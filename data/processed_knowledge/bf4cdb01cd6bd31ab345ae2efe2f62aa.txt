@@ -1,0 +1,3150 @@
+Page 1 of 87 
+Confidential   
+CLINICAL TRIAL PROTO COL  
+Double -blind, Double -dummy, Phase 2 Randomized, Multicenter, Proof -of-Concept, Safety and 
+Efficacy Trial to Evaluate Different Oral Benznidazole Monotherapy and Benznidazole/E1224 
+Combination Regimens for the Treatment of Adult Patient s with Chronic Indeterminate Chagas 
+Disease.  
+Short title BENDITA BEn znidazole New Doses Improved Treatment and 
+Associations  
+Name of product(s) E1224 (Fosravuconazole drug substance equivalent to 100 mg of 
+Ravuconazole), Abarax (Benznidazole; N-benzil-2-nitro-1-
+imidazolacetamide), and respective matched Placebos 
+Drug Class Triazole and Nitro-imidazole  
+Phase Investigational ± Phase 2 trial  
+Indication Chronic Indeterminate Chagas Disease  
+Protocol Number DNDi- CH-E1224- 003 
+EudraCT NA 
+Sponsor DNDi , Chemin Louis Dunant, 15, 1202 GENEVA Switzerland 
+Phone: +41 22 906 9230 
+Manufacturers Laboratório Elea, Buenos Aires, Argentina 
+Eisai Co, Ltd. , Tokyo, Japan 
+National Coordinating 
+Investigator  
+ 
+Plataforma de Atención Integral de Pacientes con Enfermedad de 
+Chagas. Cochabamba, Bolivia. 
+ 
+ 
+Centro de Salud Internacional, Hospital Clínico de Barcelona 
+CRESIB - Centre de Recerca en Salut Internacional de Barcelona 
+Barcelona, España. 
+Protocol Version / Date Version 5 .0 /   May 04, 2018 
+Protocol Amendment 
+Number / Date Protocol Amendment 5 / May 04 2018  
+The information contained in this document is confidential. It is to be used by investigators, potential 
+investigators, consultants, or applicable independent ethics committees. It is understood that this 
+information will not be disclosed to others without wri tten authorisation from DNDi, except where 
+required by applicable local laws .   
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 2 of 87 
+  
+CONTACT DETAILS  
+x Name, title, address, and telephone number(s) of the Sponsor's medical expert for the 
+trial  
+ 
+ 
+Rua Santa Heloisa, 05 Jardim Botânico, Rio de Janeiro, Brasil.  
+ 
+x Name and title of the Investigator(s) who is (are) responsible for conducting the trial, 
+and the address and telephone number(s) of the trial site(s)   
+Please refer to the Appendix 1 ±  Principal Investigator s¶ list 
+x Name(s) and addresse(es) of the clinical laboratory(ies) and other medical and/or 
+technical department(s) and/or Institutions involved in the trial  
+ 
+Argentina  
+Quality Control PCR  
+Instituto Nacional de Parasitología  
+ Buenos Aires, Argentina.  
+Av Paseo Colon, 568  
+ 
+Bolivia  
+PCR  Analysis  
+Laboratorio de Biología Molecular de IIBISMED  
+Facultad de Medicina UMSS  
+Av. Venezuela Lab 407 4 piso, Cochabamba, Bolivia  
+Clinical Laboratory  
+Laboratorio de la Plataforma de Atención Integral de pacientes con Chagas  
+Universidad Autónoma Juan Misael Saracho (UJMS),  C/España es. California, Tarija, 
+Bolivia  
+ 
+Laboratorio CEADES (Colectivo de Estudios Aplicados y Desarr ollo Social)  
+Calle Rico Toro, 1054 Cochabamba, Bolivia  
+ 
+Clinical Laboratory Genesis  
+Calle Ravelo n 150 Sucre, Bolivia  
+ 
+Central Conventional Serology  
+Laboratorio CEADES (Colectivo de Estudios Aplicados y Desarrollo Social)  
+Calle Rico Toro, 1054 Cochabamba, Bolivia  
+ 
+USA  
+Non Conventional Serology  
+Dept. of Biological Sciences  
+University of Texas at El Paso  
+500 W. University Ave., Bioscience bldg., room 5.200  
+El Paso, TX 79902  
+  
+Brazil:  
+PK Analysis:  
+Núcleo de Desenvolvimento Farmacêutico e Cosmético ( NUDFAC ) 
+Universidade Federal de Pernambuco  
+Centro de Ciências da Saúde  
+Departamento de Ciências Farmacêuticas  
+Centro de biodisponibilidade / bioequivalência  
+Av. Professor Arthur de Sá, s/n. Cidade Universitária, Recife ± PE 
+ 
+
+
+
+
+Protocol number DNDi- CH-E1224-003   
+ May 04, 2018.  Version 5.0. 
+ 
+Confidential  Page 3 of 87 
+ 
+ SIGNATURES   
+ 
+ 
+ 
+Signature     
+   Date of Signature 
+(DD/MM/YY)  
+Name   
+Title  
+Institution  Drugs for Neglected Diseases initiative  
+Address  Rua Santa Heloísa, 05. Rio de Janeiro, RJ.  
+ 
+ 
+ 
+Signature     
+   Date of Signature 
+(DD/MM/YY)  
+Name   
+Title  
+Institution  Drugs for Neglected Diseases initiative 
+Address  Rua Santa Heloísa, 05. Rio de Janeiro, RJ  
+ 
+  
+ 
+ 
+ 
+Signature     
+   Date of Signature 
+(DD/MM/YY)  
+Name    
+Title  
+Institution  Competence Center in Methodology and Statistics  
+         
+ Address  1A-B, rue Thomas Edison, L -1445 Strassen  
+Luxembourg  
+ 
+ 
+ 18/05/2018
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 4 of 87 
+  
+ 
+National Coordinating Investigator  
+ 
+Investigator 
+Signature    
+   Date of Signature 
+(DD/mmm /YY) 
+Name   
+Title  
+Institution  
+Address  
+  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 5 of 87 
+ Investigators Signature Page  
+ 
+I have read this protocol and agree that it contains all necessary details for carrying out this trial. I will 
+conduct the trial as outlined herein and will complete the trial within the time designated.  
+I will provide copies of the protocol and all pertinent information to all individuals responsible to me 
+who assist in the conduct of this trial. I will discu ss this material with them to ensure they are fully 
+informed regarding the drug and the conduct of the trial.  
+I will use only the informed consent form approved by the sponsor or its representative and will fulfill 
+all responsibilities for submitting perti nent information to the Institutional Review Board/Independent 
+Ethics Committee (IRB/IEC) responsible for this trial.  
+I agree that the sponsor or its representatives shall have access to any source documents from which 
+case report form information may have  been generated.  
+ 
+Principal Investigator at each trial site  
+ 
+Investigator 
+Signature    
+   Date of Signature 
+(DD/MM/YY)  
+Name   
+ 
+ 
+ 
+Title  
+ 
+ 
+Institution 
+  
+  
+ 
+ 
+Address  
+ 
+ 
+ 
+  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 6 of 87 
+ TABLE OF CONTENTS  
+ABBREVIATIONS  ................................ ................................ ................................ ................  8 
+PROTOCOL SUMMARY  ................................ ................................ ................................ .....10 
+1. BACKGROUND AND TRIAL  RATIONALE  ................................ ............................. 23 
+2. TRIAL OBJECTIVES AND  ENDPOINTS  ................................ ................................ .28 
+2.1. Objectives  ................................ ................................ ................................ ................................ ....... 28 
+2.1.1.  Primary Objective  ................................ ................................ ................................ ................  29 
+2.1.2.  Secondary Objectives  ................................ ................................ ................................ .........  29 
+2.2. Trial Endpoints  ................................ ................................ ................................ ...............................  29 
+2.2.1.  Primary Endpoints  ................................ ................................ ................................ ...............  29 
+2.2.2. Secondary Endpoints  ................................ ................................ ................................ ..........  30 
+3. TRIAL DESIGN AND TRI AL DESIGN RATIONALE  ................................ ................ 30 
+3.1. Trial design  ................................ ................................ ................................ ................................ ..... 30 
+3.2. Trial  duration and duration of patient participation  ................................ ................................ ... 31 
+3.3. Rationale of trial design  ................................ ................................ ................................ ................  32 
+4. SELECTION OF PATIENT S ................................ ................................ ..................... 37 
+4.1. Screening criteria  ................................ ................................ ................................ ...........................  37 
+4.2. Inclusion criteria  ................................ ................................ ................................ .............................  38 
+4.3. Exclusion criteria  ................................ ................................ ................................ ...........................  39 
+5. SCHEDULE OF EVENTS  ................................ ................................ ......................... 41 
+6. ENROLMENT PROCEDURES  ................................ ................................ ................. 42 
+7. TREATMENTS  ................................ ................................ ................................ ......... 42 
+7.1. Investigational Products  ................................ ................................ ................................ ...............  42 
+7.2. Doses and treatment regimens  ................................ ................................ ................................ ..... 44 
+7.3. Drugs labelling, packaging  ................................ ................................ ................................ ...........  47 
+7.4. Accountability  ................................ ................................ ................................ ................................ . 47 
+7.5. Storage  ................................ ................................ ................................ ................................ ............  48 
+7.6. Blinding an d procedures for unblinding ................................ ................................ ......................  48 
+7.7. Concomitant treatment  ................................ ................................ ................................ ..................  49 
+8. TRIAL ASSESSMENTS  ................................ ................................ ........................... 50 
+8.1. Timing of Assessments  ................................ ................................ ................................ .................  50 
+8.2. Screening and Baseline Assessments  ................................ ................................ ........................  50 
+8.3. Assessment of Efficacy  ................................ ................................ ................................ .................  53 
+8.3.1.  Assessments performed  ................................ ................................ ................................ ..... 53 
+8.4. PK Assessments  ................................ ................................ ................................ ............................  55 
+8.5. Assessment of Safety  ................................ ................................ ................................ ....................  56 
+8.5.1.  Laboratory examinations  ................................ ................................ ................................ ..... 58 
+8.5.2.  Sampling assessments schedule  ................................ ................................ ........................  58 
+8.6. Adverse event definitions and reporting  ................................ ................................ .....................  59 
+8.6.1.  Adverse Event definition  ................................ ................................ ................................ ..... 59 
+8.6.2.  Serious Adverse Event  ................................ ................................ ................................ ........  60 
+8.6.3.  Adverse Event of Special Interest (AESI):  ................................ ................................ ..........  62 
+8.6.4.  Eliciting Adverse Event information ................................ ................................ .....................  62 
+8.6.5.  Adverse Event reporting period  ................................ ................................ ...........................  62 
+8.6.6.  Adverse Event reporting requirements ................................ ................................ ................  63 
+8.6.7.  Grading of Adverse Event severity  ................................ ................................ ......................  64 
+8.6.8.  Adverse Event causality assessment  ................................ ................................ .................  64 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 7 of 87 
+ 8.6.9.  Exposure in utero  ................................ ................................ ................................ ................  65 
+8.6.10.  Adverse event follow -up ................................ ................................ ................................ ...... 66 
+9. WITHDRAWAL CRITERIA  ................................ ................................ ....................... 66 
+9.1. Rules in case of treatment suspension or temporarily interruption  ................................ ..............  67 
+9.2. Rules for permanently interrupting trial treatment  ................................ ................................ ..........  67 
+9.3. Patient withdrawal from the trial  ................................ ................................ ................................ ........  68 
+9.4. Lost to follow -up................................ ................................ ................................ ................................ .. 68 
+9.5 Patient replacement  ................................ ................................ ................................ .............................  69 
+10. DATA ANALYSIS AND ST ATISTICAL METHODS  ................................ ................. 69 
+10.1. Sample size determination  ................................ ................................ ................................ ............  69 
+10.2. Definition of trial populations included in the analysis  ................................ .............................  69 
+10.3. Baseline  ................................ ................................ ................................ ................................ ...........  70 
+10.4. Treatment Compliance ................................ ................................ ................................ ...................  70 
+10.5. Efficacy Analysis  ................................ ................................ ................................ ............................  71 
+10.6. Safety Analysis  ................................ ................................ ................................ ...............................  73 
+10.7. Analysis of other endpoints  ................................ ................................ ................................ ..........  74 
+10.8. Interim analysis  ................................ ................................ ................................ ..............................  75 
+10.9. Missing, unused, and spurious data  ................................ ................................ ............................  76 
+10.10.  Deviations from the original statistical plan  ................................ ................................ ...........  76 
+11. DATA MONITORING COMM ITTEE  ................................ ................................ ......... 76 
+12. QUALITY ASSURANCE AN D QUALITY CONTROL PR OCEDURES  .................... 76 
+12.1. IQYHVWLJaWRU¶V ILOH  ................................ ................................ ................................ ............................  76 
+12.2. Case report forms (CRFs)  ................................ ................................ ................................ .............  76 
+12.3. Source documents  ................................ ................................ ................................ .........................  77 
+12.4. Record Retention  ................................ ................................ ................................ ...........................  77 
+12.5. Monitoring  ................................ ................................ ................................ ................................ ....... 77 
+12.6. Audits and Inspections  ................................ ................................ ................................ ..................  78 
+12.7. Data Management  ................................ ................................ ................................ ...........................  78 
+12.8. Confidentiality of Trial Documents and Patients Records ................................ .........................  79 
+13. PROTOCOL AMENDMENTS  ................................ ................................ ................... 79 
+14. EARLY TERMINATION OF  THE TRIAL  ................................ ................................ ..79 
+15. ETHICS  ................................ ................................ ................................ ..................... 80 
+15.1. Informed consent process  ................................ ................................ ................................ ............  81 
+15.2. Ethical aspects of patient inclusion and trial procedures  ................................ .........................  81 
+15.3. Ethical aspects of trial treatments  ................................ ................................ ................................  82 
+15.4. Patient costs  ................................ ................................ ................................ ................................ ... 82 
+16. INSURANCE AND LIABIL ITY ................................ ................................ .................. 82 
+17. REPORTING AND PUBLIC ATION  ................................ ................................ .......... 82 
+18. REFERENCES  ................................ ................................ ................................ ......... 84 
+ 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 8 of 87 
+ ABBREVIATIONS  
+GLOSSARY OF TERMS  
+AE Adverse Event  
+AESI  Adverse Event of Special Interest  
+ADR  Adverse Drug Reaction  
+ALT Alanine Aminotransferase (SGPT)  
+AST Aspartate Aminotransferase  
+AUC  Area under the Curve  
+BID Twice a day  
+BMI Body Mass Index  
+BZN Benznidazole  
+BZN/E1224  Benznidazole and E1224  
+Ca Calcium  
+CD Chagas Disease  
+CIOMS  CoXncil foU InWeUnaWional OUgani]aWionV of Medical ScienceV  
+CL Clearance  
+Cmax Maximum Concentration  
+Cmin Minimum Concentration  
+CRF Case Report Form  
+CTCAE  Common Terminology Criteria for Adverse Events  
+DALYs  Disability -Adjusted Life Years  
+DNDi  Drugs for Neglected Diseases initiative  
+DMC  Data Monitoring Committee  
+DTU Direct typing units  
+EOT End of Treatment   
+EKG  Electrocardiogram  
+EDTA  Ethylenediaminetetraacetic Acid  
+GCP  Good Clinical Practice  
+GGT  Gamma -glutamyl Transpeptidase  
+ICH International Conferences on Harmonization  
+IEC Independent Ethics Committee  
+IRS Interactive Response System  
+ITT Intention to Treat  
+K PoWaVViXm  
+MedDRA  Medical DicWionaU\ foU RegXlaWoU\ AcWiYiWieV  
+Mg MagneViXm  
+mSk MilligUamV SeU Kilo  
+NFX NifXUWimo[   
+PAHO  Pan AmeUican HealWh OUgani]aWion  
+PCR  Pol\meUaVe Chain ReacWion  
+PI PUinciSal InYeVWigaWoU  
+PK PhaUmacokineWicV  
+PP PeU PUoWocol  
+QD Once a da\ 
+TPCR  QXanWiWaWiYe Pol\meUaVe Chain ReacWion  
+QTc CoUUecWed QT inWeUYal  
+RAV RaYXcona]ole  
+SAE SeUioXV AdYeUVe EYenW  
+SOC  S\VWem ClaVV OUgan  
+STD SWandaUd  
+W1/2 PlaVma WeUminal half -life (W=Wime)  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 9 of 87 
+ TBL ToWal BiliUXbin  
+TDR SSecial PUogUamme foU ReVeaUch and TUaining in TUoSical DiVeaVeV  
+T. Cru]i  TU\SanoVoma CUX]i  
+ULN USSeU LimiWV of NoUmal  
+UNDP  UniWed NaWionV DeYeloSmenW PUogUamme  
+UNICEF  UniWed NaWionV ChildUen ¶V FXnd  
+Vd VolXme of diVWUibXWion  
+VPC ViVXal PUedicWiYe CheckV  
+WBC  WhiWe Blood Cell  
+WHO  WoUld HealWh OUgani]aWion   
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 10 of 87 
+ PROTOCOL SUMMARY  
+Protocol Title   Double-blind, Double-dummy, Phase 2 Randomized, Multicenter, Proof- of-
+Concept, Safety and Efficacy Trial to Evaluate Different Oral Benznidazole 
+Monotherapy and Benznidazole/E1224 Combination Regimens for the Treatment 
+of Adult Patients with Chronic Indeterminate Chagas Disease 
+Phase  Investigational ± Phase 2 trial  
+Indication  Chronic Indeterminate Chagas Disease  
+Protocol 
+Number DNDi- CH-E1224- 003 
+Background 
+Information 
+and Trial 
+Rationale The current treatment for Chagas disease has significant limitations, including long 
+treatment durations, safety and tolerability concerns and is currently limited to two 
+nitro-heterocyclic drugs, nifurtimox and benznidazole (BZN).  BZN, a nitroimidazole 
+introduced by Roche in 1971, is marketed by Laboratório Farmacêutico do Estado 
+de Pernambuco S/A ± LAFEPE and Laboratorio ELEA ± Argentina. It is supplied 
+in tablets strengths of 12.5, 50 and 100 mg, administered twice daily at a dose of  5 mg/kg body weight/day for adults and 5-10 mg/kg body weight/day for children 
+for 30-60 days. Notably, the current regimens with BZN for the treatment of adults 
+with CD likely represent the maximum dosing case scenario in terms of dose, 
+duration and schedule of administration (Chagas expert meeting DNDi. January 
+2014. GVA). 
+Doses and duration of treatment for CD have not been evaluated systematically. Current treatment regimens and dosing intervals have been derived from decades-
+old patient series and with very limited direct comparisons. Data from recently concluded trials suggest existing opportunities for optimisation of the treatment 
+regimens of BZN.  
+A DNDi -sponsored Phase 2, proof- of-concept clinical trial on E1224 and BZN in 
+adults with chronic indeterminate CD, conducted between 2011 and 2013 in Bolivia, showed that all BZN-treated patients had cleared parasite DNA after 2 weeks of treatment and 81% sustained the parasite clearance at 12 months after 
+treatment. At end- of tre atment (EOT, Day 65), E1224 was found to be efficacious 
+in clearing T. cruzi  parasites when compared to placebo. However, at 12 months 
+less than one third of patients sustained parasite clearance. The trial safety data 
+also indicated a proportion of patients (10-20%) who do not complete treatment in 
+conditions of use, the majority due to adverse drug reactions (ADRs) and the long treatment duration. 
+Taking into consideration the efficacy gap with about 80% sustained response and 
+a tolerability gap, with a proportion of patients (10-20%) who do not complete 
+treatment, two approaches for Chagas treatment optimization are to be pursued: 
+1) A change in the current adult dosing regimen for BNZ to reduce exposure and 
+improve tolerability while maintaining efficacy; and 
+2) The development of a combination therapy to improve efficacy while maintaining 
+or improving tolerability. The combination therapy aims to address the efficacy gap 
+and may or may not address tolerability gap. 
+ 
+With regards to the  dosing regimen, population-pharmacokinetics studies   
+observed BZN plasma concentrations in children were significantly lower than 
+those previously reported in adults (treated with comparable mg/kg doses) . At the 
+same time, all children had parasite clearance, few adverse reactions to the drug. 
+Recent population PK data in adults suggested that the current BZN dosing 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 11 of 87 
+ regimen (2.5 mg/kg/12 h) may lead to overexposure in the majority of patients . 
+Dosing simulations suggested that a BNZ dose of 2.5 mg/kg/24 h would adequately 
+keep BNZ trough plasma concentrations within the recommended target range for 
+the majority of patients.  There are also opportunities for evaluation of fixed dose regimens for adult dosing, rather than mg/kg calculations, with increased ease- of-
+use and potential for improved compliance in scaling up treatment of CD. Intermittent dosing regimens was also evaluated in murine model of chronic CD 
+and in a pilot follow- up trial with 17 adult patients with chronic CD was, with similar 
+parasitological cure rates to standard treatment. 
+Likewise, several controlled observational trials with BZN, 5 mg/kg/day for 30 or 60 days have shown a reduction in the progression of heart disease serological and 
+sero-negative conversion up to 60% in children and 30% in adults. Different 
+publications showed anti-parasitic efficacy of treatment regimens with 30 and 60 
+days, and of incomplete treatment of 10 days. Combination therapy is a well-
+recognized treatment modality in many disease settings, including cancer , 
+cardiovascular disease, and infectious diseases. Several infectious diseases such as tuberculosis, malaria, leprosy, and AIDS only came under control and were 
+effectively treated after introduction of combinations of drugs that utilize different 
+mechanisms of action. 
+E1224 is a water-soluble monolysine salt form of the ravuconazole (RAV) pro-d rug 
+(which is a phosphonooxymethyl ether derivative of RAV). It is a broad-spectrum 
+triazole antifungal. 
+ 
+Pooled safety data for the monolysine prodrug E1224 from Phase 1 and 2 trials 
+indicated that E1224 was generally well tolerated and exhibited a safety profile 
+quite similar to other azoles. Adverse events occurring in greater than 3% of E1224 recipients, with a dose-dependent pattern and at rates higher than those observed 
+in placebo recipients included nausea, abnormalities in liver enzymes, dizziness, 
+anxiety, and contact dermatitis. 
+Safety evaluations indicated relatively mild, transient, and asymptomatic increases 
+in liver enzymes ± completely reversible upon discontinuation of therapy. Phase 1 
+cardiac safety evaluations showed that E1224 administration did not result in QTc 
+interval prolongation. 
+Experimental data suggest a positive interaction between BZN and azole 
+compounds for the treatment of Chagas disease.
+18  
+A Phase 1 drug-drug interaction trial was designed to assess the pharmacokinetics 
+(PK) and safety interaction of BNZ and E1224 co-administered daily for a total of 
+54 days (Day 4 to Day 15- E1224 multiple dose 400 mg loading dose once daily 
+for 3 days, followed by maintenance dose 100mg once daily for 9 days (from Day 7 
+to Day 15); Day 9 BNZ single dose (2.5 mg/kg); and Day 12 to Day 15 BNZ multiple dose (2.5 mg/kg twice daily)).  The trial was conducted in Argentina and was concluded in early 2015, with enrolment of 28 healthy male volunteers . Both 
+compounds were well tolerated, in monotherapy and combination. There were no treatment discontinuations or serious adverse events. Transient, minor, non-
+concomitant increase in bilirubin and liver transaminases occurred in 2 patients in 
+a pattern not suggestive of drug effect. There was no interaction of RAV on BNZ 
+PK and the limited impact of BNZ on RAV PK, suggesting that co-administration of 
+RAV and BNZ may not require any E1224 dosing adaptation. The lack of clinically 
+relevant safety findings provided support for follow-up evaluation of the two 
+compounds in combination. 
+In conclusion, recent scientific advances have provided further impetus to develop 
+new therapeutic approaches for CD using different doses and duration of BZN, as 
+well as combinations directed at multiple therapeutic targets to improve treatment response and tolerability and reduce the potential for development of resistance.  
+This project focuses on the proof- of-concept evaluation of improved treatment 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 12 of 87 
+ regimens of BZN, with the assessment of new BZN-sparing regimens in 
+monotherapy and in combination with E1224. 
+Trial 
+Objectives General Objective: 
+To determine the efficacy and safety of different dosing regimens of BZN and 
+BZN/E1224 in combination (BZN/E1224) in reducing and clearing  T. cruzi  
+parasitemia in individuals with the chronic indeterminate CD.  
+ 
+Primary Objectives: 
+x To determine the efficacy of different dosing regimens of orally 
+administered BZN and BZN/E1224 in individuals with chronic indeterminate 
+CD, by determining the proportion of patients who convert from positive to 
+negative in serial, qualitative PCR test results (3 negative PCR results) at 
+end of treatment (EOT) and sustain parasitological clearance at 6 months 
+of follow-up, in comparison to placebo. 
+ 
+Secondary Objectives:  
+x To measure the reduction in parasite load at weeks 1, 2, 3, 4, 6, 10, 12 and 
+at 4, 6 and 12 months follow-up, as measured by quantitative PCR.  
+x To assess the time to parasite DNA clearance (below the quantitative PCR 
+[qPCR ] Limit of Detection [ LOD]) for each of the regimens  
+x To assess the sustained parasitological response at week 12, and 12 
+months for each of the regimens, in comparison with placebo.   
+x To assess the time to sustained clearance of parasitemia for each of the 
+treatment regimens.  
+x To determine the efficacy of the different dosing regimens in individuals with 
+chronic indeterminate CD, by determining the proportion of patients who 
+convert from positive to negative in serial, qualitative PCR test results (3 
+negative PCR results) at EOT, in comparison with placebo.  
+x To explore if there is a dose-response relationship between the dose of 
+treatment given and parasite clearance in order to determine the minimum 
+effective dose. 
+x To evaluate serological response by conventional serology at 12 months of 
+follow up and non-conventional serology at W12, 4M, 6M, and 12 months 
+of follow up.  
+x To characterize the population pharmacokinetic parameters of orally 
+administered BZN and BZN/E1224 in adults with chronic indeterminate CD.  
+x To evaluate the safety profile of different regimens based on clinical, 
+laboratory measurements, and EKG.  
+x To correlate pharmacokinetic parameters with parasitological response and 
+safety outcomes.  
+x To evaluate the incidence of Serious Adverse Events (SAEs) and/or 
+adverse events leading to discontinuation of treatment.  
+ 
+Trial Endpoints  Primary efficacy assessment parameter:  
+x Parasitological response as determined by serial negative qualitative PCR 
+results (3 negative PCR results, from 3 samples to be collected in the same 
+day) at EOT and sustained parasitological clearance until 6 months follow-
+up.  
+For efficacy assessments, the EOT of each treatment arm will be defined in 
+accordance to the duration of the treatment regimen. Sustained response will be 
+assessed in all treatment arms using the same number of PCR samples (i.e., EOT; 
+12 weeks; 4 and 6 months).  
+ 
+Secondary efficacy assessment parameters/criteria: 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 13 of 87 
+ x Sustained parasitological clearance at 12 weeks and 12 months of follow-
+up. 
+x Parasite clearance at weeks 1, 2, 3, 4, 6, 10, 12, and at 4, 6, and 12 months 
+follow-up as measured by qualitative PCR. 
+x Change in parasite load over time assessed at weeks 1, 2, 3, 4, 6, 10, 12, 
+and at 4, 6, and 12 months follow-up as measured by quantitative PCR. 
+x Serological response by conventional serology assessed at 12 months of 
+follow up and non-conventional serology assessed at W12, 4, 6, and 12 
+months of follow up. (changes in titters  over time) 
+ 
+Primary safety criteria:  
+x Incidence and severity of adverse events (clinical, laboratory 
+measurements, and EKG)  
+x Incidence of SAEs  and/or adverse events leading to treatment 
+discontinuation 
+ 
+Safety will be assessed through routine monitoring of adverse events, evaluation 
+of haematological and blood chemistry values, regular measurement of vital 
+signs, physical examination, and conduct of EKGs at selected trial visits 
+(according to the trial schedule). 
+ 
+Pharmacokinetics (PK) endpoints:  
+ 
+x Blood level concentrations will be determined at D0 (pre-dose), after first 
+day of treatment administration (day 1, post-dose), at day 2 and day 3, at 
+steady-state phase (week 2-10)  
+x Population pharmacokinetic parameters will include: AUC, C max, C min, CL, 
+Vd, and t 1/2. 
+ 
+Covariates to be evaluated: age, body mass index, and parasite load at 
+baseline, gender. 
+ 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 14 of 87 
+ Trial Design  Double-blind, double-dummy, randomized, prospective, comparative, placebo-
+controlled, pharmacokinetic-pharmacodynamic, and proof- of-concept trial design, 
+with seven-parallel groups. 
+ 
+The trial will be conducted in 3 sites in Bolivia .  
+ 
+The trial will be sufficiently powered to compare the efficacy and safety of each of 
+the dosing regimens of BZN and the combination BZN/E1224, with placebo.  
+Primary efficacy analyses will be performed when all patients complete 6 months follow-up visit. Efficacy and safety database until 6 months will be locked. Analyses 
+of results will be used to guide planning of follow-up Phase 3 clinical study. Sponsor 
+personnel directly involved in the trial, principal investigators and study team site 
+personnel will remain blinded to treatment allocation and results of the analyses.  
+ 
+Efficacy and s afety will be monitored by an external independent Data Monitoring 
+Committee (DMC) on an ongoing basis. The committee is to include cardiac and 
+liver safety experts, as well as CD clinical expertise. 
+ 
+Randomization, Blinding and Code Breaking 
+ 
+Each patient will be assigned with a treatment number according to the 
+randomization schedule. The trial drug label will indicate the trial number, trial site 
+and patient treatment numbers (according to local regulations), but will not indicate 
+the actual designation of treatment. 
+ 
+ 
+Code breaking can only be performed if a life-threatening / emergency condition 
+depends on the information about the treatment allocation. In case of any need of 
+un-blinding, the sponsor (DNDi clinical trial manager or monitor) must be contacted 
+immediately, ideally before doing so.    
+Main Entry 
+Criteria 
+Screening, Inclusion and  
+Exclusion  Screening Criteria: 
+Patients must meet ALL of the following screening criteria to eligible for the trial :  
+x Signed, written informed consent form 
+x Age >18 to < 50 years 
+x Weight > 50 kg to < 80 kg 
+x Diagnosis of T. cruzi  infection by: 
+o Conventional serology (a minimum of two positive tests 
+[Conventional ELISA, Recombinant Elisa and/or Indirect 
+Immunofluorescence (IIF)])  
+x Ability to comply with all protocol specified tests and visits and have a 
+permanent address 
+x Patients must be residents of areas free of vectorial transmission  (Triatoma 
+infestans ). For this protocol, it will be accepted the status of Vectorial 
+Transmission Interruption or Consolidation as per the definition of PAHO /WHO , or the Local Health Program. 
+x No signs and/or symptoms of the chronic cardiac and/or digestive form of 
+CD 
+x No acute or chronic health conditions, that in the opinion of the PI, may 
+interfere with the efficacy and/or safety evaluation of the trial drug (such as 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 15 of 87 
+ acute infections, history of HIV infection, liver, and renal disease requiring 
+treatment) 
+x No formal contraindication to BZN (according to the Summary of Product 
+Characteristics) and E1224 (accoUding Wo Whe InYeVWigaWoU¶V BUochXUe)  
+Note : The contraindications described for Benznidazol and E1224 are 
+essentially hypersensitivity to the active ingredient or any excipient. In the 
+case of hepatic or renal impairment or blood discrasia, the medication should only be administered under strict medical supervision. During all the treatment period, the blood count will be monitored, with special attention to 
+leucocytes. Subjects will be indicated about the need of no alcohol intake. 
+ 
+x No history of hypersensitivity, allergic, or serious adverse reactions to any 
+of Whe ³a]oleV´ comSoXnd, and/oU iWV comSonenWV  
+x No history of CD treatment with BZN or NFX at any time in the past  
+x No history of systemic treatment with itraconazole, ketoconazole, 
+posaconazole, isavuconazole, or allopurinol in the past  
+x No history of alcohol abuse or any other drug addiction  
+x No condition that prevents patient from taking oral medication 
+x No concomitant or anticipated use of drugs that are either sensitive CYP3A4 
+substrates and/or extensively metabolized by CYP3A4 with a narrow 
+therapeutic range (as per Appendix 2) 
+x No medical history of Familial Short QT syndrome or concomitant therapy 
+with medications that can shorten the QT interval (as per Appendix 2) 
+x No family history of sudden death 
+x No family history of sudden infant death syndrome 
+ 
+Inclusion Criteria: 
+Following the screening period, patients must also meet ALL of the following inclusion criteria to be eligible for randomization:  
+x Confirmed diagnosis of T. cruzi  infection by: 
+o Serial qualitative PCR (three samples collected over a single day, 
+at least one of which must be positive) AND 
+o Conventional serology (a minimum of two positive tests must be 
+positive [Conventional ELISA, Recombinant Elisa and/or IIF)  
+x 
+Women in reproductive age must have a negative serum pregnancy 
+test at screening, must not be breastfeeding, and must use a double 
+barrier method of contraception to avoid pregnancy throughout the 
+clinical trial and for 3 months after completion of the trial, in such a 
+manner that the risk of pregnancy is minimized especially during 
+exposure to treatment.  Women who are using oral, implanted, or 
+injectable contraceptive hormones or mechanical products such as an 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 16 of 87 
+ intrauterine device with a hormonal component are required to use an 
+additional barrier method of contraception for the time period specified 
+NoUmal EKG (PR 200 mVec, QRS <120 mVec, and QTc 350mVec and 
+450 mVec inWeUYal dXUaWionV in maleV and QTc 470mVec in Zomen) aW 
+screening 
+ 
+Exclusion Criteria: 
+The presence of any of the following will exclude a patient from the trial 
+randomization: 
+x Signs and/or symptoms of chronic cardiac and/or digestive form of CD   
+x History of cardiomyopathy, heart failure, or ventricular arrhythmia.  
+x History of digestive surgery or mega syndromes. 
+x Any other acute or chronic health conditions that, in the opinion of the PI, 
+may interfere with the efficacy and/or safety evaluation of the trial drug (such 
+as acute infections, history of HIV infection, diabetes, uncontrolled 
+systolic/diastolic blood pressure, liver, and renal diseases requiring medical 
+treatment). 
+x Laboratory test values considered clinically significant or out of the 
+allowable range at selection period as follows: 
+o Total WBC must be within the normal range, with an acceptable 
+margin of +/- 5%. 
+o Platelets must be within the normal range up to 550,000/mm3 
+o Total bilirubin must be within the normal range 
+o Transaminases (ALT and AST) must be within the normal range, 
+with an acceptable margin of 25% above the upper limit of normality 
+(ULN), < 1.25 x ULN. 
+o Creatinine must be within an acceptable margin of 10% above the 
+ULN, <1.10 x ULN. 
+o Alkaline phosphatase must be within the normal range up to Grade 
+1 CTCAE ( <,2.5 x ULN) 
+o GGT must be within the normal range up to 2x ULN. 
+o Fasting glucose must be within the normal range 
+o Electrolytes (Ca, Mg, K) must be within the normal range 
+ 
+x If the results of the blood tests (hematology and biochemistry) are out of the 
+ranges defined above, but within the limits of CTCAE (version 4.03) Grade 
+1, and the laboratory finding is considered as non-clinically significant, a new 
+sample can be collected for a retest.  Only one retest will be allowed within 
+the screening period.  
+If the result of the retest is within the margins defined above, the Investigator 
+will review the parameter(s) together with all other medical information 
+available (medical history, clinical examinations, vital signs, etc.) and upon 
+his/her medical judgement will decide if the patient is eligible or not for trial 
+randomization.  
+x Any condition that prevents the patient from taking oral medication. 
+
+
+
+
+
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 20 of 87 
+ 4 -  4 wks  safety & 
+maintaining 
+efficacy suggest 50% dose scaling may be 
+possible. Human trials suggest that 
+duration may be reduced.   Higher risk 
+considering mouse data with one third of 
+dose and full duration. 
+5 BZN 150 mg 
+-  4 wks  
+E1224 300 
+mg Improving both 
+safety & 
+efficacy Assessment of combination with current 
+dose BZN in short course. Animal data 
+show reduced BZN dose with long duration 
+may lead to a sub-optimal response, thus 
+warranting the addition of E1224. 
+6 BZN 300 mg 
+-  8 wks, 
+weekly 
+doses 
+E1224 300 
+mg Improving both 
+safety & 
+efficacy  Animal and human trial data show that 
+intermittent BZN dose with long duration 
+may lead to a sub-optimal response, thus 
+warranting the addition of E1224. 
+7 
+Placebo Negative 
+control arm Assessment of sensitivity of PCR in 
+different epidemiological settings and 
+parasite diversity.  
+ 
+ 
+ 
+BZN Zill be adminiVWeUed aV 100 mg and 50 mg WableWV.  Placebo Zill be i dentically 
+matched to the BZN tablets.   
+ E1224 Zill be adminiVWeUed aV 100 mg caSVXleV. E1224 caSVXleV conWain 
+FoVUaYXcona]ole dUXg VXbVWance eTXiYalenW Wo 100 mg of RAV. Placebo Zill be 
+idenWicall\ maWched Wo Whe E1224 caSVXleV.  
+ 
+AV SeU Uecommended in Whe ABARAX  Sackage inVeUW, SaWienWV Zill be adYiVed Wo 
+abVWain fUom alcohol dXUing WUeaWmenW.  
+At the trial visits, E1224 will be administered under the supervision of the trial staff. 
+The patient will receive enough BZN until the next scheduled visit.  Also, they must 
+bring all remaining trial drugs to check for compliance with prescribed treatment 
+and ensure drug accountability.  
+ 
+Concomitant treatment :  
+Patients are allowed to receive concomitant therapy for medical occurrences during the course of the trial. However, specific compounds that interact with the trial 
+drugs, increase the liver enzymes, are immunosuppressants or have a known 
+activity against T. cruzi,  are not allowed during the treatment phase of the trial or 
+up until the 4M visit .  
+Hormonal contraceptives are allowed during the trial. However, as the 
+contraceptive efficacy is decreased due to interaction with Ravuconazole, a double 
+method is recommended (section 7.6.8 .)  
+All concomitant medications taken by the patient during the trial, from the date of 
+signature of the informed consent until the last follow up visit, will be recorded in 
+the appropriate section of the Case Report Form.   
+ 
+Rescue treatment :  
+At the end of the study, patients will receive the information related to what study 
+treatment they took and the PCR results. 
+All patients treated with placebo will be offered BZN treatment at 5 mg/kg/day, 
+divided in two daily doses for 60 days. 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 21 of 87 
+ For all other patients, except those treated with BZN standard regimen, who remain 
+PCR positive at end of trial, BZN treatment will be offered at 5 mg/kg/day, divided 
+in two daily doses for 60 days. 
+For all patients treated with BZN standard regimen who remain PCR positive at 
+end of trial NFX treatment will be offered at doses of 10-15mg/Kg/day, divided in 
+two-three daily administrations for 60 days.  
+Patients who do not tolerate the trial treatment will be withdrawn from the trial and 
+will be offered an alternative treatment with NFX 10-15mg/Kg/day, divided in two-
+three daily doses for 60 days.  
+Statistics 
+ 
+Sample size 
+considerations  
+ 
+ 
+ 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ A total of 210 patients will be recruited in the trial .  
+ 
+For a comparison of two independent binomial proportions using Pearson's Chi-
+square statistic with a Chi-square approximation with a two-sided significance level of 0.006 (multiplicity adjustment of 0.05 for 6 comparisons [treated arms] against 
+the control arm), a sample size of 11 patients per arm assuming a balanced design achieves a power of at least 0.8 when the proportions are 0.082 (control arm) and 
+0.81 (treatment arm). Alpha-adjustment to 0.0 25 is considered for interim analyses 
+to account for potential inflation of Type I error. 
+ 
+With an estimated proportion of 10% patients who would drop-out from the trial, the 
+final sample size needed is 12 patients per arm for one comparison.  
+ 
+A sample size of 30 patients per arm will allow a 99% probability of observing at 
+least one event of peripheral neuropathy or paresthesia, transaminase increase, 
+hypersensitivity (13.3%, 15.5%, and 22.2 %, respectively), and 85% probability of 
+observing at least one treatment discontinuation per arm. 
+ 
+Indications for 
+early treatment 
+discontinuation Efficacy and safety will be reviewed by the established Data Monitoring Committee 
+(DMC), as defined in the DMC charter.  
+ 
+An efficacy interim analysis will be performed when 30% of patients completed 12 
+weeks from treatment initiation. A futility stopping rule is defined by a lack of 
+significant difference to placebo in the sustained parasitological response at 12 
+weeks. The stopping rule will be applied with no change planned on the sample 
+size. Alpha-adjustment to 0.0 25 is considered to account for potential inflation of 
+Type I error. Patients will be considered early treatment failures. 
+ For safety, upon completion of treatment of 20% of recruited patients, a safety 
+interim analysis will be performed.  
+ 
+Liver safety criteria: 
+ 
+Discontinuation of treatment should be considered if: 
+ ALT oU AST >8[ULN  (to be reported as Adverse Event of Special Interest) 
+ ALT oU AST >5[ULN foU moUe Whan 2 ZeekV  
+ ALT oU AST >3[ULN and (Total Bilirubin ( TBL) >2xULN or prothrombin time INR 
+>1.5) (H\ LaZ¶V cUiWeUia  = to be reported as a serious adverse event (SAE))  
+ ALT  or AST >3xULN with the appearance of fatigue, nausea, vomiting, right 
+upper quadrant pain or tenderness, fever, rash, and/or eosinophilia (>5%)   
+Liver enzymes will be repeated as soon as possible after the initial abnormality is 
+identified. After that, the patient should be followed every 96 hours (4 days), or 
+the closest possible interval, until the serum ALT and/or AST falls below 3 X ULN 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 22 of 87 
+ or stabilize.  
+ 
+All data on liver safety will be presented to the DMC for review. 
+ 
+Cardiac safety: 
+Patients will be monitored regularly for vital signs and electrocardiographic 
+abnormalities (see Table 1 ± Schedule of Events). Patients will be re-dosed only 
+following on-site physician review of available EKGs (central reading). Specific 
+criteria for treatment discontinuation are described in Section 9 of the trial protocol. 
+ 
+Any patient with a delta QTc > 60 msec post dosing will have the trial medication 
+permanently interrupted and will follow the standard trial schedule. For the cases 
+where in addition to the delta QTc > 60 msec post-dosing, cardiac symptoms are 
+present, an EKG should be performed as soon as possible. 
+ 
+Echocardiography will be performed on any patients with any clinically significant 
+change in the EKG and in patients with AEs determined to be of cardiac etiology. 
+Holter monitoring will be carried out in patients with symptoms or EKG evidence of arrhythmia.  
+ 
+Cardiac safety experts will periodically review all EKGs and present information to 
+the DMC. Central reading of the EKGs will be utilized for the EKG database. In 
+addition, the cardiac safety expert will review all Cardiac System Organ Class 
+(SOC) AEs; and all non-Cardiac SOC, but potential Cardiac AEs.  
+ 
+A DMC will review cardiac safety information on an ongoing basis, as prescribed 
+in its Charter. 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 23 of 87 
+ 1. BACKGROUND AND TRIAL  RATIONALE  
+Chagas disease (CD) is a disease caused by Trypanosoma cruzi (T. cruzi) , ranking among 
+Whe ZoUld¶V moVW neglecWed diVeaVeV. In LaWin AmeUica, 21 coXnWUieV aUe endemic foU CD ZiWh an 
+estimated 70 million people at risk of contracting the disease1. Estimates from the 1980s indicated 
+that some 16 million to 18 million individuals were infected. In the 1990s, after a series of multinational 
+control initiatives, estimates of the number of infected people were revised to 9.8 million in 2001. The 
+estimated burden of disease in terms of disability -adjusted life years (DALYs) declined fr om 2.7 million 
+in 1990 to 586,000 in 2001. Recent estimates from PAHO (2015) indicate about 6 million infected 
+people2 and 29,925  new cases of vector transmission per year.  
+The current treatment for Chagas disease has significant limitations, including lo ng treatment 
+durations, safety and tolerability concerns and is currently limited to two nitro -heterocyclic drugs, 
+nifurtimox and benznidazole (BZN).  BZN, a nitroimidazole introduced by Roche in 1971, is now 
+marketed by Laboratório Farmacêutico do Estado de Pernambuco S/A ± LAFEPE and Laboratorio 
+ELEA ± Argentina. It is supplied in tablets strengths of 12.5 mg, 50 and 100 mg and administered 
+twice daily at a dose of 5 mg/kg body weight/day for adults and 5 -10 mg/kg body weight/day for 
+children for 30 -60 da ys. Notably, the current regimens with BZN for the treatment of adults with CD 
+likely represent the maximum dosing case scenario in terms of dose, duration and schedule of 
+administration (Chagas expert meeting DNDi. January 2014. Geneva ). 
+Lack of convincin g and consistent data on efficacy and concerns about safety and tolerability 
+profiles have limited the widespread implementation of BZN treatments. Despite being available since 
+the early 70s, treatment recommendations vary significantly from country to co untry and the 
+comparative evidence -base with the current treatment regimens is limited.   
+Doses and duration of treatment for CD has not been evaluated systematically. Current 
+treatment regimens and dosing intervals have been derived from decades -old patien t series and with 
+very limited direct comparisons. Data from recently concluded trials  suggest existing opportunities for 
+optimisation of BZN treatment regimens.  
+From 2011 to 2013, a DNDi -sponsored Phase 2, proof -of-concept clinical trial on E1224 and 
+BZN in adults with chronic indeterminate CD was conducted in Bolivia assessing different dosing 
+regimen of E1224 given for 4 to 8 weeks and benznidazole standard regi men against placebo. The 
+trial provided clear efficacy and safety information on the two compounds to support further clinical 
+development and access3. After one week of treatment, mean qPCR repeated measures analyses 
+showed a significant difference in par asite load vs. placebo in all treatment arms. All BZN -treated 
+patients had cleared parasite DNA after 2 weeks of treatment. At end -of treatment (EOT, Day 65), 
+E1224 was found to be efficacious in clearing T. cruzi  parasites when compared to placebo. Six 
+months after treatment, 22-33% of patients receiving E1224 low dose and short duration and 60% of 
+those receving high dose E1224 sustained parasite clearance compared with 95.6% of patients 
+treated with BZN  Of note, the large majority of treatment failures were identified up to  6 month follow -
+up visit.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 24 of 87 
+ Although E1224 was found to have limited efficacy as a single -treatment agent, it holds 
+promise for use in combination with existing drugs, since it showed s trong positive activity during 
+treatment, with a third of patients having a sustained treatment response at the higher dose.  
+Safety analyses showed that the most common BZN related AEs were nausea (20%), 
+dermatologic AEs (11.1%), hypersensitivity reaction s (24.4%), headache (24.4%), and neuropathy 
+(11.1%), with a time -course pattern for development of treatment emergent adverse events. Gastro -
+intestinal disturbances and hypersensitivity reactions were the first to occur, followed by liver enzyme 
+abnormalit ies, while most cases of neuropathy occurred after 30 days of treatment.  Around 9% of 
+patients in the BZN arm had elevated transaminases and hypersensitivity reactions leading to 
+treatment discontinuation. In the E1224 treatment groups, there was a dose -dependent increase in 
+AEs, including headache (24.4%), nausea (15.6%) and liver enzyme elevations (ALT (22.2%) and 
+AST (17.8%).  
+These data suggest that BZN is rapidly effective, however there is both an efficacy gap with 
+about 80% sustained response at 12 m onths and a tolerability gap, with a proportion of patients (10-
+20%) who do not complete treatment in conditions of use, the majority due to adverse drug reactions 
+(ADRs) and the long treatment duration (see Figure 1).  
+ 
+Figure 1: Current treatment for Chag as with BNZ  
+ 
+Between April 2008 and November 2010 a prospective population -pharmacokinetics cohort 
+trial4 condXcWed aW Whe PaUaViWolog\ and ChagaV SeUYice, BXenoV AiUeV ChildUen¶V HoVSiWal µµR 
+GXWieUUe]¶¶ enUolled 40 childUen beWZeen 2 and 12 \eaUV of age ZiWh  CD.  The observed BZN plasma 
+concentrations in children were significantly lower than those previous ly reported in adults (treated 
+with comparable mg/kg doses), possibly due to a higher  weight -corrected clearance rate (CL/F) in 
+smaller children. The lower blood concentrations were nevertheless associated to parasite clearance 
+in all children, measured by  PCR. Unlike adults, children had few adverse reactions to the drug, 
+suggesting that there may be a direct correlation between drug concentrations and incidence of ADRs. 
+A second trial, sponsored by DNDi, testing the pharmacokinetic/pharmacodynamic relatio nship using 
+the 12.5mg new p aediatric dosage form and enrolling a total of 81 children from birth to 12 years of 
+age in multiple p aediatric centres in Argentina (PED -CHAGAS network), confirmed this pattern5. 
+Recent population PK data in adults further char acterized BNZ PK in adults with chronic 
+Chagas disease and suggested that the current BZN dosing regimen (2.5 mg/kg/12 h) may lead to 
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 25 of 87 
+ overexposure in the majority of patients. Dosing simulations suggested that a BNZ dose of 2.5 
+mg/kg/24 h would adequately keep BNZ trough plasma concentrations within the recommended target 
+range for the majority of patients6.  There are also opportunities for evaluation of fixed dose regimens 
+for adult dosing, rather than mg/kg calculations, with increased ease -of-use and po tential for improved 
+compliance in scaling up treatment of CD.  
+Likewise, several controlled observational trials  with BZN, 5 mg/kg/day for 30 or 60 days 
+have shown a reduction in the progression of heart disease serological and sero -negative conversion 
+up to 60% in children and 30% in adults7,8,9,10,11,12,13. Different publications showed anti -parasitic 
+efficacy of treatment regimens with 30 and 60 days14,15 and of incomplete treatment of 10 days16.  
+Additional experimental data suggest other opportunities for alternative dosing regimens of 
+BZN. Bustamante et al. showed that intermittent BZN administration had similar parasitological cure 
+rates to standard treatment, in a stringent murine model of chro nic CD 17. A pilot follow -up trial was 
+conducted in Argentina by Viotti, Sosa -Estani, and colleagues to evaluate a BZN treatment regimen 
+with intermittent doses of 5 mg/kg/day, taken at 5 -day intervals, during 60 days in 17 adult patients 
+with chronic CD. P reliminary results show a high proportion of end of treatment clearance of 
+parasitemia with this regimen, in line with historical data on standard BZN treatment.  
+Taking into consideration these results, two approaches for Chagas treatment optimization 
+are to be pursued (Figure 2): 1) Changing current adult dosing regimen for BNZ to reduce exposure 
+and improve tolerability while maintaining efficacy; and, 2) Development of a combination therapy to 
+improve efficacy while maintaining or improving tolerability.  The former does not address the existing 
+efficacy gap. Combination therapy aims to address the efficacy gap and may or may not address 
+tolerability gap.  
+ 
+Figure 2: Options for improving current treatment  
+ 
+  
+The causative agent of CD, T. cruzi,  has been c alled Whe ³cUX]i comSle[´ becaXVe of Whe 
+considerable genetic polymorphism observed between parasite populations.  The T. cruzi  genome is 
+quite diverse, with multiple genotypes and phenotypes. Distinct populations correlate with geographic 
+differences in t he pathology of the disease and its response to chemotherapy.   
+Natural resistance of T. cruzi  to nitro derivatives has been described and is considered to be 
+one of the factors explaining the variable response rates detected in treating CD patients. Acqui red 
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 26 of 87 
+ resistance has also been reported while on benznidazole (BZN) therapy. Drug susceptibility varies 
+widely depending upon direct typing units (DTUs), geographic location, host factors, and prior therapy 
+used.  
+Treatment of virtually every infectious dise ase begins with empiric therapy intended to cover 
+the broadest possible spectrum of pathogens likely to cause the infection. Therapy is then narrowed 
+once the etiologic pathogen is identified and the drug susceptibility pattern is determined.  
+In routine t reatment of chronic indeterminate CD, identification of the specific etiologic 
+pathogen is almost never possible. Also,  there is evidence that more than one parasite lineage can 
+cause an infection in a single patient.  
+Combination therapy is a well -recogni zed treatment modality in many disease settings, 
+including cancer, cardiovascular disease, and infectious diseases. Several infectious diseases. such 
+as tuberculosis, malaria, leprosy, and AIDS, only came under control and were effectively treated only 
+after introduction of combinations of drugs that utilize different mechanisms of action.  
+E1224 is a water -soluble monolysine salt form of the ravuconazole (RAV) pro -drug (which is 
+a phosphonooxymethyl ether derivative of RAV). It is a broad -spectrum triazole antifungal. RAV was 
+evaluated extensively in animal models and in human trials including Phase 2 safety and efficacy 
+trials in oropharyngeal and esophageal candidiasis and onychomycosis, and for prevention of 
+invasive fungal infections in hematopoietic ste m cell transplant recipients.  
+ E1224 is rapidly converted to RAV in vivo: data from both preclinical and clinical evaluations 
+of RAV are therefore considered relevant to E1224. E1224 is available as oral formulations (100 
+capsules). It has completed gener al toxicology and safety pharmacology trials , as well as five Phase 
+1 clinical trials : ascending, single and multiple loading and maintenance dose, bioavailability, and 
+food-effect trial; ascending, multiple loading and maintenance dose trial of E1224 administered 
+intravenously over 14 days; effect of E1224 on cytochrome P450 enzymes; and cardiac 
+safety/thorough QTc trial.  
+Pharmacokinetic trials  showed that E1224 is rapidly converted to RAV with a peak 
+concentration at 2.5 to 6 hours post -dose with a long terminal half -life of 7.7 to 10.5 days. RAV 
+accumulated over time (AUC on Day 1 < Day 7 and 14). With a loading and maintenance dose 
+strategy, a steady state level at desired peak concentrations of RAV can be achieved within 7 days 
+of initial  dosing.   
+Safety evaluations indicated relatively mild, transient, and asymptomatic increases in liver 
+enzymes ± completely reversible upon discontinuation of therapy. Phase 1 cardiac safety evaluations 
+showed that E1224 administration did not result in Q Tc interval prolongation. Mean QTcF interval was 
+shortened compared to baseline, with peak effect on QTc interval at 1 and 1.5 hours post -dosing and 
+mean change from baseline of -16.9 to -19.4 msec. QT remained within normal limits and there was 
+no dose -response relationship to these changes at steady -state. Findings resolved spontaneously by 
+4 hours after dosing. Expert review indicated the unknown relevance of the cardiac safety findings.   
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 27 of 87 
+ Pooled safety data for the monolysine prodrug E1224 from Phase 1 and 2 trials  indicated 
+that E1224 was generally well tolerated and exhibited a safety profile quite similar to other azoles. 
+Adverse events occurring in greater than 3% of E1224 recipients, w ith a dose -dependent pattern and 
+at rates higher than those observed in placebo recipients included nausea, abnormalities in liver 
+enzymes, dizziness, anxiety, and contact dermatitis.   
+These data indicate that E1224, unlike some other azole antifungal com pounds ,18,19,20 does 
+not prolong QTc. Shortening of QTc has been reported for a few compounds21. E1224 was generally 
+well tolerated, with the exception of modest increases in liver enzymes (ALT, AST, and alkaline 
+phosphatase).  
+The results of a pre - and postnatal development study in rats, a 26 -week rat toxicity (tox) 
+study, and a 39 -week toxicology study in monkeys have shown the following results:  
+● In the pre - and postnatal development study in rats, the no -observable -adverse -effect 
+level (NOAEL) for F 0 maternal general toxicity and reproductive function was 27.4 mg/kg. The NOAEL 
+for F1 development was 8.2 mg/kg. The NOAEL for F1 reproductive function and F2 embryo 
+development was 109.4 mg/kg.  
+● Results from the 26 -week rat tox study (dosed at 0, 10, 30 , and 60 mg/kg/day) revealed 
+no death or moribundity related to the test article. There were no changes in clinical signs, body 
+weight, food consumption, ophthalmoscopy, or urinalysis. There were increased adrenal weights in 
+females at ≥30 mg/kg, increased  adrenal vacuolation of cortical cells in both sexes at ≥30 mg/kg, 
+and decreased triglycerides in males at 60 mg/kg. Based on these results, the NOAEL was considered 
+to be 10 mg/kg.  
+● Results from the 39 -week toxicity study in monkeys with ravuconazole dos es of 1 to 30 
+mg/kg revealed no death or moribundity related to the test article. No changes were observed in 
+clinical signs or food consumption, though one male monkey in the 30 mg/kg dose group 
+demonstrated gradual body weight decrease throughout the dos ing period ( -11%, vs pre -dosing). 
+There were no changes in ophthalmoscopy, ECG, urinalysis, or hematology measurements. Gross 
+findings showed enlarged liver and adrenals. The histopathological changes in liver appeared to be 
+related to adaptive hepatocellu lar hypertrophy. These findings were comparable to those observed in 
+the previous 4 - and 13 -week toxicity studies at doses of 5 and 30 mg/kg. These were adaptive 
+changes related to hepatic enzyme induction, and no evidence of progression or increased sever ity 
+was observed after 39 weeks of administration. In the adrenal glands, increased vacuolation of the 
+cortical cells in males at 30 mg/kg and females at 5 and 30 mg/kg; this was an expected class effect 
+of azoles. A 3 - to 4-fold increase in triglycerides was noted in the 30 mg/kg dose male monkeys 
+compared to control. Based on these results, NOAEL was considered to be 5 mg/kg for males and 1 
+mg/kg for females.  
+Experimental data suggest a positive interaction between BZN and azole compounds for the 
+treatmen t of Chagas disease18. BZN and posaconazole (POS) were administered individually or in 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 28 of 87 
+ combination in an experimental acute murine infection model. Using a rapid treatment protocol for 7 
+days, the combined treatments were more efficacious in reducing paras itemia levels than the drugs 
+given alone, with the effects most evident in combinations of sub -optimal doses of the drugs. The 
+curative action of these drug combinations was investigated, using the same infection model and 25, 
+50, 75 or 100 mg/kg/day (mpk)  of BZN in combination with 5, 10 or 20 mpk of POS , given alone or 
+concomitantly for 20 days. The effects of the combination treatments on parasitological cures were 
+higher than the sum of such effects when the drugs were administered separately at the sam e doses, 
+indicating a positive interaction. Similar results were seen with combination treatment of E1224 and 
+BZN in T.cruzi  murine infection22. 
+A Phase 1 drug -drug interaction trial was designed to assess the pharmacokinetics (PK) and 
+safety interaction of BNZ and E1224 co -administered daily for a total of 54 days (Day 4 to Day 15) 
+E1224 multiple dose 400  mg loading dose once daily for 3 days, followed by maintenance dose 100 
+mg once  daily for 9 days (from Day  7 to Day  15); Day 9 BNZ single dose (2.5 mg/kg); and Day 12 to 
+Day 15  BNZ multiple dose (2.5 mg/kg twice daily).   The trial was conducted in Argentina and was 
+concluded in early 2015, with enrolment of 28 healthy male volunteers . Both compounds were well 
+tolerated, in monotherapy and combination. There were no treatment discontinuations or serious 
+adverse events. Transient, minor, non -concomitant increase in bilirubin and liver transaminases 
+occurred in 2 patients in a pattern no t suggestive of drug effect. There was no interaction of RAV on 
+BNZ PK and the limited impact of BNZ on RAV PK, suggesting that co -administration of RAV and 
+BNZ may not require any E1224 dosing adaptation. The lack of clinically relevant safety findings 
+provided support for follow -up evaluation of the two compounds in combination.  
+In conclusion, recent scientific advances have provided further impetus to develop new 
+therapeutic approaches for CD using different doses and duration of BZN, as well as combinat ions 
+directed at multiple therapeutic targets to improve treatment response and tolerability and reduce the 
+potential for development of resistance.  
+This project focuses on the proof -of-concept evaluation of improved treatment regimens of 
+BZN, with the assessment of new BZN -sparing regimens in monotherapy and in combination with 
+E1224.  
+ 
+2. TRIAL  OBJECTIVES AND ENDPOINTS  
+ 
+2.1. Objectives  
+ 
+General objective  
+To determine the efficacy and safety of different dosing regimens of BZN and BZN  and E1224 
+in combination (BZN/E1224) in reducing and clearing T. cruzi  parasitemia in individuals with the 
+chronic indeterminate CD.  
+ 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 29 of 87 
+ 2.1.1.  Primary Objective  
+ 
+ To determine the efficacy of different dosing regimens of orally administered BZN and 
+BZN/E1224 in individuals with chronic indeterminate CD, by determining the proportion of patients 
+who convert from positive to negative in serial, qualitative PCR test results (3 negative PCR results) 
+at end -of-treatment (EOT) and sustain parasitological clearance at 6 months of follow -up, in 
+comparison to placebo.  
+ 
+2.1.2.  Secondary Objectives  
+ 
+x To measure the reduction in parasite load at weeks 1, 2, 3, 4, 6, 10, 12 and at 4, 6  and 
+12 months follow -up, as measured by quantitative PCR.  
+x To assess the time to parasite DNA clearance (below the qPCR LOD for each of the 
+regimens  
+x To assess the sustained parasitological response at week 12 and 12 months for each of 
+the regimens, in comparison with placebo.   
+x To assess the time to sustained clearance of parasitemia for each of the regimens.  
+x To determine the efficacy of the different dosing regimens in individuals with chronic 
+indeterminate CD, by d etermining the proportion of patients who convert from positive to 
+negative in serial, qualitative PCR test results (3 negative PCR results) at EOT, in 
+comparison with placebo.  
+x To explore if there is a dose -response relationship between the dose of treatm ent given 
+and parasite clearance in order to determine the minimum effective dose.  
+x To evaluate serological response by conventional serology at 12 months of follow up and 
+non-conventional serology at W12, 4M, 6M and 12 months of follow up . 
+x To characterize the population pharmacokinetic parameters of orally administered BZN 
+and BZN/E1224 in adults with chronic indeterminate CD.  
+x To evaluate safety profile of different regimens based on clinical, laboratory 
+measurements and EKG.  
+x To correlate pharmacokinetic parameters with parasitological response and safety 
+outcomes.  
+x To evaluate the incidence of Serious Adverse Events  (SAEs)  and/or adverse events 
+leading to discontinuation of treatment.  
+ 
+2.2. Trial  Endpoints  
+ 
+2.2.1.  Primary Endpoint s 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 30 of 87 
+  
+Efficacy Endpoint  
+- Parasitological response as determined by serial negative qualitative PCR results (3 
+negative PCR results, to be collected in the same day) at EOT  and sustained 
+parasitological clearance until 6 months follow -up.  
+ For efficacy assessments, the EOT  of each treatment arm w ill be defined in accordance to the 
+duration of the treatment regimen. Sustained response will be assessed in all treatment arms using 
+the same number of PCR samples (i.e. EOT; 12 weeks; 4  and 6 months).  
+Safety Endpoints  
+- Incidence and severity of adverse e vents (clinical, laboratory measurements and EKG)  
+- Incidence of SAEs  and/or adverse events leading to treatment discontinuation  
+ Safety will be assessed through routine monitoring of adverse events, evaluation of 
+haematological and blood chemistry values, regular measurement of vital signs, physical 
+examination, and conduct of EKGs at selected trial visits (according to the trial schedule).  
+2.2.2.  Secondary Endpoints  
+ 
+Efficacy Endpoints  
+- Sustained parasitological clearance at 12 weeks and 12 months of follow -up. 
+- Parasite clearance at weeks 1, 2, 3, 4, 6, 10, 12, and at 4, 6 , and 12 months follow -up 
+as measured by qualitative PCR.  
+- Change in p arasite load over time assessed at weeks 1, 2, 3, 4, 6, 10, 12, and at 4, 6 , 
+and 12 months follow -up as measured by quantitative PCR.  
+- Serological response by conventional serology assessed at 12 months of follow up and 
+non-conventional serology assessed at  W12, 4, 6 , and 12 months of follow up.  
+(changes in titters over time)  
+Pharmacokinetics  Endpoints  
+ 
+x Blood  level concentrations will be determined at D0 (pre -dose), after first day of 
+treatment administration (day 1, post -dose), at day 2 and day 3, at steady -state phase 
+(week 2 -10). 
+- Population pharmacokinetic parameters will include: AUC, Cmax, Cmin, CL, Vd, and 
+t1/2. 
+ Covariates to be evaluated: age, body mass index and parasite load at baseline, gender . 
+3. TRIAL  DESIGN AND TRIAL  DESIGN RATIONALE  
+ 
+3.1. Trial  design  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 31 of 87 
+ This trial is designed as a double -blind, double -dummy, randomised, prospective, 
+comparative, placebo -controlled, pharmacokinetic -pharmacodynamic and proof -of-concept trial 
+design, with seven -parallel groups.  
+During this trial, population PK evaluations of Benznidazole and E1224  and 
+pharmacokinetic -pharmacodynamic assessments will be performed.  
+This trial, that aims to determine whether at least one of seven dosing regimens of orally 
+administered BZN and BZN/E1224  is more appropriate with regards to efficacy and safety when 
+compared to placebo , will be conducted in  three  sites in Bolivia.  
+The sites were selected for this Phase 2 trial based on  significant disease burden , the 
+necessary expertise, excell ence of care of Chagas patients, established infrastructure  and 
+previous experience in conducting clinical trials according to GCP . 
+PaWienWV Zill be enUolled eTXall\ and Uandoml\ inWo each of Whe VeYen WUeaWmenW gUoXSV.  
+The WUial Zill be VXfficienWl\ SoZeU ed Wo SUoYide eYidence of VXSeUioU efficac\ of each of Whe 
+WUeaWmenW UegimenV UelaWiYe Wo Slacebo.   
+Primary efficacy analyses will be performed when all patients complete the 6 months 
+follow -up visit. Efficacy and safety database until 6 months will be locked. Analyses of results will 
+be used to guide planning of a follow -up Phase 3 clinical study. Sponsor personnel  directly 
+involved in the clinical trial , principal investigato rs and study team site personnel will remain 
+unequivocally blinded to treatment allocation and results of the analyses.  
+Efficacy and s afety will be monitored by an external independent DMC , on an ongoing 
+basis. The committee is to include cardiac and live r safety expert s, as well as Chagas Disease  
+expertise  (see section 11).  
+ 
+3.2. Trial  duration and duration of patient participation  
+ 
+The total duration of patient participation in the trial will be approximately  13 months, 
+considering up to  40 days for screening, 8 weeks of treatment, and follow -up visits up to 12 
+months after treatment initiation.  
+Following written, voluntary informed consent, patients will initiate a 40-day screening 
+phase. Once a patient is randomized at D1, s/he will have fo llow-up visits during the treatment 
+phase of the trial at Day 1, 2, 3, (allowable window of + 2 days for day 3 only) and at weekly 
+intervals at week 2 (allowable window of + 3 days), weeks 3 -10 (allowable window of ± 3 days), 
+and after 4, 6, and 12 months after treatment initiation (allowable window of ± 7 days).  
+In addition, patients will be advised to return on any day during the follow -up period if they 
+present any medical occurrence or adverse event.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 32 of 87 
+ Patient recruitment is expected to occur within 10 months of recruitment initiation . 
+Therefore, the timeline of First Patient In (FPI) and Last Patient Out (LPO) is 22 months. However, 
+the total trial duration is estimated to be 28 months, from start -up phase to final trial report.  
+ 
+3.3. Rationale of trial design  
+ 
+The selection of a placebo -controlled Phase 2 clinical trial design was based on the 
+requirements for well -controlled proof -of-concept, efficacy and safety data for Benznidazole and 
+Beznnidazole/E1224  for this therapeutic indication.  
+The choice of the CD target population was largely driven by the unmet medical need for 
+a new, safe and effective treatment for chronic indeterminate CD. Adults with chronic 
+indeterminate CD are recognized as the population with the most urgent requirements for the 
+development of new treatments.  Drugs employed in children, with acute and early chronic CD 
+are more often efficacious and better tolerated, with less than 10% of patients presenting serious 
+adverse events.   
+Moreover, with a decreasing incidence and existi ng patterns of disease presentation, the 
+highest disease burden is found in patients in the chronic indeterminate phase of the disease.  
+CD is seldom diagnosed in the acute phase, with circulating parasites identifiable by optical 
+microscopy, with the exce ption of congenital cases, immunosuppressed patients and the small 
+clusters of oral transmission.  Carrying out rigorous clinical trials in any of these populations would 
+present ethical and logistical challenges (in light of high response rates to benznid azole in 
+congenital disease), confounding elements (due to the severity of disease and need for frequent 
+concomitant medications in the case of immunosuppressed patients) and feasibility issues (due 
+to the small numbers and dispersed nature of most cluster s of oral transmission in the Amazon 
+region).  
+The efficacy of this indication will be assessed through sustained parasitological response 
+over six months measured by serial negative qualitative PCRs as the primary endpoint. Clinical 
+CD related events occur at a low incidence in this population and would thus require very large 
+clinical trials to assess incidence changes and serological endpoints would require several y ears 
+to decades in chronic CD. Recently concluded clinical trials provide support for the selected 
+endpoint and timelines for assessment  in proof -of-concept . 
+The secondary endpoints will assess the sustained parasitemia at 12 months and the time 
+to clearan ce of parasitemia by serial ne gative qualitative PCR results , comparing each of the six 
+dosing regimens relative to placebo, notably assessment of parasite load over time, conventional 
+and non-conventional serology . Parasite clearance data will  be correlated with pharmacokinetic 
+parameters.  
+The evaluation of cure is considered to be the most complex aspect of treatment 
+assessment in CD.  Parasitological cure is difficult to interpret and its evaluation is challenging in 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 33 of 87 
+ light of the need for tot al elimination of parasites, not only from the blood but also from tissues 
+where it is not measurable.  Assessment of parasitological cure requires long -term follow -up 
+because of the pathogenesis and hysteresis of the disease, the characteristics of the pa rasite, 
+the host response times, and the consequent clinical manifestations.  Such changes occur over 
+long periods of time.   
+A negative direct blood smear at the end of treatment is generally accepted as evidence 
+of a favorable  response in acute CD patien ts. In chronic disease, serial hemocultures, 
+xenodiagnosis, or PCR have been used to support the serological assessment, and a positive 
+parasitological diagnostic test result indicates treatment failure.  Hemoculture and xenodiagnosis 
+are techniques that re quire proper resources/infrastructure and very ski llful and experienced 
+personnel to adequately perform them. With regard to conventional serology, for chronic 
+indeterminate CD patients, seroconversion to negative would occur after 5 to 10 years (although 
+cases with a longer period for conversion to negative have been described). Therefore, for the 
+purposes of clinical development and proof -of-concept, it has been proposed that qualitative and 
+quantitative PCR parasitological tests be used as markers for ef ficacy in clinical trials  of chronic 
+indeterminate CD.   
+Important considerations have included the significant variability in the clinical sensitivity 
+and specificity of PCR tests observed in early published trials , with differences seen across all 
+phases  of the disease and across a number of techniques in use that require standardization.  In 
+particular, there has been concern regarding the sensitivity of PCR in chronic CD due to low 
+levels of circulating parasites and natural fluctuations in parasitemia.  In a recent comparison of 
+two diagnostic techniques in patients with chronic CD, PCR had high specificity (100%) and 
+moderate sensitivity (70% to 75%).  
+The latest PCR trials  have shown higher sensitivity, with a broad dynamic range for PCR 
+use allowing di rect measurements in cases with high parasitic loads such as in 
+immunosuppressed CD patients and congenitally infected newborns, as well as in cases with low 
+parasitic loads, such as patients in the chronic indeterminate phase or who are receiving 
+antipara sitic treatment.  
+An important advance in recent years has been the trial sponsored by UNICEF/UNDP/ 
+World Bank/WHO Special Programme for Research and Training in Tropical Diseases (TDR) for 
+the standardization and laboratory validation of qualitative PCR te sting for T. cruzi .  Standardized 
+procedures for the qualitative assessment of PCR (standard and real -time) testing with higher 
+analytical sensitivity and specificity, reproducibility, and low levels of intra - and inter -assay 
+variation and high levels of a ccuracy have been selected.    
+During expert panel discussions and with support from recent data on DNDi sponsored 
+trials , there is consensus on the value of using serial, sequential blood collections for qualitative 
+and quantitative PCR assays in order to increase PCR test sensitivity and evaluate durability of 
+response.  The proposed trial will incorporate the standardized  and optimi zed procedures for 
+
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 35 of 87 
+ 8 wks, weekly 
+doses 
+ 
+E1224 300 
+mg safety & 
+efficacy  BZN dose with long duration may lead to a sub-
+optimal response, thus warranting the addition of 
+E1224. 
+7 
+Placebo Negative 
+control arm Assessment of sensitivity of PCR in different 
+epidemiological settings and parasite diversity.  
+ 
+ 
+ 
+ 
+ 
+
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 37 of 87 
+ 4. SELECTION OF PATIENT S 
+Adult patient s >18 and <50 years  and weight >50 kg to <80 with serologic  tests 
+confirming a diagnosis of T. cruzi infection will be selected to participate in the trial.  
+The following screening criteria are designed to select patient s for whom the protocol 
+treatment is c onsidered appropriate. All relevant medical and non -medical conditions should 
+be taken into consideration when deciding whether this protocol is suitable for a particular 
+patient . Eligibility criteria may not be waived by the investigator. Any questions re garding a 
+patient¶V eligibiliW\ VhoXld be diVcXVVed ZiWh DNDi¶V medicall\ TXalified WUial manageU SUioU Wo a 
+patient¶V enUollmenW.  
+4.1. Screening criteria  
+ 
+x Signed, written informed consent form  
+x Age >18 to <50 years  
+x Weight >50 kg to <80 kg  
+x Diagnosis of T. cruzi  infection by:  
+o Conventional serology (a minimum of two positive tests [Conventional ELISA, 
+Recombinant Elisa and/or Indirect Immunofluorescence (IIF)])  
+x Ability to comply with all protocol specified tests and visits and have a permanent 
+address  
+x Patient s mu st be residents of areas free of vectorial transmission  (Triatoma infestans ). 
+For this protocol, it will be accepted the status of Vectorial Transmission Interruption or 
+Consolidation as per the definition of P AHO/WHO, or the Local Health Program.  
+x No signs and/or symptoms of the chronic cardiac and/or digestive form of CD  
+x No acute or chronic health conditions, that in the opinion of the PI, may interfere with 
+the efficacy and/or safety evaluation of the trial drug (such as acute infections, history 
+of HIV infection, liver and renal disease requiring treatment)  
+x No formal contraindication to BZN (according to the Summary of Product 
+ChaUacWeUiVWicV) and E1224 (accoUding Wo Whe InYeVWigaWoU¶V BUochXUe)  
+ Note : The contraindications described for Benznidazol and E1224 are essentially 
+hypersensitivity to the active ingredient or any excipient. In the case of hepatic or renal 
+impairment or blood discrasia, the medication should only be administered under strict 
+medical supervision. During all the treatment perio d, the blood count will be monitored, 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 38 of 87 
+ with special attention to leucocytes. Subjects will be indicated about the need of no 
+alcohol intake.  
+x No history of hypersensitivity, allergic, or serious adverse reactions to any of the 
+³a]oleV´ comSoXnd, and/oU iWV c omponents  
+x No history of CD treatment with BZN or NFX at any time in the past  
+x No history of systemic treatment with itraconazole, ketoconazole, posaconazole, 
+isavuconazole, or allopurinol in the past  
+x No history of alcohol abuse or any other drug addiction (as specified in the Study 
+Manual of Operations)  
+x No condition that prevents patient  from taking oral medication  
+x No concomitant or anticipated use of drugs that are either sensitive CYP3A4 substrates 
+and/or extensively metabolized by CYP3A4 with a narrow therapeutic range (as per 
+Appendix 2) 
+x No medical history of Familial Short QT syndrome or concomitant therapy with 
+medications that can shorten the QT interval (as per Appendix 2) 
+x No family history of s udden death  
+x No family history of sudden infant death syndrome  
+ 
+4.2. Inclusion criteria  
+Following the screening period, patient s must meet ALL of the following inclusion criteria 
+to be eligible for randomization:  
+x Confirmed diagnosis of T. cruzi  infection by:  
+o Serial qualitative PCR (three samples collected over a single day, at least one 
+of which must be positive) AND  
+o Conventional serology (a minimum of two positive tests must be positive 
+[Conventional ELISA, Recombinant Elisa and/or IIF)  
+x Women in reproductive  age must have a negative serum pregnancy test at screening, 
+must not be breastfeeding, and must use a double barrier method of contraception to 
+avoid pregnancy throughout a clinical trial and for 3 months after completion of the trial, 
+in such a manner th at the risk of pregnancy is minimized especially during exposure to  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 39 of 87 
+ treatment.  Women who are using oral, implanted, or injectable contraceptive hormones or 
+mechanical products such as an intrauterine device with a hormonal component are 
+required to use an  additional barrier method of contraception for the time period specified.  
+x NoUmal EKG (PR 200 mVec, QRS <120 mVec, and QTc 350  mVec and 450 mVec 
+inWeUYal dXUaWionV in maleV and QTc 470  msec in women) at screening . 
+ 
+4.3.  Exclusion criteria  
+The presence of any of the following will exclude a patient  from trial randomization : 
+x Signs and/or symptoms of chronic cardiac and/or digestive form of CD   
+x History of cardiomyopathy, heart failure , or ventricular arrhythmia.  
+x History of digestive surgery or mega syndromes.  
+x Any other acute or chronic health conditions that, in the opinion of the PI, may interfere 
+with the efficacy and/or safety evaluation of the trial drug (such as acute infections, 
+history of HIV infection, diabetes, uncontrolled systolic/ diastolic blood pressure, liver , 
+and renal disease requiring medical treatment).  
+x Laboratory test values considered clinically significant or out of the allowable range at 
+selection period as follows:  
+o Total WBC must be within the normal range, with an acceptable margin of +/ - 
+5% (3,800 ± 10,500/mm3).  
+o Platelets must be within the normal range up to 550,000/mm3  
+o Total bilirubin must be within the normal range  
+o Transaminases (ALT and AST) must be within the normal range, with an 
+acceptable margin of 25% abov e the upper limit of normality (ULN), <1.25 x 
+ULN.  
+o Creatinine must be within an acceptable margin of 10% above the ULN, <1.10 
+x ULN.  
+o Alkaline phosphatase must be within the normal range up to Grade 1 CTCAE 
+(< 2.5 x ULN)  
+o GGT must be within the normal range up to 2x ULN.  
+o Fasting g lucose must be within the normal range  
+o Electrolytes (Ca, Mg, K) must be within the normal range  
+x If the results of the blood tests (hematology and biochemistry) are out of the ranges 
+defined above, but within the limits of CTCAE (vers ion 4.03) Grade 1, and the laboratory 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 40 of 87 
+ finding is considered as non -clinically significant, a new sample can be collected for a 
+retest. Only one retest will be allowed within the screening period.   
+x If the result of retest is within the margins defined above, the Investigator will review the 
+parameter(s) together with all other medical information available (medical history, 
+clinical examinations, vital signs, etc.) and upon his/her medical judgment w ill decide if 
+the patient  is eligible or not for trial randomization.  
+x Any condition that prevents the patient  from taking oral medication  
+x Patient s with history of allergy (serious or not), allergic skin rash, asthma , intolerance, 
+sensitivity or photosensit ivity to any drug  
+x Patient s with any contra -indication (known hypersensitivity) to any nitroimidazoles, e.g. 
+metronidazole.  
+x Any concomitant use of allopurinol, antimicrobial , or anti -parasitic agents.  
+x Any planned surgery likely to interfere with the trial conduction and/or treatment 
+evaluation  
+x Unlikely to co -operate with the trial 
+x Any previous participation in any clinical trial for Chagas Disease treatment evaluation   
+x Participation in another trial at the same time or within 3 months prior to selection 
+(according to local regulations ) 
+
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 42 of 87 
+ 6. ENROLMENT PROCEDURES   
+Patient s presenting at the trial sites will undergo the routine assessments, including 
+complete medical history, physical examination , CD conventional serology , hematology  and 
+biochemistry  tests.  
+Adult patient s >18 and <50 years  with serology tests confirming a diagnosis of T. cruzi 
+infection and fulfilling screening criteria will be invited to participate in the trial through the 
+informed consent process.  In order for the patient  to be enrolled in the trial, the informed 
+consen t form must be obtained from the patient by the Principal Investigator or the delegated 
+trial team member prior to any trial specific procedure.  
+The participating site must complete a Patient  Screening/Enrolment Log to reflect 
+screening number, enrolment status,  date of enrolment, trial enrolment number , and reason 
+for not enrolling, whenever applicable.  Enrolment and screening procedures should occur up 
+to 40 days or less (i.e. , ±D40 to D0) from the intended initiation of trial therapy. Patient s fulfilling 
+entry criteria will go through the randomisation procedures. Only patient s randomized into the 
+trial will receive trial medications and will be assigned  a trial identification number.  
+ A patient  will have fulfilled participation in the clinical trial after completion of the last 
+protoc ol-specified contact , i.e. the 12-month visit.  
+ 
+7. TREATMENTS  
+7.1. Investigational Product s 
+ 
+InYeVWigaWional SUodXcWV VXSSlied foU WhiV WUial Zill inclXde:  
+E1224 100 -mg caSVXleV oU maWching SlaceboV  in bliVWeU Sackaging, VXSSlied b\ EiVai 
+PhaUmaceXWicalV.  
+E1224 caSVXleV aUe Vi]e #3 caSVXleV conWaining 100 mg of E1224 dUXg VXbVWance  
+(UaYXcona]ole eTXiYalenW doVe) comSUiVing 125.1 mg foVUaYXcona]ole, 33.4 mg L -l\Vine, and 
+10.5 mg eWhanol. The coloUV of Whe caS and bod\ aUe Ued and \elloZ, UeVSecWiYel\,  and each of 
+Whem haV Whe ZoUd ³EiVai´ SUinWed on Whem. The caSVXle conWenW iV SUeSaUed  b\ blending E1224 
+dUXg VXbVWance and e[ciSienWV.  
+DHYHORSPHQWaO CRGH : E1224 (monol\Vine ValW eWhanolaWe of foVUaYXcona]ole)  
+INN: foVUaYXcona]ole (acWiYe moieW\)  
+The chemical VWUXcWXUe of E1224 iV VhoZn beloZ:  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 43 of 87 
+  
+AbaUa[ (BZN 100 mg and 50 mg WableWV oU maWching SlaceboV) , VXSSlied b\ LaboUaWoUio V 
+ELEA, S.A., AUgenWina.  
+Each doXble -VcoUed WableW of AbaUa[ 50 mg conWainV 50 mg of Ben] nida]ole. E[ciSienWV: coUn 
+VWaUch, lacWoVe monoh\dUaWe, VodiXm cUoVcaUmelloVe, magneViXm VWeaUaWe, cellXloVe 
+micUocU\VWalline PH 102, FD & C BlXe 2 lake.  
+Each doXble -VcoUed WableW of AbaUa[ 100 mg conWainV 100 mg of Ben]nida]ole. E[ciSienWV: 
+coUn VWaUch, lacWoVe monoh\dUaWe, VodiXm cUoVcaUmelloVe, magneViXm VWeaUaWe, and cellXloVe 
+micUocU\VWalline PH 102.  
+Ben]nida]ole (N -Ben]\l 2 -NiWUo-1-Imida]olaceWamide), Zhich iV AbaUa[ ShaUmaceXWical 
+acWiYe ingUedienW, iV obWained b\ chemical V\nWheViV, ZhoVe molecXla U foUmXla iV C12H12N4O3 
+emSiUical and molecXlaU ZeighW of 260.25.  
+IWV chemical molecXlaU VWUXcWXUe iV aV folloZV:  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 46 of 87 
+ All treatment arms consider the  regimens in fixed doses. The doses of Benznidazole 
+were defined taking as reference the guidelines for the standard treatment of CD, which 
+recommend 5  mg/kg/day of BZN for 60 days. Considering an average weight of 60 kg, the 
+fixed dose would be 300 mg dai ly. With the proposed prescription, patient s¶ daily dose s will 
+vary as follows:  
+ 
+Patients' Weight 
+range 50kg to 80 kg 
+Dosing group Actual total daily dose 
+(mg/kg/day) 
+300 mg - 5.0 mg/kg 3.75 mg/kg to 6 mg/kg 
+150 mg - 2.5 mg/kg 1.88 mg/kg to 3 mg/kg 
+ 
+At the weekly visits, E1224  or E1224 ±matched placebos  will be administered under 
+the supervision of trial staff. T he patient  will receive enough BZN or BZN matched placebos  
+until the next scheduled visit.  Also, they must bring all remaining trial drugs to check for 
+compliance with prescribed treatment and ensure drug accountability.  
+If a patient  misses a dose or vomits within 30 minutes of undertaking the treatment,  
+the dose may be re ±administered . 
+As per recommended in the ABARAX ® package insert, patients will be advised to 
+abstain from alcohol during treatment.  
+ 
+Rescue treatment:  
+At the end of the study, patients will receive the information related to what study 
+treatment they took and the PCR results.  
+All patient s treated with placebo will be offered BZN treatment at 5 mg/kg/day, divided 
+in two daily doses for 60 days.  
+For all other patient s, except those treated with BZN standard regimen, who remain 
+PCR positive at end of trial, BZN treatment will be offered at 5 mg/kg/day, divided in two daily 
+doses for 60 days.  
+For all patient s treated with BZN standard regimen who remain PCR positive at end 
+of trial NFX treatment will be offered at doses of 10 -15 mg/Kg/day, divided in two -three daily 
+administrations for 60 days.  
+Patient s who do not tolerate the trial treatment will be withdrawn from the trial and will 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 47 of 87 
+ be offered an alternative treatment with NFX 10 -15 mg/Kg/day, divided in two -three daily doses 
+for 60 days.  
+ 
+7.3. Drugs labelling, packaging  
+ 
+Minimum information  to be  included on the trial medication label will be:  
+ Name of SSonVoU  
+ Trial protocol number  
+ Treatment number  
+ PhaUmaceXWical doVage foUm, UoXWe of adminiVWUaWion, TXanWiW\ of doVage XniWV  
+ ³FoU clinical WUial XVe onl\´  
+ E[SiU\ daWe and VWoUage condiWionV  
+Any additional,  country -specific requirements need to be identified and applied.  
+ 
+7.4. Accountability  
+ 
+The clinical supplies  will be shipped to the coordinating trial site at each country  and 
+then, distributed to each site accordingly . 
+Trial specific forms to track and register the trial drugs will be used for the 
+accountability. Adequate records on the trial medications receipt, use, return, loss, or other 
+disposition will be documented and maintained by the trial site. The investigator  or the 
+pharmacist or  a designated  person must complete  in real time  all the  documents provided  by 
+the sponsor  for the  treatment management . The trial specific forms will be considered as the 
+source document . 
+Trial monitors will be in charge of checking the drug accountability regularly during 
+the monitoring visits.  
+The trial drugs  must not be used for any other purpose other than the trial. Under no 
+circumstances the investigator or site staff may supply the trial medication to other 
+investigators or health care services, or allow the medication to be used other than as directed 
+by this protocol without prior authorization from DNDi.  
+All patient s must be asked to bring back the trial medication at each visit for 
+accountability and treatment compliance verification. The remaining treatments will be later 
+collected by the  trial monitor. After checking, the treatments will be packaged in a n inviolable  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 48 of 87 
+ primary container  and stored in the research site  or in the coordina tor center  until the 
+destruction  is authorized by the sponsor.  
+ 
+7.5. Storage  
+ 
+Stability trials  performed by Eisai showed that E1224 100 -mg capsules were stable at 
+30°C/ 75% RH for 12 months and 40°C/75%  RH for 6 months.  Therefore, provisional shelf life 
+for E1224 100 -mg capsule s is 24 months at controlled room temperature.  The shelf life of the 
+100-mg capsules will be extended based on the results of future stability data.  
+BZN tablets  are stable at room temperature (15 ± 30o C). 
+Therefore, t he trial drug can be shipped at normal conditions and must be kept at 
+room  temperatures , at 30o C. The trial drugs must be kept in a locked room at each of the trial 
+sites, with restricted access only by the authorized trial personnel  and/or pharmacist.  
+Site storage conditions and temperature must be monitored by the site personnel for 
+adherence to product specifications. Records must be done at least once daily and kept in the 
+investigator trial file or in the pharmacy file . 
+  
+7.6. Blinding and procedures for unblinding  
+This is a double -blinded trial. Patient s, investigators and sponsor staff directly 
+involved with the clinical trial will  not be aware of the treatment allocation and randomization 
+list. Double -blinding will be adopted for all trial arms and the placebo arm.   
+Primary efficacy analyses will be performed when all patients complete 6 months 
+follow -up visit. Analyses of results  will be used to guide planning of a follow -up Phase 3 clinical 
+study. Analysis is to be performed by an independent, external statistician. In order to allow 
+administrative decisions, the results of the primary endpoint will be disclosed unblinded (by 
+treatment arm) to the Joint Development Committee. No individual patient data will be shared 
+with the Committee. In addition, data is to be shared with the Data Monitoring Committee.  
+The Joint Development Committee is composed of the DNDi Project Leade r (DNDi 
+Head of Chagas Program  or designated person ), DNDi Medical Director, and members from 
+the Eisai team. On occasion s the JDC meetings are attended by other members of staff from 
+these organisations. Under no circumstances will , the Principal Investig ator, trial site staff and 
+study personnel from the Sponsor managing the trial have access to the results of the primary 
+efficacy analysis prior to the end of the study. They will remain unequivocally blinded until 
+completion of 12 months follow -up and fin al database lock. The study statisticians will not have 
+acce ss to unbli nded data before conduct of the analyses at the end of the study.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 49 of 87 
+ Randomization pr ocedures will be done via the I RS (Interactive Response System), 
+according to a predefined list.  The specific procedures  will be detailed in  the IRS guideline. 
+The treatment groups  will be allocated  on Day 1 based on a balanced block  randomization .  
+Each patient  will be assigned with an identification code that will correspond to the 
+trial kit number allocated to the patient . The label will indicate the trial number and number of 
+the kit, but will not indicate the treatment designation.  
+All objective measurements in this trial (in terms of efficacy and safety) will be 
+performed blinded to the treatment allocation. EKGs will be read centrally and without 
+knowledge of the patient¶V treatment group. PCR and laboratory information will be provided 
+coded, without the name of the patient to allow blinding during sample processing and analysis.  
+Code breaking will be performed via the I RS. The investigator or perso n designated 
+must contact the I RS and do the specific procedure as described in the I RS manual.  
+Breaking  the code of any  trial patient  should only  be performed  by the investigator  or 
+by an authorized person  if absolutely  necessary to find out  the treatment administered . The 
+breaking of the  code can only be  performed when the result of a life threatening medical  
+emergency  may depend on  the knowledge of the  treatment the  received  by the patient .  The 
+DNDi clinical trial manager or the trial monitor must  be immediately informed about the need 
+of unblind ing, ideally before doing so.  An emergency code -break form will be filled out with 
+information on patient  number, date of code -break, identification and signature of person 
+breaking the code, identification of person requesting the code break, reasons for breaking the 
+code and investig ator's signature.  
+A Serious Adverse Event form should also be filled out  if the reason for code -breaking 
+meets th e criteria.  
+In addition, t here will be situations whereby unblinding may not necessarily justify  
+patient  withdrawal from the trial. In such cases, these patient s should also continue with trial 
+visits and assessments as planned . 
+ 
+7.7. Concomitant treatment  
+Patient s may receive concomitant therapy for medical occurrences during the course 
+of the trial. However, specific drugs that interact with the trial drugs, have the potential to 
+shorten the QT interval, elevate liver enzymes, are either sensitive CYP3A4 substrates and/or 
+extensively metabolized by CYP3A4 with a narrow therapeutic range, are 
+immunos uppressants or are known to have activity against T. cruzi  may not be taken during 
+the treatment phase of the trial or up to the 4M visit . These specific drugs are listed in the 
+Appendix 2.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 50 of 87 
+ The use of hormonal contraceptives is allowed, however,  the interaction with E1224  
+suggests the potential for decrease d efficacy.  The use of any oral, implanted, or injectable 
+contraceptive hormones or mechanical products such as an intrauterine device with a 
+hormonal component should be registered as concomita nt treatment. Additionally, as 
+addressed in section 7.6.8 , women will be required to add an additional method, such as 
+barrier.  
+All concomitant medications taken by the patient  during the trial, from the date of 
+signature of the informed consent until the last follow up visit, will be recorded in the appropriate 
+section of the Case Record Form.   
+ 
+8. TRIAL  ASSESSMENTS  
+8.1. Timing of Assessments  
+As described in Section 5 , Schedule of events, trial assessments will be done at 
+Screening (Days ±D -40 to D -1), Day 0 (baseline), Day 1, Day 2, Day 3 (allowable window of 
++ 2 days for day 3 only) , at weekly intervals at week 2 (allowable window of + 3 days) , 3, 4, 6, 
+8, 10, and 12 (allowable window of ± 3  days) , and after 4 , 6, and 12  months from treatment 
+initiation  (allowable window of ± 7 days) . On the week s 5 and 7, patient s will go directly to the 
+pharmacy to return and take their treatments  (E1224 will be administered on site).  
+The primary efficacy assessment will be done at EOT,  week 12 and at  4, and 6months 
+of follow -up by serial qualitative PCR (3 samples to be collected in the same day ). Secondary 
+efficacy assessments will be performed at  weeks  1, 2, 3, 4, 6, 10, 12, and at 4 , and 12  months . 
+PK assessments will be done at Day 0 (pre -dose), Day 1 (post 1st dose), Day 2, Day 3, 
+week 2, 3, 4, 6 (steady -state phase), and at week 10  (elimination phase ). 
+Safety assessments will be d one at Day 1 (post -dose), at D2, D3, W2, W3, W4, W6, W8, 
+W10, W12, and at 4, 6 , and 12 months , and at any unscheduled visit.  
+ 
+ 
+ 
+ 
+8.2. Screening and Baseline Assessments  
+ 
+During screening, and after obtaining Informed Consent, the following assessments will be 
+done in order to evaluate patient  eligibility for the trial: 
+x Complete medical history with an emphasis on CD;  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 51 of 87 
+ x Demographic data and history of medications;  
+x Physical examination, body weight and height  and vital signs;  
+x Chagas Disease serology: serum sample will be collected at screening for conventional  
+CD sero logy. Patient  must have at least 2 positive tests (among Conventional ELISA, 
+Recombinant ELISA or IIF) to be eligible;  
+x Real-time PCR for qualitative and quantitative assessment  (q-PCR ) for all patient s. In 
+addition to positive serological tests, the patient  must at least have one positive 
+qualitative PCR test to be eligible for this trial; 
+x Clinical safety laboratory evaluations :  CBC , ALT, AST, total and direct bilirubin, GGT, 
+alkaline phosphatase , creatinine , fasting glucose, Ca, Mg and K will be assessed at 
+screening and repeated at Day 0.  
+x Morning serum cortisol: a morning blood sample will be taken for cortisol levels at 
+screening visit.   
+The following parameters must be within the lab ranges defined below:  
+ Total WBC must be within the normal range, with an acceptable margin of +/ - 5%  
+ Platelets must be within the normal range up to 550,000 / mm3 
+ Total bilirubin must be within the normal range  
+ Transaminases (ALT and AST) must be within the normal range, with  an 
+acceptable margin of 25% above the upper limit of normality (ULN), <1.25 x ULN.  
+ Creatinine must be within the normal range, with an acceptable margin of 10% 
+above the ULN, <1.10 x ULN.  
+ Alkaline phosphatase must be within the normal range up to Grade 1 CTCAE (< 
+2.5 x ULN)  
+ GGT must be within the normal range up to 2x ULN.  
+ Fasting g lucose must be within the normal range  
+ Electrolytes (Ca, Mg, K) must be within the normal range  
+If blood samplings (h aematology and biochemistry) are out of the ranges defined above, but 
+within the limits of CTCAE Grade 1, and the investigator consider this laboratory finding as not 
+clinically significant, one new sample can be collected from the patient  and retested. The  retest 
+could be done only one time within the screening period.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 52 of 87 
+ If the result of retest is within the margins defined above, the Investigator will review the 
+parameter(s) together with all other medical information available (medical history, clinical 
+examinations, vital signs, etc.) and upon his/her medical judgement will decide if the patient  is 
+eligible or not for trial randomization.  
+x Serum pregnancy test: Women of reproductive potential will undergo a serum 
+pregnancy test at screening. The test must b e negative for the woman to be considered 
+eligible for this trial; 
+x EKG: 1 examination will be obtained at screening  and must be normal for patient  
+eligibiliW\, i.e. PR 200 mVec ; QRS <120 msec ; and QTc  350 mVec and 450 mVec 
+interval durations  in males , and QTc 470  msec in women . Any clinically significant 
+abnormalities found on the electrocardiogram will automatically lead to patient  
+exclusion from this trial. 
+x  Please refer to item 7.5.2  (Sampling Assessment Schedule) for detailed  
+information on required  sampling volume.   
+At baseline (Day 0) the following assessments will be performed before the first dose of 
+medication is administered, in order to obtain baseline safety data and data for further 
+comparative analyses and multiple parameter correlations:  
+x Physical exam  
+x Vital signs: axillary temperature, blood pressure and pulse rate.  
+x Serum pregnancy test: Women of childbearing potential will undergo a second serum 
+pregnancy test so as to ensure they are not pregnant at treatment onse t. Any positive 
+test at baseline will automatically exclude the patient from this clinical trial.  
+x Blood sample for non -conventional serology  and laboratory assessments  
+x PK sample, pre -dose  
+Concomitant medications at baseline will be recorded in the appropri ate CRF.  
+Patient¶V eligibility criteria evaluation will be performed at day 0/ day 1  (before dosing) , or 
+when the investigator has access to all results necessary for patient¶V inclusion/exclusion 
+evaluation. After patient  eligibility is confirmed, randomization will occur and  patient  will receive 
+the first dose of medication at the clinic. On day 1, vital signs , EKG ( 1 examination) and PK 
+sampling will also be performed after treatment administration. D0 and D1 may be at t he same 
+day if all results are available for patient¶V eligibility assessment. In this case,  site should pay 
+attention to perform  examinations pre  and post -dose accordingly  (see Schedule of Events  in 
+section 5) . 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 53 of 87 
+ Patient s will be observed for occurrence of adverse events during the whole trial. If any AE 
+occurs, the patient  will receive medical assistance, and the event will be recorded in the 
+appropriate CRF.  
+8.3. Assessment of Efficacy  
+Efficacy of trial treatment will be assessed by comparing the parasitological response , 
+determined by serial qualitative PCR (3 negative PCR results to be collected in the same day)  
+assessed at EOT and sustain ed parasitological clearance  until 6 months of follow -up. Follow -
+up will be continued until 12 months for complementary assessment of response.  
+For the assessment of efficacy, the EOT of each treatment arm will be defined accordingly 
+to its corresponding duration . For efficacy assessments, the EOT of each treatment arm will 
+be defined in accordance to the duration of the treatment regimen. Sustained response will be 
+assessed in all treatment arms using the same number of PCR samples (i.e., EOT; 12 weeks; 
+4, and 6 months). The primary efficacy outcome is evaluated until 6 months of follow -up. 
+As this is a double -blind trial, this will not interfere on the schedule of events, since all 
+patients will take all samples planned at each visit.  
+In addition, a qualitative, qu antitative, and multi -criteria efficacy assessment of 
+Benznidazole and BZN/ E1224 will be performed, correlating incidence of and time to 
+parasitological clearance  with changes in  T. cruzi serology and with safety and PK parameters, 
+as described in the following sections.  
+ 
+8.3.1.  Assessments performed  
+ 
+A blood samples ( 15mL) will be collected  in the same day at screening , 2 randomly 
+times between  Days 1, 2 and 3 (allowable window of + 2 days  for day 3 only ), at weeks 2 
+(allowable window of + 3 days) , 3, 4, 6, 10 and 12 (allowable window of ± 3 days), and at 4 , 6, 
+and 12 months follow -up (allowable window of ± 7 days) for PCR analysis (qualitative and 
+quantitative PCR). Blood samples collected for PCR shall be immediately added to a tube 
+containing one volume ( 5mL) of a solution of Guanidine/ClH 6M EDTA 0.2M pH 8,0 Buffer 
+(GEB) (Schijman, 2003). Samples with guanidine buffer can remain at room temperature  
+without exposure to sunlight or heat .  
+PCR samples will be shipped to their respective molecular biology laboratory where 
+PCR assays will be performed according to the site country:  
+Samples from Bolivia: Universidad Mayor San Simón , Cochabamba.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 54 of 87 
+ The real -time PCR technique that will be used is the one described and optimised  by 
+Duffy et al. Results will be expressed qualitatively for the assessment of the primary efficacy 
+endpoint and quantitatively for secondary analyses of parasite load.  
+In order to guarantee the quality, integrity and standardization of the qPCR procedures 
+between the two laboratories, Quality Assurance mechanisms were developed such as:  
+Reproducibility evaluation : Blind analysis of 10% of samples from the trial, taken 
+randomly and sent to two laboratories of molecular biology quarterly. The results of these 
+samples will be re -sent to an independent laboratory in a pre -established time to a DNDi ad -
+hoc committee for analysis of concordance compared to the results obtained from the two 
+laboratories participating in the trial. 
+Qualitative concordance: Detectable or undetectable values of each sample following 
+the reporting criteria according to pre -established standardized analysis PCR evaluation 
+process. It is expected to ac hieYe  0.75 kaSSa inde[ foU concoUdance of all VamSleV anal\]ed.  
+Quantitative concordance:  
+The degree of concordance must match the coefficient of variation of the method 
+according to the parasitic load. The limit of quantification of the method was estim ated as 1,531 
+CL Brener par. eq./mL GEB (equivalent to 1.85 log10 par. eq./10 mL). By definition this limit 
+was chosen to present a coefficient of variation of 20% of the results expressed in logarithm, 
+as recommended by the document EP17 -A (NCCLS, 2004) f rom the precision calculation of 
+the method published in Duffy et al, 2012. Thus, values less than 1.85 log par.eq /10 mL are 
+not quantifiable, .values 2 log par/10 mL have a coefficient of variation of 6% and values 4 log 
+par/ 10 mL show a coefficient of variation of 1.72%. The parasite load corresponding to the CV 
+of each sample can be estimated by Sigma Plot (SPSS, Chicago, IL).  
+PCR samples taken at different moments during the treatment period will allow a 
+comparative assessment of the time to clearance  of parasitemia for each of the treatment 
+regimens versus that of placebo. Sustained p arasitological clearance  will be evaluated at EOT 
+until 6 months follow -up visit  as primary endpoint , and until 12 months as secondary endpoint.  
+The real -time PCR assays will allow assessment of change in parasite load over time 
+and of comparative reduction in parasite load values at week s 1, 2, 3, 4, 6, 10, 12, and at 4, 6, 
+and 12  months follow -up. It will also allow for correlation between parasi te load at baseline 
+with the incidence and time of parasitological response and pharmacokinetic parameters.  
+Other measurements will also be performed , as follows:   
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 55 of 87 
+ - For conventional serology blood sample will be collected at screening  and 12 months after 
+treatment initiation. For non-conventional serology, blood sample will be collected at D0, at 
+week 1 2 and at 4 , 6 and, 12 months after treatment  initiation . 
+- Samples will be collected for future biomarkers assessment.  No further assessments will be 
+done prior to local Ethics Committee (s) authorization (s). This information will also be available 
+in the informed consent form.  
+The trial manual of operations will provide full details regarding procedures for sampling 
+(tube s types and amount, aliquots volume), handling, storage, and shipment of the samples 
+for laboratory evaluation. Quality assurance systems will be in place and described.  Training 
+of personnel in each of the activities described above will take place befor e initiation of this 
+clinical trial. All parasitological and other laboratory assessments will be performed blinded to 
+treatment allocation.  
+ 
+8.4. PK Assessments  
+Blood samples for PK purpose will be taken from either arm. They will be collected either 
+by finger-prick, cannulation or by venepuncture of a forearm vein(s).  
+For RAV and benznidazole , whole blood samples will be collected into filter paper (dried 
+blood spots ± DBS).  
+The blood samples will be transported to the Bioanaly tical laboratory.  
+Blood samples will be analyzed for BZN and RAV using validated bioanalytical methods 
+that will be described in a separate document.  
+RAV concentrations will be assessed using a LC/MS/MS  method using dried blood spots . 
+The limit of quantification is 20 ng/m L. 
+For BZN, a LC/MS/MS method for benznidazole analysis in dried blood spots will be used. 
+The limit of quantification is 50 ng/mL.  
+Blood  level concentrations over time will be determined during the absorption, steady -state 
+and elimination pharmacokinetics  phases.  
+The PK parameters to be modelled are AUC, Cmax, Cmin, CL, Vd, and t1/2.  
+Blood samples will be collected from each patient  at the following time -points:  
+ Day 0, pre -dose  
+ Day 1, after administration of 1st dose  
+ Day2, Day3  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 56 of 87 
+  Steady -state samples on weeks 2, 3, 4, and 6   
+ Week 10  
+ Overall, a total of 9 blood samples will be collected for PK analyses . 
+The time of trial drug administration and blood draws will be recorded in the appropriate 
+sections of the CRF.   
+Whenever possible, the PK sample will be an aliquot from blood draws collected for other 
+reasons , such as safety laboratory assessments.  
+The PK data obtained will be correlated with parasitological response (qualitative and 
+quantitative), other secondary efficacy data and safety outcomes.  
+ 
+8.5. Assessmen t of Safety  
+Safety and tolerability of all treatments will be assessed through routine monitoring of 
+adverse events. At each trial visit, the patient s will be enquired about current adverse events 
+or any events observed during the period previous to the visit. Evaluation of hematology and 
+blood chemistry values, regular measurement of vital signs and physical examinations will be 
+made at each scheduled f ollow -up visit, as summarized in section 5.  
+Cardiac Safety : 
+x EKGs will be performed at selected trial visits (Days 1, 2, 3 and at weeks 2, 4, 8, 12, and 
+4 months ) in order to identify possible electrocardiographic abnormalities. If clinically 
+significant a bnormalities are judged by the investigators  at these visits, unscheduled EKG 
+should  be performed until normalization.  
+x Patients will be re -dosed only following on -site physician review of available EKGs (central 
+reading). Specific criteria for treatment discontinuation are described in Section 9 of the 
+trial protocol.  
+x Any patient  with a QTc,  post dosing <310 msec or  with a QTc , post dosing  <350 msec 
+accompanied of cardiac symptoms , shall be withdrawn  (Specific criteria for treatment 
+discontinuation are described in sections 9.1 and 9.2).  In those cases, a full cardiac 
+assessment should be performed, including EKG, Echocardiogram and Holter.   
+x Any patient  with a delta QTc >60 msec post dosing  will have the trial medication 
+permanently interrupted and will follow the standard trial schedule. For the cases where 
+in addition to the delta QTc >60 msec post -dosing, cardiac symptoms are present, an 
+EKG should be performed at unscheduled visits.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 57 of 87 
+ x Echo cardiography will be performed in all patient s with any clinically significant change in 
+the EKG and in all patient s with AEs determined to be of cardiac etiology.  
+x Holter monitoring will be carried out in patient s with cardiac symptoms or EKG with 
+evidence  of arrhythmia.  
+x Cardiac safety experts will periodically review all EKG s and present information to the 
+DMC. Central reading of the EKG s will constitute the EKG  database. In addition, the 
+cardiac safety expert will review all Cardiac System Organ Class (S OC) AEs; and all non -
+Cardiac SOC that have the potential to be related to Cardiac AEs.  
+Liver Safety : 
+As part of the liver risk assessment plan, treatment discontinuation should be considered 
+if: 
+x ALT or AST >8xULN  (to be reported as Adverse Event of Special Interest =AESI ) 
+x ALT or AST >5xULN for more than 2 weeks  
+x ALT or AST >3xULN and (TBL >2x  ULN or prothrombin time INR >1.5)  (H\ LaZ¶V 
+criteria  = to be reported as a serious adverse event ( SAE)) 
+x ALT or AST >3xULN with the appearance of fatigue, nausea, vomiting, right upper  
+quadrant pain or tenderness, fever, rash, and/or eosinophilia (>5%)  
+x LiYeU en]\meV Zill be UeSeaWed aV Voon aV SoVVible afWeU Whe iniWial abnoUmaliW\ iV idenWified. 
+AfWeU WhaW, Whe SaWienW VhoXld be folloZed eYeU\ 96 hoXUV (4 da\V), oU Whe cloVeVW SoVVible 
+inWeUYal, XnWil Whe VeUXm ALT and/oU AST fallV beloZ 3 X ULN oU VWabili]eV. If a SaWienW 
+deYeloSV V\PSWRPV RI OLYHU LQMXU\  (faWigXe, naXVea, UighW XSSeU TXadUanW Sain, daUk XUine, 
+oU jaXndice), V/he Zill be inVWUXcWed Wo immediaWel\ conWacW Whe WUial ViWe foU eYalXaWion.   
+x All daWa on liYeU VafeW\ Zill be SUeVenWed Wo Whe DMC foU UeYieZ.  
+x An e[SeUW UeYieZ Zill be condXcWed aW each of Whe Slanned inWeUim anal\ViV Wo aVVeVV Whe 
+need Wo conWinXe Whe Vame fUeTXenc\ of moniWoUing of liYeU en]\meV.  
+ 
+Adrenal Safety  
+x Confirmed abnormal low morning cortisol test results will be reported as an AESI. More 
+details are described in section 8.6.3 . 
+Also, patient s will be advised to return to the clinic on any day during the follow -up 
+period if they present any medical occurrence, as to allow for AE assessments at any 
+unscheduled visits.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 58 of 87 
+ All safety assessments will be performed by a trial team member, who is blinded to the 
+treatment allocation.  
+AEs will be recorded in the appropriate section of the CRF (see details on Section 8.6.).  
+A DMC will review safety information on an ongoing basis (see section 11). 
+ 
+8.5.1.  Laboratory examinations  
+Labor atory parameters of hematology and biochemistry will be measured at screening, 
+Day 0, weekly during treatment duration (weeks  2, 3, 4 , 6, and 8 ), at weeks 10 and 12 and at 
+4, and 6 months  follow up  and at any unscheduled visit if clinically indicated.  
+Clinical safety laboratory evaluations include CBC , ALT, AST, total direct and indirect 
+bilirubin, GGT, alka line phosphatase, and creatinine , fasting glucose , Ca, Mg and K . 
+Prothrombin Time (INR) will be assessed in case of ALT or AST >3xULN . 
+In addition ,  a morning blood sample will be taken for serum cortisol levels at  screening, 
+weeks 4, 8 and at 12 months.  Normal laboratory parameters are detailed in Common 
+Terminology Criteria for Adverse Events (CTCAE v 4.03) for the laboratory/metabolic category.  
+ 
+8.5.2.   Sampl ing assessments  schedule   
+The VchedXle  beloZ indicaWeV  Whe eVWimaWed blood YolXme V amSle Wo be collecWed SeU 
+YiViW.  
+ 
+Table 1: Sample collection and b lood volume  per visit:  
+ 
+Sample type Blood volume (mL) 
+ 
+Sample type Blood volume (mL) 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 59 of 87 
+ Biochemistry, Pregnancy and serum cortisol 
+CBC  
+Conventional and Non- Conventional Serology 
+Glucose 
+Clinical laboratory evaluations (total) 
+PK samples for Ravuconazole /Benznidazole 
+determination 
+PK samples (total) PCR (Qualitative, Quantitative) PCR samples (total)  5x 12 = 60 
+3x 11 = 33 
+6x 3 = 18 
+2x 11 = 22 
+133mL 
+ 
+1x 09 = 09 
+09mL 
+12x 15 = 180 
+180mL 
+ Total 322mL 
+ 
+8.6. Adverse event definitions and reporting  
+ 
+8.6.1.  Adverse Event definition  
+ 
+An adYeUVe eYenW Zill be defined aV an\ XnWoZaUd medical occXUUence  in a clinical WUial 
+VXbjecW adminiVWeUed a medicinal SUodXcW and Zhich doeV noW neceVVaUil\ haYe a caXVal 
+UelaWionVhiS ZiWh  WhiV WUeaWmenW.  
+IW can WheUefoUe be an\ XnfaYoUable and XninWended Vign, V\mSWom,  (i.e. an abnoUmal 
+laboUaWoU\ oU  EKG finding) oU diVeaVe WemSoUaUil\ aVVociaWed ZiWh Whe XVe of a medicinal 
+SUodXcW, ZheWheU oU noW conVideUed Wo be caXVall\ UelaWed Wo Whe medicinal SUodXcW .  
+DefiniWion of an adYeUVe eYenW inclXdeV ZoUVening (in VeYeUiW\ oU fUeTXenc\) of an\ SUe -
+e[iVWing condiWion V (³medical hiVWoU\ ´) befoUe fiUVW adminiVWUaWion of Whe WUial dUXg and 
+abnoUmaliWieV of SUocedXUeV oU laboUaWoU\ UeVXlWV Zhich aUe aVVeVVed aV clinicall\ VignificanW.  
+AbnoUmal laboUaWoU\ (hemaWolog\ and biochemiVWU\) UeVXlWV Zill be UeSoUWed aV  adYeUVe 
+eYenWV if Whe abnoUmaliW\ occXUV oU ZoUVenV afWeU VWaUW of Whe WUial WUeaWmenW, and if Whe\ aUe 
+conVideUed clinicall\ VignificanW adYeUVe changeV b\ Whe InYeVWigaWoU oU  aUe gUeaWeU Whan CTC 
+GUade 1, XnleVV Whe\ aUe aVVociaWed ZiWh an alUead\ UeSoUWed clinical AE.   
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 60 of 87 
+ LaboUaWoU\/SUocedXUeV abnoUmaliWieV (oU ZoUVening in VeYeUiW\ oU fUeTXenc\ of SUe -e[iVWing 
+abnoUmaliWieV) aVVeVVed aV ³clinicall\ significant ´ if Whe\ meeW AT LEAST ONE of Whe 
+folloZing condiWionV:  
+x The abnoUmaliW\ VXggeVWV a diVeaVe and/oU oUgan Wo[iciW\ AND WhiV abnoUmaliW\ ZaV noW 
+SUeVenW aW Whe VcUeening YiViW oU iV aVVeVVed aV haYing eYolYed Vince Whe VcUeening YiViW  
+x The abnoUmaliW\ UeVXlW V in diVconWinXaWion of Whe VWXd\ dUXg  
+x The abnoUmaliW\ UeTXiUeV medical inWeUYenWion oU concomiWanW WheUaS\  
+When UeSoUWing an abnoUmal laboUaWoU\/SUocedXUe UeVXlW, a clinical diagnoViV VhoXld be 
+UecoUded UaWheU Whan Whe abnoUmal YalXe iWVelf, if aYailable (foU e[amSle, ³anaemia ´ UaWheU 
+Whan ³decUeaVed Ued blood cell coXnW ´). 
+The inYeVWigaWoU oU aSSUoSUiaWe ViWe SeUVonnel Zill e[amine an\ SaWienW e[SeUiencing an 
+AE aV Voon aV SoVVible. The inYeVWigaWoU Zill do ZhaWeYeU iV medicall\ neceVVaU\ foU Whe VafeW\ 
+and Zell-being of Whe SaWienW. The SaWienW Zill Uemain XndeU obVeUYaWion aV long aV a SaWienW iV 
+UeceiYing WUial dUXg, and foU 10 monWhV folloZ ing Whe laVW da\ of dUXg adminiVWUaWion, oU longeU 
+if medicall\ indicaWed in Whe oSinion of Whe inYeVWigaWoU.  
+All AEV obVeUYed oU UeSoUWed folloZing adminiVWUaWion of inYeVWigaWional WUeaWmenW and 
+Zill be folloZed XnWil UeVolYed , XnWil aVVeVVed aV chUonic  oU medicall\ VWable  oU XnWil Whe SaWienW 
+SaUWiciSaWion in Whe WUial endV . 
+All adverse events identified will be recorded in the appropriate AE section of the CRF 
+using standard medical terminology in order to avoid the use of vague, ambiguous or colloquia l 
+expressions. Serious and/or unexpected adverse events will be reported by telephone  or e-
+mail to DNDi (see details in Section 8.6.5).  
+ 
+8.6.2.  Serious Adverse Event  
+ 
+An Adverse Event or Reaction which:  
+- results in death,  
+i.e. causes or contributes to the death.  
+- is life -threatening,  
+in this context refers to an AE/AR in which the patient was at risk of death at the time 
+of the AE/AR; it does not refer to an AE/AR that hypothetically might have caused death 
+if more severe.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 61 of 87 
+ - requires in -patient hospitaliz ation or prolongation of existing hospitali zation, 
+i.e. the AE requires at least an overnight admission or prolongs a hospitali zation beyond 
+the expected length of stay. Hospital admissions for surgery planned before study 
+entry, for social reasons, for any elective surgery (i.e. plastic surgery) or for normal 
+disease management (including treatment adjustment) are NOT to be considered a s 
+SAE according to this criterion (i.e. if the protocol or the standard management of the 
+disease under study requires planned hospitali zation). 
+- results in persistent or significant disability or incapacity,  
+i.e. the AE resulted in a substantial disrupti on of Whe VXbjecW¶V abiliW\ Wo condXcW noUmal 
+activities.  
+- is a miscarriage , congenital anomaly / birth defect,  
+i.e. an adverse event outcome in a child or foetus of a subject exposed to the 
+Investigational Medicinal Product (or marketed medicinal product  (Note: to be only 
+added for marketed drug)) before conception or during pregnancy.  
+- is an important medical event, i.e. is medically significant.  
+Medical and scientific judgment should be exercised in deciding whether other 
+situations should be considere d serious events/reactions, such as important medical 
+events that might not be immediately life -threatening or result in death or hospitalization  
+but might jeopardise  the patient or might require intervention to prevent one of the other 
+outcomes listed abo ve. ³E[amSleV of VXch eYenWV aUe inWenViYe WUeaWmenW in an 
+emergency room, or at home for allergic bronchospasm, blood dyscrasias or 
+convulsions that do not result in hospitalization  or development of dependency or 
+abXVe.´  
+Any suspected transmission via a medicinal p roduct of an infectious agent . 
+- Liver function abnormalities reaching any Hy Law criteria  
+Liver function abnormalities reaching any Hy Law criteria (ALT or AST > 3 x ULN in 
+combination with total bilirubin elevation >2 x ULN or prothrombin time INR > 
+1.5) will be considered as serious AEs if there is no evidence of obstructive disease 
+and no other reason can be found to explain the combination of aminotransferase and 
+total bilirubin elevation. Subjects who experience these liver abnormalities sho uld 
+permanently be discontinued from treatment. Liver enzymes should be followed until 
+resolution or until return to baseline levels. Other possible causes of similar observed 
+injury include viral hepatitis A, B, or C, pre -existing or acute liver disease, or other drugs 
+and should be investigated in case of such occurrence.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 62 of 87 
+  
+8.6.3.  Adverse Event of Special Interest (AESI):  
+An adYeUVe eYenW of VSecial inWeUeVW (AESI) iV defined aV a non -VeUioXV adYeUVe eYenW 
+of VcienWific and medical conceUn VSecific Wo Whe SSonVoU¶V SUodXcW oU SUogUam, foU 
+Zhich ongoing moniWoUing and UaSid commXnicaWion b\ Whe inYeVWigaWoU Wo Whe SSonVoU 
+ma\ be aSSUoSUiaWe. SXch an eYenW ma\ UeTXiUe fXUWheU inYeVWigaWion in oUdeU Wo 
+chaUacWeUi]e and XndeUVWand iW - AEQRUPaO ORZ PRUQLQJ FRUWL VRO 
+ConfiUmed abnoUmal loZ moUning coUWiVol WeVW UeVXlWV Zill be UeSoUWed aV an AESI; ConfiUmaWion 
+of abnoUmal UeVXlW Zill be done b\ UeSeaWing Whe WeVW afWeU 2 -7 da\V of an iniWial abnoUmal UeVXlW. 
+If UeSeaW WeVW foU confiUmaWion iV noW done oU feaVible, Whe iniWial abnoUmal YalXe Zill be 
+conVideUed confiUmed and UeSoUWed aV an AESI. SXbjecWV ZiWh abnoUmal UeVXlWV ma\ conWinXe 
+WUeaWmenW ZiWh cloVe moniWoUing and Zill be UefeUUed Wo a VSecialiVW oU can be ZiWhdUaZ baVed 
+on medical jXdgmenW  
+- LLYHU IXQFWLRQ aEQRUPaOLWLHV > 8*ULN  
+LiYeU en]\meV Zill be UeSeaWed aV Voon aV SoVVible afWeU Whe iniWial abnoUmaliW\ iV idenWified. 
+AfWeU WhaW, Whe SaWienW VhoXld be folloZed eYeU\ 96 hoXUV (4 da\V), oU Whe cloVeVW SoVVible 
+inWeUYal, XnWil Whe VeUXm ALT and/oU AST fallV  beloZ 3 X ULN oU VWabili]eV. If a SaWienW deYeloSV 
+V\mSWomV of liYeU injXU\ (faWigXe, naXVea, UighW XSSeU TXadUanW Sain, daUk XUine, oU jaXndice), 
+V/he Zill be inVWUXcWed Wo immediaWel\ conWacW Whe WUial ViWe foU eYalXaWion.   
+AESI s are not SAEs per s e (from a regulatory point of view) but the Sponsor shall be 
+informed in an expedited manner within same timelines (irrespective of the grade of the AESI) 
+as required for SAEs but using the AESI form. Shall they meet any seriousness criteria (8. 6.2) 
+they sho uld then comply for associated safety reporting requirements and be reported on the 
+SAE form.  
+8.6.4.  Eliciting Adverse Event information  
+The investigator is required to report all directly observed adverse events and all 
+adverse events spontaneously reported by t he trial patient  using concise medical terminology. 
+In addition, during each trial visit patient  will be interviewed with the use of a checklist and 
+undergo a physical exam for adverse event evaluation.  
+8.6.5.  Adverse Event reporting period  
+The adverse events rep orting period for this trial begins  
+x Upon administration of the first dose of trial medication at Day 1 for non -serious 
+events;  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 63 of 87 
+ x Upon patient  enrolment in the trial (after signature of informed consent) for 
+serious events  
+and ends at the end of patient par ticipation in the trial.  
+All adverse events that occur during the adverse event reporting period specified in the 
+protocol must be reported in the CRF, whether or not the event is considered treatment related.  
+In addition, any serious  adverse event that occurs subsequent to the adverse event 
+reporting period that the investigator assesses as related  to the investigational medication 
+should also be reported as an adverse event.  
+8.6.6.  Adverse Event reporting requirements  
+Information on adverse events must be evaluated by a physician. Each adverse event 
+is to be classified by the investigator as serious or non -serious. This classification will 
+determine the reporting procedure for the event.  
+All serious adverse events (SAE) are to be reported imm ediately (within 24 hours of 
+awareness of the SAE by the investigator) to an email to be informed at Study Manual in copy 
+to the DNDi clinical trial manager, using the SAE report form.  This includes a description of 
+the event, onset date and type, duratio n, severity, relationship to trial drug, outcome, measures 
+taken and all other relevant clinical and laboratory data. The initial report is to be followed by 
+submission of additional information (follow -up SAE form) as it becomes available. Any follow -
+up reports should be submitted as soon as possible and if possible within 5 working days.  
+Serious adverse events should also be reported on the clinical trial adverse event case 
+report form (CRF). It should be noted that the form for reporting of SAE (SAE for m) is not the 
+same as the adverse event section of the CRF. Whereas the same data are collected, the two 
+forms must be completed in a consistent manner, and the same medical terminology should 
+be used.  Any other additional reporting requirement will be add ressed in the trial manual.  
+Adverse Events of Special Interest shall be informed to the Sponsor in an expedited 
+manner within same timelines (irrespective of the grade of the AES) as required for SAEs, but 
+using the AESI form. If AESI meet any seriousness criteria (8.6.2), they should then comply 
+for associated safety reporting requirements and be reported on the SAE form.  
+Non-serious adverse events are to be reported in the CRF . In the CRF, a given adverse 
+event will be recorded only one time per patient , and the severity recorded will be the maximum 
+level reached. If several distinct episodes of the same condition occur, their number will be 
+recorded in the CRF.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 64 of 87 
+ In addition to immediately reporting SAEs to DNDi, Investigators are responsible for 
+reporting SAEs occurring at their site to their Independent Ethics Committee (IEC), and any 
+periodic safety reporting, following the local re quirements of their institution .  
+ 
+8.6.7.  Grading of Adverse Event severity  
+Severity is a clinical determination of the intensity of an AE. The severity for an AE 
+VhoXld be gUaded XVing Whe NaWional CanceU InVWiWXWe¶V Common TeUminolog\ CUiWeUia foU 
+Adverse Events (CTCAE, version 4.03). In case of AEs that are not described in the  CTCAE v 
+4.03, the investigator will use the terminology MILD, MODERATE, or SEVERE to describe the 
+maximum severity of the adverse event as follows:  
+MILD    Does not interfere with patient 's usual functions  
+MODERATE   Interferes to some extent with patient 's usual functions  
+SEVERE   Interferes significantly with patient 's usual functions  
+This information on AE grading will be entered in the adverse event section of the CRF.  
+ It is to be noted the distinction between severity and seriousness of adverse events . A 
+severe adverse event is not necessarily a serious event.  
+8.6.8.  Adverse Event causality assessment  
+For both serious and non -serious adverse events, the investigator is required to assess 
+the potential relationship between the adverse event and the trial drug,  i.e. to determine 
+whether there exists a reasonable possibility  that the trial drug caused or contributed to the 
+adverse event.  
+To help investigators with the decision binary tree in the evaluation of causality, the 
+CIOMS VI group recommends that investi gators be asked to consider the following before 
+reaching a decision:  
+x Medical history  
+x Lack of efficacy/worsening of existing condition  
+x Trial medications  
+x Other medications (concomitant or previous)  
+x Withdrawal of trial medication, especially following trial discontinuation/end of 
+trial medication  
+x Erroneous treatment with trial medication (or concomitant)  
+x Protocol related procedure  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 65 of 87 
+ The relationship of an AE to investigational treatment is assessed and determined by 
+the i nvestigator after careful consideration of the event in terms of biological plausibility, 
+possible unrelated causes, any pre -existing medical conditions or concomitant medications, 
+temporal relationship between administration of investigational treatment a nd the onset (or 
+worsening) of the event, and known patterns of response to trial medications  in general.  
+The causality assessment of an AE to the investigational medicinal product will be rated 
+as follows:  
+x Not related:  There is no reasonable possibility of causal relationship.   
+x Related:  There is at least a reasonable possibility of a causal relationship between 
+an adverse event and an investigational medicinal product. This means that there 
+are facts (evidence) or argu ments to suggest a causal relationship.   
+The decision to suspend, and resume treatment or to permanently interrupt treatment 
+due to an adverse event will be left to the trial clinician in charge .The clinician should take in 
+consideration the Assessment of  Safety defined for this protocol ( section 8.5 ) and the  Rules 
+for permanently interrupting trial treatment  ( section 9.2 ). 
+8.6.9.  Exposure in utero  
+In this trial, women of reproductive age must have a negative serum pregnancy test at 
+screening, must not be breas tfeeding, and must use a double barrier method of contraception 
+to avoid exposure to the study drugs during  pregnancy throughout the clinical trial and up for 
+3 months after completion of the trial, in such a manner that the risk of pregnancy is minimized 
+especially during exposure to treatment  and until complete elimination .  Women who are using 
+oral, implanted, or injectable contraceptive hormones or mech anical products such as an 
+intrauterine device with a hormonal component are required to use an additional barrier 
+method of contraception for the time period specified.  
+In addition to the serum pregnancy tests performed at screening and Day 0, an 
+additio nal pregnancy test will be carried out at week 10, and at 6 and 12 months follow -up visit.  
+If any trial subject becomes or is found to be pregnant  while receiving any of the study 
+treatment drugs (or during study post -treatment follow -up period + 3 months ), the medication 
+must be interrupted and inYeVWigaWoU mXVW VXbmiW Whe eYenW on a µ Clinical Study Pregnancy 
+Report Form ¶ together with the first day of last menstruation period and the expected date of 
+birth. This must be done irrespective of whether an adverse event has occurred. The 
+information submitted should include the anticipated date of delivery.  
+ 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 66 of 87 
+ The investigator will follow the patient  until completion of the pregnancy or until 
+pregnancy termination (i.e., induced/spontaneous abortion). The investigator will provide 
+SUegnanc\ oXWcome infoUmaWion in a µ Clinical Study  Pregnancy Outcome Report Form ¶.  
+Note:  A pregnancy is not an SAE . Any unfavorable outcome meeting a seriousness criterion, 
+i.e., in the case of unfavorable pregnancy outcome (miscarriage, stillbirth), birth defect occurs 
+or congenital abnormality shall be reported using the SAE form (in addition to the Pregnancy 
+Outcome  Form). 
+ 
+In the case of a live birth, a pediatrician should assess the infant at the time of birth and submit 
+a Child Surveillance form . Newborns of study subjects exposed to study drug s during 
+pregnancy will be followed up until the age of 2 years.   
+ 
+Because of the risk of development of lenticular opacity , (cataract) found in animal studies with 
+E1224 , an ophthalmologist will also assess the infant of study subjects exposed to study drugs 
+during pregnancy  from the time of birth until the child reaches  24 months of age. The principal 
+investigator must gather information on the child's health status from birth to 24 months of age 
+by the child's treating physicians (pediatrician, ophthalmologist). Investigator must inform and 
+advise the mother to ensure t he monitoring of the child's health status, as well as complete the 
+safety information of the child's health status in the corresponding form ( Child Surveillance 
+Form ). 
+ 
+  
+8.6.10.  Adverse event follow -up 
+All adverse events should be followed until they are resolved or the investigator 
+assesses them as chronic or stable or the patient  participation in the trial ends (i.e., until a final 
+report is completed for that patient ).  
+In addition, all serious advers e events and those non -serious events assessed by the 
+investigator as possibly related to the investigational drug must continue to be followed even 
+after the patient  participation in the trial is over. Such events should be followed until they 
+resolve or XnWil Whe inYeVWigaWoU aVVeVVeV Whem aV ³chUonic´ oU ³VWable.´  
+9. WITHDRAWAL CRITERIA  
+A patient  should be withdrawn from the trial treatment if, in the opinion of the investigator, 
+it is medically necessary, or if it is the wish of the patient .  
+If a patient  does not return for a scheduled visit, every effort should be made to contact 
+the patient .  
+In any circumstance, every effort should be made to document patient  outcome, if 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 67 of 87 
+ possible.  
+If the patient  withdraws consent, no further evaluations should be performed and no 
+attempts should be made to collect additional data, with the exception of safety data, which 
+should be collected if possible and in accordance with patient  consent.  
+If a patient  withdraw s from the trial, the reason must be noted on the CRF.  
+If a patient  is withdrawn from the trial because of a treatment limiting adverse event, 
+thorough efforts should be made to clearly document the outcome of AE.  
+9.1. Rules in case of treatment suspension or temporarily interruption  
+Treatment discontinuation does not imply withdrawal from the trial. In such cases, the 
+treatment might be discontinued for a few days; therefore , the treatment will be considered 
+incomp lete or delayed. Treatment  can be resumed, according to the assessment of the trial 
+investigator in charge of the patient . Please check the instructions for safety assessment and 
+follow -up as per section 8.5.  These patient s should  continue with trial visits and assessments 
+as planned, but the reasons for treatment discontinuation must be recorded in the appropriate 
+source documentation and CRF.  
+9.2. Rules for permanently interrupting trial treatment  
+The Investigator will interrupt permanently the  treatment based on the following:  
+x ALT or AST >8x  ULN (to be reported as Adverse Event of Special Interest  (AESI) ) 
+x ALT or AST >5x  ULN for more than 2 weeks  
+x ALT or AST >3x  ULN and (TBL >2x  ULN or INR >1.5 ; H\ laZ¶V cUiWeUia; Wo be UeSoUWed 
+as a Serious Adverse Event (SAE)  
+x ALT or AST >3x  ULN with the appearance of fatigue, nausea, vomiting, right upper 
+quadrant pain or tenderness, fever, rash, and/or eosinophilia (>5%)  
+x QTc post dosing <310  msec or <350 msec accompanied of cardiac symptoms  
+x QTc> 500 msec a t any time during treatment  
+x QTc post dosing >60msec  
+x AdYeUVe eYenW oU an\ oWheU condiWion Zhich, in Whe inYeVWigaWoU¶V oSinion, ZoXld SXW Whe 
+patient  at undue risk by continuing the trial treatment  
+x Major protocol deviation incompatible with the continuation /participation  on the trial 
+x Any condition that the investigators considers medically necessary to interrupt the 
+treatment, such as:  
+o Significant leukopenia (<2,500 cel ls/mm3)  
+o Severe gastrointestinal symptoms  
+o Severe allergic dermopathy  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 68 of 87 
+ o Peripheral sensitive n europathy   
+x Pregnancy  
+Regardless  of the reasons for trial treatment interruption, the investigator  will make all 
+necessary arrangements to ensure that the patient  receives the appropriate treatment for the 
+relevant medical condition.  
+Rescue treatment will be offered for these patient s upon trial completion .  
+9.3. Patient  withdrawal from the trial  
+The following will be considered reasons to indicate patient  withdrawal from the trial:  
+x Withdrawal of consent by the patient/legal representative  
+x Trial termination by the Sponsor  
+x Any condition that the investigators considers medically necessary to withdraw patient 
+from the trial 
+If the patient  withdraws the consent, no further evaluations should be performed and no 
+attempts should be made to collect additional data, with the exception of safety data, which 
+should be collected if possible.  
+All patient s withdrawn will be clinically evaluated by the investigator and if appropriate 
+treated with rescue medication . Patient  care will continue according to national treatment 
+guidelines.  
+If a patient  withdraws from the trial, the reason must be noted in the CRF. Data obtained 
+prior to the withdrawal of a p atient will still be included in the PK, efficacy , and safety analyses.  
+ 
+9.4. Lost to follow -up  
+If a patient  does not return for a scheduled visit, all necessary measures should be 
+taken to contact the patient  and document the patient¶V outcome , and before declaring him 
+³loVW Wo folloZ -XS´, Whe inYeVWigaWoU mXVW enVXUe eYeU\ effoUW Wo conWacW him/heU  and to establish 
+the reason for the discontinuation of treatment . All contact attempts should be documented 
+accordingly.  
+In order to minimise loss to fol low-up detailed contact information including address 
+and mobile phone number for the patient  and /or a relative will be taken as part of the screening 
+assessments. This information will remain at the site. If the patient  does not self -present to the 
+site and a phone number is not available then the field team will follow -up with the patient or 
+their family directly.  A patient  will only be considered lost to follow -up after the  12 month follow -
+up visit.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 69 of 87 
+  
+9.5 Patient  replacement  
+ Patient s withdrawn from this trial will not be replaced.  
+10. DATA ANALYSIS AND STATISTICAL METHODS  
+The Statistical Analysis  Plan will be  written  after the protocol  finalization and  definitely  
+finalized before  breaking  the blind  mode, prior to the first database lock . These specifications  
+will detail  the implementation of  all statistical analyzes  planned according to  the main features  
+reported  in the protocol.  
+10.1.  Sample size determination  
+A total of 210 patient s will be recruited in the trial.  
+For a comparison of two independent binomial proportions using Pearson's Chi -
+square statistic with a Chi -square approximation with a two -sided significance level of 0.006 
+(multiplicity adjustment of 0.05 for 6 comparisons [treated arms] against the control  arm), a 
+sample size of 11 patient s per arm assuming a balanced design achieves a power of at least 
+0.8 when the proportions are 0.082 (control arm) and 0.81 (treatment arm).  
+With an estimated proportion of 10% patient s who might drop-out from the trial, the 
+final sample size needed is 1 2 patient s per arm for one comparison.  
+A sample size of 30 patient s per arm will allow a 99% probability of observing at least 
+one event of peripheral neuropathy or paresthesia, transaminase increase, hypersensitivity 
+(13.3%, 15.5%, and 22.2 %, respectively) and a n 85% probability of observing at least one 
+treatment discontinuation per arm.  
+10.2.  Definition of trial populations included in the analysis  
+The primary efficacy analyses will be performed on the Intention -to-treat (ITT) data 
+set, defined as all randomized patient s by their assigned treatment arms.  
+Additionally, efficacy analyses will be performed on a per -protocol (PP) dataset. The 
+per-protocol dataset will be defined as patient s receiving randomized treatment, who meets 
+entry criteria, have not permanently discontinued treatment administration and had no major 
+protocol deviation. Eligibility and evaluability criteria will be further detailed in the Statistical 
+Analysis Plan.  
+All safety analyses will be performed on the All Treated Set, defined as all patients 
+who received at least one dose of the treatment.  
+Based  on actual  deviations , the criteria for any patient  exclusion from  the different 
+data sets  will be specified  and updated  as necessary  prior to the  break of the blind.  
+  Patient  Disposition  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 70 of 87 
+ At the end of the trial the following will be described:  
+x Number of patient s screened;  
+x Number of patient s assessed for eligibility excluded from the trial and reasons for 
+exclusion;  
+x Number of patient s who have been enrolled in the trial (ITT set);  
+x Number of patient s randomized into each trial arm; 
+x Number (%) of patient s who have received at least one dose of trial medication(s) 
+(safety population ± All Treated Set), per trial arm; 
+x Num ber (%) of patient s who have received a full course of treatment and completed 
+EOT assessments (treatment completers), per trial arm; 
+x Number (%) of patient s who have completed the trial per trial arm ( trial completers , PP 
+set); 
+x Number (%) of patient s who completed the trial visits at Days 0,  1, 2, 3, weeks 2, 3, 4, 
+5, 6, 7, 8, 10, and 4, 6, and 12 months follow -up visits, total and per trial arm; 
+x Number (%) of patient s lost to follow -up and reasons of lost, total and per trial arm; 
+x Number (%) of patients who have withdrawn from the trial, per trial arm and reasons 
+for withdrawal.  
+x Number (%) of patient s excluded from analysis per trial arm and reasons for exclusion;  
+x Number (%) of patient s with at least one protocol violation and nature of protocol 
+violation (major, minor)  
+10.3.  Baseline  
+ 
+ The following baseline characteristics of the trial population will be described  
+generally and per centre/country.  
+x Age distribution  
+x Gender distribution  
+x Weight  
+x BMI 
+x Nationality and country(ies) of residence;  
+x Parasite load measured through real -time quantitative PCR;  
+x Antibody titers assessed by conventional and selected non-conventional serology , per 
+type of assay;  
+ 
+10.4.  Treatment Compliance  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 71 of 87 
+ This is a double blind trial and compliance will be considered according to treatment 
+course . During the trial, the treatment compliance will be monitored through weekly follow -up 
+visits, as summarized in section 5 , and all information registered in the appropriate section of 
+the CRF.  
+At the weekly visits, E1224 or E1224 ±match ing placebos will be administered under 
+the supervision of trial staff. The patient  will receive enough BZN or BZN match ing placebos 
+until the next scheduled visit.  Also, they must bring all remaining trial drugs to check for 
+compliance with prescribed treatment and ensure drug accountability.  
+Treatment compliance will be described in the trial report, describing the number and 
+percentage of patients who completed and who did not complete a full course of treatment per 
+trial arm, and the reasons for treatment drop -out per trial arm. 
+For patient s who do not complete a full treatment course, mean time of exposure to 
+trial drug will be described per  trial arm. 
+ 
+10.5.  Efficacy Analysis  
+The primary efficacy endpoint is parasitological response , defined as sustained 
+parasitological clearance until6 months  of follow -up. It is determined by serial qualitative PCR 
+results (3 negative PCR results to be collected in the same day) . 
+Hypothesis:  Benznidazole or Benznidazole/E1124 improved regimens  treatment 
+leads to a statistically significant better sustained parasitological clearance rate at 6 months of 
+follow -up than placebo in patient s with chronic indeterminate CD. 
+The primary analysis will be the comparison of the  sustained  parasitological clearance 
+of each treatment arm versus that of the placebo arm . Six main final comparisons will be 
+performed. Hochberg procedure will be used to keep the global type I error a t the 5% level and 
+cope with the multiplicity issue.  With sustained clearance of parasitemia as the parameter of 
+interest , a comparison with placebo will be carried out.  An alpha adjustment to 0. 025 is 
+considered for the interim analyses to account for potential Type I inflation.  
+Primary efficacy analyses will be performed when all patients complete 6 months 
+follow -up visit. Analyses of results will be used to guide planning of a follow -up Phase 3 cl inical 
+study. Analysis is to be performed by an independent, external statistician. In order to allow 
+administrative decisions, the results of the primary endpoint will be disclosed unblinded (by 
+treatment arm) to the Joint Development Committee. No indivi dual patient data will be shared 
+with the Committee. In addition, data is to be shared with the Data  Monitoring Committee.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 72 of 87 
+ The Joint Development Committee is composed of the DNDi Project Leader (DNDi 
+Head of Chagas Program), DNDi Medical Director, and members from Eisai team. On occasion 
+the JDC meetings are attended by other members of staff from these organisations  (such as, 
+DNDi Research and Development Director and He ad of Chemistry, Manufa cturing and 
+Controls) . Under no circumstances will the Principal Investigator, trial site staff and study 
+personnel from the Sponsor managing day -to-day activities of the trial have access to the 
+results of the primary efficacy analy sis prior to the end of the study. They will remain 
+unequivocally blinded until completion of 12 months follow -up and final database lock. The 
+study statisticians will not have access to unblinded data before conduction of the analyses at 
+the end of the st udy. Study database will be cleaned and locked in preparation of analyses of 
+primary efficacy endpoint. As data accrues following 6 months assessment, it is to be included 
+to constitute the final study database for clinical trial data analyses . Other secon dary efficacy 
+analyses will further characterize differences in therapeutic response within this trial. For all 
+secondary comparisons of proportions between active arms  versus placebo, an exact test will 
+be performed.  
+For efficacy assessments, the EOT of each treatment arm will be defined according 
+to the duration of the arm dosing regimen.  
+The current primary efficacy endpoint includes the actual EOT time -point for each of 
+the different treatment groups, thus the susta ined parasitological response is to be assessed 
+in a standardised way across the different arms independent of treatment duration, i.e:  
+Table 3. Sustained response considering variable EOT for the different treatment groups  
+ Group EOT Negative serial PCR at the following 
+timepoints 
+1 BZN 300 mg - 8 wks W10 W10, W12, 4M, 6M*, 12M 
+2 BZN 300 mg -   4 wks  W6 W6, W12, 4M, 6M*, 12M 
+3 BZN 300 mg -   2 wks  W4 W4, W12, 4M, 6M*, 12M 
+4 BZN 150 mg -   4 wks  W6 W6, W12, 4M, 6M*, 12M 
+5 BZN 150 mg -   4 wks  / E1224 300 mg W10 W10, W12, 4M, 6M*, 12M  
+6 BZN 300 mg (weekly doses) -   8 wks / 
+E1224 300 mg W10 W10, W12, 4M, 6M*, 12M 
+7 Placebo W10 W10, W12, 4M, 6M*, 12M 
+ *Primary efficacy analyses   
+ 
+For quantitative PCR analyses, means and 95% confidence intervals will be 
+presented by group and visit. Time to sustained parasite clearance will be assessed using 
+Kaplan±Meier survival analysis with log rank test for significance.  Repeated measures analys is 
+will also be performed.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 73 of 87 
+ Latent class analyses will be used to evaluate the association between the 
+parasitological clearance  and serological response.   
+Multivariate analysis will be performed to define early and late predictors of a 
+sustained parasitological response.  
+Detailed analysis plan per question of interest will be provided in the Statistical 
+Analysis Plan (SAP). Information on interim analysis is provided in section 9.8 and also further 
+detailed in the SAP.  
+ 
+10.6.  Safety Analysis  
+Safety analyses will include all patient s who have received at least one dose of the 
+trial medication.  
+The proportion of patient s with SAE and/or AEs leading to treatment discontinuation 
+will be described per trial arm and by System Organ Class (using pref erred terms defined by 
+MedDRA 13.1), accoUding Wo Whe NaWional CanceU InVWiWXWe¶V Common TeUminolog\ CUiWeUia foU 
+Adverse Events (CTCAE, version 4.03).  
+The proportion of patient s presenting at least one AE will be described. Patient s with 
+multiple events with the same preferred terms will be counted once. The maximum severity 
+grade for each preferred term and body system will be summarized. If multiple events with the 
+same preferred terms are recorded for a patient , the event with the maximum grade will be  
+included in the analysis. In addition, a narrative for each of the SAEs and AESIs  will be 
+developed detailing all aspects related to the medical event.  
+AEs not leading to treatment discontinuation will also be described per trial arm using 
+the same classi fication as presented above.  
+Incidence rate and 95% confidence interval will be presented per trial arm will be 
+presented for SAE , AESI,  and AEs per category and most frequent AEs. Otherwise only 
+descriptive statistics will be presented.  
+Safety laboratory parameters (h aematology and biochemistry) will also be described 
+individually per trial arm, showing the proportion of patient s by degree of elevation relative to 
+ULN and to baseline values, and blood levels changes over time. Shift tables will be presente d. 
+A listing of patient s experiencing lab parameters elevation will be included.  
+EKG  abnormalities will be described per treatment arm as the proportion of patient s 
+per type of EKG  finding and changes over time. The cardiac safety data will be compared 
+between the different treatment groups and placebo.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 74 of 87 
+ Safety data will be correlated to efficacy and treatment compliance data and to PK 
+parameters.   
+ 
+10.7.  Analysis of other endpoints  
+Descriptive statistics (i.e. mean, median, SD, variation coefficient, etc) will be used to 
+describe the analyzed variables.  
+The PK parameters assessed in the population will be AUC, Cmax, Cmin, CL, Vd, 
+and t1/2.  
+Population pharmacokinetics modelling will be performed using non -linear mixed -
+effects modelling as implemented in the software NONMEM® VI (NONMEM Users Guides, 
+(1989 -2006) (Beal, S.L., Sheiner L.B., Boeckmann, A.J. (Eds.) Icon Development Solutions, 
+Ellicott City, Maryland, USA). This program uses mixed (fixed and random)  effects non -linear 
+regression to estimate population parameter means with inter -individual and intra -individual 
+(i.e., residual) variability.  
+To determine the basic structural pharmacoki netic parameters, a stepwise procedure 
+will be used to find the model that best fits Benznidazole/ E1224  data in blood . 
+The influence of covariates such as age, body mass index and parasite load at 
+baseline will be assessed by graphical visual inspection o f the individual estimates of the 
+pharmacokinetics parameters vs. the covariate plots. Potentially or known influential covariates 
+will be incorporated sequentially into the pharmacokinetics model. The typical value of a given 
+parameter (e.g., CL) will be modelled as linearly dependent on each covariate (e.g. body 
+weight, age, etc). Categorical covariates will be coded as indicator variable 0/1.  
+Inter-individual variations in PK parameters will be described using an exponential 
+error model with normally di stributed inter -individual random variability with mean zero and 
+YaUiance Ȧ2. An e[SonenWial eUUoU model Zill be XVed Wo deVcUibe Whe inWUa -patient (residual) 
+variability.  
+Parameter estimation and model selection: The data will be fitted using the first -order 
+conditional method (FOCE INTER in NONMEM). Model selection will be based on the 
+likelihood ratio test, pharmacokinetics parameters point estimates, and their respective 
+confidence intervals, goodness -of-fit plots , and visual predictive checks (VPC). A  model will be 
+considered as a statistically significant improvement over a previous model if it produces a 
+decrease in objective function of >10.8 for one additional parameter (Chi -Square; P <0.001).  
+Diagnostic plots will be done in R (R Development Core Team 2009. R: A language 
+and environment for statistical computing. R Foundation for Statistical Computing, Vienna, 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 75 of 87 
+ Austria. ISBN 3 -900051 -07-0, URL http://www.R -project.org .) 
+The PK parameters (AUC and Cmax) will b e correlated with parasitological response 
+(sustained parasitological response and fractional reduction of parasitemia), and safety 
+outcomes at Day 1 (post dose) , 2, 3 , and weeks 2, 3, 4, 5, 9 , and 10 . 
+ 
+10.8.  Interim analysis  
+Two interim analyses and a primary outcome analysis will be performed.  
+One Interim analys is for futility , will be performed when 30% of the patient s complete 
+12 weeks from treatment initiation  and another, for safety, upon completion of treatment of 
+20% of recruited patients.  The primary outcome analysis will occur when all patients have 
+completed the 6 -month follow -up visit.  
+The interim analyses results will not be disclosed, under any condit ion, to Sponsor 
+personnel, the Principal  Investigators and trial personnel at the trial site managing day -to-day 
+activities of the trial prior to the end of the trial. They will remain  unequivocally blinded until 
+completion of 12 months of follow -up and final database lock. As discussed in section 10.5, 
+the Joint Development Committee (including key sponsor management staff not linked with 
+clinical trial operations)  and Data Monitoring Committee will have access to primary outcome 
+(efficacy and safety ) results by treatment arm at the time of completion of 6 months follow -up 
+in order to guide planning of a follow -up Phase 3 clinical study. Sponsor personnel  directly 
+involved in the trial , principal investigators and study team site personnel will remain blinded 
+to treatment allocation and results of the analyses.  The trial statisticians will not have access 
+to unblinded data before conduct of analysis at the end of the trial. Interim a nalys es will be 
+performed by an independent statistician . A futility stopping rule is defined as no difference 
+from placebo  in sustained parasitemia clearance at 12 weeks . The stopping rule will be applied 
+with no change planned on the sample size  of the different study arms . Patient s will be 
+considered as early treatment failures . 
+The interim analysis results/outcome will not interfere on the trial procedures,  unless 
+they meet the criteria defined for the harm and futility  stopping rule. If the stopping rules are 
+not applied,  all patient s will be required to complete the 12 months visits follow -up as planned 
+by this protocol. In order to account to Type I error inflation, an alpha adjustment is considered 
+to 0.025. A total sample size of 1 1 patient s per arm assuming a balanced design achieves a 
+power of at least 0.8 when the proportions are 0.082 and 0.81. With a proportion of 10% 
+patient s who would drop -out the trial, the final total sample size needed is 1 2 patient s per arm.  
+No other changes in t he final analysis defined by this protocol and Statistical Analysis 
+Plan will be necessary . 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 76 of 87 
+ 10.9.  Missing, unused, and spurious data  
+The adequate procedure to handle with missing, unused, and spurious data  will be 
+described in detail  in the statistical analysis plan, prior to the code break.  
+ 
+10.10.  Deviations from the original statistical plan  
+In case of any deviation from the original statistical plan , a justification and description will 
+be detailed in a protocol amendment and/or in the final report, as appropriate.  
+11. DATA MONITORING COMMITTEE  
+A DMC, composed of a minimum of three  members independent of the investigator and 
+sponsors, will be set up prior to trial initiation. The DMC will monitor the trial in order to ensure 
+that harm is minimized and benefits maximized for the trial patient s. The  DMC will review 
+efficacy and safety data on an ongoing basis and at pre -determined intervals, review all 
+information related to the occurrence of SAEs , AESIs  and AEs leading to treatment 
+discontinuation, and issue recommendations about the trial if the existing benefit/risk of the 
+patients in the trial seems compromised. The data and intervals will be agreed prior to or soon 
+after the trial initiation and document ed in the DMC Charter. It is to be noted that data on liver 
+and cardiac safety will be presented to the DMC for review.  The DMC members will include a 
+liver specialist, a  cardiac safety specialist and a member with CD expertise . 
+12. QUALITY ASSURANCE AND QUALI TY CONTROL PROCEDURES  
+12.1.  IQYHVWLJaWRU¶V ILOH  
+The investigator must maintain adequate and accurate records to enable the conduct 
+of the trial to be fully documented and the trial data to be subsequently verified. These 
+docXmenWV inclXde InYeVWigaWoU¶V SiWe File, patient  clinical source documents and 
+VcUeening/enUolmenW logV. The InYeVWigaWoU¶V SiWe File Zill conWain Whe SUoWocol/SUoWocol 
+amendments, CRF and query forms, IEC and re gulatory approval with correspondence, 
+sample informed consent, drug accountability records, staff curriculum vitae and authorization 
+forms and other appropriate documents/correspondence.  
+12.2.  Case report forms (CRFs)  
+Data will be collected by laboratory techn icians, medical doctors, clinical officers and 
+nurses authorized by the investigator. It will be supervised by the Investigator and signed by 
+the investigator or by an authorized staff member. Trial-specific information will be entered into 
+an electronic C ase Report Form (CRF).  Data that are derived should be consistent with the 
+source documents or the discrepancies should be explained.  All CRF data should be 
+anonymized, ie , identified by trial patient  number only.  
+The investigator should ensure the accur acy, completeness, legibility, and timely 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 77 of 87 
+ completion of all data reported to the sponsor in the CRFs and any other additional information 
+that is required. The investigator is responsible for keeping all consent forms, screening forms, 
+CRF and the complete d patient  identification code list in a secure location.  
+12.3.  Source documents  
+The verification of the CRF data must be by direct inspection of source documents. 
+Source documents include patient  hospital/clinic records, physician's and nurse's notes, 
+appointmen t book, original laboratory reports, EKG , special assessment reports, signed 
+informed consent forms, consultant letters, and patient  screening and enrolment logs.  
+The investigator must maintain source documents (such as laboratory and 
+consultation reports,  history and physical examination reports), for possible review and/or audit 
+by DNDi and/or Regulatory Authorities. The Investigator / designee will record the date of each 
+patient¶V YiViW WogeWheU ZiWh a VXmmaU\ of WheiU VWaWXV and SUogUeVV in Whe trial. 
+12.4.  Record Retention  
+The investigator must keep all essential documents until at least 2 years after the last 
+approval of a marketing application in an ICH region and until there are no pending or 
+contemplated marketing applications in an ICH region or at leas t 15 years have elapsed since 
+the formal discontinuation of clinical development of the investigational product.  Trial 
+documents should be retained for a longer period however, if required by the applicable 
+regulatory requirements or by an agreement with DNDi.  It is the responsibility of the sponsor 
+to inform the investigator/institution as to when these documents no longer need to be retained. 
+After that , these documents may be destroyed with prior permission from DNDi, patient  to local 
+regulations.  
+Shou ld the investigator wish to assign the trial records to another party or move them 
+to another location, DNDi must be notified in advance.  
+12.5.  Monitoring  
+Clinical Monitors will conduct regular monitoring visits  following the monitoring plan , 
+during which he/she will review and source data verify the Informed Consent Forms, medical 
+records, laboratory results, imaging assessments, Case Report Forms, drug dispensing logs, 
+and protocol violations.  
+The investigators will permit representatives o f DNDi and/or designated clinical 
+monitors to verify all CRFs, medical records, laboratory work sheets and to assess the status 
+of drug storage, dispensing and retrieval at any time  during the trial. Direct access to t he 
+corresponding source documents for each patient  will be made granted provided that patient  
+confidentiality is maintained in accord with local regulations. The review is for the purpose of 
+verifying the adherence to the protocol and to ensure the trial is conducted according to GCP. 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 78 of 87 
+ It is im portant that the investigators and other trial site staff are available during these visits.  
+The monitoring visits provide DNDi with the opportunity to evaluate the progress of 
+the trial, verify the accuracy and completeness of CRFs, resolve any inconsistencies in the trial 
+records, as well as to ensure that all protocol requirements, applicable regulations, and 
+investigator's obligations are being fulfilled. Four visit types are planned:  pre-trial, trial start, 
+during the trial, and trial end. Visits may also be performed by regulatory authorities.  
+IW Zill be Whe clinical moniWoU¶V UeVSonVibiliW\ Wo inVSecW Whe CRF aW UegXlaU inWeUYalV 
+throughout the trial, to verify the adherence to the protocol and the completeness, consistency 
+and accuracy of the data being entered on them. The investigator agrees to cooperate with the 
+clinical monitor to ensure that any problems detected in the course of these monitoring visits 
+are resolved.  
+12.6.  Audits and  Inspections  
+The trial site may also be patient  to quality assurance audits by DNDi or designated 
+representatives and/or to inspection by regulatory authorities or Independent Ethics 
+Committees (IEC).  
+The investigators will permit representatives of DNDi a nd/or designated clinical 
+auditors to inspect all CRFs, medical records, laboratory work sheets and to assess the status 
+of drug storage, dispensing and retrieval at any time during the trial. The corresponding source 
+documents for each patient will be mad e available provided that patient confidentiality is 
+maintained in accord with local regulations.  
+It is important that the investigators and their relevant personnel are available for 
+possible audits or inspections.  
+12.7.  Data Management  
+A CRF must be completed for all patient s that have given informed consent. The 
+current clinical trial will use a validated electronic CRF. The trial data will be stored in a 
+computer database maintaining confidentiality in accordance with national data leg islation.  
+All entries into the CRF are the responsibility of the investigator or a qualified 
+designated staff member. The investigator will attest in writing at the beginning of the trial that 
+his/her electronic signature is the legally binding equivalent  of a written signature.  
+Data will be continuously reviewed by the clinical monitor. Data queries will be 
+generated, documented and resolved on an ongoing basis during the trial.   
+Six-month efficacy and safety database will be locked when all patients co mplete 6 
+months follow -up assessment (after all data queries generated , documented and resolved, as 
+appropriate). Twelve -month efficacy and safety database will be locked upon completion of all 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 79 of 87 
+ 12 months study visits, then constituting the final clinical t rial database for final analyses.  
+12.8.  Confidentiality of Trial Documents and Patient s Records  
+The investigator must assure that patientV¶ anon\miW\ Zill be mainWained and WhaW WheiU 
+identities are protected from unauthorized parties. On CRFs or other documents submitted to 
+the sponsor, patient s should not be identified by their names, but exclusively by an 
+identification code. The investi gator should keep a patient  enrolment list showing codes, 
+names, and addresses. The investigator should maintain documents for submission to sponsor 
+authorized representative, and patient¶V Vigned ZUiWWen conVenW foUmV, in VWUicW confidence.  
+13. PROTOCOL AMEN DMENTS  
+The Principal investigator will ensure that the trial protocol is strictly adhered to 
+throughout, and that all data are collected and recorded correctly on the CRF.  
+All protocol modifications must be documented in writing. Any protocol amendment 
+must be approved and signed by the sponsor and the Principal investigator and is to be 
+submitted to the appropriate IEC for information and approval in accordance with local 
+requirements, and to regulatory agencies if required. Approval by IEC (and Regulatory 
+Authority, if applicable) must be received before any changes can be implemented, except for 
+changes necessary to eliminate an immediate hazard to trial patient s, or when the change 
+involves only logistical or administrative aspects of the trial (e.g. change in clinical monitor (s), 
+change of telephone number (s)). 
+The protocol amendment can be initiated by either sponsor or by any Principal 
+investigator.  
+The investigator wi ll provide in writing the reasons for the proposed amendment and 
+will discuss with the clinical trial manager and sponsor.  
+14. EARLY TERMINATION OF THE TRIAL 
+Both the sponsor and the investigator reserve the right to terminate the trial at any 
+time prior to i nclusion of the intended number of patient s, but they intend to exercise this right 
+only for valid scientific or administrative reasons. Should this be necessary, both parties will 
+arrange the procedures on an individual trial basis after review and consul tation. In terminating 
+the trial, the sponsor and the investigator will assure that adequate consideration is given to 
+the protection of the patient¶V inWeUeVW.  
+Reasons for early termination by the sponsor(s) may include but not be limited to:  
+x Low enro llment rate 
+x High frequency of protocol violations  
+x Inaccurate or incomplete data  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 80 of 87 
+ x Unsafe or unethical practices  
+x Following the recommendation of the DMC or IEC  
+x Administrative decision  
+Reasons for early termination by the investigator may be:  
+x Insufficient time or resource to conduct the trial 
+x Lack of eligible patient s 
+Stopping rules will be clearly defined for both futility and  safety.  
+x For safety, a harm stopping rule will be defined on safety criteria and 
+depending on the DMC judgment, as defined in the DMC  charter. The DMC will review 
+AEs and Lab data to decide whether the arm should be stopped or not  
+x Regarding efficacy, with sustained clearance of parasitemia at 12 
+weeks as the parameter of interest, a comparison with placebo will be 
+undertaken .Alpha -adjust ment to 0.0 25 is considered to account for the 
+type I error inflat ion. 
+In the event that a trial is terminated either by the sponsor or by the investigator, the 
+investigator has to:  
+x Complete all CRFs to the greater extent possible  
+x Return all test articles, CRF, and related trial materials to the sponsor 
+who provided them  
+x Answer all questions of the sponsors or their representatives related to 
+data of patient s enrolled at the site prior to trial termination  
+x Ensure that patient s enrol led in the trial who had not yet reached a 
+follow up time point are followed up with the necessary medical care  
+x Provide in writing the reasons for his /her decision to the regulatory 
+bodies and the sponsor  
+ 
+15. ETHICS  
+The protocol for this trial has been design ed in accordance with the general ethical 
+principles outlined in the Declaration of Helsinki and ICH guidelines for Good Clinical Practice 
+(ICH Harmonised Tripartite Guideline - Guideline for Good Clinical Practice E6  (R1) - current 
+step 4 version dated 10 June 1996)). DNDi assures that it will comply with all applicable state, 
+local and regional laws for protecting the rights and welfare of human patient s. This protocol 
+and any protocol amendment  (s) will be reviewed/a pproved by an IEC before its 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 81 of 87 
+ implementation.  
+It is the responsibility of the National Coordinating Investigator/Investigator to apply 
+for review to the IEC of the country where the trial takes place regarding local rules and 
+regulations. Written approval from all involved IECs must be obtained before implementation 
+of any protocol -specified intervention /investigation provided to the patient . 
+Any modifications made to the protocol after receipt of the IEC approval must also be 
+submitted by the investigator  in writing to the IEC in accordance with local procedures and 
+regulatory requirements.  
+15.1.  Informed consent process  
+Inclusion in the trial will occur only if the patient  gives written informed consent. It is 
+the responsibility of the investigator/designee to obtain voluntary written informed consent from 
+each individual participating in this trial, after adequate presentation of aims, methods, 
+anticipated benefits, and po tential hazards of the trial. The written informed consent document 
+will be translated into the local language or a language understood by the patient  (s). The 
+patient  will be given time to discuss the information received with members of the community 
+or family before deciding to consent. The patient  will be asked to provide written and signed 
+consent.  
+If the patient  is illiterate  or unable to write , s/he will include a mark in the form and a 
+literate witness must sign (this person should have no connectio n to the research team  and 
+the sponsor , and, if possible, should be selected by the participant).  
+If new safety information results in significant changes in the risk/benefit assessment, 
+the consent form should be reviewed and updated if necessary. All patients (including those 
+already being treated) should be informed of the new information, given a copy of the revised 
+form and give their consent to continue in the trial.  
+15.2.  Ethical aspects of patient  inclusion and trial procedures  
+ 
+Only eligible  patient s for Chagas therapy according to national guidelines and for 
+whom Benznidazole standard treatment is indicated will be enrolled in this trial. The 
+management of their disease and therapy will follow national guidelines. In comparison with 
+current BZN stand ard treatment, the new therapeutic approaches for CD using different doses 
+and duration of BZN, as well as combinations , target an improve ment in  treatment response 
+and tolerability and reduce the potential for development of resistance . 
+Participants  on this trial may experience discomfort during examination and blood 
+sampling.  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 82 of 87 
+ The total volume of blood collected during the trial is about 322 mL for all evaluations  
+(around 20 table spoons) . The amount of blood drawn does not cause anaemia or problems 
+UelaWed Wo Whe bod\¶V defence mechaniVmV.  The maximal quantity during 1 visit is 28mL 
+(equivalent to 2  table spoons).  
+15.3.  Ethical aspects of trial treatments  
+ 
+Clinical data  demonstrated  that E1224  has potential for the specific treatment of T. 
+cruzi  infections  at EOT  and with a proportion of patients sustaining parasitological response 
+until 6 months . Phase 1 trials  in healthy volunteers receiving E1224  suggest that the 
+investigational drug has a satisfactory safety profile.  A Phase 1 drug -drug interaction trial which 
+assessed the interaction of BNZ and E1224 showed that both compounds were well tolerated, 
+in monotherapy and combination. The lack of clinically relevant safety findings provided 
+support for follow -up evaluation of the two compounds in combinat ion. Likewise, experimental 
+data suggest a positive interaction between BZN and azole compounds for the treatment of 
+Chagas disease.  
+ A placebo comparator has been selected for this trial. Due to the chronic nature of 
+Chagas Disease  and slow progression of organs impairment  there is no evidence of a 
+significant risk for adult patient s recruited to the placebo group  within the timelines of trial 
+evaluation . All patient s will be offered treatment at the end of the  trial. This arm will provide a 
+control for the therapeutic efficacy assessment of Benznidazole and BZN/E1224 alternative 
+regimens . In addition , it will allow a more complete evaluation of PCR as an outcome measure 
+for CD clinical trials.  
+15.4.  Patient  costs  
+Patient s will be reimbursed for travel to and from the trial site and in case of any lost 
+day(s) of work, but will not receive any payment for trial participation. Any  treatment for trial -
+related injuries  that is required during the trial period will be provided fr ee of charge to the 
+patient .  
+16. INSURANCE AND LIABILITY  
+DNDi will provide insurance against claims arising from the trial, except for claims that 
+arise from malpractice and/or negligence. In addition, the DNDi will address the costs of 
+treatment of trial patient s in the event of trial -related injuries in accordance with the applicable 
+regulatory requirements.  
+17. REPORTING AND PUBLICA TION 
+This clinical trial will be registered with a recognized clinical trial registry  and a final 
+clinical trial report will be  generated .  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 83 of 87 
+ The results of this trial may be published or presented at scientific meetings. If this is 
+foreseen, the investigator agrees to submit all manuscripts or abstracts to DNDi prior to 
+submission.  
+In accord with standard editorial and ethical pra ctice, the sponsor will generally 
+support publication of multicenter trials only in their entirety and not as individual center data. 
+Any formal publication of the trial in which input of DNDi personnel exceeded that of 
+conventional monitoring will be cons idered as a joint publication by the investigator and the 
+appropriate DNDi personnel. Authorship will be determined by mutual agreement.  
+ 
+  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 84 of 87 
+ 18. REFERENCES  
+1 WHO | Chagas disease (American trypanosomiasis) [Internet]. WHO. [cited 2013 Aug 
+22].Available from: http://www.who.int/mediacentre/factsheets/fs340/en/index.html  
+2 WHO | Chagas disease (American trypanosomiasis) [Internet]. WHO. Fact sheet N/ 340. 
+Updated March 2015. [cited 2015 April 30]. Available from: 
+http://www.who.int/mediacentre/factsheets/fs340/en/  
+3  Drugs for Neglected Disease initiative. Phase 2 Randomized, Multicenter, Placebo -
+controlled, Safety and Efficacy Trial to Evaluate Three Oral E1224 Dosing Regimen s and 
+Benznidazole for the Treatment of Adult Patients with Chronic Indeterminate Chagas Disease. 
+Clinical Trial Report. No prelo 2014.  
+4  Altcheh J, Moscatelli G, Mastrantonio G, Moroni S, Giglio N, et al. (2014) Population 
+Pharmacokinetic Trial of Benzni dazole in Pediatric Chagas Disease Suggests Efficacy despite 
+Lower Plasma Concentrations than in Adults. PLoS Negl Trop Dis 8(5): e2907. 
+doi:10.1371/journal.pntd.0002907  
+5  Drugs for Neglected Disease initiative. Population Pharmacokinetics of Benznidazole   in 
+ChildUen ZiWh ChagaV¶ DiVeaVe. Clinical TUial ReSoUW. No SUelo 2014.  
+6 Soy D, Aldasoro E, Guerrero L, Posada E, Serret N, Mejía T, Urbina JA, Gascón J. 
+Population pharmacokinetics of benznidazole in adult patients with chagas disease. Antimicrob 
+Agent s Chemother. 2015 Jun;59(6):3342 -9.  
+7 VioWWi R, Vigliano C, AUmenWi H, SegXUa E. TUeaWmenW of chUonic ChagaV¶ diVeaVe ZiWh 
+benznidazole: clinical and serologic evolution of patients with long -term follow -up. Am. Heart. 
+J. 1994;127:151 -62 
+8 Fabbro De Suasna´bar D, Arias E, Streiger M, Piacenza M, Ingaramo M, Del Barco M, 
+Amicone N. Evolutive behavior towards cardiomyopathy of treated (nifurtimox or benznidazole) 
+and untreated chronic chagasic patients. Rev. Inst. Med. Trop. Sao. Paulo. 2000; 42:99 -109.  
+9 Gallerano RR, Sosa RR. Interventional trial in the natural evolution of Chagas disease. 
+Evaluation of specific antiparasitic treatment. Retrospective -prospective trial of antiparasitic 
+therapy. Rev. Fac. Cien. Med. Univ. Nac. Cordoba. 2000;57 :135-62.  
+10 Cancado JR. Long term evaluation of etiological treatment of Chagas disease with 
+benznidazole. Rev. Inst. Med. Trop. Sao. Paulo. 2002;44:29 -37.  
+11 Viotti R, Vigliano C, Lococo B, Bertocchi G, Petti M, Alvarez MG, Postan M, Armenti A. 
+Long -Term Cardiac Outcomes of Treating Chronic Chagas Disease with Benznidazole versus 
+No Treatment. A Nonrandomized Trial. Ann. Intern. Med. 2006;144:724 -34. 
+12 Sosa -Estani S, Viotti R, Segura E. Therapy, diagnosis and prognosis of chronic chagas 
+disease: insight gained in Argentina. Mem. Inst. Oswaldo. Cruz. 2009;104:167 -80. 
+13 de Andrade AL, Zicker F, de Oliveira RM, Almeida Silva S, Luquetti A, Travassos LR, 
+Almeida IC , de Andrade SS, de Andrade JG, Martelli CM. Randomised trial of efficacy of 
+benznidazole in treatment of early Trypanosoma cruzi infection. Lancet. 1996;348:1407 -13. 
+  
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 85 of 87 
+  
+14 Richle R. Chemotherapy of experimental acute Chagas disease in mice: beneficial effects  
+of  Ro 7 -1051 on parasitaemia and tissue parasitism. Progres Med 1973;101:282.  
+15 Barclay CA, Cerisola JA, Lugones H, Ledesma O, Lopez Silva J, Mouzo G. Aspectos 
+farmacológicos y resultados terapéuticos del benznidazol en el tratamiento de la infección 
+chagásica. PrensMedArg1978;65:239 -44. 
+16 Alvarez MG, Vigliano C, Lococo B, Petti M, Bertocchi G, Viotti R. Seronegative conversion 
+after incomplete benznidazole treatment in chronic Chagas disease Trans Royal Soc Trop 
+Med Hyg 2012,106:636 -8. 
+17 Bustamante JM, Craft JM, Crowe BD, Ketchie SA, Tarleton RL. New, Combined, and 
+Reduced Dosing TreatmentProtocols Cure Trypanosoma cruzi  Infection in Mice. J Infect Dis. 
+2013 Sep 6.  
+18 Alkan, et al., 2004; Okamoto, et al., 2007; Tholakanahalli, et al., 2001  
+19 Okamoto J, Fukunami M, Kioka H. Frequent premature ventricular contractions induced by 
+itraconazole. Circ J. 2007;71:1323 -5. 
+20 Tholakanahalli VN, Potti A, Hanley JF, Merliss AD. Fluconazole -induced torsade de pointes. 
+Ann Pharmacother. 2001;35:432 -4. 
+21 Cheng TO. 2004. Digitalis administration: an underappreciated but common cause of short 
+QT interval. Circulation. 2004;109:e152.  
+22 Ribeiro I, Diniz LF, Mazzeti AL, Mota LWR, Bahia MT. Efficacy of oral administration of 
+E1224 in combination with benznidazol e on experimental Trypanosoma cruzi infection. 9th 
+European Congress of Tropical Medicine and International Health. Basel, Switzerland. 
+ECTMIH2015_1450 Abstract accepted for publication.  
+23 Ramírez JC, Cura CI, da Cruz Moreira O, Lages -Silva E, Juiz N, Velá zquez E, Ramírez JD, 
+Alberti A, Pavia P, Flores -Chávez MD, Muñoz -Calderón A, Pérez -Morales D, Santalla J, 
+Marcos da Matta Guedes P, Peneau J, Marcet P, Padilla C, Cruz -Robles D, Valencia E, 
+Crisante GE, Greif G, Zulantay I, Costales JA, Alvarez -Martínez M,  Martínez NE, Villarroel R, 
+Villarroel S, Sánchez Z, Bisio M, Parrado R, Maria da Cunha Galvão L, Jácome da Câmara 
+AC, Espinoza B, Alarcón de Noya B, Puerta C, Riarte A, Diosque P, Sosa -Estani S, Guhl F, 
+Ribeiro I, Aznar C, Britto C, Yadón ZE, Schijman AG.  Analytical Validation of Quantitative Real -
+Time PCR Methods for Quantification of Trypanosoma cruzi DNA in Blood Samples from 
+Chagas Disease Patients. J Mol Diagn. 2015 Sep;17(5):605 -15. doi: 
+10.1016/j.jmoldx.2015.04.010.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 86 of 87 
+  
+Appendix 1 ± PRINCIPAL INVESTIGATORS¶ LIST  
+ 
+Investigator list is now a separate document.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+Protocol number DNDi -CH-E1224 -003    
+ May 04, 2018 .  Version  5.0.   
+Confidential  Page 87 of 87 
+  
+Appendix 2 ± CONCOMITANT TREATMENT  
+ CYP3A4 Substrates Not Studied in vitro  or in vivo but Likely to Result 
+in Significant Drug Interactions 
+DUXJ RU DUXJ COaVV  RHFRPPHQGaWLRQV  
+TeUfenadine, 
+AVWemi]ole, Pimo]ide, 
+CiVaSUide, QXinidine  IncUeaVed SlaVma concenWUaWionV of WheVe dUXgV can lead Wo QT 
+SUolongaWion ZiWh UaUe occXUUenceV of WoUVade de SoinWeV.  
+CoadminiVWUaWion ZiWh E1224 iV conWUaindicaWed  
+EUgoW AlkaloidV  E1224 ma\ incUeaVe Whe SlaVma concenWUaWion of eUgoW alkaloidV 
+(eUgoWamine and dih\dUoeUgoWamine) Zhich ma\ lead Wo eUgoWiVm.  
+Co-adminiVWUaWion ZiWh E1224 iV conWUaindicaWed.  
+SiUolimXV E1224 ma\ VXbVWanWiall\ incUeaVe Whe SlaVma concenWUaWion of 
+ViUolimXV.  Co-adminiVWUaWion ZiWh E1224 iV conWUaindicaWed  
+Vinca AlkaloidV  E1224 ma\ incUeaVe Whe SlaVma concenWUaWionV of Yinca alkaloidV 
+(e.g., YincUiVWine and YinblaVWine) Zhich ma\ lead Wo neXUoWo[iciW\.  
+TheUefoUe, iW iV Uecommended WhaW Whe doVe adjXVWmenW of Whe 
+Yinca alkaloid be conVideUed.  
+TacUolimXV  FUeTXenW moniWoUing of WacUolimXV Zhole blood WUoXgh 
+concenWUaWionV VhoXld be SeUfoUmed XSon iniWiaWion, dXUing co-
+adminiVWUaWion, and aW diVconWinXaWion of E1224 WUeaWmenW, ZiWh 
+WacUolimXV doVeV adjXVWed accoUdingl\.  ConVideU a 33% 
+UedXcWion in doVe XSon VWaUW of E1224 WheUaS\  
+Ben]odia]eSineV 
+meWaboli]ed WhUoXgh 
+CYP3A4  E1224 iV likel\ Wo incUeaVe Whe SlaVma concenWUaWionV of 
+ben]odia]eSineV and lead Wo a SUolonged VedaWiYe effecW.  IW iV 
+Uecommended WhaW doVe adjXVWmenW of Whe ben]odia]eSine be 
+conVideUed dXUing co-adminiVWUaWion  
+HMG-CoA UedXcWaVe 
+inhibiWoUV (VWaWinV) 
+meWaboli]ed WhUoXgh 
+CYP3A4  IW iV Uecommended WhaW doVe UedXcWion of VWaWinV be conVideUed 
+dXUing co-adminiVWUaWion ZiWh E1224.  IncUeaVed VWaWin 
+concenWUaWionV in SlaVma can be aVVociaWed ZiWh Uhabdom\ol\ViV.  
+HIV PUoWeaVe 
+InhibiWoUV meWaboli]ed 
+WhUoXgh CYP3A4  AlWhoXgh in Yitro and in YiYo WeVWing failed Wo VhoZ an inWeUacWion 
+beWZeen UaYXcona]ole and nelfinaYiU, VXbjecWV VhoXld be 
+fUeTXenWl\ moniWoUed foU dUXg Wo[iciW\ dXUing Whe coadminiVWUaWion 
+of E1224 and HIV SUoWeaVe inhibiWoUV  
+Non-NXcleoVide 
+ReYeUVe TUanVcUiSWaVe 
+InhibiWoUV (NNRTIV) 
+meWaboli]ed WhUoXgh 
+CYP3A4  E1224 ma\ inhibiW Whe meWaboliVm of Vome NNRTIV.  SXbjecWV 
+VhoXld be fUeTXenWl\ moniWoUed foU dUXg Wo[iciW\ dXUing Whe 
+coadminiVWUaWion of E1224 and oWheU NNRTIV (eg, neYiUaSine and 
+delaYiUdine)  
+CalciXm Channel 
+BlockeUV meWaboli]ed 
+WhUoXgh CYP3A4  FUeTXenW moniWoUing foU adYeUVe eYenWV and Wo[iciW\ UelaWed Wo 
+calciXm channel blockeUV iV Uecommended dXUing co-
+adminiVWUaWion ZiWh E1224.  DoVe UedXcWion of calciXm channel 
+blockeUV ma\ be needed.  
+This list is not an exhaustive list. For the complete list, please refer to the Study Manual of 
+Operations.  
+

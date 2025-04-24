@@ -1,0 +1,348 @@
+ Publication Policy  
+Document owner  Statistics department  Version number  1.0 
+Effective date  2023 -01-03 Identifier  J-03-POL-01 
+ 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 1 of 11 
+1 Purpose  
+To define the EORTC policy regarding release and publication of all results from EORTC 
+clinical studies and research projects.  
+This policy covers timing of release of results, authorship and acknowledgements rules for 
+abstracts/presentations and peer -reviewed publications , and the process of review by 
+EORTC Headquarters.  
+Compatible group-specific requirements or contractual agreements may complement the 
+present policy when applicable.  
+2 Scope  
+The present policy applies to  any form of publication or public release of results of EORTC 
+clinical studies or research projects , not including disclosure to regulatory authorities . 
+Whenever EORTC participates to intergroup studies or research programs led by partner organisations, t he publication rules are prospectively agreed and documented, and must be 
+compatible with the present p olicy.  
+The development of EORTC Guidelines, expert opinions,  and the use of EORTC results in 
+promotional material on cancer care are covered in a separat e EORTC p olicy ( “Developing 
+EORTC Guidelines, Expert Opinions, and the use of EORTC Results in Promotional Material 
+on Cancer Care” ). 
+The release of individual patient data for external research is covered in the data sharing 
+policy . 
+3 Policy  statement  
+The EORTC policy is to report results of all its research completely, accurately, objectively, 
+and promptly , irrespective of the findings (positive or negative, statistically significant or not).  
+The publications must conform to the most recent r elevant publication guidelines 
+(CONSORT, CONSORT -PRO, STROBE, TRIPOD, etc., as appropriate; see www.equator -
+network.org ) 
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 2 of 11 Authorship follows the International Committee of Medical Journal Editors  guidelines on 
+authorship ( http://www.icmje.org/icmje -recommendations.pdf ). Contributors who do not fulfil 
+the conditions  for authorship are acknowledged.  
+Representatives from the for -profit industry do not generally  co-author publications of 
+EORTC clinical studies.  
+All publications that fall in the scope of the present policy must be reviewed and approved by 
+EORTC Headquarter s prior to submission to journal or congress or presentation.  
+The name “EORTC” must be clearly visible in the publications.  
+4 Changes since last version  
+Process step  Changes since last version  
+All  Supersedes Publication policy POL009 v 5.0  
+Added measures towards timely publication of results.  
+Clarifications throughout the text.  
+5 Disclosure and dissemination of results  
+5.1 General rule  
+The timing of analysis and disclosure of results must ensure that the following conditions are 
+met before results are published.  
+1. The information needed to conduct the analysis generating the results is complete 
+and accurate. In particular, the duration of  follow- up in clinical studies must be 
+sufficient to fulfil protocol requirements on analysis of study endpoints.  
+2. An unbiased and clear interpretation of these results is possible, at the light of the 
+disclosed or already available results.  
+3. The disclosure of the results shall not jeopardize the future study conduct or cause 
+bias in the future data collection regarding other research endpoints, if any.  
+The timing of disclosure of the primary and major secondary endpoints of clinical studies is 
+specified in the study  protocol. Typically, secondary efficacy endpoints are reported after 
+reporting the primary efficacy endpoint.  Any deviation from the plan s pecified in the protocol , 
+such as premature disclosure of all or part of the efficacy study endpoints on all or a subset 
+of patients , requires authorization by the study IDMC.  
+Directly ensuring from the above requirements:  
+• Intermediate results of multiple- stage phase II or phase III studies would not be 
+publicly disseminated.  
+• Intermediate results of early phase studies (phase I, very early single arm phase II 
+studies) may be published as soon as data completeness is guaranteed.  
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 3 of 11 • Results of translational res earch of randomized studies may not be disclosed prior to 
+the disclosure of the study final results when they report correlations with the study 
+endpoint in all treatment  arms . Likewise in single -arm studies, correlations with the 
+study endpoint may not be disclosed.  
+• Secondary efficacy endpoints are not disclosed before primary endpoints . 
+• Interim reports regarding baseline information, treatment compliance and acute 
+toxicity are authorized unless they are by themselves the study endpoints.  
+• Reporting during the study  only on patient and baseline data accumulation to a study 
+are authorized at any time.  
+• For full -length publications of results from clinical studies , a definitive version of the 
+locked database and a consolidated statistical analysis report must be available.  
+5.2 Abstract publications of results  
+For abstract -form publications, condition 1 (in 5.1) may be modified to the set of all following 
+3 conditions:  
+• Top line results (draft version of the data analysis report) are available.  
+• The Headquarters study team has determined that inconsistencies and incomplete 
+information in the database shall  not affect the conclusions presented in the abstract .  
+• The database can be cleaned and locked in sufficient time to enable the preparation 
+of the final data analysis report by the time of presentation.  
+If abstracts are prepared based on  the modified conditions, the abstract must clearly stipulate 
+that the results are not definitive and that definitive results shal l be presented.  
+5.3 Press release  
+All press releases about EORTC studies must be prepared by the EORTC communications 
+department.  
+If an external party undertakes to write such press releases about EORTC studies, it needs 
+to be coordinated with and approved by the EORTC communications  depart ment 
+(communication@eortc.org).  
+Embargoes set by journals, congresses, or other media must be respected.   
+5.4 Publications by individual sites pertaining to patients 
+entered in E ORTC clinical studies 
+Investigators shall not independently publish site -specific results about the study endpoints 
+until results of the whole study are published ( or after one year following database lock if 
+there is no publication). Deviations from this rule are authorized by the study IDMC.  Exceptions to this rule may be the publication of case reports when these are explicitly 
+authorized in the study protocol.
+ 
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 4 of 11 When publishing information about patients entered in an EORTC clinical study, care is  
+taken to avoid disclosing information that may affect the interpretation or the conduct of the 
+clinical study. To this aim, the proposed publication shall  be submitted for review to EORTC  
+headquarters  in accordance with the review timelines described under section 8.1 . 
+The EORTC headquarters team in charge of the study must be informed of intended 
+publications.  
+6 Authorship and acknowledgements  
+For any study or research project, authorship rules must be agreed prospe ctively and 
+documented in the study protocol or in the research documentation.  
+In particular,  the research leader (principal study coordinator(s) of clinical studies, 
+coordinator of additional  research questions to clinical studies, and leader of research  
+projects) must be clearly identified in the research protocol. The research leader directs  the 
+writing of the corresponding publication.    
+6.1 Responsibilities of first author  
+The first author of the publication is responsible for  
+• Identifying the co- authors of the publication agreeable to all parties involved in the 
+research, in compliance with the present policy and further rules specified in the study 
+protocol or research agreements. The headquarters  review coordinator check s 
+compliance of the proposed author list with the present policy.  
+For full length articles:  
+• Drafting the manuscript within 6 months of receipt of the data analysis report 
+produced by the EORTC headquarters, in collaboration with EORTC scientific staff 
+involved in the research (statistician and medical representative for clinical studies, 
+translat ional research or quality -of-life staff, or else as appropriate)  
+• Delays in dissemination of results should be avoided. In case a first draft of 
+the manuscript is not available within this timeline, the Group Chair in collaboration with the involved EORTC s cientific staff re -assigns  the first 
+author responsibility. The research leader is  then given a place in the author 
+list according to his/her contribution to the study and the applicable authorship 
+rules.  
+In case of a recurring delay, EORTC may assign the first author responsibility 
+to an EORTC scientific staff member.  
+• Selecting the journal to which the manuscript shall  be submitted, in agreement with 
+co-authors , being aware that the E uropean Journal of C ancer  is the official journal of 
+EORTC.  
+• Submitting the manuscript for review by all co- authors and to the h eadquarters 
+representatives. Ensuring that all authors have seen and approved the final 
+manuscript before submission.  
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 5 of 11 • Collecting any signatures and disclosure forms requested by the journal . 
+• Submitting the final manuscript of the article to a peer -reviewed journal as 
+corresponding author . 
+• Addressing all requests for revision by iterating the above steps until the manuscript 
+is accepted for publication.  
+• Reviewing the proofs of publication and answering any "letter to the editor" that the 
+publication may have raised.  
+For abstracts:  
+• Drafting the abstract and circulating it to the co -authors and at least one EORTC 
+headquarters representative (EORTC statistician for clinical studies and EORTC scien tific staff involved in the research). EORTC h eadquarter s circulates  the 
+manuscript to all external partners of the research in accordance with  any contractual 
+agreements . 
+• Submitting the abstract onto the congress portal  
+• Informing the Headquarters of the outcome of the submission and, if accepted,  the 
+format of the presentation 
+• Preparing the material for the presentation in collaboration with EORTC h eadquarter s  
+• Presenting at the conference 
+• Informing the EORTC headquarters of any planned press releases  
+The contents of the publication must always be submitted to the EORTC h eadquarters 
+for approval.
+ 
+6.2 Authorship on full length articles  
+EORTC follows the International Committee of Medical Journal Editors  guidelines on 
+authorship.  All contributors who do not meet sufficient criteria for authorship are acknowledged in the publication.
+ 
+The policy of EORTC is to recognize the scientific contribution of the largest possible number 
+of contributors fulfilling the ICMJE guidelines through authorship on primary and/or 
+secondary publications of its clinical studies and research project s, within the limits set by the 
+journal to which the full -length article is submitted.  
+The follow ing rules apply:  
+6.2.1  Primary publication of clinical studies  
+• The first author of publication of primary study results is the study coordinator who 
+initiated the study design ( being the research leader in this case). Other study 
+coordinators are usually second,  third or last author.  
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 6 of 11 • For intergroup studies, at least one authorship position is granted to each contributing 
+group.  
+• Authorship positions are granted to centres and groups contributing patients to the 
+study on the basis of the number of patients contributing in the published research 
+that they provided and are ordered by decreasing number. Authorship rules shall be 
+speci fied upfront in the study protocol.  Rules may specify minimum number of 
+patients required to qualify as co -author and may attribute additional positions to site s 
+recruiting beyond a specified large number of the patients. Contributing groups and 
+sites select themselves the names of the representatives that appear on the 
+publication.  
+• Scientific contributors to the trial such as but not limited to central pathologist, 
+persons responsible for integral translational research components of the study (e.g. , 
+molecular characterization, genomic analysis), central image reviewer, quality of life 
+specialists also qualify as co- authors as long as the service they provided was not 
+provided in the frame of a paid service agreement.  
+• Representatives from the industry are generally not co -authors on publications of 
+EORTC study results, except for scientists fulfilling one of the roles specified above. 
+Deviations from this rule must be authorized by the EORTC Board.  
+• Authorship is granted to t wo to three scientists at EORTC headquarters who 
+contributed to the study (typically, study statistician, medical representative, other scientist involved in the study). This condition does not apply to intergroup studies not 
+led by EORTC.  
+6.2.2  Secondary publication of clinical studies  
+• The rules listed for primary publications under 6.2.1 generally apply. However, the 
+first authorship ( research leadership) may be delegated to another study contributor, 
+in agreement with all parties involved in the study.  
+• To maximize the number of investigators from contributing sites who are granted 
+authorship, contributors fulfilling the ICMJE conditions who could not co -author the 
+primary publication should preferentially be selected to co- author secondary 
+publications. When the publication pertains to a long- term update of a clinical trial, the 
+clinicians who provided the follow -up information generally replace the initial 
+contributors as author.  
+• Authorship is granted to t wo to three scientists at EORTC headquarters who 
+contributed to the study . 
+6.2.3  Publication of research not included in the clinical study 
+protocol  
+• The scientific leader of the research identified in the research protocol is the first 
+author of the manuscript . 
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 7 of 11 • Authorship is attributed to all scientists who contributed to the research according to 
+the ICMJE  guidelines.  
+• Further authorship is granted to the site s who contributed data , samples , or 
+information that enabled the research (e.g. , sites who contributed samples in a TR 
+analysis, RT plans in an RTQA publi cation or HRQOL forms for an HRQOL 
+publication)  
+• Authorship is granted to scientists at EORTC headquarters who contributed to the 
+analysis and publication, if any.  
+6.3 Authorship on abstract publications  
+Although the general rules listed in 6.2 apply , the tota l number of co- authors allowed on 
+abstract submissions may be limited. If this is the case, the list determined in 6.1 shall be 
+modified as follows  
+• The study coordinator(s) retain authorship . 
+• One author from the EORTC h eadquarter s is retained.  
+• The other co -authors are selected from the list of co- authors starting from the 
+beginning of the list and retaining the maximum possible number of authors.  
+6.4 Acknowledgments  
+6.4.1  Contributors  
+All clinicians and scientists who contributed patient or data to the research,  relevant EORTC 
+headquarters staff, and members of study -specific oversight or review committees who 
+contributed to the research but who are not listed as co- author s are acknowledged in the 
+publication.  
+Representative(s) from the pharmaceutical companies and other partner organisations (e.g. , 
+data repositories) are acknowledged in the publication as per contractual agreements.  
+Patient representatives who were involved with the research are acknowledged for their 
+contribution.  
+6.4.2  Fundi ng bodies  
+Sources of funding for the clinical study or research (e.g. , pharmaceutical companies, grant 
+providers , financial support for fellowships ) must be acknowledged in all related publications.  
+The exact phrasing is  supplied by the EORTC Headquarters  during the review of the article.  
+For intergroup trials and other joint research ventures, any additional source of funding that 
+supported partners ’ contribution to the research need to be identified and acknowledged.  
+Some journals require explicit state ment regarding the role of the funding bodies. The 
+following statement is expected to reflect the role accurately when the study is conducted 
+independently and sponsored by EORTC: “The funders had no role in study design, data 
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 8 of 11 collection, data analysis, data interpretation, or writing of the report. The corresponding 
+author had full access to all the data in the study and had final responsibility for the decision 
+to submit for publication” . 
+6.5 Affiliation  
+6.5.1  Contributor who changed affiliation  
+Whenever a contributor changed institution during the study, that contributor is listed with the 
+affiliation he/she had at the time of her participation to the research, with the mention “(now 
+at [new affiliation ])”. 
+6.5.2  Contributors from EORTC headquarters  
+Attribution of a publication to EORTC h eadquarters via search engines is dependent on the 
+way an author lists their affiliation in the publication. All h eadquarter staff must be listed with 
+the affiliation “EORTC Headquarters, Brussels, Belgium”, without men tion of a specific 
+department or group.  
+7 Data sharing statement  
+EORTC has a data sharing policy in place which should be referred to as follows  
+“Data shall be shared according to the EORTC data release policy 
+(https://www.eortc.org/data -sharing/) ”. 
+8 Review and approval of draft publication  
+All co -authors of publications must have reviewed and approved the manuscript.  
+Co-authors from the EORTC headquarters take care of the processing of the review within 
+EORTC headquarter s. If no EORTC staff co- authors the publication, publications are 
+addressed to the author of the present policy.   
+Some EORTC groups require additional reviews by a group- specific review committee. Such 
+rules must be adhered to when applicable.  
+Whenever collaborative groups are involved in a study,  their review must comply with 
+intergroup agreements. This review is coordinated by EORTC h eadquarters.  
+Whenever a pharmaceutical company sponsors  the study, the publication review timelines 
+are documented  in the contract with the sponsor. According to the EORTC principles of 
+independence, the final decision to submit the manuscript for publication remains with the 
+EORTC.  
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 9 of 11 8.1 Timelines for review of publications  
+The review from all co -authors and partners must  conclude within 15 calendar days for 
+abstracts and within 30 calendar days for full -length articles.   
+9 Publication of perspectives on EORTC 
+clinical trials in European Journal of Cancer  
+Where a manuscript reporting the primary results of an EORTC clinical study is accepted for 
+publication in another journal with a higher i mpact factor than that of the European Journal of 
+Cancer, EORTC prepare s and submit s a perspective to the Journal, to be prepared 
+according to the Journal’s Guide for Authors ( http://www.ejcancer.com/content/authorinfo ), 
+and submitted within one (1) month of the publication of the clinical study results. The 
+editorial provides  a summary  of the clinical study and the impact of the results for the 
+scientific discipline.  
+10 Definitions  
+• Primary endpoint(s):  the outcome measure(s) identified as primary endpoint in the 
+study protocol (or research project statistical analysis plan).  
+• Secondary endpoint(s):  all other endpoints specified in the study protocol.  
+• Publication: any public release or dissemination of research  results or disclosure of 
+any confidential information, including but not li mited to intellectual property , but not 
+including disclosure to regulatory authorities . In this document, the terms “ full-length 
+publication” include the full range of formats published in peer -reviewed journals (for 
+example, original research articles, short reports, reviews, or letters to the editor) and 
+“abstract publication” includes abstracts, posters, and slides for oral pres entations at 
+scientific congresses.  
+• Independent data monitoring  committee (IDMC) : An independent group of 
+individuals with pertinent expertise that may be established by the sponsor to assess 
+at intervals the progress of a clinical trial, the safety data, and the critical efficacy 
+endpoints, and to recommend to the sponsor whether to continue, modify, or stop a 
+trial. 
+• Research leader : can be the principal study coordinator(s) of clinical studies, 
+coordinator of additional  research questions to clinical studies, and leader of research 
+projects. He/she must be clearly identified in the research protocol.  
+• Headquarters review coordinator : the scientist at EORTC headquarters who is the 
+main leader on the research  
+11 References  
+• International Committee of Medical Journal Editors (Vancouver Group) -  Uniform 
+Requirements for Manuscripts Submitted to Biomedical Journals 
+(http://www.icmje.org/ ) 
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 10 of 11 • Good Publication Practice for Communicating Company -Spons ored Medical 
+Research (GPP3). Battisti WP, Wager E, Baltzer L, et al. ; International Society for 
+Medical Publication Professionals. Ann Intern Med. 2015 Sep 15;163(6):461- 4. doi: 
+10.7326/M15- 0288 (www.ismpp.org/GPP3)  
+  
+
+Publication policy   Version 1.0 
+Proprietary information of EORTC - No use without EORTC authorisation   Page 11 of 11 12 Signature  
+This document will be elec tronically signed.   
+The signatories acknowledge that electronic signature is legally binding and equivalent to a 
+handwritten signature.  
+Author  
+ 
+Saskia Litière  
+Head of statistics   
+Approved  & authorized  by 
+ 
+Denis Lacombe  
+Chief executive officer   
+ 
+

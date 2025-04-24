@@ -1,0 +1,843 @@
+An Introduction to Clinical Trials:
+Design Issues
+Edgar R Miller III PhD, MD
+Welch Center for Prevention, Epidemiology and 
+Clinical Research
+Johns Hopkins University
+School of Medicine and Bloomberg School of 
+Public Health
+2Type of Studies
+• Non-experimental (Observational)
+– Case report
+– Case series
+– Cross-sectional (survey)– Case-control
+– Prospective, observational (cohort)
+• Experimental
+– Randomized, clinical trial (RCT) 
+3Study designs
+• Observational studies: 
+–Observe both exposures and outcomes
+• Experimental studies  (clinical trials)
+–Assign exposures 
+–Observe outcomes
+4Advantages of Clinical Trials
+• Often provides the strongest evidence in 
+support of cause-effect relationships
+• Basis for clinical and public health policy
+• Minimize/eliminat e bias and confounding
+
+5Randomized Clinical Trial
+Target Population
+Study Population
+RANDOMIZED
+Standard Treatment New Treatment
+Disease Disease
+6Comparison of Study Designs
+ Type of Study Design 
+ 
+Dimension Cross-
+Sectional Case-
+Control  
+Cohort 
+RCT
+Estimate  Prevalence A - B - 
+Estimate 
+Incidence - - A B 
+Prove 
+Causality C B- B+ A 
+Generalizability A B+ B+ B 
+Feasability A A B C 
+ 
+ 
+7Core Elements of a Clinical Trial
+• Research Question
+• Hypotheses
+• Core Design
+• Study Participants• Recruitment
+• Allocation
+• Masking (Blinding)
+• Treatment Groups•D a t a
+• Analytical Issues
+• Interpretation of 
+Results
+8The Research Question
+• Critical in the design of a trial
+• Types of questions:
+– Assessing efficacy of an intervention
+– Assessing the effectiveness of an 
+intervention
+
+9Types of Hypotheses
+• Comparative Trial (a.k.a. Superiority Trial)
+– Objective: to demonstrate that a new therapy 
+(n) is superior to standard therapy (s) in terms of incident outcome (I)
+HO: In= Is
+HA: In< Is (one tailed) or HA: In≠Is (two tailed) at 
+some minimally detectable ∆ judged to have clinical 
+significance
+10Types of Hypotheses
+• Equivalence (non-inferiority trial)
+– Objective: to demonstrate that a new therapy 
+(n) is no worse than standard therapy (s) in terms of incident outcome (I) 
+HO: In> Is
+HA: In= Is at some ∆, the maximum tolerable 
+difference considered to be clinically acceptable
+11Basic Types of Design
+Parallel
+Cross-OverA 
+A A B
+BBParallel Study Design (PREMIER)
+ADVICE ONL Y
+EST
+EST + DASHRandomization
+Primary 
+Outcomes 
+(6 months)End of 
+Intervention 
+(18 months)= Data Visit
+
+-12-10-8-6-4-2024
+B a s e l i n e 123456 7  a n d  8Control Diet     Fruits-and-vegetables Diet     DASH
+Intervention Week*
+**
+Conlin et al., Am J Hypertens,  2002Cross-Over Study Design 
+(OmniHeart)
+Period 1
+6 weeksPeriod 2
+6 weeksPeriod 3
+6 weeksRandomization 
+to 1 of 6 
+sequencesWashout 
+Period
+2–4 wkWashout 
+Period
+2-4 wk
+Data:Run-In
+6 days
+Participants Ate Study FoodScreening /
+Baseline
+Participants Ate Their Own Food
+Blood Pressure Results 
+(mmHg)
+Mean Change from Baseline in 
+Each Diet
+Systolic BP Baseline CARB PROT UNSAT
+All 131.2 -8.2  -9.5 -9.3
+HTN Only 146.5 -12.9 -16.1 -15.8
+PreHTN Only              127.5 -7.0 -8.0 -7.7
+Diastolic BP 77.0 -4.1 -5.2 -4.8
+Appel et al. 2005
+16Usual DietUsual DietRandomization 
+to Diet
+Run-in (11-14 days) Intervention (th ree 30-d periods in random order)Intermediate 
+SodiumLower 
+SodiumHigher 
+Sodium
+Lower 
+SodiumIntermediate 
+SodiumHigher 
+SodiumDASH DietMixed Study Design (DASH-Sodium)
+Randomized Sequence
+
+Effect of Increased Sodium Intake on 
+Systolic Blood Pressure in Two Diets: Results of the DASH-
+Sodium Trial*
+120125130135
+Systolic
+Blood 
+PressureAmerican Diet
+DASH Diet
+65                   100                  140
+Approximate Daily Sodium Intake (mmol/day) +2.1
++1.3
++1.7+4.6+6.7
+p<.0001
++3.0
+P<.0001
+*Sacks et al, 200118Factorial Design
+• Type of trial in which individuals are randomized to 
+two or more therapies (example: Physician’s Health Study: tested aspirin (ASA) and β-carotene
+Neither β-carotene 
+only
+ASA only BothNo β-carotene      β-carotene 
+No 
+ASA
+ASA10,000
+10,000
+10,000             10,000                  20,000
+The African American St udy of Kidney Disease 
+and Hypertension (AASK)AASK Research Questions
+Among African-Americans with early evidence 
+of hypertension-related kidney disease:
+• Does aggressive blood pressure control to a 
+target blood pressure below current 
+recommendations retard the progression of 
+kidney disease?
+• Do specific classes of anti-hypertensive 
+medications retard the progression of kidney disease?
+
+Design of AASK
+• Randomized, active cont rolled trial with a 
+2 x 3 factorial design
+• Participants: 1,094 African-Americans 
+with hypertension-related renal insufficiency 
+• Planned follow-up of 2.5 to 5 years  Treatment Assignments 
+(2:2:1 ratio of drug assignment)
+3 X 2 Factorial Design
+N                 441                436               217
+MAP = Mean Arterial Pressure;  * = referent group 
+ 
+  
+ Metoprolol*  
+ Ramipril   
+ Amlodipine
+ 
+MAP <92  
+      20%  
+     20% 
+   
+    10% 
+ MAP 102-107 
+      20%  
+     20%  
+    10% 
+ 
+ 
+23Mean Arterial Pressu re During Follow-up
+Lower BP Goal (Achieved: 128/78)
+Usual  BP Goal (Achieved: 141/85)MAP (mm Hg)
+8090100110120130
+Follow-up Month0 4 12 20 28 36 44 52 60
+24RR=Risk Reduction, adjusted for baseline covariates% with EventsComposite Clinical Outcome
+Declining GFR Event, ESRD or Death
+Low vs. Usual:
+RR=2%, (p=0.85)Lower BP (Achieved: 128/78)
+Usual BP (Achieved: 141/85)
+0510152025303540
+Follow-Up Time (Months)0 6 12 18 24 30 36 42 48 54 60
+
+25Main Clinical Composite Outcome
+Declining GFR Event, ESRD, or Death%w it hE v e n t sMetoprolol vs. Amlodipine:
+RR= 20%, p=0.17       
+Ramipril vs. Amlodipine:  
+RR= 38%, p=0.004         MetoprololRamiprilAmlodipine
+0510152025303540
+Follow-up Month0 6 12 18 24 30 36 42 48 54 60
+RR = Risk ReductionRamipril vs. Metoprolol
+RR = 22%, p = 0.042
+RR = Risk Reduction, Adjusting for Baseline Covariates
+27Study Participants
+Target 
+PopulationAccessible 
+Population
+Study 
+Samples
+28Study Participants: Example
+• Target Population -> Healthy Elderly
+• Accessible Population -> Retired Teachers
+• Study Sample -> Volunteer Teachers who 
+respond to mass mailing
+
+29Study Participants
+• Ideal ‘Accessible’ Population
+– high risk for disease
+– candidates for treatment
+– representative of target population 
+– feasibility considerations
+• recruitment
+• follow-up• high quality data
+30Enrollment Criteria
+• Inclusion Criteria
+– characteristics of accessible population
+• Exclusion Criteria
+– considerations related to:
+• adherence to therapy• follow-up• safety•e t h i c s
+31Common Recruitment Strategies
+• General mailings
+– Licensed drivers
+– Voters
+– Employee paychecks
+• Targeted mailings
+– HMO enrollees– AARP members
+• Mass media
+– Radio
+– TV ads
+– Newspapers– Posters/flyers• Screenings
+– Worksite
+– Community
+• Physician Referral
+• Medical Record Review• Internet / WWW
+– Clinical trial registries
+– Banner ads
+– Social networks
+32Comments on Recruitment
+• Recruitment begins with design
+• Response rate is always lower than 
+expected
+• Required resources are more than 
+expected
+• Dedicated personnel are necessary
+
+33More Comments on Recruitment
+• Recruitment period is often longer than expected
+• Implement several strategies to identify best 
+source
+• Prepare back-up strategies• Monitor recruitment
+–E a r l y
+– Often– Locally
+34Recruitment “Funnel”
+(Example: VITAL Pilot Study)
+4,774 Mailed Invitations
+2,034 Questionnaires Returned
+765 Interested After Initial Mailing
+323 Randomizable after Second Mailing (7% cumulative)
+297 Randomized43%
+38%
+41%
+35Allocation
+• Random
+– stratified 
+– blocked 
+• Non-Random
+– haphazard– systematic
+36Why randomize?
+• Two critical reasons:
+– to eliminate selection BIAS
+– to reduce/avoid CONFOUNDING from known and, 
+more importantly, unknown confounders
+
+37Masking (Blinding)
+• Single Blind
+– Observers (persons who collect outcome 
+variable) do not know treatment assignment
+• Double Blind
+– Study participants AND observers do not know 
+treatment assignments
+• Triple Blind
+– Data interpreters, study participants, and 
+observers do not know treatment assignments  38Masking (Blinding)
+Single 
+MaskedDouble 
+MaskedTriple 
+Masked
+Outcome 
+Assessor(s)XX X
+Participant X XData 
+InterpreterX
+39Selection of Groups
+• Active Treatment Group
+• Comparison Group
+– Placebo (no active therapy)
+– Usual care (referral back to personal MD)
+– Active control group (provision of standard 
+therapy)
+40Problems with selecting  
+active treatment group
+• Many Candidate treatments 
+– observation studies, animal models, or 
+theoretically based
+• Strong evidence rarely exists to guide 
+selection of intervention
+• Dose/intensity are uncertain
+
+41Comparison Group
+• Placebo – used in setting of:
+– No standard therapy OR
+– Standard therapy but risk of not providing it 
+is minimal
+• Usual care OR active control – common 
+42Problems with standard of 
+care approach
+• Efficacy of ‘Usual care’ often not tested
+• Variations in standard of care are common:
+– across providers
+– between experts and providers
+– secular trends occur
+43Data
+• Baseline data
+– Determine eligibility– Describe study participants
+– Define subgroups
+– Address confounding
+• Measures of Adherence
+• Outcome Variables
+44Outcome Variables
+• Principal outcome
+– most important variable after 
+randomization code
+– specified in hypothesis– determinant of sample size
+• Secondary Outcomes
+– relevant to research question
+
+45Desirable Features of 
+Outcome Variable
+• clinically relevant
+• easy to measure
+• little measurement error
+–random error – leads to imprecision 
+–systematic error – leads to bias 
+• masked (blinded) ascertainment
+46Surrogate Outcomes 
+• Definition: a laboratory measurement 
+or physical sign used as a substitute for a clinically meaningful outcome
+• Types: physiologic variable, clinical 
+risk factor, or sub-clinical disease
+47Advantages of Surrogate 
+Outcomes
+• Surrogate outcomes typically increase 
+statistical power compared to clinical outcomes
+– Surrogate outcomes
+• often continuous• measured repeatedly
+– Clinical outcomes
+• often categorical• surveillance till outcome occurs
+48Advantages of Surrogate 
+Outcomes (continued)
+• Enhanced power means 
+– shorter duration of follow-up and/or 
+reduced sample size
+– less cost
+• Less contamination by competing 
+comorbidities if the study duration is short
+• Useful in studies of mechanisms 
+
+Surrogate and clinical outcomes: 
+a continuum
+Total 
+MortalityCause-
+Specific 
+MortalityMorbid 
+EventsEstablished 
+Risk FactorAntecedent 
+of the Risk 
+FactorSurrogate and clinical outcomes: 
+an example
+Total 
+MortalityCVD 
+MortalityMI Blood 
+PressureWeight Angina
+Relationship between Surrogate 
+and Clinical Outcomes
+Surrogate OutcomeRelationship between Change in 
+Surrogate Outcome and Change 
+in Clinical Outcomes
+Change in Surrogate Outcome
+
+Clinical and Surrogate 
+Outcomes: Cardiovascular
+Clinical Surrogate
+Stroke Ultrasound measurement of intimal 
+medial thickness of the carotid artery 
+Blood pressure
+Myocardial 
+infarctionQuantitative coronary angiography
+Electron beam computerzied tomography
+Sudden 
+deathVentricular arrhythmia 
+Heart failure Ejection fraction
+WeaknessesDisadvantages of Surrogate 
+Outcomes
+• Measurement of surrogate outcomes can involve 
+complex, technical procedures
+– procedures sometimes new (therefore, 
+longitudinal data is scant)
+– procedures become obsolete– many technical and analytic issues, often 
+unapparent
+
+Disadvantages of Surrogate 
+Outcomes (continued)
+• Missing values are commonplace
+• Missing values result from loss to follow-up and 
+poor quality of data
+• Potential for bias
+– missing values occur in the sickest people, 
+sometimes because of the clinical outcome of 
+interest
+– informative censoring, that is, loss of follow-
+up data potentially related to treatment assignmentModels for success and 
+failure of surrogate 
+outcomes*
+*Fleming TR, DeMets DL. Surrogate End 
+Points in Clinical Trials: Are we being mislead? 
+Ann Int Med 1996;125:605-613.
+Model for potential success: Surrogate 
+outcome in the casual pathway
+DiseaseSurrogate 
+OutcomeClinical 
+OutcomeIntervention
+TimeModel for potential success: Surrogate 
+outcome in the casual pathway
+HypertensionBlood 
+PressureStrokeDiuretics
+Time
+
+Model for failure: the surrogate is 
+not in the causal pathway of the disease process
+Surrogate 
+Outcome Clinical 
+OutcomeDiseaseInterventionModel for failure: the surrogate is 
+not in the causal pathway of the disease process
+Bone Density
+fractures OsteoporosisFluoride
+DiseaseSurrogate 
+OutcomeClinical 
+OutcomeInterventionModel for failure: the intervention 
+affects only the pathway mediated through the surrogate
+Kidney 
+DamageProteinuriaKidney 
+FailureProtein 
+RestrictionModel for failure: the intervention 
+affects only the pathway mediated through the surrogate
+
+Model for failure: The intervention 
+has several mechanisms of action
+Surrogate 
+OutcomeClinical 
+OutcomeIntervention
+DiseaseExample: Dihydropyridine calcium 
+channel blockers
+Blood 
+PressureMyocardial 
+InfarctionCalcium Channel 
+Blockers
+ASCVD+
+_
+The Cardiac Arrhythmia Suppression 
+Trial (CAST*): Background
+• Ventricular arrhythmias are a risk factor 
+for sudden death after MI
+• Four fold higher risk of cardiac mortality 
+among persons with frequent premature ventricular contractions (PVCs)
+• In the CAST pilot study, the 
+antiarrhythmic dr ugs (encainide, 
+flecainide) suppressed PVCs
+*Echt DS et al.  Mortality and morbidity in patients receiving 
+encainide, flecainide, or pl acebo.  NEJM 1991: 324(12): 781-8.CAST Research Question
+Does suppression of 
+ventricular ectopy after a MI reduce the incidence of sudden death?
+
+CAST Design
+• Design: randomized trials of
+– encainide vs placebo
+– flecainide vs placebo
+• Participants (n=1498)
+– recent MI (6 days to 2 years ago)– ventricular ectopy (6 or more PVCs /hr)– at least 80% suppression of PVCs by 
+active drug during open label titration period prior to randomization
+Source: Echt DS, Liebson PR, Mitchell B, et al.  Mortality and morbidity in patients 
+receiving encainide, flecainide, or placebo.   The Cardiac Arrhythmia Suppression 
+Trial .  NEJM 1991: 324(12): 781-8.
+CAST results: number of deaths 
+and cardiac arrests by group
+• Active treatment: 63 events / 755
+• Placebo: 26 events / 743
+p  = 0.0001
+• same pattern of results for
+– death from arrhythmia– death from any cardiac cause– death from any causeLessons from CAST
+• Active treatments can be harmful (one of 
+several recent trials in which placebo was superior to active treatment) 
+• Reliance on surrogate outcomes can be 
+misleading
+• The scientific community should encourage 
+researchers and sponsors to conduct studies with ‘hard’ clinical outcomes
+
+Examples from the Field
+• Surrogate that go in that  go the right direction 
+(easy to explain –f it your hypothesis)
+• Surrogates that go in  unexpected directions 
+(create a greater need for hand-waving and but can still be made to fit your hypothesis)
+• Surrogates that behave badlyModel for potential success: Surrogate 
+outcome in the casual pathway
+↑ oxidative 
+stress↓ oxidative 
+stressASCVDDiet Change
+Time
+LDL Cholesterol
+Oxidized LDL
+Fatty Streak Formation
+AtherosclerosisDietary Antioxidants
+Vitamin C
+Vitamin E
+beta-carotene
+Free Radical ActivityDietary Patterns 
+Inflammatory
+MarkersOxidative stress
+Markers
+Figure 2b
+Alpha-toc opherolβ-caroteneVitamin C
+
+Nurses Health Study
+• Design: Prospective Cohort Study
+• Participants: 121,700 female nurses free of 
+diagnosed cardiovascular disease 
+• Exposure Dietary questionnaire at baseline
+Assessment Vitamin E and Multivitamin Use
+• Follow-up: 8 years• End Points: 1) Major Coronary Disease
+2) Non-fatal MI3) Deaths Due to Coronary Disease 
+N Engl J Med 1993;328:1444-1449
+N Engl J Med 1993;328:1444-1449
+Adapted from: Jha, P . et. al. Ann Intern Med 1995;123:860-872Prospective observational studies of vitamin E: Effects 
+on cardiovascular end points
+
+
+Summary of Biological Evidence
+• Antioxidants are necessary
+• Oxidized lipids are associated with CVD• Oxidation of lipids is reduced by antioxidant 
+supplementation
+• Does supplementation lower risk of CVD?
+– Observational studies
+–t r i a l s
+Do Vitamin E supplements 
+reduce risk?
+• Observational studies are confounded –vitamin E 
+takers exercise more, have a lower BMI, eat healthier diets and smoke less often that non-vitamin users
+• Observational studies are hypothesis generating
+• Surrogate markers are only indirectly related to 
+clinical events
+• Benefits can only be assessed in randomized 
+controlled clinical trialsClinical Trials – Clinical 
+Outcomes
+• Cardiovascular Events
+– Fatal and Non-fatal MI
+–S t r o k e
+– Peripheral artery disease
+• Mortality
+
+ATBC Study
+• Design: Randomized, double-blind, placebo-
+controlled primary prevention trial
+• Participants: 29,133 male Finnish smokers, 
+age 50-69
+• Intervention: 1) Vitamin E 50 IU/day
+2) B-carotene 20 mg/day
+3) Combination4) Placebo
+• Follow-up: 5-8 years
+• End Points: Incident lung cancer & deaths 
+ATBC, 1993 NEJM
+ATBC Trial Results
+• Beta-carotene group (20 mg/day)
+– increase in total mortality (9%)– increased incidence of angina (13%)* – increased CVD mortality (11%)*– increased incidence of lung cancer (18%)
+• Vitamin E Group (50 mg/day)
+– reduction in total coronary events (3%)
+– reduction in incident angina (9%)– reduction in non-fatal MI (11%)
+ATB C, 1994 NEJMCARET Study
+• Design: Randomized, double blind, placebo-
+controlled primary prevention 
+trial
+• Participants: 18,314 smokers,  former smokers, and 
+workers exposed to asbestos 
+• Intervention: 1) B-carotene (30 mg/day) and
+vitamin A (25,000 IU/day) 
+2) Placebo
+• Follow-up: 4 years
+• End Points: Incident lung cancer
+Cardiovascular Disease 
+Omenn, 1996 NEJM
+
+Failed surrogate marker: example
+↑β-carotene ↑Lung 
+Cancerβ- carotene 
+supplements
+Smoking
+↓β-carotene+
+_
+Need for reliable surrogate markers
+
+93Disadvantages of Surrogate 
+Outcomes (continued)
+• The relationship between a surrogate 
+outcome and a clinical outcome has face 
+validity but is often uncertain
+• Relationship betw een change in surrogate 
+and risk of clinical outcomes is rarely knownThe Bottom Line
+“Trust but verify”
+Ronald Reagan
+95Analytical Issues
+• Sample Size (Power Calculations)
+• Analytical Approach (a priori)
+• Intention-to-treat (vs ‘as treated’) 
+96Analytic Techniques:
+Crude analyses
+• Analysis depends on the type of outcome data
+•B a s i c  t e s t s
+– Continuous outcome variable: t-test
+• Examples: Blood pressure, serum cholesterol
+– Dichotomous or categorical data: chi-squared, 
+logistic regression, cox modeling for time to 
+event
+• Example: Incident HIV, MI, cancer, renal failure, death
+
+97Epidemiology in a box: The 2x2 table
+• The EXPOSURE (E)
+– Example: obesity
+• The OUTCOME (D)
+– Example: Hypertension
+• Applicable to most 
+study designsE+
+E-D- D+
+ab
+cd
+b+d a+c Totala+b
+c+d
+98Analytic Techniques:
+Adjusted (Regression) Analyses
+• Regression determines association between 
+exposure and outcome
+• Procedures depends on outcome variable:
+– Continuous outcome: linear regression
+– Dichotomous outcome: logistic regression
+– Time-to-event: Cox proportional hazards
+99Interpretation of Results
+• Internal Validity 
+– conclusions correctly describe what 
+happened in the study 
+• External Validity (‘generalizability’)
+– the degree to which the conclusions apply 
+to the study population and other populationsWhy RCTs Can Be Difficult
+• Hard to find and recruit the right people
+– Many don’t want to be “guinea pigs”
+• Greater responsib ility, documentation
+• May take years for outcomes to develop• People are free to do as they please 
+– Some assigned to treatment don’t adhere
+– Some assigned to control seek treatment
+– Some drop out of the trial completely 
+
+101Adherence (compliance)
+• Difficult to measure
+• Difficult to promote
+• Must be promoted and measured, at 
+least in efficacy or explanatory trials
+102Why be worried about adherence? 
+Control Active
+Drop-In’s
+Drop-Out’s
+Intention-to-Treat: analysis by randomized group, 
+not by final groupings 
+103Adherence (compliance)
+• Measurement
+– self report
+– pill count
+– blood levels of drug
+– biological changes (urine or blood)
+•P r o m o t i o n
+– exclude poor candidates  before randomization
+– keep intervention simple
+– respond to evidence of inadequate adherenceHow To Handle Participants Who 
+Don’t Adhere to Trial Assignment
+• Intention-to-Treat  Approach
+– Least optimistic– Maintains initial balance from randomization– Highlights problems from adverse effects
+• On-Treatment Approach
+– Most optimistic– Upsets initial balance from randomization
+– Downplays problems from adverse effects
+Because of its conservatism, the Intention-to-Treat approach is strongly preferred.
+
+Cardiac Event-Free Survival in 192 Adults with 
+Refractory Angina by Random Assignment and 
+Cross-Over (from Medical Treatment to TMR) Status
+Randomized to 
+TMR, no crossing 
+over to Medical Rx
+Randomized to 
+Medical Rx, did OK, 
+no need for TMR Randomized to 
+Medical Rx, did 
+poorly, needed TMR 
+as last ditch effort
+TMR =transmyocardial laser revascularization 
+Cardiac Event-Free Survival in 192 Adults with 
+Refractory Angina by Random Assignment and 
+Cross-Over (from Medical Treatment to TMR) Status
+Were X-overs 
+reclassified 
+as “TMR”, it 
+would tend to 
+make TMR 
+look worse 
+Cardiac Event-Free Survival in 192 Adults with 
+Refractory Angina by Random Assignment and 
+Cross-Over (from Medical Treatment to TMR) Status
+Were X-overs 
+classified as 
+“Medical Rx”, 
+it would tend 
+to make 
+Medical Rx  
+look betterClinical Trials: Design and 
+interpretation Considerations
+108
+
+When Trials Are Impossible 
+(or Nearly Impossible)
+• Adverse Exposures (e.g. Cigarettes)
+• Rare Outcomes (e.g. Reye’s Syndrome)
+• Intervention Already in Wide Use
+In these circumstances, one must rely on observational studies—i.e. 
+prospective cohort studies and case-control studies.  When interventions are 
+already in wide use, “outcomes research” is a good option.  In outcomes 
+research, medical interventions (e.g. drugs, surgical procedures) are 
+considered as exposures.  Data on these interventions, and on relevant clinical 
+outcomes, are available from medical records and often from large-scale 
+electronic databases.110Statistical vs Clinical 
+Significance
+• Statistical significance pertains to 
+whether or not the observed results 
+could occur from chance alone
+• Clinical significance pertains to whether 
+or not the observed results have “important” clinical, research or public 
+health relevance.
+How To Interpret Negative Results
+• Treatment is worthless
+• Treatment is worthwhile, BUT study had…
+– Bias against the treatment (e.g. crossing in)
+– Inadequate contrast between groups
+• Suboptimal treatment (e.g. unskilled surgeons)
+• Low adherence (e.g. drug causes GI distress)• Controls sought treatm ent despite assignment
+– Insufficient statistical power
+• Very common cause of negative findings
+• Meta-analysis a potential remedy
+112Efficacy (Explanatory) Trial
+vs Effectiveness (Pragmatic) Trial
+• Theory
+– Efficacy: What is the effect of the therapy 
+under ideal conditions
+– Effectiveness: What is the effect of therapy 
+under ‘real world’ conditions 
+• Reality
+– The dichotomy between efficacy and 
+effectiveness is artificial
+– Broad continuum
+
+113Typical Implementation Units
+• Clinical Centers
+– recruit participants
+– collect data
+– administer intervention/therapy
+• Laboratory or Reading Centers
+– perform assays or readings of procedures
+• Data Coordinating Center*
+– receive/assemble data– coordinate activities– perform data analyses
+* similar to Contract Research Organization (CRO) 114Oversight Units
+• Internal
+– Sponsor
+– Data Coordinating Center or Contract 
+Research Organization
+• External
+– Institutional Review Board
+– Data and Safety Monitoring Board
+115Organizational Structure of 
+a Multi-Center Trial
+(Weight Loss Maintenance Trial)
+Steering Committee NIH Project Office DSMB
+Coordinating Center
+Design & Analysis
+Publications
+Measurement & Quality 
+Control
+Clinic CoordinatorsEnrollment and 
+Retention
+Intervention
+Minority 
+ImplementationIntervention
+DevelopmentData 
+ManagementCenter for Health 
+ResearchJohns Hopkins 
+University
+Pennington LSU Duke UniversityClinical Centers Subcommittees
+

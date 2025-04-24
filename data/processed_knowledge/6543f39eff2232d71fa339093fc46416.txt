@@ -1,0 +1,627 @@
+70 |  March 2023   Medical Writing   |  Volume 32 Number 1Surayya Taranum  
+Evidera-PPD, part of Thermo Fisher Scienti fic 
+Paris, France  
+ 
+ 
+ 
+ 
+ 
+Correspondence to:  
+Surayya Taranum  
+surayya.taranum@evidera.com  
+ 
+ 
+Abstract  
+Clinical study reports (CSR) are detailed  
+documents that provide a comprehensive and  
+transparent account of the conduct and  
+results of a clinical trial. They are an important  
+source of information for the regulatory  
+authorities, healthcare professionals, and the  
+public, and are used to assess the safety and  
+efficacy of medical treatments. This article  
+presents an overview of the steps involved in  
+writing and submitting CSRs to regulatory  
+authorities, as well as reporting clinical trial  
+findings to the scientific community and the  
+public.  
+ 
+ 
+nhe clinical study report (CSR) is a  
+document that describes the results of a  
+clinical trial and is used to assess the safety and  
+effectiveness of a new medical treatment.1-3 CSRs  
+provide detailed information about the design,  
+conduct, and results of clinical studies.  
+A CSR is prepared by the sponsor of the clinical  
+trial to report study outcomes to regulatory  
+authorities, such as the FDA in the US or the  
+EMA in the EU. Regulatory authorities use the  
+information in the CSR to evaluate the safety,  
+efficacy, and quality of the medicinal product and  
+to determine whether it should be approved for  
+marketing. Information provided in the CSR is  
+also used by researche rs and other stakeholders  
+including patients and the public to evaluate the  
+safety and efficacy of the treatment being tested  
+and to make decisions about its potential use in  
+clinical practice.  
+ Types of CSRs  
+Different types of CSRs can be prepared  
+depending on the specific context and purpose  
+of the clinical trial, as well as the requirements of  
+the regulatory authority reviewing the data.  
+ 
+Examples include:  
+lFull CSR:  The most comprehensive type of  
+CSR. It includes all the data and analyses  
+from the clinical trial. Full CSRs are typically  
+used for regulatory purposes, such as  
+submitting data to the FDA in support of a  
+new drug application.  
+lInterim CSR: Used to report on the progress  
+of a clinical trial that is still ongoing. Interim  
+CSRs are typically shorter than full CSRs, are  written once the primary and secondary  
+endpoints are met and may be used for  
+marketing authorisation application (MAA)  
+before the clinical trial is complete. Data on  
+the exploratory endpoints and long-term  
+follow-up are included later in the full CSR.  
+lAbbreviated CSR:4, 5 Used for studies that do  
+not contribute to the evaluation of efficacy or  
+provide definitive information on the clinical  
+pharmacology of the investigational product.  
+Abbreviated CSRs contain abbreviated  
+method and efficacy sections, as well as a  
+detailed safety section.  
+lSynoptic CSR:4 Generally prepared for  
+studies that are not relevant in evaluating the  
+effective ness and clinical pharmacology of the  Clinical study reports:  
+A snapshot for aspiring medical writers
+doi:   10.56012/qett4705
+T
+
+
+www.emwa.org                                                                                                                                                     Volume 32 Number 1   |  Medical Writing   March 2023   |  71T aranum  |  Clinical study reports
+medicinal product but provide data for  
+evaluating its safety (e.g. studies evaluating  
+routes of drug administration for which  
+marketing approval is not required, in com -
+plete studies enrollin g fewer than one-third  
+of intended participants, and early general  
+phase 1 safety-tolerance studies).  
+ 
+Structure of a CSR  
+The content and format of a CSR are based on  
+The International Council for Harmonisation  
+of T echnical Requirements for Pharmaceutical s 
+for Human Use guideline E3 on the Structure  
+and Content of Clinical Study Reports (ICH  
+E3),3 which was approved in 1996. The  
+detailed structure of a CSR may vary slight ly 
+depending on the specific requirements of the  
+regulatory authority to which it is being  
+submitted. Medical writers use the ICH E3  
+template,3 the T ransCelerate template,6 and  
+the CORE (Clarity and Openness in  
+Reporting: E3-based) Refer ence to create  CSRs that are compliant with regulatory  
+guidelines.7–10 
+A CSR typically includes the following  
+components:  
+lSynopsis : A brief overview of the main find -
+ings and con clusions of the study  
+lIntroduction: Background in formation  
+about the medicinal product  
+being studied, including its  
+intended use and the rationale  
+for the study  
+lMethods:  The study design, ob -
+jectives and endpoints, patient  
+population, interventions, and  
+outcomes; includes informa tion  
+about the ethical con siderations  
+and any statistical analyses that  
+were performed  
+lResults:  The findings of the  
+study, including both numeri cal  
+data and descriptive infor mation;  
+also includes tables, figures, and  other visual aids to illustrate the results  
+lDiscussion:  The clinical implications of the  
+study findings and limitations of the study  
+lConclusion: The main find ings and con -
+clusions of the study  
+lAppendices:  Additional information or  
+materials that are relevant to the study such as  
+protocols, informed con sent  
+forms, data tables, figures and  
+listings, as well as patient  
+narratives  
+ 
+Submission of a CSR  
+The submission process for  
+CSRs differs depending on the  
+regulatory authority. Under  
+the Clinical T rials Regulation  
+(EU) No 536/2014 (EU  
+CTR), EU member states and  
+European Economic Area  
+(EEA) countries have, since  
+January 31, 2022, been able to  
+use the Clinical T rial Information System (CTIS)  
+to submit all clinical trial data .11–13 The CTIS  
+harmonises the submission, assessment, and  
+supervision pro cesses for clinical trials; A single  
+application can be submitted through the CTIS  
+for review by all EU/EEA countries. The CTIS  
+also facilitates interactions between clinical trial  
+sponsors and the regulatory authorities in  
+EU/EEA countries throughout the clinical trial,  
+and replaced the EU Drug Regulating  
+Authorities Clinical T rials Database (EudraCT)  
+on January 31, 2023.14,15 The CTIS will store all  
+documents related to clinical trials (e.g. CSRs  
+and clinical study protocols) and will also serve  
+as a publicly accessible database for clinical trial  
+data. However, the CTIS does not accept or  
+evaluate MAAs for the commercialisation of  
+medicinal products, which must be made  
+separately.  
+As per Article 37 of the EU CTR, sponsors  
+who have had their MAAs approved are required  
+to submit a full CSR to the CTIS within 30 days  
+after the marketing authorisation approval.9,16  
+Article 37(4) also requires the sponsor to submit  
+a summary of the clinical trial results to the  
+CTIS, irrespective of the outcome of the clinical  
+trial, within one year from the end of the trial in  
+adults (6 months for a clinical trial in the  
+paediatric population), in all the EU languages  
+in which the study was conducted.9,17 Sponsors  
+are required to provide a summary of results and  
+a lay summary after the end of each clinical trial  
+in the EU. The CSR, summary of clinical trial  
+The detailed  
+structure of a CSR  
+may vary slightly  
+depending on the  
+specific  
+requirements of  
+the regulatory  
+authority to which  
+it is being  
+submitted.
+
+72 |  March 2023   Medical Writing   |  Volume 32 Number 1Clinical study reports    |   T aranum
+results, and the lay summary are disclosed  
+publicly. In the US, a full CSR is submitted as part  
+of a New Drug Appli cation (NDA) to the FDA.18 
+Unlike in the EU, CSRs in the US are not  
+disclosed publicly.  
+Sponsors in the EU are required to submit all  
+CSRs that are intended to be used for marketing  
+authorisations.19,20 As part of an MAA, CSRs are  
+compiled in Module 5 of the common technical  
+document (CTD), a standardised  
+format for submitting regulatory  
+information to health authorities  
+globally.21,22 The CTD consists of five  
+modules that cover different aspects  
+of the submission (e.g. quality, safety,  
+and efficacy of the product), and  
+includes a comprehensive overview of  
+the clinical trials and their results.  
+ 
+Reporting findings published in CSRs  
+Findings reported in CSRs are disseminated in  
+several ways.  l    European Public Assess ment Reports:23 
+Reports prepared by the EMA and published  
+on the EMA website. These reports provide  
+information on the medicinal product,  
+including the evaluation process and the  
+decision to approve or reject the MAA  
+l    Clinical trial registries:  The EudraCT or  
+CTIS databases of the EMA, the Inter national  
+Clinical T rials Registry Platform of the  
+WHO,24 and the ClinicalT rials.gov  
+registry25 in the US  
+l    Other public disclosure plat -
+forms:  EMA clinical data website  
+under EMA Policy 0070,26 Health  
+Canada Public Release of Clinical  
+Information27 
+l    Lay language summaries:  Pub -
+lished in the CTIS or on company  
+websites  
+lPublications: Manuscripts  in peer-reviewed  
+journals, conference posters and presen ta -
+tions, abstracts, preprints, and plain-language  summaries. Good Publication Practice guide -
+lines28–30 mandate that all biomedical research  
+should be published in peer-reviewed journals  
+in a timely manner and that reporting of  
+biomedical research should follow all ap -
+plicable laws and guidelines. Several checklists  
+exist to ensure that findings from a CSR are  
+reported accurately and transparently in peer-
+reviewed medical journals.31 Examples include:  
+l   CONSORT (Consolidated Standards of  
+Reporting Trials):32 A guideline for  
+reporting randomised,  controlled trials  
+l   STROBE (STrengthening the Reporting  
+of OBservational studies in Epidemi ol o -
+gy):33 A guideline for reporting obser -
+vational studies  
+lProduct information:  Clinical trial results are  
+also reported in the summary of product  
+characteristics or prescribing information (a  
+document prepared for healthcare  
+professionals), as well as package leaflets  
+(aimed at the patient).   
+  
+Table 1. Training courses on writing clinical study reports
+Course name  
+ 
+Regulatory Medical Writing  
+Bundle40 
+ 
+Regulatory Medical Writing  
+Training Programme41 
+ 
+Regulatory Affairs Training  
+Program42  
+ 
+Regulatory Writing43  
+ 
+ 
+Regulatory Writing44  
+ 
+ 
+ 
+CRED Regulatory Document  
+Writing and Management45 
+ 
+Writing Clinical Study Reports46 
+ 
+ 
+ 
+Clinical Study Reports: Mastering  
+the Essential Skills47Organisation  
+ 
+Regulatory Affairs Professionals Society  
+ 
+ 
+Groep Biomedische Wetenschappen KU  
+Leuven  
+ 
+Duke University School of Medicine  
+ 
+ 
+University of California San Diego  
+Extended Studies  
+ 
+The University of Chicago  
+ 
+ 
+ 
+The Organization for Professionals in  
+Regulatory Affairs  
+ 
+European Center for Clinical Research  
+Training  
+ 
+ 
+European Medical Writers AssociationDescription  
+ 
+Introduces medical writing, different types of regulatory  
+applications, and techniques for improving document quality  
+ 
+Provides an overview of clinical development and a practical  
+introduction to writing clinical and regulatory documents  
+ 
+Provides an overview of premarket  regulatory work related to  
+drugs, biologics, and medical devices  
+ 
+Provides training on writing CSRs, information on regulations, and  
+guidance governing regulatory documents in the US and the EU  
+ 
+Focuses on the basics of editing regulatory documents, as well  
+as collaborating on creating biomedical regulatory packets and  
+navigating the writing, submission, and auditing processes  
+ 
+Focuses on the theory and practice of writing effective  
+regulatory documents and communications  
+ 
+Covers the principles of clinical research writing and reporting,  
+including how to write a CSR. The course includes interactive  
+exercises and case studies  
+ 
+Double workshop for medical writers with little or no experience  
+in writing CSRs. Workshops on the CORE Reference as well as  
+variations of CSRs are also available  
+ 
+Abbreviations: CSR, clinical study report
+The CSR,  
+summary of  
+clinical trial  
+results, and the  
+lay summary  
+are disclosed  
+publicly in  
+the CTIS.
+
+www.emwa.org                                                                                                                                                     Volume 32 Number 1   |  Medical Writing   March 2023   |  73T aranum  |  Clinical study reports
+ 
+Writing your first CSR  
+Medical writers specialising in regulatory  
+documents typically spend a lot of time writing  
+CSRs. A medical writer working on a CSR needs  
+to have sound knowledge of how clinical trials are  
+planned, conducted, and reported.34–39 For an  
+aspiring medical writer, there are several online  
+training programs and courses on how to write a  
+CSR (T able 1). Writing a CSR is a team effort  
+involving multiple stakeholders including  
+clinicians, biostatisticians, regulatory specialists,  
+safety experts, and the clinical study management  
+team. Therefore, the medical writer also needs  
+strong communication and project management  
+skills. Planning timelines and determining  
+stakeholder roles before the start of the project  
+can help with effective project management. CSR  
+templates based on the ICH E3 guideline,  
+T ransCelerate template, and CORE Reference  
+can help the medical writer create a document  
+that meets rigorous regulatory standards.  
+ 
+Acknowledgements  
+The author thanks Stephen Gilliver, PhD  
+(Evidera-PPD, part of Thermo Fisher Scientific)  
+for review and editorial support.  
+ 
+Disclosures and con flicts of interest  
+The author is an employee of Evidera-PPD, part  
+of Thermo Fisher Scientific.  
+ 
+References  
+1.   American Medical Writers Association.  
+What Is a clinical study report? A medical  
+communicator’s guide [cited 2022 Dec 19].  
+Available from: https://blog. amwa.org/  
+what-is-a-clinical-study-report-a-medical-  
+communicato rs-guide . 
+2.   EMA. ICH E6 (R2) Good clinical practice  
+– Scientific guideline [cited 2022 Dec 19].  
+Available from:  
+https://www.ema.europa.eu/en/  
+documents/scientific-guideline/ich-
+guideline-good-clinical-practice-e6r2-step-
+5_en.pdf . 
+3. EMA. ICH T opic E 3. Structure and  
+content of clinical study reports 1996 [cited  
+2022 Dec 19]. Available from:  
+https://www.ema.europa.eu/en/  
+documents/scientific-guideline/ich-e-3-
+structure-content-clinical-study-reports-
+step-5 _en.pdf . 
+4. FDA. Guidance for industry submission of  abbreviated reports and synopses in  
+support of marketing applications 1999  
+[cited 2023 Jan 19]. Available from:  
+https://www.fda.gov/files/drugs/  
+published/Submission-of-Abbreviated-
+Reports-and-Synopses-in-Support-of-
+Marketing-Applications..pdf . 
+5. Alfaro V , Cullell-Y oung M, T anovic A.  
+Abbreviated clinical study reports with  
+investigational medicinal products for  
+human use: Current guidelines and  
+recommendations. Croat Med J.  
+2007;48(6):871–7. doi:  
+10.3325/cmj.2007.6.871 .  
+6. Hamilton S, Bernstein AB, Blakey G, et al.  
+Critical review of the T ransCelerate  
+T emplate for clinical study reports (CSRs)  
+and publication of Version 2 of the CORE  
+Reference (Clarity and Openness in  
+Reporting: E3-based) T erminology T able.  
+Res Integr Peer Rev. 2019;4:16.  
+doi:10.1186/s41073-019-0075-5  
+7. CORE Reference. Clarity and openness in  
+reporting: E3-based [cited 2022 Dec 19].  
+Available from: https://www.core-
+reference.org/ . 
+8. EMWA. The CORE Reference project  
+[cited 2022 Dec 19]. Available from:  
+https://www.emwa.org/resources/core-
+reference/ . 
+9. Hamilton S, Bernstein AB, Blakey G, et al.  
+Developing the Clarity and Openness in  
+Reporting: E3-based (CORE) Reference  
+user manual for creation of clinical study  
+reports in the era of clinical trial trans -
+parency. Res Integr Peer Rev. 2016;1:4.  
+doi:10.1186/s41073-016-0009-4  
+10. Hamilton S, D J. CORE Reference – a tool  
+for modern clinical study reports in an era  of increasing transparency and disclosure.  
+Medical Writing. 2018;27(2):64–7.  
+11. EMA. Clinical T rials Information System  
+(CTIS) [cited 2022 Dec 19]. Available  
+from: https://euclinicaltrials.eu/.  
+12. EMA. Clinical Study Reports submission  
+[cited 2022 Dec 19. Available from:  
+https://www.ema.europa.eu/en/document
+s/other/quick-guide-clinical-study-reports-
+submission-ctis-training-programme-
+module-13 _en.pdf . 
+13. EMA. Clinical T rials Regulation [cited  
+2022 Dec 19 ]. Available from:  
+https://www.ema.europa.eu/en/human-
+regulatory/research-development/clinical-
+trials/clinical-trials-regulation#clinical-  
+trials-information-system-section . 
+14. EMA. EudraCT . [cited 2022 Dec 19].  
+Available from:  
+https://eudract.ema.europa.eu/ . 
+15. EMA. Key Information for Sponsors on  
+CTIS [cited 2022 Dec 19]. Available from:  
+https://www.ema.europa.eu/en/document
+s/other/clinical-trials-information-system-
+key-information-sponsors-ctis _en.pdf . 
+16. European Commission. Clinical trials –  
+Regulation EU No 536/2014 [cited 2022  
+Dec 19]. Available from:  
+https://health.ec.europa.eu/medicinal-
+products/clinical-trials/clinical-trials-
+regulation-eu-no-5362014 _en#eu-clinical-  
+trial-portal-and-database . 
+17. Barnes A, Patrick S. Lay summaries of  
+clinical study results: An overview.  
+Pharmaceut Med. 2019;33(4):261-8.  
+doi:10.1007/s40290-019-00285-0  
+18. US FDA. New Drug Application (NDA)  
+[cited 2022 Dec 19]. Available from:  
+https://www.fda.gov/drugs/types-
+
+
+74 |  March 2023   Medical Writing   |  Volume 32 Number 1applications/new-drug-application-nda . 
+19. EMA. Marketing authorisation [cited 2022  
+Dec 19]. Available from:  
+https://www.ema.europa.eu/en/human-
+regulatory/marketing-authorisation . 
+20. EMA. Obtaining an EU marketing  
+authorisation, step-by-step [cited 2022 Dec  
+19]. Available from:  
+https://www.ema.europa.eu/en/human-
+regulatory/marketing-authorisation/  
+obtaining-eu-marketing-authorisation-step-
+step . 
+21. EMA. ICH M4 Common technical  
+document (CTD) for the registration of  
+pharmaceuticals for human use -  
+organisation of CTD - Scientific guideline  
+[cited 2022 Dec 19 ]. Available from:  
+https://www.ema.europa.eu/en/ich-m4-
+common-technical-document-ctd-
+registration-pharmaceuticals-human-use-or
+ganisation-ctd#documents-section . 
+22. ICH harmonisation for better health.  
+M4:The Common T echnical Document  
+[cited 2022 Dec 19]. Available from:  
+https://www.ich.org/page/ctd . 
+23. EMA. European public assessment reports:  
+Background and context [cited 2022 Dec  
+19]. Available from:  
+https://www.ema.europa.eu/en/medicines
+/what-we-publish-when/european-public-
+assessment-reports-background-context . 
+24. WHO. International Clinical T rials  
+Registry Platform (ICTRP) [cited 2022 19  
+Dec]. Available from:  
+https://www.who.int/clinical-trials-
+registry-platform . 
+25. US National Library of Medicine.  
+ClinicalT rials.gov [cited 2022 Dec 19].  
+Available from:  
+https://www.clinicaltrials.gov/ . 
+26. EMA. Clinical data publication [cited 2023  
+Jan 19]. Available from:  
+https://www.ema.europa.eu/en/human-
+regulatory/marketing-
+authorisation/clinical-data-publication . 
+27. Health Canada. Guidance document on  
+Public Release of Clinical Information:  
+Profile page [cited 2023 Jan 19]. Available  
+from: https://www.canada.ca/en/health-
+canada/services/drug-health-product-
+review-approval/profile-public-release-  
+clinical-information-guidance.html . 
+28. Battisti WP , Wager E, Baltzer L, et al. Good  
+publication practice for communicating  
+company sponsored medical research:  GPP3. Ann Intern Med. 2015;163(6):  
+461–4.   doi:10.7326/m15-0288  
+29. DeT ora LM, T oroser D, Sykes A, et al.  
+Good publication practice (GPP)  
+guidelines for company-sponsored  
+biomedical research: 2022 update. Ann  
+Intern Med. 2022;175(9):1298-304.  
+doi:10.7326/m22-1460  
+30. ISMPP . Introducing GPP 2022 [cited 2022  
+Dec 19]. Available from:  
+https://www.pathlms.com/ismpp . 
+31. Equator Network. Enhancing the QUAlity  
+and T ransparency Of health Research  
+[cited 2022 Dec 19]. Available from:  
+https://www.equator-network.org/ . 
+32. CONSORT . Consolidated Standards of  
+Reporting T rials [cited 2022 Dec 19].  
+Available from: https://www.consort-
+statement.org/ . 
+33. STROBE. Strengthening the reporting of  
+observational studies in epidemiology  
+[cited 2022 Dec 19]. Available from:  
+https://www.strobe-statement.org/ . 
+34. Friedman LM, CD F. Fundamentals of  
+Clinical T rials. 4th ed2010.  
+35. LF W. T argeted Regulatory Writing  
+T echniques: Clinical Documents for Drugs  
+and Biologics2009.  
+36. RAPS. Fundamentals of US Regulatory  
+Affairs. 11th ed.  
+37. RAPS. Regulatory Writing: An Overview.  
+2nd ed.  
+38. RAPS. Fundamentals of EU Regulatory  
+Affairs. 9th ed.  
+39. RAPS. Key Regulatory T opics: eCTD.  
+40. Regulatory Affairs Professionals Society.  
+Regulatory Medical Writing Bundle  
+[Complete Package] [cited 2022 Dec 19].  
+Available from:  
+https://www.raps.org/products/  
+regulatory-medical-writing-bundle-complete-package . 
+41. Groep Biomedische Wetenschappen KU  
+Leuven. Regulatory Medical Writing  
+T raining Programme [cited 2022 Dec 19].  
+Available from:  
+https://gbiomed.kuleuven.be/english/  
+phd/PhD_Researchers/Skills/medical-
+writing-training-programme . 
+42. Duke University School of Medicine.  
+Regulatory Affairs T raining Program [cited  
+2022 Dec 19]. Available from:  
+https://medschool.duke.edu/research/  
+research-support/research-support-offices/  
+office-regulatory-affairs-and-quality-3 . 
+43. UC San Diego Extended Studies.  
+Capstone: Regulatory Writing [cited 2022  
+Dec 19]. Available from:  
+https://extendedstudies.ucsd.edu/courses-
+and-programs/capstone-regulatory-
+writing . 
+44. The University of Chicago. Regulatory  
+Writing [cited 2022 Dec 19]. Available  
+from: https://professional.uchicago.  
+edu/find-your-fit/non-credit-
+certificates/regulatory-writing . 
+45. TOPRA. CRED Regulatory Document  
+Writing and Management [cited 2022 Dec  
+19]. Available from:  
+https://www.topra.org/TOPRA/TOPRA _
+Member/Events/Event _Display.aspx?Even
+tKey=DOC22O . 
+46. European Center for Clinical Research  
+T raining. Writing Clinical Study Reports  
+[cited 2022 Dec 19]. Available from:  
+https://eccrt.com/writing-clinical-study-
+reports/ . 
+47. EMWA. Clinical study reports –Mastering  
+the essential skills (double workshop)  
+[cited 2023 Jan 19]. Available from:  
+http://filemaker.emwa.org/workshops /
+view _workshop.php?recid=1318Clinical study reports    |   T aranum
+ 
+Author information   
+Surayya Taranum, PhD,  is a Senior Medical Writer at Evidera-PPD,  
+part of Thermo Fisher Scienti fic. She is also Regional Director of  
+Corporate Relations (Operations & Insights) at the Healthcare  
+Businesswomen’s Association (Europe), and a member of the EMWA  
+Sustainability Special Interest Group (SUS-SIG).
+
+

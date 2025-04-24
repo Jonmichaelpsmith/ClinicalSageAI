@@ -1,0 +1,189 @@
+ 
+International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use  
+ 
+ICH Secretariat, Route de Pré -Bois 20, 1215 Geneva, Switzerland  
+Telephone: +41 (22) 710 74 80 - admin@ich.org, http://www.ich.org   
+Final Concept Paper  
+Targeted Revisions of the ICH Stability Guideline Series  
+(Guidelines ICH Q1A -F, ICH Q5C)  
+Endorsed by the Management Committee on 15 November 2022  
+ 
+Type of Harmonisation Action Proposed  
+Revision of the ICH Stability Guideline Series  Q1A -F and Q5C is recommended to  a) streamline  the 
+series by combining the various guidelines into a single guideline  focused on co re stability principles ; 
+b) promote harmoni sed interpretation  by address ing potential gaps and areas of ambiguity ; c) address 
+additional technical issues,  includ ing relevant stability strategies and innovative  tools  that strengthen the 
+application of risk  management ; and d) consider inclusion of new topics, such as stability considerations 
+for advanced therapies . The informal working group proposes to establish these updates through the 
+Revision  procedure . The envisioned result is a combined guideline, ICH Q1 , with integrated annexes 
+and/or appendices  that address specific topics  beyond the core principle s on stability recommendations  
+and to address product  type1 specific  recom mendations , as required .  It is also recommended to update 
+and supplement current training materia l. 
+Statement of the Perceived Problem:  
+Further to a comprehensiv e assessment of existing Quality guidelines and in consideration of potential 
+future topics, ICH’s Quality Discussion Group (QDG) issued the report to the ICH Management 
+Committee entitled “ Future Opportunities & Modernization of ICH Quality Guidelines: Implementation 
+of the ICH Quality Vision from the ICH Quality Reflection Paper ”, which was subsequently published 
+on the ICH website in October 2021. Maintenance of the Q1/Q5C Stability guideline series was 
+determined as one of the  highest priorities based on the evaluation and recommendations from the QDG . 
+As written, ICH Q1A -E (plus content of the withdrawn ICH Q1F currently covered by WHO) and ICH 
+Q5C do not align with the format of more  recently developed  ICH guidelines that embrace a harmoni sed 
+core document approach supported by  topic -specific annexes /appendices . The individual guideline 
+approach leads to interpretation of the guidelines on an indi vidual basis, with uncertainty around how 
+they should work together.  ICH Q5C, for example, is specific to stability of biotechnological/biological 
+products and it is often unclear wh ich chapters of the ICH Q1 series apply to biologics as well.   
+Furtherm ore, the stability guidelines do not reflect modern analytical technologies and tools.  
+Incorporation of guidance that addresses the use of stability modelling  and risk management  could 
+enable earlier patient access to high quality medicines.  Additionally, the current guideline s do not 
+address  stability considerations for  advanced  and emerging product types1. 
+ 
+ 
+ 
+1 Product type refers to all aspects of the drug product, including drug substance, intermediates,  and devices.  
+
+FINAL                                             Q1/Q5C Con cept Pap er                              Endorsed : 15 Nove mber  2022   
+ 
+-2- 
+ Issues to be Resolved:  
+The Expert Working Group will aim to address the f ollowing identified issues :   
+• Consistency of interpretation : 
+o Through reorgani sation into a core guideline with topic -specific annexes /appendices , 
+the update will clarify  which parts of the guideline apply to which product types.  
+o Improve harmoni sation by clarifying perceived ambiguities  within  the current 
+guideline . 
+ 
+• Clarification of technical components of current guideline  and stability -related concepts ; may 
+include but not limited to : 
+o Combine common/overlapping principles and expand on items specific for Drug 
+Substances  (DS) /Intermediates/Drug Products  (DP) . 
+o Additional p roducts  not comprehensively covered by  the existing  ICH stability 
+guidelines  to be considered  can include Cell  and Gene Therapy Products / Advanced 
+Therapy Medicinal Products (ATMPs), Oligonucleotides,  Peptides , Generics, 
+Biosimilars, New products developed from approved  active substances , Vaccines , 
+Plasma -derived products , and regulated over the counter (OTC) products .  As part of 
+this consideration , certain  stability c oncepts (e.g., retest date) may not be applicable to 
+all product types . 
+o Data and evaluation strategies for defining the retest  period /shelf -life (DS) (align with 
+ICH Q7) and shelf -life (DP) . 
+o Baseline  considerations in designing a stability protocol  (e.g.,  storage 
+temperatures /%RH/study timepoints , stability -indicating methods , Climatic Zones III 
+and IV (former ICH Q1F guideline) . 
+o Container Closure System: packaging configurations on stability ; related conditions  for 
+drug and drug-device combination products . 
+o Photostability: testing expectations , relevant testing conditions  and applicability  
+o The practical use of bracketing and/or matrixing . 
+o For compatibility studies, consideration for microbial testing and compatibility with 
+drug delivery systems (e.g., infusion bags, pumps, syringes, in -line filters and tubing) . 
+o Clarification of how in -use stability and container closure integrity  studies are 
+conducted (i.e., in -use stability vs. open dish/worst case stability and container closure 
+integrity (CCI) testing in lieu of sterility , including multidose containers ). 
+o Clarity on in -use/end user storage  conditions  (storage of drug product  as supplied) , 
+including multi dose container s. 
+o Expectations for products requiring preparation prior to use (e.g., [re]constitution or 
+dilution , mixing with other media) . 
+o Excipient  (when applicable)  and adjuvant stability considera tions . 
+o Clarity on application of antimicrobial effectiveness testing ( AET ) on stability .  
+o Update of the current glossary to define the new topics  and terms . 
+o Clarify the difference and intent of studies under accelerated and stressed stability 
+conditions , as well as forced degradation studies . 
+o Stability profiling of reference materials/standards  when applicable .  
+o Acceptance criteria for stability testing versus release testing . 
+
+FINAL                                             Q1/Q5C Con cept Pap er                              Endorsed : 15 Nove mber  2022   
+ 
+-3- 
+ o Analytical procedure validation aspects including stress testing con ditions to 
+demonstrate the stability -indicating ability of the test method, algorithms used ( to align 
+with ICH Q2 and Q14).  
+o Clarity on the determination of water loss calculations when used in place of storage of 
+the drug product at low humidity conditions  for semi -permeable containers.  
+ 
+• Address new technolog ies and modern tools/strategies used as part of enhanced product 
+understanding:  
+o Modelling techniques , criteria for selection of batches , applicability,  and 
+caveats /limitations . 
+o Expectations for statistical approaches  and potential for Artificial Intellige nce 
+modelling methodologies.  
+o Expectations  for the justification of appropriate studies to determine shelf life for drug 
+products and retest date /shelf life  for drug substance s. 
+o Advances in unders tanding accelerated stability conditions and prior knowledge which 
+may support extrapolation . 
+o Use of risk management  to define appropriate stability strategies . 
+o Importance of justifying the product -specific stability test conditions and methods in 
+the stab ility protocol . 
+o Ensure consistency with (or refer to) the ICH Q13 discussion of stability considerations 
+for continuous manufacturing . 
+ 
+• Pharmaceutical Quality System (PQS)  related stability topics :  
+o Stability related  considerations  through the product supply chain (e.g., excursions 
+during storage and transportation , freeze -thaw cycle stability ). 
+o Stability related considerations  related to processing and hold-time studies during 
+manufacture .  
+o Stability approaches  for manufacturing  of DS and/or DP at multiple manufacturing 
+sites.  
+o Considerations  of Out of Specification (OOS) , Out of Trend (O OT) and significant 
+change for stability data , and expectations for trending within the PQS .  
+ 
+• Clarify applicability of requirements across development and lifecycle :  
+o Application of an integrated, science and risk -based approach to stability . 
+o Labelled storage statements/recommendations (e.g., in-use periods , temperature 
+conditions) .  
+o Common f iling considerations,  e.g., stability protocol/repo rt; minimum data sets .  
+o Consider  and clarify  applicabili ty of phase specific stability through out the different 
+stages of product development .  
+o Address how concepts should be applied to address product lifecycle /post -approval . 
+changes (risk -based approaches based on change)  and ensure consistency  with ICH Q12  
+principles . 
+ 
+• Training strategies and alignment with other guidelines  
+o Development of training materials related to the guideline updates with a focus on new 
+content.   
+o Development of case studi es. 
+
+FINAL                                             Q1/Q5C Con cept Pap er                              Endorsed : 15 Nove mber  2022   
+ 
+-4- 
+ Background to the Proposal:  
+The original Q1A guideline (reaching Step 4 in 1993) was one of the first guidelines to be finalised at 
+ICH. In the early 2000s, the parent Stability guideline had undergone a revision process and several 
+further guidelines were developed and finalised. Multiple ICH guidelines in the Q1 series had been 
+endorsed as ‘supplementing guidance’ and were given the sub -letters, i.e.,  Q1B, Q1C etc. These 
+individual guidelines were intended as  ‘subchapters’ of the “parent” Q1A(R2) stability guideline. This 
+was done in the 1990s and in the early 2000s to build on initial achievements of harmoni sation and avoid 
+potentially reopening a section or a guideline where consensus was already achieved. ICH Q5C was 
+later written to address the biotech/biological aspects of stability. ICH Q1F was later withdrawn in June 
+2006 and the aspects of stability tes ting in Climatic Zones III and IV were referenced to the WHO 
+guideline ‘Annex 10, Technical Report Series, 1010, 2018’ since at that time the ICH Regions resided 
+in Climatic Zones I and II. With more recently developed ICH guidelines, beginning with ICH Q7  and 
+through Q14, ICH guidelines typically bear a single number and incorporate a broader array of topics 
+as structured  annexes/addenda . 
+ 
+The ICH Q1 series (Q1A -Q1E)  as a Tier 1 guideline , ICH Q5C , and the WHO stability guidance 
+covering Climatic Zones III  and IV (i.e., content of the withdrawn ICH Q1F) are implemented 
+successfully in the regulatory framework by most regulatory authorities. However, experience gained 
+with the implementation since the finalisation of these guidelines  shows uncertainties rela ted to the 
+interpretation of the individual guidelines and how they fit together. Furthermore, it is recognized that  
+innovation in analytical testing including approaches as described in ICH Q2 and ICH Q14 along with 
+the development of control strategies ( ICH Q8  and Q 11), Quality Risk Management principles (ICH 
+Q9) and lifecycle approaches (as addressed in ICH Q10 and ICH Q12) create additional  uncertainty for 
+industry and regulatory agencies regarding how these pieces contribute to the assessment of  produc t 
+stability. This results in technical issues regarding stability that should  be addressed to harmoni se 
+approaches and expectations during product development and regulatory review and inspections.  
+ 
+Type of Expert Working Group Recommended:  
+The EWG should include regulators and industry representatives with background and expertise in either 
+(or both) the  technical and regulatory aspects of pharmaceutical stability.  Representatives should 
+comprise  expertise in Chemistry, Manufacturing and Co ntrols (CMC), Good Manufacturing Practices 
+(GMP) , API/drug substance, drug product, small and large molecules,  statistics,  and predictive 
+modelling.  The EWG should also include expert s in Cell and Gene  Therapy/ATMP product  types to 
+help add this topic in t he revised guidance.   
+Timing:  
+It is proposed that this work is initiated in Q4 calendar year 2022, following finali sation of the Concept 
+Paper and Business Plan and establishment of an Expert Working Group.  It is anticipated that the 
+development of an ICH Q1 guideline using the concepts outlined  in ICH Q1A -Q1E, WHO -Stability 
+(Q1F) and ICH Q5C guideline could reach Step 1  two years after initiation of an EWG and Step 4  in the 
+year after that .  Training materia ls will be initiated during Step 3 and available after Step 4 . 
+• Q4 calendar year 2022 - Final Concept Paper,  Business Plan  
+• Q4 calendar year  2024 – Complete Step 1  
+• Q4 calendar year  2025 – Complete Step 4   
+

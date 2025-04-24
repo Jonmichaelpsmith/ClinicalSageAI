@@ -1,0 +1,305 @@
+ 
+ 
+ 
+These Clinical Study Results are provided for informational purposes only.  
+  
+The  study  listed  may  include  approved  and  non-approved   uses, formulations  
+or  treatment  regimens.  It is not intended to promote any product  or indication 
+and is not intended to replace the advice of a health care professional .   The 
+results reported in any single clinical trial  may not reflect  the overall results 
+obtained across the product dev elopment. Only a physician  can determine if a 
+specific  product is the appropriate treatment for  a particular patient. If you have 
+questions, please consult a health care professional .   Before  prescribing  any  
+product,  healthcare  professionals  shou ld  consult  prescribing  information  for  
+the  product  approved  in  their  country.   
+ 
+
+Company name: Convergence Pharmaceuticals Ltd Protocol No.:1014802/201 
+Study drug: CNV1014802  CSR FINAL Revised, 04-September-2014 
+ 
+   CONFIDENTIAL Page 4 of 95 
+ 2. SYNOPSIS 
+Name of sponsor/company:  
+Convergence Pharmaceuticals 
+Ltd. Individual study table referring to 
+part of the dossier  (For National Authority use 
+only)  
+Name of finished product:  
+CNV1014802  Volume:   
+Name of active ingredient:  
+CNV1014802  Page:   
+Title of study:  
+A randomized, double blind, cross -over study to evaluate the safety and efficacy of CNV1014802 in 
+subjects with neuropathic pain from lumbosacral radiculopathy  
+ 
+Investigators:  
+Sweden: Dr.  Dr.  Dr.   
+Czech Republic: Dr.  Dr.  Dr.   
+France: Dr.  Pr.  Dr.  Dr.   
+Denmark: Dr.  Dr.  
+Study centres:  
+A full list of investigators and study sites is provided in Appendix 16.1.5.  
+Publication (reference): Not applicable  
+ 
+Studied period:  
+First subject consented -  21 July 2011  
+Last subject completed -  04 June 2012  Phase of development: II 
+ 
+Objectives:  
+Primary:   
+ To investigate the effect of repeat oral dosing of CNV1014802 on neuropathic pain in subjects 
+with lumbosacral radiculopathy  
+Secondary:  
+ To investigate the effects of repeat oral dosing of CNV1014802 on low back pain in subjects 
+with lumbosacral radiculopathy in whom there is lower limb pain.  
+ To investigate the effects of repeat oral dosing of CNV1014802 on function in subjects with 
+pain from lumbosacral radiculopathy.  
+ To investigate the safety and tolerability of CNV1014802 in subjects with lumb osacral 
+radiculopathy.  
+ To assess the plasma concentrations and exposures of CNV1014802  
+ 
+Exploratory:  
+  
+Methodology:  
+This was a multi -centre, double -blind, randomized, 2 -period cross -over study o f CNV1014802 versus 
+placebo.  Following a screening period, 137 subjects with a diagnosis of neuropathic pain due to 
+lumbosacral radiculopathy (LSR) were enrolled into a run -in phase where they received single blind 
+placebo medication for two weeks.  On Day 15, 82 subjects were randomized  to take part in two 
+sequential 22 -day dosing periods  (AM dose only on day 22) .  Subjects were randomized  in a 1:1 ratio to 
+receive either 350mg CNV1014802 BID followed by placebo BID, or vice versa.  The dosing periods 
+were separated by a 13 day washout period and were followed by a 7 day run out, during which subjects 
+received placebo.   
+ 
+
+
+Company name: Convergence Pharmaceuticals Ltd  Protocol No.:1014802/201  
+Stud y drug: CNV1014802  CSR FINAL  Revised , 04-September -2014  
+ 
+   CONFIDENTIAL  Page 5 of 95 
+ Number of subjects:  
+Planned  Randomized : 80  
+Enrolled: 137  
+Randomized : 82  
+Treated:  81 (CNV1014802 N=79; Placebo N=73)   
+Diagnosis an d main criteria for inclusion:  
+Inclusion criteria: Male or female aged between 18 and 65 years, with a  diagnosis of neuropathic pain 
+due to lumbosacral radiculopathy (LSR) .  Female subjects were to be of non -child bearing potential or 
+agree to use an appro ved form of contraception.  Male subjects had to agree to use an approved form of 
+contraception.  Body weight  50 kg for men and  45 kg for women.   Subjects had to be capable of 
+giving written informed consent.  Average QTcB or QTcF <450 msec; or QTc <480 msec in subjects 
+with Bundle Branch Block at screening.  AST and ALT <2xULN; alkaline phosphatase and bilirubin  
+1.5xULN.  Approved concomitant medications must have been stable for at least 4 weeks prior to Day 1.  
+Average baseline daily pain score for  neuropathic pain due to LSR on the 11 -point numerical rating scale 
+of 4 or greater.  France only :  subjects had to be affiliated to a health social security system.  
+ 
+Exclusion criteria:  Subjects who were unable to reliably delineate or assess their own pa in by 
+anatomical location/distribution.  Subjects with lumbar canal stenosis in which the pain in the lower 
+limbs occurred solely on walking and not at rest.  Subjects with causes for their neuropathic pain other 
+than LSR.  Subjects who had received nerve blocks and/or steroid injections for neuropathic pain within 
+4 weeks prior to Day 1.  Subjects who were indicated for surgical treatment of lumbosacral 
+radiculopathy.  Subjects with a  positive pre -study drug screen, a positive history of HIV, a positive pr e-
+study Hepatitis B surface antigen or positive Hepatitis C antibody result within 3 months of screening .  
+Subjects with hi story of any liver disease within the last 6 months, with the exception of known Gilbert‟s 
+disease.   Subjects with a h istory of exces sive regular alcohol consumption within 6 months of the study.  
+Subjects with a history or risk of seizures or a history of epilepsy, head injury or related neurological 
+disorders.  Subjects with a history of uncontrolled or poorly controlled hypertension,  with systolic BP 
+frequently exceeding 160mmHg and/or diastolic BP frequently exceeding 100mmHg, or subjects who 
+had BP greater than or equal to 160mmHg systolic and/or greater than or equal to 100mmHg diastolic  at 
+screening after repeated measurements.   Subjects with a history or presence of significant cardiovascular, 
+gastro -intestinal, or renal disease or other condition known to interfere with the absorption, distribution, 
+metabolism, or excretion of drugs.  Subjects with conditions known to affect card iac conduction or a 
+personal or familial history of Brugada syndrome.  Pregnant females or lactating females.  Subjects with 
+a history or presence of any clinically significant abnormality in vital signs / ECG / laboratory tests or 
+have any medical or psyc hiatric condition, which, in the opinion of the Investigator may interfere with 
+the study procedures or compromise subject safety .  History of suicidal ideation and/or suicide attempts 
+or clinical evidence of recent major depression.  Subjects who were una ble to maintain their same 
+medications for the treatment of neuropathic pain at a stable dose during the study.  Unable to refrain 
+from excessive use of sedatives.  Unable to comply with the prohibited concomitant medication 
+restrictions as detailed in the  protocol.  Unable to stop and remain abstained from non -pharmacological 
+treatments for their neuropathic pain during the study.  History of hypersensitivity to CNV1014802.  
+Subjects who had participated in a clinical trial and had received an investigatio nal product within 5 half -
+lives or twice the duration of the biological effect of the investigational product (whichever is longer) 
+prior to the start of this study .  Exposure to more than four new chemical entities within 12 months prior 
+to the first dosi ng day.   Where participation in the study would result in donation of blood or blood 
+products in excess of 500 mL within a 56 day period.   Subject was mentally or legally incapacitated.   
+Subject who, in the clinical judgement of the investigator, may be ma lingering or be motivated by 
+secondary gain from participation in the study.  Unwillingness or inability to follow the procedures 
+outlined in the protocol.  
+Test product, dose and mode of administration, batch number:  
+CNV1014802, oblong shape, film -coated,  immediate release tablets.  
+Excipients: Mannitol, microcrystallin e cellulose, sodium starch glycolate, magnesium stearate, colloidal 
+silicon dioxide, titanium dioxide (E171), hypromellose, polyethylene glycol 400, iron oxide yellow 
+(E172) and iron oxide bl ack (E172)  
+Batch number: E4445 -01 
+Study medication was to be taken at a dose of 350 mg BID at the same time each day (plus or minus 1 
+
+Company name: Convergence Pharmaceuticals Ltd Protocol No.:1014802/201 
+Study drug: CNV1014802  CSR FINAL Revised, 04-September-2014 
+ 
+   CONFIDENTIAL Page 6 of 95 
+ hour) and one hour before or after food.  
+Duration of treatment:  
+Subjects took part in two treatment periods of 22 days with randomized CNV1014802 350 mg BID or 
+placebo BID.  In addition, placebo was administered during the run -in, wash -out and run -out phases.  
+Reference therapy, dose and mode of administration, batch number:  
+Placebo was identical in appearance to the activ e drug but without CNV1014802.  
+Excipients: Mannitol, microcrystalline cellulose, sodium starch glycolate, magnesium stearate, titanium 
+dioxide (E171), hypromellose, polyethylene glycol 400, iron oxide yellow (E172) and iron oxide black 
+(E172)  
+Batch number : E4445 -01 
+This study was a double blind study and consequently the route of administration and dosing 
+requirements were identical to those for CNV1014802 (as above).  
+Criteria for evaluation:  
+Efficacy:  
+ Change in average daily neuropathic pain score from  baseline to Week 3 based on the 11 point 
+Pain Intensity Numerical Rating Scale (PI -NRS).  
+ Change in average daily pain score from baseline to Week 1, 2 and 3 of treatment and 1 week 
+following the end of randomized treatment, based on the 11 point PI -NRS.  Pain intensity for 
+neuropathic pain associated with lumbosacral radiculopathy and that for low back pain in the 
+lumbosacral spine was to be scored separately.  
+ Proportion of subjects who had ≥30% and  ≥50% reduction in average daily pain score for 
+neuropathic pain from LSR and low back pain (each separately) relative to baseline during 
+Weeks 1, 2 and 3 of treatment and 1 week following the end of randomized treat ment.  
+ Change in the amount of rescue medication used from baseline to Week 3 of treatment  
+ Change in Galer Neuropathic Pain Scale from baseline to Week 3 of treatment.  
+ Change in average disability score from baseline to Week 3 of treatment based on Oswestr y 
+Disability Index.  
+ Proportion of subjects who had “improved”, “much improved” or “very much improved” 
+relative to baseline on each of the Patient Global Impression of Change (PGIC) and Clinical 
+Global Impression of Change (CGIC) on Week 3 of treatment.  
+ Change in pain (11 -point NRS) from baseline on straight leg raise.  
+ Change in angle of extension of leg from baseline during straight leg raise.  
+Pharmacokinetics:  
+ Pre-dose and post -dose plasma CNV1014802 concentrations – AUC(0 -24)-ss, Cmin -ss and 
+Cmax -ss 
+Safety: 
+ Adverse events  
+ Vital signs  
+ ECG parameters  
+ Laboratory safety tests (clinical chemistry, haematology, urinalysis)  
+Exploratory:  
+  
+Statistical methods:  
+Efficacy Analysis:  
+The intent -to-treat population, defined as all rand omized subjects who received at least one dose of 
+randomized  study medication, was used for all efficacy analyses.  
+In general, continuous data was summarized using descriptive statistics.  The primary e fficacy analysis 
+was performed using a mixed effect m odel including subject as a random effect.  For statistical analyses, 
+all tests were two -sided with significance interpreted at the 5% level.  
+Subjects randomized into this study either had radiculopathic pain in one or both lower limbs only, or one 
+or both  lower limbs and back pain together.  If subjects only had pain in one or both lower limbs then the 
+
+
+Company name: Convergence Pharmaceuticals Ltd Protocol No.:1014802/201 
+Study drug: CNV1014802  CSR FINAL Revised, 04-September-2014 
+ 
+   CONFIDENTIAL Page 7 of 95 
+ primary endpoint was the PI -NRS score associated with the pain in their worst affected lower limb (most 
+painful lower limb determined at Screening).  If the  subject had pain in one or both lower limbs and back 
+pain then the PI -NRS score for the worst affected lower limb was used as the primary endpoint for that 
+subject, but the PI -NRS score for the back was also recorded and analysed separately as a secondary  
+endpoint.  
+ 
+Post Hoc Analyses  
+Post hoc analyses were conducted on the primary endpoint and responder rates to explore the treatment 
+effect in different subpopulations.   
+In addition to the model described by the SAP (period level baseline), analyses of the  primary endpoint 
+and responder rates were also conducted using a mixed effects model that included both a period and 
+subject level (mean of baseline 1 & 2) baseline as fixed effects.   
+ 
+Pharmacokinetics Analysis:  
+The PK analysis population consisted of 78  subjects (43 males, 35 females).  Each subject had 11 PK 
+samples taken, of which four at steady state on active treatment (two pre -dose and two 2 hrs post -dose).  
+The total number of concentration records (on active treatment only) in the final datafile w as 287.  The 
+observations were visually compared to the study specific (regimen and population) predictions (median 
+and 90% prediction interval) from a historical popPK model based on healthy volunteer phase I data.  
+Subsequently, non -linear mixed effect m odelling was used, applying the historical popPK model, to 
+estimate the PK parameters for each individual.  For the final model all PK parameters were fixed to the 
+healthy volunteer values except for the between subject variability on CL/F.  The data did n ot allow other 
+parameters to be estimated with sufficient confidence.  The final model described the observations well 
+and neither obvious biases, nor evidence of non -compliance were observed.  The individual PK 
+parameters were then used to derive (through  simulation and calculation) the individual exposures at 
+steady state, assuming full compliance.  
+ 
+ 
+ 
+Safety Analysis:  
+The safety population, defined as all subjects who had received any amount of study medication, was 
+used for safety analyses.  Safety data was presented in tabular and/or graphical format and summarized 
+descriptively.  
+SUMMARY: RESULTS  
+Efficacy:  
+ CNV1014802 significantly improved neuropathic pain in LSR patients.  On the primary 
+endpoint, there was a difference in the average change in PI -NRS for neuropathic pain from 
+baseline to Week 3 of -0.43 (p= 0.0255) for CNV1014802 compared to placebo.  
+ A statistically significant effect on neuropathic pain levels was seen from Week 2 onwards.  
+ There were no stati stically significant effects of CNV1014802 on PI -NRS assessments of lower 
+back pain – non-neuropathic.  
+ The effect of CNV1014802 on neuropathic pain was most pronounced in monotherapy patients.  
+There was a difference in the average change in PI -NRS for neu ropathic pain from baseline to 
+Week 3 of -0.73 (p= 0.0038) for CNV1014802 compared to placebo in monotherapy patients.  
+ There was no evidence that patients with no prior surgery responded any differently to 
+CNV1014802 than those with a history of surgery.  
+ There were no statistically significant differences between CNV1014802 and placebo on any of 
+the other secondary efficacy endpoints as analysed using the period 1 baseline only.  
+ Sensitivity analyses conducted analy sing the first period only in a between sub ject analysis  
+showed a similar magnitude of effect of PI -NRS in Week 3 compared to baseline, in both the all 
+subject ITT population ( -0.43, p= 0.1858) and the Monother apy subjects ( -0.81, p=0. 0555).  
+ 
+Pharmacokinetics:  
+ CNV1014802 plasma concentrations and exposures were as expected from the healthy volunteer 
+
+
+Company name: Convergence Pharmaceuticals Ltd  Protocol No.:1014802/201  
+Stud y drug: CNV1014802  CSR FINAL  Revised , 04-September -2014  
+ 
+   CONFIDENTIAL  Page 8 of 95 
+ Phase I  PK data . 
+ Individual PK exposures could be estimated in 78/79 subjects that received active treatment 350 
+BID.  
+ The median (90% percentile range) derived exposures were AUC(0 -24)-ss 55 (40 - 78) 
+[μg*hr/ml], Cmax -ss 3.7 (2.7 - 5.0) [μg/ml], Cmin -ss 1.4 (0.9 - 2.0) [μg/ml].  
+ The PK data suggested no evidence of major non -compliance.  
+ 
+Safety:  
+ CNV1014802 was well tolerated; 58% subjects dosed with CNV1014802 reported TEAE‟s 
+compared to 49% dosed with pl acebo.  
+ The most common treatment emergent adverse events occurring in this study were headache 
+(CNV1014802: 12 subjects ( 15.2%); placebo: 5 subjects (6. 8%)) and dizziness (CNV1014802: 9 
+subjects (11. 4%); placebo: 3 subjects ( 4.1%)).  The majority of all T EAE‟s were mild in 
+severity.  
+ A total of 8 ( 10.1%) CNV1014802 and 1 (1. 4%) placebo treated subjects were discontinued due 
+to TEAE‟s.  One CNV1014802 subject was discontinued due to a rash which was considered to 
+be related to study drug.  
+ ALT increases of >3 xULN were observed in two subjects dosed with CNV1014802.   One 
+subject was discontinued from the study; this subject also had significant elevations of AST, 
+GGT and alkaline phosphatase.  Serum bilirubin was normal in both subjects.  The abnormal 
+laborator y parameters in both subjects rapidly fell once CNV1014802 was withdrawn.  
+ No other clinically significant changes in laboratory test parameters, were reported.  
+ There were no clinically significant changes in BP, heart rate or ECG parameters associated 
+with CNV1014802  
+ 
+SUMMARY: CONCLUSION  
+The primary objective of this study was to investigate the efficacy of repeat oral dosing of CNV1014802 
+on neuropathic pain in subjects with lumbosacral radiculopathy.  There was a small but statistically 
+significant effec t of CNV1014802 compared to placebo at Week 3 on the change in neuropathic pain 
+associated with LSR, but not with low back pain.  The improvement in the monotherapy subset was 
+greater than in the overall ITT population.  No significant changes in the secon dary endpoints were 
+observed.   Whilst improvements in pain ratings  were seen , there were no statistically significant 
+differences between CNV1014802 and placebo on any of the other secondary efficacy endpoints .  
+However, these were  analysed using the perio d 1 baseline only  for both treatment periods baseline .  
+CNV1014802 plasma concentrations and exposures were as expected from phase I healthy volunteer data 
+and there was no evidence of major non -compliance.  
+ 
+CNV1014802 was generally well tolerated with the  most common adverse events being headache and 
+dizziness.  No serious adverse events were reported and only 2 subjects experienced severe treatment 
+emergent adverse events (headache and liver function test abnormal) which both resolved without 
+sequelae.  Two subjects treated with CNV1014802 reported rises in ALT greater than 3x ULN which fell 
+rapidly once CNV1014802 was terminated.  One subject was discontinued with a rash which was related 
+to CNV1014802.  No other clinically significant changes in laborato ry test parameters, vital signs or 
+ECG changes were reported.  
+ 
+Date of Report: 04 September  2014  
+ 
+ 
+

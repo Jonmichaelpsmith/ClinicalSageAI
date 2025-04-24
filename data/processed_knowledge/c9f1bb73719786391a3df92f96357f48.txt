@@ -1,0 +1,245 @@
+Factsheet: publication of clinical trial results  
+Network of coordination centres for clinical trials – KKS-Netzwerk e.V. 13. 
+Februar 2020   
+Over  the last months , the media have repeated ly discussed the  publication of the results of clinical 
+trials. A debate was triggered by the critical positions voiced by the ALL Trials Initiative 
+(https://www.alltri als.net/ ), whose  supporte rs include  the British Medical Journal  
+(https://www.bmj.com/ ), the Centre for Evidence -based Medicine (https://www.cebm.net/ ) and the 
+Cochrane Collaboration (https://www.cochrane.org/ ). Academic  clinical researchers  in particular 
+were criticised for not  mak ing their data available to the public , or not quickly enough,  and thus 
+contributing  to bias in  the body of evidence. The German Network of coordination centres for clinical 
+trials  (KKS -Netzwerk e.V. – KKSN)  has long been attending to this problem. Below , you will  find a 
+summary of the facts as seen by the KKSN.   
+ 
+Timely  publication of the results of clinical trials is both a scientific and an 
+ethical imperative  
+The publication of the results of clinical trials is a scientific and ethic al imperative as noted  by leading 
+organisations such as the World Medical Association and the WHO (12, 3). To be able to weigh the 
+benefits  and risks of medical procedures or medications, a  complete  overview as of the current 
+evidence  is essential. This does not  only apply to new medications and procedu res. Such an 
+assessment is always to be seen in the temporal  context of the current state of knowledge . It is thus 
+to be reviewed and updated once new data becomes available. If the publication  of clinical trials is 
+delay ed or does not take place at all , this can bias the bas is for such an assessment (publication bias).  
+Furthermore, one has an  ethical obligation toward the trial participants , who consent to participat e 
+and can expect the results  of the trial to be p ublished . Finally , it is a waste of sig nificant human  and 
+financial resources if clinical trials are terminated  without their results being published. This was 
+discussed  in the Lancet’s  publication  series:  „Research: increasing value, reducing waste“  
+(https://www.thelancet.com/series/research ).  
+ 
+Where are the results from clinical trials being published?   
+In general, results of clinical trials are published in scientific journals. During the publication  process , 
+submitted manuscripts undergo strict scientific evaluation by independent experts (peer review).  
+Moreover , clinical trial results  can be made available in public clinical trials registries. However, in 
+this case , there is no  independent peer rev iew. In clinical trials involving medicinal products , there is 
+even a legal  obligation to publish clinical trial results in a public registry (1, 2). This applies 
+irrespective of whether the findings are published in a scientific journal or not.   
+ 
+Which study registries are available ? 
+In accordance with the terms of the Declaration of Helsinki  (3), the International Committee of 
+Medical Journals Editors (I CMJE)  (4) requires  that only those trials should be published that were 
+register ed in an eligible registry  prior to the start of patient recruitment . There are already a 
+considera ble number of publicly accessible registries for clinical trials. The World Health Organisation  
+has set up a web portal  serving as a meta platform to collect  entries from existing registries  
+
+throug hout the world . All basic data of trials listed in national registries can be retrieved from there 
+(https://www.w ho.int//ictrp/search/en/ . 
+Publicly  accessible registries of particular relevance for Germany  are:  
+ 
+German register of clinical trials (DRKS, drks.de)  
+The DRKS informs in English and German about clinical trials carried out in Germany. All kinds of 
+clinical trials can be registered there (interventional trial s with medicinal products , medical devices or 
+other therapeutic procedures, prospective observational  studies, trials on diagnostic strategies). 
+Although registration is voluntary, German funding bodies like the DFG and BMBF  explicitly mention 
+the DRKS in the context of requesting the public registration of trials . For each trial registered with 
+the DRKS,  basic data such as title, short description , inclusion and exclusion criteria, study status and 
+endpoints are retrievable. Results can be uploaded . The DRKS is free and run by the German Institute 
+of Medical Documentation and Information, an agency embedd ed in  the Federal Ministry of Health 
+(BMG). The DRKS is accredited as a register by the WHO.  
+ 
+ClinicalTrials.gov (clinicaltrials.gov)  
+ClinicalTrials.gov is a registr y primarily for clinical trials carried out in the USA, but open for trials 
+from other countries. It is  operated by the National Institutes of Health (NIH) . As with the DRKS , all 
+kinds of studies can be registered and results can be recorded. Sponsors and investigators of certain 
+trials have been legally bound in the USA since 2008 to register their trials with  ClinicalTrials.gov  and 
+to post results  (5, 6) . With more than 300 ,000 trials from 209 countries ClinicalTrials.gov is the m ost 
+comprehensive  registr y acknowledged by the WHO.  
+ 
+EU Clinical Trials Register (clinicaltrialsregister.eu)  
+The EU Clinical Trials Register (EUCTR) accesses  the EudraCT database (European Union Drug 
+Regulating Authorities Clinical Trials Database) , a database exclusively for interventional cli nical 
+studies with medicinal products within the European Union. The database is operated by the 
+European Medicines Agency  (EMA) and used by the competent authorities of the respective member 
+states  during approval and for  supervision of clinical trials with medicinal products. Clinical trials with 
+medicinal products carried out in the EU must be approved in ad vance by the competent authorities  
+(7). As part of the authorisation process, registration with the EUCTR is compulsory. The EUCTR also 
+allows  spon sors the ability to document clinical study results in a standardised manner. However, the 
+public can only see the results after approval and release by the EMA. Unfortunately, part of the 
+process of data activation  is only carried out after considerable d elay. 
+ 
+PharmNet.Bund (pharmnet -bund.de)  
+PharmNet.Bund  is the portal  for information  on medicinal products of  the German  federal 
+government and the states. The integrated database ‘clinical trials’ contains information about  
+clinical trials that were approved in Germany for  medicinal products, including a report of the  results. 
+The database is operated exclusively by the responsible competent  authorities ( Federal Institute for 
+Drugs and Medical Devices  (BfArM) ), Paul -Ehrlich -Institut e (German Federal Agency for Sera and 
+Vaccines , PEI). Reports submitted to the competent  authorities by the sponsors of clinical trials are 
+made available to the public  with a delay of up to several years. Sponsors of clinical trials have no 
+means of influenc ing this lengthy process.  
+
+Is there a statutory obligation to publish results of clinical trials?  
+In Germany, the legal requirement to publish results only holds for  clinical trials with medicinal 
+products . For all other kinds of clinical trials there is no legal obligation for results to be made 
+available to the public. The current 2013 Declaration of Helsinki (3) states th ough that “ Researchers 
+have a duty to make publicly available the results of their res earch on human subjects ”. According to 
+the (ideal ) code of conduct  for doctors working in Germany , the Helsinki declaration has to be 
+observed within the frame work  of research.  
+ 
+Clinical Trials with medicinal products  
+Status quo: For clinical trials with  medicinal products conducted in the EU, there is a legal obligation 
+to publish trial results , which is based on the European Regulations 726/2004 (8) and 1901/2006 (9).  
+These provide the legal bas is for the establishment  of the public clinical trials database on 
+PharmNet .Bund , a database containing information on medicinal products, provided by the German 
+federal government and the state s. The German medicines law and the subordinate regulation on 
+the application of Good Clinical Practice for the conduct of clinical trials with medicinal products (1, 
+2) oblige sponsors of clinical trials to submit a report to the competent authority  within  one year of 
+terminati ng the trial . This holds for all clinical trials that were started in Germany since 2004. After 
+revision  by the responsible authority, the report is published on the publicly accessible portal 
+PharmNet.Bund.  
+In 2012, the EU published guideline  2012/c302/03 (10) , complementing the previous regulations 
+726/2004 (8)  and 1901/2006 (9)  with regard to the disclosure of results from clinical trials. In 
+particular, the guideline requir es that results  from c linical trials  have to be su bmitted to the EudraCT 
+database (and therewith on EUCTR) in a standardised manner. This extension  of the EudraCT 
+database was completed  on 21. 07.2014. Since then, sponsors can submit results directly to the 
+EudraCT database.  
+However, a  European guideline is not legally binding in the same way  as a regulation. In Germany, 
+the German medicines law continues to  be the authoritative source for sponsors of clinical trials. 
+Already i n 2014, the KKSN raised the topic with the EU -commission  in a detailed letter . Receipt of the 
+letter was acknowledged.  
+Future stat us: On 16 June 2014 the n ew EU -regulation 536/2014 (11) on clinical trials on  medicinal 
+products came into effect . This regulation only becomes valid,  however, after completion and full 
+functionality  of an EU-portal and an associated database for the transmission of data and 
+information on clinical trials . Its completion was scheduled for 2016 but has been postponed 
+repeatedly since. Even now , six years  after the regulation  came into effect , it is not yet possible to 
+forecast when the database will be executable and hence the regulation becoming valid.  Upon  
+validity of the EU-regulation 536/2014, article 37  stipulates that reporting  of results from clinical 
+trials via the EU portal becomes legally binding within the entire EU (Joint Letter by the European 
+Commission, EMA and HMA, June 2019).  
+To summarise , in Germany it is currently legally required that results from clinical trials with 
+medicinal products are made public. This takes place through  submission of the final report to the 
+competent  authorities . For other kinds of clinical trials, for instance those with medical devices, there 
+are currently no such legal requirements. With the creation of the EU regulations 536/2014 
+(medicinal products) and 2017/745 (medical devices – legall y binding from May 2020 (12)),  the legal 
+basis was set up for the  reporting of results from clinical trials  to the respective register. Concerning 
+clinical trials with medicinal products, this reporting obligation is linked to a corresponding European 
+
+data base structure, the completion of which has already been postponed for several years. 
+Notwithstanding the above, the publication of results from clinical trials should be an ethical 
+imperative to all researchers.   
+ 
+What about the rate of publication of clinical trials conducted at university 
+medical centres?   
+In recent years, p ublic disclosure of results from clinical trials has increasingly been sp otlighted by 
+both methodological research and public debate. Reliable statements with regard to the rate of 
+publication, however, a re methodologically difficult. This is because, as outlined above, there are 
+different ways in which  the results from clinical trials  can be published .  
+All analyses carried out to date show , however , that a substantial proportion  of clinical trials remains 
+unpublished . Depending on methodological and temporal aspects, publication rates in scientific 
+journals and study registries of 54% have been reported ( clinical trials with medicinal products 
+phases II-IV, with  completion 2006 - 2015) (13), 71% ( for randomised trials with a large number of 
+participants, completion before 2009) (14), 66% ( for academic studies in the USA , with completion of 
+studies 2007 - 2010) (15) und 74% ( for interventional academic trials  in Germany  (16).  
+If one looks at the rate of prompt ly reported clinical trial results (that is within 24 months following 
+study completion as required by the WHO (17) ), numbers are much  lower. In interventional academic 
+trials  from  Germany , a positive trend  in publication rate can be seen : in trials completed in 
+2009/2010 , 35% were disclosed within 24 months  compared  to 42% for trials from 2013 (16).  
+Two further publi cations that attracted public attention  analysed the disclosure of results from 
+clinical trials i n public registries, with the objective of assess ing compliance with the relevant laws : 
+Goldacre et al. (18) for the EU, and De Vito et al (19) for the USA.  In the analysis by Goldacre et al. , 
+however,  compliance of German sponsors is considerably underestimated since according to German 
+legislation , results from clinical trials have to be reported to the competent  authorities , who in turn 
+disclose those reports to the public via the PharmNet.Bund portal and not on EUCTR.  
+The overall conclusion is that results from a number of clinical trials are still not being published – 
+neither in journals nor on registries.  
+ 
+How could the rate of publication be enhanced in the future?  
+The KKSN believes that th e following measures could contribute to the improvement of the situation:   
+- Definition of a harmonised basic data set for reporting of results approved by all registries – in 
+extension to the information bel onging to the core data set requested by the WHO  
+- Extension  of the WHO portal, via which  trial data from all registries can be retrieved, to 
+information on study results . This would have the benefit that one central portal could provide 
+an overview on results from all kinds of clinical studies.  
+- The establishment of the legal framework by which scientific publications that have undergone 
+peer review  and are available to t he public as ‘Open Access’  can be considered sufficient trial 
+reporting . The corresponding register could provide a link to the publication.  
+- Improve the possibility for timely public disclosure also  of trials with negative results, 
+discontinued trials or trials lacking fundamental gain of insight.  
+- Timely processing and posting of reports submitted to  the competent  authorities (for 
+PharmNet.Bund portal) and the EMA (for the EUCTR).  
+
+- Establishing a  public ation  ethic  at universit ies that encourages  timely disclosure  of studies , 
+irrespective of results and thus of the impact of the publication medium . This would constitute a 
+major step toward  increased transparency. This could be realised for example  by considering 
+such aspects  when allocating performance -oriented funds.  
+The members of the KKSN are committed  to contribut ing to the improvement of the situation and 
+therefore endorse the appeal of the WHO (17).  
+ 
+Referen ces  
+1. Gesetz über den Verkehr mit Arzneimitteln - Arzneimittelgesetz in der Fassung der 
+Bekanntmachung vom 12. Dezember 2005 (BGBl. I S. 3394), das zuletzt durch Artikel 18 des Gesetzes 
+vom 20. November 2019 (BGBl. I S. 1626) geändert worden ist: AMG.  
+2. Verordnung über die Anwendung der Guten Klinisch en Praxis bei der Durchführung von klinischen 
+Prüfungen mit Arzneimitteln zur Anwendung am Menschen - GCP-Verordnung vom 9. August 2004 
+(BGBl. I S. 2081), die zuletzt durch Artikel 8 des Gesetzes vom 19. Oktober 2012 (BGBl. I S. 2192) 
+geändert worden ist: GCP-Verordnung - GCP-V.  
+3. Declaration of Helsinki: Ethical Principles for Medical Research Involving Human Subjects. 2013.  
+4. International Committee of Medical Journal Editors. Clinical trial registration in recommendations 
+for the conduct, reporting, editing, and publication of scholarly work in medical journals. 2018. 
+Available from: URL: http://www.icmje.org/icmje -recommendations.pdf .  
+5. Food and Drug Administration: Amendments Act of 2007. Public Law 110 –85. 2007. Available 
+from: URL: https://www.govinfo.gov/content/pkg/PLAW -110publ85/pdf/PLAW -110publ85.pdf .  
+6. National Institutes of Health, Department of Health and Human Services: Clinical trials registration 
+and results information submission: final rule. 2016.  
+7. Directive 2001/20/EC of 4 April 2001, of the European Parliament and of the Counc il on the 
+approximation of the laws, regulations and administrative provisions of the Member States relating 
+to implementation of good clinical practice in the conduct of clinical trials on medicinal products for 
+human use: EC 2001/20. Official Journal of the European Union 2001; L 121: 34 –44.  
+8. Regulation (EC) No 726/2004 of the European Parliament and of the Council of 31 March 2004 
+laying down Community procedures for the authorisation and supervision of medicinal products for 
+human and veterinary use and establishing a European Medicines Agency: EC 726/2004. Official 
+Journal of the European Union 2004; L 136: 1 -33.  
+9. Regulation (EC) No 1901/2006 of the European Parliament and of the Council of 12 December 
+2006 on medicinal products for paediatric use  and amending Regulation (EEC) No 1768/92, Directive 
+2001/20/EC, Directive 2001/83/EC and Regulation (EC) No 726/2004: EC 1901/2006;. Official Journal 
+of the European Union 2006; L 378: 1 -19.  
+10. Commission Guideline — Guidance on Posting and Publication of Result -Related Information on 
+Clinical Trials in Relation to the Implementation of Article 57(2) of Regulation (EC) No 726/2004 and 
+Article 41(2) of Regulation (EC) No 1901/2006: EC 2012/c30 2/03. Official Journal of the European 
+Union 2012; C 302: 2 -10.  
+
+11. Regulation (EU) No 536/2014 of the European Parliament and of the Council of 16 April 2014 on 
+clinical trials on medicinal products for human use, and repealing Directive 2001/20/EC: EC 
+536/2014. Official Journal of the European Union 2014; L 158: 1 -76.  
+12. Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on 
+medical devices, amending Directive 2001/83/EC, Regulation (EC) No 178/2002 and Regulation (EC ) 
+No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EEC. Official Journal of the 
+European Union 2017; L 117: 1 –175.  
+13. Zwierzyna M, Davies M, Hingorani AD, Hunter J. Clinical trial design and dissemination: 
+comprehensive analysis of clin icaltrials.gov and PubMed data since 2005. BMJ 2018; 361: k2130.  
+14. Jones CW, Handler L, Crowell KE, Keil LG, Weaver MA, Platts -Mills TF. Non -publication of large 
+randomized clinical trials: cross sectional analysis. BMJ 2013; 347: f6104.  
+15. Chen R, De sai NR, Ross JS, Zhang W, Chau KH, Wayda B et al. Publication and reporting of clinical 
+trial results: cross sectional analysis across academic medical centers. BMJ 2016; 352: i637.  
+16. Wieschowski S, Riedel N, Wollmann K, Kahrass H, Müller -Ohlraun S, Sch ürmann C et al. Result 
+dissemination from clinical trials conducted at German university medical centers was delayed and 
+incomplete. J Clin Epidemiol 2019; 115: 37 –45.  
+17. Joint statement on public disclosure of results from clinical trials; 2017. Availab le from: URL: 
+https://www.who.int/ictrp/results/jointstatement/en/ .  
+18. Goldacre B, DeVito NJ, Heneghan C, Irving F, Bacon S, Fleminger J et al. Compliance with 
+requirement to report res ults on the EU Clinical Trials Register: cohort study and web resource. BMJ 
+2018; 362: k3218.  
+19. DeVito NJ, Bacon S, Goldacre B. Compliance with legal requirement to report clinical trial results 
+on ClinicalTrials.gov: a cohort study. The Lancet 2020; 39 5(10221): 361 -369 
+ 
+  
+ 
+

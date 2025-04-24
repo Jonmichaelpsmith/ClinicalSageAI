@@ -1,0 +1,195 @@
+ 
+ 
+02 June 2024 
+Definitions v 1. 2 
+1 
+ Definitions of terms in the context of the implementation of ICH Guidelines  
+ 
+Term  Definition  Comments  
+Not (yet) implemented  The process for the 
+implementation of an ICH 
+Guideline has not yet started.  a) No guideline exists  or b) 
+national/ regional guideline 
+deviating from ICH Guideline or 
+national/regional guideline exists 
+but the process for replacement or 
+amendments for alignment with 
+the ICH Guideline has not started 
+yet. 
+In the process of 
+implementation  The process for the 
+implementation of the ICH 
+Guideline has started and has 
+reached a specified milestone. The 
+process is monitored by the 
+regulatory agency and the 
+progress is reported to the ICH 
+MC/Assembly on a regular basis.  The process can have different 
+starting points: a) no 
+national/regional guideline exists; 
+the ICH Guideline defines new 
+requirements and b) a 
+national/regional guideline is in 
+the process of development or c) a 
+national/regional guideline exists 
+and is rep laced by or is amended 
+to be in line with the ICH 
+Guideline. Generic processes for 
+a) non -electronic and b) electronic 
+guidelines will be defined 
+outlining the milestones that 
+should be followed.  
+Implemented  The process of implementation is 
+completed. This step is identical 
+to step 5 of the ICH process.  This term refers to the self -
+declaration of the regulator 
+regarding the conclusion of the 
+implementation process. The 
+regulator makes publicly available  
+the final guideline.  
+Adequately 
+implemented  All relevant elements, concepts 
+and principles  of the ICH 
+Guideline  are followed . This is 
+done preferably by referring 
+to/implementing the original ICH 
+Guideline text and/or translating 
+the original guideline text. This 
+may include in justified cases Minimal elements, concepts and 
+principle s will be defined and 
+included in the survey to assess 
+the degree of implementation. 
+Additional information  to the ICH 
+guideline  should only be included 
+in order to provide clarity and 
+facilitate implementation by 
+
+ 
+ 
+02 June 2024 
+Definitions v 1. 2 
+2 
+ Term  Definition  Comments  
+implement ation of the guideline in 
+a way that may incorporate 
+additional information  beyond 
+those defined in the ICH 
+Guideline in circumstances when 
+the Guideline is too high -level and 
+does not provide sufficient 
+guidance.  
+ industry, but should not increase 
+regulato ry burden.  
+Deviation s or additional 
+information to help clarify  
+concepts should be  communicated 
+(with the justification ) to the ICH 
+Management  Committee for 
+transparency and possibly 
+assessment.  
+Not adequately 
+implemented  The ICH Guideline has been 
+implemented in a modified way 
+that a) incorporates additional 
+requirements beyond those 
+defined in the ICH Guideline 
+without objective justification in 
+cases where clear guidance is 
+provided,  or b) does not include 
+all relevant e lements, concepts 
+and principles of the ICH 
+guideline and does not provide 
+any objective justification for 
+omitting some requirements in the 
+guideline or c) requires 
+application of the guideline for a 
+smaller range of products than 
+outlined in the ICH Guid eline.  Lack of adequate implementation 
+means that the ICH guideline has 
+not been adequately implemented 
+following an assessment of the 
+regulatory or administrative 
+measure that incorporates the ICH 
+Guideline into the regulatory 
+framework.  
+There may be varying degrees of 
+inadequate implementation and 
+this assessment can only be done 
+on a case -by-case basis. Examples 
+could be taken from the Industry 
+Survey to illustrate this range. It 
+should be noted that according to 
+the Assembly RoP (v. 4.0 ), 
+deviation from the guideline , in 
+exceptional cases,  may be 
+accepted if objectively justified.  
+Adherence* In its practice, the regulatory 
+authority consistently adheres to 
+(applies) all identified relevant 
+elements, concepts and principles 
+of the ICH Guideline over time.  Once an ICH Guideline has been 
+(adequately) implemented by a 
+regulatory authority, experience is 
+gathered on how the regulator 
+applies the guideline in practice. 
+Adherence leads to a stable 
+regulatory environment and to 
+increased sustainability. 
+Adherence may be assessed in 
+regular intervals.  
+                                                             
+* Adherence at this point in time is defined as application of the ICH Guideline by the regulator ’s view . At a 
+later stage, consideration will be given to the aspect of adherence to the guideline requirements by industry ’s 
+view . 
+
+ 
+ 
+02 June 2024 
+Definitions v 1. 2 
+3 
+ Term  Definition  Comments  
+Lack of adherence  Even if the guideline has been 
+adequately implemented, it is not 
+being applied and adhered to in 
+practice.   The regulatory authority does not 
+in practice require industry to 
+adhere to the guideline or does not 
+follow the guideline when 
+assessing the applications ; e.g. is 
+in its practice adding requirements 
+beyond what is provided in the 
+(implemented) ICH guideline . 
+Confirmed 
+implementation/ 
+adherence  Both the implementation of and 
+adherence to the ICH Guideline 
+have been assessed by an 
+independent third party and have 
+been found to be adequate by the 
+Assembly/the MC (see above).  The assessment should be done in 
+two-steps: first assessment of a) 
+adequate implementation and then 
+b) adherence to the ICH 
+Guideline.  
+The implementation should not be 
+considered confirmed even in case 
+of adherence if there is no 
+adequate implementation of the 
+ICH Guideline (i.e. where the 
+regulatory authority in practice 
+accepts submissions that comply 
+with the requirement s in the ICH 
+Guideline despite not having 
+adequately implemented it).  
+Not applicable  The implementat ion of a specific 
+ICH guideline  is not applicable in 
+a country/ region . An appropriate 
+justification is provided.  Example: A country may not have 
+its own Pharmacopeia but 
+reference s internationally 
+recognized Pharmacopoeias. 
+Hence , the ICH  Q4B Guideline  is 
+not applicable (and does not need 
+to be implemented) . 
+ 
+

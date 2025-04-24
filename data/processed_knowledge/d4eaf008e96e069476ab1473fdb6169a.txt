@@ -1,0 +1,159 @@
+ 
+International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use  
+ 
+ICH Secretariat, Route Pré -Bois 20, P.O. Box 1894, 1215 Geneva, Switzerland  
+Telephone: +41 (22) 710 7480 - admin@ich.org, http://www.ich.org   
+Final  Concept Paper  
+ICH Q14:  Analytical Procedure Development and Revision of Q2(R1) Analytical 
+Validation  
+dated 14 November 2018 
+Endorsed by the Management Committee on 15 November 2018 
+ 
+ 
+Type of Harmoni sation Action Proposed  
+ 
+It is proposed to develop a new quality guideline on Analytical Procedure Development and 
+to revise the ICH Q2(R1) Guideline on Validation of Analytical Procedures: Text and 
+Methodology.  
+The Expert Working Group should potentially determine the feasibility to combine both 
+documents into one for simplification and clarity.  
+ 
+Q14 Analytical Procedure Development guideline  
+The new guideline is proposed for harmonising the scientific approaches of Analytical 
+Procedur e Development, and providing the principles relating to the description of Analytical 
+Procedure Development process. Applying this guideline will improve regulatory 
+communication between industry and regulators and facilitate more efficient, sound scientif ic 
+and risk- based approval as well as post -approval change management of analytical 
+procedures.  
+ 
+Q2(R1) Revision 
+The scope of the revision will include validation principles that cover analytical use of 
+spectroscopic or spectrometry data (e.g., NIR, Raman, NMR or MS) some of which often 
+require multivariate statistical analyses.  
+The guideline will continue to provide a general framework for the principles of analytical 
+procedure validation applicable to products mostly in the scope of Q6A and Q6B.  
+ 
+These proposed guidelines (Q2 and Q14) are intended to complement with ICH Q8 to Q12 
+Guidelines, as well as on -going ICH Q13 for Continuous Manufacturing.  
+ 
+Statement of the Perceived Problem  
+ 
+Q14Analytical Procedure Development guideline  
+Since there is no ICH guideline on Analytical Procedure Development, applicants often report  
+analytical validation results alone and rarely present performance evaluation with analytical 
+development outcomes. This makes regulatory communication ineffective  especially when 
+non-conventional (for example, real time release testing) analytical procedures are employed. 
+Additionally, the lack of guidelines precludes the applicant from an opportunity to present 
+scientific basis for flexible regulatory approaches to post -approval Analytical Procedure 
+changes.  
+ 
+Q2(R1) Revision 
+The current Q2(R1) “Guideline on Validation of Analytical Procedures: Text and 
+Methodology” does not cover more recent application of analytical procedures, (e.g., Near 
+
+FINAL  Q2(R2)/Q14  Concept Paper  Endorsed: 15 November 2018  
+ 
+-2- Infrared (NIR) Spectroscopy or Raman Spectroscopy). The lack of guidance for these 
+analytical data sets can lead to submissions with inadequate validation data for such analytical 
+procedures, resulting in recursive information requests and responses, which can delay 
+application approval. This is particularly the case for procedures reliant on multivariate 
+models, a category for which no ICH validation guideline exists. Spectroscopy tools like NIR 
+or Raman are commonly used in process control and real time testing of pharmaceutical 
+products using m ultivariate analysis methods. Taking into consideration a difference between 
+multivariate and traditional methods, the current approach of Q2 (R1) is not sufficient to 
+establish the suitability of multivariate methods. For example, when traditional methods  use 
+reference standards, analysed along with the unknown samples, the performance of these 
+methods is confirmed and assured during each test. By contrast, multivariate model -based 
+methods often do not use reference standards during analysis. This makes robust 
+development, validation and proper maintenance of such methods of utmost importance for 
+reliable prediction throughout the method lifecycle. 
+ 
+Issues to be Resolved  
+ 
+Q14Analytical Procedure Development guideline  
+Analytical procedures are necessary to d evelop products and manufacturing process, to 
+measure critical quality attributes and to ensure the quality of final products. These analytics 
+would be modified or improved throughout the product lifecycle because of continual 
+improvement activities. Thus,  the new guideline will provide an opportunity to present the 
+outcome of Analytical Procedure Development in traditional approaches and in enhanced 
+approaches and facilitate efficient and science -based change management by improving 
+communication between i ndustry and regulators.  
+Some of main technical and scientific elements, which require harmonization, include:  
+- Submission of Analytical Procedure Development and related information in CTD format  
+- The concept and strategy of enhanced approaches for Analytic al Procedures  
+- Performance criteria of Analytical Procedures.  
+- In line with ICH Q8 and ICH Q11, greater understanding of Analytical Procedure can 
+create the basis for more efficient, sound science and risked -based change management 
+(e.g., using analytical Qu ality by Design principles).  
+- Key elements and terminology  
+- Demonstration of suitability for Real Time Release testing.  
+ 
+Q2(R1) Revision 
+In addition to the current guideline, the revised guideline will define the common validation 
+characteristics for procedures, like NIR, nuclear magnetic resonance spectroscopy (NMR), 
+and hyphenated techniques, for example CE -MS, CE -ICP-MS, LC -NMR, GC -MS, L C-MS. 
+Although these techniques utilize very different instrumentation, the data output is an 
+intensity across a frequency range or mass to charge ratio range. When necessary, the data 
+analysis can be simplified via  appropriate use of multivariate statistical analyses to compare 
+measurements between test and reference samples.  
+Procedures reliant on multivariate methods below will be also addressed:  
+- Definition of validation characteristics applicable to multivariate methods which may 
+differ with the area of application ( e.g., identification vs.  quantitation, batch vs.  continuous 
+process, dosage form assay vs. blending monitoring)  
+- Important method parameters ( e.g., the number of latent variables) established during 
+method development  
+- Robustness which is well understood, however does not have a quantitative measure  
+
+FINAL  Q2(R2)/Q14  Concept Paper  Endorsed: 15 November 2018  
+ 
+-3- - Inclusion of post -approval verification and maintenance considerations as a part of the 
+validation  
+- Requirements for validation data sets  
+ 
+Background to the Proposal  
+ 
+The new Analytical Procedure Development guideline ( Q14) will be for S4, P4 and P5 of 
+CTD and will complement with Q8(R2) and Q11.  
+The objective of this proposal is to provide an opportunity to present the knowledge obtained 
+through applying the enhanced a pproaches to analytical procedures. The proposed guideline 
+will facilitate selecting or identifying development approaches that will streamline post -
+approval changes to procedures and enable more efficient, sound science - and risk- based 
+change management. Applying the enhanced approach for analytical procedures can 
+contribute to the resource -efficient drug development and post -approval CMC changes.  
+ 
+The revised Q2(R1) guideline will be for S4, P4 and P5 of CTD with emphasis on systematic 
+Analytical Developm ent. 
+The expected outcome would be an expanded Q2 that would specifically address validation of 
+some of the newer analytical procedures, and include a discussion of statistical aspects in 
+validation.  
+The revision of Q2(R1) will include validation approach es for analytical method based on 
+instrumentation that provides spectra across a frequency range (e.g., Raman, NIR or NMR) or 
+across a mass to charge range (i.e., mass spectrometry). The revision will also include 
+presentation of appropriate multivariate s tatistical methods with consideration of sample size 
+and ongoing method performance verification.  
+ 
+As Analytical Development activities are followed by Analytical Validation activities, the two 
+tasks above will be conducted in an orchestrated manner by one EWG. Two separate 
+documents will be produced.  
+ 
+Type of Expert Working Group and Resources  
+ 
+Because activities are strongly interrelated, one Expert Working Group will be designated to 
+establish the new Analytical Procedure Development and revise ICH Q2(R 1). 
+An Expert Working Group composed of experts with expertise in the area of analytical 
+chemistry and pharmaceutical control is needed.  
+ 
+Timing  
+ 
+It is proposed that this work is initiated in fall of 2018 following finalization of the Concept 
+Paper and Business Plan and establishment of an Expert Working Group.  
+ 
+By Fall 2018; Final Concept Paper, The first Face to Face EWG meeting 
+Spring 2019; 2nd F2F EWG meeting  
+Fall 2019; 3rd F2F EWG meeting 
+(Finish two draft documents to be reviewed within Member/Observer parties for both).  
+Spring 2020; 4th F2T EWG meeting 
+(Step 2 for both)  
+Spring 2021; 5th F2F EWG meeting 
+(Step 4 for both)  
+

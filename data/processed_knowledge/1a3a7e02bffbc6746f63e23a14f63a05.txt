@@ -1,0 +1,231 @@
+24 Journal for Clinical Studies 
+Volume 11 Issue 3Market Report
+How Engaging Patients in Trial Design 
+Maximises Orphan Drug Success
+Orphan drug discovery is characterised both by extraordinary 
+opportunities and challenges. The potential to affect the 
+course of medicine is every bit as significant as the promise 
+of changing the lives of people who suffer from lifelong, 
+debilitating conditions. 
+Yet, research in this space is also associated with some of the 
+highest hurdles in medicine. Orphan drugs, by their very nature, 
+treat small, complex patient populations. Thus, clinical trial design 
+and execution require a level of scientific expertise, operational 
+acumen, regulatory knowledge, and patient engagement skills that 
+many sponsors find daunting. Indeed, algorithms have been created 
+just to assist in the selection of appropriate alternate trial design, 
+given the emphasis placed upon maximising patient exposure 
+and reducing the overall timeline for development prior to market 
+authorisation or NDA submission.1
+Fortunately, regulatory flexibility and financial incentives can 
+help build a strong business case for conducting orphan drug trials, 
+in the context of exceptionally innovative clinical development 
+programmes. Amid a scarcity of research resources, the US Food 
+and Drug Administration (FDA), European Medicines Agency 
+(EMA), and others apply special considerations to rare disease trials. 
+Notably, a study published by the National Organization for Rare 
+Diseases affirms the effectiveness of programmes like the Orphan 
+Drug Act of 1983 and reinforces the need for continued flexibility, 
+which has been demonstrated from the FDA.2,3
+Backed by a friendly financial and regulatory framework, 
+sponsors can participate in orphan drug research with greater 
+confidence. The key to a successful outcome, however, is to engage 
+patients and advocacy groups at a deeper, more personal level. Even 
+the language typically used must change: It is not enough to “recruit” 
+or “retain” patients for an orphan drug trial, we must “engage” 
+them in the process of programme design and the articulation of 
+benefits and risks. A successful orphan drug programme is all about 
+understanding not only the clinical disease at hand but also how 
+patients and their families experience the illness in their daily lives. 
+Orphan Drug Discovery:  
+Recognise the Inherent Nuances and Challenges
+The journey for a patient with an orphan disease is often marred 
+with frustrations and setbacks. It’s not uncommon for patients to 
+spend years seeing multiple specialists before they even receive a 
+diagnosis. Once a rare disease is identified, a patient’s entire life 
+may revolve around trying to find a cure, all while managing any 
+functional limitations that may accrue.
+Small patient populations coupled with significant clinical 
+heterogeneity and complex lifestyles and disease dynamics make 
+patient engagement particularly challenging. That’s why it’s vital 
+that sponsors first understand their patient population – how 
+they live and the far-reaching impact of their illness on both the 
+individual and family – in order to create an informed research and 
+clinical development programme. The second step is to design a trial that reflects the knowledge 
+of what patients and families are up against, i.e., a protocol 
+structure based upon visit frequency or visit density (the number 
+of assessments/visits) and the need for specialised testing, which is 
+consistent with ongoing standards of care. Protocols must account 
+for highly diverse clinical manifestations and disease progression, 
+as well as accommodate patients and families who live complicated, 
+demanding lives.
+This factor alone requires a level of finesse and expertise not 
+typically found in clinical trials for more common conditions, with 
+more traditional development programmes. It also requires a higher 
+level of collaboration and engagement with families and advocacy 
+groups at an earlier phase of research. It’s important not to overlook that 
+patients with rare diseases are often part of close-knit communities. 
+Both positive and negative information about a product’s attributes 
+or an ongoing clinical trial can spread rapidly across these patient 
+populations, and sponsors who hope to engage the right participants 
+must develop a level of trust that results in widespread endorsement 
+with information that is both timely and accurate.
+Elements of a Patient-Centric Trial Design
+Because the success of orphan drug research is intrinsically connected 
+to the right participant engagement strategies, sponsors should 
+prioritise a patient-centric trial design that considers the following 
+elements:    
+• Collaboration with advocacy groups
+More than 7000 rare diseases exist, which makes it nearly 
+impossible for sponsors or contract research organisations 
+(CROs) to be experts on all of them. Indeed, the most laudable 
+skills are those that are fungible across diverse indications, 
+which permits adaptation to one indication based upon the 
+experience of evaluating another. That’s why collaboration 
+with advocacy groups from the outset – even before protocol 
+design – is imperative to understanding the patient journey 
+connected to a particular illness and identifying appropriate end 
+points. In fact, without buy-in from these groups, it’s very hard 
+to conduct a successful orphan drug trial as either the design 
+or other pragmatic constraints of study enrolment limit patient 
+participation.
+Keep in mind, however, that not all advocacy groups will be 
+quick to endorse a trial, and their purpose may differ markedly 
+as a reflection of their primary focus. When there are numerous 
+groups to choose from representing a particular orphan disease, 
+sponsors and CROs must determine the main players and then 
+build genuine relationships that can help establish trust across 
+the continuum of development.
+• Branding that captures the patients’ voice
+Once partnered with the right organisations, sponsors and 
+CROs can collaboratively brand a study in a way that reflects 
+the patients’ voice. Patients and families are much more likely 
+to respond positively when all education and communication is 
+consistent and familiar and when they feel like their experience 
+and input matter. 
+
+
+Journal for Clinical Studies  25
+www.jforcs.com
+Market Report
+• Support for patients
+Daily life for patients with rare diseases may be very 
+draining, with multiple comorbidities, and families are often 
+overwhelmed with the tasks involved in managing the illness 
+within the framework of regular life responsibilities. Sponsors 
+who implement support services are much more likely to 
+engage patients and families for the long term. Some of these 
+services may include:
+• Transportation and travel.  These are huge factors for 
+many patients. Limited patient numbers often necessitate 
+a global approach to orphan drug research, and patients 
+may be spread across large geographical territories. 
+In one study involving a rare metabolic disturbance, 
+for example, a patient flew across 11 time zones every 
+two weeks. Without assistance from the sponsor and 
+the supporting CRO, the travel challenge likely would 
+have meant the patient could not participate. This one 
+example also emphasises the importance of linking 
+experimental design with the pragmatism associated 
+with clinical operations because they are intrinsically 
+the same consideration.• Visit frequency and density.  Establishing home nursing 
+visits can ease travel burdens by decreasing the number 
+of site visits required, especially if the study requires 
+many site visits or the patient has compromised mobility. 
+Many assessments can be done in the patient’s home by 
+skilled and protocol-trained nurses. These assessments 
+can include abbreviated physical examination, adverse 
+event and concomitant medication recording, CSSRS 
+questionnaire, abbreviated neurology examination, ECG 
+recording, blood draw, IMP compliance, multiple quality-
+of-life and neurological function assessments, and more. 
+When patients do travel, it’s imperative to make maximum 
+use of site time by scheduling as many specialist meetings 
+as possible at each visit without overwhelming the patient. 
+Indeed, recent trends within the industry showcase the 
+potential value of “at home” versus “within clinic” as 
+sessments, with responsibilities parsed based upon the 
+competency of home versus clinic personnel.4
+• Sibling and pet care.  The impact of disease burden and 
+study burden on the entire family must be considered. 
+Ensuring care for siblings or pets during a trial may 
+make it possible for families to participate and to do 
+so relatively unencumbered regarding concerns about 
+family members.  
+• Ongoing communication. Keeping patients and families 
+educated and engaged requires ongoing communication, 
+both to build interest and to ensure all their needs are 
+met. Online portals offer an effective means for easing 
+and centralising communication. In addition, regular 
+communication through email or text can enhance 
+satisfaction by reminding patients about appointments, 
+what they need to bring, or just simply what to expect. 
+Managing the communication process is critically 
+important during studies conducted under GCP (Good 
+Clinical Practice), given the oversight mandated for study 
+participants. 
+
+26 Journal for Clinical Studies 
+Volume 11 Issue 3
+Barbara Zupancic
+Barbara Zupancic is senior director of patient 
+recruitment and retention at Worldwide 
+Clinical Trials. With nearly 20 years of 
+experience in clinical research, she is 
+responsible for the patient engagement aspects 
+of clinical trials, which includes making trials more accessible to 
+patients, less burdensome for sites, and smoother for sponsors.
+Email: barbara.zupancic@worldwide.com
+Dr Michael Murphy
+Dr Michael Murphy is chief medical and 
+scientific officer at Worldwide Clinical Trials. 
+With 30 years of pharmaceutical experience, 
+he is responsible for enabling strategic 
+clinical research consultation and protocol 
+development services for Phases I–IV, across therapeutic areas 
+within Worldwide Clinical Trials.
+Email: michael.murphy@worldwide.com
+Market Report
+• Support for clinical sites 
+An online portal to help support each site – complete with 
+training, study protocols, education resources and contact 
+points – is a critical part of this equation, as well. Branded 
+materials, pocket protocols, lunch-and-learn materials, 
+referral letters, and other resources can ease the participation 
+burden for sites. 
+Capture All the Benefits of Orphan Trials
+In the US and elsewhere, administrative flexibilities that reduce 
+timelines and costs for orphan drug studies can lower the development 
+risk for sponsors. Tax credits and other financial incentives enhance 
+the attractiveness.5 Consider, for example, that simply acquiring an 
+orphan designation can increase a public company’s valuation by 3-10 
+per cent, contingent upon the size of the organisation, in the portfolio 
+on the development.6
+Partnering with a CRO experienced in innovative approaches to 
+orphan drug trials can help sponsors achieve timely, effective results. 
+The innovation extends from methods of regulatory interface, the 
+innovative portfolio of experimental designs that could be considered, 
+the operational acumen that must be specifically tailored toward 
+project execution, and the overarching need to embed patient-
+centricity into a formal clinical development process. When a patient-
+centric trial design complements an already attractive regulatory 
+outlook, opportunity abounds. Rare disease research presents a strong 
+business case for advancing medical practice and improving the lives 
+of some of healthcare’s most disadvantaged patients by maximally 
+exploiting advances in research and development and in clinical trial 
+methodology. It’s an important mission for healthcare, and one that is 
+ripe for future expansion.
+REFERENCE
+1.  https:/ /ojrd.biomedcentral.com/articles/10.1186/1750-1172-8-48, visited on 
+31 Jan 2019.
+2. https:/ /www.fdanews.com/ext/resources/files/archives/n/
+NORDstudyofFDAapprovaloforphandrugs111611.pdf, visited on 31 Jan 2019.
+3. https:/ /www.fda.gov/ForIndustry/DevelopingProductsforRare  
+DiseasesConditions/HowtoapplyforOrphanProductDesignation/
+ucm364750.htm, visited on 31 Jan 2019.
+4.  https:/ /www.clinicaltrialsarena.com/comment/home-based-clinical-
+studies-a-paradigm-shift-6094192-2/, visited on 6 Feb 2019.
+5.  http:/ /www.ojrd.com/content/3/1/33, visited on 31 Jan 2019.
+6.  https:/ /ojrd.biomedcentral.com/articles/10.1186/s13023-017-0665-6, 
+visited on 6 Feb 2019.
+

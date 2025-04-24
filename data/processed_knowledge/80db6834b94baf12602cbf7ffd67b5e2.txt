@@ -1,0 +1,506 @@
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 1PFIZER INC.
+These results are supplied for informational purposes only .
+Prescribing decisions should be made based o n the approved package insert.
+For publications based on this study , see associated bibliograph y.
+PROPRIETARY DRUG NAME®/GENERIC DRUG NAME :Chantix/ Varenicline 
+tartrate
+THERAPEUTIC AREA AND FDA APPROVED INDICATIONS:   See United States 
+Package Insert (USPI)
+NATIONAL CLINICAL TRIAL NO .: NCT00691483
+PROTOCOL NO. : A3051095 
+PROTOCOL TITLE :Phase 4, Prospective, Multi -National, Randomized,  Double -Blind, 
+Placebo -Controlled Study  to Evaluate Smoking Cessation with Varenicline Tartrate 
+Compared with Placebo in the Setting of Patient Self -Selected (Flexible) Quit Date
+Study Center(s) :  33 in 14 countries (Argentina  [1], Brazil  [1], Canada  [2], China  [3], Czech 
+Republic  [2], France  [1], German y [2], Hungary  [2], Italy [1], Republic of Korea  [2], Mexico
+[1], Taiwan  [2], United Kingdom  [1], United States  (US) [12])
+Study Initiation Date and Primary Completion  or Completion  Dates:   
+22September 2008 to 10 December 2009 
+Phase of Development :  Phase  4
+Study Objective(s):   The primary  efficacy  objective of this protocol was to compare 
+12weeks of treatment with varenicline 1 mg twice daily  (BID) to placebo for smoking 
+cessation in the setting of a su bject self -selected quit date (before Week 5 visit), and to 
+evaluate continuous abstinence (CA) from smoking for 12 weeks after the treatment period.  
+Additional secondary  objectives were to compare treatments for urge to smoke, smoking 
+satisfaction, and the ps ychological reward over time in subjects in the US by  anal yses of the 
+results from the Minnesota Nicotine Withdrawal Scale (MNWS) and the Modified Cigarette 
+Evaluation Questionnaire (mCEQ) , respectivel y.  
+The safet y objective was to gather safety da ta for 12 weeks of treatment with varenicline 
+1mg BID or placebo followed b y 12 weeks of non -treatment follow -up, and to evaluate 
+safet y and tolerability when used in the setting of a subject self selected quit date.
+METHODS
+Study Design:   This was a rand omized, double blind, placebo -controlled, multinational study  
+comparing the efficacy  and safet y of varenicline 1 mg BID with placebo for smoking 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 2cessation.  The stud y consisted of a 12 -week treatment phase followed b y a 12-week 
+non-treatment phase for a to tal study  duration of 24 weeks.  Approximately 652 subjects (at 
+least 489 varenicline and 163 placebo) were to be randomized in a 3:1 ratio to receive either 
+varenicline (1 -week titration followed by  11 weeks of 1 mg BID treatment) or placebo.  
+Blinded stu dy medication was discontinued at the Week 12 visit and was followed by  a 
+non-treatment period to Week 24.  Subjects were to self -select a quit date to occur between 
+Day 8 (the date of dose escalation to 1 mg BID) and the Week 5 visit day .  The Week 1 visi t 
+occurred at the end of the first week of treatment.  Subjects were to return for clinic visits at 
+Weeks 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 and 12 during the treatment period.  During the 
+non-treatment follow -up, subjects were to return for visits at Weeks 13 , 16, 20 and 24, and 
+were contacted b y phone at Weeks 14, 18 and 22.  Each subject received brief smoking 
+cessation counseling, consistent with the Agency  for Healthcare Research and Quality  
+(AHRQ) guidelines or similar local guidelines at each clinic visi t and at each telephone 
+contact starting with the baseline visit.  At the baseline visit, subjects also received an 
+educational booklet about smoking cessation.
+Number of Subjects  (Planned and Analyzed):   It was planned to randomize at least 
+652subjects t o varenicline or placebo in a 3:1 ratio.  Four hundred and ninety  three (493) 
+subjects were assigned to varenicline and 166 to placebo.  Of these, 486 and 165 were treated 
+with at least 1 dose of varenicline and placebo, respectivel y.
+Diagnosis and Main Cr iteria for Inclusion:   Subjects were eligible for enrollment into the 
+study  if they  were current cigarette smokers between 18 and 7 5 years of age and motivated to 
+stop smoking .  Subjects had to have smoked an average of at least 10 cigarettes per day  
+durin g the past y ear and during the month prior to the screening visit, with no continuous 
+period of abstinence greater than 3 months in the past y ear.  In addition, subjects were not to 
+have had serious or unstable disease within the past 6 months .
+Study Treat ment:   Subjects were randomized to receive either blinded varenicline or 
+placebo.  Subjects randomized to varenicline were titrated to the full dose during the first 
+week in the following manner: 0.5 mg once dail y (QD) x 3 days followed by 0.5 mg BID x 
+4days, and then 1 mg BID for 11 weeks. During the non -treatment follow -up period from 
+Week 13 to Week 24, subjects did not receive study  medication.   Tablets (blinded varenicline 
+or placebo) were supplied in bottles containing sufficient tablets for 1week. Varenicline was
+supplied as 0.5 mg tablets for the first week and 1.0 mg tablets for the remaining 11 weeks of 
+the study  treatment period.
+Efficacy Evaluations:   Efficacy  data were collected using the Nicotine Use Inventory  (NUI) 
+and exhaled CO measureme nts.  NUI was also completed at all telephone contacts.  Data on 
+quitting plans and quit attempts (defined as quitting smoking for at least a few hours with the 
+conviction to quit permanently ) occurring during the first 5weeks of the study  were also 
+colle cted using the Plan and Quit Questionnaire .  The MNWS was used  to assess craving and 
+nicotine withdrawal s ymptoms.   The rewarding effects associated with smoking were 
+measured with the mCEQ.  The MNWS and the mCEQ were administered at the baseline 
+visit an d weekly  through Week 12 to subjects enrolled in US centers onl y. 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 3Pharmacokinetic, Pharmacodynamic, and/or Other Evaluations:   This study  included the 
+collection of a single blood sample for de -identified pharmacogenomic studies. Participation 
+in this co mponent of the study  was voluntary  and required a separate informed consent.  
+Pharmacogenomic anal yses were described in a separate protocol and were not part of this 
+study  report . 
+Safety Evaluations:   Safety  was evaluated based on adverse events (AEs), vital signs, 
+physical examination, body  weight and height, electrocardiograms (ECGs), and laboratory  
+test results.   Throughout the study , the Columbia Suicide Severity  Rating Scale  (C-SSRS) 
+was administered to evaluate suicidal ideation and behavior .  The Patient Health 
+Questionnaire (PHQ -9) was used at each clinic visit or telephone assessment to evaluate 
+depression .
+Statistical Methods :  The All Subjects population was defined as all subjects who received 
+at least 1 dose, including partial doses, of rando mized study  medication.  The All Subjects 
+population was the primary  population for efficacy  and safet y analyses in this study .  
+Analy ses of the Evaluable Subjects population (all subjects who took at least 14 day s of 
+study  medication in the first 21 day s of the study ), Completers population  (all subjects who 
+had at least 80% treatment compliance), and intention -to-treat ( ITT)population  (all 
+randomized subjects) were intended to support the robustness of the conclusions made on the 
+All Subjects population.
+The int ent of the primary anal ysis wa s to evaluate the hy pothesis that varenicline  is superior 
+to placebo  for smoking cessation after 12 weeks of treatment , when used in a setting where 
+subject sare given some discretion regard ing setting their own quit d ate. The primary  efficacy  
+endpoint was the CO -confirmed 4 -week CQR for Weeks 9 through 12, inclusive.  The key  
+secondary  efficacy  endpoint was the continuous abstinence rate (CA R) from Weeks 9 
+through 24 .  
+Other secondary  efficacy endpoints included CO -confirmed and non -CO-confirmed long 
+term quit rate (LTQR) from  Weeks 9 through 24 , 7-day point prevalence o f smoking 
+cessation at Weeks 12 and 24 , 4-week point prevalence of smoking cessation at Week 24 , 
+non-CO-confirmed 4 -week CQR for Weeks 9 through 12 , and endpoints related to plans for 
+or times of smoking quit attempts. Patient -reported outcomes (PRO) endpoints included data 
+from the MNWS and the mCEQ with focus on the Urge -to-Smoke item of the MNWS 
+(baseline and weekl y through Week 12) and the Smoking S atisfaction and Psy chological 
+Reward domains of the mCEQ (baseline and weekly  through Week 12).
+A planned sample size of 652 subjects randomized to varenicline or placebo in a 3:1 ratio 
+(489 varenicline and 163 placebo) was to provide at least 90% power to  detect a difference in 
+the primary  endpoint between the varenicline and placebo groups, assuming a true 
+Week s9to12 CAR of 0.24 and 0.46 for placebo and varenicline, respectively  (odds ratio 
+[OR] of at least 2.67).  This sample size also provided at lea st 90% power to detect a 
+difference between varenicline and placebo in the secondary  endpoint Week s 9 to 24 CAR, 
+assuming a true Week s 9 to 24 CAR of 0.18 and 0.31 for placebo and varenicline, 
+respectivel y (OR of at least 2.10).
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 4Mean, median, standard devi ation, and range were used to summarize continuous variables, 
+and counts and percentages were used to summarize categorical variables.  For binary  
+efficacy  endpoints, statistical inference was based on logistic regression models with main 
+effect of treatme nt as the explanatory  variable and investigative center as covariate.  This
+statistical methodology  was used for anal yzing the primary  and key  secondary  efficacy  data .
+For the time -to-event endpoint, statistical inference was based on the Kaplan -Meier meth od 
+with treatment groups as strata.  For continuous PRO endpoints, statistical inference was 
+based on a linear repeated measures model with covariates in harmon y with those used to 
+control the anal ysis of the primary  endpoint.   
+All statistical testing was  2-sided and used a 0.05 level of significance.   In order to preserve 
+the ty pe I famil y-wise error rate of 0.05, a step -down procedure was used for the anal ysis of 
+the primary  and key  secondary  endpoint.  The hierarchy  of comparisons was 1) the 4 -week 
+CQR for Weeks 9 through 12 and then 2) the CA at Week 24.  Statistical significance was 
+declared for each h ypothesis in the ordered list until a p -value >0.05 was obtained, at which 
+point the hy pothesis was declared to not be statistically  significant.   The p -values for 
+analyses of the secondary  endpoints, other than the key  secondary  endpoint, were reported 
+with no adjustments for multiplicity .
+An addition al sensitivity  anal ysis was performed on the primary  and key  secondary  anal yses 
+to assess the impact of ex cluding 18 subjects with unreliable data who were randomized at 
+investigational center  1032 .
+All subjects in the All Subjects population were included in the safety  anal ysis.  Safety data 
+were presented using descriptive statistics.
+RESULTS
+Subject Dispo sition and Demography:   Subject disposition and data sets are summarized in 
+Table 1.  Subjects were encouraged to remain in the study  if they  discontinued treatment in 
+order to provide data for smoking status and other outcomes.  Table 1 consequently  provides 
+2 separate presentations on subject disposition, 1 representing treatment and 
+1 representing stud y.
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 5Table 1.Subject Disposition
+Number (%) of subjects Varenicline Placebo
+Screened: 831
+Assigned to study treatment 493 166
+Treated 486 165
+Com pleted study 425 (87.4) 141 (85.5)
+Discontinued study 61 (12.6) 24 (14.5)
+Com pleted study treatment period 442 (90.9) 142 (86.1)
+Discontinued study in treatment 
+period44 (9.1) 23 (13.9)
+Com pleted treatment 425 (87.4) 131 (79.4)
+Discontinued treatment a61 (12.6) 34 (20.6)
+Related to study drug 24 (4.9) 14 (8.5)
+Adverse event 23 (4.7) 11 (6.7)
+Lack of efficacy 1 (0.2) 3 (1.8)
+Not related to study dr ug 37 (7.6) 20 (12.1)
+Adverse event 1 (0.2) 2 (1.2)
+Lost to follow up 9 (1.9) 10 (6.1)
+Subject no longer willing to 
+participate in study18 (3.7) 6 (3.6)
+Other 9 (1.9) 2 (1.2)
+Discontinued treatment, but stayed 
+in study b17 (3.5) 11 (6.7)
+Com pleted follow -up period 0 10 (6.1)
+Discontinued study in follow -
+up period17 (3.5) 1 (0.6)
+Not related to study drug 17 (3.5) 1 (0.6)
+Lost to follow up 8 (1.6) 0
+Subject no longer willing 
+to participate in study7 (1.4) 1 (0.6)
+Other 2 (0.4) 0
+a Discontinuations from the study could occur during the treatment period or during the post -
+therapy follow -up period , i.e. subjects discontinuing treatment were not necessarily also 
+discontinuing the study .
+b Subjects could discontinue from treatmen t and remain in the study.
+Most of the subjects in either treatment group (60%) were male.  The mean age for the 
+varenicline group was 43.9 y ears and ranged from 18 to 75 y ears.  The mean age of the 
+placebo group was 43.2 years and ranged from 18 to 72 years.  The average body  mass 
+indices ( BMIs) were 26.2kg/m2 and 26.7 kg/m2 for the varenicline and placebo groups, 
+respectivel y.  The distribution of races was similar in both treatment groups, with subjects in 
+both groups being mostl y White. 
+A summary  of data sets analy zed is provided in Table 2.
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 6Table 2.Data Sets Analyzed
+Number (%) of subjects Varenicline
+N = 493Placebo
+N = 166
+Analyzed for efficacy a
+All Subjects b486 (98.6) 165 (99.4)
+Evaluable Subjects c468 (94.9) 160 (96.4)
+Com pleter Subjects d425 (86.2) 130 (78.3)
+ITT (All Randomized 
+Subjects) e493 (100.0) 166 (100.0)
+Analyzed for safety f
+Adverse events g486 (100.0) 165 (100.0)
+Laboratory data h444 (91.4) 144 (87.3)
+ITT = intent -to-treat, N = number of subjects in the respective treatment group.
+a Percentages based on ITT population.  
+b The All Subjects population was defined as all subjects who received at least 1 dose
+  of study drug . This wa s the prim ary efficacy an alysis population.  
+c The Evaluable Subjects group w as defined to be a subset of the All Subjects population,
+  who took at least 14 days of study drug  in the first 21 days of the study.  
+d The Completers population group w as defined as the subset of the  All Subjects population, who had at
+  least 80% treatment compliance.
+eThe ITT population w as defined as all randomized subjects.
+fPercentages based on All Subjects  population .
+g Adverse events were analyzed for the A ll Subjects population (see footnote b). 
+h Laboratory data were analyzed for all subjects who had at least 1 postbaseline
+  laboratory value.
+Efficacy Results:  An overview of the primary  and the key  secondary  endpoint  is given in 
+Table 3.
+Analy ses of smoking ces sation rates for the All Subjects population showed that varenicline 
+was more efficacious than placebo in all measures of abstinence, both at the end of the 12 -
+week treatment period and during the non -treatment follow -up through Week 24. Statistical 
+signif icance in favor of varenicline treatment was reached for the primary  and the key  
+secondary  endpoints (all p <0.0001). 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 7Table 3.Overview of Primary and Key Secondary Efficacy Endpoints (All 
+Subjects  Population ) 
+EndpointVarenicl ine
+N = 486
+n (%)Placebo
+N = 165
+n (%)Odds Ratio#
+(95% CI) versus 
+placebo p-value#
+4-week CQR Weeks 9 to 12 262 (53.9) 32 (19.4) 6.03 (3.80, 9.56) <0.0001
+CA Week 9 to Week 24 171 (35.2) 21 (12.7) 4.45 (2.62, 7.55) <0.0001
+# Odds ratios and p -values were obtained from a logistic regression model including the main effects of 
+treatment and pooled center. 
+CA = continuous abstinence, CI = confidence interval, CO=carbon monoxide, CQR = continuous quit 
+rate, N = number of subjects in respective treatmen t group , ppm = parts per million .
+n (CQR) = the number of subjects who, at each visit from Week 9 through 12 (inclusive), reported no 
+smoking and no use of other nicotine -containing products since the last study visit (on the Nicotine 
+Use Inventory) and wh o did not have CO >10 ppm at any of these visits; 
+n (CA) = number of subjects who at each contact from Week s 9 to 24 , reported no smoking and no use of 
+other nicotine -containing products (treatment phase) or tobacco products (non -treatment phase) since 
+the last study contact (on the Nicotine Use Inventory) and who did not have CO >10 ppm at the clinic 
+visit.
+The LTQR at Week 24 was also statistically  significantly  higher in the varenicline group than 
+in the placebo group ( OR: 4.91 ( 95% confidence interva l [CI] 2.96, 8.13) , p<0.0001 ).  Other 
+results for abstinence endpoints were consistent with the results above.  Significantly  greater 
+abstinence rates for the varenicline group were observed for the 7 -day point prevalence of 
+abstinence at all time points (Week 12: OR 5.66 ( 95% CI  3.66, 8.75) , p<0.0001, Week 24: 
+OR: 4.12 ( 95% CI  2.58, 6.58) , p<0.0001), and for the 4 -week point prevalence of abstinence 
+at Week 24 ( 4.14 ( 95% CI 2.58, 6.67) , p<0.0001).
+Subjects in the varenicline group made their first quit  attempt statistically  significantly  earlier 
+(p=0.0074 ) compared with subjects in the placebo group , with the  median 17 days versus 
+24days, respectively .  Two hundred and fort y five ( 245) (50.4%) subjects in the varenicline 
+group made a first quit attem pt during Week 1 and Week 2 compared with 62 (37.6%) 
+subjects in the placebo group.  
+At all weekl y time points from Week 1 through Week 12, MNWS scores for Urge to Smoke
+and mCEQ scores for Satisfaction were lower for varenicline than for placebo , but onl y 
+marginally  lower for mCEQ Psychological Reward .
+Pharmaco genomic  Results: Pharmacogenomic anal yses were described in a separate 
+protocol and were not part of this study .
+Safety Results:   Treatment -emergent AEs reported by ≥2% of subjects in any treatment
+group are summarized below in Table 4.
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 8Table 4.  Treatment -Emergent Adverse Events Reported by ≥2% of Subjects in Any 
+Treatment Group (All Causalities) (All Subjects  Population )
+Varenicline
+N = 486Place bo
+N = 165
+System  Organ Class
+AE Preferred Term (MedDRA v12.1) Number (%) of subjects
+Cardiac disorders 18 (3.7) 0
+Ear and labyrinth disorders 3 (0.6) 4 (2.4)
+Gastrointestinal disorders 200 (41.2) 32 (19.4)
+Toothache 6 (1.2) 6 (3.6)
+Constipation 23 (4.7) 5 (3.0)
+Diarrhea 11 (2.3) 3 (1.8)
+Abdominal pain 6 (1.2) 4 (2.4)
+Abdominal pain upper 14 (2.9) 0
+Dyspepsia 13 (2.7) 2 (1.2)
+Nausea 142 (29.2) 15 (9.1)
+Vom iting 19 (3.9) 1 (0.6)
+Dry mouth 18 (3.7) 3 (1.8)
+General  disorders  and administration s ite conditions 57 (11.7 ) 17 (10.3 )
+Fatigue 23 (4.7 ) 3 (1.8 )
+Irritability 14 (2.9 ) 6 (3.6 )
+Infections and infestations 119 (24.5) 39 (23.6)
+Bronchitis 12 (2.5) 1 (0.6)
+Nasopharyngitis 34 (7.0) 14 (8.5)
+Rhinitis 7 (1.4) 4 (2.4)
+Sinusitis 8 (1.6) 4 (2.4)
+Upper respiratory tract infection 13 (2.7) 4 (2.4)
+Influenza 19 (3.9) 6 (3.6)
+Injury, poisoning and procedural complications 18 (3.7) 10 (6.1)
+Investigations 26 (5.3) 8 (4.8)
+Weight increased 17 (3.5) 3 (1.8)
+Metabolism  and nutrition disorders 23 (4.7) 6 (3.6)
+Increased appetite 11 (2.3) 5 (3.0)
+Musculoskeletal and connective tissue disorders 45 (9.3) 14 (8.5)
+Arthralgia 6 (1.2) 4 (2.4)
+Back pain 15 (3.1) 4 (2.4)
+Nervous system disorders 95 (19.5) 35 (21.2)
+Headache 55 (11.3) 20 (12.1)
+Distu rbance in attention 11 (2.3) 6 (3.6)
+Dizziness 8 (1.6) 8 (4.8)
+Somnolence 11 (2.3) 2 (1.2)
+Psychiatric disorders 137 (28.2) 27 (16.4)
+Anxiety 4 (0.8) 5 (3.0)
+Depressed mo od 5 (1.0) 5 (3.0)
+Depression 4 (0.8) 5 (3.0)
+Abnorm al dreams 61 (12.6) 5 (3.0)
+Insomnia 43 (8.8) 6 (3.6)
+Sleep disorder 20 (4.1) 6 (3.6)
+(continued)
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 9Table 4 continued:   Treatment -Emergent Adverse Events Reported by ≥2% of Subjects 
+in Any Treatment Group (All Causalities) (All Subjects  Population )
+Varen icline
+N = 486Placebo
+N = 165
+System  Organ Class
+AE Preferred Term (MedDRA v12.1) Number (%) of subjects
+Reproductive system and breast disorders 10 (2.1) 3 (1.8)
+Respiratory, thoracic and mediastinal disorders 38 (7.8) 8 (4.8)
+Cough 14 (2.9) 5 (3.0)
+Skin and subcutaneous tissue disorders 24 (4.9) 7 (4.2)
+Vascular disorders 16 (3.3) 4 (2.4)
+Subjects are only counted once per treatment in each row .
+Includes data up to 30 days after last dose of study drug.
+Note: Two additional adverse events occurre d in the varenicline group (common cold and headache) which are not 
+documented in the clinical database .
+AE = adverse event; MedDRA = Medical Dictionary for Regulatory Activities, N = number of subjects in 
+respective treatment group.
+Sleep disorders and  disturbances were the most frequently  reported psy chiatric disorders for 
+both varenicline and placebo treated subjects, followed by  anxiety  disorders and sy mptoms 
+and depressed mood disorders and disturbances.  Suicidal and self -injurious behaviour 
+(suici dal ideation) was documented as AE for 1 subject (0.2%) in the varenicline group and 
+2subjects (1.2%) in the placebo group.
+A change  in PHQ -9 depression severit y from any at baseline to an increased severit y at an y 
+postbaseline visit was only reported for 1 subject (0.6 %) in the placebo group (from mild to 
+moderate depression). Shifts from no  depression  at baseline to a postbaseline assessment of 
+mild depression occurred in 54 subjects [11.1% ] in the varenicline group and 25 subjects 
+[15.2% ] in the placeb o group ; shifts from none at baseline to moderate or moderatel y severe 
+depression were reported for 8 (1.6%) and 3 (0.6%)varenicline subjects, respectivel y, and 
+3(1.8%) and 0 placebo subjects .  No allocation to the depression category  severe occurred at 
+any study  visit  for either treatment group .
+Subjects who permanently discontinued treatment due to AEs are listed in Table 5.
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 10Table 5. Discontinuations Due to Adverse Events
+Discontinuations from Treatmen t and from  Study 
+MedDRA v12.1 preferred term Onset (Day)aOutcom e Causality SAE
+Varenicline
+Amnesia 5 Resolved Study drug No
+Aggression 7 Resolved Study drug No
+Major depression 23 Still present Study drug No
+Irritability 2 Resolved Study drug No
+Irritability 15 Resolved Study drug No
+Abdominal pain upper 7 Resolved Study drug No
+Rash 22 Resolved Study drug No
+Depression 28 Resolved Study drug No
+Nausea 8 Resolved Study drug No
+Syncope 6 Resolved Study drug Yes
+Nausea 1 Reso lved Study drug No
+Abnorm al dreams 18 Resolved Study drug No
+Vulvovaginal dryness 17 Resolved Study drug No
+Lower limb fracture 20 Resolved Other – fracture left leg No
+Placebo
+Suicidal ideation 11 Resolved Study drug Yes
+Depression 16 Resol ved Study drug No
+Depression 26 Resolved Study drug No
+Headache 10 Unknown Other illness No
+Depressed mood 15 Resolved Study drug No
+Somnolence 28 Still present Study drug No
+Discontinuations from Treatment 
+MedDRA v12.1 preferred term Onset (Day)aOutcom e Causality SAE
+Varenicline
+Headache 12 Resolved Study drug No
+Vom iting 4 Resolved Study drug No
+Insomnia 19 Resolved Study drug No
+Dyspepsia 14 Resolved Study drug No
+Nausea 9 Resolved Study drug No
+Insomnia 36 Resolved Study drug No
+Irritability 21 Resolved Study drug No
+Nausea 8 Resolved Study drug No
+Nightmare 25 Resolved Study drug No
+Nausea 74 Resolved Study drug No
+Placebo
+Disturbance in attention 14 Resolved Study drug No
+Disturbance in attention 14 Resolved Study drug No
+Migraine 15 Resolved Study drug No
+Intervertebral disc protrusion 22 Resolved Other illness –
+herniated lumbar 
+discNo
+Depressed mood 5 Resolved Study drug No
+Anxiety 36 Resolved Study drug No
+Obsessive compulsive disorde r 35 Resolved Study drug No
+a Day relative to start of study treatment. First day of study treatment = Day 1. 
+MedDRA = Medical Dictionary for Regulatory Activities, SAE = serious adverse event.
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 11There were no deaths in this study .
+All SAEs during the tr eatment phase and reported during  the 28 day  post -treatment collection 
+period are summarized in Table 6. 
+Table 6. Serious Adverse Events
+MedDRA v12.1 preferred term Onset (Day)aDay of last dose bOutco me Causalityc
+Varenicline
+Intervertebral disc protrusion 21 84 Resolved Unrelated
+Carotid artery stenosis 43 85 Resolved Unrelated
+Colonic obstructiond133 84 Resolved Unrelated
+Pneumoniad141 84 Resolved Unrelated
+Syncope 6 7 Resolved Relatede
+Atrial flutterd147 83 Resolved Unrelated
+Peripheral arterial occlusive diseasef111 82 Resolved Unrelated
+Intervertebral disc protrusion 18 85 Resolved Unrelated
+Calculus ureteric 97 81 Resolved Unrelated
+Pyelocaliectasis 97 81 Resolved Unrelated
+Ureteric obstruction 100 81 Resolved Unrelated
+Prostate cancerd155 83 Resolving Unrelated
+Placebo
+Suicidal ideation 11 13 Resolved Unrelatedg
+Gastrointestinal haemorrhaged140 84 Resolved Unrelated
+Thyroid cancerd73 21 Resolved Unrelated
+a Day relative to start of study treatment. First day of study treatment = Day 1. 
+bBased on Administration Schedule .
+c Causality according to investigator.
+d Reported after the 28 day collection period for SAEs and included in study database .  Since the event occurred 
+  after the 28 day reporting period and w as considered unrelated to the investigational product, it was classified as 
+  ‘invalid’ in the safety database. 
+eThe sponsor  concluded that the syncope was not related to varenicline tr eatment and that the presence of risk
+  factors like smoking, diabetes and a predisposing condition of coronary artery disease had played a contributory 
+  role to the syncope.  
+f This event was included in the summary of treatment -emergent SAEs (occurren ce 29 days post dose) that w as
+  based on the study database .
+gThis SAE was recorded as related to study drug in statistical outputs based on the clinical database .  In statistical 
+  outputs based on the safety database, the event was assessed as   unrel ated according to follow -up information
+ received from the investigator. 
+MedDRA = Medical Dictionary for Regulatory Activities, SAE = serious adverse event.
+The results from laboratory , body  weight, vital signs, ECG, and phy sical examination did not 
+raise an y safet y concerns. 
+CONCLUSION(S):   This 12 -week stud y comparing varenicline 1 mg BID with placebo for 
+smoking cessation in the setting of a subject self -selected quit date with a 12 -week follow -up 
+period demonstrated that:
+Varenicline treatment comp ared to placebo treatment resulted in statistically significantl y 
+higher abstinence rates as measured b y the primary efficacy  endpoint CO -confirmed 
+4-week CQR .  Varenicline treatment also achieved statistically  significantly higher 
+abstinence rates as evid enced b y the parameters CA R Weeks 9 to 24 , LTQR at Week 24 ,
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+
+PhRMA Web Synopsis
+Protocol A3051095 –13 July  2010 –Final
+Page 127-day point prevalence of abstinence at Weeks 12 and 24 , and the 4 -week point 
+prevalence of abstinence at Week 24.  Varenicline statistically  significantly  reduced the 
+Urge to Smoke based on the MNWS and the Satisfaction from Smoking based on the 
+mCEQ , when compared to placebo .  
+Varenicline was safe and well tolerated.  There were relatively  few discontinuations due 
+to AEs.  The most frequently  occurring AE in the varen icline group assessed as 
+treatment -related was nausea, which was generally  mild to moderate in intensity  and 
+infrequentl y resulted in treatment discontinuation.  The majority of SAEs were not 
+assessed as treatment -related.  
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+090177e1816f0ef5\Approved\Approved On: 12-Oct-2010 14:03 
+

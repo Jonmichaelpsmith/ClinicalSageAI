@@ -1,0 +1,27 @@
+Structure and Content  of Clinical Study Reports  Dr. Jo White 
+
+    As in Good Clinical Practices overview,  follow ICH guidance   ´ Provides complete information about study    ▶ Organized so the most important information is the most accessible ´ Allows for comparability of different studies ´ Accepted by all countries/regions and all regulatory agencies Structure & Content of Clinical Study Report  
+
+  Title page gives extensive information, including:          Formal Title of Report           Investigational Product Studied               Sponsor               Relevant Dates           Condition/Indication Studied            Protocol Identification (Code #)           Development Phase of the Clinical Trial           Names of Principal Individuals – Chief Investigator,                    Medical Officer, Sponsor Signatory 
+
+
+Three Broad Divisions of the Report ´ Introductory material  ´ Substantive information on the study  ´ Annexes / appendices 
+
+Opening Pages of Report … Preliminary Material ´ Study Synopsis   ▶ Like executive summary, 3-page maximum   ▶ Should include numerical data to illustrate results, not just text or p-values ´ Table of Contents, Glossary   ▶ Abbreviations, acronyms, definitions of key terms 
+
+Preliminary Material (Continued) ´ Statement of Ethics ´ Administrative Structure, List of Investigators  ´ Introduction   ▶ One page only   ▶  Enough information to place study in context, state important guidelines ´ Study Objectives   ▶ Overall purpose of the study    , 
+
+Now Comes the Main Body of the Report Corresponds with Sections 9 through 13 in ICH “Structure & Content” document 
+
+Section 9-Investigational Plan  ´ Full discussion & description of study design, plan  ´ Criteria for both inclusion & exclusion of study subjects  ´ Treatments administered, efficacy & safety variables, quality assurance information ´ Statistical basis; notes on any changes to original concept   ´ Clearly account for all patients who entered the study, including any who discontinued their participation  ´ Document all deviations from protocol Section 10-Study Patients (subjects)  
+
+Section 12-Safety Evaluation  ´ Data sets analyzed ´ Baseline characteristics of subjects; treatment compliance ´ Report & tabulate results, including statistical adjustments if appropriate ´ Information on individual response, drug concentration, interactions, etc. ´ Make particular note of adverse events, especially SAEs ´ Clinical laboratory evaluation Section 11-Efficacy Evaluation  
+
+Section 13-Discussion & Overall Conclusions This can and should be brief! Provide a concise text summary of the study results.  Make special note of unanticipated occurrences.  Refer report recipients to tables, etc. in the Appendix for more detailed information. 
+
+Now we’re ready to wrap this up . . . The remaining sections of the report are basically supplementary  Many people who get the report may not even look at these final addenda  BUT maintain high professionalism in completing these last necessary pieces 
+
+Reference List ´ Refer readers to literature with relevance to the study Appendices Tables, Figures, Graphs ´ A section for more detailed data, expanding the information provided in the main body of the report ´ Also, an opportunity to make special note of certain unique aspects of the study ´ Investigator list, protocol specifics, notes on study subjects, sample forms, etc. 
+
+
+

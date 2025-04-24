@@ -1,0 +1,121 @@
+Clinical Trials scope – Blood Journal  
+ 
+1 
+ Reporting clinical trials in Blood  
+ 
+Blood  welcomes submission of manuscripts reporting on clinical trials whether phase  
+1, 2, 3 or 4. Reports should include a full description of the study design, patient 
+population, methodology and conduct, and statistical plan. In all cases, the report will undergo peer review and will be evaluated for technical merit, novelty, clinical and 
+scientific impact, and other measures to determine suitability for publication. Fast -
+track peer review is offered for clinical trial studies that deserve to be brought out to the public with maximum expediency.  
+ 
+As defined by the International Committe e of Medical Journal Editors  (ICMJE) 
+(www.ICMJE.org
+), a clinical trial is ‘any research project that prospectively assigns 
+human subjects to intervention and comparison groups to study the cause -and-effect 
+relationship  between a medical intervention and a health outcome’.  
+ 
+Blood  follows the trial registration policy of the ICMJE  and considers only trials that 
+have been registered before submission, and before the onset of patient enrollment . 
+Acceptable registries must be ICMJE -approved (see more information in the section 
+below).  
+ 
+For authors reporting phase II and phase III rand omized controlled trials it is 
+recommended to consult the CONSORT Statement and Checklist ( http://www.equator -
+network.org/reporting -guidelines/consort -2010- statement -updated- guidelines -for-
+reporting -parallel -group -randomised- trials/ ) to facilitate the complete and 
+transparent reporting of trial findings. In addition, including a Patient Flow Diagram in the manuscript is recommended for randomized studies.  
+  
+ 
+Registration number and name of the trial registry must be provided at the end of the 
+article abstract.  
+ 
+Phase 1 studies  are welcome in Blood  provided the results are sufficiently novel, 
+clinically or scientifically significant and of high impact to merit publication in Blood . 
+Criteria that may determine suitability for publication include the following:  
+• First-in-class molecules with important mechanistic information emerging from 
+the study  
+
+Clinical Trials scope – Blood Journal  
+ 
+2 
+ • Safety information that is novel and important for patient care  
+• Important dosing, pharmacokinetic or pharmacodynamic information  
+• Unexpected efficacy for the patient po pulation with a novel agent or a novel 
+combination of agents  
+• Ground -breaking information about the biology of the disease in question, 
+including biomarker development, or about the mechanistic activity of a 
+particular drug  
+In all cases, phase 1 studies should have been completed and should have met the 
+objectives based on the planned study design before they can be considered for publication.  
+Phase 2 studies  are acceptable for publication with the following guidelines:  
+• Results of a completed phase 2 study with proper design and sample size (as 
+delineated in the statistical section) to answer an important clinical or biological 
+question  
+• An interim analysis may  be considered provided this is a planned interim 
+analysis according to the design of the study and the results merit publication. This may include an unexpected or high level of efficacy, important safety information that may impact the use of the agent(s ) in question, or important 
+biologic information learned from the study at the time the report is being proposed  
+• Single -arm, uncontrolled studies can be considered provided the results are 
+significant enough on their own (based on efficacy, safety or trans lational 
+information). When historical cohorts are used for analysis, the statistical and 
+scientific validity and design of such a comparison should be clearly described.  
+Phase 3 studies  are welcome in Blood  with the following guidelines:  
+• The results are presented after completion of the study as planned according to 
+the statistical design of the protocol  
+• Studies that are terminated early are acceptable for publication if a proper 
+justification is provided for the early termination. Such justification may include a decision by a Data Safety Monitoring Board or regulatory authority. In these cases, this information should be added to the submission to support publication.  
+
+Clinical Trials scope – Blood Journal  
+ 
+3 
+ • Interim analyses are generally only acceptable when planned according to the 
+statistica l design of the trial and provided there is important new information 
+generated that warrants release of early data. Proper description and 
+justification of such scenarios needs to be included, and the report cannot 
+represent only a subset analysis.  
+Phase 4 studies  may be accepted for publication in Blood  if they meet the following 
+criteria:  
+• They provide important efficacy and/or safety information and are not merely 
+confirmatory but provide important new insight into the disease and/or the treatment  
+• They are properly designed and conducted in a prospective manner  
+• Studies that provide important new data pertaining to survivorship are welcome  
+Follow -up reports of previously published studies can be submitted to 
+Blood  when the 
+follow -up report provides addit ional new information not previously available. This 
+may include the following: 
+• Significant additional follow -up on a trial of a novel agent or combination of 
+agents where the additional information is valuable to assess issues such as 
+duration of response , survival, safety, etc. For a follow -up report to be 
+acceptable, there has to be either a significant change in the efficacy or safety information, or it has to include clinically relevant prolonged follow -up 
+information regarding response duration or survival as compared to any prior publication.  
+• Long -term follow -up data that may provide valuable survivorship information 
+(e.g., late complications, long -term survival, etc) or new insights into the 
+disease or the drug(s)  
+ 
+  
+
+Clinical Trials scope – Blood Journal  
+ 
+4 
+  
+Clinical trial registry  
+In accordance with the guidelines published by the International Committee of Medical 
+Journal Editors (ICMJE) that all clinical trials be registered in one of five ICMJE -approved 
+public trials registries (i.e., ClinicalTrials.gov, www.actr.org.au, www.ISRCTN.org , 
+www.umin.ac.jp/ctr/index/htm , or www.trialregister.nl ). Trials must be registered at or 
+before the onset of patient enrollment .  
+In addition to accepting registration in any of the above five registries, Blood  will 
+accept registration of clinical trials in any of the primary registers that participate in the WHO International Clinical Trial Registry Platform (ICTRP)  or in EudraCT
+. 
+Registration in a partner register only is insufficient.  
+The ICMJE and Blood  implement the WHO definition of clinical trials for all trials that 
+began enrollment on or after July 1, 2008 . This definition states that a clinical trial is 
+"any res earch study that prospectively assigns human participants or groups of 
+humans to one or more health- related interventions to evaluate the effects on health 
+outcomes."  
+Following ICMJE, Blood  will not consider results posted in the same clinical trials 
+registry in which the primary registration resides to be previous publication if the 
+results are presented in the form of a brief, structured (< 500 words) abstract or table.  
+For more information, see ICMJE Uniform Requirements for Manuscripts Submitted to 
+Biomedical Journals . 
+

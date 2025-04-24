@@ -1,0 +1,1793 @@
+1 
+ 
+2021 PROJECT REPORT 
+ 
+MONITORING THE ADEQUACY OF 
+IMPLEMENTATION AND ADHERENCE TO 
+INTERNATIONAL COUNCIL FOR 
+HARMONISATION OF TECHNICAL 
+REQUIREMENTS FOR PHARMACEUTICALS 
+FOR HUMAN USE (ICH) GUIDELINES 
+ 
+  
+ 
+Table of contents   
+Executive Summary p. 3 
+Background and Objectives p. 4 
+Scope and Method p. 5 
+Results  
+Part 1: ICH Regulatory Members  p. 7 
+Part 1.1: Tier 2 Guidelines  p. 9 
+Part 1.2: Tier 3 Guidelines  p. 12 
+Part 2: ICH Regulatory Observers - Tier 1 Guidelines  p. 20 
+Part 3: Summary tables –  ICH Regulatory Members and Observers p. 24 
+Part 3.1: Implementation status  p. 24 
+Part 3.2: Adherence status  p. 26 
+Conclusion  p. 29 
+Appendix 1 – Definitions of Terms in the context of the implementation and adherence of ICH 
+Guidelines  p. 30 
+Appendix 2 – Study Tool  p. 32 
+Appendix 3 – Method of Analysis p. 36 
+Appendix 4 – List of Guidelines  p. 38 
+
+
+2 
+ MONITORING THE ADEQUACY OF IMPLEMENTATION AND ADHERENCE TO INTERNATIONAL COUNCIL FOR 
+HARMONISATION OF TECHNICAL REQUIREMENTS FOR PHARMACEUTICALS FOR HUMAN USE (ICH) GUIDELINES 
+ 
+Report prepared by: 
+Centre for Innovation in Regulatory Science (CIRS) - www.cirsci.org  
+Juan Lara, Research Analyst  
+Magda Bujar, Manager, Strategic Development  
+Neil McAuslane, Scientific Director  
+ 
+The Centre for Innovation in Regulatory Science (CIRS) is a neutral, independent UK-based subsidiary of Clarivate 
+plc. CIRS provides an international forum for industry, regulators, HTA and other healthcare stakeholders to 
+meet, debate and develop regulatory and reimbursement policy through the innovative application of regulatory 
+science and to facilitate access to pharmaceutical products. It is governed and operated by Clarivate for the sole 
+support of its members’ activities. The organisation has its own dedicated management and advisory boards, 
+and its funding is derived from membership dues, related activities, special projects and grants.  
+ 
+ICH Implementation Leads 
+Jerry Stewart, Vice President, Global Regulatory Policy Head, Pfizer, representing PhRMA  
+Junko Sato, Office Director, Office of International Programs, MHLW/PMDA, Japan 
+ 
+International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use (ICH) - 
+www.ich.org; admin@ich.org  
+The International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use (ICH) 
+is unique in bringing together the regulatory authorities and pharmaceutical industry to discuss scientific and 
+technical aspects of drug registration. ICH’s mission is to promote public health by achieving greater 
+harmonisation worldwide to ensure that safe, effective, and high-quality medicines are developed and 
+registered in the most resource-efficient manner. Since its inception in 1990, ICH has gradually evolved to 
+respond to the increasingly global face of drug development. Since the introduction of organisational changes 
+in October 2015, ICH, as an independent, international, non-profit organisation, has grown and now includes 
+eighteen Members and thirty-three Observers.  
+ 
+Acknowledgements 
+Special thanks to the participating pharmaceutical companies, and the participating ICH Regulatory Members 
+and Observers. 
+ 
+Report date: 09 September 2021       Version 1.4 
+With editorial changes added on 07 January 2022 
+  
+
+3 
+  
+EXECUTIVE SUMMARY 
+Background:  This study was built on the previous 2018/2019 assessment1where ICH selected the Centre for 
+Innovation in Regulatory Science (CIRS) to collaborate on the development and the conduct of this project.  
+Objectives:  This study aimed to monitor the adequacy of implementation and adherence to ICH Guidelines by 
+regulatory authorities. The objectives were: 
+ To assist the Management Committee in determining whether ICH non-Standing non-Founding Regulatory 
+Members would meet the eligibility criteria for the ICH Management Committee (MC) elections in June 2021  
+ To allow participating Observers interested in future ICH Membership to reference the survey findings to 
+confirm their eligibility. 
+Method: An online questionnaire and definitions developed in 2018 and updated in 2019 by CIRS in collaboration with 
+ICH were adapted for the purpose of this study. The questionnaire was completed in January-March 2021 by 
+companies (assessing all the participating authorities) and authorities (assessing themselves only).  
+This questionnaire focused on assessing implementation and adherence to ICH Guidelines by ICH non-Standing, non-
+Founding Regulatory Members (ANVISA, Brazil; NMPA, China; HSA, Singapore; MFDS, Republic of Korea; TFDA, 
+Chinese Taipei and TITCK, Turkey) for Tier 2 and 3 Guidelines. The study was also open to ICH Observers on a voluntary 
+basis, where INVIMA, Colombia; JFDA, Jordan; SAHPRA, South Africa and SFDA, Saudi Arabia participated in the study 
+for Tier 1 ICH Guidelines. 
+ 
+ 
+ 
+ 
+Results: The results demonstrate that in general, there is a strong level of implementation and adherence across the 
+agencies studied, as well as alignment between the perception of the companies and the self-declaration of 
+authorities studied. 10 regulatory authorities  (100% response rate) and 30 pharmaceutical companies  (75% response 
+rate) participated in the 2021 study to undertake gap analysis, indicating strong interest and support for this initiative. 
+Implementation 
+o ICH non-Standing non-Founding Regulatory Members:  
+ Tier 2: Two authorities implemented all of the Tier 2 Guidelines, while all of the authorities implemented 
+the E2D and M4 Guidelines, followed by E2A (five out of six). Compared with 20191 report, results indicated 
+an increase in implementation and adherence across most of the Tier 2 Guidelines 
+ Tier 3: Five out of the six Regulatory Members implemented >70% of the Tier 3 Guidelines  
+o ICH Observers: 
+ Tier 1: Two out of the four ICH Observers implemented all three of the Tier 1 Guidelines 
+Adherence: Across all the authorities, where implementation was confirmed, there was a good level of adherence to 
+the ICH Guidelines, or it was too early to assess.  
+Conclusion:  The results demonstrate authorities’ and companies’ continued commitment and support in ICH’s mission 
+to achieve greater harmonisation worldwide and ensure that safe, effective, and high-quality medicines are 
+developed, registered, and maintained in the most resource-efficient manner whilst meeting high standards. In 
+addition, the study highlights progress made by authorities in implementing and adhering to ICH Guidelines since the 
+2019 assessment and the results will be used to support training needs as well as ICH-membership related activities.   
+                                                                    
+1 https://admin.ich.org/sites/default/files/inline-files/ICHImplementationReportOutline_v1.4_2019_1101_0.pdf  
+2 63 Guidelines where 61 are unique given that E9 and S5 were included twice as E9 – E9(R1) and S5(R2)-S5(R3) 
+Assessment of 
+implementation/  
+adherence across 
+632 ICH Guidelines  
+ 
+10 ICH Regulatory 
+Members/ Observers 
+undertook  
+a self-assessment 
+ 
+30 international pharmaceutical 
+companies provided a perception 
+across the authorities to facilitate 
+a gap analysis  
+ 
+
+
+4 
+ BACKGROUND AND OBJECTIVES 
+In the ICH Assembly Rules of Procedure, it is stated that there should be a process for the Assembly to monitor 
+the progress of international harmonisation and coordinate efforts to provide the current state of play of the 
+implementation and adherence to the ICH Guidelines. 
+On behalf of ICH, the ICH Founding Industry Members agreed that a pilot study, Phase 1, would be conducted 
+in 2017 to obtain feedback from companies on their perspective and perception of implementing the ICH 
+Guidelines. An independent third party (CIRS) developed and led a proof-of-concept survey of 
+PhRMA/EFPIA/JPMA company members on their perspective and perception of the implementation status of 
+Tier 1 and 2 ICH Guidelines. The Phase 1 study results demonstrated that a survey could be undertaken across 
+companies, where the response rate was excellent, indicating strong interest in the project. 
+In 2018, ICH approached CIRS to undertake a follow-on study to assess the adequacy of implementation and 
+adherence to ICH Guidelines. The aim of this phase of the project, namely Phase 2a, was to build on the 
+outcomes and lessons learned from Phase 1. CIRS developed an online questionnaire and definitions in 
+collaboration with ICH and the ICH Implementation Subcommittee. The survey was completed by companies 
+(assessing all the participating authorities) and authorities (assessing themselves only) to undertake a gap 
+analysis. The report of this study has been published and endorsed by the ICH Management Committee (MC)1. 
+In addition, CIRS prepared a report for ICH to analyse the study’s free-text comments further to support ICH 
+work, including training efforts. 
+At the ICH 2019 Meeting in Singapore, the ICH MC, together with the ICH Implementation Co-Leads (Jerry 
+Stewart and Junko Sato), discussed and proposed that a follow-on survey should be conducted in 2020/2021. 
+The remit of the study described in this report, here referred to as Phase 2b, was principally to assist the 
+Management Committee in their elections. Data collection, data cleaning, and analysis occurred from January 
+to March 2021, followed by delivering a tailored report to each authority and an overall draft report to the MC 
+in April. After the draft report was delivered, the results were presented in May and June to the ICH MC and 
+Assembly respectively.  
+Goals and Objectives 
+This study aimed to monitor the adequacy of implementation and adherence to ICH Guidelines by regulatory 
+authorities, continuing the assessment initiated in 2019. 
+The objectives were: 
+ To assist the Management Committee in determining whether ICH non-Standing non-Founding 
+Regulatory Members would meet the eligibility criteria for the MC elections in June 2021  
+ To allow participating Observers interested in future ICH Membership to reference the survey findings 
+to confirm their eligibility. 
+The long-term objectives would be to establish a sustainable ICH-driven mechanism to assess implementation 
+and adherence to the ICH Guidelines over time to inform ICH stakeholders on multiple areas as specified in the 
+goals and, therefore, to fulfil the ICH mission.   
+                                                                    
+1 https://admin.ich.org/sites/default/files/inline-files/ICHImplementationReportOutline_v1.4_2019_1101_0.pdf  
+
+5 
+ SCOPE AND METHOD 
+CIRS adapted the study questionnaire and the online data collection tool (DCT) developed in collaboration with 
+ICH as part of the 2019 Phase 2a study1. The study utilised the same definitions for ‘implementation’ and 
+‘adherence’ developed jointly by ICH and the ICH Implementation Subcommittee as part of the 2017 Phase 1 
+study (see Appendix 1). The questionnaire was completed between January and March 2021 by companies 
+(assessing all the participating authorities) and authorities (assessing themselves only) to undertake a gap 
+analysis.  
+Three sequential concepts  were used to evaluate the implementation/ adherence status using the developed 
+questionnaire : 
+ 
+In addition, where there was inadequate implementation or lack of adherence, respondents were asked to 
+provide the rationale, including specific evidence and examples.  
+It should be noted that for Tier 1 and 2 ICH Guidelines, participants were asked to complete the entire 
+questionnaire (assessing Step 1, 2, 3 and the rationale) while for Tier 3, recognising a large workload needed to 
+complete the questionnaire for 53 Guidelines, participants were only asked questions related to implementation 
+status and adherence status (Step 1 and 3). To provide consistency in the results among Tier 1, 2 and 3, only 
+results from Step 1 (implementation) and Step 3 (adherence) are presented in this report. However, the 
+complete set of results, including Step 2 for Tier 1 and 2 Guidelines, as well as unaggregated results, were shared 
+with the participating organisations and presented to the ICH.  
+ Step 1: 
+implementation Step 2: Adequacy 
+of implementation Step 3: Adherence Rationale: lack of 
+implementation 
+/adherence 
+What was assessed through questionnaire and shared with participants for the different Guidelines:  
+Tier 1 Guidelines X X X X 
+Tier 2 Guidelines  X X X X 
+Tier 3 Guidelines  X  X  
+What is presented in this 
+report (all Guidelines) to 
+provide consistency  X  X X (adherence only as 
+example) 
+                                                                    
+1 https://admin.ich.org/sites/default/files/inline-files/ICHImplementationReportOutline_v1.4_2019_1101_0.pdf  
+Step 1  
+Implementation (based on 
+self-declaration by agency)  
+Step 2 
+Adequacy of implementation 
+(based on modifications)  
+Step 3  
+Adherence to the Guideline 
+(based on practice) 
+Implementation 
+The process of implementation is 
+completed. This term refers to the self-
+declaration of the regulator regarding 
+the conclusion of the implementation 
+process. Usually, the regulator 
+publishes the final guideline. 
+ Question 1 in survey Adequate implementation 
+ICH Guideline implemented by 
+authority without modifications or 
+modifications are justified (do not 
+increase regulatory burden) 
+ Question 1.2 and 1.2.2 Adherence 
+The regulatory authority 
+consistently adheres to (applies) all 
+identified relevant elements, 
+concepts, and principles of the ICH 
+Guideline in practice 
+ Question 1.3 
+
+6 
+ The following ICH Guidelines were assessed: 
+ Tier 1 (only for ICH Observers)  
+o Q1 – Stability (all subparts considered)  
+o Q7 – Good Manufacturing Practice Guide for Active Pharmaceutical Ingredients  
+o E6(R2) – Good Clinical Practice (GCP) 
+ Tier 2 (only for ICH non-Standing non-Founding Regulatory Members)  
+o E2A – Clinical Safety Data Management: Definitions and Standards for Expedited. Reporting 
+o E2B(R3) – Clinical Safety Data Management: Data Elements for Transmission of Individual Case 
+Safety Reports 
+o E2D – Post-approval Safety Data Management: Definitions and Standards for Expedited 
+Reporting 
+o M1 – Medical Dictionary for Regulatory Activities Terminology (MedDRA) 
+o M4 – Common Technical Document (CTD) 
+ Tier 3 (only for ICH non-Standing non-Founding Regulatory Members)  
+o 55 Guidelines were studied, of which 53 were unique Guidelines (where two Guidelines, E9 and 
+S5, were included twice as E9 – E9(R1) and S5(R2)-S5(R3)) from across Q, S, E, M domains. All 
+ICH Guidelines are listed in Appendix 4 
+ 
+The following organisations participated in undertaking a gap analysis:  
+ 10 regulatory authorities (assessing themselves only): 
+ 
+ 30 Major Pharmaceutical Companies (assessing all the participating authorities) provided a response in 
+total out of 40 invited from across PhRMA, EFPIA, JPMA, BIO and IGBA companies.  
+  ICH non-Standing non-Founding Regulatory Members  
+- ANVISA, Brazil 
+- NMPA, China 
+- HSA, Singapore 
+- MFDS, Republic of Korea 
+- TFDA, Chinese Taipei 
+- TITCK, Turkey  ICH Observers (voluntary basis)  
+- INVIMA, Colombia 
+- JFDA, Jordan 
+- SAHPRA, South Africa 
+- SFDA, Saudi Arabia 
+
+7 
+ RESULTS PART 1: ICH REGULATORY MEMBERS (TIER 2 & TIER 3)  
+Characteristics of participating companies  
+ 
+Key Messages  
+ 30 companies participated 
+out of 40 invited companies 
+(75% response rate) 
+ There was a good level of 
+experience among the 
+participating pharmaceutical 
+companies regarding 
+implementation of Tier 2 and 
+Tier 3 ICH Guidelines by ICH 
+non-Standing non-Founding 
+Regulatory Members 
+ 27 out of the 30 participating 
+companies had experience 
+with at least one authority 
+and at least one Guideline 
+(Tier 2 or 3). 
+Method: Question 1i (see Appendix 1)  
+ 
+Companies’ Experiences with ICH non-Standing non-Founding Regulatory Members : Participating companies 
+were asked for their most recent/relevant experience regarding a Guideline for a selected authority.  
+ 
+Key Messages  
+ In general, the most 
+recent/relevant experiences 
+for companies were from a 
+past regulatory submission or 
+by ongoing regulatory 
+intelligence input/local 
+affiliate opinion 
+ Where companies indicated 
+that they had experience 
+from a past regulatory 
+submission, 91% of them 
+were submitted in 2019 or 
+later. 
+ 
+ 
+ 
+Method: Question 1a (see Appendix 2)   
+
+
+8 
+ Company type: Companies were asked to specify their company type based on the countries/regions where they 
+submitted drug applications.  
+Key Messages  
+ More than 80% of companies 
+were global, and this varied 
+little according to authority or 
+Guideline. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1i (see Appendix 2)   
+ 
+Company Focus:  Companies were also asked to specify their focus for drug development, i.e. innovative and/or 
+generic medicines.   
+Key Messages  
+ 90% of surveyed companies 
+were innovative companies. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1ii (see Appendix 2)   
+ 
+  
+
+
+9 
+ RESULTS PART 1.1: TIER 2 GUIDELINES  
+Implementation status:  Authorities and companies were asked about their views on the implementation status 
+for the selected Tier 2 Guidelines. The first bar in the graph below corresponds to the self-declaration by the 
+authorities (aggregated results across the six ICH non-Standing non-Founding Regulatory Members), and the 
+second bar shows the number of responses across the companies. The ICH Guidelines were firstly ordered in 
+descending order based on the percentage of answers that authorities marked as ‘Implemented’ in question 1, 
+and secondly based on the responses from companies. 
+Key Messages 
+ Most of the Guidelines were 
+seen as implemented or in the 
+process of implementation  
+ Company perception of 
+implementation status was 
+generally aligned with agency 
+self-declaration 
+ E2A, E2D and M4 had the 
+highest proportion of 
+‘implemented’ responses  
+ For E2B(R3) and M1, the 
+response was mixed between 
+‘implemented’ and ‘in the 
+process of implementation’. 
+Method: Question 1 (See Appendix 2)   
+ 
+Adherence status: Organisations that confirmed that a Tier 2 Guideline had been adequately implemented 
+(unmodified or modified with justification) were asked to provide views on the adherence status. Adherence 
+relates to whether, in practice, the authority applies all identified relevant elements, concepts, and principles of 
+the ICH Guideline over time. The ICH Guidelines were firstly ordered in descending order based on the 
+percentage of answers that authorities marked as ‘adherence’ in question 1.3, and secondly based on the 
+responses from companies. 
+Key Messages  
+ Where implementation was 
+confirmed, the perceived 
+level of adherence to the 
+Guidelines was high or too 
+early to assess, particularly for 
+E2B(R3) Guideline 
+ In general, company 
+perception and agency self-
+declaration was aligned.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1.3 (See Appendix 2)   
+
+
+10 
+ Rationale for lack of adherence: The graph below outlines the rationale for selecting a “lack of adherence” 
+response for selected Guidelines.  
+ 
+Method: Question 2 (See Appendix 2) 
+Key Messages 
+ As no authorities declared ‘lack of adherence’ response for Tier 2 Guidelines, the results below only show 
+rationale from companies, aggregated across all the authorities studied 
+ However, it should be noted that the number of companies that perceived lack of adherence, and 
+subsequently provided the rationale, was low (three, five and eleven companies for E2A, E2D and M4 
+Guidelines, respectively) 
+ The most common reasons among E2A, E2D and M4 Guidelines based on company perception was that 
+authorities incorporate additional requirements or apply them inconsistently 
+ M4 Guideline received the largest number of responses with varied reasons for lack of adherence. 
+  
+
+
+11 
+ Comparison to 2019 Survey Results1 
+The following graphs compare the 20191 and 2021 surveys’ results regarding implementation and adherence of 
+Tier 2 Guidelines from included ICH non-Standing non-Founding Regulatory Members (except for TITCK, Turkey, 
+who was an Observer at the time)  
+Key Messages for implementation 
+progress 
+• In only two years, the number 
+of authorities that declared 
+implementation of E2B(R3) 
+Guideline have increased by 
+three 
+• The implementation of E2D, 
+M4, and M1 Guidelines have 
+progressed in one authority 
+compared with 2019 results 
+• In general, based on the 
+industry perception, there 
+was also an increased level of 
+Guideline implementation by 
+the authorities compared to 
+two years ago. 
+ 
+Key Messages for adherence 
+progress 
+• Where implementation was 
+confirmed, the perceived 
+level of adherence to the 
+Guidelines was high 
+• There was an increase in 
+adherence based on the 
+authorities’ declaration and 
+industry perception, 
+compared to the 2019 study 
+e.g. for E2D  
+• For a number of Guidelines 
+and authorities where 
+implementation occurred 
+recently, it was too early to 
+assess adherence e.g. 
+E2B(R3).  
+ 
+ 
+                                                                    
+1 https://admin.ich.org/sites/default/files/inline-files/ICHImplementationReportOutline_v1.4_2019_1101_0.pdf  
+
+
+12 
+ RESULTS  PART 1.2: TIER 3 GUIDELINES  
+Implementation status:  Authorities and companies were asked about their views on the implementation status 
+for the selected Tier 3 Guidelines. The first bar in the graph below corresponds to the self-declaration by the 
+authorities (aggregated results across the six ICH non-Standing non-Founding Regulatory Members), and the 
+second bar shows the number of responses across the companies. The ICH Guidelines were firstly ordered in 
+descending order based on the percentage of answers that authorities marked as ‘Implemented’ in question 1, 
+and secondly based on the responses from companies. 
+Key Messages for Quality Guidelines 
+ Generally, the self-declaration of the ICH Regulatory Members on the implementation of the Quality ICH 
+Guidelines was aligned with companies’ implementation perceptions 
+ The aggregated results demonstrate that, in general, the Guidelines were perceived as implemented 
+ A number of the Guidelines, particularly Q12, are still seen to be in the process of being implemented or not 
+implemented.  
+Method: Question 1 (See Appendix 2) 
+
+
+13 
+ Key Messages for Safety Guidelines  
+ The aggregated results across the stakeholders demonstrate that, in general, the Safety Guidelines were 
+perceived as implemented  
+ A few of the Guidelines, particularly S11 and S5(R3), are still seen to be in the process of being implemented 
+or not implemented. 
+ 
+Method: Question 1 (See Appendix 2) 
+  
+
+
+14 
+ Key Messages for Efficacy Guidelines 
+ Most of the Efficacy Guidelines were perceived by companies and self-declared by authorities as 
+implemented  
+ A number of the Guidelines, particularly E9(R1), are seen to be in the process of being implemented or not 
+implemented. 
+ 
+Method: Question 1 (See Appendix 2) 
+  
+
+
+15 
+ Key Messages for Multidisciplinary 
+Guidelines  
+ M7(R1) and M3(R2) Guidelines 
+were considered as 
+implemented by the majority 
+of companies and declared by 
+authorities 
+ M9 Guideline was considered 
+as mainly in the process of 
+implementation. 
+ 
+ 
+ 
+ 
+Method: Question 1 (See Appendix 2)   
+ 
+  
+
+
+16 
+ Adherence status: Organisations were asked to provide views on the adherence status. Adherence relates to 
+whether, in practice, the authority applies all identified relevant elements, concepts, and principles of the ICH 
+Guideline over time. The ICH Guidelines were firstly ordered in descending order based on the percentage of 
+answers that authorities marked as ‘adherence’ in question 1.3, and secondly based on the responses from 
+companies.  
+ 
+Key Messages for Quality Guidelines 
+ For those Quality ICH Guidelines that were confirmed as implemented, there was generally a strong level of 
+adherence based on agency self-declaration and company perception 
+ For Q12, no responses were received from authorities regarding adherence status, as no authority declared 
+it as implemented (see page 12) however, four authorities confirmed they are in the process of 
+Implementing. 
+ 
+Method: Question 1.3 (See Appendix 2)   
+  
+
+
+17 
+ Key Messages for Safety Guidelines 
+ Based on the companies and authorities’ responses, there was a good level of adherence to the 
+implemented Safety Guidelines  
+ For S5(R3), no responses were received from authorities regarding adherence status, as no authority 
+declared it as implemented (see page 13) however, three authorities confirmed they are in the process of 
+Implementing. 
+ 
+Method: Question 1.3 (See Appendix 2)   
+
+
+18 
+ Key Messages for Efficacy Guidelines  
+ Based on agencies self-declaration and companies’ perception, in general Efficacy Guidelines were seen as 
+adhered to by most of the authorities  
+ For E9(R1), no responses were received from authorities regarding adherence status, as no authority 
+declared it as implemented (see page 14) however three authorities confirmed they are in the process of 
+Implementing. 
+ 
+Method: Question 1.3 (See Appendix 2) 
+  
+
+
+19 
+ Key Messages for Multidisciplinary 
+Guidelines 
+ Based on agencies self-
+declaration, there was 
+adherence to M3(R2) and 
+M7(R1) Guidelines by three 
+out of the six authorities; this 
+was generally consistent with 
+the industry perception. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1.3 (See Appendix 2) 
+ 
+  
+
+
+20 
+ RESULTS  PART 2: ICH REGULATORY OBSERVERS (TIER 1) 
+General overview of participating companies 
+Key Messages  
+ The majority of 
+participating companies 
+had experiences across 
+the studied ICH Observers. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1i (see Appendix 2)   
+ 
+Companies’ Experiences with ICH Observers: Participating companies were asked for their most recent/relevant 
+experience regarding a Guideline for a selected authority.  
+Key Messages  
+ The most recent/relevant 
+experience from companies 
+regarding the studied ICH 
+Observers were from a past 
+regulatory submission 
+ Where companies indicated 
+that they had experience 
+from a past regulatory 
+submission, 93% of them 
+were submitted in 2019 or 
+later. 
+ 
+ 
+ 
+Method: Question 1a (see Appendix 2)   
+ 
+ 
+ 
+ 
+  
+
+
+21 
+ Company type: Companies were asked to specify their company type based on the countries/regions where they 
+submitted drug applications.  
+Key Messages  
+ More than 80% of companies 
+were global, and this was 
+consistent across the 
+different authorities.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1i (see Appendix 2)   
+ 
+Company Focus:  Companies were also asked to specify their focus for drug development, i.e. innovative and/or 
+generic medicines.   
+Key Messages  
+ Approximately 80% of 
+companies are focused on 
+innovative medicines. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1ii (see Appendix 2) 
+ 
+ 
+ 
+ 
+ 
+
+
+22 
+ Implementation status:  Authorities and companies were asked about their views on the Tier 1 Guidelines’ 
+implementation status. The first bar in the graph below corresponds to the self-declaration by the authorities 
+(aggregated results across the six ICH Observers), and the second bar shows the number of responses across the 
+companies. The ICH Guidelines were firstly ordered in descending order based on the percentage of answers 
+that authorities marked as ‘Implemented’ in question 1, and secondly based the responses from companies. 
+Key Messages   
+ E6(R2), Q7 and Q1 Guidelines 
+were declared as implemented 
+by three of the authorities; this 
+was generally aligned with the 
+views of the industry  
+ Q1 Guideline was declared as 
+implemented by two 
+authorities while it is in the 
+process of implementation by 
+other two 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1 (See Appendix 2)  
+ 
+Adherence status: Organisations that confirmed that a Guideline had been adequately implemented (unmodified 
+or modified with justification) were asked to provide views on the adherence status. Adherence relates to 
+whether, in practice, the authority applies all identified relevant elements, concepts and principles of the ICH 
+Guideline over time. The ICH Guidelines were firstly ordered in descending order based on the percentage of 
+answers that authorities marked as ‘adherence’ in question 1.3, and secondly based on the responses from 
+companies.  
+Key Messages  
+ For those Guidelines that were 
+implemented, there was 
+generally a strong level of 
+adherence. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Method: Question 1.3 (See Appendix 2)   
+ 
+
+
+23 
+ Rationale for lack of adherence: The graph below outlines the rationale for selecting a “lack of adherence” 
+response for selected Guidelines.  
+Key Messages  
+• As no authorities declared ‘lack of adherence’ response for Tier 1 Guidelines, the results below only 
+show rationale from companies, aggregated across all the authorities studied 
+• However, it should be noted that the number of companies that perceived that there is a lack of 
+adherence, and subsequently provided the rationale, was low (three companies for Q1 and Q7 only) 
+• The most mentioned rationale for lack of adherence was that other local guidelines conflict with the 
+Guideline and prevent full adherence to the ICH Guideline. 
+ 
+ 
+Method: Question 2 (See Appendix 2)  
+ 
+
+
+24 
+ RESULTS  PART 3.1: SUMMARY TABLES - IMPLEMENTATION STATUS  
+Aiming to compare and find agreement among authorities’ self-declaration and companies’ perception, an 
+assessment was undertaken to summarise the consensus implementation status of the ICH Guidelines among 
+the authorities for all Tiers. The following tables show the result of this assessment, and the method used for 
+developing it is described in Appendix 3.  
+A. Implementation of Tier 2 Guidelines by ICH Regulatory Members  
+Method: Question 1 (See Appendix 2 and Appendix 3)  
+Key Messages 
+ Two authorities implemented all of the Tier 2 Guidelines  
+ All of the authorities implemented the E2D and M4 Guidelines, followed by E2A (five out of six) based on 
+agreement between authority self-declaration and majority industry perception. 
+ 
+B. Implementation of Tier 3 Guidelines by ICH Regulatory Members  
+ 
+Key Messages for  Implementation of all Tier 3 Guidelines by ICH Regulatory Members  
+ Five out of the six authorities implemented >70% of the Tier 3 Guidelines (data not shown but were shared 
+with participants). The results for the Tier 3 Guideline were organised below according to the topic: 
+ 
+a) Quality Guidelines 
+Method: Question 1 (See Appendix 2 and Appendix 3)  
+Key Messages for Quality Guidelines 
+ Four out of the six authorities implemented more than 14 out of the 18 (87%) Quality Guidelines.   
+ 
+b) Safety Guidelines 
+Note: Guideline S5(R3) excluded from ‘% of authorities where the Guideline was implemented since S5(R2) was included    
+          Method: Question 1 (See Appendix 2 and Appendix 3)  
+ 
+Key Messages for Safety Guidelines 
+ Four out of the six authorities implemented more than 13 out of the 15 (87%) Safety Guidelines.  
+ Guideline/ authority E2D M4 E2A M1 E2B(R3) 
+% of authorities where the Guideline was 
+implemented (no. of authorities out of 6)  100% (6) 100% (6) 83% (5) 33% (2) 17% (1) 
+Guideline/ 
+authority 
+Q6A 
+Q5B 
+Q5A(R1) 
+Q3A(R2) 
+Q5C 
+Q5E 
+Q2(R1) 
+Q3C(R6) 
+Q3B(R2) 
+Q6B 
+Q9 
+Q10 
+Q5D 
+Q11 
+Q8(R2) 
+Q3D(R1) 
+Q4B 
+Q12 
+% of authorities where the 
+Guideline was implemented 
+(no. of authorities out of 6)  
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+50% (3) 
+33% (2) 
+33% (2) 
+0% (0) 
+Guideline/ 
+authority 
+S4 
+S7A 
+S7B 
+S1A 
+S2(R1) 
+S1C(R2) 
+S9 
+S3A 
+S6(R1) 
+S1B 
+S3B 
+S8 
+S10 
+S5(R2) 
+S11 
+% of authorities where the 
+Guideline was 
+implemented (no. of 
+authorities out of 6)  
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+67% (4) 
+67% (4) 
+67% (4) 
+50% (3) 
+17% (1) 
+
+25 
+ c) Efficacy Guidelines  
+Note: Guideline E9(R1) excluded from ‘% of Guidelines implemented across the six authorities’ in the final column as E9 was included 
+Method: Question 1 (See Appendix 2 and Appendix 3)  
+Key Messages for Efficacy Guidelines  
+ E2C(R2) and E2E Guidelines were considered as implemented by all the authorities 
+ Four out of the six authorities implemented more than 13 out of the 17 (76%) Efficacy Guidelines.  
+ 
+ 
+d) Multidisciplinary Guidelines  
+Method: Question 1 (See Appendix 2 and Appendix 3)  
+Key Messages for Multidisciplinary Guidelines 
+ M3(R2) and M7(R1) were implemented by four out of the six authorities. 
+ 
+ 
+C. Implementation of Tier 1 Guidelines for ICH Observers 
+Method: Question 1 (See Appendix 2 and Appendix 3) 
+Key Messages  
+ The four ICH Observers studied implemented the E6(R2) Guideline  
+ Results showed that two authorities implemented all Tier 1 Guidelines.  
+  Guideline/ 
+authority 
+E2C(R2) 
+E2E 
+E9 
+E8 
+E10 
+E3 
+E5(R1) 
+E4 
+E7 
+E11(R1) 
+E1 
+E17 
+E16 
+E14 
+E18 
+E2F 
+E15 
+% of authorities where the 
+Guideline was implemented 
+(no. of authorities out of 6)  
+100% (6) 
+100% (6) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+83% (5) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+50% (3) 
+50% (3) 
+50% (3) 
+50% (3) 
+Guideline/  
+authority M3(R2) M7(R1) M9 
+% of authorities where the Guideline was implemented 
+(no. of authorities out of 6)  67% (4) 67% (4) 17% (1) 
+Guideline/ 
+authority E6(R2) Q7 Q1 
+% of authorities where the Guideline was 
+implemented (no. of authorities out of 4) 100% (4) 75% (3) 50% (2) 
+
+26 
+ RESULTS  PART 3.2: ADHERENCE STATUS 
+Aiming to compare and find agreement among authorities’ self-declaration and companies’ perception, an 
+assessment was undertaken to summarise the consensus adherence status of the ICH Guidelines among the 
+authorities for all Tiers. The following tables show the result of this assessment, and the method used for 
+developing it is described in Appendix 3.  
+A. Adherence to Tier 2 Guidelines by ICH Regulatory Members  
+Note: Each column does not add up to 100% because there was no consensus response for some Guidelines/authorities, or 
+Guidelines were not implemented by the authority           Method: Question 1.3 (See Appendix 2 and Appendix 3)   
+Key Messages 
+ E2D and M4 Guidelines were considered as adhered to, in addition to being implemented, by five of the 
+authorities based on agreement between authority self-declaration and the majority industry perception 
+ E2A Guideline was considered as adhered to by four authorities 
+ Where there was no adherence this was largely due to the fact that implementation occurred recently and 
+it is too early to assess adherence i.e. E2D, M4 and E2B(R3) for one authority each. 
+ 
+B. Adherence to Tier 3 Guidelines by ICH Regulatory Members  
+ 
+Key Messages for  adherence of Tier 3 Guidelines by ICH Regulatory Members  
+ Across all six Regulatory Members, adherence to the Tier 3 Guidelines ranged from 2%-92%; where 
+adherence was low, this was due to the Guideline being not implemented or only recently  
+ Three out of the six Regulatory Members adhered to >70% of the Tier 3 Guidelines (data not shown but was 
+shared with participants). The results for the Tier 3 Guidelines were organised below according to the topic: 
+ 
+a) Quality Guidelines  
+Note: Each column does not add up to 100% because there was no consensus response for some Guidelines/authorities, or 
+Guidelines were not implemented by the authority           Method: Question 1.3 (See Appendix 2 and Appendix 3)   
+ Guideline/ 
+authority Adherence 
+category E2D M4 E2A M1 E2B(R3) 
+% of authorities where 
+the Guideline was 
+adhered to (no. of 
+authorities out of 6)  Adherence  83% (5) 83% (5) 67% (4) 33% (2) 0% (0) 
+No adherence  0% (0) 0% (0) 0% (0) 0% (0) 0% (0) 
+Too early to 
+assess adherence  17% (1) 17% (1) 0% (0) 0% (0) 17% (1) 
+Guideline/ 
+authority Adherence 
+category 
+Q3C(R6) 
+Q10 
+Q2(R1) 
+Q3A(R2) 
+Q3B(R2) 
+Q5A(R1) 
+Q5B 
+Q5C 
+Q5D 
+Q5E 
+Q6B 
+Q8(R2) 
+Q9 
+Q4B 
+Q6A 
+Q11 
+Q3D(R1) 
+Q12 
+% of authorities 
+where the 
+Guideline was 
+adhered to (no. 
+of authorities 
+out of 6) Adherence  
+67% 
+(4) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 50% 
+(3) 33% 
+(2) 33% 
+(2) 33% 
+(2) 17% 
+(1) 0% (0) 
+No adherence 
+0% (0) 
+17% (1) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+Too early to 
+assess 
+adherence  
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+0% (0) 
+17% (1) 
+0% (0) 
+33% (2) 
+17% (1) 
+0% (0) 
+0% (0) 
+
+27 
+ Key Messages for Quality Guidelines 
+ Most of the Quality Guidelines were considered as adhered to by three or more authorities 
+ Where there was no adherence this was largely due to the fact that implementation occurred recently and 
+it was too early to assess adherence e.g. Q6A for two authorities 
+ 
+b) Safety Guidelines 
+Note: Each column does not add up to 100% because there was no consensus response for some Guidelines/authorities, or 
+Guidelines were not implemented by the authority           Method: Question 1.3 (See Appendix 2 and Appendix 3)   
+ 
+Key Messages for Safety Guidelines 
+ Most of the Safety Guidelines were considered as adhered to by three or more authorities 
+ 
+c) Efficacy Guidelines  
+Note: Each column does not add up to 100% because there was no consensus response for some Guidelines/authorities, or 
+Guidelines were not implemented by the authority           Method: Question 1.3 (See Appendix 2 and Appendix 3)  
+ 
+Key Messages for Efficacy Guidelines 
+ Most of the Efficacy Guidelines were considered as adhered to by three or more authorities 
+ 
+ Guideline/ 
+authority Adherence 
+category 
+S1A 
+S1B 
+S2(R1) 
+S3A 
+S4 
+S7A 
+S9 
+S1C(R2) 
+S3B 
+S6(R1) 
+S7B 
+S8 
+S10 
+S5(R2) 
+S11 
+% of authorities 
+where the 
+Guideline was 
+adhered to (no. of 
+authorities out of 
+6) Adherence  
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+50% (3) 
+50% (3) 
+50% (3) 
+50% (3) 
+50% (3) 
+50% (3) 
+33% (2) 
+17% (1) 
+No 
+Adherence 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+0% (0) 
+17% (1) 
+17% (1) 
+0% (0) 
+17% (1) 
+0% (0) 
+0% (0) 
+17% (1) 
+0% (0) 
+Too early to 
+assess 
+adherence  
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+17% (1) 
+0% (0) 
+0% (0) 
+17% (1) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+Guideline/ 
+authority Adherence 
+category 
+E2C(R2) 
+E2E 
+E3 
+E7 
+E8 
+E9 
+E10 
+E1 
+E2F 
+E4 
+E5(R1) 
+E11(R1) 
+E17 
+E14 
+E15 
+E16 
+E18 
+% of authorities 
+where the 
+Guideline was 
+adhered to 
+(number of 
+authorities out of 
+6) Adherence  
+83% (5) 
+83% (5) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+67% (4) 
+50% (3) 
+50% (3) 
+50% (3) 
+50% (3) 
+50% (3) 
+33% (2) 
+33% (2) 
+33% (2) 
+33% (2) 
+33% (2) 
+No 
+Adherence 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+17% (1) 
+0% (0) 
+0% (0) 
+0% (0) 
+0% (0) 
+Too early to 
+assess 
+adherence  
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+0% (0) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+17% (1) 
+0% (0) 
+17% (1) 
+17% (1) 
+
+28 
+ d) Multidisciplinary Guidelines 
+Note: Each column does not add up to 100% because there was no consensus response for some Guidelines/authorities, or 
+Guidelines were not implemented by the authority           Method: Question 1.3 (See Appendix 2 and Appendix 3)   
+ 
+Key Messages for Multidisciplinary Guidelines 
+ M3(R2) and M7(R1) Guidelines were considered as adhered to by three authorities, while one Authority 
+was shown to adhere to M9. 
+ 
+ 
+Adherence of Tier 1 Guidelines by ICH Observers 
+ 
+Note: Each column does not add up to 100% because there was no consensus response for some Guidelines/authorities, or 
+Guidelines were not implemented by the authority           Method: Question 1.3 (See Appendix 2 and Appendix 3)   
+ 
+Key Messages 
+• All ICH Observers have implemented the E6(R2) Guideline, while only two have implemented all Guidelines. 
+ 
+  Guideline/ 
+authority Adherence category M3(R2) M7(R1) M9 
+% of authorities where the 
+Guideline was adhered to 
+(number of authorities out of 6)  Adherence  50% (3) 50% (3) 17% (1) 
+No Adherence  0% (0) 0% (0) 0% (0) 
+Too early to assess adherence  17% (1) 17% (1) 0% (0) 
+Guideline/  
+authority Adherence category E6(R2) Q7 Q1 
+% of authorities where the 
+Guideline was adhered to 
+(number of authorities out of 
+6) Adherence  100% (4) 75% (3) 50% (2) 
+No Adherence  0% (0) 0% (0) 0% (0) 
+Too early to assess 
+adherence  0% (0) 0% (0) 0% (0) 
+
+29 
+ CONCLUSION 
+The results of Phase 2b project show evidence of a strong level of implementation and adherence to the ICH 
+Guidelines by the participating 6 ICH non-Standing non-Founding Regulatory Members and the 4 ICH Observers 
+with a good alignment between the perception of the participating 30 pharmaceutical companies and the self-
+declaration from the assessed authorities.  
+ICH non-Standing non-Founding Regulatory Members:  Tier 2 Guidelines were implemented and adhered to by 
+most of the ICH non-Standing non-Founding Regulatory Members. By comparing results from 2019, in general, 
+the guideline implementation increased in the last two years. For Tier 3 Guidelines there is evidence that most 
+of the Guidelines in this Tier are implemented and adhered to by the authorities, or that they are in the process 
+of implementation 
+ICH Observers - Tier 1 Guidelines: Results showed that two ICH Observers implemented and adhered to all Tier 
+1 Guidelines. 
+Overall, the results demonstrate authorities’ and companies’ continued commitment and support in ICH’s mission 
+to achieve greater harmonisation worldwide and ensure that safe, effective, and high-quality medicines are 
+developed, registered, and maintained in the most resource-efficient manner whilst meeting high standards.  
+These could be used to support decisions related to ICH membership applications, the transparent communication 
+of Guideline implementation status, and more targeted approaches to ICH training activity, as well as future 
+revisions of ICH Guidelines.  
+ 
+  
+
+30 
+ APPENDIX 1 – DEFINITIONS OF TERMS IN THE CONTEXT OF THE IMPLEMENTATION AND 
+ADHERENCE OF ICH GUIDELINES 
+Term Definition  Comments  
+Not (yet) implemented The process for the 
+implementation of an ICH 
+Guideline has not yet started. a) No guideline exists or b) national/ regional 
+Guideline deviating from ICH Guideline or 
+national/regional Guideline exists but the process for 
+replacement or amendments for alignment with the 
+ICH Guideline has not started yet.  
+In the process of 
+implementation The process for the 
+implementation of the ICH 
+Guideline has started and has 
+reached a specified milestone. 
+The process is monitored by 
+the regulatory agency and the 
+progress is reported to the ICH 
+MC/Assembly on a regular 
+basis.  The process can have different starting points: a) no 
+national/regional guideline exists; the ICH Guideline 
+defines new requirements and b) a national/regional 
+guideline is in the process of development or c) a 
+national/regional guideline exists and is replaced by 
+or is amended to be in line with the ICH Guideline. 
+Generic processes for a) non-electronic and b) 
+electronic guidelines will be defined outlining the 
+milestones that should be followed. 
+Implemented The process of implementation 
+is completed. This step is 
+identical to step 5 of the ICH 
+process. This term refers to the self-declaration of the 
+regulator regarding the conclusion of the 
+implementation process. Usually, the regulator 
+publishes the final Guideline.  
+Adequately 
+implemented All relevant elements, concepts 
+and principles of the ICH 
+Guideline are followed. This is 
+done preferably by referring 
+to/implementing the original 
+ICH Guideline text and/or 
+translating the original 
+Guideline text. This may 
+include in justified cases 
+implementation of the 
+Guideline in a way that may 
+incorporate additional 
+information beyond those 
+defined in the ICH Guideline in 
+circumstances when the 
+Guideline is too high-level and 
+does not provide sufficient 
+guidance.  
+ Minimal elements, concepts and principles will be 
+defined and included in the survey to assess the 
+degree of implementation. Additional information to 
+the ICH Guideline should only be included in order to 
+provide clarity and facilitate implementation by 
+industry, but should not increase regulatory burden. 
+Deviations or additional information to help clarify 
+concepts should be communicated (with the 
+justification) to the ICH Management Committee for 
+transparency and possibly assessment. 
+Not adequately 
+implemented The ICH Guideline has been 
+implemented in a modified 
+way that a) incorporates 
+additional requirements 
+beyond those defined in the 
+ICH Guideline without Lack of adequate implementation means that the ICH 
+Guideline has not been adequately implemented 
+following an assessment of the regulatory or 
+administrative measure that incorporates the ICH 
+Guideline into the regulatory framework.  
+
+31 
+ Term Definition  Comments  
+objective justification in cases 
+where clear guidance is 
+provided, or b) does not 
+include all relevant elements, 
+concepts and principles of the 
+ICH Guideline and does not 
+provide any objective 
+justification for omitting some 
+requirements in the Guideline 
+or c) requires application of the 
+Guideline for a smaller range of 
+products than outlined in the 
+ICH Guideline.  There may be varying degrees of inadequate 
+implementation and this assessment can only be 
+done on a case-by-case basis. Examples could be 
+taken from the Industry Survey to illustrate this 
+range. It should be noted that according to the 
+Assembly RoP (v. 4.0), deviation from the Guideline, 
+in exceptional cases, may be accepted if objectively 
+justified. 
+Adherence1 In its practice, the regulatory 
+authority consistently adheres 
+to (applies) all identified 
+relevant elements, concepts 
+and principles of the ICH 
+Guideline over time. Once an ICH Guideline has been (adequately) 
+implemented by a regulatory authority, experience is 
+gathered on how the regulator applies the Guideline 
+in practice. Adherence leads to a stable regulatory 
+environment and to increased sustainability. 
+Adherence may be assessed in regular intervals.  
+Lack of adherence Even if the Guideline has been 
+adequately implemented, it is 
+not being applied and adhered 
+to in practice.  The regulatory authority does not in practice require 
+industry to adhere to the Guideline or does not follow 
+the Guideline when assessing the applications; e.g. is 
+in its practice adding requirements beyond what is 
+provided in the (implemented) ICH Guideline. 
+Confirmed 
+implementation/ 
+adherence Both the implementation of 
+and adherence to the ICH 
+Guideline have been assessed 
+by an independent third party 
+and have been found to be 
+adequate by the Assembly/the 
+MC (see above). The assessment should be done in two-steps: first 
+assessment of a) adequate implementation and then 
+b) adherence to the ICH Guideline. 
+The implementation should not be considered 
+confirmed even in case of adherence if there is no 
+adequate implementation of the ICH Guideline (i.e. 
+where the regulatory authority in practice accepts 
+submissions that comply with the requirements in 
+the ICH Guideline despite not having adequately 
+implemented it).  
+Not applicable The implementation of a 
+specific ICH Guideline is not 
+applicable in a country/region. 
+An appropriate justification is 
+provided. Example: A country may not have its own 
+Pharmacopeia but references internationally 
+recognised Pharmacopoeias. Hence, the ICH Q4B 
+Guideline is not applicable (and does not need to be 
+implemented). 
+02 October 2018 Definitions v 1.1 
+                                                                    
+1 Adherence at this point in time is defined as application of the ICH Guideline by the regulator’s view. At a later 
+stage, consideration will be given to the aspect of adherence to the Guideline requirements by industry’s view. 
+
+32 
+ APPENDIX 2 – Study TOOL  
+ 
+Questionnaire  
+This document outlines the questions that will be listed as part of the online data collection tool (DCT).  
+ 
+The below questions will be used for each Guideline and authority for respondents from both companies and 
+authorities (note that where specified, certain questions are applicable to companies only).  
+ 
+Companies will have to answer the following general questions:  
+Question 1i (Companies only): Please specify your company type, which refers to what countries/regions the 
+company is submitting drug applications to:  
+ Local country only  
+ Single region  
+ Multi-regional  
+ Global  
+ 
+Question 1ii (Companies only): Please specify your company’s focus for drug development:  
+ Innovative medicines  
+ Generic medicines  
+ Both  
+ 
+All questions will be available for Tier 1 and Tier 2 Guidelines whereas Tier 3 Guidelines, an abbreviated 
+questionnaire will be utilised based on questions highlighted in gray.  
+ 
+Question 1a (for Companies only)  
+What is your company’s experience in regard to this Guideline for the selected authority? Select one (most 
+recent and relevant). (Additional text to display as ‘hover box’ for company’s experience: “Please specify your 
+company’s experience relating to the Guideline/authority before answering Questions 2-4. If ‘no experience’ 
+selected, scroll down to Question 3. If multiple options apply, select one that is most relevant, noting that 
+responses in the subsequent Questions 2-4 should relate to your company’s general experience, and not only 
+to the single submission/experience selected. Additional comments and/or divergences can be captured 
+through comment boxes, for example Question 3.”)  
+ From a past regulatory submission  
+ 
+1.1.a. If yes, give a year of the most recent submission Text box ‘yyyy’ format  
+ Through ongoing regulatory intelligence input/local affiliate opinion  
+ Being used to prepare for an upcoming submission  
+ Through interactions and exchanges with the authority  
+ No experience  
+ 
+If ‘no experience’, respondent redirected to Question 3. If other responses selected, respondent asked to answer 
+Question 1.  
+ 
+ 
+ 
+Question 1 (for companies and authorities)  
+1.1. Please provide your organisation’s view on the implementation status for the selected Guideline. Select one.  
+
+33 
+  Not implemented - The process for the implementation of an ICH Guideline has not yet started. 
+(Additional text to display as a 'hover box' for 'not implemented': "a) No guideline exists or b) national/ 
+regional Guideline deviating from ICH Guideline or national/regional Guideline exists but the process 
+for replacement or amendments for alignment with the ICH Guideline has not started yet.”)  
+ In the process of implementation - The process for the implementation of the ICH Guideline has started 
+and has reached a specified milestone. (Additional text to display as a ‘hover box’ for ‘in the process of 
+implementation’: “The process can have different starting points: a) no national/regional guideline 
+exists; the ICH Guideline defines new requirements and b) a national/regional guideline is in the process 
+of development or c) a national/regional guideline exists and is replaced by or is amended to be in line 
+with the ICH Guideline. Generic processes for a) non-electronic and b) electronic guidelines will be 
+defined outlining the milestones that should be followed.”)  
+ Implemented - The process of implementation is completed. (Additional text to display as a ‘hover box’ 
+based for ‘implemented’: “This term refers to the self-declaration of the regulator regarding the 
+conclusion of the implementation process. Usually, the regulator publishes the final Guideline. This 
+could relate to both adequate or inadequate implementation of the Guideline. The adequacy of 
+implementation will be queried in the next question.”)  
+ Not Applicable - The implementation of a specific ICH Guideline is not applicable in this country/region. 
+An appropriate justification is provided. (Additional text to display as a ‘hover box’ for ‘not applicable’: 
+“Example: A country may not have its own Pharmacopeia but references internationally recognised 
+Pharmacopoeias. Hence, the ICH Q4B Guideline is not applicable (and does not need to be 
+implemented).”)  
+ 
+If ‘Not applicable’ selected in Question 1.1, respondent redirected to Question 1.1.1, and then Question 3. If ‘not 
+implemented’ or ‘in the process of implementation’ selected in Question 1.1, respondent redirected to Question 
+3. If ‘implemented’, respondent asked to answer Question 1.2.  
+ 
+1.1.1 If ‘not applicable’, please comment  
+(Free text comment); 
+ 
+1.2. Please indicate which statement best characterises your organisation’s view of the implementation of the 
+ICH Guideline? Select one.  
+ 
+ An unmodified ICH Guideline has been implemented, where all relevant elements, concepts and 
+principles of the ICH Guideline are followed. This is done preferably by referring to/implementing the 
+original ICH Guideline text and/or translating the original guideline text.  
+ Some modifications have been made to the original ICH Guideline either by adding or altering certain 
+elements, concepts or principles  
+If ‘An unmodified ICH…’ to Question 1.2, respondent redirected to Question 1.3.  
+If ‘Some modification’ to Question 1.2, respondent redirected to 1.2.1  
+ 
+1.2.1. Please specify what modifications were made (either by indicating the section of the Guideline, inserting 
+the wording or outlining the area concerned).  
+ (Free text comment);  
+ 
+1.2.2. Are these modifications objectively justified by the authority? (Additional text to display as a ‘hover box’ 
+for ‘objectively justified’: “This may include in justified cases implementation of the Guideline in a way that may 
+incorporate additional information beyond those defined in the ICH Guideline in circumstances when the 
+
+34 
+ Guideline is too high-level and does not provide sufficient guidance. Additional information to the ICH Guideline 
+should only be included in order to provide clarity and facilitate implementation by industry, but should not 
+increase regulatory burden.”)  
+ Yes  
+ No  
+If ‘No’ to Question 1.2.2, respondent redirected to Question 2.  
+If ‘Yes’ to Question 1.2.2, respondent asked to answer Question 1.3 (i.e. only if Guideline is ‘adequately’ 
+implemented will the respondent answer the question on adherence)  
+ 
+ 
+1.3. Please provide your organisation’s view on the adherence status for the selected Guideline? Select one.  
+ In its practice, the regulatory authority consistently adheres to (applies) all identified relevant elements, 
+concepts and principles of the ICH Guideline over time (Additional text to display as a ‘hover box’ for 
+‘consistently adheres (applies) ‘: “Once an ICH Guideline has been (adequately) implemented by a 
+regulatory authority, experience is gathered on how the regulator applies the Guideline in practice. 
+Adherence leads to a stable regulatory environment and to increased sustainability. Adherence may be 
+assessed in regular intervals.”)  
+ Even if the Guideline has been adequately implemented, it is not being applied and adhered to in 
+practice (Additional text to display as a ‘hover box’ for ‘not being applied and adhered to ‘: “The 
+regulatory authority does not in practice require industry to adhere to the Guideline or does not follow 
+the Guideline when assessing the applications; e.g. is in its practice adding requirements beyond what 
+is provided in the (implemented) ICH Guideline.”)  
+ The regulatory authority has only recently implemented the Guideline therefore it is too early to assess 
+the adherence to the Guideline due to limited experience  
+ 
+If ‘Even if the Guideline has been adequately implemented, it is not being applied and adhered (…)’ to Question 
+1.3, respondent asked to answer Question 2. Otherwise respondents redirected to Question 3.  
+ 
+Question 2 (for companies and authorities)  
+2.1. Please provide the rationale for your selection by specifying the appropriate root cause(s) listed below. 
+Select all that apply.  
+If ‘not adequately implemented’ is specified in Question 1.2, the following will be displayed:  
+ Incorporates additional requirements beyond those defined in the ICH Guideline without objective 
+justification in cases where clear guidance is provided  
+ Does not include all relevant elements, concepts and principles of the ICH Guideline and does not 
+provide any objective justification for omitting some requirements in the Guideline  
+ Requires application of the Guideline for a smaller range of products than outlined in the ICH Guideline  
+ Other  
+ 
+If ‘other’, please specify  
+(free text comment)  
+If ‘lack of adherence’ is specified in Question 1.3, the above will be displayed, as well as the below (i.e. all 9 
+options) 
+ 
+ Other local guidelines conflict with the ICH Guideline and prevent full adherence to the Guideline  
+ Agency process or capacity issues (agency does not have an internal process and/or resources to 
+implement the Guideline)  
+ There is a general lack of understanding of the elements of the ICH Guideline by technical reviewers 
+(the underlying regulatory science is not understood)  
+
+35 
+  Inconsistent application of the Guideline; e.g. adherence and interpretation varies by 
+submission/review division/reviewer  
+ The agency does not in practice require industry to adhere to the Guideline  
+ 
+2.2 Please provide specific evidence or examples that substantiate your root cause choice(s), (OPTIONAL)  
+(free text comment) 
+ 
+Question 3 (for companies and authorities- OPTIONAL)  
+Please provide any other comments you would like to make in regard to the implementation and adherence of 
+the Guideline.  
+(free text comment)  
+ 
+Question 4 (for companies and authorities)  
+Please provide the following respondent information 
+4.1. Name  
+(free text comment) 
+4.2. Department  
+(free text comment)  
+4.3. (Company only question) Location of respondent. Select one.  
+ Head office  
+ Local/regional office  
+ 
+Completion tickbox : Respondent tick 'complete' if section completed. This will enable tracking of response rate 
+in a summary table for each organisation.  
+ 
+  
+
+36 
+ APPENDIX 3 – METHOD OF ANALYSIS  
+Summary – Implementation status’ Method 
+ 
+To consider that a Guideline was implemented in a specific agency, the answers to Question 1 were analysed 
+using the following inclusion criteria: 
+1. The Guideline should be considered as implemented by at least 60% of the companies that responded 
+to Question 1 
+2. At least three companies are in consensus 
+3. The regulatory agency declared that the Guideline was implemented 
+Once the Guidelines were categorised as implemented for each authority, the % of authorities where the 
+Guideline was implemented, was calculated  dividing the number of authorities with Guideline implemented by 
+the authorities’ total number 
+ 
+Summary – Adherence status’ Method   
+ 
+An assessment utilising the following three categories was undertaken to summarise the implementation and 
+adherence status of the agency for the Guidelines assessed 
+ 
+Category 1: Guideline 
+implemented AND  
+adhered to Category 2a: Guideline 
+implemented BUT no adherence Category 2b: Guideline 
+implemented BUT too early to 
+assess adherence 
+ 
+The method is as follows: 
+• Implementation: For both categories 1, 2a and 2b the first criterion is that the response to Question 1 
+on implementation was ‘implemented’ for BOTH the authority and based on a majority response from 
+all companies (here assumed as >60% responses e.g. 6/10 companies)  
+• Adherence: The difference in categories is response to Question 1.3 on adherence, where: 
+• Category 1: both authority and company majority response (>60%) is ‘adherence’ 
+• Category 2a and 2b: a number of combinations are possible (see table below): 
+ 
+  Company majority response to Question 1.3 (>%60)  
+  Adherence No adherence Too early to assess 
+Authority response to 
+Question 1.3 Adherence  Category 1 Category 2a Category 2b 
+No adherence  Category 2a Category 2a Category 2b 
+Too early to assess Category 2b Category 2b Category 2b 
+NOTE: number of companies stating ‘implemented’ AND ‘adherence’ must be ≥ 3 to be included in analysis 
+ 
+Once the Guidelines were categorised based on their adherence status, the % of authorities where the Guideline 
+was adhered to  was calculated with the number of authorities that have adhered the Guideline divided by total 
+number of authorities 
+  
+
+37 
+ APPENDIX 4 – LIST OF GUIDELINES  
+ 
+Quality Guidelines 
+Q1 – Stability (NOTE: this Guideline should be considered as a whole, but as it is made up of sub parts, these 
+should be taken into consideration when answering and can be referred to using comment boxes) 
+Q2(R1) – Validation of Analytical Procedures: Text and Methodology 
+Q3A(R2) – Impurities in New Drug Substances 
+Q3B(R2) – Impurities in New Drug Products 
+Q3C(R6) – Maintenance of the Guideline for Residual Solvents 
+Q3D(R1) – Guideline for Elemental Impurities 
+Q4B – Evaluation and Recommendation of Pharmacopoeial Texts for Use in the ICH Regions 
+Q5A(R1) – Viral Safety Evaluation of Biotechnology Products Derived from Cell Lines of Human or Animal Origin 
+Q5B – Analysis of the Expression Construct in Cells Used for Production of r-DNA Derived Protein Products 
+Q5C – Quality of Biotechnological Products: Stability Testing of Biotechnological/Biological Products 
+Q5D – Derivation and Characterisation of Cell Substrates Used for Production of Biotechnological/Biological 
+Products 
+Q5E – Comparability of Biotechnological/Biological Products Subject to Changes in their Manufacturing Process 
+Q6A – Specifications: Test Procedures and Acceptance Criteria for New Drug Substances and New Drug 
+Products: Chemical Substances 
+Q6B – Specifications: Test Procedures and Acceptance Criteria for Biotechnological/Biological Products 
+Q7 – Good Manufacturing Practice Guide for Active Pharmaceutical Ingredients 
+Q8(R2) – Pharmaceutical Development 
+Q9 – Quality Risk Management 
+Q10 – Pharmaceutical Quality System 
+Q11 – Development and Manufacture of Drug Substances (Chemical Entities and Biotechnological/Biological 
+Entities) 
+Q12 – Technical and Regulatory Considerations for Pharmaceutical Product Lifecycle Management 
+ 
+Safety Guidelines 
+S1A – Need for Carcinogenicity Studies of Pharmaceuticals 
+S1B – Testing for Carcinogenicity of Pharmaceuticals 
+S1C(R2) – Dose Selection for Carcinogenicity Studies of Pharmaceuticals 
+S2(R1) – Guidance on Genotoxicity Testing and Data Interpretation for Pharmaceuticals Intended for Human 
+Use 
+S3A – Note for Guidance on Toxicokinetics: The Assessment of Systemic Exposure in Toxicity Studies 
+S3B – Pharmacokinetics: Guidance for Repeated Dose Tissue Distribution Studies 
+S4 – Duration of Chronic Toxicity Testing in Animals (Rodent and Non-Rodent Toxicity Testing) 
+S5(R2) – Detection of Toxicity to Reproduction for Medicinal Products & Toxicity to Male Fertility 
+S5(R3) – Revision of S5 Guideline on Detection of Toxicity to Reproduction for Human Pharmaceuticals 
+S6(R1) – Preclinical Safety Evaluation of Biotechnology-Derived Pharmaceuticals 
+S7A – Safety Pharmacology Studies for Human Pharmaceuticals 
+S7B – The Non-Clinical Evaluation of the Potential for Delayed Ventricular Repolarization (QT Interval 
+Prolongation) by Human Pharmaceuticals 
+S8 – Immunotoxicity Studies for Human Pharmaceuticals 
+S9 – Nonclinical Evaluation for Anticancer Pharmaceuticals 
+S10 – Photosafety Evaluation of Pharmaceuticals 
+S11 – Nonclinical Safety Testing in Support of Development of Paediatric Medicines 
+ 
+ 
+ 
+
+38 
+ Efficacy Guidelines 
+E1 – The Extent of Population Exposure to Assess Clinical Safety for Drugs Intended for Long-Term Treatment 
+of Non-Life-Threatening Conditions 
+E2A – Clinical Safety Data Management: Definitions and Standards for Expedited Reporting 
+E2B(R3) – Clinical Safety Data Management: Data Elements for Transmission of Individual Case Safety Reports 
+E2C(R2) – Periodic Benefit-Risk Evaluation Report 
+E2D – Post-approval Safety Data Management: Definitions and Standards for Expedited Reporting 
+E2E – Pharmacovigilance Planning 
+E2F – Development Safety Update Report 
+E3 – Structure and Content of Clinical Study Reports 
+E4 – Dose-Response Information to Support Drug Registration 
+E5(R1) – Ethnic Factors in the Acceptability of Foreign Clinical Data 
+E6(R2) – Good Clinical Practice 
+E7 – Studies in Support of Special Populations: Geriatrics 
+E8 – General Considerations for Clinical Trials 
+E9 – Statistical Principles for Clinical Trials 
+E9(R1) – Addendum: Statistical Principles for Clinical Trials 
+E10 – Choice of Control Group and Related Issues in Clinical Trials 
+E11(R1) – Addendum: Clinical Investigation of Medicinal Products in the Pediatric Population 
+E14 – The Clinical Evaluation of QT/QTc Interval Prolongation and Proarrhythmic Potential for Non-
+Antiarrhythmic Drugs 
+E15 – Definitions for Genomic Biomarkers, Pharmacogenomics, Pharmacogenetics, Genomic Data and Sample 
+Coding Categories 
+E16 – Biomarkers Related to Drug or Biotechnology Product Development: Context, Structure and Format of 
+Qualification Submissions 
+E17 - General principles for planning and design of Multi-Regional Clinical Trials 
+E18 – Genomic Sampling and Management of Genomic Data 
+ 
+Multidisciplinary Guidelines 
+M1 – Medical Dictionary for Regulatory Activities Terminology 
+M3(R2) – Guidance on Nonclinical Safety Studies for the Conduct of Human Clinical Trials and Marketing 
+Authorization for Pharmaceuticals 
+M4 – Common Technical Document 
+M7(R1) – Assessment and Control of DNA Reactive (Mutagenic) Impurities in Pharmaceuticals to Limit Potential 
+Carcinogenic Risk 
+M9 – Biopharmaceutics Classification System-based Biowaivers 
+
+39 
+ MONITORING THE ADEQUACY OF IMPLEMENTATION AND ADHERENCE TO INTERNATIONAL COUNCIL FOR 
+HARMONISATION OF TECHNICAL REQUIREMENTS FOR PHARMACEUTICALS FOR HUMAN USE (ICH) GUIDELINES  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Report date: 09 September 2021 
+With editorial changes added on 07 January 2022 
+Version 1.4 
+ 
+ 
+ 
+ 
+MONITORING THE ADEQUACY OF IMPLEMENTATION AND ADHERENCE TO INTERNATIONAL COUNCIL FOR 
+HARMONISATION OF TECHNICAL REQUIREMENTS FOR PHARMACEUTICALS FOR HUMAN USE (ICH) GUIDELINES 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+

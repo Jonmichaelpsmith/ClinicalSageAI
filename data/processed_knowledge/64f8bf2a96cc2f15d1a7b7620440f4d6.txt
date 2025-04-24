@@ -1,0 +1,430 @@
+PUBLIC WORKSHOP
+Enhancing Clinical 
+Study Diversity
+November 29 and 30, 2023
+WORKSHOP REPORT
+June 2024  
+www.fda.gov
+
+ ii
+Enhancing Clinical Study Diversity ReportTable of Contents
+Executive Summary .............................................................................................. 1
+Introduction ........................................................................................................... 3
+Clinical Study Diversity – A Brief Overview: Where Are We Now? ................... 3
+Establishment of Clinical Study Enrollment Goals and  
+Use of Disease Prevalence or Incidence Data  ................................................. 6
+Approaches To Support the Inclusion of Underrepresented  Populations and To Encourage Clinical Study Participation ............................ 8
+Age, Race, Ethnicity , Sex, Pr egnancy
+, and Lactation  ................................. 8
+Individuals With Disabilities, Including Intellectual  
+or Developmental Disabilities  ..................................................................... 10
+Individuals With Mental Illness  .................................................................... 11
+Appropriate Use of Decentralized Studies, Digital Health  
+Tools, and Other Trial Elements To Support the Inclusion  of Underrepresented Populations in Clinical Studies 
+ .................................... 13
+Post-Approval Dissemination of Clinical Study Enrollment  Demographic Data to the Public
+ ....................................................................... 15
+Community Engagement  ................................................................................... 16
+Moving Forward  .................................................................................................. 17
+Conclusion  ......................................................................................................... 19
+Acknowledgements  ........................................................................................... 20
+Link to the Public Meeting Recording, Materials, and Resources  ................ 20
+APPENDIX - FDA Guidance Documents That Address Topics  Supportive of Enhancing Clinical Trial Diversity
+ .............................................. 21
+
+ 1
+Enhancing Clinical Study Diversity ReportExecutive Summary
+1 In this document, trial and study are used interchangeably.
+2 Public Law 117-328, https://www.congress.gov/bill/117th-congress/house-bill/2617The U.S. Food and Drug Administration (FDA or Agency) has a longstanding  
+commitment to promote the inclusion of underrepresented populations in clinical trials
+1 and to help reduce barriers that may prevent the enrollment and retention  
+of a diverse trial population. FDA has published a number of guidances with  
+recommendations on enhancing diversity in clinical trials, including those  
+specifically addressing enrollment of populations such as pregnant women, older adults, and underrepresented ethnic and racial groups, as well as guidances on innovative trial designs and digital health technology, to make clinical trials more accessible to a broader set of patients.
+Section 3603 of the Food and Drug Omnibus Reform Act of 2022 (FDORA)
+2  
+requires FDA to convene one or more public workshops in consultation with drug 
+sponsors, medical device sponsors, clinical research organizations, academia, patients, and other stakeholders, to solicit input on increasing the enrollment of historically underrepresented populations in clinical studies and encouraging clinical study participation that reflects the prevalence of the disease or condition among demographic subgroups, where appropriate. To satisfy this requirement, and in collaboration with the Clinical Trials Transformation Initiative, the Agency organized a 2-day virtual public workshop titled “Public Workshop to Enhance Clinical Study Diversity” on November 29 and 30, 2023.
+FDORA Section 3603(c) also requires FDA to publish a report on topics discussed 
+at the public workshop not later than 180 days after the close of the comment period for a docket established in connection with this workshop. To satisfy  
+this FDORA requirement, this report summarizes the discussions at the public workshop, with an emphasis on the following topics: 
+1. How and when to collect and present the prevalence or incidence data on a disease or condition by demographic subgroup, including possible sources  for such data and methodologies for assessing such data;
+2. Considerations for the dissemination, as appropriate, after approval, of  information to the public on clinical study enrollment demographic data;
+3. The establishment of goals for enrollment in clinical trials, including the  relevance of the estimated prevalence or incidence, as applicable, in the  United States of the disease or condition for which the drug or device is  
+being developed;
+4. Approaches to support inclusion of underrepresented populations and to  encourage clinical study participation that reflects the population expected  to use the drug or device under study, including with respect to the  establishment of inclusion and exclusion criteria that do not hinder enrollment for certain subgroups, such as pregnant and lactating women and individuals with disabilities, including intellectual or developmental disabilities or  mental illness;
+
+ 2
+Enhancing Clinical Study Diversity Report5. Considerations regarding informed consent with respect to individuals with 
+intellectual or developmental disabilities or mental illness, including ethical  and scientific considerations;
+6. The appropriate use of decentralized trials or digital health tools, clinical  endpoints, biomarker selection, and study analysis.
+The report is being provided as a summary of the meeting and does not  provide guidance or reflect FDA’s current thinking on this subject.
+
+ 3
+Enhancing Clinical Study Diversity ReportIntroduction
+FDA organized the 2-day virtual public workshop, in collaboration with the  
+Clinical Trials Transformation Initiative (CTTI), on strategies to increase  
+broader representation in clinical trials. Specifically, the workshop provided an  opportunity for speakers and panelists to share their experiences on ways to increase the enrollment of historically underrepresented populations in clinical studies and encourage clinical study participation that reflects the prevalence  of the disease or condition among demographic subgroups, where appropriate.  
+The attendees represented drug sponsors, medical device sponsors, clinical  
+research organizations, academics, patients and patient advocacy groups,  
+and other interested parties. This report summarizes the presentations and  discussions from the workshop. 
+Clinical Study Diversity – A Brief Overview:  
+Where Are We Now?
+The workshop included an overview of the current status of clinical study diversity 
+from FDA, industry, academia, and patient viewpoints. The following are some  of the shared perspectives from the various speakers and panelists. 
+Although there have been unprecedented advances in our understanding of many 
+diseases that have increased our capacity to develop treatments with greater  precision, certain populations continue to experience barriers to accessing such innovative treatments in clinical trials or following approval, which can result in adverse health outcomes. Despite the scientific community’s understanding  
+that valuable, high-impact research should be inclusive and representative of  real-world experience, historical practices have proven inadequate to achieve  this objective. For example, the clinical trial ecosystem remains focused on the use of established trial sites while insufficiently leveraging community sites where most patients receive their care from a trusted health care team. A comprehensive  
+strategy to enroll a representative population that includes specific goals and  metrics for success is still missing in many cases.
+As reflected throughout this document, panelists identified similar barriers to 
+achieving a diverse clinical trial population across different demographic and non-demographic groups and made suggestions for overcoming those barriers. Barriers that are common across several historically underrepresented groups include distrust in the research enterprise; not being referred to clinical studies; restrictive eligibility criteria; transportation problems; inflexible trial visit and  procedure windows; receiving clinical trial materials that are not appropriate  
+to a participant’s language, reading level, or knowledge capacity; and lack of  community engagement that can foster enrollment of populations that typically  do not enroll. Panelists identified options for overcoming those barriers that are also applicable across several demographic groups, including but not limited  to providing transportation for participants, increasing community engagement  before trials are planned, providing flexible trial visit and procedure windows,  utilizing decentralized trials and digital health technologies, and ensuring  trial-related materials are appropriate across the spectrum of trial participants.  
+
+ 4
+Enhancing Clinical Study Diversity ReportAddressing common barriers (in addition to barriers specific to a demographic 
+group) can help achieve a trial population that is more reflective of the population that will use the medical product, if approved. 
+Historical mistreatment of underrepresented populations in clinical research  
+continues to lead to a foundation of mistrust for many in these communities.  
+For example, the 1972 Tuskegee Syphilis Study, when many Black or African American men with syphilis were left intentionally untreated for many years, has been correlated with increases in medical mistrust and mortality among African American men because of the fear of engaging in the health care system.  The importance of collecting race and ethnicity data in clinical research and  health care was noted as fundamental for understanding existing gaps and  identifying opportunities in clinical trial diversity. A speaker noted that  demographic information is not necessarily collected globally in clinical trials and that reporting of information about major demographic groups (White, Black or African American, Asian, American Indian or Alaska Native, and Latino) is often lacking on the website ClinicalTrials.gov. Although the requirement under FDA’s  regulations for drugs to present data by demographic characteristics in certain submissions was cited as a positive measure, published papers in journals do  not always provide such level of detail and it would be helpful to standardize  such data in public reports. 
+Discussions at the meeting on strategies to overcome some barriers to diverse 
+trial enrollment included: (1) diversifying trial investigators, staff, and sites to better engage and successfully recruit a diverse population; (2) providing language- appropriate cultural literacy and sensitivity training for trial staff; (3) being mindful that those who have been historically excluded, included without consent or  
+mistreated in the name of clinical research, may lack information about, interest  in, or trust in clinical trials; (4) understanding the demographic, political, social, cultural, and health care environments in which populations affected by a given disease exist, which is critical for clinical researchers; (5) engaging a diverse  patient population in the process before the clinical study protocol is drafted;  and (6) simplifying informed consent forms.  
+Using clinical trials in breast cancer as an example, panelists discussed the need 
+for the clinical trial ecosystem to educate with cultural agility so that more women from more diverse backgrounds are invited to participate in clinical trials and can make informed decisions. For example, breast cancer is illustrative of health  disparities for Black or African American women. Black or African American  
+women diagnosed with breast cancer face a 41 percent higher mortality rate,  39 percent higher risk of breast cancer recurrence, and 71 percent higher relative risk of death compared to White women. Despite these statistics, the physiology of Black or African American women has not been a consideration in research, with clinical trials for drugs that are now the standard of care for breast cancer having included very few to no Black or African American women. Panelists noted that researchers are not inviting Black or African American women to participate in clinical trials, and when Black or African American women express interest in clinical trials, they are not sufficiently informed about their options. The recent  FDA draft guidance on the submission of diversity plans was noted as an  
+
+ 5
+Enhancing Clinical Study Diversity Reportimportant first step to help ensure enrollment of diverse study participants;  
+however, there is still a need for proven metrics to evaluate the implementation and success of these diversity plans.
+Panelists from the medical device industry noted that diverse representation is 
+important in all phases of medical device development to facilitate understanding about how these devices will function in the intended use population, which can give people confidence in the ability of these devices to benefit them. Given the wide range of different types of medical devices, such as therapeutic, diagnostic, and clinical decision support devices, it is important to have clinical evidence that is broad and inclusive across all device types. Given the growing trend of using existing data to develop products, it is also important to focus on the  representativeness of the chosen datasets. For example, artificial intelligence-  
+enabled devices rely on a training dataset, which can result in inherently biased products when the data themselves are not representative. There are also unique opportunities for medical device trials. For example, with implanted devices,  long-term connectedness and the use of registries can create an opportunity  to collect more information from diverse populations in the postmarket setting.
+Moreover, the panelists noted that site selection has traditionally been challenging 
+because device trials tend to rely on specialized centers that are located in  specific demographic areas. In addition, traditional recruitment pathways relying on health care provider (HCP) referrals may not reach all the eligible populations. Some potential actions that were discussed at the workshop to increase diversity in medical device trials include engaging diverse patients during the study  design process, building partnerships with community groups in locations with  underrepresented populations, and employing novel approaches to patient  
+recruitment, such as using direct-to-patient communication tools and social  media outreach. 
+Another current effort to help improve clinical trial diversity includes a collaborative 
+consortium of biopharmaceutical companies across the clinical trial ecosystem that addresses common challenges and efficiencies in drug development,  including increasing diversity in clinical trials. This consortium provides  
+materials that are publicly available to help improve the representation of  patient populations in clinical trials for which the studied drugs are intended  to be prescribed or used. The materials include a reference table and landscape  of available resources; a sponsor toolkit for portfolio- and program-level  considerations for diversity, equity, and inclusion of participants in clinical trials; communty-based site engagement and capacity building; and a sponsor toolkit for site engagement and capacity building. Several key insights came out of  
+developing these solutions. For instance, progress in clinical trial diversity will require multidisciplinary collaboration — both within any given organization  and across the ecosystem. Sponsors also need to ensure appropriate capacity  investment to facilitate adequate staffing, support services, resources, and  
+expertise at all sites. In addition, collecting data will be fundamental for  understanding existing gaps and opportunities for improvement; using consistent and standardized ways to capture and categorize demographic data across the clinical trial ecosystem is important to that effort. 
+
+ 6
+Enhancing Clinical Study Diversity ReportEstablishment of Clinical Study Enrollment Goals 
+and Use of Disease Prevalence or Incidence Data 
+Panelists and speakers shared insights on considerations regarding setting clinical 
+study enrollment goals and using disease prevalence or incidence information in developing those goals. Helping to ensure generalizability of clinical trial results requires quality research that takes an active approach to enhancing trial diversity and includes establishing enrollment goals; engaging with underrepresented  populations; taking creative, proactive approaches to facilitate the ability to achieve goals; and monitoring enrollment diversity throughout trial conduct. 
+To establish enrollment goals and engage underrepresented populations,  
+panelists discussed the following three stages of clinical trial participation:  (1) initial approach, (2) recruitment, and (3) retention. Each stage has its  unique challenges for achieving a representative clinical trial population and  corresponding strategies for addressing those challenges. During the initial  approach stage, the selection of trial sites, the way patients are approached, and the diversity of the research team can impact the diversity of the study population. Once potential participants are approached in the recruitment stage, mistrust  or discomfort with research and travel- and time-related barriers should be  considered. Finally, once participants have consented to participate in a trial, these same barriers can potentially affect retention. Panelists discussed how retention barriers may be overcome by providing financial incentives and providing flexibility in the timing and location of trial activities. 
+Panelists also discussed measuring diversity throughout a trial as an important 
+part of enhancing clinical study diversity. One means of measuring the adequacy of diversity in clinical trials is the participation-to-prevalence ratio (PPR), which is the ratio of the number of participants in a given demographic group to the overall prevalence of the disease or condition in that group. The PPR is a single metric that can be used across clinical trials for many different diseases and is aligned with the goal of equitably distributing potential benefits of trial participation.  However, there are problems with solely relying on the PPR as a metric for  diversity. First, accurate disease prevalence data across all relevant demographic groups are often unavailable. Second, due to geographic heterogeneity, disease prevalence may vary from region to region, making it challenging to determine where to measure disease prevalence. Third, it’s possible to improve the PPR by selectively recruiting from sites with high percentages of underrepresented groups; however, such oversampling of underrepresented patients can potentially result in selective enrollment that produces data that are not generalizable. Fourth, improving equity of opportunity may or may not improve PPR. Fifth, PPR may not be aligned with the goal of augmenting biomedical knowledge. 
+Another step to helping ensure a diverse patient population is monitoring  
+enrollment diversity throughout trial conduct. Panelists noted that data moni-toring committees (DMCs) can play a role in this process. While DMCs function primarily to safeguard the interests of study participants, they also act to preserve the integrity and credibility of clinical trials. Panelists outlined a potential role for sponsors, DMCs, and others to describe and understand trial recruitment on an 
+
+ 7
+Enhancing Clinical Study Diversity Reportongoing basis, identifying the baseline characteristics of the participants and  
+comparing these characteristics with available prevalence data to understand whether representation targets are being met. The research team could then  review this comparison to understand the generalizability of the primary  
+confirmatory analyses, and these comparisons may also reveal descriptive  
+information about the differential efficacy and safety of the medical product in  
+key subgroups. To prepare DMCs to perform this function, panelists identified  a need to train diverse groups of people to serve on DMCs. 
+Approaches to monitoring trial diversity can vary. For example, one sponsor  
+has developed an interactive data visualization dashboard that enables site- and  trial-level monitoring and real-time tracking of diversity metrics that has helped keep teams on target and focused. Another panelist described the analysis of demographic data captured in clinical trial screening logs as a way to understand why historically underrepresented individuals are not enrolled in a trial. In one example, screen failure logs identified that the primary reason African Americans, Asian Americans, and women were not enrolled in a trial was the choice not to sign the informed consent document. Once the reason participants fail to enroll  is identified, this information can then be used to develop strategies to  
+diversify enrollment. 
+Industry panelists described a process for preparing a diversity plan that includes 
+details on disease prevalence, recruitment, and retention plans, and how they  plan to engage with communities. Engaging with the community is also important even before a trial is being developed. One industry panelist discussed its  
+Diversity and Inclusion Patient Council, a standing committee of diverse patients that provides direct input into clinical trial design considerations and materials  
+to create solutions within underserved communities to improve meaningful  
+representation in clinical trials for generations. Another industry-led campaign seeks to empower Latina and Black or African American women with heart failure, a demographic group that experiences a higher mortality rate, by encouraging  
+patients to prioritize their heart health, creating awareness, and providing  educational resources.
+Historically, women have been excluded from some medical device trials because 
+the sizes of the devices limited enrollment of participants with smaller body  sizes. Panelists discussed how, for device trials, clinical study diversity and  other relevant characteristics of various populations with the disease should be  considered early in device design, with engineers, physicians, and patients  
+meeting in the initial planning stages to understand implantation constraints  
+and long-term patient concerns.
+Different data sources are often available to derive disease prevalence, such as 
+registries and national or global health care databases. Registries often include urban centers but are now incorporating more rural hospitals, leading to a more comprehensive understanding of the prevalence of a given disease. Other  real-world data sources can also be of value. For example, panelists discussed  a coalition of over 30 hospitals in rural communities and urban centers that have 
+
+ 8
+Enhancing Clinical Study Diversity Reportpooled their electronic health record data, along with claims data and data on  
+social determinants of health, to provide researchers with a better perspective  of disease prevalence.
+Approaches To Support the Inclusion of 
+Underrepresented Populations and  To Encourage Clinical Study Participation
+Age, Race, Ethnicity, Sex, Pregnancy, and Lactation 
+Developing strategies to increase diversity in clinical trials starts with identifying 
+the barriers to diversity and planning key innovative solutions to address these barriers. Strategies to increase diversity in clinical trials — such as engaging  communities and patients as partners, proactively designing an inclusive study, acknowledging and alleviating barriers to recruitment and retention, and tracking metrics to facilitate data-driven decision-making — should take place throughout medical product development.
+Panelists discussed the barriers to clinical study diversity with respect to age, 
+race, ethnicity, and sex, such as the historic lack of trust. Panelists also noted that a lack of cultural competency can contribute to unconscious bias toward patients and reduce patients’ willingness to participate in clinical trials. Other barriers include limited health literacy, which can lead to varying levels of understanding during the informed consent process. Overly restrictive eligibility criteria or  complicated protocol designs can also inadvertently exclude historically  
+underrepresented patients and patients with certain comorbidities. Additionally, the financial and time burden of clinical trial participation can make it difficult  
+for some patients to participate. Panelists discussed how strategies to improve  
+diversity should consider the languages and varying levels of health and digital  
+literacy, broadband access for digital tools, and accessibility among potential  participants to enable inclusive and equitable participation. Other strategies  discussed by panelists include targeted patient engagement plans, enhanced  site selection and inclusive patient educational materials using decentralized  trial tools, digital technologies, choosing sites that are located in diverse areas,  protocol optimization with inclusive study design elements, and using  
+patient concierges to help with scheduling and reimbursement for travel  and transportation.
+Throughout clinical development, panelists discussed how sponsors should 
+collect and track relevant demographic data in real time and conduct ongoing data-driven assessments of diversity and representativeness. For relevant studies, sponsors should consider collecting sexual orientation and gender identity  
+data. Sponsors should clearly define and track key performance indicators to monitor program performance and refine strategies to effectively reach target  patient populations.
+Because there is heterogeneity within populations, when collecting data in clinical 
+studies to reflect the population for which the product is intended, it is important to make sure the data collection instruments being used are collecting the right variables. Panelists discussed how sponsors should consider the types of  
+
+ 9
+Enhancing Clinical Study Diversity Reportinformation they need in terms of race, ethnicity, sex or gender, and age, and 
+ensure that they are capturing those variables in a way that can inform the data analysis. Diversity plans are more likely to succeed when enrollment and retention are evaluated continuously in real time, and adjustments should be made if  targets are not being met.
+Pregnant and lactating individuals have also been historically excluded from 
+clinical trials. This exclusion can lead to ineffective treatments, once the product is marketed, due to physiological differences between pregnant individuals and other study participants that can contribute to undertreatment or toxicity.  
+Exclusion can also expose pregnant individuals and fetuses to risk because  there is not sufficient safety data to inform on the use of many marketed drugs in pregnant people. As a result of this risk, many physicians and patients themselves may be reluctant to use these drugs even if they may be beneficial to the patient’s health. One panelist described three ethical foundations used in her own work  that justify inclusion of pregnant people in biomedical research: protection from intervention-related risks, access to the benefits of new technologies, and respect for pregnant people’s own health.
+A number of institutions and regulatory agencies have begun to invest in ways to 
+enhance the inclusion of pregnant and lactating individuals in biomedical research. Examples cited at the workshop include FDA’s 2018 draft guidance for industry Pregnant Women: Scientific and Ethical Considerations for Inclusion in Clinical  
+Trials. In addition, the Department of Health and Human Services’ Task Force  
+on Research Specific to Pregnant Women and Lactating Women (PRGLAC)  documented evidence gaps in knowledge and research on safe and effective  therapies for pregnant and lactating women and made recommendations for improved inclusion of pregnant and lactating women in clinical trials. Moving forward, panelists recommended pregnant individuals should be redefined as a complex population that needs to be protected through research rather than a vulnerable population that needs to be protected from research. 
+Another panelist spoke from the perspective of experience with implantable  
+device trials. The panelist noted that taking the time to educate patients and  
+their families to understand their disease and understand the role of clinical  
+research is important. This often includes digital strategies, such as websites where information is presented to patients and families in plain, lay-friendly  language. However, some patients may not have access to the right set of  physicians who are participating in implantable device trials. Sponsors should be intentional about identifying and partnering with community physicians who are treating underrepresented patients but are not traditionally engaged in medical  device trials. The panelists also noted that because evaluations of implantable devices may involve long-term data collection, sponsors should consider how patients will be able to access not just the implantation procedure but also all  the follow-up procedures over that time span. Decentralization strategies, like home visits, may improve the accessibility of these follow-up appointments.
+
+ 10
+Enhancing Clinical Study Diversity ReportIndividuals With Disabilities, Including Intellectual or 
+Developmental Disabilities 
+Individuals with disabilities are the largest minority group in the US. There are 
+many kinds of disabilities, and an individual can identify as having more than  
+one. Individuals with disabilities represent 1 in 4 adults, and 1 in 3 Black or  African American and Hispanic or Latino adults. Individuals with disabilities  may participate in trials as participants, researchers, and institutional review  board (IRB) members. Panelists discussed the importance of the clinical trial  
+ecosystem shifting from the status quo of default exclusion of people with  disabilities to default inclusion, where investigators and sponsors must make  a case for exclusion based on a clear scientific or ethical rationale. 
+Federal laws such as section 504 of the Rehabilitation Act
+3 and section 1557 
+of the Affordable Care Act (ACA)4 have been enacted to prohibit discrimination 
+against people with disabilities and require equal access to health care. Panelists 
+noted that some sponsors are reluctant to include individuals with certain  disabilities based on the fear that they will have different side effects or efficacy profiles that adversely influence the value assessment of the medical product  
+and discussions with payors on utilization, management, and payment. According to a recent report,
+5 individuals with cognitive and intellectual or developmental  
+disabilities were excluded in 42 percent of the studies the report examined  (including depression, diabetes, and lung cancer studies) and in approximately  
+90 percent of dementia studies. It is important to include populations with  
+disabilities because they will be part of the population using the drug, if approved.
+Panelists noted that there are several approaches to support the inclusion of  
+individuals with disabilities in clinical studies. For example, the Multi-Regional Clinical Trials Center of Brigham and Women’s Hospital and Harvard released  a toolkit
+6 that outlines trial design considerations for the inclusion of people with 
+disabilities in clinical research, organized into key themes and categorized by  how difficult the trial designs could be to implement. Another approach discussed the revision of eligibility criteria in study protocols to be as specific as possible  regarding exclusions and the scientific rationale for those exclusions. Additionally, study protocols could include reasonable accommodations, such as providing transportation and flexible scheduling for procedures and trial visits to better  accommodate supported care settings or conducting trials within care settings. The discussion also highlighted the importance of researchers collecting data on the inclusion of people with disabilities by consistently capturing self-reported disability information.
+Panelists discussed strategies that may be employed to promote decision-  
+making when people may have compromised cognitive abilities. In general,  
+3 Fact Sheet: Nondiscrimination on the Basis of Disability Proposed Rule Section 504 of the Rehabilitation Act of 1973,  
+https://www.hhs.gov/civil-rights/for-individuals/disability/section-504-rehabilitation-act-of-1973/fact-sheet/index.html
+4 Section 1557 of the Patient Protection and Affordable Car e Act, https://www.hhs.gov/civil-rights/for-individuals/section-1557/
+index.html
+5 WD Plosky, A Ne’eman, BC Silverman, DH Strauss, LP Francis, MA Stein, and BE Bier er, 2022, Excluding People With 
+Disabilities From Clinical Research: Eligibility Criteria Lack Clarity and Justification, Health Affairs, 41(10): 1423-1432,  
+https://doi.org/10.1377/hlthaff.2022.00520 
+6 Accessibility by Design (AbD) Toolkit, Multi-Regional Clinical Trials Center of Brigham and W omen’s Hospital and Harvard, 
+https://mrctcenter.org/wp-content/uploads/2023/12/12-11-2023-AbD-Toolkit.pdf
+
+ 11
+Enhancing Clinical Study Diversity Reportit is a best practice for patients to bring a family member or friend to support  
+them in discussing the risks and benefits of trial participation. Supported  
+decision-making is something that researchers and clinicians may currently  do, but there are arguments for formalizing it in certain instances. In some cases,  
+the designated supporter may have access to more information than would  otherwise be available. There are State laws and other formal programs that are experimenting with providing legal status to support relationships. Furthermore, most people with disabilities, including many people with intellectual and  developmental disabilities, are capable of making informed decisions. It is a  stereotype that people with intellectual and developmental disabilities cannot  consent. It is important that researchers start from a posture of presuming  competence, providing accommodations, facilitating supported decision-making, and ensuring that participants have the information they need to consent.
+There are different reasons for the exclusion of individuals with disabilities from 
+clinical studies. One reason discussed during the workshop is safety concerns. Unless researchers have concrete reasons to believe a medical product is  less safe for a specific population, then they should be able to enroll people,  
+including those with disabilities, with deference to the participant’s right to  make their own decisions regarding safety. Those decisions should be made  with adequate support, and the benefit-risk profile of the medical product should  be outlined in a way that is accessible to the participant, but researchers should avoid a paternalistic model that does not allow patients the opportunity to make their own decisions. Another reason for exclusion, which may be legitimate but  is often misused, is the concern that the medical product will have a different  efficacy profile in people with disabilities. Panelists noted that it is important to evaluate the scientific rationale for this kind of exclusion because if approved, the medical product will be used by people with and without disabilities or comorbid conditions. If there are unique risks or a medical contraindication for a certain  subpopulation, then there may be a reason for exclusion from a clinical trial. 
+Individuals With Mental Illness
+The prevalence of mental illness in US adults is approximately 20 percent, with  7 percent suffering from severe mental illness. The co-occurrence of mental  health conditions and physical illnesses is particularly notable given that people with severe, acute, or chronic physical illness often experience higher rates of  mental illness. For example, people with diabetes are 2 to 3 times more likely  to suffer from depression than those without diabetes, and nearly half of people with bipolar disorder suffer from diabetes. In addition, about 8 to 15 percent of people with cancer suffer from depression, and about 23 percent of people with epilepsy suffer from depression and anxiety. Individuals with autism spectrum disorder also tend to have multiple chronic health conditions. These statistics demonstrate the significant overlap of mental illness and other health conditions. 
+Given the prevalence of mental illness and the co-occurrence of mental illness 
+with other medical conditions, the exclusion of individuals with mental illness from clinical trials may limit the generalizability of trial results. Trials often exclude some individuals with mental illness because of assumptions about their capacity to consent to research; concerns about retention rates or interrupted participation 
+
+ 12
+Enhancing Clinical Study Diversity Reportowing to hospitalization; lack of guidance surrounding how to measure, monitor, 
+and manage psychiatric symptoms in the context of co-occurring medical  
+conditions; and variations in whether IRBs identify people with mental illness  
+as a vulnerable population, leading to variations in the degree of monitoring  
+and safety considerations that the IRB implements.
+There are additional barriers that may limit the participation of individuals with 
+mental illness in clinical studies. One barrier discussed during the workshop  
+is the distrust and fear of research that individuals with mental illness may  experience. Distrust can stem from stigma and discrimination against individuals with mental illness in health care and research. In addition, individuals with mental illness may also be part of another marginalized community; for example, due to race or disability. To address the distrust of clinical research that individuals with mental illness may experience, panelists noted that it is important to understand this intersectionality, how it has played a role in the history of clinical studies,  and the resulting trauma that has affected many individuals. Other barriers to the  
+participation of individuals with mental illness in clinical studies discussed during the workshop include lack of transportation, inconvenient timing for trial activities, and the language chosen for trial materials. It is important for participants to have trial materials at an appropriate reading level with appropriate language and to provide education and continuous communication throughout the trial to address barriers to participation. Additionally, where a participant is in their mental illness recovery may impact their willingness to accept treatment or any kind of support. 
+Panelists discussed other approaches to support the inclusion of individuals with 
+mental illness in clinical studies. Better education about mental illness is needed so that researchers understand that having mental illness does not necessarily make a patient less likely to adhere to the requirements for participation in the  trial, either due to hospitalizations or being more likely to drop out of the trial. Many people with mental illness have stable disease, and even people with  
+severe mental illness are often stable on medication. Sponsors, IRBs, and others involved in trial design need to evaluate the justifications for eligibility criteria  and ensure that the reasons for excluding certain individuals with mental illness are scientifically justified. Clinical sites should have support personnel to  
+accommodate people with mental illness, including staff who have experience working with individuals who have mental illness and are familiar with the safety procedures that should be in place. Screening of participants should include a suicidality assessment, and research teams should have the capacity to support patients who report suicidal thoughts. 
+With regard to consent, in situations where patients with mental illness are  
+experiencing cognitive decline, it is common to need a proxy at some point in a study. However, panelists noted that it should not be assumed that including individuals with mental illness will add to the complexity of the consent process or conduct of the trial, and exclusions should be based on safety issues. When conducting digital consent, brief quizzes that evaluate whether the participant understands what they are consenting to can be useful. 
+
+ 13
+Enhancing Clinical Study Diversity ReportPanelists noted how using these approaches to address barriers will support  
+clinical trial participation of individuals with mental illness in a manner that is meaningful for studies of both mental health conditions as well as other physical illnesses that may co-occur in this population.
+Appropriate Use of Decentralized Studies, Digital 
+Health Tools, and Other Trial Elements To Support the Inclusion of Underrepresented Populations in Clinical Studies 
+Panelists discussed a number of different elements of trial design and how  
+the choice to use or incorporate particular elements into the design of a  
+given trial may support the inclusion of participants from historically  underrepresented populations. 
+Decentralized clinical trials (DCTs) are clinical trials where some or all of the  
+trial-related activities occur at locations other than traditional clinical trial  
+sites, including both fully remote and hybrid trials. These types of trial designs  create more options for patients, resulting in trials that are often more broadly  accessible. DCTs can improve participant experience and access, particularly  
+for rural, underserved, and disabled patients. DCTs may also make it easier for sponsors to maintain trials in an unpredictable environment when unexpected events occur, such as a pandemic or severe weather conditions when participants cannot travel to trial sites. Another benefit of DCTs is supporting Green Trials  and environmental, social, and governance (ESG) commitments. Panelists noted,  however, that DCTs alone are not the sole solution to enhancing diversity in  clinical trials. DCTs may help researchers enroll more diverse patients but will  not completely address equitable research access for all. While DCTs can increase  
+access to clinical trials, DCTs need to be combined with the use of personal  connections and community engagement. A diversity plan will help ensure  representative patients are being invited to participate and that participants  
+have the tools and knowledge they need to engage with decentralized trial  
+activities. Panelists also discussed how sponsors can enhance the diversity  
+of DCTs by being strategic about where they build study centers; engaging  community leaders with information about the study; and providing plain  
+language study materials, which include printed materials, communications,  
+questionnaires, and educational materials in English, Spanish, and other  languages as appropriate.
+For example, in heart failure research, where the role of biomarkers has been 
+explored extensively, many cardiology trials are not representative of the patients who have the disease. Black or African American patients, Hispanic or Latino  
+patients, and women are among the most common populations hospitalized  with heart failure, and yet they make up a minority of clinical trial populations. DCTs and other trial elements that make trials more accessible to patients will  be important for achieving more representative trials. Sponsors need to make  sure they are engaging with trusted community leaders and involving investigators  
+and trial staff who reflect the patient communities they are trying to recruit.
+
+ 14
+Enhancing Clinical Study Diversity ReportWhile DCTs can occur at a wide range of locations — at home, the pharmacy, 
+or beyond — point-of-care DCTs focus on the HCPs administering care in the community. Incorporating DCT elements in trials conducted at the point of care  
+is a promising means of increasing opportunities for participation in research.  For these trials, addressing challenges that may arise with protocol adherence  and collection of quality data from nontraditional clinical sites is needed. When trials are administered through community HCPs, the expectations with regard  to patient safety and research integrity are the same as for traditional clinical trials. To ensure data integrity and confidence with these approaches, those designing trials need to understand routine care and identify HCPs who are qualified and trained to serve as investigators and maintain proper oversight of the trial. The  trial should include technologies, tools, data flow, and processes that facilitate investigator oversight. 
+While digital health technologies may support the inclusion of underrepresented 
+populations, they too are not a universal solution. Panelists suggested that  sponsors should consider the role of technology in generating valuable trial  data and evaluate how the technology will fit into participants’ daily lives.  
+Barriers such as lack of broadband or smartphone access and digital literacy should be identified and addressed. While DCTs and digital tools are useful, it  is still important to build a human connection with participants and communities.  
+By soliciting patient or patient advocate input during the trial design, planning phase, and throughout the trial as appropriate, sponsors can receive feedback  on the specifics of how the study is being designed and conducted. Sponsors  can leverage community ambassadors or advocates to build that kind of human  
+connection and trust, so patients have a person they can contact to discuss  
+questions or concerns during the trial. 
+With regard to clinical endpoints, patient engagement early in trial design,  
+including in the identification of endpoints that matter to them, can help  
+overcome critical barriers such as mistrust and social determinants of health, leading to more patient-centered trials and better participant recruitment and  retention. A panelist described patient-centered endpoints as outcomes or  measures specifically relevant and meaningful to patients and aligned with patient preferences, needs, and priorities (e.g., quality of life, knowledge and satisfaction, caregiver burden). Community engagement and partnerships are critical to  
+successfully designing patient-centered trials that foster diversity and inclusion. The practice of patient-centered research and outcomes advises that patients, caregivers, and patient advocates provide input on all aspects of the research, including patient-centered endpoints and outcomes. 
+With regard to study analyses, sponsors and investigators should consider  
+the study analysis plan early in trial design, including considerations for key  
+population subgroups. Despite best efforts, trials may often fall short of the  
+number of participants needed to conduct appropriate statistical analyses of  these groups. It is important that while a trial is ongoing, sponsors continue  
+to monitor recruitment and retention strategies and adjust as needed to gain  insights and identify trends that could be further explored.
+
+ 15
+Enhancing Clinical Study Diversity ReportAchieving equitable clinical trial inclusion and participation requires designing  
+patient-centered trials that focus on meaningful, relevant, and measurable  patient-centered endpoints. The goal of patient-centered research is to create sustainable research equity that demonstrates the benefits, implications, and  
+relevance of study findings for impacted individuals and communities and that recognizes and addresses the social determinants of health and vulnerability  
+indicators that contribute to disparities in clinical trial participation and  health outcomes. 
+Post-Approval Dissemination of Clinical Study 
+Enrollment Demographic Data to the Public
+Sharing information with the public about the demographic composition of a  
+study can enhance diversity in studies by informing patients of the importance  
+of representative clinical research. Sharing health information in general in a  
+way that is accessible and understandable to all people is essential for  
+improving overall patient outcomes and reducing mortality rates. Clinical trial  communications should be patient-centric, reflect an understanding of the patient community’s needs, and address the trustworthiness of researchers and their investment in helping the community. Clinical trial participants have requested  the ability to access, visualize, and share their data, and clinical researchers have a responsibility to provide more transparency and engagement with participants. 
+Panelists discussed several innovative efforts to share data with clinical trial  
+participants. One industry sponsor uses an opt-in portal that helps clinical trial participants find information, resources, and data related to their current or prior studies. The site gives participants a personalized page where they can access and view the aggregate study results, access study announcements, connect with patient advocacy groups that are related to their study, search for related studies, and access their individual participant data. Return of data to participants is  important in the advancement of health equity because it fulfills the sponsors’ social contract with participants by responding to participants’ data requests  and allows patients to opt into data return. Data return also empowers participants with their data to make more informed health care decisions and facilitates  continued care beyond the trial. Additionally, when sponsors return data to  participants, they maintain engagement with participants, improving the trial  experience and optimizing future trial enrollment and retention. 
+Another industry organization’s Individual Participant Data Return initiative is 
+developing solutions to support flexible processes for the planned, intentional, and meaningful return of pre-defined individual data to participants who choose to receive it. As part of this initiative, a publicly available participant data return resource pack has been created, providing access to a consolidated set of  resources from across the clinical research ecosystem that can assist with  returning individual data globally.
+When communicating study information to the public, panelists discussed  
+how sponsors should ensure they are protecting the privacy of participants,  
+clearly explaining the broader context of the study’s purpose and outcomes, 
+
+ 16
+Enhancing Clinical Study Diversity Reporttransparently and accurately portraying the study results, and sharing  
+demographic information to highlight the importance of representative  
+clinical research. Sponsors should use plain language with visual aids to  make study results more understandable, and there should be procedures  in place to guarantee that the information being communicated is accurate.  Because completeness is essential for transparency, sharing data trial-by-trial  may not be as informative as sharing program-level data. 
+Panelists noted that it is also important to consider the target audiences,  
+including patients, participants, and the public at large. Sponsors should  be sharing aggregate results of every clinical trial in sufficient detail so that  people can know whether they were represented in the trial population.
+Community Engagement
+Panelists in the community engagement session discussed the historical  marginalization and mistreatment of underrepresented populations, which  has led to major barriers for Black or African American and American Indian or Alaska Native communities becoming involved in research. The perception is that researchers will come into these communities to fulfill diversity quotas required  
+for grant funding without investing in these communities, developing partnerships, or sharing the benefits of research with the community. Furthermore, researchers coming to these communities just to recruit participants do not address any of  the systemic inequities that make it more difficult for community practitioners  to get funding to continue research in their own communities.
+One panelist indicated that to achieve true equity, sponsors need to go beyond 
+checking boxes for meeting diversity targets and directly invest in community  researchers, trial staff, and physicians who speak the language and have the  cultural competency and trust of their communities. Many patients want to  
+contribute to research, especially if they know it will eventually benefit them. Sponsors should work collaboratively with community- and faith-based  
+organizations to speak to communities through a voice of trust and convey  information about how participating in research can benefit their community  and the wider patient community. Sponsors should build capacity, competence, and resources within these communities as part of their overall strategy to over -
+come distrust and improve clinical trial diversity. Sustainable community-based investments need to be proactive and collaborative, with a bidirectional  relationship between the researchers and the communities they are trying to  engage. Community members have a wealth of knowledge and experience  they can bring to trials through community advisory boards. The benefit for  the communities involved needs to be long lasting, so sponsors should look  for ways to create and maintain infrastructure and investments that can benefit  these communities and future research.
+There are ongoing issues of health care access for many in the lesbian, gay,  
+bisexual, transgender, queer, and/or questioning (LGBTQ+) community, especially among transgender people. Many LGBTQ+ individuals have complicated histories 
+
+ 17
+Enhancing Clinical Study Diversity Reportwith religious institutions, so they may not be reached by faith-based community 
+outreach alone. Panelists noted that sponsors may need to engage LGBTQ+  community organizations to recruit patients in these communities.
+Panelists discussed a few additional efforts that sponsors may consider when 
+engaging with communities. Using the right language is essential. The study materials and staff have to reflect the languages spoken by the target population. Sponsors should consider providing multilingual resources to provide accessibility for non-English speaking participants. For example, Hispanic or Latino communi-ties need bilingual staff at study sites and study resources written in Spanish by someone who understands the community. In addition, sponsors should note  that some Hispanic or Latino patients who are willing to participate in trials are excluded because they do not have a social security number. 
+Another important aspect to consider is access to transportation. The workshop 
+discussed how sponsors could consider making a contract with ridesharing  
+companies or another transportation service to help participants get to sites. To limit the need for transportation, sponsors could also consider using local sites, such as federally qualified health care centers, free community clinics, and public health departments — or building new sites to bring clinical trials directly to these communities. Sites should consider evening and weekend hours to accommodate patients who cannot take time away from their jobs.
+It is important to note that the definition of community can include geographical, 
+racial, ethnic, sex-based, and age-based groups. Panelists discussed how  researchers should endeavor to understand the culture of the communities  with which they are trying to engage, the day-to-day challenges people in those  
+communities face, and the social factors that impact their health outcomes. 
+Moving Forward
+Panelists discussed key considerations and challenges regarding approaches  
+to support the inclusion of underrepresented populations in clinical study  participation that reflects the population for which a medical product is  intended. One panelist noted that the results of a clinical trial need to be  generalizable to intended users in the US population and have adequate  
+representation by both clinical and demographic factors. It is important to  
+consider all the factors that can potentially influence the treatment effect of  a medical product, including extrinsic and intrinsic factors. Extrinsic factors  
+include access to supportive care, concomitant medications, subsequent  therapies, complementary therapies, and access to care for management  
+of toxicities. Intrinsic factors are factors limited and specific to the patients  themselves, such as genomic interactions and variations in the ways cancers behave or respond in different populations. Additionally, diversity efforts should begin at the organizational and program level, rather than starting with a single, pivotal registrational trial. Engaging patients at each stage of trial planning and conduct is crucial to ensuring that historically underrepresented participants  have access to these trials, but it is also necessary to recognize the importance  
+of efficient drug development for getting effective, safe drugs to the patients  
+who need them. 
+
+ 18
+Enhancing Clinical Study Diversity ReportBalancing the enrollment of representative trial populations with the efficiency  
+of product development requires sponsors to proactively develop programs  that are designed to facilitate diverse and efficient trials. Trying to add diversity  
+measures late in the design and implementation of a trial program will not be effective. Instead, sponsors need to engage in upfront planning, tracking progress, and establishing backup strategies as early as possible. One challenge that  
+needs to be addressed on an ecosystem level is that there are often not enough  accessible, well-structured investigational sites available for phase 3 trials, and traditional development of those sites may require a lot of effort and investment.
+Discussions during the workshop considered how diversity plans should be  
+embedded in the sponsor’s underlying business strategy, with dedicated  resources and an allocated budget. Additionally, sponsors should bring trials closer to where patients are already receiving their health care, collaborate with community sites, and leverage existing health care networks to connect with community clinics through a unified health care platform. There has been greater consolidation into growing networks of hospitals and clinics with unified patient portals. These networks may help research sponsors identify appropriate subjects for clinical studies and facilitate communication with potential participants through patient portals. Given that the clinics in these networks are local, there is an  
+element of trust between the patients and the site. Sponsors can also partner  
+with clinics and physicians to build awareness and ensure patients are being  referred to clinical trials. One example discussed was the use of nontraditional community sites to achieve adequate representation of minority populations,  including American Indians and Alaska Natives, for coronavirus disease (COVID-19) vaccine trials. Nontraditional community sites allow sponsors to  
+move trials closer to where individuals are already getting their health care.  In vaccine development, knowing that a diverse group of people had received  the vaccine in clinical trials helped individuals decide whether to receive a COVID-19 vaccine. 
+On the health care side, clinic staff should think about how they can start the  
+conversation with participants around clinical trials. Ensuring that patients are aware that they have opportunities to participate in clinical trials is an important first step. It is also crucial that diversity is reflected throughout the clinical trial ecosystem, including in health care staff.
+Moving forward, panelists highlighted a number of important approaches to  
+consider for ensuring lasting change to improve clinical trial diversity. For example, 
+there needs to be a greater effort around the generation of quality real-world  evidence, which can provide representative data that are reflective of the people who will use a drug or medical device. It is also important to promote innovations that reflect a patient-centered approach and to develop diverse partnerships across the clinical trials enterprise, including diverse patient counsels, steering committees, and site staff. Intention, focus, and action are needed to maintain momentum in this endeavor.
+FDA notes that many of the suggested approaches for reducing barriers to  
+diverse clinical study representation discussed during this public workshop are 
+
+ 19
+Enhancing Clinical Study Diversity Reportconsistent with recommendations in FDA guidance. We have included a list of  
+relevant guidance documents in an appendix to this report and encourage  interested parties to review our recommendations.
+FDA will further consider the important points raised at this workshop as the 
+Agency continues its robust policy efforts to help increase diversity in clinical  
+research so that the study population reflects the population that will use the  medical product, if approved.
+Conclusion 
+The public workshop emphasized the importance of ensuring that the  participants in a clinical study reflect the population that will use the medical  product, if approved. Enrolling a diverse population increases confidence in  the results and facilitates generalizability of the medical products’ efficacy and  safety findings to the intended population. Ensuring that people from diverse backgrounds join clinical studies is a key goal for all partners in the clinical trials enterprise, including patients, industry, clinicians, health care systems, regulators, and other interested parties. While there are many ongoing efforts across the  enterprise to improve diversity and equity in clinical studies, there is not a  
+one-size-fits-all solution. Employing the options identified during the public  
+workshop may help address barriers to clinical study participation. 
+FDA is committed to promoting clinical study diversity and increasing the  
+participation of underrepresented populations in clinical trials. FDA supports  
+a pragmatic, balanced approach to ensure that, to the extent possible, clinical studies enroll a population that is representative of the diversity of the population that will use the medical product, if approved. As noted above, through a series of recent guidances (see Appendix), FDA encourages the use of clinical study designs that minimize complexity and reduce burden, support better informed consent processes, and promote fit-for-use approaches such as innovative study designs and the use of appropriate digital health technologies. FDA looks forward to continuing engagements, partnerships, and mutual learnings across the clinical trial ecosystem to facilitate the adoption and implementation of best practices that will support clinical study diversity. Overall, achieving meaningful change in the inclusion of underrepresented populations in clinical trials will require collaboration across all sections of the clinical trials enterprise.
+
+ 20
+Enhancing Clinical Study Diversity ReportAcknowledgements 
+The Center for Drug Evaluation and Research, in collaboration with the Center  
+for Biologics Evaluation and Research, Center for Devices and Radiological Health, Oncology Center of Excellence, Office of Minority Health and Health  
+Equity, and Office of Women’s Health, thanks the Clinical Trials Transformation  Initiative for their support in the planning and execution of the public workshop. We also express our sincere appreciation to all speakers, panelists, and  workshop attendees. 
+Link to the Public Meeting Recording, Materials,  
+and Resources
+The virtual public meeting recording and slide decks are available at https://ct-
+ti-clinicaltrials.org/virtual-public-workshop-to-enhance-clinical-study-diversity . 
+
+ 21
+Enhancing Clinical Study Diversity ReportAPPENDIX - FDA Guidance Documents That  
+Address Topics Supportive of Enhancing Clinical Trial Diversity
+7 Guidances issued in 2014 - 2024Published Guidance7
+1. Evaluation of Sex-Specific Data in Medical Device Clinical Studies  
+(Final Guidance, August 2014)
+2. Evaluation and Reporting of Age-, Race-, and Ethnicity-Specific Data in  
+Medical Device Clinical Studies (Final Guidance, September 2017)
+3. Pregnant Women: Scientific and Ethical Considerations for Inclusion in Clinical Trials (Draft Guidance, April 2018)
+4. Considerations for the Inclusion of Adolescent Patients in Adult Oncology  
+Clinical Trials (Final Guidance, March 2019)
+5. Clinical Lactation Studies: Considerations for Study Design  (Draft Guidance, May 2019)
+6. Postapproval Pregnancy Safety Studies (Draft Guidance, May 2019)
+7. Enhancing the Diversity of Clinical Trial Populations — Eligibility Criteria,  Enrollment Practices and Trial Designs (Final Guidance, November 2020)
+8. FDARA Implementation Guidance for Pediatric Studies of Molecularly  
+Targeted Oncology Drugs: Amendments to Sec. 505B of the FD&C Act  (Final Guidance, May 2021)
+9. Inclusion of Older Adults in Cancer Clinical Trials (Final Guidance, March 2022)
+10. Diversity Plans to Improve Enrollment of Participants From Underrepresented Racial and Ethnic Populations in Clinical Trials (Draft Guidance, April 2022) (FDA is currently revising this guidance, which will be retitled “Diversity  Action Plans to Improve Enrollment of Participants from Underrepresented Populations in Clinical Studies,” per below)
+11. Decentralized Clinical Trials for Drugs, Biological Products, and Devices  (Draft Guidance, May 2023)
+12. ICH E6 (R3); Good Clinical Practice (Draft Guidance, June 2023)
+13. Postmarketing Approaches to Obtain Data on Populations  Underrepresented in Clinical Trials for Drugs and Biological Products  (Draft Guidance, August 2023)
+
+ 22
+Enhancing Clinical Study Diversity Report14. Digital Health Technologies for Remote Data Acquisition in Clinical  
+Investigations (Final Guidance, December 2023)
+15. Rare Diseases: Considerations for the Development of Drugs  and Biological Products (Final Guidance, December 2023)
+16. Collection of Race and Ethnicity Data in Clinical Trials and Clinical Studies for FDA-Regulated Medical Products (Revised Draft Guidance,  
+January 2024) (when finalized, the guidance will replace an existing version 
+from October 2016, Collection of Race and Ethnicity Data in Clinical Trials )
+17. Key Information and Facilitating Understanding in Informed Consent  
+Guidance for Sponsors, Investigators, and Institutional Review Boards   
+(Draft Guidance, March 2024)
+Guidance Under Development
+18. Diversity Action Plans to Improve Enrollment of Participants from  Underrepresented Populations in Clinical Studies (Revised Draft Guidance) 
+19. Evaluation of Sex-Specific and Gender-Specific Data in Medical Device  Clinical Studies (Draft Guidance)
+20. Study of Sex Differences in the Clinical Evaluation of Medical Products  
+(Draft Guidance)
+
+U.S. Food and Drug Administration
+www.fda.gov
+Center for Drug Evaluation and Research 
+U.S. Food and Drug Administration 
+10903 New Hampshire AvenueSilver Spring, Maryland 20993
+

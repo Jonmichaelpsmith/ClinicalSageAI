@@ -1,0 +1,765 @@
+STUDY PROTOCOL
+   Infrastructure, capabilities, and capacities required for 
+clinical trials design and delivery: A rapid scoping review of 
+recommendations and regulations
+[version 2; peer review: 2 approved]
+Laura Merson
+1, Karolina Witt1, Arishay Hussaini
+2, Ayesha Siddiqui
+2, 
+Eli Harriss3, Steve Webb
+4, Patricia Njuguna5, Divya K Shah6, An-Wen Chan7, 
+Robert Terry
+8, Nandi Siegfried9, Jeni Stolow
+10, Emmanuelle Denis
+1, 
+Madiha Hashmi
+2
+1Pandemic Sciences Institute, ISARIC, University of Oxford, Oxford, OX3 7LF, UK  
+2Critical Care Medicine, Ziauddin University, Karachi, Sindh, 75000, Pakistan  
+3Bodleian Health Care Libraries, University of Oxford, Oxford, England, OX1 3BG, UK  
+4Australian and New Zealand Intensive Care Research Centre, Monash University, Clayton, Victoria, 3004, Australia  
+5Program for Appropriate Technology in Health (PATH), Nairobi, Kenya  
+6Infectious Disease, Wellcome Trust, London, England, NW1 2BE, UK  
+7University of Toronto, Toronto, Ontario, M5T 3M6, Canada  
+8Special Programme for Research and Training in Tropical Diseases (TDR), Geneva, 1211, Switzerland  
+9South African Medical Research Council, Cape Town, 19070, South Africa  
+10Public Health and Tropical Medicine, Tulane University, New Orleans, Louisiana, 70112, USA  
+First published:  19 Dec 2024, 9:729  
+https://doi.org/10.12688/wellcomeopenres.23135.1
+Latest published:  06 Mar 2025, 9:729  
+https://doi.org/10.12688/wellcomeopenres.23135.2v2
+ 
+Abstract  
+Objective
+Synthesise the published literature and national regulations on 
+infrastructure, capabilities and capacities required to manage and 
+quality assure clinical research.
+Introduction
+The World Health Assembly (WHA) resolution 75.8 (2022) called “for a 
+strengthened global architecture for coordinated and high-quality 
+clinical trials”. For this remit, infrastructure, capabilities, and capacities 
+needed to design and deliver high-quality clinical trials must be 
+understood and advanced. This rapid scoping review aims to identify 
+the breadth of requirements and recommendations for effective 
+management of clinical trials in regulations, national legislation and Open Peer Review
+Approval Status  
+ 
+1 2
+version 2
+(revision)
+06 Mar 2025
+view
+version 1
+19 Dec 2024
+ view
+ view
+James Spicer
+ , King's College London, 
+London, UK1. 
+William J Cragg , University of Leeds, Leeds, 
+UK2. 
+Any reports and responses or comments on the 
+article can be found at the end of the article.
+ 
+Page 1 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+the published literature. The findings will be summarised into themes. 
+It will inform a framework for the assessment and development of 
+units undertaking observational studies and interventional clinical 
+trials.
+Inclusion criteria
+Peer-reviewed literature, grey literature, and national legislation that 
+recommends infrastructure, capabilities, and/or capacities needed to 
+manage and quality assure clinical trials. Publications authored by 
+those who design, manage, fund, sponsor, regulate or oversee clinical 
+trials.
+Methods
+Peer-reviewed and grey literature will be identified through Medline, 
+Embase, PsycINFO, and Global Health via Ovid; SCOPUS; the Web of 
+Science Core Collection; and the WHO Global Index Medicus using 
+specific field codes to increase the specificity of the search strings. No 
+date, language, or geographic limits will be applied. Deduplicated 
+titles and abstracts will be screened by two blinded reviewers with 
+discrepancies resolved by a third reviewer. Grey literature may be 
+identified through the peer reviewed literature, supplemented with 
+structured searches of Google and DynaMed. National regulations will 
+be sourced online and from available summaries. Full text literature 
+and regulations will be screened by a single reviewer, with 
+proportionate verification by a second reviewer. Data will be extracted 
+and coded for patterns in NVivo software. All items and codes will be 
+summarised using a thematic framework analysis and identify core 
+constructs within each theme.
+Plain language summary   
+Clinical trials are essential for improving healthcare, but for them to 
+be effective, they need to be high quality. Poor quality trials waste 
+resources and harm public trust in science. During the COVID-19 
+pandemic, many clinical trials suffered from issues like being 
+underpowered and of low quality. Additionally, clinical trials were 
+underrepresented in low- and middle-income countries (LMICs), with 
+few being led by researchers from those regions.  
+ 
+To address these issues, the World Health Assembly (WHA) and other 
+global bodies have called for stronger global clinical trial 
+infrastructure. The WHA 75.8 resolution, for example, encourages 
+organizations to support high-quality trials, especially in developing 
+countries. Understanding the infrastructure, capabilities, and 
+resources required for running effective trials is essential for 
+improving clinical research globally. This knowledge can help 
+countries and institutions identify gaps and areas for improvement.  
+ 
+ Page 2 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+Corresponding authors:  Laura Merson ( laura.merson@ndm.ox.ac.uk ), Ayesha Siddiqui ( ayesha.s@zu.edu.pk )
+Author roles:  Merson L : Conceptualization, Data Curation, Funding Acquisition, Investigation, Methodology, Project Administration, 
+Supervision, Writing – Original Draft Preparation; Witt K : Data Curation, Methodology, Resources, Writing – Original Draft Preparation; 
+Hussaini A : Data Curation, Methodology, Writing – Review & Editing; Siddiqui A : Data Curation, Methodology, Project Administration, 
+Writing – Review & Editing; Harriss E : Data Curation, Investigation, Methodology, Resources, Writing – Review & Editing; Webb S : Writing 
+– Review & Editing; Njuguna P : Writing – Review & Editing; K Shah D : Writing – Review & Editing; Chan AW : Writing – Review & Editing; 
+Terry R : Writing – Review & Editing; Siegfried N : Writing – Review & Editing; Stolow J : Methodology, Writing – Review & Editing; Denis E : 
+Conceptualization, Data Curation, Methodology, Supervision, Writing – Review & Editing; Hashmi M : Conceptualization, Data Curation, 
+Funding Acquisition, Supervision, Writing – Review & Editing
+Competing interests:  No competing interests were disclosed.
+Grant information:  This work was supported by the Wellcome Trust (Grant No. 303666, awarded to Peter Horby) for the project titled 
+ISARIC 3.0: Strengthening the Global Clinical Research Ecosystem for Epidemic and Pandemic Prevention and Preparedness. Additional 
+funding was provided by the Department for International Development, UK Government (Grant No. 301542-403), and the Bill & Melinda 
+Gates Foundation (Grant No. INV-063472).  
+The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the manuscript.
+Copyright:  © 2025 Merson L et al. This is an open access article distributed under the terms of the Creative Commons Attribution 
+License , which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited.
+How to cite this article:  Merson L, Witt K, Hussaini A et al.  Infrastructure, capabilities, and capacities required for clinical trials 
+design and delivery: A rapid scoping review of recommendations and regulations [version 2; peer review: 2 approved]  Wellcome 
+Open Research 2025, 9:729 https://doi.org/10.12688/wellcomeopenres.23135.2
+First published:  19 Dec 2024, 9:729 https://doi.org/10.12688/wellcomeopenres.23135.1  Clinical Trials Units (CTUs) are specialized teams or facilities 
+responsible for managing various aspects of clinical trials. These units 
+ensure regulatory compliance, participant recruitment, data 
+management, and trial oversight. CTUs can differ based on the type of 
+clinical trials they handle. For example, different resources are needed 
+for phase I trials, multi-site trials, and trials involving participant 
+recruitment.  
+ 
+There is no globally accepted framework for assessing CTUs. To fill 
+this gap, this review seeks to develop a "CTU Maturity Framework" to 
+evaluate national and institutional resources and provide guidance on 
+strengthening clinical trial operations. A rapid scoping review of 
+literature will inform this framework, allowing for the identification of 
+best practices, regulatory benchmarks, and guidance for clinical trial 
+units worldwide.  
+ 
+This framework aims to improve clinical trials across countries, 
+supporting better health outcomes through high-quality research.
+Keywords  
+Quality by design, quality control, research quality, research 
+management, research standards, quality assurance
+ Page 3 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+          Amendments from Version 1
+This updated version incorporates revisions in response to 
+reviewer feedback. Key changes include:
+Relevant references have been added in the background and for 
+the TDR framework. 
+Clarifications in Eligibility Criteria:
+The inclusion of grey literature has been emphasized to capture 
+non-peer-reviewed but relevant institutional and regulatory 
+reports. 
+The definition of ‘news items’ has been clarified to exclude 
+journalistic articles, press releases, and media reports that do not 
+provide primary research or formal guidance.
+The verification process for determining author involvement in 
+trial design, management, and oversight has been explained, 
+focusing on stated affiliations and institutional roles within the 
+publications.
+Methods Section Revisions:
+The search strategy description has been restructured for clarity, 
+particularly in the phrasing of search terms and the application 
+of proximity commands.
+The approach to identifying legislative documents has been 
+refined, specifying a combination of structured keyword searches 
+and manual browsing.
+Data Extraction and Analysis:
+Details on translation methods for non-English papers have 
+been included, specifying a combination of automated tools and 
+manual verification.
+Any further responses from the reviewers can be found at 
+the end of the articleREVISED
+Introduction
+Randomised clinical trials have the potential to provide reli -
+able evidence that can be implemented by health care work -
+ers and policy makers to save lives. However, only high-quality  
+clinical trials achieve feasibility, validity, and implementabil -
+ity, and hence capacity for impact. Every trial that falls short 
+in one of these three areas is a wasted opportunity to improve 
+patient outcomes. During the COVID-19 pandemic, the  
+global clinical trials landscape was plagued by underpowered 
+and low-quality studies that wasted limited research resources 
+and threatened public trust in science1. Furthermore, both before 
+and during the COVID-19 pandemic, only a minority of clini -
+cal trials were conducted in low- and middle-income countries 
+(LMICs) and even fewer were led by researchers from those 
+countries. This imbalance remains true in the years since the  
+pandemic2,3.
+This has led to calls in the G7 Clinical Trials Charter, the 
+100 Days Mission, and the World Health Assembly (WHA) 
+to strengthen the global architecture for coordinated and  
+high-quality clinical trials. The WHA 75.8 (2022) resolution 
+invites international nongovernmental organisations and other 
+relevant stakeholders “to support robust, quality clinical trials as  
+well as to strengthen clinical trial research capacities glo -
+bally, particularly in developing countries…”. Key to delivering  
+on this remit is understanding the infrastructure, capabili -
+ties, and capacities needed to effectively plan, operationalise,  manage, and/or recruit to clinical trials. The characterisation 
+of these resources will support nations and institutions to iden -
+tify gaps in their clinical trials ecosystems and define actions  
+to advance priority areas.
+In many cases, a specialised team and/or facilities, often called 
+a Clinical Trials Unit (CTU), are dedicated to the planning, 
+coordination, implementation, analysis and/or reporting of  
+clinical trials. A CTU may include personnel with expertise 
+in regulatory and ethics compliance, research methods, statis -
+tics, community engagement, participant recruitment and reten -
+tion, data management or other trial related activities. CTUs 
+that are a part of an institution that sponsors clinical trials may  
+also take responsibility for quality assurance activities. The 
+type of clinical trials planned, and the remit of trial responsibili -
+ties define the scope of needs for an individual CTU. For exam -
+ple, different infrastructure, capabilities and capacities will 
+be needed to deliver first-in-human phase 1 clinical trials, to  
+lead and coordinate multi-centre clinical trials, or to enrol par -
+ticipants and collect data as a part of a multi-centre clinical 
+trial. Delineating and describing the range of resources needed 
+for different activities can support targeted strengthening of  
+priority areas.
+Many countries have guidance or requirements for the opera -
+tion of a CTU, for example the Pakistan BioStudy Rules and the 
+India National Accreditation Board for Hospitals & Healthcare 
+Providers Standards for Clinical Trials Sites4,5. In some coun -
+tries, CTUs may operate only when externally qualified against 
+a benchmarked standard, for example the United Kingdom  
+Clinical Research Collaboration Registered Clinical Trials  
+Unit Network Key Competencies and Evaluation Framework6. 
+These standards, requirements, and guidance differ between  
+countries and there is no globally accepted framework. This 
+rapid scoping review aims to inform the development of a matu -
+rity framework that supports the assessment of national and 
+institutional clinical research resources and plan for improve -
+ments to deliver robust, quality clinical trials and strengthen  
+the broader clinical research ecosystem. 
+As a baseline for development of these metrics, this rapid  
+scoping review will identify the spectrum of requirements and 
+recommendations for effective management and implemen -
+tation of high-quality clinical trials across national authori -
+ties and in the published literature. The aim is to capture the  
+breadth of unique and overlapping resources, then summa -
+rise their contents by theme. We have selected a rapid scop -
+ing review method due to the breadth of the research question, 
+our intent to map the range and gaps in topics, and our focus 
+on qualitative synthesis. A preliminary search of MEDLINE,  
+PROSPERO, the Cochrane Database of Systematic Reviews 
+and JBI Evidence Synthesis was conducted and no exist -
+ing or registered systematic reviews or scoping reviews on the  
+topic were identified. Our review will identify national regu -
+lations and other publications that describe benchmarking,  
+capacity, quality, capabilities, or infrastructure, for clinical tri -
+als to inform global clinical trial practice. Publications authored   
+by individuals from all types of institutions that design,  
+Page 4 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+manage, fund, sponsor, regulate or otherwise oversee clini -
+cal trials will be the focus. An initial review of PubMed and 
+Google have identified a wide variety of material on these 
+topics, ranging from recommendations drawn from a single  
+clinical trial to national accreditation programmes.
+By consolidating the experience, guidance, and interests of  
+the global clinical trials community, we will promote an inclu -
+sive starting point for the development of maturity metrics 
+for clinical trials units. The methods employed to control and  
+assure clinical trial quality have many similarities with those 
+used in other forms of clinical research, such as observational 
+studies. Consequently, we anticipate that the findings of this 
+review will identify key maturity metrics for research units  
+engaged in a range of clinical studies which may encompass, 
+but are not limited to, clinical trials. The findings of this review 
+will assist national authorities and research institutions in under -
+standing the critical role of quality in clinical research and 
+enhance their capacity to achieve it. Literature from many dis -
+ease areas, geographic regions, regulatory contexts, and trial  
+phases will bring a diversity of perspectives to inform the range 
+of capacities, capabilities and infrastructure needed to plan 
+and execute high quality research, with a focus on clinical  
+trials.
+Review questions
+What is the breadth of requirements, regulations, recommenda -
+tions and good practice guidance published on optimising the  
+quality of clinical trial management? What infrastructure,  
+capabilities and capacities do those who manage, oversee, and  
+fund clinical trials associate with the maturity of the units that  
+support their delivery?
+Eligibility criteria
+Participants
+Publications regarding the management of clinical trials in any 
+population, authored by individuals, institutions or organisations 
+who participate in the design, delivery, management, analysis,  
+oversight, funding, sponsorship, or regulation of trials.
+Concept
+Peer-reviewed literature, grey literature, and regulations that 
+describe or recommend infrastructure, capabilities, and/or  
+capacities needed to manage and quality assure clinical trials.
+Context
+No date, geographic or language limitations will be applied 
+to the search criteria. Publications originating from clinical  
+trials regulations or experience will be included from a diver -
+sity of contexts, including low- and middle-income countries. 
+All types of authoring institutions will be eligible, includ -
+ing academic, industry, government, non-government or others  
+without  exclusion.
+Sources
+This rapid scoping review will consider a broad range of lit -
+erature, including qualitative or quantitative research, opinion  papers, case reports, first-hand accounts, and guidance or rec -
+ommendations issued by health or research authorities, pro -
+fessional societies, research units or networks, government, 
+or other authorities. Primary or secondary reports will be  
+acceptable. News items such as journalistic articles, press 
+releases, and media reports that do not provide primary 
+research, formal guidance, or authoritative recommendations 
+from regulatory bodies, research institutions, or professional  
+organizations will not be included. 
+Methods
+This protocol is based on the Joanna Briggs Institute (JBI) scop -
+ing review protocol template and adheres to the Preferred 
+Reporting Items for Systematic Reviews and Meta-analyses  
+extension for scoping review (PRISMA-ScR) guidance7,8. A 
+review protocol developed and published on Open Science  
+Framework in February 2024 can be accessed at https://osf.io/
+p6kyd /9.
+Search strategy
+An initial scoping of PubMed and Google will be under -
+taken to identify articles on the topic. The text words contained 
+in the titles and abstracts of relevant articles, and the index  
+terms used to describe the articles will be used to develop a full 
+search strategy. An information specialist will search the fol -
+lowing databases from inception to the search date for rel -
+evant references: Medline, Embase, PsycINFO, and Global  
+Health all via Ovid; SCOPUS; the Web of Science Core Col -
+lection; and the WHO Global Index Medicus. No limits will 
+be applied to the search results. The databases will be searched 
+using specific field codes to increase the specificity of the  
+search strings to make the overall total number of results to 
+screen manageable given the resources available. The Ovid  
+databases will be searched using the title and abstract fields 
+for references related to clinical research and trials, includ -
+ing terms such as study, studies, and trial; quality and standards,  
+including benchmarking, standards, accreditation, and frame -
+work; infrastructure and capacity, including unit, hub, capacity, 
+systems, and metrics; and governance and management, includ -
+ing governance, integrity, management, quality, capabilities, 
+guidance, and skills. Proximity commands will be applied to  
+refine the search and improvespecificity.
+SCOPUS, the Web of Science Core Collection, and the 
+WHO Global Index Medicus will be searched in the title field 
+only for the same reason, using proximity commands where  
+available. The TRIP Database will be searched specifically 
+for Regulatory Guidance. This prioritising search method 
+and description meets the recommendations by Speckemeier  
+et al.10. The detailed strategies are available in the extended  
+data.
+Websites and reports, including WHO reports, the Office 
+for Human Research Protections International Compilation 
+of Human Research Standards, and the National Institute of  
+Health’s ClinRegs Database, will be reviewed to identify  
+legislative documents and regulatory frameworks. A combination  
+Page 5 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+of structured keyword searches and manual browsing will 
+be used to ensure comprehensive coverage. National regu -
+lations will be identified via the websites of the relevant 
+authorities. For screening, the same eligibility criteria will be  
+applied for inclusion of recommendations as above.
+Following an initial screening of publications, a grey litera -
+ture search will be conducted from the sources above, Google 
+and DynaMed searches will be designed to identify addi -
+tional, unique literature. The search will be conducted across  
+i) internet search engine (Google advanced search) and ii) asso -
+ciated references cited in identified documents. The eligibil -
+ity criteria undertaken for grey literature will be the same as 
+above. Search terms will include, “clinical trials units” com -
+bined with terms relevant to the inclusion criteria, includ -
+ing “regulations”, “recommendations”, “gold standard”, and  
+“maturity framework”. Search will be limited to the first 
+5 pages of Google search results and the date recorded for  
+transparency.
+Screening and selection of eligible publications
+All peer-reviewed references will be exported to EndNote 
+21 (Thomson Reuters, New York, NY), and deduplicated in  
+Rayyan ( https://www.rayyan.a i). Pilot screening will be done 
+by all team members to develop a sample list of topics and 
+content for inclusion or exclusion (see extended data). When 
+a draft list of eligible content by topic is agreed across the 
+team screening will begin with a fresh list of deduplicated  
+references.
+Titles and abstracts will be screened by two independent 
+reviewers against the eligibility criteria in a single cycle. Each 
+reviewer’s decision will be blinded from other reviewers. The  
+list of eligible content by topic will be consulted and collec -
+tively iterated according to the eligibility criteria as screening  
+progresses. Discrepancies in the selections of two review -
+ers will be scrutinised by a third individual to make a final 
+decision, in consultation with the two reviewers. Where suit -
+ability is unclear, the team will include the publication in  
+the list for full-text review.
+Challenges to exclusion decisions will be discussed between  
+reviewers for a final decision and strengthening consensus 
+across the team. Reasons for exclusion will be recorded and  
+reported alongside all details of identified, screened, included  
+and excluded publications in a Preferred Reporting Items for 
+Systematic Reviews and Meta-analyses extension for scop -
+ing review ( PRISMA-ScR statemen t) flow diagram8. As a qual -
+ity assurance measure, ten percent of excluded publications  
+will be reviewed by a second reviewer. 
+Full-text publications or website links (URLs) will be 
+retrieved for all selections approved by two or three review -
+ers during the title and abstract review process. If retrieval 
+of the full text is not possible, the abstract will be assessed  
+for data extraction. Data extraction
+A codebook of topics and categories will be developed based 
+on the TDR Research Competencies Framework11. The code -
+book will additionally include other codes generated by 
+the research team during title and abstract screening. Indi -
+vidual researchers will code relevant text using cloud-based  
+qualitative data analysis software ( NVivo1 4 software ( Lumiver o) 
+version 14.23.3).
+Each full-text publication will be reviewed for inclusion and 
+data extraction by a single reviewer from one of three insti -
+tutions: OUCRU (Vietnam), University of Oxford (UK), or  
+Ziauddin University (Pakistan). Papers in languages other than 
+English, will be translated into English and the translated ver -
+sion will be uploaded into the NVivo cloud. Translations will be 
+conducted using a combination of automated tools and, where 
+feasible, manual verification. Specific focus will be given to 
+three topics of special interest to the WHO team involved in 
+this effort: (A) phase I studies, (B) international and multi-
+site trials, and (C) patient recruitment and management in  
+clinical trials.
+The codebook will be used to generate a preliminary results 
+framework. This framework will be updated iteratively, and 
+collaboratively as new topics and keywords are identified.  
+Coding will be reviewed a second time by a second researcher 
+or “Code Specialist” to ensure consistency and rigour across 
+the analysis. Any coding discrepancies between the review -
+ers will be resolved through discussion. At least 10% of papers 
+will be evaluated jointly during team meetings to ensure inter -
+coder reliability. The process of full text paper review will be 
+coordinated, and all activity will be monitored using a shared 
+project tracker, which will be regularly updated with progress 
+and feedback to the Project Advisory Committee on a weekly  
+basis.
+Data analysis and presentation
+Data will be synthesised into themes by comparing, connect -
+ing, and combining keywords and category codes. Data will  
+be organised thematically and summarised inclusively to 
+present all unique recommendations within each theme. 
+Results will be structured into a framework of infrastructures,  
+capacities and capabilities for each identified theme. Data 
+gaps within the framework will be identified. Data will be 
+descriptively analysed by these categories where appropri -
+ate. A qualitative narrative summary will accompany the tabu -
+lated results and will describe how the results relate to the 
+development of a maturity framework for units managing  
+clinical trials and other types of clinical research. A final 
+report of the structured results will be presented to working 
+groups contributing to a maturity framework for clinical trial  
+units.
+No quality assessment of the document contents will be  
+conducted as it is deemed unsuitable for the inclusive meth -
+odology applied and no comprehensive system for critically  
+appraising this range of literature was identified.
+Page 6 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+Ethics and consent
+Ethical approval and consent were not required.
+Data availability
+Underlying data
+No data are associated with this article.
+Extended data
+OSF: Infrastructure, capabilities, and capacities required for 
+clinical trials design and delivery: a rapid scoping review of  
+recommendations and regulations. https://doi.org/10.17605/OSF.
+IO/P6KYD9This project contains the following extended data:
+1. Detailed search strategy 
+2. The topics and category framework for data coding 
+Reporting guidelines
+OSF: PRISMA-ScR checklist for ‘Infrastructure, capabilities, 
+and capacities required for clinical trials design and delivery: 
+A rapid scoping review of recommendations and regulations’  
+https://doi.org/10.17605/OSF.IO/P6KY D9
+Data are available under the terms of the Creative Commons  
+Attribution 4.0 International license (CC-BY 4.0).
+References
+1.  Bugin K, Woodcock J: Trends in COVID-19 therapeutic clinical trials.  Nat Rev 
+Drug Discov.  2021; 20(4): 254–5.  
+PubMed Abstract  | Publisher Full Text  
+2. Ramanan M, Tong SYC, Kumar A, et al. : Geographical representation of  
+low- and middle-income countries in Randomized Clinical Trials for  
+COVID-19.  JAMA Network Open.  2022; 5(2): e220444.  
+Publisher Full Text  
+3. Number of clinical trials by year, country, region and income group.   [cited 
+2025 Feb 26].  
+Reference Sourc e
+4.  Drug Regulatory Authority of Pakistan: BioStudy rules.  Pakistan Ministry of 
+National Health Service, 2017; [cited 2024 Nov 8].  
+Reference Sourc e
+5.  Standards for clinical trials site.  National Accreditation Board for Hospitals 
+and Healthcare Providers (NABH), 2014; [cited 2024 Nov 8].  
+Reference Sourc e
+6.  UKCRC Registered CTU network key competencies and evaluation  
+criteria.  United Kingdom: UKCRC Registered CTU Network; 2023; [cited 2024 
+Nov 8].  
+Reference Sourc e7.  Peters M, Godfrey C, McInerney P , et al. : Chapter 11: Scoping Reviews (2020 
+version).  In: JBI Reviewer’s Manual.  2020; [cited 2024 Nov 8].  
+Reference Sourc e
+8.  Tricco AC, Lillie E, Zarin W, et al. : PRISMA extension for Scoping Reviews 
+(PRISMA-ScR):  checklist  and explanation.  Ann Intern Med.  2018; 169(7): 
+467–73.  
+PubMed Abstract  | Publisher Full Text  
+9.  Merson L, Witt K, Hussaini A, et al. : Infrastructure, capabilities, and 
+capacities required for clinical trials design and delivery: a rapid scoping 
+review of recommendations and regulations.  2024; [cited 2024 Nov 5]. 
+https://osf.io/p6kyd /
+10.  Speckemeier C, Niemann A, Wasem J, et al. : Methodological guidance for 
+rapid reviews in healthcare: a scoping review.  Res Synth Methods.  2022; 13(4): 
+394–404.  
+PubMed Abstract  | Publisher Full Text  
+11. UNICEF/UNDP/World Bank/WHO Special Programme for Research and Training 
+in Tropical Diseases: Using the TDR global competency framework for 
+clinical research:a set of tools to help develop clinical researchers.   Geneva: 
+World Health Organization, 2016; 76. [cited 2024 Jul 24]. [cited 2024 Jul 24].  
+Reference Sourc e
+Page 7 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+Open Peer Review
+Current Peer Review Status:  
+ 
+Version 2
+Reviewer Report  19 March 2025
+https://doi.org/10.21956/wellcomeopenres.26355.r120247
+© 2025 Cragg W.  This is an open access peer review report distributed under the terms of the Creative Commons 
+Attribution License , which permits unrestricted use, distribution, and reproduction in any medium, provided the 
+original work is properly cited.
+William J Cragg   
+University of Leeds, Leeds, England, UK  
+I have reviewed the responses and have nothing else to raise except in relation to my second point 
+– the text ‘trials involving participant recruitment’ is actually in the plain language summary rather 
+than the abstract. I think that comment would still be worth the authors’ attention, but otherwise I 
+have nothing to raise.
+ 
+Competing Interests:  No competing interests were disclosed.
+I confirm that I have read this submission and believe that I have an appropriate level of 
+expertise to confirm that it is of an acceptable scientific standard.
+Version 1
+Reviewer Report  22 January 2025
+https://doi.org/10.21956/wellcomeopenres.25475.r116090
+© 2025 Cragg W.  This is an open access peer review report distributed under the terms of the Creative Commons 
+Attribution License , which permits unrestricted use, distribution, and reproduction in any medium, provided the 
+original work is properly cited.
+William J Cragg   
+University of Leeds, Leeds, England, UK  
+Thanks for the invitation to review this paper about an important project. It is clear overall, and I 
+just have a few comments for your consideration below.
+General comment: I think the theme of risk proportionality could come through more 1. 
+ Page 8 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+strongly in this work (as per principle 7 of the new ICH GCP revision). I think a negative 
+outcome of this work would be recommendations that say or imply that clinical trials can 
+only be run using a large amount of resource. Risk-proportionality is also key to delivery as 
+it enables us (humanity) to do more trials, more quickly and more cheaply (I appreciate 
+quality is the other important aspect to cover there). In other words, you might give as 
+much emphasis to 'efficient' trial management as you do to 'effective' trial management. I 
+don't mind what you do in response to this comment.
+Abstract: 'trials involving participant recruitment' - this sounds like all trials; could you 
+explain what you mean here?2. 
+Introduction: 'this imbalance remains true in the years since the pandemic' - this claim 
+needs a reference.3. 
+Eligibility criteria: I wonder if you might miss relevant information by focusing only on 
+published information. You mention the UKCRC Registered CTU Network, and their 
+registration criteria do appear to be public. However, might there be other, similar networks 
+in other countries whose criteria are not public, but which might be obtainable if you ask?4. 
+Eligibility criteria: 'authored by individuals, institutions or organisations who participate in 
+the design, delivery, management, analysis, oversight, funding, sponsorship, or regulation 
+of trials' - how will you verify this criterion?5. 
+Eligibility criteria - sources: 'news items will not be included'. How are you defining 'news 
+items'?6. 
+Methods, search strategy: I think your decision to have no date limits on search results need 
+justification. E.g. would a result from 30+ years ago still be useful?7. 
+Methods, search strategy: scoping review methodology tends to include a consultation with 
+relevant experts to find additional information/results. If you are not including this, you 
+should justify why not.8. 
+Methods, search strategy: will you include all countries in your search for relevant 
+legislation?9. 
+Methods, search strategy: sentence starting 'the title and abstract fields' - this sentence is 
+too long and unnecessarily writes out lots of the search strategy. Please consider another 
+way to present this information.10. 
+Methods, search strategy: 'websites and reports…will be reviewed to identify legislative 
+documents and regulatory frameworks'. 'Will be reviewed' is a bit vague, here; will there be 
+a search method? Or is it simple 'hand searching' in this case?11. 
+Methods, search strategy: recording the date of the Google search is good, but the location 
+of the search may affect the results, too. Might you record this as well?12. 
+Methods, data extraction: might a reference/link be needed for 'TDR Research 
+Competencies Framework'?13. 
+Methods, data extraction: 'papers in languages other than English will be translated…' - 
+how?14. 
+Methods, data analysis: what will you do if sources disagree on a particular point?15. 
+Methods, data analysis: 'no quality assessment…was conducted' - why past tense?16. 
+ 
+Is the rationale for, and objectives of, the study clearly described?
+Yes
+Is the study design appropriate for the research question?
+ Page 9 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+No
+Are sufficient details of the methods provided to allow replication by others?
+Partly
+Are the datasets clearly presented in a useable and accessible format?
+Not applicable
+Competing Interests:  No competing interests were disclosed.
+I confirm that I have read this submission and believe that I have an appropriate level of 
+expertise to confirm that it is of an acceptable scientific standard, however I have 
+significant reservations, as outlined above.
+Author Response 27 Feb 2025
+Ayesha Siddiqui  
+1. Thank you for this insightful comment. We agree. Though this is not a feature of the 
+protocol, we will be sure to embed this reflection into our reporting of findings and of the 
+Maturity Framework in general.  
+ 
+2. Thank you for your comment. We have reviewed the abstract but could not find this exact 
+sentence. Could you kindly clarify which part you are referring to?  
+ 
+3. Thank you, this has been added.   
+ 
+4. Our review includes grey literature searches, which allow us to capture non-peer-
+reviewed sources such as institutional reports, regulatory documents, and other publicly 
+accessible materials. While unpublished criteria will be available by direct inquiry, we 
+acknowledge that such data would be difficult to standardize or validate across multiple 
+contexts. So, our approach prioritizes publicly available sources while recognizing that 
+certain non-public information may remain outside the scope of this review.  
+ 
+5. As a scoping review, our focus is on mapping existing literature rather than 
+independently verifying authors’ roles. We will rely on the information provided within 
+publications, considering an article eligible if the authors’ affiliations and content indicate 
+involvement in clinical trial design, management, oversight, funding, sponsorship, or 
+regulation.  
+ 
+6. Thank you, this has been defined as news items such as journalistic articles, press 
+releases, and media reports that do not provide primary research, formal guidance, or 
+authoritative recommendations from regulatory bodies, research institutions, or 
+professional organizations.    
+ 
+7. Yes, our approach is that older documents may provide historical context on evolving 
+regulations and practices, as well as be relevant in some resource limited settings.  
+ 
+ Page 10 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+8. Thank you, as this review prioritizes systematically published guidance and regulations. 
+For developing the maturity framework, subsequently, expert input will be sought.  
+ 
+9. Yes, all countries will be included in the search.   
+ 
+10. Thank you, we agree, this has been changed to: The Ovid databases will be searched 
+using the title and abstract fields for references related to clinical research and trials, 
+including terms such as study, studies, and trial; quality and standards, including 
+benchmarking, standards, accreditation, and framework; infrastructure and capacity, 
+including unit, hub, capacity, systems, and metrics; and governance and management, 
+including governance, integrity, management, quality, capabilities, guidance, and skills. 
+Proximity commands will be applied to refine the search and improve specificity.  
+ 
+11. This sentence has been added to eliminate ambiguity: A combination of structured 
+keyword searches and manual browsing will be used to ensure comprehensive coverage.  
+ 
+12. Yes, we will record date, time and location.   
+ 
+13. Thank you, this has been added.   
+ 
+14. We have added: Translations will be conducted using a combination of automated tools 
+and, where feasible, manual verification.  
+ 
+15. Thank you for your comment. As a scoping review, our focus is on mapping existing 
+perspectives rather than resolving discrepancies. We will ensure that differing viewpoints 
+are documented objectively and presented transparently in our findings.  
+ 
+16. Thank you, this has been corrected.  
+Competing Interests:  No competing interests were disclosed.
+Reviewer Report  20 January 2025
+https://doi.org/10.21956/wellcomeopenres.25475.r116965
+© 2025 Spicer J.  This is an open access peer review report distributed under the terms of the Creative Commons 
+Attribution License , which permits unrestricted use, distribution, and reproduction in any medium, provided the 
+original work is properly cited.
+James Spicer  
+  
+King's College London, London, UK  
+The authors propose to synthesise the published literature and national regulations on 
+infrastructure, capabilities and capacities required for clinical research. The scope of the literature 
+and national regulations to be searched is broadly defined and appropriate. It will be important to 
+ Page 11 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+review these critically, particularly in the case of the regulatory framework. A survey of the 
+regulatory requirements governing trials will be of value, especially where there is divergence 
+even in otherwise similar healthcare economies, but these should be evaluated, not simply 
+catalogued. Regulatory requirements in many jurisdictions are too regimented in some scenarios, 
+and may stifle innovation and slow development of advances in care [Rule S et al. (2019)]  
+ 
+Key aspects for focus should include examination of the role and practicalities of allowing for 
+proportional tolerance of risk, in particular differentiating the widely differing contexts for 
+research involving healthy volunteers and that recruiting patients with immediately life-
+threatening diagnoses such as advanced malignancy. In various jurisdictions this has been 
+attempted [“Risk-adapted approach to clinical trials and risk assessments”, MHRA 2022; ‘Risk 
+proportionate approaches in clinical trials”, EU 2017], but many argue that progress in this area 
+has to date been too conservative.  
+ 
+Other issues for critical review include excessively narrow trial eligibility, driven by a simplistic 
+aspiration for homogeneity in study population, but instead jeopardising the real-world validity of 
+results [AACR Cancer Disparities Progress Report 2024].  
+ 
+The authors allude to the pressures of the COVID-19 pandemic on trial design and conduct, and it 
+will be interesting to see whether this scoping review supports the suggestion that these arose 
+from a deficiency in trial infrastructure, or whether in part they were a result of unrealistic 
+expectations and §over-allocation of resource, to the detriment of deferred and discontinued non-
+pandemic-related clinical research.  
+ 
+References  
+1. Rule S, LeGouill S: Bureaucracy is strangling clinical research. BMJ. 2019; 364: l1097 PubMed 
+Abstract  | Publisher Full Text   
+ 
+Is the rationale for, and objectives of, the study clearly described?
+Yes
+Is the study design appropriate for the research question?
+Yes
+Are sufficient details of the methods provided to allow replication by others?
+Yes
+Are the datasets clearly presented in a useable and accessible format?
+Yes
+Competing Interests:  No competing interests were disclosed.
+Reviewer Expertise:  Clinical trial design, delivery and governance.
+I confirm that I have read this submission and believe that I have an appropriate level of 
+expertise to confirm that it is of an acceptable scientific standard.
+ Page 12 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+
+Author Response 27 Feb 2025
+Ayesha Siddiqui  
+Thank you for your detailed and thoughtful feedback. We appreciate the emphasis on 
+critically reviewing regulatory frameworks rather than simply cataloguing them. While our 
+primary aim is to map existing regulations and recommendations, we recognize the 
+importance of highlighting areas where rigid regulatory structures may hinder trial 
+innovation and efficiency. We will ensure that our synthesis acknowledges divergences in 
+regulatory approaches, including those that allow for risk-proportional tolerance, 
+particularly in different research contexts such as healthy volunteer studies versus trials 
+involving critically ill patients. To your point on eligibility criteria and the potential 
+limitations of overly narrow selection criteria, where relevant, we will capture discussions in 
+the literature regarding the balance between scientific rigor and real-world applicability in 
+clinical trials. Regarding the impact of the COVID-19 pandemic on trial infrastructure and 
+conduct, we agree that assessing whether challenges stemmed from systemic deficiencies 
+or shifting research priorities is important. However, as our scoping review is intended to 
+inform a maturity framework, it does not fall within our remit to evaluate the underlying 
+causes of these changes. We will document reported changes in trial conduct and 
+infrastructural requirements in crisis and pandemic situations. Thank you again for your 
+constructive comments, which will help refine the focus of our review.  
+Competing Interests:  No competing interests were disclosed.
+ Page 13 of 13Wellcome Open Research 2025, 9:729 Last updated: 19 MAR 2025
+

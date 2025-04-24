@@ -1,0 +1,196 @@
+© 2024 Celegence. All rights reserved. 
+Pharmaceutical Industry RegulatoryReadiness &Resources2024 Survey Report
+Executive Summary for 2024 Celegence Sponsored Research in Partnership with the Regulatory Affairs Professionals Society (RAPS)
+
+
+© 2024 Celegence. All rights reserved. 2
+Executive Summary – Regulatory Readiness & ResourcesPharmaceuticalsThe full RAPS-Celegencesponsored survey report is a compilation of a survey to Regulatory Affairs professionals. A few key findings:•Top two challenges for regulatory affairs show teams are stretched:1)Time/bandwidth (45%)2)Costs/managing budget (31%) •57% indicated they are under-resourced to meet all of 2024 priorities•Positive momentum for eCTD v4.0 •81% understand the benefits of v4.0 •56% see the benefit of increased consistency across submissions•51% see the benefit of reduced time and effort in preparing submissions •Medical writing remains a critical area for support with 67% using a dossier management system•Artificial Intelligence shows engagement and increased plans•56% identified a need for AI for data extraction from docs and other sources, 10% using today •53% identified a need for AI for information summarization from different sources, 9% using today•12% are incorporating AI into automated report generation from multiple sourcesThank you to all who took part in the survey and contribute to the industry.
+
+© 2024 Celegence. All rights reserved. 
+Methodology & Respondent Segments
+
+© 2024 Celegence. All rights reserved. 4
+Methodology
+Goal:Gather data on regulatory readiness and resources in the medical device arena. Method:Email survey of regulatory professionalsTiming:Survey was active for 17 calendar days (12 March 2024 to 1 April 2024) | One invitation and two reminders sent during campaignSample Size:26,623
+
+
+© 2024 Celegence. All rights reserved. 5
+There were 698 responses to the Regulatory Readiness and Resources Survey, with 274 respondents reporting they work for a medical devices or IVD company and 139 reporting they work for a pharmaceutical company or a pharmaceutical company that also produces combination devices.All remaining respondents are with CROs, government/non-profit/academic institutions, manufacturers, or other.Survey Response
+698Overall Response
+274Medical deviceor IVD company139Pharma company or pharma company also producing combination devicesResponse by Segment
+Medical DevicesPharmaceuticals
+
+
+© 2024 Celegence. All rights reserved. 6
+18%1%1%6%7%5%18%45%
+0%10%20%30%40%50%OtherContract manufacturer of finished devicesContract manufacturer of components for finished devicesGovernment, non-profit, academicContract research organizationPharma company that also produces combination devicesPharma companyMedical devices or IVD company
+% RespondentsOrganization IndustryOrganization Industry
+My organization is best described as:Nearly half (45%) of respondents work for a medical devices or IVD company, 18% for a pharmaceutical company, and 5% for a pharmaceuticals company that also produces combination devices.
+
+© 2024 Celegence. All rights reserved. 
+Respondent Organization & RolePharmaceuticals
+
+© 2024 Celegence. All rights reserved. 8
+What is the size of your organization?  My company’s annual revenue is:Organization Size & RevenuePharmaceuticalsThe largest proportion of respondents (34%) work for an organization with 10,000 or greater employees, while 29% report working for a company with revenues between $1 billion and $25 billion.34%16%27%23%Organization Size10,000 or greater1,000 to 9,999100 to 999Less than 10 to 99
+Annual Revenue% RespondentsLess than $10M$25%$10M to $250M$$21%$250M to $1B$$$11%$1B to $25B$$$$29%More than $25B$$$$$19%Organization Annual Revenue
+
+© 2024 Celegence. All rights reserved. 9
+55%29%11%2%1%1%0%10%20%30%40%50%60%
+North AmericaEuropeAsia Pacific/OceaniaMiddle East/AfricaLatinAmerica/CaribbeanSouth Asia% RespondentsHeadquarters LocationOrganization LocationPharmaceuticalsAmong the respondents employed by pharmaceutical companies, 55% indicate that their company’s headquarters is in North America, while 29% report their headquarters being in Europe. Another 11% indicate Asia Pacific/Oceania (compared to 5% of respondents employed by medical device companies).84%
+Where is your company headquartered?
+
+© 2024 Celegence. All rights reserved. 10
+Job Title & SeniorityPharmaceuticalsMost respondents report holding job titles related to directorship. Similarly, when queried about organizational seniority, the majority identify as directors.
+Job TitleRespondent #Manager(mostly RA)23Director / Leader / Head(mostly RA/some QA)62Specialist / Associate(mostly RA/some scientists)14Consultant(unspecified or RA)5Project Manager(RA & CMC)2President / VP / C-Suite(Mostly RA/QA & unspecified)17Other5Respondent Job Titles35%18%17%14%9%6%0%5%10%15%20%25%30%35%40%
+DirectorIndividualcontributorManagerVPC-SuiteOther% RespondentsRespondent Organizational Seniority
+What is your current job title?My organizational seniority is:
+
+© 2024 Celegence. All rights reserved. 
+Regulatory Challenges & ReadinessPharmaceuticals
+
+© 2024 Celegence. All rights reserved. 12
+7%12%23%26%27%31%45%
+0%10%20%30%40%50%OtherCompliance requirementsData qualityStaffingNew regulationsCostTime
+% RespondentsGreatest Regulatory ChallengesGreatest Regulatory ChallengesPharmaceuticalsOverall, respondents identify time as their primary challenge this year. C-suite respondents noted time and staffing equally significant challenges.
+8%17%25%33%42%42%
+0%10%20%30%40%50%OtherData qualityNew regulationsCostStaffingTime
+% RespondentsGreatest Regulatory Challenges –C-Suite
+What are the greatest regulatory challenges your organization is facing this year? (Select two options.)
+
+© 2024 Celegence. All rights reserved. 13
+42%38%19%
+0%5%10%15%20%25%30%35%40%45%
+He have the resources we need for all 2024prioritiesWe have the resources we need for criticalwork, but not all 2024 prioritiesWe are under-resourced to meet 2024priorities% RespondentsCompany Regulatory Function ResourcefulnessResource Readiness vs. 2024 PrioritiesPharmaceuticals57% of respondents acknowledge resource constraints within their companies when it comes to fulfilling their 2024 priorities. Specifically, 38% report having sufficient resources for critical tasks, but not for all the priorities set for this year.
+How well-resourced is your company’s regulatory function to meet your 2024 priorities?57%Under-resourced to some degree
+
+© 2024 Celegence. All rights reserved. 14
+25%21%5%8%11%18%
+0%5%10%15%20%25%30%
+0:None1:Awareness/education2:Analysis3:Design4:Implementation5:Operations - datamanagement andgovernance% RespondentsInitiated/Complete Stages of IDMP ReadinessStages of IDMP ReadinessPharmaceuticals
+My organization has initiated/completed the following stages of IDMP readiness:NOTE: “others” were removed from analysis (almost all were not applicable).25% of respondents have not yet started or completed any phases related to IDMP readiness. Meanwhile, 21% are currently in the awareness, analysis, or design stages (stages 1-3). 11% have initiated or completed the implementation stage, and 18% have reached the operations stage.29%already implementing
+
+© 2024 Celegence. All rights reserved. 
+eCTD v4.0Pharmaceuticals
+
+© 2024 Celegence. All rights reserved. 16
+eCTD v4.0 Submissions PlanningPharmaceuticals67% of respondents say they are planning to prepare submissions in eCTD v4.0 format. Comments around this include some saying it is not in their position scope, they are unsure, or it is not currently required for them.Do you plan to prepare submissions in eCTD v4.0 format? 67%33%Planning Submissions in eCTD v4.0
+YesNoComments:
+We will use whatever format our Publisher uses.We currently submit to CVM at FDA and Australia/NZ, therefore no eCTD format.I will need to look this up. My company is a small, early phase biotech that is not up to date on many aspects of regulatory compliance.But not for another couple of years.Personally not involved. RA does BLANot sureUnsure at this time. Monitoring.Vendor performs this task.Not in scope of my positionNot yet, also we work with a third party publisher.Not required in Pakistan where I am basedI don't knowN-size = 98
+
+© 2024 Celegence. All rights reserved. 17
+eCTD v4.0 Impact Readiness Assessment PlanningPharmaceuticals60% of respondents indicate they have done or plan to do an eCTD v4.0 readiness impact assessment.
+Have you or do you plan to do an eCTD 4.0 impact readiness assessment?Comments:
+Do not knowWorking with our vendor on that issue.Using CRO for publishingDone at the HQ but not at the affiliate level60%40%Planning eCTD v4.0 Impact Readiness Assessment
+YesNoN = 49
+
+© 2024 Celegence. All rights reserved. 18
+13%10%14%9%46%
+6%0%25%50%
+UnsureNo plansIn the next 6-12monthsIn the next 12-18monthsAlready availableOther% RespondentsExpected Timeframe for eCTD v4.0 Sequences at OrganizationeCTD v4.0 Expected TimeframePharmaceuticalsNearly half of respondents (46%) say their organization already has sequences in eCTD v4.0 available. Another 23% plan to have sequences available in the next six to 18 months. Nearly a quarter are either unsure or have no plans.
+When do you expect to have sequences in eCTD v4.0 available in your organization?23%Planning
+
+© 2024 Celegence. All rights reserved. 19
+24%24%28%40%51%56%
+0%10%20%30%40%50%60%Facilitated pre-population of documentsEnhanced collaboration & workflowAccelerated publishing & validationImproved tracking & version controlReduced time & effort preparing submissions with automationIncreased consistency across submissions
+% RespondentsBenefits from Reuse of Documentation with eCTD v4.0eCTD v4.0 BenefitsPharmaceuticalsRespondents cite increased consistency across submissions and reduced time and effort preparing submissions with automation as the top benefits from reuse of documentation with eCTD v4.0. 19% say they are not able to realize a benefit.
+How can your organization benefit from the reuse of documentation enabled by the transition to eCTD v4.0 from eCTD v3.2?(Select all that apply.)81%Understand benefits of eCTD 4.0NOTE: “Others” were % and mostly not applicable responses
+
+© 2024 Celegence. All rights reserved. 
+Future InvestmentsPharmaceuticals
+
+© 2024 Celegence. All rights reserved. 21
+Future Resource InvestmentsPharmaceuticalsRespondents indicated that they might invest in change management systems, improving regulatory intelligence and post-market surveillance in the next 12 months.
+On a scale from 1 to 5 with 1 being no investment and 5 being high investment,how will your company invest in resources during the next 12 months?
+Future InvestmentsNo investment1234High investment5N-sizeImproving regulatory intelligence21%20%26%24%9%66Change management including risk management documentation16%15%40%21%8%62Post-market surveillance26%16%39%13%6%62Complaints management – post-market / pre-market23%23%26%23%5%61QMS – documentation and setup (MDSAP, ISO, QSR)23%13%39%23%3%62MDR/IVDR maintenance52%17%22%8%2%60MDR/IVDR conversion51%12%25%10%1%68Company Resource Investments – Next 12 Months
+NOTE: data were sorted from highest % 5, then 4, 3, 2, and lowest % 1.
+
+© 2024 Celegence. All rights reserved. 
+Artificial Intelligence (AI) UsePharmaceuticals
+
+© 2024 Celegence. All rights reserved. 23
+53%24%24%14%12%9%0%25%50%75%
+Not enough internalknowledge toimplementEarly stages, PoC/trialWaiting for additionalregulatory guidanceUsing standalone largelanguage modelPlanning to implementIntegrating intoworkflow% RespondentsCompany Artificial Intelligence (AI) UseArtificial Intelligence UsePharmaceuticalsSeveral respondents indicated there is not enough internal knowledge to implement AI at their company. However, many said they are in the early stages and/or are waiting for additional regulatory guidance. A few are already using a standalone LLM, planning to implement AI, and/or were already integrating AI into workflow.
+How is your company currently using/integrating Artificial Intelligence? (Select all that apply.)NOTE: this was a multiple-choice question.
+
+© 2024 Celegence. All rights reserved. 24
+Artificial Intelligence Use & NeedsPharmaceuticalsMost respondents note that they have either identified needs or expressed no need for AI in various areas, while many fewer are using AI. The highest use of AI is around automated report generation from multiple sources. The top AI uses and needs identified were data extraction from documents and other types of sources and information summarization from different sources.
+What are your primary use cases for Artificial Intelligence (AI)?
+UsingAutomated report generation from multiple sources 12%Data extraction from documents and other types of sources 10%Document management (classify, organize, discover, redact) 9%Compliance gap analysis 9%Risk mitigation 9%Medical writing – content generation 9%Information summarization from different sources 9%Incorporated into company’s medical device product(s) 5%Submission planning and tracking 4%Post-market surveillance analytics 4%
+Identified NeedData extraction from documents and other types of sources56%Information summarization from different sources53%Medical writing – content generation50%Submission planning and tracking48%Risk mitigation48%Document management (classify, organize, discover, redact)47%Post-market surveillance analytics41%Compliance gap analysis41%Automated report generation from multiple sources35%Incorporated into company’s medical device product(s)20%
+No NeedIncorporated into company’s medical device product(s) 75%Post-market surveillance analytics 54%Automated report generation from multiple sources 53%Compliance gap analysis 50%Submission planning and tracking 48%Document management (classify, organize, discover, redact) 44%Risk mitigation 43%Medical writing – content generation 41%Information summarization from different sources 38%Data extraction from documents and other types of sources 33%Artificial Intelligence (AI) Use & Needs
+
+© 2024 Celegence. All rights reserved. 
+Medical Writing EnvironmentPharmaceuticals
+
+© 2024 Celegence. All rights reserved. 26
+38%22%18%15%7%0%0%25%50%
+Off-the-shelf dossiermanagement softwareCombination ofinternal systems andoff-the-shelf softwareManual processes, nodedicated systemOutsourced to apartner companyInternal proprietarysystemOther% RespondentsSystem Used for Managing Regulatory DossiersRegulatory Dossier ManagementPharmaceuticalsOf the 67% of respondents who are using a regulatory dossier management system, 7% are using an internal proprietary system, 38% are using off-the-shelf dossier management software, and 22% are using a combination of the two. It’s worth noting that unlike medical devices respondents, only 18% have no dedicated system (compared to 45%) and 15% outsource this function (compared to 2%).
+Which system is your company primarily using for managing regulatory dossiers?67%Using a Dossier Management System
+
+© 2024 Celegence. All rights reserved. 
+Regulatory Intelligence & CompliancePharmaceuticals
+
+© 2024 Celegence. All rights reserved. 28
+20%34%18%13%16%Company’s Current Regulatory Intelligence & Monitoring Capabilities RatingRegulatory Intelligence & Monitoring CapabilitiesPharmaceuticalsJust over a third (34%) of respondents characterize their regulatory intelligence and monitoring capabilities as reactive, while 20% call them minimal.
+How would you rate your company's current regulatory intelligence and monitoring capabilities?
+Minimal
+Reactive
+Emerging
+Strategic
+ComprehensiveLacking systematic processes & rely on manual research to stay informedMonitoring regulations but often reactive to changes, rather than proactiveHaving adequate processes but needing help analyzing the implications of changes.Researching is a strategic function, but lacking automation.Having robust processes, dedicated staff & automation to identify upcoming changes.
+
+© 2024 Celegence. All rights reserved. 29
+Pre- & Post-Market Regulatory CompliancePharmaceuticalsMost respondents say their company has dedicated regulatory affairs teams for pre- and post-market compliance. A notable percentage of respondents say pre-market compliance is shared among different departments. 17% selected “other” for post-market compliance, all citing that it is not applicable to them.
+Who is primarily responsible for post-market regulatory compliance in your organization? Primarily responsible forpre-market compliance
+Dedicated
+regulatory
+affairs team39%
+Collaboratively
+managed by
+Quality assurance23%
+Regulatory responsibilities
+shared among different
+departments32%
+Outsourced to
+a third
+-
+party2%
+Other4%Primarily responsible forpost-market compliance
+Dedicated
+regulatory
+affairs team31%
+Collaboratively
+managed by
+Quality assurance24%
+Regulatory responsibilities
+shared among different
+departments24%
+Outsourced to
+a third
+-
+party4%
+Other17%(all n/a)
+
+© 2024 Celegence. All rights reserved. 
+QMS ChallengesPharmaceuticals
+
+© 2024 Celegence. All rights reserved. 31
+Quality Management System (QMS) ChallengesPharmaceuticalsThe cost of maintaining compliance was cited as a modest challenge for respondents, as was difficulty keeping documents updated with changes and having unorganized documents slowing down audits. Version control of documents globally was not a challenge for almost half (47%) of respondents.
+On a scale from 1 to 5, with 1 being not a challenge and 5 being a top challenge, please rate each possible challenge below relative to your company’s quality management system (QMS) documentation and compliance:
+QMS ChallengesNot achallenge1234Topchallenge5N-sizeCost of maintaining compliance 26%16%26%18%14%50Difficulty keeping documents updated with changes. 22%22%25%20%12%51Unorganized documents slowing down audits. 25%33%18%14%10%51Lack of resources to maintain documentation. 23%17%34%19%8%53Manual documentation processes leading to errors. 29%16%20%29%6%49Specific compliance across regulations like ISO 13485, 21 CFR 820, etc. 31%23%29%10%6%48Version control of documents across global sites. 47%12%20%18%2%49Company’s Challenges Relative to QMS Documentation & Compliance
+NOTE: data were sorted from highest % 5, then 4, 3, 2, and lowest % 1.
+
+© 2024 Celegence. All rights reserved. 
+Compliance SkillsetsPharmaceuticals
+
+© 2024 Celegence. All rights reserved. 33
+Compliance Skillset CapabilitiesPharmaceuticalsThough respondents infrequently report high skill levels for most compliance skillsets, knowledge of changing global regulatory landscapes and clinical evaluation and literature review process capabilities have the highest response for high skill level. Cybersecurity and software compliance guidance and requirements is the most limited skill level.
+On a scale from 1 to 5, with 1 being limited skill and 5 being highly skilled, please rate your company’s current capabilities relative to the compliance skill sets below:
+Compliance SkillsetsLimitedSkill1234HighlySkilled5N-sizeKnowledge of changing global regulatory landscapes 7%9%43%24%17%46Clinical evaluation and literature review process capabilities 15%7%35%30%13%46Data science and analytics for post-market surveillance 18%18%40%18%7%45MDR/IVDR maintenance requirements 36%16%30%14%5%44Expertise in specific regulatory requirements – MDR/IVDR 37%13%28%17%4%46Cybersecurity and software compliance guidance & requirements 16%16%34%32%2%44Company’s Current Capabilities Relative to Compliance Skillsets
+NOTE: data were sorted from highest % 5, then 4, 3, 2, and lowest % 1.
+
+© 2024 Celegence. All rights reserved. 
+Regulatory Affairs Professionals Society (RAPS)5635 Fishers Lane, Suite 400Rockville, MD 20852 USA+1.301.355.0393 • raps@raps.org • raps.org
+Celegence1213 Butterfield RoadDowners Grove, IL 60515 USA+1.224.484.0559  •  info@celegence.com  •  celegence.com
+For more information, contact:
+
