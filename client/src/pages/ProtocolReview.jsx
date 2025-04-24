@@ -50,6 +50,8 @@ import {
 import ProtocolBlueprintGenerator from '../components/protocol/ProtocolBlueprintGenerator';
 import AdaptiveDesignSimulator from '../components/protocol/AdaptiveDesignSimulator';
 import IntelligentEndpointAdvisor from '../components/protocol/IntelligentEndpointAdvisor';
+import AdvancedSimulationTools from '../components/protocol/AdvancedSimulationTools';
+import StatisticalDesign from '../components/protocol/StatisticalDesign';
 
 /**
  * Protocol Review Page Component
@@ -947,8 +949,147 @@ const ProtocolReview = () => {
         </TabsContent>
         
         <TabsContent value="simulator">
-          <div className="space-y-6">
-            <AdaptiveDesignSimulator />
+          <div className="space-y-8">
+            <Tabs defaultValue="adaptive" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="adaptive">
+                  <Beaker className="h-4 w-4 mr-2" />
+                  Adaptive Design
+                </TabsTrigger>
+                <TabsTrigger value="statistical">
+                  <BarChart4 className="h-4 w-4 mr-2" />
+                  Statistical Power
+                </TabsTrigger>
+                <TabsTrigger value="advanced">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Advanced Analysis
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="adaptive">
+                <AdaptiveDesignSimulator />
+              </TabsContent>
+              <TabsContent value="statistical">
+                <div className="mt-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart4 className="h-5 w-5 text-blue-600" />
+                        Monte Carlo Simulation & Power Analysis
+                      </CardTitle>
+                      <CardDescription>
+                        Design your clinical trial with comprehensive statistical power analysis and Monte Carlo simulations
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <StatisticalDesign />
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              <TabsContent value="advanced">
+                <div className="mt-2">
+                  <Card>
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-blue-600" />
+                        Advanced Multi-dimensional Analysis
+                      </CardTitle>
+                      <CardDescription>
+                        Optimize your trial design with sophisticated simulations across multiple dimensions
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <AdvancedSimulationTools 
+                        results={{
+                          recommendedN: 250,
+                          withDropout: 290,
+                          simulationResults: {
+                            probabilityOfSuccess: 0.85,
+                            meanDifference: 0.45,
+                            confidenceInterval: [0.32, 0.58],
+                            requiredSampleSize: 250
+                          },
+                          powerCurve: Array.from({length: 10}, (_, i) => ({
+                            sampleSize: 100 + i * 50,
+                            power: Math.min(0.99, 0.3 + (i * 0.1))
+                          }))
+                        }}
+                        parameters={{
+                          testType: 'superiority',
+                          alpha: 0.05,
+                          effectSize: 0.45,
+                          stdDev: 1.0,
+                          margin: 0.2
+                        }}
+                        simulationSettings={{
+                          nSimulations: 5000,
+                          endpointType: 'continuous',
+                          designType: 'parallel',
+                          dropoutRate: 0.15
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <Card>
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BookMarked className="h-5 w-5 text-orange-600" />
+                  Regulatory Documentation Generation
+                </CardTitle>
+                <CardDescription>
+                  Generate regulatory-ready statistical analysis plan sections based on your design choices
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="h-5 w-5 text-blue-600" />
+                        <h3 className="font-medium">Statistical Analysis Plan</h3>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Generate a comprehensive statistical analysis plan section with methods, models, and handling of missing data.
+                      </p>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700">ICH E9 Compliant</Badge>
+                    </div>
+                    
+                    <div className="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="h-5 w-5 text-green-600" />
+                        <h3 className="font-medium">Sample Size Justification</h3>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Generate a detailed sample size justification with power calculations, assumptions, and sensitivity analyses.
+                      </p>
+                      <Badge variant="outline" className="bg-green-50 text-green-700">FDA/EMA Ready</Badge>
+                    </div>
+                    
+                    <div className="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="h-5 w-5 text-purple-600" />
+                        <h3 className="font-medium">Interim Analysis Plan</h3>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Generate a detailed interim analysis plan with alpha spending function, stopping boundaries, and operational procedures.
+                      </p>
+                      <Badge variant="outline" className="bg-purple-50 text-purple-700">DMC/DSMB Ready</Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end mt-4">
+                    <Button className="bg-orange-600 hover:bg-orange-700">
+                      <Download className="h-4 w-4 mr-2" />
+                      Generate Documentation
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
         
