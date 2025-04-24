@@ -1,494 +1,270 @@
 /**
- * OpenAI Service for TrialSage CMC Module
+ * OpenAI Service for TrialSage
  * 
- * This service integrates OpenAI's latest technologies to provide cutting-edge
- * AI capabilities for chemistry, manufacturing, and controls documentation.
- * 
- * Current integrations:
- * - GPT-4o for comprehensive text analysis and regulatory intelligence
- * - DALL-E 3 for chemical structure and manufacturing process visualization
- * - GPT-4o Vision for manufacturing equipment analysis and cGMP compliance assessment
- * - OpenAI Assistants API for persistent regulatory guidance
+ * This service provides a unified interface for all interactions with OpenAI APIs,
+ * including GPT-4o and DALL-E 3 capabilities.
  */
 
-// Helper function to handle API errors
-const handleApiError = (error) => {
-  console.error('OpenAI API Error:', error);
-  
-  // Provide meaningful error messages based on error type
-  if (error.response) {
-    // OpenAI API error response
-    const status = error.response.status;
-    const data = error.response.data;
+/**
+ * Generate document analysis with GPT-4o
+ * 
+ * @param {Object} documentData - Document content and metadata to analyze
+ * @returns {Promise<Object>} Analysis results
+ */
+export const analyzeSpecification = async (documentData) => {
+  try {
+    // In a production implementation, this would call a backend endpoint
+    // that interfaces with OpenAI API using your OPENAI_API_KEY
     
-    if (status === 429) {
-      return {
-        error: true,
-        message: "Rate limit exceeded. Please try again shortly.",
-        details: data
-      };
-    } else if (status === 401) {
-      return {
-        error: true,
-        message: "Authentication error. Please check your API key.",
-        details: data
-      };
-    } else {
-      return {
-        error: true,
-        message: `API error: ${data.error?.message || 'Unknown error'}`,
-        details: data
-      };
-    }
-  } else {
-    // Network or other error
+    // For demo purposes, we're simulating the response
+    console.log('Analyzing specification with GPT-4o', documentData);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Return simulated response
     return {
-      error: true,
-      message: `Request error: ${error.message}`,
-      details: error
-    };
-  }
-};
-
-/**
- * Generate content for CMC sections using GPT-4o
- * 
- * @param {Object} params - Generation parameters
- * @param {string} params.section - The CTD section code (e.g., "S.2.2")
- * @param {string} params.title - Section title
- * @param {Object} params.context - Contextual data for the generation
- * @returns {Promise<Object>} Generated content and metadata
- */
-export const generateCMCContent = async (params) => {
-  try {
-    // Simulated response for development
-    // In production, this would be replaced with an actual API call
-    console.log('Generating CMC content with OpenAI for:', params);
-    
-    const response = await fetch('/api/openai/generate-cmc', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(params)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-
-/**
- * Analyze manufacturing process using GPT-4o
- * 
- * @param {Object} processData - Manufacturing process details
- * @returns {Promise<Object>} Analysis results and recommendations
- */
-export const analyzeManufacturingProcess = async (processData) => {
-  try {
-    console.log('Analyzing manufacturing process with OpenAI:', processData);
-    
-    const response = await fetch('/api/openai/analyze-manufacturing', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(processData)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-
-/**
- * Assess regulatory compliance using GPT-4o
- * 
- * @param {Object} complianceData - Regulatory specifications to assess
- * @returns {Promise<Object>} Compliance assessment and recommendations
- */
-export const assessRegulatoryCompliance = async (complianceData) => {
-  try {
-    console.log('Assessing regulatory compliance with OpenAI:', complianceData);
-    
-    const response = await fetch('/api/openai/assess-compliance', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(complianceData)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-
-/**
- * Generate risk analysis using GPT-4o
- * 
- * @param {Object} riskData - Risk assessment context and parameters
- * @returns {Promise<Object>} Risk analysis and mitigation strategies
- */
-export const generateRiskAnalysis = async (riskData) => {
-  try {
-    console.log('Generating risk analysis with OpenAI:', riskData);
-    
-    const response = await fetch('/api/openai/risk-analysis', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(riskData)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-
-/**
- * Generate visualization of chemical or manufacturing process using DALL-E 3
- * 
- * @param {Object} visualizationParams - Parameters for visualization generation
- * @returns {Promise<Object>} Generated visualization data
- */
-export const generateProcessVisualization = async (visualizationParams) => {
-  try {
-    console.log('Generating process visualization with DALL-E 3:', visualizationParams);
-    
-    const response = await fetch('/api/openai/visualization', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(visualizationParams)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-
-/**
- * Analyze manufacturing equipment image using GPT-4o Vision
- * 
- * @param {string} base64Image - Base64-encoded image data
- * @param {Object} context - Additional context about the equipment
- * @returns {Promise<Object>} Analysis of equipment and compliance assessment
- */
-export const analyzeEquipmentImage = async (base64Image, context = {}) => {
-  try {
-    console.log('Analyzing equipment image with GPT-4o Vision');
-    
-    const response = await fetch('/api/openai/analyze-equipment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        image: base64Image,
-        context
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-
-/**
- * Compare regulatory requirements across different markets
- * 
- * @param {Object} comparisonParams - Parameters for cross-market comparison
- * @returns {Promise<Object>} Comprehensive comparison and gap analysis
- */
-export const compareMarketRequirements = async (comparisonParams) => {
-  try {
-    console.log('Comparing market requirements with GPT-4o:', comparisonParams);
-    
-    const response = await fetch('/api/openai/market-comparison', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(comparisonParams)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-
-/**
- * Generate global readiness report using GPT-4o
- * 
- * @param {Object} documentInventory - Inventory of available documentation
- * @param {Array} targetMarkets - List of target markets for analysis
- * @returns {Promise<Object>} Comprehensive readiness assessment
- */
-export const generateGlobalReadinessReport = async (documentInventory, targetMarkets) => {
-  try {
-    console.log('Generating global readiness report with GPT-4o');
-    
-    const response = await fetch('/api/openai/global-readiness', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        documentInventory,
-        targetMarkets
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error);
-  }
-};
-
-/**
- * Simulate OpenAI response for development purposes
- * 
- * @param {string} endpoint - The endpoint to simulate
- * @param {Object} params - The parameters for the simulation
- * @returns {Promise<Object>} Simulated response
- */
-export const simulateOpenAIResponse = async (endpoint, params) => {
-  console.log(`Simulating OpenAI response for ${endpoint}:`, params);
-  
-  // Add artificial delay to simulate network request
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  // Simulation responses for development
-  const simulations = {
-    'analyze-equipment': {
-      equipment: {
-        type: 'Centrifugal Separator',
-        model: 'Alpha Laval BTAX 215',
-        components: [
-          'Stainless steel bowl assembly (316L)',
-          'CIP (Clean-In-Place) system',
-          'Explosion-proof motor (Class 1, Div 1)',
-          'Programmable control panel with HMI'
-        ]
-      },
-      compliance: {
-        gmpStatus: 'Partially Compliant',
-        concerns: [
-          'Visible gasket wear may compromise product contact surface integrity',
-          'Equipment layout appears to limit access for cleaning validation',
-          'Drainage configuration may create potential dead legs'
-        ],
-        recommendations: [
-          'Replace bowl assembly gaskets with documented material certificates',
-          'Implement improved accessibility for cleaning validation protocols',
-          'Consider adding sanitary thermometer connections for process monitoring',
-          'Update IQ/OQ documentation to reflect current GMP expectations'
-        ]
-      }
-    },
-    'global-readiness': {
-      markets: {
-        'FDA': {
-          readiness: 82,
-          strengths: ['Comprehensive validation documentation', 'Well-structured CTD format'],
-          gaps: ['Nitrosamine risk assessment needs updating'],
-          criticalItems: []
-        },
-        'EMA': {
-          readiness: 65,
-          strengths: ['QP declaration properly formatted'],
-          gaps: ['Starting material justification needs strengthening', 'Elemental impurities assessment incomplete'],
-          criticalItems: ['Complete ICH Q3D assessment for catalysts']
-        },
-        'PMDA': {
-          readiness: 43,
-          strengths: ['Translation quality meets requirements'],
-          gaps: ['Insufficient API starting material documentation', 'Incomplete stability data'],
-          criticalItems: ['Expand API starting material documentation', 'Complete stability studies']
-        },
-        'NMPA': {
-          readiness: 51,
-          strengths: ['Local agent properly established'],
-          gaps: ['Manufacturing process validation incomplete', 'Local standards specifications missing'],
-          criticalItems: ['Complete process validation for critical steps']
-        },
-        'Health Canada': {
-          readiness: 78,
-          strengths: ['Bilingual labeling compliant', 'Quality Overall Summary well structured'],
-          gaps: ['Quality Overall Summary needs minor updates'],
-          criticalItems: []
-        }
-      },
-      actionItems: [
+      issues: [
         {
-          id: 'ai-001',
-          title: 'API Starting Material Documentation (PMDA)',
-          description: 'Additional documentation required for API starting material selection and justification, including synthetic route options and impurity profiles.',
-          priority: 'high',
-          market: 'PMDA',
-          dueDate: '2025-05-15'
+          severity: 'Critical',
+          description: 'Acceptance criteria for dissolution test does not include time point',
+          location: 'Section 3.2.P.5.1',
+          recommendation: 'Add specific time point (e.g., "Q=80% in 30 minutes") to dissolution acceptance criteria'
         },
         {
-          id: 'ai-002',
-          title: 'Elemental Impurities Assessment (EMA)',
-          description: 'Elemental impurities assessment does not meet ICH Q3D requirements for risk assessment of potential catalyst residues.',
-          priority: 'high',
-          market: 'EMA',
-          dueDate: '2025-06-03'
+          severity: 'Major',
+          description: 'Missing validation data for analytical method',
+          location: 'Section 3.2.P.5.3',
+          recommendation: 'Include method validation data including linearity, precision, accuracy, and specificity'
         },
         {
-          id: 'ai-003',
-          title: 'Manufacturing Process Validation (NMPA)',
-          description: 'Additional process validation data required for critical manufacturing steps, with specific focus on NMPA requirements for sterilization validation.',
-          priority: 'high',
-          market: 'NMPA',
-          dueDate: '2025-05-22'
+          severity: 'Minor',
+          description: 'Inconsistent terminology used for excipients',
+          location: 'Throughout document',
+          recommendation: 'Standardize terminology according to pharmacopoeial nomenclature'
         }
       ],
-      overview: {
-        commonGaps: ['Stability data presentation inconsistencies between modules', 'Specification justifications need harmonization'],
-        potentialRisks: ['Different analytical methods across regions may delay approvals', 'Starting material strategies differ between US and EU submissions'],
-        recommendations: [
-          'Prioritize PMDA documentation gaps for fastest global alignment',
-          'Harmonize stability protocols across all regions',
-          'Consider joint scientific advice meeting with FDA and EMA'
-        ]
-      }
-    }
-  };
-  
-  return simulations[endpoint] || { 
-    success: true, 
-    message: 'Simulated response (generic)',
-    data: {
-      result: 'This is a simulated response for development purposes.',
-      parameters: params
-    }
-  };
+      regulatoryAlignment: {
+        fda: 92,
+        ema: 85,
+        ich: 90,
+        who: 88
+      },
+      overallScore: 88,
+      summary: "The specification is generally well-structured but contains some regulatory gaps. The document follows ICH Q6A format but lacks some details required by FDA and EMA. Critical issues include incomplete dissolution criteria and missing validation data for analytical methods. Addressing these issues would improve regulatory compliance significantly.",
+      improvementRecommendations: [
+        "Add specific time points to all dissolution criteria",
+        "Include complete analytical method validation data",
+        "Standardize excipient terminology across the document",
+        "Add detailed stability protocol with specific sampling points",
+        "Include reference to pharmacopoeial methods where applicable"
+      ]
+    };
+  } catch (error) {
+    console.error('Error analyzing specification:', error);
+    throw new Error('Failed to analyze specification: ' + (error.message || 'Unknown error'));
+  }
 };
 
 /**
- * Generate batch documentation using GPT-4o
+ * Generate validation protocol with GPT-4o
  * 
- * @param {Object} batchData - Critical batch process parameters
- * @returns {Promise<Object>} Generated batch documentation
+ * @param {Object} methodData - Method details and validation parameters
+ * @returns {Promise<Object>} Generated validation protocol
+ */
+export const generateValidationProtocol = async (methodData) => {
+  try {
+    // In a production implementation, this would call a backend endpoint
+    console.log('Generating validation protocol with GPT-4o', methodData);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    // Return simulated response
+    return {
+      title: `Validation Protocol for ${methodData.methodName}`,
+      methodSummary: `This protocol outlines the validation of ${methodData.methodName} for the analysis of ${methodData.productName}.`,
+      validationParameters: [
+        {
+          parameter: 'Specificity',
+          acceptanceCriteria: 'No interference from placebo, impurities, or degradation products at the retention time of the analyte peak',
+          procedureOutline: 'Analyze standard solution, placebo solution, and sample solution. Compare chromatograms to verify absence of interference.'
+        },
+        {
+          parameter: 'Linearity',
+          acceptanceCriteria: 'Correlation coefficient (r) ≥ 0.99',
+          procedureOutline: 'Prepare and analyze 5 standard solutions covering 50-150% of the target concentration. Plot peak area vs. concentration and calculate r.'
+        },
+        {
+          parameter: 'Accuracy',
+          acceptanceCriteria: 'Recovery: 98.0-102.0%',
+          procedureOutline: 'Prepare and analyze samples at 3 concentration levels (80%, 100%, 120%) in triplicate. Calculate recovery.'
+        },
+        {
+          parameter: 'Precision (Repeatability)',
+          acceptanceCriteria: 'RSD ≤ 2.0%',
+          procedureOutline: 'Analyze 6 replicate injections of standard solution at 100% concentration. Calculate RSD.'
+        },
+        {
+          parameter: 'Intermediate Precision',
+          acceptanceCriteria: 'RSD ≤ 3.0%',
+          procedureOutline: 'Repeat precision study on different days, by different analysts, using different equipment. Calculate overall RSD.'
+        },
+        {
+          parameter: 'Range',
+          acceptanceCriteria: 'Demonstrated acceptable accuracy and precision from 80% to 120% of target concentration',
+          procedureOutline: 'Evaluated based on data from linearity, accuracy, and precision studies.'
+        },
+        {
+          parameter: 'Robustness',
+          acceptanceCriteria: 'Method remains unaffected by small variations in method parameters',
+          procedureOutline: 'Evaluate the effect of small variations in pH, mobile phase composition, column temperature, and flow rate on system suitability parameters.'
+        }
+      ]
+    };
+  } catch (error) {
+    console.error('Error generating validation protocol:', error);
+    throw new Error('Failed to generate validation protocol: ' + (error.message || 'Unknown error'));
+  }
+};
+
+/**
+ * Generate batch documentation with GPT-4o
+ * 
+ * @param {Object} batchData - Batch manufacturing details
+ * @returns {Promise<Object>} Generated batch record
  */
 export const generateBatchDocumentation = async (batchData) => {
   try {
-    console.log('Generating batch documentation with GPT-4o:', batchData);
+    // In a production implementation, this would call a backend endpoint
+    console.log('Generating batch record with GPT-4o', batchData);
     
-    const response = await fetch('/api/openai/batch-documentation', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(batchData)
-    });
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
+    // Response would normally come from OpenAI API
+    return {
+      // Structured batch record data would be returned here
+      title: `Batch Manufacturing Record for ${batchData.productName}`,
+      batchNumber: batchData.batchNumber,
+      generatedAt: new Date().toISOString(),
+      sections: {
+        // Batch record sections would be included here
+      }
+    };
   } catch (error) {
-    return handleApiError(error);
+    console.error('Error generating batch documentation:', error);
+    throw new Error('Failed to generate batch documentation: ' + (error.message || 'Unknown error'));
   }
 };
 
 /**
- * Generate Method Validation Protocol using GPT-4o
+ * Generate image with DALL-E 3
  * 
- * @param {Object} methodData - Analytical method parameters
- * @returns {Promise<Object>} Generated method validation protocol
+ * @param {string} prompt - Text prompt for image generation
+ * @param {Object} options - Additional options like size
+ * @returns {Promise<Object>} Generated image data
  */
-export const generateMethodValidationProtocol = async (methodData) => {
+export const generateImage = async (prompt, options = {}) => {
   try {
-    console.log('Generating method validation protocol with GPT-4o:', methodData);
+    // In a production implementation, this would call a backend endpoint
+    console.log('Generating image with DALL-E 3', { prompt, options });
     
-    const response = await fetch('/api/openai/method-validation', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(methodData)
-    });
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 3500));
     
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
+    // Return simulated response
+    return {
+      url: "https://example.com/generated-image.png", // This would be a real image URL in production
+      generatedAt: new Date().toISOString(),
+      prompt
+    };
   } catch (error) {
-    return handleApiError(error);
+    console.error('Error generating image:', error);
+    throw new Error('Failed to generate image: ' + (error.message || 'Unknown error'));
   }
 };
 
 /**
- * Generate regulatory response using GPT-4o Assistant
+ * Analyze image with GPT-4o Vision
  * 
- * @param {string} query - The regulatory query
- * @returns {Promise<Object>} Regulatory assistant response
+ * @param {string} imageData - Base64 encoded image data
+ * @param {string} prompt - Text prompt for image analysis
+ * @returns {Promise<Object>} Analysis results
  */
-export const queryRegulatoryAssistant = async (query) => {
+export const analyzeImage = async (imageData, prompt) => {
   try {
-    console.log('Querying regulatory assistant with GPT-4o:', query);
+    // In a production implementation, this would call a backend endpoint
+    console.log('Analyzing image with GPT-4o Vision', { imageLength: imageData?.length, prompt });
     
-    const response = await fetch('/api/openai/regulatory-assistant', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ query })
-    });
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
+    // Return simulated response
+    return {
+      analysis: "Image analysis would be provided here based on the actual image content.",
+      generatedAt: new Date().toISOString()
+    };
   } catch (error) {
-    return handleApiError(error);
+    console.error('Error analyzing image:', error);
+    throw new Error('Failed to analyze image: ' + (error.message || 'Unknown error'));
+  }
+};
+
+/**
+ * Generate formulation analysis with GPT-4o
+ * 
+ * @param {Object} formulationData - Formulation details and components
+ * @returns {Promise<Object>} Analysis and recommendations
+ */
+export const analyzeFormulation = async (formulationData) => {
+  try {
+    // In a production implementation, this would call a backend endpoint
+    console.log('Analyzing formulation with GPT-4o', formulationData);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // Return simulated response
+    return {
+      compatibilityMatrix: {
+        // Compatibility data would be returned here
+      },
+      stabilityPrediction: {
+        // Stability prediction data would be returned here
+      },
+      recommendations: [
+        // Recommendations would be listed here
+      ]
+    };
+  } catch (error) {
+    console.error('Error analyzing formulation:', error);
+    throw new Error('Failed to analyze formulation: ' + (error.message || 'Unknown error'));
+  }
+};
+
+/**
+ * Helper function to simulate OpenAI responses for demo purposes
+ * 
+ * This function is for development and demo purposes only.
+ * In a production environment, this would be replaced with actual API calls.
+ */
+export const simulateOpenAIResponse = async (type, data) => {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  switch(type) {
+    case 'specification':
+      return analyzeSpecification(data);
+    case 'validation':
+      return generateValidationProtocol(data);
+    case 'batch':
+      return generateBatchDocumentation(data);
+    case 'image':
+      return generateImage(data);
+    case 'formulation':
+      return analyzeFormulation(data);
+    default:
+      throw new Error(`Unknown simulation type: ${type}`);
   }
 };
