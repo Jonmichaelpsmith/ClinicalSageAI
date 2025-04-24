@@ -867,21 +867,23 @@ const ECTDSubmissionBuilder = () => {
                 </CardDescription>
               </div>
               {selectedNode && (
-                <input
-                  type="file"
-                  id="file-upload"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => handleFileUpload(e, selectedNode.name)}
-                />
-                <label htmlFor="file-upload">
-                  <Button variant="outline" size="sm" asChild>
-                    <span>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload Files
-                    </span>
-                  </Button>
-                </label>
+                <div>
+                  <input
+                    type="file"
+                    id="file-upload"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleFileUpload(e, selectedNode.name)}
+                  />
+                  <label htmlFor="file-upload">
+                    <Button variant="outline" size="sm" asChild>
+                      <span>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Files
+                      </span>
+                    </Button>
+                  </label>
+                </div>
               )}
             </div>
           </CardHeader>
