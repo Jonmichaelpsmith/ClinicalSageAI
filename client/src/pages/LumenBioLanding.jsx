@@ -79,38 +79,38 @@ const LumenBioLanding = () => {
         <title>CONCEPT2CURE.AI | TrialSage™ Platform</title>
       </Helmet>
       
-      {/* Top navigation banner */}
-      <header className="bg-gradient-to-r from-amber-50 to-amber-100 py-3 px-4">
+      {/* Top navigation banner with light amber/cream background */}
+      <header className="bg-amber-50 py-2 px-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-xl font-bold text-slate-900">CONCEPT2CURE.AI</h1>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" className="text-slate-700 hover:text-slate-900">
-              <Search className="h-4 w-4 mr-2" />
+              <Search className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" className="bg-amber-50 border-amber-200 text-slate-800">
+            <Button variant="outline" size="sm" className="border-amber-200 bg-amber-50 text-slate-800">
               Sign In
             </Button>
           </div>
         </div>
       </header>
       
-      {/* Main header with brand and navigation */}
-      <div className="border-b border-slate-200 bg-white py-4 px-4 md:px-6 lg:px-8">
+      {/* Main header with white background and C2C branding */}
+      <div className="border-b border-slate-200 bg-white py-4 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between">
-          <div className="flex items-center mb-4 md:mb-0">
-            <div className="bg-amber-100 h-14 w-14 flex items-center justify-center rounded-lg mr-3 text-amber-800 font-bold">
+          <div className="flex items-center">
+            <div className="bg-amber-100 h-10 w-10 flex items-center justify-center rounded-md mr-3 text-amber-800 font-bold text-sm">
               C2C
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">CONCEPT2CURE.AI</h1>
-              <p className="text-sm text-slate-600">TrialSage™ Platform</p>
+              <h1 className="text-lg font-bold text-slate-900">CONCEPT2CURE.AI</h1>
+              <p className="text-xs text-slate-600">TrialSage™ Platform</p>
             </div>
           </div>
-          <div className="flex space-x-3">
-            <Button variant="outline" className="border-blue-200 text-blue-700">Sign In</Button>
-            <Button className="bg-blue-600 hover:bg-blue-700">Get Started</Button>
+          <div className="flex space-x-2 mt-2 md:mt-0">
+            <Button variant="outline" className="text-sm border-blue-200 text-blue-700">Sign In</Button>
+            <Button className="text-sm bg-blue-600 hover:bg-blue-700">Get Started</Button>
           </div>
         </div>
       </div>
