@@ -61,7 +61,7 @@ export default function HomeMarketingPage() {
       {/* Certara-style header */}
       <header className="relative z-40">
         {/* Top utility bar with solutions alongside other nav items */}
-        <div className="bg-gradient-to-r from-green-50 via-green-100 to-green-50 text-black">
+        <div className="bg-gradient-to-r from-orange-50 via-orange-100 to-orange-50 text-black">
           <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
             {/* Company info */}
             <div className="flex items-center">
@@ -73,7 +73,7 @@ export default function HomeMarketingPage() {
               <Link to="/enterprise-csr-intelligence" className="text-[#000000] hover:text-[#0055aa]">
                 <Search className="h-4 w-4" />
               </Link>
-              <Link to="/auth" className="text-[12px] bg-[#0055aa]/20 rounded px-3 py-1 text-[#000000] font-bold hover:bg-[#0055aa]/30 transition">
+              <Link to="/auth" className="text-[12px] bg-orange-200/50 rounded px-3 py-1 text-[#000000] font-bold hover:bg-orange-200/70 transition">
                 Sign In
               </Link>
             </div>
@@ -87,8 +87,8 @@ export default function HomeMarketingPage() {
               {/* Logo & Brand - Enhanced contrast */}
               <div className="flex items-center">
                 <Link to="/" className="inline-flex items-center group hover:opacity-90 transition-opacity">
-                  <div className="bg-gradient-to-r from-green-100 to-green-200 rounded-md p-1.5 mr-2 border border-green-300">
-                    <span className="text-[#003057] font-bold text-xs">C2C</span>
+                  <div className="bg-gradient-to-r from-orange-100 to-orange-200 rounded-md p-1.5 mr-2 border border-orange-300">
+                    <span className="text-[#000000] font-bold text-xs">C2C</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[18px] font-bold text-[#003057]">CONCEPT2CURE.AI</span>
@@ -484,7 +484,7 @@ export default function HomeMarketingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-green-50 via-green-100 to-green-50 text-black py-8">
+      <footer className="bg-gradient-to-r from-orange-50 via-orange-100 to-orange-50 text-black py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
