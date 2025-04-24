@@ -61,26 +61,16 @@ export async function pullGuidance() {
   
   // Resolve dependencies or use fallbacks
   let axios, cheerio, cron;
-  try {
-    axios = require("axios");
-  } catch (error) {
-    console.log("[RegIntel] Using axios fallback due to dependency issue");
-    axios = axiosFallback;
-  }
   
-  try {
-    cheerio = require("cheerio");
-  } catch (error) {
-    console.log("[RegIntel] Using cheerio fallback due to dependency issue");
-    cheerio = cheerioFallback;
-  }
+  // Use fallbacks in ES module environment
+  console.log("[RegIntel] Using axios fallback due to dependency issue");
+  axios = axiosFallback;
   
-  try {
-    cron = require("node-cron");
-  } catch (error) {
-    console.log("[RegIntel] Using cron fallback due to dependency issue");
-    cron = cronFallback;
-  }
+  console.log("[RegIntel] Using cheerio fallback due to dependency issue");
+  cheerio = cheerioFallback;
+  
+  console.log("[RegIntel] Using cron fallback due to dependency issue");
+  cron = cronFallback;
   
   // Default regulatory feed URLs if environment variable not set
   const feedUrls = process.env.REG_FEED_URLS
@@ -140,14 +130,20 @@ export async function pullGuidance() {
 // Schedule periodic guidance pulls
 let cronJob;
 try {
-  const cron = require("node-cron");
-  
-  // Schedule to run every 6 hours
-  cronJob = cron.schedule("0 */6 * * *", pullGuidance);
-  console.log(`[RegIntel] Scheduled regulatory guidance pulls for every 6 hours`);
-  
-  // Perform initial pull
-  pullGuidance();
+  // Use dynamic import instead of require since we're in an ES module
+  import('node-cron').then(cron => {
+    // Schedule to run every 6 hours
+    cronJob = cron.schedule("0 */6 * * *", pullGuidance);
+    console.log(`[RegIntel] Scheduled regulatory guidance pulls for every 6 hours`);
+    
+    // Perform initial pull
+    pullGuidance();
+  }).catch(err => {
+    console.log(`[RegIntel] Failed to import node-cron: ${err.message}. Using fallback.`);
+    // Fallback to setTimeout if import fails
+    setInterval(pullGuidance, 6 * 60 * 60 * 1000); // Every 6 hours
+    pullGuidance(); // Initial pull
+  });
 } catch (error) {
   console.warn(`[RegIntel] Could not schedule regulatory guidance pulls:`, error);
   
