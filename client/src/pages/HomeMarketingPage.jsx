@@ -56,8 +56,8 @@ export default function HomeMarketingPage() {
                   <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
                     CMC Insights™
                   </Link>
-                  <Link to="/document-vault-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
-                    Document Vault™
+                  <Link to="/document-vault-use-case" className="block px-4 py-2 text-[11px] font-semibold text-[#0078d4] hover:bg-blue-50 my-2 border-l-2 border-blue-500 pl-3">
+                    TrialSage.AI Solutions
                   </Link>
                   <Link to="/ai-copilot-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
                     AI Copilot™
@@ -127,8 +127,8 @@ export default function HomeMarketingPage() {
                         <Link to="/enterprise-csr-intelligence" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
                           CSR Intelligence™
                         </Link>
-                        <Link to="/versions" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
-                          Document Vault™
+                        <Link to="/versions" className="block px-6 py-3 text-[14px] font-semibold text-[#0078d4] bg-blue-50 hover:bg-blue-100 border-l-2 border-blue-500 pl-7">
+                          TrialSage.AI Solutions
                         </Link>
                         <Link to="/analytics-dashboard" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
                           Analytics
@@ -158,8 +158,8 @@ export default function HomeMarketingPage() {
                     </li>
                     
                     <li className="group relative">
-                      <Link to="/versions" className="inline-flex items-center px-4 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
-                        Document Vault
+                      <Link to="/versions" className="inline-flex items-center px-4 py-2 text-[14px] font-semibold text-[#0078d4] hover:text-[#0078d4] transition bg-blue-50 rounded">
+                        TrialSage.AI Solutions
                       </Link>
                     </li>
                     
@@ -462,7 +462,7 @@ export default function HomeMarketingPage() {
                   <li><Link to="/ind-wizard" className="text-[#666] hover:text-[#0078d4] text-sm">IND Wizard™</Link></li>
                   <li><Link to="/enterprise-csr-intelligence" className="text-[#666] hover:text-[#0078d4] text-sm">CSR Intelligence™</Link></li>
                   <li><Link to="/cmc-blueprint-generator" className="text-[#666] hover:text-[#0078d4] text-sm">CMC Blueprint™</Link></li>
-                  <li><Link to="/versions" className="text-[#666] hover:text-[#0078d4] text-sm">Document Vault™</Link></li>
+                  <li><Link to="/versions" className="text-[#666] hover:text-[#0078d4] text-sm font-semibold">TrialSage.AI Solutions</Link></li>
                   <li><Link to="/ask-lumen" className="text-[#666] hover:text-[#0078d4] text-sm">Ask Lumen™</Link></li>
                 </ul>
               </div>
