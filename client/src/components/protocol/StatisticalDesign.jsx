@@ -14,7 +14,7 @@ import {
   Calculator, ActivitySquare, LineChart, Brain, Users, AlertTriangle, FileText, Clipboard, 
   Database, BrainCircuit, BarChart3, CheckCircle2, Server, Clock, FileCheck, Settings2, X,
   Download, Share2, PenTool, Zap, Layers, Lock, ArrowRight, ArrowUpRight, Microscope,
-  Scroll, FileSpreadsheet, Table, ChevronDown, Star, Filter
+  Scroll, FileSpreadsheet, Table, ChevronDown, Star, Filter, Info
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
@@ -754,7 +754,7 @@ const StatisticalDesign = () => {
                   <Card className="bg-blue-50 border-blue-200 mt-4">
                     <CardHeader className="py-3 pb-1">
                       <CardTitle className="text-sm text-blue-800 flex items-center gap-2">
-                        <InfoIcon className="h-4 w-4" />
+                        <Info className="h-4 w-4" />
                         Regulatory Considerations
                       </CardTitle>
                     </CardHeader>
