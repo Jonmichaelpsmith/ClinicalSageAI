@@ -89,11 +89,21 @@ html, body {
   min-height: 100vh;
 }
 
-/* HIGH CONTRAST MODE - GLOBAL OVERRIDE */
+/* GLOBAL TEXT COLOR SETTINGS */
 :root {
   --text-color: #000000;
   --bg-color: #FFFFFF;
   --border-color: #000000;
+}
+
+/* Fix for light purple text - Make all text dark black by default */
+p, span, h1, h2, h3, h4, h5, h6, td, th, li, label, a {
+  color: #000000 !important;
+}
+
+.dark p, .dark span, .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6, 
+.dark td, .dark th, .dark li, .dark label, .dark a {
+  color: #FFFFFF !important;
 }
 
 /* Force all text to be black on white with strong borders */
