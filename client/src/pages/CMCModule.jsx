@@ -116,12 +116,12 @@ import withAuthGuard from '../utils/withAuthGuard';
 const StatusBadge = ({ status, text, details }) => {
   const getStatusColor = () => {
     switch (status) {
-      // Enhanced contrast for light and dark modes
-      case 'success': return 'bg-green-100 text-green-900 border-green-300 dark:bg-green-800 dark:text-green-50 dark:border-green-700';
-      case 'warning': return 'bg-yellow-100 text-yellow-900 border-yellow-300 dark:bg-yellow-800 dark:text-yellow-50 dark:border-yellow-700';
-      case 'error': return 'bg-red-100 text-red-900 border-red-300 dark:bg-red-800 dark:text-red-50 dark:border-red-700';
-      case 'info': return 'bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-800 dark:text-blue-50 dark:border-blue-700';
-      default: return 'bg-gray-100 text-gray-900 border-gray-300 dark:bg-gray-700 dark:text-gray-50 dark:border-gray-600';
+      // Maximum contrast for light and dark modes
+      case 'success': return 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white';
+      case 'warning': return 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white';
+      case 'error': return 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white';
+      case 'info': return 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white';
+      default: return 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white';
     }
   };
 
@@ -251,10 +251,10 @@ const ProcessCard = ({ title, description, status, progress, linkedRecords }) =>
 const RiskAnalysisCard = ({ title, severity, probability, description, recommendations, impact }) => {
   const getRiskLevelColor = () => {
     const riskScore = severity * probability;
-    // Enhanced contrast for better readability in both light and dark modes
-    if (riskScore >= 15) return 'bg-red-100 text-red-900 border-red-300 dark:bg-red-800 dark:text-red-50 dark:border-red-700';
-    if (riskScore >= 8) return 'bg-yellow-100 text-yellow-900 border-yellow-300 dark:bg-yellow-800 dark:text-yellow-50 dark:border-yellow-700';
-    return 'bg-green-100 text-green-900 border-green-300 dark:bg-green-800 dark:text-green-50 dark:border-green-700';
+    // Maximum contrast for better readability in both light and dark modes
+    if (riskScore >= 15) return 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white';
+    if (riskScore >= 8) return 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white';
+    return 'bg-white text-black border-black dark:bg-black dark:text-white dark:border-white';
   };
 
   const getRiskLevel = () => {
