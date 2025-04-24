@@ -19,7 +19,6 @@ import {
   ArrowRight,
   Check,
   X,
-  FileWord,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -251,7 +250,7 @@ const StudyDesignReport = () => {
             variant="outline"
             className="flex items-center gap-2"
           >
-            <FileWord className="h-4 w-4" />
+            <FileText className="h-4 w-4" />
             Export to Word
           </Button>
           
@@ -676,7 +675,7 @@ const StudyDesignReport = () => {
             </div>
             <div className="print:hidden flex gap-2">
               <Button variant="outline" onClick={handleGenerateWord} className="flex items-center gap-2">
-                <FileWord className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
                 Export to Word
               </Button>
               <Button variant="outline" onClick={handleGeneratePDF} className="flex items-center gap-2">
