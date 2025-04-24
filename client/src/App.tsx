@@ -385,6 +385,11 @@ export default function App() {
                   <LazyICHWizPage />
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/lumen-bio/ich-wiz">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="ICH Wiz - Lumen Bio" />}>
+                  <LazyICHWizPage />
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/analytics-dashboard">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Analytics Dashboard" />}>
                   <LazyAnalyticsDashboard />
