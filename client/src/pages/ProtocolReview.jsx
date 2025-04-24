@@ -610,15 +610,26 @@ const ProtocolReview = () => {
                       <div key={key} className="border rounded-md p-3">
                         <div className="flex justify-between items-center mb-2">
                           <span className="font-medium capitalize">{key.replace(/_/g, ' ')}</span>
-                          <Badge 
-                            className={
-                              score >= 80 ? "bg-green-100 text-green-800" : 
-                              score >= 60 ? "bg-yellow-100 text-yellow-800" : 
-                              "bg-red-100 text-red-800"
-                            }
-                          >
-                            {score}% Aligned
-                          </Badge>
+                          <div className="flex items-center">
+                            <Badge 
+                              className={
+                                score >= 80 ? "bg-green-100 text-green-800" : 
+                                score >= 60 ? "bg-yellow-100 text-yellow-800" : 
+                                "bg-red-100 text-red-800"
+                              }
+                            >
+                              {score}% Aligned
+                            </Badge>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="ml-2 h-6 text-xs"
+                              onClick={() => handleViewDetails(key, score)}
+                            >
+                              <Info className="h-3 w-3 mr-1" />
+                              Details
+                            </Button>
+                          </div>
                         </div>
                         <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
                           <div 
@@ -629,6 +640,19 @@ const ProtocolReview = () => {
                             }`}
                             style={{ width: `${score}%` }}
                           ></div>
+                        </div>
+                        <div className="mt-2 text-xs text-gray-600 flex items-start">
+                          <BookMarked className="h-3 w-3 mt-0.5 mr-1.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium">Reference Standards:</span> {
+                              key.toLowerCase().includes('exclusion_criteria') ? 'ICH E6(R2) §4.3.3, FDA Guidance (2016)' : 
+                              key.toLowerCase().includes('inclusion_criteria') ? 'ICH E6(R2) §4.3.3, FDA Eligibility Criteria (2019)' : 
+                              key.toLowerCase().includes('safety') ? 'ICH E2A §2.4, FDA IND Safety Reporting (21 CFR 312.32)' : 
+                              key.toLowerCase().includes('endpoint') ? 'ICH E9 §2.2.2, FDA CDER Guidance (2019)' : 
+                              key.toLowerCase().includes('dosing') ? 'ICH E4 §2, FDA Exposure-Response Guidance (2003)' : 
+                              'Relevant ICH/FDA guidelines'
+                            }
+                          </div>
                         </div>
                       </div>
                     ))
