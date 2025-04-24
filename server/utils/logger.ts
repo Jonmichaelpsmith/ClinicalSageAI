@@ -1,43 +1,69 @@
 /**
- * Structured Logging System for TrialSage
+ * Simple Logging System for TrialSage
  * 
- * Features:
- * - Context-aware logging with automatic metadata
- * - Configurable log levels and transport destinations
- * - Log rotation for production environments
- * - Request logging middleware for HTTP API access
+ * A simplified logger implementation without external dependencies
  */
-import winston, { format, transports, Logger } from 'winston';
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
+import fs from 'fs';
 
-// Define log levels and colors
-const LOG_LEVELS = {
-  error: 0,   // Errors that require immediate attention
-  warn: 1,    // Warning conditions 
-  info: 2,    // Informational messages
-  http: 3,    // HTTP request logs
-  debug: 4,   // Detailed debug information
-  trace: 5    // Very detailed tracing information
-};
+// Log levels
+type LogLevel = 'error' | 'warn' | 'info' | 'http' | 'debug' | 'trace';
+
+// Logger interface
+interface SimpleLogger {
+  error: (message: string, meta?: Record<string, any>) => void;
+  warn: (message: string, meta?: Record<string, any>) => void;
+  info: (message: string, meta?: Record<string, any>) => void;
+  http: (message: string, meta?: Record<string, any>) => void;
+  debug: (message: string, meta?: Record<string, any>) => void;
+  trace: (message: string, meta?: Record<string, any>) => void;
+  log: (level: LogLevel, message: string, meta?: Record<string, any>) => void;
+  child: (metadata: Record<string, any>) => SimpleLogger;
+}
 
 // Determine environment
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 // Configure log level based on environment
-const level = () => {
+const getCurrentLevel = (): LogLevel => {
   return isDevelopment ? 'debug' : 'info';
 };
 
-// Define custom format for console output
-const consoleFormat = format.combine(
-  format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-  format.colorize({ all: true }),
-  format.printf((info) => {
-    const { timestamp, level, message, ...metadata } = info;
+const LOG_LEVEL_VALUES: Record<LogLevel, number> = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  http: 3,
+  debug: 4,
+  trace: 5
+};
+
+const LOG_LEVEL_COLORS: Record<LogLevel, string> = {
+  error: '\x1b[31m', // Red
+  warn: '\x1b[33m',  // Yellow
+  info: '\x1b[36m',  // Cyan
+  http: '\x1b[35m',  // Magenta
+  debug: '\x1b[32m', // Green
+  trace: '\x1b[90m'  // Grey
+};
+
+const RESET_COLOR = '\x1b[0m';
+
+// Create a simple logger
+const createLogger = (defaultMeta: Record<string, any> = {}): SimpleLogger => {
+  const currentLevel = getCurrentLevel();
+  
+  const shouldLog = (level: LogLevel): boolean => {
+    return LOG_LEVEL_VALUES[level] <= LOG_LEVEL_VALUES[currentLevel];
+  };
+  
+  const formatMessage = (level: LogLevel, message: string, meta: Record<string, any> = {}): string => {
+    const timestamp = new Date().toISOString();
+    const combinedMeta = { ...defaultMeta, ...meta };
     
     // Extract context for cleaner logs
-    const { module, service, endpoint, ...otherMeta } = metadata;
+    const { module, service, endpoint, ...otherMeta } = combinedMeta;
     
     // Format context parts
     const contextParts = [];
@@ -51,58 +77,57 @@ const consoleFormat = format.combine(
     const metaStr = Object.keys(otherMeta).length > 0 
       ? '\n' + JSON.stringify(otherMeta, null, 2)
       : '';
+      
+    const color = LOG_LEVEL_COLORS[level];
+    const levelFormatted = `${color}${level.toUpperCase()}${RESET_COLOR}`;
     
-    return `${timestamp} ${level}: ${context}${message}${metaStr}`;
-  })
-);
+    return `${timestamp} ${levelFormatted}: ${context}${message}${metaStr}`;
+  };
+  
+  const logToConsole = (level: LogLevel, message: string, meta: Record<string, any> = {}): void => {
+    if (!shouldLog(level)) return;
+    
+    const formattedMessage = formatMessage(level, message, meta);
+    
+    if (level === 'error') {
+      console.error(formattedMessage);
+    } else if (level === 'warn') {
+      console.warn(formattedMessage);
+    } else {
+      console.log(formattedMessage);
+    }
+  };
+  
+  // Create logger methods
+  const logger: SimpleLogger = {
+    error: (message, meta) => logger.log('error', message, meta),
+    warn: (message, meta) => logger.log('warn', message, meta),
+    info: (message, meta) => logger.log('info', message, meta),
+    http: (message, meta) => logger.log('http', message, meta),
+    debug: (message, meta) => logger.log('debug', message, meta),
+    trace: (message, meta) => logger.log('trace', message, meta),
+    log: (level, message, meta) => {
+      logToConsole(level, message, meta);
+      
+      // In production, we would add file logging here
+      if (!isDevelopment && (level === 'error' || level === 'warn')) {
+        // Implementation for file logging would go here
+        // For now, we're just logging to console
+      }
+    },
+    child: (metadata) => {
+      return createLogger({ ...defaultMeta, ...metadata });
+    }
+  };
+  
+  return logger;
+};
 
-// Define JSON format for file output
-const fileFormat = format.combine(
-  format.timestamp(),
-  format.json()
-);
-
-// Define transports
-const logTransports = [
-  // Console transport (for all environments)
-  new transports.Console({
-    format: consoleFormat,
-    level: isDevelopment ? 'debug' : 'info',
-  }),
-];
-
-// Add file transport in production
-if (!isDevelopment) {
-  // Add rotating file transport for production
-  logTransports.push(
-    new transports.File({
-      filename: path.join(process.cwd(), 'logs', 'error.log'),
-      level: 'error',
-      format: fileFormat,
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-    new transports.File({
-      filename: path.join(process.cwd(), 'logs', 'combined.log'),
-      format: fileFormat,
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    })
-  );
-}
-
-// Create logger instance
-export const logger = winston.createLogger({
-  level: level(),
-  levels: LOG_LEVELS,
-  format: fileFormat,
-  transports: logTransports,
-  // Don't exit on uncaught error
-  exitOnError: false,
-});
+// Create the main logger instance
+export const logger = createLogger();
 
 // Create a context logger with metadata
-export function createContextLogger(context: Record<string, any>): Logger {
+export function createContextLogger(context: Record<string, any>): SimpleLogger {
   return logger.child(context);
 }
 
@@ -142,9 +167,9 @@ export function requestLogger(req: Request, res: Response, next: NextFunction) {
     
     // Skip health checks in logs to reduce noise
     if (!req.path.includes('/health')) {
-      const level = res.statusCode >= 500 ? 'error' : 
-                    res.statusCode >= 400 ? 'warn' : 
-                    'http';
+      const level = res.statusCode >= 500 ? 'error' as LogLevel : 
+                   res.statusCode >= 400 ? 'warn' as LogLevel : 
+                   'http' as LogLevel;
       
       requestLogger.log(level, `${req.method} ${req.path} - ${res.statusCode} (${duration}ms)`);
     }
