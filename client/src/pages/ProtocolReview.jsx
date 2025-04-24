@@ -51,7 +51,10 @@ import {
   HelpCircle,
   ShieldCheck,
   Beaker,
-  BookMarked
+  BookMarked,
+  Copy,
+  LineChart,
+  Users
 } from 'lucide-react';
 
 // Import the subcomponents we created
@@ -659,6 +662,16 @@ const ProtocolReview = () => {
                       <p className="text-sm text-gray-700 mt-1">{suggestion.description}</p>
                     </div>
                   ))}
+                </div>
+                
+                <div className="mt-4">
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => generateOptimizedProtocolSection(key)}
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Generate Optimized Protocol Section
+                  </Button>
                 </div>
               </div>
             )}
