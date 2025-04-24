@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
+import HighContrastModeToggle from '../components/HighContrastModeToggle';
 import {
   Dialog,
   DialogContent,

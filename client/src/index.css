@@ -88,3 +88,65 @@ html, body {
 #root {
   min-height: 100vh;
 }
+
+/* HIGH CONTRAST MODE - GLOBAL OVERRIDE */
+:root {
+  --text-color: #000000;
+  --bg-color: #FFFFFF;
+  --border-color: #000000;
+}
+
+/* Force all text to be black on white with strong borders */
+.high-contrast-mode * {
+  color: var(--text-color) !important;
+  background-color: var(--bg-color) !important;
+  border-color: var(--border-color) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.high-contrast-mode button, 
+.high-contrast-mode .button,
+.high-contrast-mode .badge,
+.high-contrast-mode .card,
+.high-contrast-mode .dialog,
+.high-contrast-mode .input {
+  border: 1px solid var(--border-color) !important;
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* Ensure contrast for all text elements */
+.high-contrast-mode h1, 
+.high-contrast-mode h2, 
+.high-contrast-mode h3, 
+.high-contrast-mode h4, 
+.high-contrast-mode h5, 
+.high-contrast-mode h6,
+.high-contrast-mode p,
+.high-contrast-mode span,
+.high-contrast-mode a,
+.high-contrast-mode div,
+.high-contrast-mode label,
+.high-contrast-mode li {
+  color: var(--text-color) !important;
+  opacity: 1 !important;
+}
+
+/* Override badge and status colors to ensure visibility */
+.high-contrast-mode .badge,
+.high-contrast-mode [class*="text-"],
+.high-contrast-mode [class*="bg-"] {
+  color: var(--text-color) !important;
+  background-color: var(--bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* Remove gradients and opacity effects */
+.high-contrast-mode [class*="opacity-"],
+.high-contrast-mode [class*="from-"],
+.high-contrast-mode [class*="to-"],
+.high-contrast-mode [class*="via-"] {
+  opacity: 1 !important;
+  background: var(--bg-color) !important;
+}
