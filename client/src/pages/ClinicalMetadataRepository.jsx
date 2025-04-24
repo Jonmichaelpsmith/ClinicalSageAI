@@ -40,6 +40,21 @@ import {
 } from 'lucide-react';
 
 const ClinicalMetadataRepository = () => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  
+  // Simulate intelligence analysis
+  const handleIntelligentMapping = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      toast({
+        title: "Intelligent Mapping Generated",
+        description: "The metadata has been analyzed and mapped to SDTM standards.",
+      });
+    }, 1500);
+  };
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
@@ -169,7 +184,6 @@ const ClinicalMetadataRepository = () => {
           </div>
         </section>
 
-        {/* Use Cases */}
         {/* Advanced AI-Powered Features - Goes beyond Certara's offering */}
         <section className="mb-12">
           <h2 className="text-2xl font-semibold text-gray-900 mb-3">Advanced AI-Powered Capabilities</h2>
@@ -245,8 +259,17 @@ const ClinicalMetadataRepository = () => {
                       Find Similar
                     </Button>
                   </div>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                    Generate Intelligent Mapping
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={handleIntelligentMapping}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Processing...
+                      </>
+                    ) : "Generate Intelligent Mapping"}
                   </Button>
                   
                   <div className="mt-4 border-t border-gray-100 pt-4">
@@ -268,6 +291,108 @@ const ClinicalMetadataRepository = () => {
                 </div>
               </div>
             </Card>
+          </div>
+        </section>
+
+        {/* Advanced Vector Search - Beyond Certara's capabilities */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Advanced Vector Search with OpenAI</h2>
+          
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              <div className="lg:col-span-3">
+                <h3 className="text-xl font-medium text-gray-900 mb-3">Semantic Metadata Search</h3>
+                <p className="text-slate-700 mb-4">
+                  Leverage OpenAI's GPT-4o and embeddings to search for metadata based on meaning rather than just keywords.
+                  This AI-powered approach enables finding relevant metadata even when terminology varies across studies.
+                </p>
+                
+                <div className="mb-6">
+                  <Label htmlFor="semanticSearch">Search clinical metadata semantically:</Label>
+                  <div className="flex mt-2">
+                    <Input 
+                      id="semanticSearch" 
+                      placeholder="E.g. find all blood pressure measurements in pediatric studies"
+                      className="flex-1 rounded-r-none"
+                    />
+                    <Button className="rounded-l-none bg-blue-600 hover:bg-blue-700">
+                      <Search className="h-4 w-4 mr-2" />
+                      Search
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Powered by OpenAI's embeddings technology for contextual understanding
+                  </p>
+                </div>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start">
+                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Vector-Based Similarity Search</h4>
+                      <p className="text-sm text-gray-600">Using embeddings to transform metadata into high-dimensional vectors for accurate similarity detection.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Cross-Study Semantic Inference</h4>
+                      <p className="text-sm text-gray-600">Identify semantically related metadata across studies even when naming conventions differ.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Natural Language Metadata Queries</h4>
+                      <p className="text-sm text-gray-600">Write queries in plain English to find relevant metadata across your organization.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Learn More About Vector Search
+                </Button>
+              </div>
+              
+              <div className="lg:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-medium text-gray-900 mb-3">Sample Results</h4>
+                <div className="space-y-3">
+                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
+                    <div className="text-sm font-medium text-blue-700 mb-1">VS.VSTESTCD=BP (98% match)</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      Blood pressure measurement - Study XYZ-001
+                    </div>
+                    <div className="bg-blue-50 text-xs p-1 rounded">
+                      <span className="font-medium">Semantic context:</span> Vital sign, cardiovascular assessment
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
+                    <div className="text-sm font-medium text-blue-700 mb-1">PEDIATRIC.VS.BPSYS (94% match)</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      Systolic blood pressure - Pediatric Study ABC-123
+                    </div>
+                    <div className="bg-blue-50 text-xs p-1 rounded">
+                      <span className="font-medium">Semantic context:</span> Pediatric vital sign
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
+                    <div className="text-sm font-medium text-blue-700 mb-1">CARDIO.HEMO.BP (89% match)</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      Hemodynamic blood pressure - Study DEF-789
+                    </div>
+                    <div className="bg-blue-50 text-xs p-1 rounded">
+                      <span className="font-medium">Semantic context:</span> Cardiovascular assessment
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 text-xs text-gray-500">
+                  <Progress value={42} className="h-1 mb-1" />
+                  42 additional semantically similar metadata elements found across 18 studies
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -379,7 +504,7 @@ const ClinicalMetadataRepository = () => {
                       </li>
                       <li className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">Cross-terminology mappings for enhanced interoperability</span>
+                        <span className="text-sm text-gray-600">Automated consistency checks across studies</span>
                       </li>
                     </ul>
                     <div className="mt-6">
@@ -390,40 +515,49 @@ const ClinicalMetadataRepository = () => {
                     </div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 className="font-medium text-gray-900 mb-2">Impact Statistics</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">Terminology Coverage</h4>
                     <div className="space-y-3">
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span>Data Consistency</span>
-                          <span className="font-medium">89%</span>
+                          <span>CDISC SDTM</span>
+                          <span className="font-medium">100%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "89%" }}></div>
+                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "100%" }}></div>
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span>Mapping Efficiency</span>
-                          <span className="font-medium">72%</span>
+                          <span>MedDRA v25.0</span>
+                          <span className="font-medium">100%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "72%" }}></div>
+                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "100%" }}></div>
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span>Reuse Rate</span>
-                          <span className="font-medium">65%</span>
+                          <span>LOINC</span>
+                          <span className="font-medium">94%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "65%" }}></div>
+                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "94%" }}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>WHO-DD</span>
+                          <span className="font-medium">98%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "98%" }}></div>
                         </div>
                       </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="flex items-center">
-                        <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
-                        <span className="text-xs text-gray-500">Inconsistent terminology can increase data cleaning costs by 40%.</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Controlled Terms:</span>
+                        <span className="text-xs font-medium">243,826</span>
                       </div>
                     </div>
                   </div>
@@ -437,24 +571,24 @@ const ClinicalMetadataRepository = () => {
                   <div className="col-span-2">
                     <h3 className="text-xl font-semibold text-gray-900 mb-3">Dataset Standards Management</h3>
                     <p className="text-slate-700 mb-4">
-                      Define, validate, and govern SDTM, ADaM, and custom datasets with full lifecycle management and submission readiness.
+                      Centralize SDTM, ADaM, and custom dataset definitions with programmatic generation and validation.
                     </p>
                     <ul className="space-y-2">
                       <li className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">CDISC SDTM and ADaM dataset templates with validation rules</span>
+                        <span className="text-sm text-gray-600">Full compliance with CDISC SDTM, ADaM, and SEND standards</span>
                       </li>
                       <li className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">Automated impact analysis for dataset specification changes</span>
+                        <span className="text-sm text-gray-600">Automated dataset creation from standardized templates</span>
                       </li>
                       <li className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">Traceability from raw data to standardized datasets</span>
+                        <span className="text-sm text-gray-600">Integration with statistical programming environments (R, SAS, Python)</span>
                       </li>
                       <li className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">Submission-ready dataset validation with FDA/PMDA compliance checks</span>
+                        <span className="text-sm text-gray-600">Automated validation against regulatory standards</span>
                       </li>
                     </ul>
                     <div className="mt-6">
@@ -465,40 +599,36 @@ const ClinicalMetadataRepository = () => {
                     </div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 className="font-medium text-gray-900 mb-2">Impact Statistics</h4>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Validation Success</span>
-                          <span className="font-medium">94%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "94%" }}></div>
-                        </div>
+                    <h4 className="font-medium text-gray-900 mb-2">Standards Compliance</h4>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm">CDISC compliance score</span>
+                      <div className="flex items-center">
+                        <span className="font-medium text-green-600 mr-1">94.8%</span>
+                        <span className="text-xs text-green-600">↑2.3%</span>
                       </div>
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Submission Readiness</span>
-                          <span className="font-medium">87%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "87%" }}></div>
-                        </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span>SDTM IG v3.3</span>
+                        <span className="font-medium">Supported</span>
                       </div>
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Time-to-Submission</span>
-                          <span className="font-medium">-38%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "38%" }}></div>
-                        </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span>ADaM IG v1.2</span>
+                        <span className="font-medium">Supported</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span>SEND 3.1</span>
+                        <span className="font-medium">Supported</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span>FDA Data Standards Catalog</span>
+                        <span className="font-medium">Compliant</span>
                       </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex items-center">
                         <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
-                        <span className="text-xs text-gray-500">Non-standardized datasets are 5x more likely to have submission delays.</span>
+                        <span className="text-xs text-gray-500">SDTM v2.0 is now required for new FDA submissions</span>
                       </div>
                     </div>
                   </div>
@@ -512,12 +642,16 @@ const ClinicalMetadataRepository = () => {
                   <div className="col-span-2">
                     <h3 className="text-xl font-semibold text-gray-900 mb-3">Governance & Compliance</h3>
                     <p className="text-slate-700 mb-4">
-                      Implement robust governance processes with full audit trails, approval workflows, and regulatory compliance checks.
+                      Implement comprehensive governance workflows with role-based access control and audit trails.
                     </p>
                     <ul className="space-y-2">
                       <li className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">Role-based access control with fine-grained permissions</span>
+                        <span className="text-sm text-gray-600">Role-based access control with detailed permissions</span>
+                      </li>
+                      <li className="flex items-start">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                        <span className="text-sm text-gray-600">Complete audit trail for 21 CFR Part 11 compliance</span>
                       </li>
                       <li className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
@@ -525,11 +659,7 @@ const ClinicalMetadataRepository = () => {
                       </li>
                       <li className="flex items-start">
                         <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">Comprehensive audit trails for 21 CFR Part 11 compliance</span>
-                      </li>
-                      <li className="flex items-start">
-                        <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">Automated validation reports for regulatory inspections</span>
+                        <span className="text-sm text-gray-600">Impact analysis for proposed metadata changes</span>
                       </li>
                     </ul>
                     <div className="mt-6">
@@ -540,40 +670,46 @@ const ClinicalMetadataRepository = () => {
                     </div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 className="font-medium text-gray-900 mb-2">Impact Statistics</h4>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Compliance Rate</span>
-                          <span className="font-medium">98%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "98%" }}></div>
-                        </div>
+                    <h4 className="font-medium text-gray-900 mb-2">Regulatory Support</h4>
+                    <div className="bg-white p-3 rounded border border-gray-200 mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">21 CFR Part 11</span>
+                        <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">Compliant</span>
                       </div>
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Audit Readiness</span>
-                          <span className="font-medium">96%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "96%" }}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Process Efficiency</span>
-                          <span className="font-medium">74%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{ width: "74%" }}></div>
-                        </div>
-                      </div>
+                      <p className="text-xs text-gray-600">
+                        Full electronic records and signature compliance with audit trails, access controls, and validation documentation.
+                      </p>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="flex items-center">
-                        <AlertTriangle className="h-4 w-4 text-amber-500 mr-2" />
-                        <span className="text-xs text-gray-500">Poor governance can lead to 60% higher inspection findings.</span>
+                    <div className="bg-white p-3 rounded border border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">ICH Guidelines</span>
+                        <span className="text-xs px-2 py-0.5 bg-green-100 text-green-800 rounded-full">Supported</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
+                          <span>ICH E2B(R3)</span>
+                        </div>
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
+                          <span>ICH E3</span>
+                        </div>
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
+                          <span>ICH E6(R2)</span>
+                        </div>
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
+                          <span>ICH E9</span>
+                        </div>
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
+                          <span>ICH M2</span>
+                        </div>
+                        <div className="flex items-center">
+                          <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
+                          <span>ICH M10</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -583,106 +719,46 @@ const ClinicalMetadataRepository = () => {
           </Tabs>
         </section>
 
-        {/* Features Section */}
+        {/* Call to Action */}
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Core Capabilities</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
-              <div className="mb-4">
-                <div className="bg-blue-100 p-2 rounded-lg inline-block">
-                  <Search className="h-5 w-5 text-blue-700" />
+          <div className="rounded-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">Ready to Transform Your Clinical Trial Metadata Management?</h2>
+                  <p className="text-blue-100 mb-6">
+                    Join leading pharmaceutical companies and CROs who have accelerated their study startup by 40% and improved data quality across trials.
+                  </p>
+                  <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <Button className="bg-white text-blue-700 hover:bg-blue-50">
+                      Request a Demo
+                    </Button>
+                    <Button variant="outline" className="text-white border-white/30 hover:bg-blue-700/50">
+                      Learn More
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Semantic Search</h3>
-              <p className="text-sm text-gray-600 flex-grow">
-                Intelligent semantic search capabilities let you find forms, terminologies, and 
-                datasets based on meaning, not just exact text matches.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
-              <div className="mb-4">
-                <div className="bg-green-100 p-2 rounded-lg inline-block">
-                  <GitBranch className="h-5 w-5 text-green-700" />
+                <div className="bg-blue-900/20 rounded-lg p-5 border border-blue-400/30">
+                  <h3 className="text-xl font-medium mb-4">Why Top 10 Pharma Companies Choose Our CMDR</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-blue-300 mt-0.5 mr-2 flex-shrink-0" />
+                      <p className="text-blue-100">AI-powered intelligence that goes beyond traditional CMDR capabilities</p>
+                    </div>
+                    <div className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-blue-300 mt-0.5 mr-2 flex-shrink-0" />
+                      <p className="text-blue-100">Seamless integration with existing EDC, CTMS, and statistical systems</p>
+                    </div>
+                    <div className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-blue-300 mt-0.5 mr-2 flex-shrink-0" />
+                      <p className="text-blue-100">Enterprise-grade security and compliance with regulatory standards</p>
+                    </div>
+                    <div className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-blue-300 mt-0.5 mr-2 flex-shrink-0" />
+                      <p className="text-blue-100">Dedicated implementation and support from clinical metadata experts</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Version Control</h3>
-              <p className="text-sm text-gray-600 flex-grow">
-                Comprehensive versioning for all metadata with history tracking, 
-                comparisons, and the ability to restore previous versions.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
-              <div className="mb-4">
-                <div className="bg-purple-100 p-2 rounded-lg inline-block">
-                  <History className="h-5 w-5 text-purple-700" />
-                </div>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Audit Trails</h3>
-              <p className="text-sm text-gray-600 flex-grow">
-                Complete, tamper-proof audit trails for all metadata changes with 
-                user information, timestamps, and change details.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
-              <div className="mb-4">
-                <div className="bg-amber-100 p-2 rounded-lg inline-block">
-                  <AlertTriangle className="h-5 w-5 text-amber-700" />
-                </div>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Impact Analysis</h3>
-              <p className="text-sm text-gray-600 flex-grow">
-                Proactively assess the impact of metadata changes on dependent 
-                systems, studies, and submissions before implementation.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
-              <div className="mb-4">
-                <div className="bg-red-100 p-2 rounded-lg inline-block">
-                  <FileText className="h-5 w-5 text-red-700" />
-                </div>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">EDC Export</h3>
-              <p className="text-sm text-gray-600 flex-grow">
-                Direct export to leading EDC systems with validation to ensure 
-                forms and datasets transfer correctly with proper mappings.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
-              <div className="mb-4">
-                <div className="bg-indigo-100 p-2 rounded-lg inline-block">
-                  <Layers className="h-5 w-5 text-indigo-700" />
-                </div>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Standards Library</h3>
-              <p className="text-sm text-gray-600 flex-grow">
-                Comprehensive library of industry standards (CDISC, LOINC, MedDRA) 
-                with automatic updates and version management.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="mb-6">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl overflow-hidden shadow-md">
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-white mb-4">Ready to Optimize Your Clinical Metadata?</h2>
-              <p className="text-blue-100 mb-6 max-w-3xl">
-                Streamline your clinical trial metadata management, ensure compliance, and 
-                accelerate your studies with our enterprise-grade Clinical Metadata Repository.
-              </p>
-              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                <Button className="bg-white text-blue-700 hover:bg-blue-50">
-                  Request a Demo
-                </Button>
-                <Button variant="outline" className="text-white border-white/30 hover:bg-blue-700/50">
-                  Learn More
-                </Button>
               </div>
             </div>
           </div>
@@ -691,107 +767,5 @@ const ClinicalMetadataRepository = () => {
     </div>
   );
 };
-
-        {/* Advanced Vector Search - Beyond Certara's capabilities */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Advanced Vector Search with OpenAI</h2>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-              <div className="lg:col-span-3">
-                <h3 className="text-xl font-medium text-gray-900 mb-3">Semantic Metadata Search</h3>
-                <p className="text-slate-700 mb-4">
-                  Leverage OpenAI's GPT-4o and embeddings to search for metadata based on meaning rather than just keywords.
-                  This AI-powered approach enables finding relevant metadata even when terminology varies across studies.
-                </p>
-                
-                <div className="mb-6">
-                  <Label htmlFor="semanticSearch">Search clinical metadata semantically:</Label>
-                  <div className="flex mt-2">
-                    <Input 
-                      id="semanticSearch" 
-                      placeholder="E.g. find all blood pressure measurements in pediatric studies"
-                      className="flex-1 rounded-r-none"
-                    />
-                    <Button className="rounded-l-none bg-blue-600 hover:bg-blue-700">
-                      <Search className="h-4 w-4 mr-2" />
-                      Search
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Powered by OpenAI's embeddings technology for contextual understanding
-                  </p>
-                </div>
-                
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-start">
-                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">Vector-Based Similarity Search</h4>
-                      <p className="text-sm text-gray-600">Using embeddings to transform metadata into high-dimensional vectors for accurate similarity detection.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">Cross-Study Semantic Inference</h4>
-                      <p className="text-sm text-gray-600">Identify semantically related metadata across studies even when naming conventions differ.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">Natural Language Metadata Queries</h4>
-                      <p className="text-sm text-gray-600">Write queries in plain English to find relevant metadata across your organization.</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  Learn More About Vector Search
-                </Button>
-              </div>
-              
-              <div className="lg:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-gray-200">
-                <h4 className="font-medium text-gray-900 mb-3">Sample Results</h4>
-                <div className="space-y-3">
-                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
-                    <div className="text-sm font-medium text-blue-700 mb-1">VS.VSTESTCD=BP (98% match)</div>
-                    <div className="text-xs text-gray-600 mb-2">
-                      Blood pressure measurement - Study XYZ-001
-                    </div>
-                    <div className="bg-blue-50 text-xs p-1 rounded">
-                      <span className="font-medium">Semantic context:</span> Vital sign, cardiovascular assessment
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
-                    <div className="text-sm font-medium text-blue-700 mb-1">PEDIATRIC.VS.BPSYS (94% match)</div>
-                    <div className="text-xs text-gray-600 mb-2">
-                      Systolic blood pressure - Pediatric Study ABC-123
-                    </div>
-                    <div className="bg-blue-50 text-xs p-1 rounded">
-                      <span className="font-medium">Semantic context:</span> Pediatric vital sign
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
-                    <div className="text-sm font-medium text-blue-700 mb-1">CARDIO.HEMO.BP (89% match)</div>
-                    <div className="text-xs text-gray-600 mb-2">
-                      Hemodynamic blood pressure - Study DEF-789
-                    </div>
-                    <div className="bg-blue-50 text-xs p-1 rounded">
-                      <span className="font-medium">Semantic context:</span> Cardiovascular assessment
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 text-xs text-gray-500">
-                  <Progress value={42} className="h-1 mb-1" />
-                  42 additional semantically similar metadata elements found across 18 studies
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
 export default ClinicalMetadataRepository;
