@@ -1,0 +1,538 @@
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 1PFIZER INC.
+These results are supplied for informational purposes only .
+Prescribing decisions should be made based o n the approved package insert.
+For publications based on this study , see associated bibliograph y.
+PROPRIETARY DRUG NAME®/GENERIC DRUG NAME: Toviaz®/Fesoterodine 
+Fumarate
+THERAPEUTIC AREA AND FDA APPROVED INDICATIONS: See United States 
+Package Insert (USPI)
+NATIONAL CLINICAL TRIAL NO .: NCT00806494
+PROTOCOL NO. :A0221058
+PROTOCOL TITLE :A 12 Week, Multicentre, Open Label Stud y to Evaluate the Efficacy , 
+Tolerability  and Safet y of a  Feso terodine Flexible Dose Regimen i n Patients with Overactive 
+Bladder
+Study Center s:  The study  was conducted at 39 centers in the United Kingdom.
+Study Initiation Date and Completion  Dates:   07February 2009 to 14January 2010
+Phase of Development :  Phase 4
+Study Objectives :  The primary  objective was  to demonstrate the efficacy , in terms of 
+reduction of micturitions, of 12 weeks flexible dose fesoterodine in subjects w ith overactive 
+bladder  (OAB) compared with b aseline.
+The secondary  objectives were to assess the use of flexible dosing of fesoterodine on other 
+bladder diary  variables after 4 and 12 weeks compared to baseline, the effect of flexible dose 
+fesoterodine on treatment satisfaction and health related qu ality of life (QoL) measures at 
+12weeks compared to baseline, and the safet y and tolerability of flexible dose fesoterodine 
+in subjects with OAB.
+The exploratory  objectives were to analyze baseline data such as subject demographics, 
+subject  reported outco mes and bladder diary  variables that could  predict dose escalation a fter 
+4weeks , understand the impact of cessation of fesoterodine after 12 weeks of therap y and to 
+explore the potential impact of fesoterodine upon goal achievement after 12 weeks of 
+thera py.
+METHODS
+Study Design:   This was a single country , multi -center, open -label stud y which  aimed to 
+enter 326 male and female subjects with  OAB sy mptoms from across the United Kingdom at 
+approximately  41centers in primary  and secondary  care sites , with ea ch center  enrolling 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 2approximately  8subjects .  The study  require d 5in-clinic visits in cluding the screening  visit, 
+baseline/enrol lment visit, end of Week 4 visit , end of treatment visit ( Week 12), and a post 
+treatment visit (Week 16).
+Number of Subjects  (Planned and Analyzed): It was estimated that a sample size of 
+277subjects would have been sufficient to provide 95% confidence intervals (CI s) of width 
+no more than 0.38 with 80% coverage probability .  Allowing for a drop -out rate of 15%, a 
+total of 326 subjects were required to be entered into the study .
+All 331 subjects who were treated were included in the safet y anal ysis set and were anal yzed 
+for adverse events ( AEs).  One subject was excluded from the full analy sis set (FAS)  because 
+she did not have an y post -baseline efficacy  data for any  efficacy  endpoints .  A total of 
+251subjects (75.8%) were included in the per protocol anal ysis set (PPAS).
+Diagnosis and Main  Criteria for Inclusion:   Eligible subjects were male or female 
+outpatients ≥18years old with OAB s ymptoms (subject -reported) for ≥3months prior to 
+screening/Visit 1 according to International Continence Societ y guidelines, mean urinary  
+frequency  of ≥8micturitions per 24 hours as verified by  the screening bladder diary  prior t o 
+baseline/Visit 2, and mean number of urgency  episodes ≥3 per 24 hours as verified b y the 
+screening bladder diary  prior to baseline/Visit 2 (urgency  episodes were defined as those 
+with urinary  sensation scale [USS] rating ≥3).  Subjects with conditions that would 
+contraindicate the usage of fesoterodine  orcould impact OAB sy mptoms, history  of urinary  
+tract surgery , active bladder stones and urinary  tract infection were excluded from the study .
+Study Treatment:   All entered subjects were  initially  treated with fesoterodine 4 mg once 
+daily  for the first  4weeks of treatment.  At the end of Week 4, based upon a discussion 
+between the subject and the investigator of efficacy  and tolerability  reported by  the subject, 
+the investigator could  either increase the d ose to 8 mg for those subjects who desire d greater 
+symptom improvement and report ed good tolerability , or could continue the subject on the 
+4mg dose, for the remaining 8weeks of the study .  No dose adjustments we re allowed 
+during the remaining 8weeks of  the tr eatment phase of the stud y. One tablet was to  be taken 
+with water at approximately  the same time every  day.
+Efficacy Evaluations:
+Bladder Diary :
+Each subject was to  com plete a bladder diary  for 3 consecutive day s immediately  preceding 
+each clinic v isit to record details of micturitions (frequency , urgen cy, urgency  urinary  
+incontinence  [UUI ]).
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 3Questionnaires:
+Patient Perception of Bladder Condition (PPBC) is a self -administered, single -item, v alidated 
+questionnaire that asked  subjects to describe th eir perception of their bladder -related 
+problems .  The PPBC was  administered at screening  (Visit 1), baseline  (Visit 2), Week 4 
+(Visit 3), Week 12or early  termination  (Visit 4), and Week 16 (Visit 5).
+Urgency  Perception Scale (UPS; formerl y referred to as Patient P erception of  Urgency  Scale) 
+is a self -administered, single -item, valid ated questionnaire that measured  the subject’s 
+perception of urinary  urgency .  It was  administered at baseline  (Visit 2), Week 4 (Visit 3),
+andWeek 12or earl y termination  (Vis it4).
+The Overactive Bladder -questionnaire (OAB -q) symptom bother scale consisting of 8 items
+asked the subjects how much they  had been bothered by  selected bladder s ymptoms during 
+the past 4 weeks.  It was administered at baseline  (Visit 2), Week 4 (Visi t3), and Week 12or 
+early termination  (Visit 4).
+The King’s Health Questionnaire (KHQ) is a self -administe red questionnaire containing 
+21questions that are scored in 9 domains (general health perception, incontinence impact, 
+role limitations, phy sical li mitations, social limitations, personal relationships, emotions, 
+sleep/energy , severit y of urinary s ymptoms).  It was administered at baseline  (Visit 2), 
+Week 4 (Visit 3), and Week 12or earl y termination  (Visit 4).
+The International Consultation on Incontinence Questionnaire -Short F orm (ICIQ-SF) is a
+brief and comprehensive subject -compl eted questionnaire containing 6 items for the 
+assessment and quantification of incontinence a nd its impact on QoL .  It was  administered at 
+baseline  (Visit 2) and at Week 12or early  termination  (Visit 4).
+The Benefit , Satisfaction and Willingness to continue (BSW) is a 3 -item questionnaire 
+designed to assess treatment benefit, subject satisfaction with treatment, and subject 
+willingness to continue treatment .  It was  adminis tered at Week 12or earl y termination
+(Visit 4).
+Aninitial version of the Self Assessment Goal Achievement (SAGA ) questi onnaire, before 
+the final validated version was available, was included in the study  as an exploratory  
+endpoint. The SAGA questi onnair e is a subject -completed, phy sician -reviewed tool to assess 
+treatment goals and achievement of go als for subjects suffering from OAB and/or other 
+urinary  tract sy mptoms .SAGA First Assessment questionnaire was  provided to the subject s
+at the end of screen ing visit , when the investigator took  the time to expla in the questionnaire.
+The second part (SAGA Follow -up questionnaire) was  provided to the subject s along with 
+their SAGA First Assessment finalized at baseline (Visit 2) (for reference).
+The Treatment Satisfaction Question (TSQ) is a self -administered, 1 -item measure of subject 
+satisfaction for subjects receiving treatment for OAB. The TSQ was administered at the end 
+of study  at Week 12or early  termination  visit (Visit 4) to assess subject’s satisfact ion with 
+current treatment of fesoterodine.
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 4Safety Evaluations:   AEs were monitored throughout the study .A urine dipstick test for red 
+blood cells, white blood cells, glu cose, protein, and nitrites was performed only at the 
+screening  visit  for assessment  of study  entry  qualification.  A urine pregnancy  test 
+(beta -human chorionic gonadotropin) was done for women of child bearing potential at 
+screening  visit for assessment of study  inclusion criteria and at Week 12 (end of treatment 
+visit).  Sitting blood p ressure and pulse rate were recorded at all visits including screening, 
+baseline, Week 4, and Week 12 or earl y termination visit.
+Statistical Methods:   All efficacy  parameters were anal yzed within the FAS.  I n addition, 
+the primary  efficacy  endpoint was al so anal yzed using the PPAS.
+The primary  efficacy  endpoint was the change in mea n number of micturitions (micturition 
+frequency  [MF]) per 24 hours at Week 12 relative to baseline.   The mean MF per 24 hours 
+was calculated as the sum of all micturitions divid ed by  the total number of diary  days 
+collected at that visit.  The primary  endpoint was summarized using descriptive statistics, 
+which included the number of subjects, mean, standard deviation, minimum, median, 
+maximum and 95% CI.
+The secondary  efficacy  endpoints based on the bladder diary  were: 
+change in mean MF per 24 hours at Week 4 relative to baseline
+percent change in MF at Weeks 4 and 12 relative to baseline
+change  and percent change  in mean number of nocturnal micturitions  (nocturnal 
+micturition fr equency  [NMF])  per 24 hours at Weeks 4 and 12 relative to baseline in 
+subjects with >0 episodes during the 3 -day baseline diary  period
+change and percent change in mean number of UUI episodes per 24 hours at Weeks 4 and 
+12 relative to baseline in subjects with >0 UUI episodes during the 3 -day baseline diary  
+period
+change and percent change in mean number of urgency  episodes (urgency  episode 
+frequency  [UEF]) per 24 hours at Weeks 4 and 12 relative to baseline
+change and percent change in mean number of noctu rnal urgency  episodes (nocturnal 
+urgency  episode frequency  [NUEF]) per 24 hours at Weeks 4 and 12 relative to baseline 
+in subjects with >0 episodes during the 3 -day baseline diary  period
+change and percent change in mean number of severe urgency  episodes (severe urgency  
+episode frequency  [SUEF]) per 24 hours at Weeks 4 and 12 relative to baseline in 
+subjects with >0 episodes during the 3 -day baseline diary  period
+change in mean number of incontinence pads used per 24 hours at Weeks 4 and 12 
+relative to base line.
+To support the interpretation of the primary  analy sis, a secondary  anal ysis on the primary  
+endpoint similar to the primary  anal ysis was to be conducted based upon the PPAS.  All 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 5other secondary  diary  endpoints (both absolute and percent change) wer e summarized as 
+continuous endpoints with summary  statistics provided for baseline and Weeks 4 and 12.  
+These summary  statistics were also provided for numeric and percentage changes from 
+baseline to Weeks 4 and 12.
+The secondary  efficacy  endpoints based o n the questionnaires were:
+change in PPBC at Weeks 4 and 12 relative to baseline
+change in UPS  at Weeks 4 and 12 relative to baseline
+change in OAB -q symptom bother and individual item (question) scores  at Week s4 and 
+12 relative to baseline
+change in tota l score of each domain and individual item (question) score at Week 12 
+relative to baseline
+change in ICIQ -SF and individual item (questions 1-3) scores at Week 12 relative to 
+baseline
+each BSW item and total score at Week 12
+percentage of subjects reporti ng satisfaction (including ‘very  satisfied’ and ‘somewhat 
+satisfied’) at Week 12.
+The change from baseline to Weeks 4 and 12 in the PPBC were summarized.  Frequency  
+tables and change from baseline frequency  tables were also presented.  Frequency  tables f or 
+the UPS categories at each visit and change from baseline to Week 4 and Week 12 frequency  
+tables were presented.  The change in the sy mptom severity /bother items and total of the 
+OAB -q symptom bother scale at Week 4 and Week 12 relative to baseline was summarized.  
+Absolute values and changes from baseline at Week 12 for each domain of the KHQ were 
+summarized.  The changes from baseline in item scores of the ICIQ-SF at Week 12 were 
+summarized.  Each item of the BSW and the total score at Week 12 were sum marized.  For 
+the single item measur e of satisfaction from the TSQ , the score (very  dissatisfied to very 
+satisfied) at Week 12 was summarized descriptively .  In addition ,the percent age of 
+responde rs (ie,subject s who indicated being ‘Very  satisfied’  or ‘Somewhat satisfied’) was 
+summarized at Week 12.
+Endpoints based on changes  (absolute or percentage) from Week 12 (end of treatment) to 
+Week 16 were evaluated  for exploratory  anal yses.
+The proportion of subjects escalating from fesoterodine 4 mg to fesoterod ine 8mg at Week 4 
+was summarized.  Logistic r egression anal ysis was used to explore the relationship between 
+the final dose of fesoterodine (ie, whether subjects escalated to 8 mg or not) and 
+screening/baseline factors , and other covariates , as follows:
+Baseline mean number of micturitions per 24 hours
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 6Change in mean number of mict uritions per 24 hours at Week 4 relative to baseline
+PPBC score at Week 4
+OAB wet (at least 1 incontinence episode per 24 hours at baseline) vs OAB dry(no 
+incontinence episodes pe r 24hours at baseline)
+Age
+Gender
+BMI
+Duration of OAB from the date of onset
+Presence/ absence of anticholinergic AEs prior to Week 4
+For the purposes of this analy sis, the PPBC responses at Week 4 were categorized into ‘no 
+problems/some very  minor problem s’, ‘some minor problems’, ‘some moderate problems’ 
+and ‘severe problems/many  severe problems’.  The reference category  for comparing the 
+proportion titrating for this factor was ‘no problems/some very  minor problems’ and the odds 
+of titrating for subjects  in this category  were compared to each of the other categories.  The 
+factors OAB wet vs OAB dry,gender, p resence/ absence of anticholinergic AEs prior to Week 4
+were modeled as binary  endpoints, and baseline and change from baseline to Week 4 in mean 
+number  of micturitions per 24 hours, age, BM I and duration of OAB were modeled as 
+continuous endpoints.
+The covariate factors used in this analy sis were summarized for all subjects, split by  subjects 
+who were dose titrated and n ot dose t itrated at Week 4.
+Safety  data were  summ arized for all subjects included in the safet y analysis set .  All safet y 
+data were summarized and listed according to the sponsor’s data standards.
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 7RESULTS
+Subject Disposition and Demography:   Table 1 summarizes the  subject disposition.   The 
+most common reasons for discontinuations were ‘other ’reasons that were not related to study  
+treatment (30subjects [9.1%]) with the majority  occurring during the post -treatment 
+follow -up period between Week 12 and 16,  and treatm ent-related AEs (25 subjects [7.6%]).
+Table 1.Subject Disposition
+Number of Subjects Fesoterodine
+Screened 418
+Assigned to study treatment 331
+Treated 331
+Com pleted 251 (75.8)
+Discontinued 80 (24.2)
+Related to study trea tment 31 (9.4)
+Adverse event 25 (7.6)
+Lack of efficacy 6 (1.8)
+Not related to study treatment 49 (14.8)
+Adverse event 4 (1.2)
+Lost to follow -up 10 (3.0)
+Other 30 (9.1)
+Subject no longer willing to participate 
+in study5 (1.5)
+Subjec ts were mostly  white ( 325subjects [98.2%] ) and female (263 subjects [79.5 %]).
+Subjects had a mean age of 60.3 years (range:  23 -86years) and weight of 79.7 kg (range:  
+51.0-174.0 kg).  All 331 subjects had a history  of hy pertonic bladder with a mean dur ation 
+since onset of 7.7 years (range:  0.1 to53.8 years).
+Efficacy Results:
+Primary Efficacy Results:
+Results from this study  show ed a clinically  relevant  change (improvement) from baseline  to 
+Week 12 in the primary  endpoint ofmean MF  per 24 hours . The mean change  from baseline
+in the primary  endpoint was -3.26 (95% CI:  -3.62, -2.91) ( Table 2).
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 8Table 2.Mean Micturition Frequency per 24 hours – FAS (LOCF)
+Fesoterodine
+N=33 0
+Baseline
+n 330
+Mean ( SD) 12.82 (3.53)
+Week 12
+n 317
+Mean (SD) 9.58 (3.00)
+Median (min, max) 9.3 (2.3, 23.3)
+Change from  Baseline at Week 12
+n 317
+Mean (SD) -3.26 (3.21)
+Median (min, max) -3.0 (-17.0, 7.7)
+95% CI -3.62, -2.91
+FAS=full analysis set; LOCF=last  observation carried forward; n=number of subjects; SD=standard deviation; 
+min=minimum; max=maximum; CI=confidence interval; N=total number of subjects.  Note: One subject w as 
+excluded from the FAS because she did not have any post -baseline data for any eff icacy endpoints.
+Secondary Efficacy Results:
+At Week 12, there was a decrease  from baseline (ie, improvement) in the N MF per 24 hours.  
+The mean change from baseline to Week 12 was -0.78 (95% CI :  -0.91, -0.64).
+At Week 12, there was a decrease  from base line (ie, improvement) in the UUI (urinary  
+sensation scale rating of 5) per 24 hours.  The mean change from baseline to Week 12 was 
+-1.64 (95% CI : -2.02, -1.25).
+At Week 12, there was a clinically  relevant decrease (improvement) from baseline in the 
+UEF ( urinary  sensation scale rating ≥3) per 24 hours.  The mean change from baseline to 
+Week 12 was -5.10 (95% CI :  -5.62, -4.58).
+At Week 12, there was decrease  from baseline (ie, improvement) in the NUEF (urinary  
+sensation scale rating ≥3) per 24 hours.  The mean change from baseline to Week 12 was 
+-1.16 (95% CI:  -1.32, -1.01).
+At Week 12, there was a decrease  from baseline (ie, improvement) in the SUEF (urinary  
+sensation scale rating ≥4) per 24 hours.  The mean change from baseline to Week 12 was 
+-2.93 (95% CI:  -3.36, -2.50).
+At Week 12 ,the mean absolute change from baseline in the number of incontinence  pads 
+used per 24 hours was -0.64 per 24 hours (95% CI :-0.79, -0.49).
+At baseline, all subjects (with responses at Week 12) considered their bladder condi tion 
+caused them problems, with the majority  (276 subjects [85.7%]) considering the problems 
+moderate or severe, and 44 subjects (13.7%) considering the problems ‘many  severe ’.  At 
+Week 12, 160 subjects (49.7%) had major improvements in bladder condition c ompared to 
+baseline, and a further 94 subjects (29.2%) had minor improvements.
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 9At baseline , most subjects (with responses at Week 12) were not able to hold urine 
+(81subjects [ 25.2%]) or were able to hold urine until they  reached a toilet but without 
+finishing what they  were doing (2 21subjects [68. 8%]).  At Week 12, 1 54subjects ( 48.0%) 
+had improvements in UPS compared to baseline.
+At Week 12, there was a decrease  from baseline (ie, an indication of improvement) in the 
+OAB -q Symptom Bother Score.  The mean  change from baseline to Week 12 was -37.25 
+(95% CI :  -39.83, -34.66).   Changes from baseline in scores for individual questions were 
+comparable, no individual question score was markedly  different.
+At Week 12, there were decreases (ie, an indication of improvements) from baseline in all 
+domains of the KHQ, with the greatest improvements for the Phy sical and Role L imitations 
+domains .  Changes from baseline in scores for individual questions were comparable, no 
+individual question score was markedl y differen t.
+At Week 12, there was a decrease (ie, an indication of improvement) from baseline in the 
+ICIQ-SF.  The mean change from baseline to Week 12 was -5.13 (95% CI:  -5.72, -4.54).  
+Mean changes from baseline in individual scores were negative for individual  questions: 
+frequency  (Question 1) and amount (Question 2) of urine leak, and how much leaking 
+interfered with life (Question 3).
+At Week 12, >50% of subjects reported the maximum categories of benefit (Question 1:  
+‘much benefit’) and satisfaction (Questi on2:  ‘very  satisfied’) from treatment.  When 
+subjects were asked to answer ‘y es’ or ‘no’ to whether they  were satisfied (Question 3) and 
+willing to continue treatment (Question 5), >75% of subjects answered ‘y es’ to each 
+question.  When the magnitude of subjects’ willingness to continue was categorized, >60% 
+reported the maximum category  of ‘very  willing’.
+The majority  of subjects (73.6%) reported satisfaction with study  treatment at Week 12.
+Exploratory Results
+At Week 16, for all micturition diary  varia bles there were deteriorations (increases in 
+frequency ) from Week 12, ie, after the last  dose of fesoterodine was taken .
+Of 307 subjects, 195 subjects had a dose increase from fesoterodine 4 mg to fesoterodine 
+8mg at Week 4.  For 182 subjects the dose inc rease was due to insufficient clinical response 
+and for 13 subjects the dose increase was for ‘other’ reasons.  Most of the dose increases 
+(111/195 subjects) were as result of the subject making the decision assisted by  the 
+investigator.  Dose increases al so occurred as a result of the subject (68 subjects) or 
+investigator (12 subjects) making the decision, or due to ‘other’ reasons (4 subjects). 
+The stepwise logistic regression identified the covariates of change from baseline in 
+micturition per 24 hours at Week 4 and respons e to the PPBC questionnaire at Week 4 as 
+most strongly  associated with whether a subject  titrated or not. The other factors tested in the 
+stepwise logistic regression ( gender, age, BMI, presence or absence of anticholinergic AEs 
+prior  to Week 4, baseline mea n number of micturitions per 24 hours, OAB wet/OAB dry and
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 10duration  of OAB from the date of onset) were not found to be significant .  Response to the 
+PPBC Questionnaire at Week 4 gave different results for the sub -group that titrated to 
+fesoterodine 8 mg compared to the sub -group that did not; eg, of the subjects who were 
+titrated , 50subjects (25.6%) had positive responses to ‘My  bladder condition causes me 
+severe problems’ compared to 1 (0.9%) of the subjects who were not titrated.  Subjects who 
+were titrated had more micturitions per 24 hours at Week 4 (mean=13.4; SD=3.75) than 
+those who were not (mean=11.9; SD=2.98).
+The most important goals at baseline , as identified by  subjects  in the SAGA questionnaire ,
+were ‘ Reduce the sudden ne ed to rush to the bathroom ’, ‘Reduce frequency to the bathroom 
+through the day ’ and ‘ Reduce frequency  to the bathroom at night’.  The  most frequ ently 
+achieved goals at Week 12 were ‘ Reduce difficulty  starting or maintaining a urinary  stream ’, 
+‘Reduce frequ ency  to the bathroom through the day’and ‘Reduce my urine leakage’ .  Nearl y 
+50% of subjects (49.5 %) achieved the  goal that was rated ‘Most Important Goal’, and 81.0% 
+‘Somewhat achieved goals’ or better .
+Benefit of treatment with fesoterodine, was generall y observed across all subjects for Fixed 
+Total Score, Global Total Score,  as well as OAB symptom -related Fixed Total Score and 
+Global Total Score - derived from the SAGA  questionnaire.  The mean scores at Week 12 
+ranged between 47.62 and 48.63 .
+As per the TSQ, the majority  of subjects reported satisfaction with the OAB medication 
+(fesoterodine).  There was a  high correlation between the SAGA questionnaire (o verall 
+achievement of goals)  and the TSQ .
+Safety Results:   An overview of AE experience during the st udy is provided in Table 3.  A 
+total of 605 AEs were reported by  254 subjects, and 295 AEs reported b y 159subjects were 
+considered treatment -related.  T he most commonly  reported all -causality  AEs were dry  
+mouth (99 subjects [29.9 %]), constipation (30 subjects [9.1%]) and diarrhea (29 subjects 
+[8.8%]) ( Table 4).  The majority  of the most commonly  reported AEs were considered 
+treatment -related.
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 11Table 3.Overview of Treatment -Emergent  Adverse Events - All-Causality and 
+Treatment -Related 
+Number of Subjects Fesoterodine  (N=331 )
+Subjects evaluable for AEs 331 
+All Causality Treatment -Related
+AEs 605 295
+Number (%) of subjects:
+Subjects with AEs 254 (76 .7) 159 (48.0)
+Subjects wi th SAEs 11 (3.3) 3 (0.9)
+Subjects with severe AEs 25 (7.6) 16 (4.8)
+Subjects discontinued due to AEs 29 (8 .8) 25 (7.6 )
+Subjects with dose reductions or 
+temporary discontinuation due to AEs 14 (4.2 ) 4 (1.2 )
+Includes data up to 7 days after last dose of study treatment.
+Except for the number of AEs, subjects w ere counted only once per treatment in each row .
+SAEs are according to the investigator’s assessment.
+MedDRA (v12.1) coding dictionary applied.
+N=number of subjects; AE=adverse event; SAE=serious adv erse event; MedDRA= Medical Dictionary for 
+Regulatory Activities
+Table 4.Summary of Most Commonly Reported Treatment -Emergent Adverse 
+Events (Occurring in >2% of  Subjects ) - All Causality and 
+Treatment -Related
+Numb er of Subjects 
+with MedDRA v12.1
+Preferred TermFesoterodine
+(N=331 )
+All Causality Treatment -Related
+Number (%) of subjects 
+with AEs254 (76 .7) 159 (48.0)
+Number (%) of subjects 
+with:
+Dry mouth 99 (29.9) 97 (29.3)
+Constipation 30 (9.1) 25 (7.6)
+Diarrhea 29 (8.8) 19 (5.7)
+Urinary tract infection 26 (7.9) 4 (1.2)
+Headache 19 (5.7) 10 (3.0)
+Dyspepsia 17 (5.1) 13 (3.9)
+Nausea 15 (4.5) 9 (2.7)
+Dizziness 11 (3.3) 6 (1.8)
+Fatigue 9 (2.7) 6 (1.8)
+Back pain 8 (2.4) 0
+Dry eye 8 (2.4 ) 8 (2.4)
+Cough 7 (2.1) 2 (0.6)
+Dry throat 7 (2.1) 7 (2.1)
+Subjects w ere counted only once per treatment in each row .
+Includes data up to 7 days after last dose of study treatment .
+MedDRA v12.1 coding dictionary applied.
+MedDRA=Medical Dictionary for Regulatory Activities; N=total  number of subjects ; AE=adverse event
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 12Twenty -nine subjects (8.8%) experienced AEs that led to permanent study  discontinuation; 
+for 25subjects (7.6%) these AEs were considered  treatment -related .  AEs leading to 
+discontinuation that were experienced b y mo re than 1 subject were dry  mouth (10 subjects), 
+dizziness (4 subjects), headache (3 subjects), nausea (3 subjects), constipation (2 subjects), 
+pollakiuria (2 subjects), and dy spepsia (2 subjects).
+Fourteen subjects (4.2%) experienced AEs that led to tempor ary study discontinuation or 
+dose reduction; for 4 subjects (1.2%) AEs were considered treatment -related.   AEs  leading to 
+temporary  discontinuation or dose reduction that were experienced by  more than 1 subject 
+were diarrhea (4 subjects), dry mouth  (2subjects) and lab yrinthitis (2 subjects).
+One subject died post -study  treatment.  A  76-year-old male  died post -study  treatment due to 
+a ruptured atheromatous aneury sm of the thoracic aorta, which was not considered 
+treatment -related .
+All serious AEs ( SAEs ) are listed by  subjec t in Table 5.  Eleven subjects  (3.3%) experienced 
+at least 1 treatment -emergent SAE, including 3 subjects  (0.9%)  who experienced SAEs
+considered treatment -related.  All SAEs r esolved by  the end of the study  with t he exception 
+of 1SAE which was fatal .
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 13Table 5.Serious Adverse Events
+Sex/Age 
+(years)Adverse Event Start 
+DayStop 
+DaySeverity Outcom e Investigator
+Causality / Sponsor 
+Causality
+F/74 Hypertension 42 57 Severe Resolved Related/ Unrelated
+Edema peripheral 42 57 Moderate Resolved Unrelated/ Unrelated
+F/52 Gastritis 23 30 Moderate Resolved Related/ Related
+F/74 Femur  fracture 45 51 Severe Resolved Unrelated/ Unrelated
+Fall 45 45 Severe Resolved Unrelated/ Unrelated
+M/67 Left ve ntricular failure a33 NA NA Resolving Related/ Related
+F/64 Transient ischemic attack 30 31 Mild Resolved Unrelated/ Unrelated
+F/50 Diverticulitis 38 54 Severe Resolved Unrelated/ Unrelated
+F/69 Myocardial infarction 3 >45 Severe Resolving Unrelated/ U nrelated
+F/74 Diverticulitis 25 27 Severe Resolved Unrelated/ Unrelated
+M/76 Aortic aneurysm rupture a36 NA NA Fatal Unrelated/ Unrelated
+F/55 Edema peripheral 8 11 Moderate Resolved Unrelated/ Unrelated
+F/38 Asthma a78 101 Severe Resolved Unrelated/  Unrelated
+M/77 Keratitis 19 30 Severe Resolved Unrelated/ Unrelated
+Angina  pectoris 73 73 Severe Resolved Unrelated/ Unrelated
+F/58 Chest discomfort 25 26 Severe Resolved Related/ Related
+Throat  tightness 25 26 Severe Resolved Related/ Related
+Headache 25 26 Severe Resolved Related/ Related
+Palpitations 25 26 Severe Resolved Related/ Related
+Dyspnea 25 26 Moderate Resolved Related/ Related
+Serious adverse event presentations were derived from a combination of data contained within the clinical  study 
+database and the corporate safety database.  The corporate safety database was a separate, centralized, adverse 
+event monitoring database that w as continuously updated based on rapidly communicated reports from the 
+investigators to th e sponsor.  The clinical study database was based on information provided from the 
+CRFs/DCTs. Consequently, occasional differences in data may exist between the centralized safety database 
+and the clinical study database .
+F=female; M=male; NA=not available or not appli cable
+aPost-therapy.
+Mean chan ges from baseline in sitting sy stolic blood pressure, sitting diastolic blood 
+pressure, and sitting pulse rate were small.  Nine subjects (2.8%) had an increase in sitting 
+systolic blood pressure ≥30mmHg, and 7 subjects (2.1%) had an increase in sitting diastolic 
+blood pressure ≥20mmHg.  Five subjects experienced increase d blood pressure during the 
+study , which was reported as an AE; 1 subject experienced increased blood pressure that was 
+reported as a treatment -related AE.  There were no other safet y concerns for vital signs.
+CONCLUSIONS :
+The primary  objective was to demonstrate the efficacy  of 12 weeks flexible dose 
+fesoterodine in subjects with OAB, in terms of a reduction from baseline in MF, and as a 
+secondary  objective, in terms of reductions in bl adder diary  variables (NMF, UUI, UEF, 
+NUEF and SUEF).  Results demonstrated that fesoterodine was efficacious in reducing 
+MF and other bladder diary  variables  from baseline to Week 12.
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+
+PhRMA Web Synopsis
+Protocol  A0221058 –26 August 2010 – Final
+Page 14The assessment of the effect of flexible dose fesoterodine on treatment satisfaction and 
+health -related QoL measures at 12 weeks compared to baseline showed that the majority  
+of subjects were satisfied with their treatment.
+A flexible dose regime of fesote rodine was safe and well tolerated.  Overall, the safet y 
+data were consistent to those observed in prior fesoterodine studies and reported in the 
+label for the OAB population:
+The most commonly  reported all -causality  AEs were dry  mouth, constipation and 
+diarrhea; which are generally  expected for this compound and population.  There 
+were no reported events of urinary  retention.
+Twenty -nine subjects (8.8%) experienced AEs that led to permanent study  
+discontinuation; for 25 subjects (7.6%) AEs were considered treatment -related .
+Eleven subjects (3.3%) experienced at least 1 treatment -emergent SAE, including 
+3subjects who experienced treatment -related SAEs.  All SAEs resolved by  the end of 
+the study  with the exception of 1 SAE which was fatal.
+Exploratory  anal yses to understand the impact of cessation of fesoterodine after 12 weeks 
+of therap y showed that for all micturition diary variables there were deteriorations 
+(increases in frequency ) after Week 12, ie, after the last dose of fesoterodine was taken.
+Explorat ory analysis of dose titration data showed that the 2 factors that were most 
+strongl y associated with titration from fesoterodine 4 mg to fesoterodine 8 mg at Week 4 
+were change from baseline in MF and subject response to the PPBC questionnaire at 
+Week 4. 
+The exploratory  SAGA questionnaire, used in this study  to evaluate subjects’ treatment 
+goals with r egard to their bladder problems, showed that 49.5 % of subjects achieved the 
+goal that was rated ‘Most I mportant Goal’ ,and 81.0% ‘Somewhat achieved goals’ or 
+better.   
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+090177e1816562cb\Approved\Approved On: 28-Sep-2010 15:00 
+

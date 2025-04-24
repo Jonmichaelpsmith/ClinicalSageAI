@@ -10,7 +10,13 @@ import { Switch } from "@/components/ui/switch";
 import { Radio, RadioGroup } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, ActivitySquare, LineChart, Brain, Users, AlertTriangle, FileText, Clipboard, Database, BrainCircuit, BarChart3, CheckCircle2, Server, Clock, FileCheck, Settings2, X } from 'lucide-react';
+import { 
+  Calculator, ActivitySquare, LineChart, Brain, Users, AlertTriangle, FileText, Clipboard, 
+  Database, BrainCircuit, BarChart3, CheckCircle2, Server, Clock, FileCheck, Settings2, X,
+  Download, Share2, PenTool, Zap, Layers, Lock, ArrowRight, ArrowUpRight, Microscope,
+  Scroll, FileSpreadsheet, Table, ChevronDown, Star, Filter
+} from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import EnzymaxStudyDesign from './EnzymaxStudyDesign';
 import StudyDesignReport from './StudyDesignReport';
@@ -1473,7 +1479,67 @@ const StatisticalDesign = () => {
                           </span>
                         </div>
                         
-                        <div className="pt-4">
+                        <div className="border border-blue-200 rounded-md p-3 bg-gradient-to-r from-blue-50 to-blue-100">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Layers className="h-4 w-4 text-blue-600" />
+                            <h4 className="text-sm font-medium text-blue-800">Advanced Simulation Options</h4>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 mb-3">
+                            <div>
+                              <Label htmlFor="distributionType" className="text-xs text-gray-600">Outcome Distribution</Label>
+                              <Select 
+                                defaultValue="normal" 
+                                id="distributionType"
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="Distribution Type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="normal">Normal</SelectItem>
+                                  <SelectItem value="skewed">Right-skewed</SelectItem>
+                                  <SelectItem value="left-skewed">Left-skewed</SelectItem>
+                                  <SelectItem value="bimodal">Bimodal</SelectItem>
+                                  <SelectItem value="mixture">Mixture Model</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="missingDataHandling" className="text-xs text-gray-600">Missing Data Strategy</Label>
+                              <Select 
+                                defaultValue="mcar" 
+                                id="missingDataHandling"
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="Missing Data Strategy" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="mcar">MCAR (Random)</SelectItem>
+                                  <SelectItem value="mar">MAR (Pattern-based)</SelectItem>
+                                  <SelectItem value="mnar">MNAR (Outcome-dependent)</SelectItem>
+                                  <SelectItem value="none">No missing data</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 mb-2">
+                            <div className="flex items-center">
+                              <Switch id="sensitivityAnalysis" checked />
+                              <Label htmlFor="sensitivityAnalysis" className="ml-2 text-xs text-gray-600">Sensitivity Analysis</Label>
+                            </div>
+                            <div className="flex items-center">
+                              <Switch id="interimAnalyses" checked />
+                              <Label htmlFor="interimAnalyses" className="ml-2 text-xs text-gray-600">Interim Analyses</Label>
+                            </div>
+                            <div className="flex items-center">
+                              <Switch id="covariateAdjustment" />
+                              <Label htmlFor="covariateAdjustment" className="ml-2 text-xs text-gray-600">Covariate Adjustment</Label>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2 pt-4">
                           <Button 
                             onClick={runSimulation} 
                             disabled={isLoading} 
@@ -1487,12 +1553,78 @@ const StatisticalDesign = () => {
                             ) : (
                               <>
                                 <BrainCircuit className="h-4 w-4" />
-                                Run Monte Carlo Simulation
+                                Run Advanced Monte Carlo Simulation
                               </>
                             )}
                           </Button>
+                          
+                          {results && (
+                            <div className="bg-green-50 border border-green-200 rounded-md p-3 mt-2">
+                              <h4 className="text-sm font-medium text-green-800 flex items-center gap-2 mb-2">
+                                <FileSpreadsheet className="h-4 w-4" />
+                                Export Statistical Report
+                              </h4>
+                              <p className="text-xs text-green-700 mb-2">
+                                Generate regulatory-grade documentation for submission or internal review.
+                              </p>
+                              <div className="grid grid-cols-2 gap-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="w-full text-xs flex gap-1">
+                                      <Download className="h-3 w-3" />
+                                      Export Report
+                                      <ChevronDown className="h-3 w-3 ml-auto" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem className="text-xs cursor-pointer">
+                                      <FileText className="h-3 w-3 mr-2" />
+                                      PDF Report (Detailed)
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-xs cursor-pointer">
+                                      <Table className="h-3 w-3 mr-2" />
+                                      Excel Workbook
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-xs cursor-pointer">
+                                      <Database className="h-3 w-3 mr-2" />
+                                      Raw Data (CSV)
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-xs cursor-pointer">
+                                      <Microscope className="h-3 w-3 mr-2" />
+                                      Regulatory Documentation
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="w-full text-xs flex gap-1 bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100">
+                                      <Share2 className="h-3 w-3" />
+                                      Share/Collaborate
+                                      <ChevronDown className="h-3 w-3 ml-auto" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem className="text-xs cursor-pointer">
+                                      <Users className="h-3 w-3 mr-2" />
+                                      Share with Team
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-xs cursor-pointer">
+                                      <Lock className="h-3 w-3 mr-2" />
+                                      Secure Link
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-xs cursor-pointer">
+                                      <Scroll className="h-3 w-3 mr-2" />
+                                      Schedule Review Meeting
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                          )}
+                          
                           <p className="text-xs text-center mt-2 text-gray-500">
-                            Results will include power distribution, sample size recommendations, and confidence intervals
+                            Results will include power distribution, sample size recommendations, confidence intervals and detailed outcome distributions
                           </p>
                         </div>
                       </div>

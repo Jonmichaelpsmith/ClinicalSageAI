@@ -1,0 +1,365 @@
+ICH eCTD Specification Change Control V1.9 
+   
+ 
+ 
+INTERNATIONAL COUNCIL FOR HA RMONISATION OF TECHNICAL 
+REQUIREMENTS FOR REGISTRATIO N OF PHARMACEUTICALS FOR 
+HUMAN USE  
+ 
+  
+ 
+ 
+   
+Change Control Proc ess for the eCTD 
+ 
+Version 1.9 
+ 
+  
+April, 2017 
+ 
+
+ICH eCTD Specification Change Control V1.9 
+   Document Change History 
+Version 
+Number Date Description 
+Version 1.0  Initial Baseline 
+Version 1.1 December 2002 Teleconference review of required 
+section 
+Version 1.2 January 2003 Revised by subsection of M2 EWG 
+Version 1.3 January 2003 Comments from subset of M2 
+members 
+Version 1.4 February 2003 ICH Tokyo M2 Meeting 
+Version 1.5 July 15, 2003 ICH Brussels M2 Meeting 
+Version 1.6 July 17, 2003 ICH Brussels M2 Meeting 
+Version 1.7 July 18, 2003 ICH Brussels M2 Meeting – FDA 
+Lawyer Comments 
+Version 1.8 June 10, 2004 ICH Tyson’s Corner Meeting – Add 
+release schedules 
+Version 1.9 April, 2017 Updated the contact information 
+
+ICH eCTD Specification Change Control V1.9 
+   Contents 
+Introductio n ......................................................................................................................... 1  
+Scope ......................................................................................................................... ...... 1 
+Purpose ....................................................................................................................... ..... 1 
+Members ....................................................................................................................... ... 1 
+ 
+Change Control Process ...................................................................................................... 2  
+Change Requests.............................................................................................................. 2  
+eCTD Change Control Meetings ..................................................................................... 3  
+Emergency Meetings ....................................................................................................... 3  
+Preparing for the Meeting ................................................................................................ 3  
+Change Control Review................................................................................................... 3  
+Approved Change Requests............................................................................................. 4 
+ eCTD Release Strategy ....................................................................................................... 5
+ 
+Major Releases ................................................................................................................  5 
+Minor Releases ................................................................................................................  5 
+Version Compatibility ....... ..................................................................................... ......... 5 
+ 
+ 
+
+ICH eCTD Specification Change Control V1.9 
+   1Introduction 
+At the September 2002 ICH Steering Committee meeting, the ICH M2 Expert Working 
+Group (EWG) presented the signed Step 3 eCTD Specification for Step 4 consideration 
+by the ICH Steering Committee. The Steering Committee signed the specification to Step 
+4 and tasked the M2 EWG to also be the Implementation Working Group (IWG) for the 
+eCTD Specification. To implement the eCTD across all three regions, change control 
+should be in place to effectively communicate and execute changes to the eCTD 
+Specification. 
+Scope 
+This document establishes the change cont rol process for the eCTD Specification.  
+Change control for regional eCTD Module 1 specifications is the regional authority’s responsibility. 
+Purpose 
+The eCTD IWG is authorised by the ICH Steer ing Committee to administer changes to 
+the eCTD Specification.  Change control is established to serve the following purposes: 
+ Evaluate and approve or disapprove proposed changes to the eCTD Specification 
+ Ensure implementation of approved changes 
+ Represent the interests of all group s who might be affected by changes 
+Members 
+The eCTD IWG consists of a Topic Leader, Deputy Topic Leader, and Experts from each 
+of the six ICH parties, and ICH observers.  The Steering Committee can also nominate, or 
+the eCTD IWG can request, additional members to work with the eCTD IWG to support eCTD change control. 
+ These members of the eCTD IWG are responsible for performing functions related to 
+eCTD change control. 
+ 
+Rapporteur 
+The eCTD IWG Rapporteur w ill be responsible for: 
+ Organising and presenting change requests to eCTD IWG in RTF format 
+ Presenting results of eCTD change control meetings to ICH Steering Committee 
+ Ensuring results of change control meetings are posted on the ICH Web site 
+(www.ich.org ) 
+ Identifying change requests in the eCTD Q&A document  
+ 
+Topic Leaders/Deputy Topic Leaders 
+The Topic Leaders for ICH parties will be responsible for: 
+ Submitting their party’s vote on eCTD change control 
+ Assigning regional members to present change requests originating in their region as 
+needed 
+ 
+
+ICH eCTD Specification Change Control V1.9 
+   2Experts 
+Experts from each region will be responsible for: 
+ Defining issues related to change requests 
+ Providing practical solutions 
+ 
+Secretary 
+The eCTD IWG Secretary will be responsible for: 
+ Recording approved change requests 
+ Recording change control meeting minutes 
+ 
+Change Control Process 
+Change Requests 
+Change requests can originate in ICH CTD change control or through eCTD 
+implementation, as follows: 
+ 
+1. During CTD change control process, CTD IWGs should consult with the eCTD IWG.  
+All change requests from a CTD IWG should be documented, showing concurrence of all ICH parties, including the eCTD IW G, and should receive Steering Committee 
+approval prior to being submitted to the eCTD IWG as a change request. The eCTD IWG Rapporteur should make CTD changes a high priority on the eCTD change 
+control list. 
+ 
+2. For change requests originating in an ICH region, the change request could be 
+submitted by any interested party to an eCTD IWG member from their region.  
+Change requests from non-ICH regions can be forwarded to the eCTD IWG 
+Rapporteur or the ICH Secretariat.  Prior to being submitted to the eCTD IWG, the 
+proposed change should undergo any necessary testing by the eCTD IWG parties in 
+the region sponsoring the request.  Change requests should then be forwarded to the 
+eCTD IWG Rapporteur for tracking, submission, and resolution. 
+ A change request form is provided in Appe ndix A.  The form is  for change requests 
+originating outside of ICH. 
+
+ICH eCTD Specification Change Control V1.9 
+   3Each change request should contain at least the following information: 
+ Contact information 
+ Summary of the problem, including rationale 
+ Reference to the area of the specification to be changed 
+ Version number and date of the eCTD specification 
+ Detailed description, including results of any testing 
+ Recommended solution, if any 
+ 
+eCTD Change Control Meetings 
+One day will be set aside at each M2 EWG m eeting for eCTD change control.  Meetings 
+can take place at regularly scheduled ICH Steering Committee meetings or via meetings, 
+teleconferences, or videoconferences approved by the Steering Committee. 
+Emergency Meetings 
+Any member of the eCTD IWG can request that the Rapporteur schedule an emergency 
+eCTD change control meeting.  
+Preparing for the Meeting 
+A list of change requests will be organised and presented by the Rapporteur to the eCTD 
+IWG prior to each change control meeting. 
+Change Control Review 
+Change requests would be categorised by the Rapporteur prior to the eCTD change 
+control meeting.   
+ 
+ Any change requests requiring testing will be assigned to a sub group of the eCTD 
+IWG 
+ Change requests not requiring additional testing will be sent to the eCTD IWG prior 
+to the next change control meeting 
+ 
+ A discussion of the disposition of a change request with input from each ICH party 
+will occur at the change control meetings.  Any requests that required testing will be 
+presented by the sub group assigned to the testing. This discussion can involve CTD 
+review if additional information on the initial change request and/or proposed 
+solution is warranted. 
+ 
+After the discussion, the change request would take one of the following paths: 
+ 
+1. Defined as out the of scope of eCTD IWG include: 
+ 
+ Is not relevant  
+ Involves a significant new concept 
+ Involves the M2 EWG or other ICH groups and the ICH step process to make the 
+necessary eCTD change  
+
+ICH eCTD Specification Change Control V1.9 
+   4 
+2. Defined as in the scope of the eCTD IWG: can be processed by the eCTD IWG and 
+would take one of the following paths: 
+ Approved by a unanimous vote from all six ICH parties 
+– Specification change 
+– Q&A document 
+ Deferred to 
+– Next change control meeting 
+ Assigned to a subgroup for testing 
+ Rejected 
+ Additional testing may be called for before a change request can be fully evaluated.  
+When a change request is assigned for testing, a particular ICH party, or members from 
+each party, can be assigned to test the change request.  The change request would stay on 
+the eCTD change control agenda and be presented at the next change control meeting for additional review. 
+Approved Change Requests 
+Change requests approved by the eCTD IWG would either be addressed in Q&A or 
+implemented into the eCTD specification by the Rapporteur and presented to the ICH 
+Steering Committee for approval. 
+ The recommendation on which versions of the eCTD specification will be supported by 
+regulators will be provided with each new eCTD version. 
+ Documentation 
+ Once approved by the Steering Committee, the following documentation would be 
+posted on the ICH Web site: 
+ New Version of the eCTD Specification 
+ Updated change request tracking document that includes the status of approved, 
+rejected, and deferred requests 
+ 
+Appendix B displays the process flow of an eCTD change request.  
+
+ICH eCTD Specification Change Control V1.9 
+   5eCTD Release Strategy 
+Stability of the ICH eCTD Specification is  important to ensure that industry and 
+regulators can develop or procure efficient tools.   In order to provide this stability, the 
+ICH eCTD Specification will follow a specific  release strategy that allows software 
+application developers and managers to plan for the future. 
+ 
+Major Releases 
+Major new releases of the eCTD Specification will be announced at least two years 
+before Step 4.  Major releases include changes that significantly impact the DTD, completely modify the eCTD architecture, or significantly impact the software 
+applications being used in the three regions.   These major releases will be addressed by 
+the M2 Expert Working Group (EWG) and follow the ICH step process.  Following this 
+process allows comments from parties external to ICH. 
+ 
+Major releases will be identified by a new numbering sequence (e.g., 4.0). 
+Minor Releases 
+In between major releases of the ICH eCTD Specification, the eCTD Implementation 
+Working Group (IWG) could also release new, minor releases of the ICH eCTD 
+Specification.  The scope of these minor releas es will be to correct minor issues with the 
+specification that hinder eCTD implementation or software application development.  
+Since these are minor modifications to the eCTD Specification, notification will occur 
+when the minor release is published on the ICH Web site. 
+ Minor releases will continue the numbering sequence of the last major release (e.g., 4.1). 
+Version Compatibility 
+Backwards compatibility will be considered for each eCTD Specification release.  
+Descriptions of the scope of each change will be provided with each new release. 
+
+ICH eCTD Specification Change Control V1.9 
+Change Request Number:_________________ (for eCTD IWG Use)    1APPENDIX A:  ECTD Q&A OR CHANGE REQUEST 
+This form should be used to request a change to the ICH eCTD Specification.  The 
+change can be to fix a perceived “bug”, meet a new requirement or to enhance existing 
+functionality.  Please provide the following information. 
+Contact Information 
+Organisation Name :  
+Organisation 
+Address :  
+ 
+Contact Name :  
+Address :  
+ 
+Telephone Number :  
+E-mail Address :  
+ 
+Question or Change Request  
+Summary This should be a short summary of the problem submitted including 
+rationale. 
+Submit Date Date you submit the change request (YYYY-MM-DD) 
+Item to be 
+Changed/ Question  Reference to the area of the specification to be changed (e.g., the eCTD 
+DTD, the written specification , the M2 eCTD style sheet) 
+Version Number 
+and Date Indicate the specific version and date of the eCTD Specification for 
+which the change is proposed. 
+Description Provide a detailed explanation of the problem, any known solutions, and 
+steps on how to recreate the error, if applicable.  If this is a new 
+requirement or enhancement, please provide the reason for the 
+requirement or enhancement and any known solutions. If you have any 
+sample output, sample code or other examples to help clarify the 
+description, attach the samples to this form.   You should also provide a 
+detailed description of any testing or research that was done to support 
+the solution(s) being proposed and any advice on backward compatibility 
+issues. 
+ 
+Submit a completed copy of this form to an eCTD IWG member in your region in RTF 
+format.  Those not residing in an ICH region  can forward this request to the eCTD IWG 
+Rapporteur or to  the ICH Secretariat at the following address.  An  electronic copy is 
+preferred with the subject field “eCTD Change Request”. 
+ 
+ICH Secretariat  
+c/o IFPMA,  
+9 Chemin des Mines, 
+1202 Geneva, Switzerland  
+Tel: +41 (22) 338 32 06  
+E-mail : admin@ich.org  
+
+ICH eCTD Specification Change Control V1.9 
+   2APPENDIX B:  ECTD CHANGE CONTROL PROCESS 
+ 
+ 
+ 
+  
+ 
+ 
+ 
+  
+ 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+  
+ 
+ 
+  
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+ Change Request Submitted to 
+eCTD IWG Rapporteur 
+Change Request Added to 
+eCTD IWG Tracking 
+Document 
+Change Request 
+Forwarded/Tested 
+Change Discussed at eCTD 
+Change Control Meeting 
+In IWG 
+Scope 
+M2 EWG and 
+Tracking 
+Document  Approved
+New 
+Specification 
+and Tracking 
+Document Rejected 
+Require 
+Testing Rejected and 
+Tracking 
+Document  
+IWG Review, Test, 
+and Pilot and 
+Provides Summary
+Deferred and Tracking 
+Document Posted Process Flow Key 
+ 
+Stop/Start
+ 
+ 
+Action 
+Decision
+ 
+Evaluation to or 
+Discussion with CTD 
+eCTD 
+Change Added to 
+Q&A and 
+Tracking 
+Document  
+NYes Yes No
+Yes
+YesNo
+Yes No
+No
+NoChange Request 
+from ICH Region, 
+other Regions or 
+Secretariat   
+Change Request 
+from CTD IWG  
+

@@ -1,0 +1,409 @@
+Assessing the Impact of Protocol Design Changes
+on Clinical Trial Performance
+Kenneth A. Getz, MBA,1* Julia Wenger, BA,1†Rafael A. Campo, BS,2
+Edward S. Seguine, MBA,2and Kenneth I. Kaitin, PhD1
+Although it is widely acknowledged that protocol design plays a crucial role in the success of clinical
+research studies, how protocols have changed over time and the impact of these changes on clinical
+trial performance have never been quantiﬁed. To measure protocol design trends, the Tufts Center forthe Study of Drug Development analyzed data on 10,038 unique phase 1–4 protocols conducted
+between 1999 and 2005. Tufts Center for the Study of Drug Development analyzed study conduct
+performance data on 57 individual phase 2 and 3 protocols administered at US-based investigativesites. The results of this study indicate that the number of unique procedures and the frequency of
+procedures per protocol have increased at the annual rate of 6.5% and 8.7%, respectively, during the
+time period measured. Investigative site work burden to administer each protocol increased at aneven faster rate of 10.5% between 1999 and 2005. Additionally, during this time period, studyconduct performance—that is, cycle time and patient recruitment and retention rates—worsened;
+and the number of protocol amendments, observed serious adverse events, and length of case report
+forms increased substantially. Implications of these results for simplifying protocol designs andminimizing negative effects on study conduct performance are discussed.
+Keywords: clinical study design, clinical research protocols, protocol design, clinical trial cycle time,
+patient recruitment and retention, drug development
+INTRODUCTION
+It is widely held that protocol design plays a critical
+role in the successful administration and completion of
+clinical research studies.1,2Clinical research professio-
+nals have long noted anecdotally that protocol designnot only affects the scientiﬁc value of a clinical researchstudy but also inﬂuences many operational factors thatimpact how well the study is conducted. The keyoperating areas believed to be most impacted by poor
+protocol design include the ability of investigative site
+personnel to secure ethical approval and timely studyinitiation; the ability of the clinical investigator and
+study coordinator to follow protocol design instruc-
+tions; the ability of site personnel to screen, enroll, and
+retain study volunteers; and the ability of project
+managers to control clinical study costs.
+Several trends have been reported in the literature
+that support these perceptions and document changes
+in protocol design over time. According to Wampler
+3,
+for example, the number of procedures performed per
+protocol and per patient has been rising steadily since
+the 1990s. The mean number of procedures performed
+on each study volunteer has increased 11% annuallysince the year 2000.
+4Kahn et al5have noted that the
+rising complexity and associated costs of study
+protocols have made it more difﬁcult for investigative
+sites to complete clinical studies on time and within
+budget. A 2004 study found that more than 90% of all
+clinical trials failed to complete volunteer enrollment
+within the initial study time frame, resulting in an1Tufts Center for the Study of Drug Development, Tufts
+University School of Medicine, Tufts University, Boston, MA;
+and2Medidata Solutions, Inc. (Formerly Fast Track Systems, Inc.),
+Conshohocken, PA.†Present address: Department of Public Health and Family
+Services, Tufts University School of Medicine, Tufts University,
+Boston, MA.*Address for correspondence: Senior Research Fellow, Tufts Centerfor the Study of Drug Development, Tufts University School of
+Medicine, Tufts University, 75 Kneeland Street, Suite 1100,
+Boston, MA 02111. E-mail: kenneth.getz@tufts.eduAmerican Journal of Therapeutics 15, 450–457 (2008)
+1075-2765 /C2112008 Lippincott Williams & Wilkins
+
+average delay of 6 weeks.6Furthermore, published
+Food and Drug Administration investigator site in-spection results reveal that failure to follow protocoldesign requirements is among the most commonlycited area of Good Clinical Practice noncompliance.
+7
+Interviews of clinical research managers in bio-
+technology and pharmaceutical companies, conducted
+by the Tufts Center for the Study of Drug Development
+(Tufts CSDD), indicate that sponsor companies activelymodify and amend research protocols to addressdelays due to poor design while clinical studies areunderway—a practice that is both highly disruptiveand costly.
+8According to Tufts CSDD, biopharmaceut-
+ical companies report making an average of 3 amend-ments to phase 1 protocols and 7 amendments to phase
+2 and 3 protocols, with the cost to implement each
+amendment ranging from $250,000 to $450,000.
+Although the Tufts CSDD interviews shed some light
+on the impact of protocol design on study conduct andits economics, the ﬁndings are limited. To date, the fullextent of protocol design trends and the direct impactof protocol design on study conduct performance havenot been assessed. Similarly, changes in volunteer
+eligibility criteria and types of procedures adminis-
+tered over time have not been quantiﬁed. To addressthese issues, Tufts CSDD conducted primary and sec-ondary data analyses to understand how protocoldesigns (eg, eligibility criteria, procedure frequency,and type) have changed over time and the directimpact of these changes on clinical trial performance(eg, time lines, investigative site workload, and patient
+recruitment and retention effectiveness).
+It is well documented that the long time lines, high
+cost, and substantial risks that occur during the clinicalphase of drug development pose formidable challengesfor sponsors vying to bring new pharmaceutical andbiopharmaceutical products to market. Protocol designimprovement is a critical area of focus today for drugsponsors and clinical investigators looking to eliminate
+drug development inefﬁciencies.
+METHODOLOGY
+Measuring protocol design changes
+Retrospective data analyses were conducted on 10,038
+protocols drawn from proprietary PharmaceuticalInvestigators Cost Assessment Service (PICAS) data-
+base of Fast Track Systems, Inc. This database contains
+detailed protocol and investigator grant informationfrom over 75 pharmaceutical and biotechnologycompanies covering all therapeutic areas and geogra-phies representative of the current state of drugdevelopment activity.
+9For this analysis, protocols were selected if they had
+received institutional review board (IRB) approvalbetween 1999 and 2005. In addition to the study designinformation already captured within PICAS, TuftsCSDD coded eligibility criteria and procedural criteriafor each protocol. All coding was veriﬁed by 3 in-dependent raters, with an intercoder reliability of 90%.
+The following eligibility classiﬁcations were established
+and coded:
+1. Demographics: general characteristics of study
+participants (eg, age, race, gender, and family
+composition);
+2. Lifestyle choices not associated with the study:
+participant behaviors that are independent ofrequirements for the study (eg, smoking status,medications, sexual behaviors, and nutrition);
+3. Lifestyle choices associated with the study:
+participant behaviors that will occur or change
+as a result of study enrollment (eg, willingness to
+take medication, necessary changes in sexualbehavior, and smoking cessation during courseof trial);
+4. Pre-existing medical conditions: physical and
+psychological conditions and histories previouslydiagnosed in participants (eg, previous surgeries,family medical history, and disease history);
+5. Medical procedures associated with the study:
+procedures and tests performed during the courseof the study or as a threshold requirement forstudy participation (eg, tests for speciﬁc glucoselevels and willingness to undergo protocol-basedprocedure);
+6. Disease stage and progression: characteristics of
+diseases at various stages in their development
+(eg, tumor size, white blood cell count, and cancer
+progression);
+7. Administrative requirements and general guide-
+lines associated with study participation (eg, sign-ing of informed consent and proper transportation).
+The following protocol procedural categories were
+established and coded for this study:
+1. Laboratory tests: laboratory tests, panels, and
+cultures for vitamin levels, infectious and bacterialagents, and toxins;
+2. Blood work: laboratory tests and assays examin-
+ing hematology and coagulation, such as blood
+counts, bone marrow compositions, and pro-thrombin/thromboplastin times;
+3. Questionnaires and subjective assessments: self-
+administered or physician-administered question-naires, rating scales, and assessments for psycho-logical and medical conditions;
+American Journal of Therapeutics (2008) 15(5)Impact of Protocol Design on Clinical Trial Performance 451
+
+4. Ofﬁce consultations and examinations: full eval-
+uation and management procedures for bothmedical and psychological conditions, both newpatient and follow-up examinations;
+5. X-rays and imaging: preventative and diagnostic
+procedures, including ultrasounds, CAT scans,x-rays, and magnetic resonance imagings of
+internal organs;
+6. Heart activity assessments: electrocardiograms
+(EKGs), stress tests, and electrocardiographicmonitoring for both diagnostic and preventativepurposes.
+Quantifying impact on study conduct performance
+To assess the impact of design change on the work
+burden of investigative sites to administer protocols,Tufts CSDD adapted the relative value unit (RVU)methodology pioneered by Medicare. Created in 1992,Medicare’s RVU scale was established to determinepayment levels for physicians’ relative costs instead ofprevailing charges for medical services. The RVUs arebased on the estimated value of physician time and
+expertise to administer medical procedures.
+10
+Using Medicare’s methodology, Tufts CSDD created
+Work Effort Units (WEUs) for clinical trial proceduresconducted to support each protocol. Clinical trialprocedures that were comparable to common medicalprocedures were assigned Medicare’s RVU values. Forthose procedures that were not already assigneda Medicare RVU, a panel of 10 physicians at the Tufts
+University School of Medicine was convened to
+estimate the time spent per procedure. The panelwas also asked to pair clinical trial procedures withsimilar procedures already assigned RVU values byMedicare. WEUs values were established for eachprotocol procedure based on the panel’s averageassessed value or the average comparable RVU valueselected. Tufts CSDD assigned a WEU to each pro-
+cedure for all 10,038 protocols in the Fast Track Systems
+database. ‘‘Investigative Site Work Burden’’ is theproduct of WEUs per procedure and the frequency ofprocedures that were conducted over the course ofthe protocol.
+In addition, questionnaires were administered to
+a randomly selected, convenience sample of seniorstaffers at pharmaceutical and biotechnology compa-
+nies chosen from Fast Track’s proprietary database.
+Companies were eligible for selection if they hadprovided protocol information on studies conductedduring the time period 1999–2006 and if institutionalmemory of each protocol was still available. To controlfor the wide variability in the duration of clinical trialstargeting acute versus chronic illnesses and for thecycle time variations between clinical trials conducted
+in developing countries versus those conducted in theUnited States and Western Europe, Tufts CSDD limitedits analysis to only phase 2 and 3 protocols investigatingchronic illnesses and conducted in the United States.
+The questionnaire was designed to assess various
+aspects of study conduct performance (ie, cycle time,
+patient enrollment rates, IRB review rates, average
+number of amendments per protocol, average length ofcase report forms, and the average number of queriesper form). In all, 14 biopharmaceutical companiescompleted and submitted questionnaires. Of these, 5were able to provide complete and detailed question-naire responses on 57 unique protocols: 28 protocolswere conducted during 1999–2002 and 29 were
+conducted during 2003–2006.
+Using the 57 unique protocols provided by partici-
+pating companies, Tufts CSDD coded the inclusion andexclusion criteria using its 7 eligibility categories.
+RESULTS
+Measuring protocol design changes
+Unique procedures per protocolBetween 1999 and 2005, the annual growth rate in the
+number of unique procedures per protocol across alltherapeutic areas was 6.5%. Phase 4 postapprovalstudies showed the highest annual growth rate [9.1% (n= 1788)]—in unique procedures per protocol between1999 and 2005 (Table 1). The median number of unique
+procedures per protocol was highest in phase 1 studies.
+Across all therapeutic areas and phases in 2005, themedian number of unique procedures conducted perprotocol was 35.
+During 1999–2005, protocols for studies in ophthal-
+mology, pain management, and gastrointestinal in-dications saw the highest annual growth rates in themedian number of unique procedures across all phases
+(Table 2).
+Procedural frequency per protocol
+Procedural frequency measures the number of times
+that a given procedure is conducted during theduration of the study to support a given protocol.For example, if blood work is conducted 3 times duringthe course of a study, then it would receive a procedural
+frequency count of 3.
+Phase 1 clinical trials tend to have the highest overall
+level of procedural frequency. In 2005, a total of 217procedures per protocol (n = 51) were conducted inphase 1 (Table 1). Each of the 40 unique procedures,therefore, was conducted an average of 5.4 times over
+American Journal of Therapeutics (2008) 15(5)452 Getz et al
+
+the course of the trial. Unique procedures were
+conducted an average of 6.5, 4.0, and 3.1 times, forphases 2, 3, and 4 trials, respectively. Across alltherapeutic areas and phases, 158.3 procedures wereconducted in 2005—an average of 4.5 per uniqueprocedure—during the course of a clinical trial. By
+therapeutic area, studies focusing on pharmacokinetics,
+hematology, and gastrointestinal diseases had thehighest procedural frequencies.
+The annual growth rate in procedural frequency
+during 1999–2005, across all phases and therapeuticareas, was 8.7%. Annual growth in procedural fre-quency during the same period was highest for protocolsin phase 2 (12.1%) and lowest for protocols in phase 3
+(6.1%) (Table 1). By therapeutic area, gastrointestinalindications, pain management, and ophthalmology sawthe highest annual growth rates in procedural frequencyper protocol in the 1999–2005 period.
+Types of procedures per protocolFigure 1 shows the distribution of procedures con-
+ducted per protocol during 1999 and 2005. In 2005,laboratory tests and blood work were the mostcommon types of procedures conducted per protocol,accounting for 50% of all procedures per protocol forstudies across all development phases and therapeuticTable 1. Key protocol design characteristics and trends.
+All phases Phase 1 Phase 2 Phase 3 Phase 4
+Unique procedures per protocol
+Median number in 2005 35 40 35 33 32Annual growth rate (1999–2005) 6.5% 6.1% 5.8% 5.5% 9.1%
+Total procedures per protocol*
+Median number in 2005 158 217 195 132 99Annual growth rate (1999–2005) 8.7% 9.5% 12.1% 6.1% 11.0%
+Work burden per protocol†
+Median WEUs in 2005 37.1 50.6 46.5 31.9 24.2
+Annual growth rate (1999–2005) 10.5% 14.0% 12.5% 7.9% 10.8%
+*Deﬁned as the number of unique procedures multiplied by their frequency during the duration of the protocol.
+†Deﬁned as the product of WEUs per unique procedure multiplied by their frequency.
+Table 2. Protocol design characteristics and trends by therapeutic area.
+Unique procedures Total procedures* Work burden†
+Median
+number Annual
+growth (%)Median
+number Annual
+growth (%)Median WEUs Annual
+growth (%) All phases
+(2005) 1999–2005All phases
+(2005) 1999–2005All phases
+(2005) 1999–2005
+Anti-infectives (N = 801) 28 0.6 124 0.2 30 2.5
+Cardiovascular (N = 782) 31 6.7 128 14.1 19 2.5
+CNS (N = 1459) 39 5.7 122 4.8 39 4.2Dermatology (N = 224) 15 26.9 63 21.0 15 20.7
+Devices and diagnostics (N = 32) 23 9.3 33 9.4 11 3.8
+Endocrinology (N = 850) 37 8.0 128 4.8 25 5.6Gastrointestinal indications (N = 236) 40 11.3 227 30.5 45 25.1Obstetrics/gynecology (N = 536) 24 0.7 53 23.8 17 2.3
+Hematology (N = 190) 35 8.9 230 13.8 31 13.9
+Immunology (N = 752) 49 10.4 193 12.0 36 13.2Ophthalmology (N = 91) 51 36.2 181 21.2 52 11.3
+Oncology (N = 1450) 34 7.1 208 11.2 52 9.6
+Pain/anesthesia (N = 1332) 33 12.8 162 22.5 34 18.7Pharmacologics (N = 203) 49 7.4 258 11.7 51 13.7
+All therapeutic areas (N = 10,038) 35 6.5 158 8.7 37 10.5
+*Deﬁned as the number of unique procedures multiplied by their frequency during the duration of the protocol.
+†Deﬁned as the product of WEUs per unique procedure multiplied by their frequency.
+American Journal of Therapeutics (2008) 15(5)Impact of Protocol Design on Clinical Trial Performance 453
+
+areas. Questionnaires and subjective study volunteer
+assessments (eg, Quality of Life Questionnaires andPhysician’s Global Assessment Scales) were the secondmost common procedures per protocol, accounting for23.3% of the total.
+Table 3 shows change in the distribution of pro-
+cedure type per protocol by development phase during1999–2005. As a proportion of all procedure types, the
+administration of questionnaires and subjective study
+volunteer assessments showed the greatest growthacross all phases of development but most notably inphase 3 and 4 clinical studies. Laboratory tests andblood work and ofﬁce consultations and examinationssaw the largest relative declines as a proportion of allprocedures performed per protocol.
+Eligibility criteria per protocol
+Figure 2 compares protocol eligibility criteria during
+1999–2002 and 2003–2006. In the later period, protocolsaveraged a modest increase in the number of exclusion
+criteria. The average number of inclusion criteria,however, jumped nearly 3 times from the earlier period(10) to the later period (26).
+In both periods, the most common inclusion criteria
+were Medical Procedures Associated with the Study(eg, medical testing results requirements or the will-ingness on the part of the patient to undergo testingduring the clinical trial) and Pre-existing MedicalConditions. Medical Procedures Associated with theStudy accounted for 33% of procedures during 1999–2002 and 31% during 2003–2006. Pre-existing Medical
+Conditions accounted for 18% in the earlier and 23% in
+the later period. Logistics and general study require-ments were the least common inclusion criteria,accounting for 9% and 10% of all inclusion criteria inthe earlier and later time periods, respectively.
+The average number and type of exclusion criteria
+used per protocol were similar for the 2 time periods,with a few exceptions. From 1999–2002 to 2003–2006,
+FIGURE 1. Distribution of procedures per protocol (All phases 1999–2005).
+Table 3. Distribution of procedures per protocol by phase.
+Laboratory tests and
+blood work
+(%)Consultation
+and routine
+examination
+(%)Questionnaires
+and subjective
+assessments
+(%)Invasive
+procedures
+(%)Heart activity
+assessments
+(%)X-rays
+and
+imaging (%)
+Phase 1 1999 69.8 17.2 3.3 2.7 5.1 1.9
+2005 60.4 18.0 11.2 4.6 4.1 1.7
+Phase 2 1999 55.5 16.0 13.5 5.8 4.3 5.0
+2005 53.0 14.4 17.9 4.9 3.2 6.6
+Phase 3 1999 54.0 16.1 17.2 4.5 3.5 4.7
+2005 42.6 13.8 32.2 4.0 2.7 4.8
+Phase 4 1999 51.8 20.0 15.2 5.9 3.0 4.1
+2005 41.5 15.9 34.5 4.7 2.2 1.2
+American Journal of Therapeutics (2008) 15(5)454 Getz et al
+
+the proportion of exclusion criteria related to Lifestyle
+Habits and Choices Associated with the Study in-
+creased from 5% of the total to 10%. Although it
+represents a small percentage of the total, demographiccriteria also grew sharply, quadrupling from 1% of allexclusion criteria to 4%. The most common exclusioncriteria in both time periods were Pre-existing MedicalConditions, which accounted for 52% of all exclusioncriteria during 1999–2002 and 43% during 2003–2006.
+Quantifying impact on study conduct performance
+Impact on investigative site workloadIn 2005, the median investigative site work burden
+across all phases to administer all procedures requiredper protocol was 37.1 WEUs (Table 1). Ophthalmology,oncology, and pharmacokinetics protocols had thehighest investigative site work burden in 2005 (Table 2).
+During 1999–2005, investigative site work burden
+increased annually by 10.5%. The largest annual
+growth—33%—in work burden occurred between
+2003 and 2005. Annual growth in investigative sitework burden was highest in phase 1. During 1999–2005,investigative site work burden increased by 14% (n =1900) to administer phase 1 protocols. Additionally,during 1999–2005, investigative site work burdenincreased the most in gastrointestinal, pain and anes-thesia, and hematology studies. Dermatology was the
+only therapeutic area to become less burdensome over
+the 6-year time period, with a change in work burden of20.7% (n = 224).
+Impact on study conduct performance
+The design characteristics and performance results for
+57 unique protocols were aggregated into 2 cohorts and
+analyzed. Results are presented in Table 4. Group 1contained 28 protocols conducted during 1999–2002;group 2 contained 29 protocols conducted during2003–2006. Changes in design characteristics betweenprotocol cohorts were consistent with and mirrored thechanges observed in the larger database of 10,038protocols. The average number and frequency of
+unique procedures per protocol increased substantially.Investigative site work burden increased dramatically.
+A notable increase was observed in all cycle time
+metrics for protocols conducted during 2003–2006,with one exception, the time from submission of theprotocol to receipt of the IRB decision decreased from45 days during 1999–2002 to 22 days during 2003–2006.
+No differences were found in the average number of
+additional progress reports submitted to the IRB forprotocols conducted in the 1999–2002 and the 2003–2006 cohorts. An average of one additional progressreport was submitted in each time period.
+The median number of days from protocol readiness
+to ﬁrst patient/ﬁrst visit rose 12%. The median cycletime from protocol readiness to drug availability
+increased 19%. Median broad cycle time from protocol
+readiness to last patient/last visit increased 73% fromthe earlier to the later cohorts, and median elapsed timefrom protocol readiness to data lock increased 70%.Finally, the average overall duration of clinical trialsincreased 74%.
+The average number of protocol amendments in-
+creased modestly between 1999 and 2006: from 2Table 4. Impact on study conduct performance.
+1999–2002 2003–2006
+Per protocol
+Unique procedures (median) 33.5 44Total procedures (median)* 89.8 150.5
+Work burden (median)† 21.7 37.8
+Select study cycle times metrics
+Days from protocol ready
+to ﬁrst patient/ﬁrst visit
+(median)115 129
+Days from protocol ready
+to last patient/last visit
+(median)413 714
+Days from protocol ready
+to data lock (median) 460 780
+Select patient recruitment and
+retention metricsPercent screened who were
+randomized 75% 59%
+Percent randomized who
+completed study 69% 48%
+Other metrics
+Case report form pages
+(median) 55 180
+*Deﬁned as the number of unique procedures multiplied by their
+frequency during the duration of the protocol.†Deﬁned as the product of WEUs per unique proceduremultiplied by their frequency.
+FIGURE 2. Protocol eligibility criteria.
+American Journal of Therapeutics (2008) 15(5)Impact of Protocol Design on Clinical Trial Performance 455
+
+during 1999–2002 to 3 during 2003–2006. However, the
+average length of the case report form increased 227%,from 55 pages per protocol to 180 pages per protocol,for the 2 cohorts.
+Measures of patient enrollment performance
+changed notably across the 2 protocol cohorts. Enroll-ment rates for volunteers who met the rising number of
+protocol eligibility criteria dropped from 75% during
+1999–2002 to 59% during 2003–2006. Retention rates forstudy volunteers dropped from 69% to 48% for the 2comparison time periods.
+Patient enrollment cycle times increased for proto-
+cols conducted during the later time period. Mediancycle time from ﬁrst patient/ﬁrst visit to last patient/ﬁrst visit increased 53%, and median cycle time from
+ﬁrst patient/ﬁrst visit to last patient/last visit in-
+creased 65%.
+Finally, the median number of adverse events
+reported in the 2 cohorts jumped dramatically, from667 in the 1999–2003 cohort to 1481 in the 2003–2006cohort, an increase of 122%. There was also a 12-foldincrease in the median number of serious adverseevents reported (2 per protocol during 1999–2002 vs 25
+per protocol during 2003–2006). These sharp increases
+may be due, in large part, to changes in the way thatadverse events are deﬁned and counted.
+DISCUSSION
+The results presented in this study clearly illustrate thatthe number of unique procedures and the procedural
+frequency per protocol have increased notably during
+the past 7 years, with wide variation across therapeuticareas. Whereas the number of exclusion criteria has notchanged since 1999, the average number of inclusioncriteria per protocol has increased substantially.Moreover, protocols have increasingly required theuse of questionnaires and subjective study volunteerassessments and heart assessments, x-ray and imaging
+procedures, and invasive procedures. Procedural fre-
+quency per protocol is substantially higher in phases 1and 2. This ﬁnding is consistent with recent TuftsCSDD studies that have documented growing sponsorreliance on early-phase clinical studies to determinewhether to commit to larger and more costly phase 3studies.
+11
+Investigative site work burden to administer each
+protocol has increased notably during the past 7 years
+and these increases vary widely by therapeutic area.The results further suggest that it is the combinationof changes in the number, frequency, and type ofunique procedures per protocol that is driving higherlevels of investigative site work burden. Growth ininvestigative site work burden is, therefore, a function
+of both growing complexity of protocol design andrising administrative demands to execute theseprocedures.
+Study conduct performance seems to have been
+adversely impacted by changes in protocol design dur-ing the past 7 years. When comparing study conduct
+performance for those protocols conducted in 1999–
+2002 with those in 2003–2006, the latter protocols hadlonger cycle times to enroll patients and collect studydata, poorer patient randomization and completionrates, higher numbers of protocol amendments andobserved adverse and serious adverse events, and morelengthy informed consent and case report forms.
+Numerous factors may be behind the growing
+number of unique procedures and inclusion criteria
+in the more recent protocols. For example, duringthe past 10 years, a large and growing proportion ofinvestigational treatments in drug development pro-grams are targeting chronic illnesses that are moredifﬁcult to treat and require longer and more elaboratemethods to measure safety and efﬁcacy end points.Protocols for the study of investigational biologics
+typically require longer cycle times, more stringent
+eligibility requirements, and more elaborate methods—including diagnostic assessments of biomarkers toevaluate safety and efﬁcacy. As the composition of thedrug development pipeline continues to focus on morechronic and complex illnesses and biologics-basedtherapies, protocol designs are expected to becomeeven more demanding and challenging.
+A number of clinical research professionals within
+pharmaceutical and biotechnology companies havesuggested that regulatory agency requirements mayalso be major drivers of protocol design complexity.Pharmaceutical and biotechnology companies designmore ambitious protocols to gather additional clinicaldata that they anticipate will be required by theregulatory agency. Some have argued, however, that
+not all of the data required by the protocol are
+scientiﬁcally necessary. Eligibility criteria and thenumber and types of procedures per protocol arerising steadily, as evidenced by the results of this study.Sponsor companies may need to do a better job ofchallenging whether these design elements are criticalto the desired project end points.
+In the current drug development environment,
+regulatory agencies are particularly sensitive to spon-
+sor companies gathering additional safety data.As such, new protocols can be expected to contain agrowing number of procedures designed to satisfyagency sensitivities. This suggests that phase 1 and 2studies may continue to see more rapid relative growthin the number and frequency of procedures.
+American Journal of Therapeutics (2008) 15(5)456 Getz et al
+
+It is important to note that the sample size in this
+initial analysis of protocol design impact on studyconduct performance is relatively small (n = 57).As such, these results should be interpreted with somecaution. The current analysis is based on a conveniencesample of highly difﬁcult to obtain metrics. Studyconduct metrics gathered per protocol are typically not
+routinely compiled by pharmaceutical and biotechnol-
+ogy companies or captured in an accessible manner.If feasible, a larger sample of protocols will be used infuture studies. In addition, subsequent analyses areplanned to evaluate protocol design approaches thatmost contribute to improvements in study conductperformance and to understand the impact of designchanges on a global basis.
+Although causality has not been determined, the
+results do suggest that as protocol designs havebecome more ambitious and demanding, study con-duct has become less efﬁcient and effective. Theseresults challenge the notion that improvements instudy conduct performance can be achieved throughaggressive investigative site management. Opportuni-ties to achieve higher levels of study conduct
+performance also lie with improvements in protocol
+design.
+Given intense pressure on sponsor companies to
+accelerate development cycle times and lower drugdevelopment costs, the results of this study speak tothe necessity of simplifying protocol designs to easeinvestigative site work burden and, ultimately, toimprove study conduct efﬁciency. Protocols in thera-
+peutic areas that have seen the highest growth in the
+number of procedures, eligibility requirements, andwork burden may be good initial candidates fordetermining whether simpliﬁcation is practical and,indeed, possible.
+The results also highlight the importance of up front
+planning to anticipate how protocol design variationswill impact investigative site work burden. Protocols
+for studies in speciﬁc therapeutic areas, such as
+gastrointestinal indications and pain management,have become particularly demanding. These may begood areas initially to incorporate additional planningactivity.
+Investigative sites have long held that sponsors are
+demanding more from them for less relative compen-sation, resulting in lower study staff motivation to
+conduct clinical trials. This claim may be legitimate.
+The results of this study show that investigative sitework burden to administer protocols has been in-creasing by 10.5% annually since 1999. During thissame period, compensation per procedure to investi-gative sites has been declining 3% annually.
+12A review
+of clinical study grant amounts per protocol and thework burden required to administer that protocol may
+assist sponsor companies in determining more moti-vating study compensation levels.
+The results of this study provide compelling insights
+into the role that protocol design change plays in studyconduct performance and work burden. In the currentdrug development environment, improved protocol
+designs may hold the key to achieving higher levels of
+efﬁciency and effectiveness for the research-basedpharmaceutical and biopharmaceutical industry.
+ACKNOWLEDGMENTS
+This study was funded in part by a grant from FastTrack Systems, Inc.
+REFERENCES
+1. Guarino R. Clinical research protocols. In: Guarino R, ed.
+New Drug Approval Process . New York: Marcel Dekker Inc;
+2004:257–258.
+2. Brandt C, Argraves S, Money R, et al. Informatics tools to
+improve clinical research study implementation. Contemp
+Clin Trials . 2006;27:112–122.
+3. Wampler S. Tackling protocol complexity. Good Clin Pract
+J. 2000;7(2):6–8.
+4. Fast Track Systems. Index of Clinical Study Complexity
+by Year, Phases I-IV. In: Mathieu M, ed. Parexel’s
+Pharmaceutical R&D Statistical Sourcebook, 2007/2008 .
+Waltham, MA: Parexel International & Corp; 2007:116.
+5. Kahn M, Broverman C, Wu N, et al. A model-based
+method for improving protocol complexity. Appl Clin
+Trials . 2002;11:40–50.
+6. Getz K. Benchmarking patient recruitment and retention
+in clinical trials. In: Anderson D, ed. ‘‘ A Guide to Patient
+Recruitment and Retention .’’ Boston, MA: CenterWatch;
+2004:25–28.
+7. Food and Drug Administration. FDA 2006 report on
+investigative site inspection results. Available at: www.
+fda.gov/. Accessed December 11, 2007.
+8. Getz K. Analysis of the protocol design process. Paper
+presented at: Clinical Research Roundtable Symposia;
+April 18, 2007; Boston, MA.
+9. Seguine E, Berndt E. Hidden trends in the globalization of
+clinical trials. Paper presented at: DIA Annual Confer-
+ence; June 26, 2007; Atlanta, GA.
+10. Maxwell S, Zuckerman S, Berenson R. Use of physician’s
+services under Medicare’s resource-based payments. N
+Engl J Med . 2007;356:1853–1861.
+11. DiMasi JA, Grabowski HG. The cost of biopharmaceutical
+R&D: is biotech different? Manage Decis Econ . 2007;28:
+469–479.
+12. Kaitin KI, ed. Number of Active Investigators in FDA-Regulated
+Clinical Trials Drops . Vol 7. Number 3. Boston: Tufts Center
+for the Study of Drug Development Impact Report; 2005.
+American Journal of Therapeutics (2008) 15(5)Impact of Protocol Design on Clinical Trial Performance 457
+

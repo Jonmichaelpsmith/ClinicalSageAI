@@ -1,0 +1,72 @@
+Annex 4: Maintenance Procedure for Q3C, Q3D, and M7  
+This Maintenance Procedure applies to revision of the Q3C Guideline for Residual Solvents, Q3D 
+Guideline for Elemental Impurities, and M7 Addendum for the Assessment and Control of DNA 
+Reactive (mutagenic) Impurities in Pharmaceuticals to Limit Potential C arcinogenic Risk. The 
+procedure explains the process for revising the existing Guidelines as new solvents, metals or 
+impurities are accepted or as new data becomes available. These changes include the following 
+revisions for each Guideline:  
+• Q3C – Incorpor ation of Permitted Daily Exposure (PDE) for new solvents and revising the PDE 
+for solvents already listed in Q3C as new toxicological data for solvents becomes available.  
+• Q3D - Incorporation of Permitted Daily Exposure (PDE) for new elemental impurities/ro utes 
+of administration and revising the PDE for elemental impurities already listed in Q3D as new 
+toxicological data for elemental impurities becomes available.  
+• M7 Addendum – Incorporation of acceptable limits (Acceptable Intakes (AIs) or PDEs) for new 
+DNA reactive (mutagenic) impurities and revising acceptable limits for impurities already 
+listed in the Addendum as new data becomes available.  
+Data and/or proposals pertaining to the revision of the Q3C, Q3D, or M7 Guidelines with supporting 
+information can be submitted directly to the ICH Secretariat from either an ICH Member or Observer 
+or other interested ICH stakeholders.   
+Information provided within a proposal should be based on significant toxicity data from studies such 
+as repeat -dose studies, reprodu ctive toxicity studies, genotoxicity studies, and carcinogenicity studies 
+and/or other relevant studies. Single -dose toxicity data alone are not sufficient. The toxicity data 
+should be of sufficient quality to calculate a PDE or AI.  Genotoxicity and carci nogenicity data are of 
+primary importance for revisions to the M7 Guideline.  
+An Expert Working Group (EWG) will evaluate any proposals received. The membership of an EWG 
+will generally not change however, the same procedure applies for establishment of an  EWG/IWG as 
+outlined in section 1. 4.1 – EWG/IWG Membership  of this SOP. As appropriate, an ICH Observer 
+may submit a request to the Assembly to nominate an Observer expert to the EWG.  
+The Rapporteur should be a Fou nding Regulatory Member and will serve a two -year term.  The role of 
+the Rapporteur for each working group will rotate every two years to a new Founding Regulatory 
+Member.  The ICH Assembly will be notified following each rotation of the Rapporteur.  Propo sals will 
+be evaluated once every 2 years following rotation of the Rapporteur. The ICH Secretariat will share 
+any proposals received with the new Rapporteur and ICH Coordinators. The Rapporteur will facilitate 
+the review of any proposals received by the E WG and the EWG will make a recommendation on 
+whether the proposal should be supported by the Management Committee (MC).  
+If a proposal for maintenance is supported by an EWG, the EWG should submit a revised work plan to 
+the MC to outline this work. The MC will then provide a recommendation to the Assembly for approval 
+on whether the EWG should be tasked with making the revision.  
+
+A revision will be considered only on presentation of new data or previously un -recognised toxicity 
+data sufficient to result in a significant change, or because of convincing evidence that the existing 
+data used to calculate a PDE are invalid. Minor changes in a PDE will not be considered. The Regulatory 
+Chair (or in the absence of a Regulatory Chair, the Rapporteur) with the conse nsus of the EWG 
+members, will assign data reviews to the EWG and request subsequent recommendations.  
+The Rapporteur will ordinarily rely on correspondence or teleconferencing to avoid unnecessary 
+travel. Based on the discussion, with requests for further information to the proposing group and/or 
+individual as appropriate, the Rapporteur will prepare an assessment report based on the EWG’s 
+approval with a recommendation to accept, with or without modifications, or reject any proposed 
+revisions.   
+After endo rsement by the Assembly, either at the next formal meeting or by electronic endorsement, 
+the recommendation of the EWG will be published in each region for public comment ( Step 3 of the 
+ICH process). In addition, the proposal will be provided to each pharm acopoeia for their publication.  
+To ensure clarity on the matter for public comment, only a document listing any changes to the core 
+guideline and/or any new addendums (e.g., with new PDEs) should be published.   
+After closure of the public comment period, t he Regulatory Chair (or in the absence of a Regulatory 
+Chair, the Rapporteur) may convene a meeting of the EWG or will rely on correspondence or 
+teleconferencing to consider the comments and finalise the proposal for the revised Guideline. The 
+final recomm endation for the Guideline and implementation is then forwarded to the Assembly for 
+adoption in consultation with the MC. Implementation will follow regional practices. With approval of 
+the ICH Assembly, the change will be provided to the pharmacopoeias at  regional/national level for 
+publication.  
+When a new or revised PDE or AI is recommended by the EWG, approval by the ICH MC is required. 
+Once approval occurs, the information should be disseminated as quickly as possible to all ICH 
+participants and other members of the chemical and pharmaceutical communities. It is recommended 
+that the following actions should be taken by the MC to ensure rapid transmission of the new 
+information:  
+• Publish relevant information on the ICH website;  
+• Request publication of re visions by the pharmacopoeias of the ICH regions in their Forums or 
+websites;  
+• Request that each member publish the new or revised PDE or AI information on its respective 
+websites.  
+ 
+

@@ -1,0 +1,1582 @@
+ 
+ 
+ 
+ 
+ 
+ 
+INTERNATIONAL  COUNCIL  FOR  HARMONISATION  OF TECHNICAL  
+REQUIREMENTS  FOR  PHARMACEUTICALS  FOR  HUMAN  USE  
+ 
+ 
+ICH  HARMONISED  GUIDELINE  
+ 
+ 
+VALIDATION  OF ANALYTICAL  PROCEDURES   
+Q2(R2)  
+ 
+Final  Version  
+Adopted  on 1 November  2023  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+This Guideline  has been  developed  by the appropriate  ICH Expert  Working  Group  and 
+has been  subject  to consultation  by the regulatory  parties,  in accordance  with the ICH 
+Process.  At Step 4 of the Process  the final draft  is recommended  for adoption  to the 
+regulatory  bodies  of ICH regions.   
+
+ 
+  Q2(R2)  
+Document  History  
+ 
+Code  History  Date  
+Q2 Approval  by the Steering  Committee  under  Step 2 
+and release  for public  consultation.   26 October  1993  
+Q2A  Approval  by the Steering  Committee  under  Step 4 
+and recommendation  for adoption  to the three  ICH 
+regulatory  bodies.   27 October  1994  
+Q2B  Approval  by the Steering  Committee  under  Step 2 
+and release  for public  consultation.  29 November  1995  
+Q2B  Approval  by the Steering  Committee  under  Step 4 
+and recommendation  for adoption  to the three  ICH 
+regulatory  bodies.  6 November  1996  
+Q2(R1)  The parent  guideline  is now renamed  Q2(R1)  as the 
+guideline  Q2B  on methodology  has been  
+incorporated  to the parent  guideline.   The new title 
+is “Validation  of Analytical  Procedures:  Text and 
+Methodology”.  November  2005  
+Q2(R2)  Complete  revision  of guideline  to include  more  
+recent  application  of analytical  procedures  and to 
+align  content  with Q14. 
+Endorsement  by the Members  of the ICH Assembly  
+under  Step 2 and release  for public  consultation .  24 March  2022  
+Q2(R2)  Adoption  by the Regulatory  Members  of the ICH 
+Assembly  under  Step 4. 1 November  2023  
+Q2(R2)  Error  Correction  to Table  5: Dissolution  with HPLC  
+as product  performance  test for an immediate  
+release  dosage  form  Reportable  Range  Linearity  
+formulae  on page  25; Correction  to Tables  6-11 on 
+pages  26-32. 30 November  2023  
+ 
+ 
+ 
+ 
+Legal notice: This document is protected by copyright and may, with the exception of the ICH 
+logo, be used, reproduced, incorporated into other works, adapted, modified, translated or 
+distributed under a public license provided that ICH's copyright in the document is ac knowledged 
+at all times.  In case of any adaption, modification or translation of the document, reasonable 
+steps must be taken to clearly label, demarcate or otherwise identify that changes were made to 
+or based on the original document.  Any impression th at the adaption, modification or translation 
+of the original document is endorsed or sponsored by the ICH must be avoided.  
+The document is provided "as is" without warranty of any kind.  In no event shall the ICH or the 
+authors of the original document be liable for any claim, damages or other liability arising from 
+the use of the document.  
+The above -mentioned permissions do not apply to content supplied by third parties.  Therefore, 
+for documents where the copyright vests in a third party, permission for r eproduction must be 
+obtained from this copyright holder.  
+
+ 
+i ICH  HARMONISED GUIDELINE  
+VALIDATION  OF ANALYTICAL  PROCEDURES   
+Q2(R2)   
+ICH  Consensus  Guideline  
+ 
+ 
+TABLE OF CONTENTS  
+1 INTRODUCTION  ................................ ................................ ................................ ..................  1 
+1.1 Objective  ................................ ................................ ................................ ................................ .. 1 
+1.2 Scope  ................................ ................................ ................................ ................................ ........  1 
+2 GENERAL  CONSIDERATIONS  FOR  ANALYTICAL  PROCEDURE  VALIDATION . 1 
+2.1 Analytical  Procedure  Validation  Study  ................................ ................................ ....................  2 
+2.2 Validation  During  the Lifecycle  of an Analytical  Procedure  ................................ ...................  4 
+2.3 Reportable  Range  ................................ ................................ ................................ .....................  4 
+2.4 Demonstration  of Stability -Indicating  Properties  ................................ ................................ .... 5 
+2.5 Considerations  for Multivariate  Analytical  Procedures  ................................ ...........................  5 
+3 VALIDATION  TESTS,  METHODOLOGY  AND  EVALUATION  ................................ .... 7 
+3.1 Specificity/Selectivity  ................................ ................................ ................................ ..............  7 
+3.1.1  General  Considerations  ................................ ................................ ...............................  7 
+3.1.1.1  Absence  of Interference  ................................ ................................ ..........................  7 
+3.1.1.2  Orthogonal  Procedure  Comparison  ................................ ................................ .........  7 
+3.1.1.3  Technology  Inherent  Justification  ................................ ................................ ...........  7 
+3.1.2  Recommended  Data  ................................ ................................ ................................ ..... 7 
+3.1.2.1  Identification  ................................ ................................ ................................ ...........  7 
+3.1.2.2  Assay,  Purity  and Impurity  Test(s)  ................................ ................................ ..........  8 
+3.2 Range  ................................ ................................ ................................ ................................ ....... 8 
+3.2.1  General  Considerations  ................................ ................................ ...............................  8 
+3.2.2  Response  ................................ ................................ ................................ .......................  9 
+3.2.2.1  Linear  Response  ................................ ................................ ................................ ...... 9 
+3.2.2.2  Non-linear  Response  ................................ ................................ ...............................  9 
+3.2.2.3  Multivariate  Calibration  ................................ ................................ ........................  10 
+3.2.3  Validation  of Lower  Range  Limits  ................................ ................................ ..............  10 
+3.2.3.1  Based  on Visual  Evaluation  ................................ ................................ ..................  10 
+3.2.3.2  Based  on Signal -to-Noise  ................................ ................................ ......................  10 
+3.2.3.3  Based  on the Standard  Deviation  of a Linear  Response  and a Slope  ....................  10 
+3.2.3.4  Based  on Accuracy  and Precision  at Lower  Range  Limits  ................................ ... 11 
+3.2.3.5  Recommended  Data ................................ ................................ ..............................  11 
+
+ICH Q2(R2)  Guideline  
+ 
+ii 
+ 3.3 Accuracy  and Precision  ................................ ................................ ................................ ........... 11 
+3.3.1  Accuracy  ................................ ................................ ................................ ...................... 11 
+3.3.1.1  Reference  Material  Comparison  ................................ ................................ ...........  12 
+3.3.1.2  Spiking  Study  ................................ ................................ ................................ ........  12 
+3.3.1.3  Orthogonal  Procedure  Comparison  ................................ ................................ ....... 12 
+3.3.1.4  Recommended  Data ................................ ................................ ..............................  12 
+3.3.2  Precision  ................................ ................................ ................................ ....................  12 
+3.3.2.1  Repeatability  ................................ ................................ ................................ .........  13 
+3.3.2.2  Intermediate  Precision  ................................ ................................ ...........................  13 
+3.3.2.3  Reproducibility ................................ ................................ ................................ ...... 13 
+3.3.2.4  Recommended  Data ................................ ................................ ..............................  13 
+3.3.3  Combined  Approaches  for Accuracy  and Precision  ................................ ...................  13 
+3.3.3.1  Recommended  Data ................................ ................................ ..............................  13 
+3.4 Robustness  ................................ ................................ ................................ .............................  14 
+4 GLOSSARY  ................................ ................................ ................................ ..........................  14 
+5 REFERENCES  ................................ ................................ ................................ .....................  18 
+6 ANNEX  1: SELECTION  OF VALIDATION  TESTS  ................................ .......................  19 
+7 ANNEX  2: ILLUSTRATIVE  EXAMPLES  FOR  ANALYTICAL  TECHNIQUES  ....... 20 
+ 
+ 
+
+ICH Q2(R2)  Guideline  
+ 
+1 1 INTRODUCTION  
+1.1 Objective  
+This guideline  presents  elements  for consideration  during  the validation  of analytical  
+procedures  included  as part of registration  applications.  Analytical  procedure  validation  forms  
+a part of the analytical  procedure  lifecycle,  as described  within  ICH Q14 Analytical  Procedure  
+Development . ICH Q2(R2)  provides  guidance  on selection  and evaluation  of the various  
+validation  tests for analytical  procedure s. This guideline  includes  a collecti on of terms  and their 
+definitions , which  are meant  to bridge  the differences  that often  exist  between  various  
+compendia  and documents  of the ICH member  regulatory  authorities . 
+The objective  of validation  of an analytical  procedure  is to demonstrate  that the analytical  
+procedure  is fit for the intended  purpose.  Further  general  guidance  is provided  on validation  
+studies  for analytical  procedures.   
+1.2 Scope  
+This guideline  applies  to analytical  procedures  used for release  and stability  testing  of 
+commercial  drug substances  and products , hereafter  referred  to as ‘products ’. The guideline  
+can also be applied  to other  analytical  procedures  used as part of the control  strategy  (ICH Q10 
+Pharmaceutical Quality System ) following  a risk-based  approach.  The scientific  principles  
+described  in this guideline  can be applied  in a phase -appropriate  manner  to analytical  
+procedures  used during  clinical  development.   
+The guideline  is directed  to common  uses of analytical  procedure s, such as assay,  potency,  
+purity,  impurity  (quantitative  or limit  test),  identity  or other  quantitative  or qualitative  
+measurements.   
+2 GENERAL CONSIDERATIONS FOR ANALYTICAL PROCEDURE 
+V ALIDATION  
+This guideline  indicates  the data which  should  be presented  in a regulatory  submission.  
+Analytical  procedure  validation  data should  be submitted  in the corresponding  sections  of the 
+application  (ICH M4Q  The Common  Technical  Document  For The Registration  Of 
+Pharmaceuticals  For Human  Use). Relevant  data collected  during validation  (and any 
+methodology  used for calculating  validation  results)  should  be submitted  to demonstrate  the 
+suitability  of the procedure  for the intended  purpose . Suitable  data derived  from  development  
+studies  (see ICH Q14)  can be used as part of validation  data.  When  an established  platform  
+analytical  procedure  is used for a new purpose,  validation  testing  can be abbreviated,  if 
+scientifically  justified.  
+Approaches  other  than those  set forth  in this guideline  may be applicable  and acceptable  with 
+appropriate  science -based  justification.  The applicant  is responsible  for designing  the 
+validation  studies  and protocol  most  suitable  for their product.   
+Reference  materials , or other  suitably  characterised  materials , with documented  identity,  purity,  
+or any other  characteristics  as necessary,  should  be used in the validation  study.   
+In practice,  the experimental  work  can be designed  so that the appropriate  performance  
+characteristics  are considered  simultaneously  to provide  sound,  overall  knowledge  of the 
+performance  of the analytical  procedure,  for instance:  specificity/selectivity , accuracy,  and 
+precision  over the reportable  range .  
+
+ICH Q2(R2)  Guideline  
+ 
+2 As described  in ICH Q14,  the system  suitability  test (SST)  is an integral  part of analytical  
+procedures  and is generally  established  during  development  as a regular  check  of performance.  
+Robustness  is typically  evaluated  as part of development  prior  to the execution  of the analytical  
+procedure  validation  study  (ICH  Q14).  Finally,  the analytical  procedure  validation  strategy  is 
+developed  based  on knowledge  of the analytical  procedure  and the intended  purpose . This 
+includ es the required  analytical  procedure  performance  to ensure  the quality  of the measured  
+result  (ICH Q14). If successfully  executed , the analytical  procedure  validation  strategy  will 
+demonstrate  that the analytical  procedure  is fit for the intended  purpos e.  
+2.1 Analytical Procedure Validation Study  
+A validation  study  is designed  to provide  sufficient  evidence  that the analytical  procedure  meets  
+its objectives.  These  objectives  are described  with a suitable  set of performance  characteristics  
+and related  performance  criteria , which  can vary depending  on the intended  purpose  of the 
+analytical  procedure  and the specific  technology  selected.  Section  3 “V ALIDATION  TESTS,  
+METHODOLOGY  AND  EV ALUATION”  summarises  the typical  methodologies  and 
+validation  tests that can be used (see also Figure  2 in Annex  1 on selection  of validation  tests). 
+Specific  non-binding  examples  for common  techniques  are given  in Annex  2.  Table  1 (below)  
+provides  the measured  quality  attributes,  typical  performance  characteristics  and related  
+validation  tests, which  are further  illustrat ed in Annex  1. 
+The validation  study  should  be documented.  Prior  to the validation  study,  a validation  protocol  
+should  be generated.  The protocol  should  contain  information  about  the intended  purpose  of 
+the analytical  procedure,  the performance  characterist ics to be validated  and the associated  
+criteria.  In cases  where  prior  knowledge  is used (e.g., from  development  or from  previous  
+studies),  appropriate  justification  should  be provided.  The results  of the validation  study  should  
+be summarised  in a validation  report.  
+The experimental  design  of the validation  study  should  reflect  the number  of replica tes used in 
+routine  analysis  to generate  a reportable  result . If justified,  it may be acceptable  to perform  
+some  validation  tests using  a different  number  of replicates  or to adjust  the number  of replicates  
+in the analytical  procedure  based  on data generat ed during  validation.  
+Figure  1 shows  the inter-relationship  between  ICH Q2 and ICH Q14,  and how knowledge  
+generated  during  analytical  procedure  development  as described  in ICH Q14 aids the design  of 
+a validation  study.  
+  
+
+ICH Q2(R2)  Guideline  
+ 
+3 Table 1:  Typical performance chara cteristics and related validation tests  for measured quality 
+attributes  
+   Measured  Quality   
+Attribute  
+ 
+ 
+Analytical  
+Procedure   
+Performance  
+Characteristics  to be 
+Demonstrated  (2) IDENTITY  IMPURITY  (PURITY ) 
+Other  quantitative  
+measurements  (1) ASSAY  
+Content  or potency  
+ 
+Other  quantitative  
+measurements  (1) Quantitative  
+Test Limit  Test 
+Specificity  (3) 
+ Specificity  Test 
+  
++  
++  
++  
++ 
+Range      
+ Response  
+(Calibration  Model ) 
+ - + - + 
+ Lower  Range  Limit  
+  - QL† DL - 
+Accuracy  (4) 
+ Accuracy  Test 
+  
+-  
++  
+-  
++ 
+Precision  (4)  
+ Repeatability  Test 
+ 
+ Intermediate  
+Precision  Test  
+- 
+ 
+-  
++ 
+ 
++ (5)  
+- 
+ 
+-  
++ 
+ 
++ (5) 
+- signifies  that this test is not normally  conducted  
++ signifies  that this test is normally  conducted  
+† in some  complex  cases  DL may also be evaluated  
+QL, DL: quantitation  limit , detection  limit 
+(1) other  quantitative  measurements  can follow  the scheme  for impurity,  if the range  limit  is close  to the 
+DL/QL ; other quantitative  measurements  can follow  the scheme  for assay  (content  or potency),  if the 
+range  limit  is not close  to the DL/QL   
+(2) some  performance  characteristics  can be substituted  with technology -inherent  justification  in the case 
+of certain  analytical  procedures  for physicochemical  properties  
+(3) lack of specificity  of one analytical  procedure  should be compensated  by one or more  other  supporting  
+analytical  procedures , unless  appropriately  justified   
+(4) alternatively,  a combined  approach  can be used to evaluate  accuracy  and precision   
+(5) where  reproducibility  has been  performed  and intermediate  precision  can be derived  from  the 
+reproducibility  data set, an independent  study  for intermediate  precision  is not required    
+
+ICH Q2(R2)  Guideline  
+ 
+4 Figure  1: Validation  study  design  and evaluation  
+ 
+2.2 Validation During the Lifecycle of an Analytical Procedure  
+Changes  may be required  during  the lifecycle  of a validated  analytical  procedure.  In such cases,  
+partial  or full revalidation  may be required.  Science  and risk-based  principles  can be used to 
+justify  whether  or not a given  performance  characteristic  needs  revalidation.  The extent  of 
+revalidation  depends  on the performance  characteristics  impacted  by the change.  
+Transfer  of a validated  analytical  procedure  should  be considered  in the context  of analytical  
+lifecycle  changes  in line with ICH Q14. When transferring  analytical  procedures  to a different  
+laboratory,  a partial or full revalidation  of the analytical  procedure  performance  characteristics  
+and/or  comparative  analysis  of representative  samples  should  be performed.  Justification  for 
+not performing  additional  transfer  experiments  should  be provided  if appropriate.   
+Co-validation  can be used to demonstrate  that the analytical  procedure  meets  predefined  
+performance  criteria  by using  data generated  at multiple  sites and could  also satisfy  the 
+requirements  of analytical  procedure  transfer  at the participating  sites.  
+2.3 Reportable Range  
+The required  reportable  range  is typically  derived  from  the specification  and depends  on the 
+intended  use of the procedure.  The reportable  range  is confirmed  by demonstrating  that the 
+analytical  procedure  provides  results  with acceptable  response, accuracy  and precision.  The 
+reportable  range  should  be inclusive  of the upper  and lower  specification  or reporting  limits,  
+as applicable.   
+Table  2 exemplifies  recommended  reportable  ranges  for common  uses of analytical  procedures;  
+other  ranges  may be acceptable  if justified.  In some  cases,  e.g., at low amounts,  wider  upper  
+ranges  may be more  practical.  
+
+
+ICH Q2(R2)  Guideline  
+ 
+5 2.4 Demonstration of Stability -Indicating Properties  
+A validated  quantitative  analytical  procedure  that can detect  changes  in relevant  quality  
+attributes  of a product  during  storage  is considered  to be stability -indicating.  To demonstrate  
+specificity/selectivity  of a stability -indicating  test, samples  containing  relevant  degradation  
+products  should  be included  in the study.  These  can include:  samples  spiked  with target  analytes  
+and known  interferences;  samples  that have  been  exposed  to various  physical  and chemical  
+stress  conditions;  and actual  product  samples  that are either  aged  or have  been  stored  under  
+stresse d conditions.    
+2.5 Considerations for Multivariate Analytical Procedures  
+For multivariate  analytical  procedures,  results  are determined  through  a multivariate  
+calibration  model  utilising  more  than one input  variable  (e.g., a spectrum  with many  
+wavelength  variables).   The multivariate  calibration  model  relates  the input  data to a value  for 
+the property  of interest  (i.e., the model  output).   
+Successful  validation  of a multivariate  procedure  should  consider  calibration,  internal  testing  
+and validation.  
+Typically,  development  and validation  are performed  in two phases.   
+• In the first phase,  model  development  consists  of calibration  and internal  testing.  
+Calibration  data are used to create  the calibration  model.  Test data are used for internal  
+testing  and optimisatio n of the model.  The test data could  be a separate  set of data or 
+part of the calibration  set used in a rotational  manner.  This internal  test step is used to 
+obtain  an estimate  of the model  performance  and to fine-tune an algorithm’s  parameters  
+(e.g., the number  of latent  variables  for partial  least squares  (PLS))  to select  the most  
+suitable  model  within  a given  set of data.  For more  details,  see ICH Q14.  
+• In the second  phase,  model  validation,  a validation  set with independent  samples  is 
+used for validation  of the model.  For identification libraries, validation involves 
+analysing samples ( i.e., challenge samples) not represented in the library to demonstrate 
+the discriminative ability of the library model.  
+ 
+  
+
+ICH Q2(R2)  Guideline  
+ 
+6 Table  2: Examples  of reportable  ranges  for common  uses of analytical  procedures  
+Use of analytical  
+procedure  Low  end of reportable  
+range   High  end of reportable  
+range  
+Assay  of a product  (1) 80% of declared  content  or 
+80% of lower  specification  
+acceptance  criterion   120%  of declared  content  or 
+120%  of the upper  
+specification  acceptance  
+criterion   
+Potency  Lowest  specification  
+acceptance  criterion  -20% Highest  specification  
+acceptance  criterion  +20%  
+Content  uniformity  70% of declared  content   130%  of declared  content   
+Dissolution :  
+Immediate  release  
+• one point  
+specification  
+ 
+• multiple  point  
+specification  
+ 
+Modified  release   
+ 
+Q - 45% of the lowest  
+strength   
+ 
+Lower  limit  of reportable  
+range  (as justified  by the 
+specification)  or QL, as 
+appropriate.  
+Lower  limit  of reportable  
+range  (as justified  by the 
+specification)  or QL, as 
+appropriate.  130%  of declared  content  of 
+the highest  strength   
+Impurity  (1) Reporting  threshold   120%  of specification  
+acceptance  criterion  
+Purity  (as area %) 80% of lower  specification  
+acceptance  criterion   Upper  specification  
+acceptance  criterion  or 100%   
+(1) Where  assay  and impurity  are performed  as a single  test and only one standard  is used,  
+linearity  should  be demonstrated  for both the reporting  level  of the impurities  and up 
+to 120%  of the specification  acceptance  criterion  for assay . 
+Samples  used for the validation  of quantitative  or qualitative  multivariate  procedures  require  
+values  or categories  assigned  to each sample,  typically  obtained  by a reference  analytical  
+procedure , i.e., a validated  or pharmacop oeial procedure .  
+When  a reference  analytical  procedure  is used,  its performance  should  equal  or exceed  the 
+expected  performance  of the multivariate  analytical  procedure.  Analysis  by the reference  
+analytical  procedure  and multivariate  data collection  should  be performed  on the same  samples  
+
+ICH Q2(R2)  Guideline  
+ 
+7 (whenever  possible)  within  a reasonable  period  of time to assure  sample  and measurement  
+stability.  In some  cases,  a correlation  or conversion  may be needed  to provide  the same  unit of 
+measure.  Any assumptions  or calculations  should  be described.    
+3 V ALIDATION TESTS, METHODOLOGY AND EV ALUATION  
+In the following  chapters,  experimental  methodologies  to evaluate  the performance  of an 
+analytical  procedur e are described . These  methodologies  are grouped  according  to main  
+performance  characteristics  dictated  by the analytical  procedure  design . It is acknowledged  that 
+information  about  multiple  performance  characteristics  may be derived  from  the same  dataset.  
+Different  approaches  may be used to demonstrate  that the analytical  procedure  meets  the 
+objectives  and related  performance  criteria,  if justified.  
+3.1 Specificity/Selectivity  
+3.1.1 General Considerations  
+The specificity  or selectivity  of an analytical  procedure  can be demonstrated  through  absence  
+of interference  or comparison  of results  to an orthogonal  procedure .  In some  cases , 
+specificity/selectivity  may be inherently  given  by the underlying  scientific  principles  of the 
+analytical  procedure.  Some  experiments  can be combined  with accuracy  studies.  
+Selectivity  could  be demonstrated  when  the analytical  procedure  is not specific.  However,  the 
+test for an analyte  to be identified  or quantitated  in the presence  of potential  interference  should 
+minimise  that interference  and demonstrate  that the analytical  procedure  is fit for the intended  
+purpose.   
+Where  one analytical  procedure  does not provide  sufficient  discrimination,  a combination  of 
+two or more  procedures  is recommended  to achieve  the necessary  specificity/ selectivity.   
+3.1.1.1  Absence of Interference  
+Specificity/selectivity  can be shown  by demonstrating  that the identification  and/or  
+quantitation  of an analyte  is not impacted  by the presence  of other  substances  (e.g., impurities,  
+degradation  products,  related  substances,  matri ces, or other  components  likely  to be present ).  
+3.1.1.2  Orthogonal Procedure Comparison  
+Specificity/selectivity  can be verified  by demonstrating  that the measured  result  of an analyte  
+is comparable  to the measured  result  of a second,  well characterised  analytical  procedure  that 
+ideally  applies  a different  measurement  principle .  
+3.1.1.3  Technology Inherent Justification  
+In some  cases  where  the specificity  of the analytical  technology  can be ensured  and predicted  
+by technical  parameters  (e.g., resolution  of isotopes  in mass  spectrometry,  chemical  shifts  in 
+NMR  spectroscopy ), additional  experimental  studies  may not be required,  if justified.  
+3.1.2 Recommended Data  
+3.1.2.1  Identification  
+For identification  tests,  a critical  aspect  is to demonstrate  the capability  to identify  the analyte  
+of interest  based  on unique  aspects  of its molecular  structure  and/or  other  specific  properties . 
+The capability  of an analytical  procedure  to identify  an analyte  can be confirmed  by obtaining  
+positive  results  comparable  to a reference  material  using  samples  containing  the analyte,  along  
+with negative  results  from  samples  which  do not contain  the analyte.  In addition,  the 
+identification  test should  be applied  to materials  structurally  similar  to or closely  related  to the 
+
+ICH Q2(R2)  Guideline  
+ 
+8 analyte  to confirm  that a positive  result  is not obtained.  The choice  of such potentially  
+interfering  materials  should  be based  on scientific  judgement  with a consideration  of 
+interference s that could  occur.   
+3.1.2.2  Assay, Purity and Impurity Test(s)  
+The specificity/selectivity  of an analytical  procedure  should  be demonstrated  to fulfil  the 
+accuracy  requirements  for the content  or potency  of an analyte  in the sample.   
+Representative  data (e.g., chromatograms,  electropherograms , spectra , biological  response ) 
+should  be used to demonstrate  specificity  and relevant  components  should  be labelled , if 
+appropriate .  
+For separation  techniques,  suitable  discrimination  should  be investigated  at an appropriate  level  
+(e.g., for critical  separations  in chromatography,  specificity  can be demonstrated  by the 
+resolution  of the two components  which  elute  closest  to each other).  Alternat ively, spectra  of 
+different  components  could  be compared  to assess  the possibility  of interfere nce. 
+For non-separation  techniques  (e.g., bioassay,  ELISA,  qPCR),  specificity  can be demonstrated  
+through  the use of reference  materials  or other  suitably  characterised  materials  to confirm  the 
+absence  of interference  in relation  to the analyte.  In cases  where the analyte  is a process -related  
+impurity,  specificity  (non-interference)  must  also be confirmed  against  the product.  
+In case a single  procedure  is not considered  specific  or sufficiently  selective , an additional  
+procedure  should  be used to ensure  adequate  discrimination . For example,  where  a titration  is 
+used to assay  a drug substance  for release,  the combination  of the assay  and a suitable  test for 
+impurities  may be used.  
+Impurities  or related  substances  are available  or can be intentionally  created : 
+For assay  or potency , discrimination  of the analyte  in the presence  of impurities  and/or  
+excipients  should  be demonstrated.  Practically,  this can be performed  by spiking  product  with 
+appropriate  amount s of impurities  and consequently  demonstrating  that the assay  result  is 
+unaffected  by the presence  of these  materials  (e.g., by comparison  with the assay  result  
+obtained  on unmanipulated  samples).  Alternatively,  samples  containing  appropriat e amounts  
+of impurities  could  be generated  throu gh deliberate  stressing  of product  material s. 
+For a purity  or impurity  test, discrimination  can be established  by stressing  or spiking  product  
+to achieve  appropriate  levels  of impurities  or related  substances  and demonstrating  the absence  
+of interference . 
+Impurities  or related  substances  are not available:  
+If impurities , related  substance s or degradation  product s cannot  be prepared  or isolated , 
+specificity  can be demonstrated  by comparing  the test results  of samples  containing  typical  
+impurities,  related  substances  or degradation  products  with an orthogonal  procedure . The 
+approach  taken  should  be justified.  
+3.2 Range  
+3.2.1 General Considerations  
+The range of an analytical procedure is the interval between the lowest and the highest results 
+in which the analytical procedure has a suitable level of response, accuracy and  precision . The 
+range  can be validated  through  the direct  assessment  of reportable  results  (to generate  a 
+reportable  range)  using  an appropriate  calibration  model  (i.e., linear,  non-linear,  multivariate) . 
+
+ICH Q2(R2)  Guideline  
+ 
+9 In some  cases , the reportable  range  can be determined  using  one or more  appropriate  working  
+ranges , depending  on the sample  preparation  (e.g., dilutions)  and the analytical  procedure  
+selected.  
+Typically,  a working  range  corresponds  to the lowest and the highest sample  concentrations  or 
+purity  levels  presented  to the analytical  instrument  for which  the analytical procedure provides 
+reliable  results . Mathematical  calculations  are typically  required  to generate  reportable  results.  
+Reportable  range  and working  range  could  be identical.   
+In cases  where  materials  of sufficient  purity  (or containing  sufficient  amount s of impurities)  to 
+validate  the full range  (e.g., 100%  purity)  cannot  be generated,  extrapolation  of the reportable  
+range  may be appropriate  and should  be justified . 
+3.2.2 Response  
+3.2.2.1  Linear Response  
+A linear  relationship  between  analyte  concentration  and response  should  be evaluated  across  
+the range  of the analytical  procedure  to confirm  the suitability  of the procedure  for the intended  
+purpose . The response  can be demonstra ted directly  on the product  or suitable  reference  
+materials,  separate  weighings  of analyte,  or predefined  mixtures  of the components  (e.g., by 
+dilution  of a solution  of known  content) , using  the proposed  procedure .  
+Linearity  can be evaluated  with a plot of signals  as a function  of analyte  concentration  or 
+content , and should  demonstrate  the analytical  procedure  capability  across  a given  range  to 
+obtain  values  that are proportional  to the true (known  or theoretical)  sample  values . Test results  
+should  be evaluated  by an appropriate  statistical  method  (e.g., by calculation  of a regression  
+line by the method  of least squares) . 
+Data  derived  from  the regression  line may help to provide  mathematical  estimates  of the 
+linearity.  A plot of the data,  the correla tion coefficient  or coefficient  of determination,  y-
+intercept  and slope  of the regression  line should  be provided.  An analysis  of the deviation  of 
+the actual  data points  from  the regression  line is helpful  for evaluating  linearity  (e.g., for a 
+linear  respo nse, the impact  of any non-random  pattern  in the residual s plot from  the regression  
+analysis  should  be assessed ).  
+To assess  linearity  during  validation , a minimum  of five concentrations  appropriately  
+distributed  across  the range  is recommended.   
+The measured  data can be mathematically  transformed  if necessary  (e.g., through  the use of a 
+log function ).  
+Other  approaches  to the assessment  of linearity  should  be justified.  
+3.2.2.2  Non-linear Response  
+Some  analytical  procedures  may show  non-linear responses.  In these  cases,  a model  or function  
+which  can describe  the relationship  between  the activity/concentration  present  and the response  
+of the analytical  procedure  is necessary.  The suitability  of the model  should  be assessed  by 
+means  of non-linear regression  analysis  (e.g., coefficient  of determination).  
+For example,  immunoassays  or cell-based  assays  may show  an S-shaped  response.  S-shaped  
+test curves  occur  when  the range  of concentrations  is wide  enough  that responses  are 
+constrained  by upper  and lower  asymptotes.  Common  models  used in this case are four- or 
+five-parameter  logistic  functions,  though  other  acceptable  models  exist.   
+
+ICH Q2(R2)  Guideline  
+ 
+10 For these  analytical  procedures,  the evaluation  of linearity  is separate  from  consideration  of the 
+shape  of the conc entration -response  curve.  Thus,  linearity  of the concentration -response  
+relationship  is not required.  Instead,  analytical  procedure  performance  should  be evaluated  
+across  a given  range  to obtain  values  that are proportional  to the true (known  or theoretica l) 
+sample  values.   
+3.2.2.3  Multivariate Calibration  
+Algorithms  used for construction  of multivariate  calibration  models  can be linear  or non-linear,  
+as long as the model  is appropriate  for establishing  the relationship  between  the signal  and the 
+quality  attribute  of interest.  The accuracy  of a multivariate  procedure  is dependent  on multiple  
+factors,  such as the distribution  of calibration  samples  across  the calibration  range  and the 
+reference  analytical  procedure  error.   
+In multivariate  analysis,  the measured  data are commonly  pre-treated  through  derivatives  or 
+normalisation.  
+Linearity  assessment,  apart  from  comparison  of reference  and predicted  results,  should  include  
+information  on how the analytical  procedure  error  (residuals)  changes  across  the calibration  
+range.  Graphical  plots  can be used to assess  the residuals  of the model  prediction  across  the 
+working  range.  
+3.2.3 Validation of Lower Range Limits  
+If the quality  attribute  to be measured  requires  the range  of an analytical  procedure  to be close  
+to the lower  range  limits  of the procedure , detection  limit (DL)  and quantitation  limit (QL) , can 
+be estimated  using  the following  approaches.   
+3.2.3.1  Based on Visual Evaluation  
+Visual  evaluation  can be used for both non-instrumental  and instrumental  procedures.  
+The limit  is determined  by the analysis  of samples  with known  concentrations  and by 
+establishing  the minimum  level  at which  the analyte  can be reliably  resolved  and detected  or 
+quantitated . 
+3.2.3.2  Based on Signal -to-Noise 
+This approach  is relevant  for analytical  procedures  which  exhibit  baseline  noise.  Determination  
+of the signal -to-noise  ratio is performed  by comparing  measured  signals  from  samples  with 
+known  low concentrations  of analyte  with those  of blank  samples.  Alternatively,  signals  in an 
+appro priate  baseline  region  can be used instead  of blank  samples.  The DL or QL are the 
+minimum  concentrations  at which  the analyte  can be reliably  detected  or quantitated , 
+respectively.  A signal -to-noise  ratio of 3:1 is generally  considered  acceptable  for estim ating  the 
+DL. For QL, a ratio of at least 10:1 is considered  acceptable.  
+The signal -to-noise  ratio should  be determined  within  a defined  region  and, if possible,  situated  
+equally  around  the place  where  the peak  of interest  would  be found.  
+3.2.3.3  Based on the Stan dard Deviation of a Linear Response and a Slope  
+The detection  limit  (DL)  can be expressed  as: 
+𝐷𝐿=3.3𝜎
+𝑆 
+while  the quantitation  limit  (QL)  can be expressed  as: 
+
+ICH Q2(R2)  Guideline  
+ 
+11 𝑄𝐿=10𝜎
+𝑆 
+ where   σ = the standard  deviation  of the response  
+  S = the slope  of the calibration  curve  
+The slope  S can be estimated  from  the regression  line of the analyte.  The estimate  of σ can be 
+carried  out in a variety  of ways,  for example:   
+Based  on the Standard  Deviatio n of the Blank  
+Measurement  of the magnitude  of background  response  is performed  by analysing  an 
+appropriate  number  of blank  samples  and calculating  the standard  deviation  of the responses.   
+Based  on the Calibration  Curve  
+A specific  calibration  curve  should  be evaluated  using  samples  containing  an analyte  in the 
+range  of the DL and QL. The residual  standard  deviation  of a regression  line (i.e., root mean  
+square  error/deviation)  or the standard  deviation  of y-intercepts  of the regression  lines  can be 
+used as the standard  deviation.   
+3.2.3.4  Based on Accuracy and Precision at Lower Range Limits  
+Instead  of using  estimated  values  as described  in the previous  approaches,  the QL can be 
+directly  validated  by accuracy  and precision  measurements.  
+3.2.3.5   Recommended Data  
+The DL and the approach  used for its determination  should  be presented.  If the DL is 
+determined  based  on visual  evaluation  or based  on signal -to-noise  ratio,  the presentation  of the 
+relevant  data is considered  an acceptable  justification.  
+In cases  where  an estimated  value  for the DL is obtained  by calculation  or extrapolation,  this 
+estimate  can subsequently  be validated  by the independent  analysis  of a suitable  number  of 
+samples  known  to be near or prepared  at the DL.  
+The QL and the approa ch used for its determination  should  also be presented.  
+If the QL was estimated,  the limit  should  be subsequently  validated  by the analysis  of a suitable  
+number  of samples  known  to be near or at the QL. In cases  where  the QL is well below  (e.g., 
+approximat ely 10 times  lower  than)  the reporting  limit , this confirmatory  validation  can be 
+omitted  with justification.  
+For impurity  tests,  the QL for the analytical  procedure  should  be equal  to or below  the reporting  
+threshold .  
+3.3 Accuracy and Precision  
+Accuracy  and precision  can be evaluated  independently,  each with a predefined  acceptance  
+criterion.  Alternatively,  accuracy  and precision  can be evaluated  in combination .  
+3.3.1 Accuracy  
+Accuracy  should  be established  across  the reportable  range  of an analytical  procedure  and is 
+typically  demonstrated  through  comparison  of the measured  results  with expected  value s. 
+Accuracy  should  be demonstrated  under  regular  test conditions  of the analytical  procedure  
+(e.g., in the presence  of sample  matrix  and using  described  sample  preparation  steps).   
+
+ICH Q2(R2)  Guideline  
+ 
+12 Accuracy  is typically  verified  through  one of the studies  described  below.  In certain  cases,  
+accuracy  can be inferred  once  precision,  response  within  the range  and specificity  have  been  
+established.   
+3.3.1.1  Reference Material Comparison  
+The analytical  procedure  is applied  to an analyte  of known  purity  (e.g., a reference  material,  a 
+well characterised  impurity  or a related  substance)  and the measured  versus  theoretically  
+expected  result s are evaluated.   
+3.3.1.2  Spiking Study  
+The analytical  procedure  is applied  to a matrix  of all components  except  the analyte  where  a 
+known  amount  of the analyte  of interest  has been  added.  In cases  where  all the expected  
+components  are impossible  to reproduce,  the analyte  can be added  to or enriched  in the test 
+sample.  The results  from  measurements  on unspiked  and spiked /enriched  samples  are 
+evaluated.  
+3.3.1.3  Orthogonal Procedure Comparison  
+The results  of the proposed  analytical  procedure  are compared  with those  of an orthogonal  
+procedure.  The accuracy  of the orthogonal  procedure  should  be reported.  Orthogonal  
+procedures  can be used with quantitative  impurity  measurements  to verify  primary  
+measurement  values  in cases  where  obtaining  samples  of all relevant  components  needed  to 
+mimic  the matrix  for spiking  studies  is not possible.  
+3.3.1.4  Recommended Data  
+Accuracy  should  be assessed  using  an appropriate  number  of determinations  and concentration  
+levels  covering  the reportable  range  (e.g., 3 concentrations/3  replicates  each of the full 
+analytical  procedure).  
+Accuracy  should  be reported  as the mean  percent  recovery  of a known  added  amount  of analyte  
+in the sample  or as the differe nce between  the mean  and the accepted  true value , together  with 
+an appropriate  100(1 -α) % confidence  interval  (or justified  alternative  statistical  interval).  The 
+observed  interval  should  be compatible  with the corresponding  accuracy  acceptance  criteria,  
+unless  otherwise  justified.  
+For impurity  tests,  the approach  for the determination  of individual  or total impurities  should  
+be described  (e.g., weight/weight  or area percent  with respect  to the major  analyte).  
+For quantitative  applications  of multivariate  analytical  procedures,  appropriate  metrics,  e.g., 
+root mean -squared  error  of prediction  (RMSEP),  should  be used.  If RMSEP  is found  to be 
+comparable  to acceptable  root mean -squared  error  of calibration  (RMSEC)  then this indicates  
+that the model  is sufficient ly accurate  when  tested  with an independent  test set. Qualitative  
+applications  such as classification,  misclassification  rate or positive  prediction  rate can be used 
+to characterise  accuracy.   
+3.3.2 Precision  
+Validation  of tests for assay  and for quantitative  determination  of impurity  (purity ) include s an 
+investigation  of precision.  
+Precision  should  be investigated  using  authentic  homogeneous  samples  or, if unavailable,  
+artificially  prepared  samples  (e.g., spiked  matrix  mixtures  or samples  enriched  with relevant  
+amounts  of the analyte  in question).   
+
+ICH Q2(R2)  Guideline  
+ 
+13 3.3.2.1  Repeatability  
+Repeatability  should  be assessed  using:  
+a) a minimum  of 9 determinations  covering  the reportable  range  for the procedure  (e.g., 3 
+concentrations/3  replicates  each)  
+or 
+b) a minimum  of 6 determinations  at 100%  of the test concentration.  
+3.3.2.2  Intermediate Precision  
+The extent  to which  intermediate  precision  should  be established  depends  on the circumstances  
+under  which  the procedure  is intended  to be used.  The applicant  should  establish  the effects  of 
+random  events  on the precision  of the analytical  procedure.  Typical  variations  to be studied  
+include  different  days,  environmental  conditions,  analysts  and equipment,  as relevant.  Ideally,  
+the variations  tested  should  be based  on and justified  by using  analytical  procedure  
+understanding  from  development  and risk assessment  (ICH  Q14).  Studying  these  effects  
+individually  is not necessary.  The use of design  of experiments  studies  is encouraged.  
+3.3.2.3  Reproducibility  
+Reproducibility  is assessed  by means  of an inter-laboratory  trial. Investigation  of 
+reproducibility  is usually  not required  for regulatory  submission  but should  be considered  in 
+cases  of standardisation  of an analytical  procedure,  for instance,  for inclusion  of procedures  in 
+pharmacopoeias  and in cases  where  analytical  procedures  are conducted  at multiple  sites.   
+3.3.2.4  Recommended Data  
+The standard  deviation,  relative  standard  deviation  (coefficient  of variation) , and an appropriate  
+100(1 -α) % confidence  interval  (or justified  alternative  statistical  interval)  should  be reported . 
+The observed  interval  should  be compatible  with the corresponding  precision  acceptance  
+criteria,  unless  otherwise  justified.  
+Additionally,  for multivariate  analytical  procedures,  the routine  metrics  of RMSEP  encompass  
+accuracy  and precision.   
+3.3.3 Combined Approaches for Accuracy and Precision  
+An alternative  to separate  evaluation  of accuracy  and precision  is to consider  their total impact  
+by assessing  against  a combined  performance  criterion.   
+Data  generated  during  development  may help determine  the best approach  and refine  
+appropriate  performance  criteria  to which  combined  accuracy  and precision  are compared.  
+Combined  accuracy  and precision  can be evaluated  by use of a prediction  interval, a tolerance  
+interval  or a confidence  interval . Other  approaches  may be acceptable  if justified.  
+3.3.3.1  Recommended Data  
+If a combined  performance  criterion  is chosen,  results  should  be reported  as a combined  value  
+to provide  appropriate  overall  knowledge  of the suitability  of the analytical  procedure.  If 
+relevant  to justify  the suitability  of the analytical  procedure , the individual  results  for accuracy  
+and precision  should  be provided  as supplemental  information.  The approach  used shoul d be 
+described.  
+ 
+
+ICH Q2(R2)  Guideline  
+ 
+14 3.4 Robustness  
+The evaluation  of the analytical  procedure’s  suitability  within  the intended  operational  
+environment  should  be considered  during  the development  phase  and depends  on the type of 
+procedure  under  study.  Robustness  testing  should  show the reliability  of an analytical  
+procedure  in response  to deliberate  variations  in analytical  procedure  parameters , as well as 
+the stability  of the sample  preparations  and reagents  for the duration  of the procedure , if 
+appropriate . The robustness  evalu ation  can be submitted  as part of development  data for an 
+analytical  procedure  on a case-by-case basis  or should  be made  available  upon  request.    
+For further  details,  see ICH Q14.  
+4 GLOSSARY   
+ACCURACY  
+The accuracy of an analytical procedure expresses the closeness of agreement between the 
+value which is accepted either as a conventional true value or as an accepted reference value 
+and the value  or set of values  measured. (ICH Q2)  
+ANALYTICAL PROCEDURE  
+The analytical procedure refers to the way of performing the analysis. The analytical procedure 
+should describe  in sufficient detail the steps necessary to perform each analytical test . (ICH 
+Q2) 
+ANALYTICAL PROCEDURE PARAMETER  
+Any analytical factor (including reagent quality) or analytical procedure operational condition 
+that can be varied continuously (e.g., flow rate) or specified at controllable, unique levels. (ICH 
+Q14)  
+ANALYTICAL PROCEDURE VALIDATION STRATEGY  
+An analytical procedure validation strategy describes the selection of  analytical procedure 
+performance characteristics for validation. In the strategy, data gathered during development 
+studies and system suitability tests (SSTs) can be applied to validati on and an appropriate set 
+of validation tests  can be predefined. (ICH Q14)  
+CALIBRATION MODEL  
+A model based on analytical measurements of known samples that relates the input data to a 
+value for the property of interest ( i.e., the model output). (ICH Q2)  
+CONTROL STRATEGY  
+A planned set of controls, derived from current product and process understanding, that assures 
+process performance and product quality. The controls can include parameters and attributes 
+related to drug substa nce and drug product materials and components, facility and equipment 
+operating conditions, in -process controls, finished product specifications, and the associated 
+methods and frequency of monitoring and control. (ICH Q10)  
+ 
+ 
+
+ICH Q2(R2)  Guideline  
+ 
+15 CO-VALIDATION  
+Demonstration that the analytical procedure meets its predefined performance criteria when 
+used at different laboratories for the same intended purpose. Co -validation can involve all (full 
+revalidation) or a subset (partial revalidation) of performance cha racteristics potentially 
+impacted by the change in laboratories. (ICH Q2)  
+DETECTION LIMIT  (DL)  
+The detection limit is the lowest amount of an analyte in a sample which can be detected but 
+not necessarily quantitated as an exact value. (ICH Q2)  
+DETERMINATION  
+The reported value(s) from single or replicate measurements of a single sample preparation as  
+per the validation protocol. (ICH Q2)  
+INTERMEDIATE PRECISION  
+Intermediate precision expresses intra-laboratory variations. Factors to be considered should 
+include potential sources of variability, for example, different days, different environmental 
+conditions, different analysts and different equipment. (ICH Q2) PERFORMANCE 
+CHARACTERISTIC  
+A technology independent description of a characteristic that ensure s the quality of the 
+measured result. Typically, accuracy, precision, specificity/selectivity and range may be 
+considered. Previous ICH Q2 versions  referred to this as  VALIDATION CHARACTER ISTIC. 
+(ICH Q2)  
+PERFORMANCE CRITERION  
+An acceptance criterion describing a numerical range, limit or desired state to ensure the quality 
+of the measured result  for a given performance characteristic . (ICH Q14)  
+PLATFORM ANALYTICAL PROCEDURE  
+An analytical procedure  that is  suitable to test quality attributes of different products without 
+significant change to its operational conditions, system suitability and reporting structure. This 
+type of analytical procedure can be used to analyse  molecules  that are sufficiently alike with 
+respect to the attributes that the platform analytical procedure is intended to measure. (ICH Q2)  
+PRECISION  
+The precision of an analytical procedure expresses the closeness of agreement (degree of 
+scatter) between a series of measurements obtained from multiple samplings of the same 
+homogeneous sample under the prescribed conditions. Precision can be considered at three 
+levels: repeatability, intermediate precision and reproducibility.  
+The precision of an analytical procedure is usually expressed as the variance, standard 
+deviation or coefficient of variation of a series of measurements. (ICH Q2)  
+QUANTITATION LIM IT (QL)  
+The quantitation limit is the lowest amount of analyte in a sample which can be quantitatively 
+determined with suitable precision and accuracy. The quantitation limit is a parameter used for 
+
+ICH Q2(R2)  Guideline  
+ 
+16 quantitative assays for low levels of compounds in sample matrice s, and, particularly, is used 
+for the determination of impurities and/or degradation products. (ICH Q2)  
+RANGE  
+The range of an analytical procedure is the interval between the lowest and the highest results 
+in which the analytical procedure has a suitable level of precision, accuracy and response. (ICH 
+Q2) 
+REPORTABLE RANGE  
+The reportable range of an analytical procedure includes all values from the lowest to the 
+highest reportable result for which there is a suitable level of precision and accuracy. 
+Typically, the reportable range is given in the same unit as the specification  acceptance 
+criterion . (ICH Q2)  
+WORKING RANGE  
+A working  range  corresponds  to the lowest and the highest level of the quality attribute  
+to be measured (e.g., content  or purity ) as presented  to the analytical  instrument  and for 
+which  the analytical procedure provides reliable  results . (ICH  Q2) 
+REFERENCE  MATERIAL   
+A suitably characteri sed material, sufficiently homogeneous and stable with regard to one or 
+more defined attributes, which has been established to be fit for the intended purpose. 
+Reference materials may include national/international reference standards, pharmacop oeial 
+reference standards, or in -house  primary/secondary reference materials.   (ICH  Q2) 
+REPEATABILITY  
+Repeatability expresses the precision under the same operating conditions over a short interval 
+of time. Repeatability is also termed intra -assay precision. (ICH Q2)  
+REPORTABLE RESULT  
+The result as generated by the analytical procedure after calculation or  processing and applying 
+the described sample replication. (ICH Q2)  
+REPRODUCIBILITY  
+Reproducibility expresses the precision between laboratories ( e.g., inter-laboratory studies, 
+usually applied to standardisation of methodology). (ICH Q2)  
+RESPONSE  
+The response of an analytical procedure is its ability (within a given range) to obtain a signal 
+which is effectively related to the concentration (amount) or activity  of analyte in the sample 
+by some known mathematical function. (ICH Q2)  
+REVALIDATION  
+Demonstration that an analytical procedure is still fit for the intended purpose after a change to 
+the product, process or the analytical procedure itself. Revalidation can involve all (full 
+revalidation) or a subset (partial revalidation) of performance c haracteristics. (ICH Q2)  
+
+ICH Q2(R2)  Guideline  
+ 
+17 ROBUSTNESS  
+The robustness of an analytical procedure is a measure of its capacity to meet the expected 
+performance criteria during normal use. Robustness is tested by deliberate variations of 
+analytical procedure parameters. (ICH Q14)  
+SPECIFICITY/SELECTIV ITY 
+Specificity and selectivity are both terms to describe the extent to which other substances 
+interfere with the determination of an analyte  according to a given analytical procedure. 
+Specificity is typically used to describe the ultimate state, measuring unequivocally a desired 
+analyte. Selectivity is a relative term to describe the extent to which particular analytes in 
+mixtures or matrices can be measured without interferences from other components with 
+similar behaviour . (ICH Q2)  
+SYSTEM SUITABILITY TEST (SST)  
+System suitability tests are developed and used to verify that the measurement system and the 
+analytical operations associated with the analytical procedure are fit for the intended purpose 
+and increase the detectability of unacceptable performance . (ICH Q14)  
+VALIDATION STUDY  
+An evaluation of prior knowledge, data or deliberate experiments (i.e., validation tests) to 
+determine the suitability of an analytical procedure for the intended purpose. (ICH Q2)  
+VALIDATION TEST  
+Validation tests are deliberate experiments designed to authenticate the suitability of an 
+analytical procedure for the intended purpose. (ICH Q2)  
+MULTIVARIATE GLOSSARY  
+CALIBRATION SET  
+A set of data with matched known characteristics and measured analytical results. (ICH Q14) 
+INDEPENDENT SAMPLE  
+Independent samples are samples not included in the calibration set of a multivariate model. 
+Independent samples can come from the same batch from which calibration samples are 
+selected. (ICH Q2)  
+INTERNAL TESTING  
+Internal testing is a process of checking if unique samples processed by the model yield the 
+correct predictions (qualitative or quantitative).  
+Internal testing serves as means to establish the optimal number of latent variables, estimate 
+the standard error and detect potential outliers. (ICH Q2)  
+LATENT VARIABLES  
+Mathematically derived variables that are directly related to measured variables and are used 
+in further processing. (ICH Q2)  
+ 
+
+ICH Q2(R2)  Guideline  
+ 
+18 MODEL VALIDATION  
+The process of determining the suitability of a model by challenging it with independent test 
+data and comparing the results against predetermined performance criteria. (ICH Q2)  
+MULTIVARIATE ANALYTICAL PROCEDURE  
+An analytical procedure where a result is determined through a multivariate calibration model 
+utilising more than one input variable. (ICH Q2)  
+REFERENCE ANALYTICAL PROCEDURE  
+A separate analytical procedure used to obtain the reference values of the calibration and 
+validation samples for a multivariate analytical procedure. (ICH Q2)  
+VALIDATION SET  
+A set of data used to give an independent assessment of the performance of the ca libration 
+model. (ICH Q2)  
+5 REFERENCES  
+ICH Q10  Pharmaceutical Quality System  
+ICH Q 14 Analytical Procedure Development  
+ICH M4Q The Common Technical Document For The Registration Of Pharmaceuticals For 
+Human Use
+
+ICH Q2(R2)  Guideline  
+ 
+19 6 ANNEX 1 : SELECTION OF V ALIDATION TESTS  1 
+Figure  2: Examples  of relevant  validation  tests  based  on the objective  of the analytical  procedure  2 
+ 3 
+
+
+ICH Q2(R2)  Guideline  
+ 
+20 7 ANNEX 2 : ILLUSTRATIVE EXAMPLES FOR ANALYTICAL TECHNIQUES  
+The tables presented in this annex are example s of approaches to analytical procedure 
+validation for a selection of technologies. The technologies and approaches presented have 
+been constructed to illustrate potential applications of the principles contained within this 
+guideline  and are not exhaustive . The examples are not intended to be mandatory, and 
+alternative approaches (fulfilling the intent of the guideline ) may also be acceptable.  
+  
+
+ICH Q2(R2)  Guideline  
+ 
+21 Table  3: Examples  for quantitative  separation  techniques  
+Technique  Separation  techniques  (e.g., 
+HPLC,  GC, CE) for impurities  
+or assay  Separation  techniques  with  relative  
+area quantitation  (e.g., product -
+related  substances  such  as charge  
+variants ) 
+Performance  
+characteristic  Validation  study  methodology  
+Specificity/  
+Selectivity  Absence  of relevant  interference:   
+With  product , buffer,  or 
+appropriate  matrix,  and between  
+individual  peaks  of interest   
+ 
+Spiking  with known  impurities/  
+excipients  
+ 
+or 
+ 
+By comparison  of impurity  
+profiles  by an orthogonal  
+analytical  procedure  
+ 
+Demonstration  of stability -
+indicating  properties  through  
+appropriate  forced  degradation  
+samples,  if necessary  Absence  of relevant  interference:  
+With  product , buffer,  or appropriate  
+matrix,  and between  individual  peaks  
+of interest   
+ 
+Demonstration  of stability -indicating  
+properties  through  appropriate  forced  
+degradation  samples  if necessary    
+  
+Precision  Repeatability:  
+Replicate  measurements  with 3 times  3 levels  across  the reportable  range  
+or 6 times  at 100%  level,  considering  peak(s)  of interest   
+  
+Intermediate  precision :  
+e.g., different  days,  environmental  conditions,  analysts,  equipment  
+Accuracy   For Assay:   
+Comparison  with suitably  
+characterised  material  (e.g., 
+reference  material ) 
+ 
+or 
+ 
+Comparison  with an orthogonal  
+procedure  
+ 
+For impurities  or related  
+substances:   
+ 
+Spiking  studies  with impurities  
+ 
+or 
+ 
+Comparison  of impurity  profiles  
+with an orthogonal  procedure  Comparison  with an orthogonal  
+procedure  and/or  suitably  
+characterised  material  (e.g., reference  
+material)  
+ 
+or 
+ 
+Accuracy  can be inferred  once  
+precision,  linearity  and specificity  
+have  been  established   
+ 
+or 
+ 
+Spiking  studies  with forced  
+degradation  samples  and/or  suitably  
+characterised  material  
+
+ICH Q2(R2)  Guideline  
+ 
+22 Technique  Separation  techniques  (e.g., 
+HPLC,  GC, CE) for impurities  
+or assay  Separation  techniques  with  relative  
+area quantitation  (e.g., product -
+related  substances  such  as charge  
+variants ) 
+Performance  
+characteristic  Validation  study  methodology  
+Reportable  
+Range  Validation  of calibration  model  
+across  the range:   
+  
+Linearity:  Dilution  of the analytes  
+of interest  over the expected  
+procedure  range,  at least 5 points   
+ 
+Validation  of lower  range  limits  
+(for purity  only):  QL, DL through  
+a selected  methodology  (e.g., 
+signal -to-noise  determination )   Validation  of calibration  model  across  
+the range:   
+ 
+Linearity:  Between  measured  
+(observed)  relative  result  versus  
+theoretically  expected  relative  result  
+across  specification  range(s) , e.g., by 
+spiking  or degrading  material   
+ 
+Validation  of lower  range  limits:  QL 
+(and DL) through  a selected  
+methodology  (e.g., signal -to-noise  
+determination)  
+Robustness  and 
+other  
+considerations  
+(performed  as 
+part of analytical  
+procedure  
+development  as 
+per ICH Q14)   Deliberate  variation  of relevant  parameters,  e.g.,  
+ 
+Sample  preparation:  extraction  volume,  extraction  time,  temperature , 
+dilution  
+ 
+Separation  parameters:  column/capillary  lot, mobile  phase/buffer  
+composition  and pH, column/capillary  temperature,  flow rate, detection  
+wavelength  
+ 
+Stability  of sample  and reference  material  preparations  
+ 
+Relative  Response  Factors  
+ 
+If the analyte  has a different  response  from  the reference  material  (e.g., a 
+different  specific  UV absorbance),  relative  response  factors  should  be 
+calculated  using  the appropriate  ratio of responses.  This evaluation  may 
+be performed  during  validation  or development , and should  use the 
+finalised  analytical  procedure  conditions  and be appropriately  
+documented   
+ 
+If the relative  response  factor  is outside  the range  0.8-1.2, then a 
+correction  factor  should  be applied.  If an impurity/degradation  product  is 
+overestimated,  it may be acceptable  not to use a correction  factor  
+ 
+  
+
+ICH Q2(R2)  Guideline  
+ 
+23 Table  4: Example  for elemental  impurities  by ICP-OES  or ICP-MS  
+ 
+Technique   Elemental  Impurities  by ICP-OES  or ICP-MS  
+Performance  
+characteristic  Validation  study  methodology  
+Specificity/  
+Selectivity  Spiking  of elements  into matrix  and demonstration  of sufficient  non-
+interference  and confirmation  of accuracy  with the presence  of 
+components  (e.g., carrier  gas, impurities,  matrix)   
+ 
+or  
+ 
+Justification  through  technology/prior  knowledge  (e.g., specificity  of 
+technology  for certain  isotopes)  
+  
+Precision  Repeatability:   
+Replicate  measurements  with 3 times  3 levels  across  the reportable  range  
+or 6 times  at 100%  level,  considering  signals  of interest   
+ 
+Intermediate  precision:   
+e.g., different  days,  environmental  conditions,  analysts,  equipment  
+Accuracy   Spiking  studies  with impurities   
+ 
+or 
+ 
+Comparison  of impurity  profiles  with an orthogonal  procedure  
+Reportable  Range  Validation  of working  range:   
+  
+Linearity:  Dilution  of the analytes  of interest  over the expected  working  
+range,  at least 5 points,  can be combined  with multi -level  accuracy  
+experiment   
+  
+Validation  of lower  range:  QL, DL through  a selected  methodology    
+Robustness  and 
+other  
+considerations  
+(performed  as 
+part of analytical  
+procedure  
+development  as 
+per ICH Q14)   Deliberate  variation  of parameters  and stability  of test conditions , e.g.,  
+ 
+Sample  digestion  technique  and preparation,  nebulizer  and sheath  flow 
+settings,  plasma  settings   
+ 
+  
+
+ICH Q2(R2)  Guideline  
+ 
+24 Table  5: Example  for dissolution  with  HPLC  as product  performance  test for an 
+immediate  release  dosage  form   
+ 
+Technique   Dissolution  with  HPLC  as product  performance  test for an immediate  
+release  dosage  form   
+Performance  
+characteristic   Demonstration  of performance  
+of dissolution  step  
+Typically  demonstrated  with 
+development  data  Validation  testing  methodology   
+Typically  demonstrated  with final 
+procedure   
+Specificity/  
+Selectivity   Discriminatory  power:   
+Demonstration  of the 
+discriminatory  power  to 
+differentiate  between  batches  
+manufactured  with different  critical  
+process  parameters  and/or  critical  
+material  attributes  which  may have  
+an impact  on the bioavailability  
+(performed  as part of development  
+of dissolution  step) Absence  of interference :  
+Demonstration  of non-interference  
+with excipients  and dissolution  media  
+likely  to impact  the quant itation  of 
+the main  analyte   
+Precision   Repeatability  and intermediate  
+precision:    
+Understanding  of variability  by 
+performing,  e.g., vessel -to-vessel  
+repeatability  studies  or 
+intermediate  precision  studies  
+(operators,  equipment)  
+Note:  The study  provides  a 
+combined  assessment  of variability  
+of product  quality  and product  
+dissolution  performance  in 
+addition  to the variability  of the 
+quantitative  procedure  
+ Repeatability  and intermediate  
+precision :    
+Demonstration  with a homogeneous  
+sample  from  one dissolved  tablet,  
+e.g., several  samples  drawn  from  the 
+same  vessel,  after analyte  in sample  
+has been  fully  dissolved   
+  
+Accuracy   (Not applicable  for dissolution  step)   Spiking  study:   
+Add known  amounts  of the reference  
+material  to the dissolution  vessel  
+containing  excipient  mixture  in 
+dissolution  media  and calculate  
+recovery  within  defined  working  
+range   
+
+ICH Q2(R2)  Guideline  
+ 
+25 Technique   Dissolution  with  HPLC  as product  performance  test for an immediate  
+release  dosage  form   
+Performance  
+characteristic   Demonstration  of performance  
+of dissolution  step  
+Typically  demonstrated  with 
+development  data  Validation  testing  methodology   
+Typically  demonstrated  with final 
+procedure   
+Reportable  
+Range    (Not applicable  for dissolution  step)   Validation  of calibration  model  
+across  the range   
+  
+Linearity:   
+Demonstrate  linearity  from  sample  
+concentrations  (as presented  to 
+quantitative  measurement)  in the 
+range  of Q - 45% of the lowest  
+strength  up to 130%  of the highest  
+strength,  for one point  specification,  
+and in the range  of QL up to 130%  of 
+the highest  strength,  for multiple  
+point  specification  
+ 
+If lower  concentration  ranges  are 
+expected  to be close  to QL:  
+  
+Validation  of lower  range  limits , see 
+separation  techniques   
+Robustness  and 
+other  
+considerations  
+(performed  as 
+part of 
+analytical  
+procedure  
+development  as 
+per ICH Q14)  Justification  of the selection  of the 
+dissolution  procedure  parameters,  
+e.g., medium  buffer  composition , 
+surfactant  concentration,  use of 
+sinkers,  pH, deaeration,  volume,  
+agitation  rate, sampling  time 
+ Deliberate  variation  of parameters  of 
+the quantitative  procedure , see 
+separation  technique   
+  
+ 
+  
+
+ICH Q2(R2)  Guideline  
+ 
+26 Table  6: Example  for quantitative  1H-NMR  for the assay of a drug substance    
+Technique   Quantitative  1H-NMR  (internal  standard  method)  for the assay of a 
+drug  substance    
+Performance  
+characteristic  Validation  study  methodology  
+  
+Specificity/  
+Selectivity   Absence  of interference:  
+Select  a signal  which  is representative  for the analyte  and does not show  
+interference  with potential  baseline  artefacts,  residual  water  or solvent  
+signals,  related  structure  impurities  or other  impurities,  internal  
+standards,  non-target  major  component  or potent ial isomers/forms  
+Precision  Repeatability:  
+Replicate  measurements  of at least 6 independent  preparations  at 100%  
+level  
+ 
+Intermediate  Precision:   
+Not necessary  to be conducted  on target  analyte  (justified  by technology  
+principle,  as typically  verified  through  instrument  calibration  with a 
+standard  sample)  
+Accuracy   Reference  material  comparison : 
+Confirm  with sample  of known  purity  
+ 
+Reportable  Range  Validation  tests are typically  not necessary  because  the integral  areas  are 
+usually  directly  proportional  to the amount  (mole)  of reference  material  
+and analyte  (technology  inherent  justification)  
+ 
+Robustness  and 
+other  
+considerations  
+(performed  as 
+part of analytical  
+procedure  
+development  as 
+per ICH Q14)  Deliberate  variation  of parameters , e.g., 
+Temperature,  concentration , field (shim) , tuning  and matching  of the 
+NMR  probe , solution  stability  
+ 
+ 
+ 
+ 
+  
+
+ICH Q2(R2)  Guideline  
+ 
+27 Table  7: Example  for biological  assays  
+Technique   Binding  assay  (e.g., ELISA,  SPR)  or cell-based  assay  for 
+determination  of potency  relative  to a reference  
+Performance  
+characteristic  Validation  study  methodology  
+ 
+Specificity/  
+Selectivity   Absence of interference : 
+Dose -response curve fulfils  the response criteria demonstrating the 
+similarity of the analyte and reference material, as well as non -interfering 
+signal from the matrix  (for binding assay ), or no dose -response from the 
+cell line alone  (for cell -based assay)  
+ 
+Demonstration of stability -indicating properties through appropriate 
+forced degradation samples if necessary  
+ 
+Precision  Repeatability:  
+Repeated sample analysis on a single day or within a short interval of  
+time covering  the reportable  range  of the analytical procedure  (at least  3 
+replicates  over at least 5 levels)  
+ 
+Intermediate  Precision : Different  analysts,  multiple  independent  
+preparations  over multiple  days at multiple  potency  levels  through  the 
+analytical  procedure 's reportable  range,  inclusive  of normal  laboratory  
+variation  
+ 
+Accuracy   Reference material comparison : 
+Assess recovery versus  theoretical activity for multiple ( at least 3) 
+independent preparations at multiple ( at least 5) levels through the  
+analytical procedure 's reportable range  
+ 
+Reportable  Range  Validation  of range,  including  lower  and higher  range  limits : 
+The lowest  to highest  relative  potency  levels  that meet  accuracy,  
+precision,  and response  criteria,  determined  over at least 5 potency  levels .  
+ 
+Robustness  and 
+other  
+considerations  
+(performed  as 
+part of analytical  
+procedure  
+development  as 
+per ICH Q14)   Deliberate variation of  parameters,  e.g., 
+Plate type , buffer components , incubation times , incubation conditions , 
+instruments , reaction times , reagent lots  including controls  
+ 
+For binding assay  procedures:  coating proteins,  capture/detection 
+antibody  
+ 
+For cell -based assay procedures: cell density, effector/target cell ratio, 
+cell generation number  
+ 
+ 
+  
+
+ICH Q2(R2)  Guideline  
+ 
+28 Table  8: Example  for quantitative  PCR  
+Technique   Quantitative  PCR  (quantitative  analysis  of impurities  in drug  
+substances  or products)  
+Performance  
+characteristic  Validation  study  methodology  
+ 
+Specificity/  Selectivity   Orthogonal  Procedure  Comparison:    
+Test reaction  specificity  by gel electrophoresis,  melting  profile  or 
+DNA  sequencing   
+ 
+Absence  of interference:   
+Positive  template,  no-reverse  transcription  control  for RT-qPCR  and 
+no template  control . Test primer  and probe  target  specificity  against  
+gene  bank  with sequence  similarity  search  program  (e.g., nucleotide  
+BLAST ). Evaluate  the slope  of standard  curve  for efficiency   
+Precision  Repeatability:    
+Independent  preparations  of 5 positive  control  levels  evenly  
+distributed  along  the standard  curve  and assayed  in triplicate  within  
+a single  assay  assessment.  The results  can be compared  using  
+coefficient  of variation  (CV)   
+ 
+Intermediate  precision :  
+At least three  replicates  per run at each positive  control  level  in at 
+least 6 runs over two or more  days 
+Accuracy   Spiking  Study:  
+Test (e.g., n=6)  replicates  at 3 to 5 template  spike  levels  from  the 
+standard  curve  concentrations   
+ 
+Efficiency/consistency  of RNA/DNA  extraction  method  should  be 
+accounted  for  
+Reportable  Range  Linearity:  
+Working  range  should  cover  at least 5 to 6 log to the base 10 
+concentration  values.  Correlation  coefficients  or standard  deviations  
+should  be calculated  through  the entire  dynamic  range   
+  
+Validation  of lower  working  range  limits  based  on the calibration  
+curve :  
+  
+DL defined  by template  spiking  in samples  or from  standard  curves . 
+DL is lowest  point  meeting  the response  curve  parameters  
+  
+QL demonstrated  through  showing  sufficient  recovery  and 
+acceptable  CVs from  the accuracy  experiment    
+Robustness  and other  
+considerations  
+(performed  as part of 
+analytical  procedure  
+development  as per 
+ICH Q14)   Deliberate  variation  of parameters , e.g., 
+Equipment , master  mix composition  (concentrations  of salts,  
+dNTPs,  adjuvants) , master  mix lots, reaction  volume , probe and 
+primer  concentrations , thermal  cycling  parameters  
+
+ICH Q2(R2)  Guideline  
+ 
+29 Table  9: Example  for particle  size measurement  
+Technique   Particle  size measurement  
+(dynamic  light  scattering;  laser diffraction  measurement)  as a 
+property  test 
+Performance  
+characteristic  Validation  study  methodology  
+  
+Specificity/  
+Selectivity   Absence  of interference : 
+ 
+Evaluate  blank  and sample  to determine  the appropriateness  of the 
+equipment  settings  and sample  preparation   
+ 
+Precision  Repeatability:   
+Test at least 6 replicates  using  established  analytical  procedure  
+parameters  at target  range   
+ 
+Intermediate  precision:   
+Analysis  performed  on different  days,  environmental  conditions,  
+analysts,  equipment  setup  
+  
+Accuracy   Technology  inherent  justification :  
+Confirmed  by an appropriate  instrument  qualification  
+ 
+or 
+ 
+Orthogonal  procedure  comparison:  
+Qualitative  comparison  using  a different  technique,  like optical  
+microscopy,  to confirm  results  
+Reportable  Range  Technology  specific  justification , e.g., particle  size range  covered  
+ 
+Robustness  and 
+other  
+considerations  
+(performed  as part 
+of analytical  
+procedure  
+development  as 
+per ICH Q14)   Deliberate  variation  of parameters , e.g., 
+Evaluation  of expected  size ranges  for the intended  use of the analytical  
+procedure  
+ 
+Dispersion  stability  for liquid  dispersions  (stability  over potential  
+analysis  time,  stir rate, dispersion  energy  equilibration  or stir time 
+before  measurement)  
+ 
+Dispersion  stability  for dry dispersions  (sample  amount,  measurement  
+time,  air pressure  and feed rate) 
+ 
+Obscuration  range  (establish  optim um percentage  of laser  obscuration)  
+Ultrasound  time/percentage  for sample , if applicable   
+ 
+ 
+  
+
+ICH Q2(R2)  Guideline  
+ 
+30 Table  10: Example  for NIR analytical  procedure   
+ 
+Technique   NIR analytical  procedure  for core tablet  assay  
+Performance  
+characteristic  Validation  study  methodology  
+  
+Specificity/  
+Selectivity   Absence  of interference : 
+ 
+Comparison  of drug substance  spectrum  and the loading  plots  of the 
+model   
+ 
+Rejection  of outliers  (e.g., excipient,  analogue s) not covered  by the 
+multivariate  procedure   
+Precision  Repeatability:   
+Repeated  analysis  with removal  of sample  from  the holder  between  
+measurements  
+ 
+Accuracy   Comparison  with an orthogonal  procedure :  
+Demonstration  across  the range  through  comparison  of the predicted  
+and reference  values  using  an appropriate  number  of determinations  
+and concentration  levels  (e.g., 5 concentrations,  3 replicates)   
+ 
+Accuracy  is typically  reported  as the standard  error  of prediction  (SEP  
+or RMSEP)  
+Reportable  Range  Response :  
+Demonstration  of the relationship  between  predicted  and reference  
+values  
+  
+Error  (accuracy)  across  the range:   
+Information  on how the analytical  procedure  error  (accuracy)  changes  
+across  the calibration  range,  e.g., by plotting  the residuals  of the model  
+prediction  versus  the actual  data 
+Robustness  and 
+other  
+considerations  
+(performed  as part 
+of analytical  
+procedure  
+development  as 
+per ICH Q14)   Deliberate  variation  of parameters , e.g., 
+Chemical  and physical  factors  that can impact  NIR spectrum  and 
+model  prediction  should  be represented  in data sets. Examples  include  
+various  sources  of drug substance  and excipients,  water  content,  tablet  
+hardness,  and orientation  in the holder   
+ 
+Note:  NIR measurements  are sensitive  to changes  in tablet  composition  
+and properties  outside  variation  present  in the calibration  set 
+ 
+  
+
+ICH Q2(R2)  Guideline  
+ 
+31 Table  11: Example  for quantitative  LC/MS  
+Technique   Quantitative  LC/MS  analysis  of trace  impurities  in product   
+Performance  
+characteristic  Validation  study  methodology   
+ 
+Specificity/  
+Selectivity   Technology  inherent  justification:   
+Inferred  through  use of specific  and selective  MS detection  (e.g., MRM  
+transition  with specified  quantitative  to qualitative  ion ratio,  accurate  
+m/z value)  in combination  with retention  time,  consider  potential  for 
+isotopes   
+ 
+or  
+ 
+Absence  of interference  from  other  components  in sample  matrix   
+  
+or 
+ 
+Comparison  of impurity  profiles  determined  by an orthogonal  analytical  
+procedure   
+ 
+Precision  Repeatability   
+Measurement  of a minimum  of 3 replicates  at each of at least 3 spiking  
+levels  or a minimum  of 6 replicates  at 100%  
+  
+Intermediate  precision   
+Comparison  of measurements  of the same  samples  performed  in the 
+same  laboratory  but under  varying  conditions  (e.g., different  LC/MS  
+systems,  different  analysts,  different  days)    
+ 
+Accuracy   Spiking  study :  
+Acceptable  recovery  of spiked  impurity  standards  in sample  matrix  at 
+multiple  spiking  levels   
+  
+or  
+  
+Comparison  of the results  to the ‘true’  values  obtained  from  an 
+orthogonal  procedure   
+ 
+
+ICH Q2(R2)  Guideline  
+ 
+32 Technique   Quantitative  LC/MS  analysis  of trace  impurities  in product   
+Performance  
+characteristic  Validation  study  methodology   
+ 
+Reportable  Range  Validation  of calibration  model  across  the range :  
+  
+Linearity:   Experimental  demonstration  of the linear  relationship  
+between  analyte  concentrations  and peak  responses  (or the ratio of peak  
+response  if an internal  standard  was used)  with reference  materials  at 5 
+or more  concentration  levels   
+  
+Validation  of lower  range  limits:   
+ 
+DL: Use the coefficient  of variation  (CV)  of responses  at the spiking  
+level  (with  6 or more  repeated  injections)  as a measure  of signal -to-
+noise.  The CV obtained  must  be less than or equal  to a pre-defined  
+acceptable  value  
+ 
+QL: The lowest  spiking  level  with acceptable  accuracy  and precision    
+  
+The range  extends  from  and is inclusive  of the QL to the highest  spiking  
+level  with acceptable  accuracy,  precision  and response   
+ 
+Robustness  and 
+other  
+considerations  
+(performed  as part 
+of analytical  
+procedure  
+development  as 
+per ICH Q14)   Deliberate  variation  of parameters , e.g., 
+LC flow rate, LC injection  volume,  MS drying/desolvation  temperature,  
+MS gas flow,  mass  accuracy , MS collision  energy , stability  of test 
+conditions    
+  
+  
+ 
+ 
+

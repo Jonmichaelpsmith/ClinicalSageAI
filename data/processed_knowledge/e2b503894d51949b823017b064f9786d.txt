@@ -1,0 +1,320 @@
+EDITORIAL
+Clin. Invest.  (2012) 2(4), 339–342Opportunities for innovation in the 
+design and execution of clinical trials
+John J  Orloff* & Jeffrey Kralstein
+We are all quite familiar with the challenges facing the pharmaceutical industry 
+today that have contributed to declining productivity. The industry has matured to a 
+point where the old pharmaceutical business model is unlikely to be sustainable. The 
+cost of bringing a new medical entity to market has been estimated to exceed US$1.3 
+billion when capitalized costs are factored in [1]. Contributing to this unsustainable 
+trajectory are the soaring costs and excessively high failure rates that continue to 
+plague late-phase clinical development [2,101] . Innovative approaches to the design 
+and execution of clinical trials hold promise for improving efficiency and reducing 
+attrition rates, thereby addressing a significant factor underlying stagnation in the 
+industry. 
+Indeed, opportunities for innovation in trial design and execution abound, and 
+run the spectrum from technical and methodological aspects to operational and 
+structural considerations. These opportunities include the application of novel tools 
+and methodologies, flexible and adaptive designs, new infrastructures to support 
+a ‘learning health system’ [3], open-sourced models, social media and web-based 
+approaches.
+Flexible trial designs
+Much has been written and debated on flexible and adaptive trial designs [4], yet 
+wide-scale adoption and integration into drug development strategies has lagged. 
+The US FDA, in its draft adaptive design guidance for industry, has stated that 
+the flexibility offered by adaptive design trials may be particularly useful in the 
+exploratory phase of development by allowing for the initial evaluation of a broad 
+range of choices for drug use, for discontinuation of suboptimal options, and for 
+optimization by further adaptations within a sequential study [5]. In this guidance 
+the FDA encourages sponsors to gain experience with these ‘less well-understood’ 
+methods in the exploratory study setting, in part because there is less impact on 
+regulatory approval decisions. The ability to adapt to rapidly changing information 
+can be used to enhance flexibility in designs spanning, for example, from single 
+ascending dose to multiple ascending dose studies, to seamless integration of proof-
+of-concept with dose ranging, and to target population enrichment strategies. A 
+flexible trial design can also allow for adaptation within a single dose-finding trial to 
+best assess the steepest part of the dose–response curve and to identify the minimal 
+effective dose. While such approaches can improve efficiency, reduce timelines 
+and make better use of available resources, significantly more up-front planning is 
+required when compared with more traditional designs. In the end, this may well be 
+worth the effort if successful identification of effective dose range and target patient 
+population are achieved before heading into more costly late development programs. 
+Novartis Pharmaceuticals, One Health Plaza,  
+East Hanover, NJ, USA  
+*Author for correspondence:  
+E-mail: john.orloff@novartis.com
+Keywords:   Bayesian methods • flexible designs • informatics • learning health system 
+• modeling and simulation • open innovation • web-based trials“It is imperative that everyone with 
+a stake in the viability of drug 
+development, and the delivery of 
+novel medicines to patients with 
+unmet needs, come together 
+collaboratively to work out 
+practical solutions that will move 
+us into a new era of productivity. ”
+339 10.4155/CLI.12.19 © 2012 Future Science Ltd ISSN 2041-6792
+For reprint orders, please contact reprints@future-science.com
+
+When it comes to late-phase clinical trials, there has 
+been general reluctance from industry to use flexible/
+adaptive designs, other than blinded sample size 
+re-estimation, with a few rare exceptions.  Blinded sample 
+size re-estimation is routinely applied by many industry 
+sponsors as it provides a mechanism for appropriately 
+adjusting the necessary sample size based on an interim 
+ana lysis [6], and thereby increasing confidence that an 
+appropriate sample size has been chosen to answer the 
+primary study questions. For more substantial trial 
+adaptations, one of the reasons for the low adoption 
+rate has been the hesitancy of major health authorities 
+to embrace such designs for pivotal trials that would 
+serve as the basis of registration. Careful attention to 
+details that safeguard the integrity of the trial and that 
+establish processes for selection decisions must be agreed 
+to in advance with regulators. This can require a lot of 
+planning and can potentially delay the initiation of the 
+trial, obviating much of the benefit. And flexible designs 
+are not appropriate for every situation; rather, they should 
+be considered in carefully selected circumstances with 
+valid approaches to implementation. Areas for further 
+exploration include the use of early interim analyses with 
+biomarker-defined end points to better determine the 
+timing of a final interim ana  lysis based on the primary 
+end point, and enrichment designs with interim decisions 
+on whether to base the claim on the total study population 
+or a subgroup [7]. More experience with such innovative 
+designs in late-phase clinical trials in collaboration with 
+health authorities should provide successful examples 
+that will illustrate the value of adaptation and hopefully 
+reduce some of the barriers to greater adoption.
+Novel statistical tools & methodologies
+Modeling and simulation can greatly aid in the 
+successful design of clinical trials. Indeed, modeling 
+and simulation tools are increasingly being used to 
+support development strategies and health authority 
+interactions throughout all phases of development 
+[8,9]. Biological and pharmacological modeling can 
+be very useful in the selection of a dose and dosing 
+regimen that optimizes the target clinical benefit while 
+minimizing undesirable adverse effects [10]. Data derived 
+from such modeling exercises can therefore provide 
+more objective justification for taking a specific dosing 
+regimen into a Phase III trial, which may also be useful 
+in addressing regulatory queries at the time of filing.  
+Furthermore, the design of Phase  III studies can be 
+supported by prospectively simulating the outcomes 
+of different trial designs, potentially improving success 
+rates for compounds with efficacy that is intrinsically 
+advantageous. Model-based drug development will 
+be a cornerstone of the new development paradigm 
+once there is greater experience and acceptance of its utility in supporting decision making across 
+development. Additional applications include target 
+and pathway evaluation in support of drug and disease 
+models, portfolio ana  lysis and product strategy, 
+Go/No Go decision ana  lysis, risk–benefit ana  lysis and 
+cost–effectiveness evaluations. 
+“Model-based drug development will be a 
+cornerstone of the new development paradigm 
+once there is greater experience and acceptance 
+of its utility in supporting decision making across 
+development. ”
+Bayesian methodologies combine prior data with 
+newly observed data, which may enhance the power of 
+the updated information [11]. Using Bayesian approaches, 
+limited available information may be maximized, power 
+calculations for sample size may be enhanced, and 
+potentially fewer studies and patients may be necessary 
+to address the program’s objectives. Modeling and 
+simulation techniques for the purposes outlined above 
+are also greatly facilitated by incorporating Bayesian 
+principles where applicable. The detection of safety and 
+efficacy signals can be made more efficient by deploying 
+longitudinal modeling approaches to make use of all 
+available information. Furthermore, the utility of 
+early phase studies can be enhanced by incorporating 
+the information obtained in them directly into later 
+phase trials [11,12] . Bayesian modeling techniques are 
+particularly useful in implementing these approaches. 
+Transforming clinical operations and the 
+research infrastructure 
+The Institute of Medicine (IOM) has published a report 
+on ‘The Learning Health System and its Innovation 
+Collaboratives’ [3] that describes a vision to apply the 
+best evidence for the healthcare choices of every patient 
+and provider, while promoting discovery and innovation 
+in healthcare. One of the transformation targets 
+identified in this report is clinical research. Untapped 
+opportunities exist to draw more frontline healthcare 
+providers into the clinical research enterprise and make 
+knowledge generation a part of the job description 
+for everyone delivering healthcare. This includes an 
+expanding set of new providers (e.g., nurse practitioners 
+and physician assistants) practicing in alternative care 
+settings such as pharmacies and convenient care clinics. 
+These alternative settings have the potential to reduce 
+some of the infrastructure costs and inefficiencies 
+associated with trials using more traditional clinical 
+investigative sites, while potentially accessing patients 
+at their local point of care. Appropriate incentive 
+systems will be required to engage busy healthcare 
+providers and to make it worth their while to devote 
+www.future-science.com future science group 340EDITORIAL   Orloff & Kralstein
+
+time and effort to clinical research, unless it becomes 
+integral to the delivery of healthcare itself. If this could 
+be accomplished, frontline providers could serve as 
+ambassadors for clinical research to patients, which 
+could go a long way to surmounting the reluctance of 
+many patients to participate in trials.
+Use of advanced technology & informatics for 
+disruptive innovation
+The clinical research enterprise in western countries 
+is being challenged by high costs, huge inefficiencies 
+and difficulty finding and recruiting patients. For 
+example, it has been estimated that less than 5% of 
+adults diagnosed with cancer each year will be treated 
+through enrolment in a clinical trial [102], and that 
+the vast majority of clinical trial costs are accounted 
+for by clinical sites. Greater use of health information 
+technology has the potential to significantly improve 
+efficiency and lower costs. This could be accomplished 
+in part by reducing screen failure rates through pre-
+identification of patients who meet the inclusion/
+exclusion criteria using electronic health records. Open 
+innovation models utilizing crowd-sourcing methods 
+[103] can leverage the full breadth of input from internal 
+and external experts, optimizing the design of trials and 
+taking transparency to the next level. 
+A transformative approach to reduce costs and provide 
+better access for patients has been piloted by conducting 
+trials directly with patients, also called ‘direct-to-
+participant’ trials [104]. This method uses a single center 
+overseen by a physician principal investigator, but 
+otherwise has no clinical sites and no clinical investigators. 
+The center interacts with participants via the internet or 
+by email, and therefore has the potential to reach patients 
+in remote areas regardless of proximity to a traditional 
+clinical site. Recruitment is accomplished by the 
+internet, consent is obtained via an interactive web-based process, and drug supply is distributed from a central 
+pharmacy. Data collection can also be accomplished 
+electronically [105], facilitated by smart phones or other 
+hand-held devices. These devices could greatly hasten 
+the incorporation of patient-reported outcomes into 
+clinical trials, delivering on a growing demand for such 
+data from patients, physicians and payers that goes well 
+beyond the registration needs of regulatory authorities. 
+While support from regulatory bodies and ethics review 
+boards has been achieved for over-the-counter and 
+marketed products, the next frontier is to explore the 
+utility of this approach to products in development and 
+to end points other than patient-reported outcomes. This 
+will require further discussions with health authorities, 
+and may ultimately be achieved for selected disorders 
+and some investigational therapies in the near future. 
+However, if these novel methods could be applied more 
+broadly, incredible efficiencies in trial costs and in patient 
+enrolment could become a reality. 
+Opportunities for innovation: moving forward
+The pharmaceutical industry is facing a productivity 
+challenge. The business model should change if we are 
+to reap the full benefit of having sequenced the human 
+genome and deliver on the promise of a continued 
+stream of breakthrough therapies. A key component 
+of the new paradigm must include a transformed 
+clinical research enterprise and the integration of 
+novel approaches, some of which are outlined above. 
+Opportunities for innovation spanning scientific, 
+technical and operational domains have been identified, 
+with many credible solutions already on the table. It is 
+imperative that everyone with a stake in the viability 
+of drug development, and the delivery of novel 
+medicines to patients with unmet needs, come together 
+collaboratively to work out practical solutions that will 
+move us into a new era of productivity.
+Disclaimer
+Opinions expressed represent those of the authors and 
+do not represent the official position of Novartis 
+Pharmaceuticals.
+Financial & competing interests 
+disclosure
+JJ Orloff and J Kralstein are employees of Novartis 
+Pharmaceuticals Corporation. The authors have no 
+other relevant affiliations or financial involvement 
+with any organization or entity with a financial 
+interest in or financial conflict with the subject mat -
+ter or materials discussed in the manuscript apart 
+from those disclosed. No writing assistance was 
+utilized in the production of this manuscript. References
+1 DiMasi JA, Grabowski HG. The cost of 
+biopharmaceutical R&D: is biotech different? 
+Managerial & Decision Economics  28, 469–479 
+(2007). 
+2 Ledford H. Translational research: 4 ways to fix 
+the clinical trial . Nature 477, 526–528 (2011).
+3 Institute of Medicine of the National Academies. 
+The Learning Health System and its Innovation 
+Collaboratives. Update report. (2011).
+4 Krams M  Burman CF, Dragalin V  et al. 
+Adaptive designs in clinical drug development: 
+opportunities, challenges, and scope reflections 
+following PhRMA’s November 2006 workshop. 
+J. Biopharm. Stat. 17, 957–964 (2007).5 US Department of Health and Human 
+Services , FDA, Center for Drug Evaluation 
+and Research , Center for Biologics 
+Evaluation and Research . Guidance for 
+industry. Adaptive design clinical trials for 
+drugs and biologics. Draft guidance.  
+(2010).
+6 Chuang-Stein C, Anderson K, Gallo P, 
+Collins S. Sample size reestimation: a review 
+and recommendations. Drug Inf. J.  40, 
+475–484 (2006).
+7 Jenkins M, Stone A, Jennison C. An 
+adaptive seamless Phase  II/III design for 
+onolcogy trials with subpopulation selection 
+using correlated survival endpoints. 
+Pharmaceutical Statistics  10, 347–56 (2011).    Opportunities for innovation in the design & execution of clinical trials EDITORIAL
+future science group Clin. Invest.  (2012) 2(4) 341
+
+8 Miller R, Ewy W, Corrigan BW  et al.  How 
+modeling and simulation have enhanced 
+decision making in new drug development. 
+J. Pharmacokinet. Pharmacodyn.  32, 185–197 
+(2005).
+9 Wang Y, Bhattaram VA, Jadhav PR et al.  
+Leveraging prior quantitative knowledge to 
+guide drug development decisions and 
+regulatory science recommendations: impact 
+of FDA Pharmacometrics during 2004–2006. 
+J. Clin. Pharmacol.  48(2), 146–56 (2008).
+10 Goggin T. et al.  Modeling and simulation of 
+clinical trials: an industrial perspective. In: 
+Simulation for Designing of Clinical Trials . Kimko HC & Duffull SB (Eds). Marcel 
+Dekker, NY, USA 227–224 (2002).
+11 Berry DA. Bayesian clinical trials. Nature Rev. 
+Drug Discov.  5, 27–36 (2006).
+12 Lalonde RL,  Kowalski KG, Hutmacher  MM 
+et al.  Model-based drug development. Clin. 
+Pharmacol. Ther.  82, 21–32 (2007).
+ ■Websites
+101 KMR Group industry success rates 
+2006–2010.  
+www.kmrgroup.com/
+PressReleases/2012_01_09%20KMR%20
+PBF%20Success%20Rate%20Press%20
+Release.pdf102 National Cancer Institute: boosting cancer 
+trial participation (2011).  
+www.cancer.gov/clinicaltrials
+103 Mintz C. Crowdsourcing Pharma Drug 
+Development.  
+www.lifescienceleader.com
+104 Corbett-Dooren J.  A clinical drug trial via 
+phone, computer. Wall Street Journal.  June 7, 
+2011.  
+http://online.wsj.com/article/SB1000142405
+2702304432304576369840721708396.html
+105 Mitchel JT. The paperless clinical trial (2011).  
+www.theconferenceforum.org/JulesMitchel.
+pdf
+www.future-science.com future science group 342EDITORIAL   Orloff & Kralstein
+

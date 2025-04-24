@@ -1,0 +1,515 @@
+1
+Q14: Analytical Procedure Development
+Q2(R2): Validation of Analytical Procedures
+Step 4 documents –to be implemented
+6 November 2023
+International Council for Harmonisation of Technical Requirements
+for Pharmaceuticals for Human Use
+
+
+2Legal Notice
+•This presentation isprotected bycopyright andmay, with theexception ofthe
+ICH logo, beused, reproduced, incorporated into other works, adapted,
+modified, translated ordistributed under apublic license provided that ICH's
+copyright inthepresentation isacknowledged atalltimes .Incase ofany
+adaption, modification ortranslation ofthepresentation, reasonable steps must
+betaken toclearly label, demarcate orotherwise identify that changes were
+made toorbased ontheoriginal presentation .Any impression that the
+adaption, modification ortranslation oftheoriginal presentation isendorsed or
+sponsored bytheICHmust beavoided .
+•The presentation isprovided "asis"without warranty ofanykind.Innoevent
+shall theICHortheauthors oftheoriginal presentation beliable foranyclaim,
+damages orother liability arising from theuseofthepresentation .
+•The above -mentioned permissions donotapply tocontent supplied bythird
+parties .Therefore, fordocuments where thecopyright vests inathird party,
+permission forreproduction must beobtained from thiscopyright holder .ICH Q14: Analytical Procedure Development
+ICH Q2(R2): Validation of Analytical Procedures
+2
+
+3Background
+•The documents have been signed offasStep 4
+documents (1November 2023 )tobeimplemented by
+theICHRegulatory Members
+•The documents were developed based onaConcept
+Paper (15November 2018 )and aBusiness Plan (15
+November 2018 )ICH Q14: Analytical Procedure Development
+ICH Q2(R2): Validation of Analytical Procedures
+
+4Key Principles
+•Together ICH Q14and ICH Q2(R2)describe the
+development andvalidation activities during thelifecycle of
+ananalytical procedure used fortheassessment ofthe
+quality ofdrug substances anddrug products .
+•ICH Q14 describes the scientific principles for
+development, change management and submission
+requirements ofanalytical procedures fortheminimal and
+enhanced approach .
+•ICHQ2(R2)provides guidance forestablishing, submitting
+andmaintaining evidence thatananalytical procedure isfit
+fortheintended purpose (assuring drug quality) .ICH Q14: Analytical Procedure Development
+ICH Q2(R2): Validation of Analytical Procedures
+
+5Guideline Objectives –ICH Q14
+•Describes science andrisk-based approaches fordeveloping andmaintaining
+analytical procedures that arefitfortheintended purpose, inlinewith the
+systematic approach suggested inICHQ8andusing principles ofICHQ9.
+•Outlines aminimal approach and elements ofanenhanced approach for
+analytical procedure development .
+•Describes considerations forthe development ofmultivariate analytical
+procedures andforrealtime release testing (RTRT) .
+•Provides guidance onhow principles described inICH Q12can support
+change management ofanalytical procedures based onriskmanagement,
+comprehensive understanding oftheanalytical procedure andadherence to
+predefined criteria forperformance characteristics .
+•Includes submission considerations ofanalytical procedure development and
+related lifecycle information intheCommon Technical Document (CTD)
+format .ICH Q14: Analytical Procedure Development
+
+6Expected Benefits –ICH Q14
+•Harmonizes scientific approaches and terminology for analytical procedure 
+development (including multivariate analytical procedures and RTRT).
+•Provides more reliable analytical procedures through the application of 
+enhanced approaches.
+•Improves communication between regulators and industry around analytical 
+procedures.
+•Employs predefined performance characteristics guides development and 
+facilitates regulatory change management of analytical procedures.
+•Reduces the amount of effort across the analytical procedure lifecycle.
+•Enables effective analytical procedure knowledge and risk management to 
+facilitate continual improvement.ICH Q14: Analytical Procedure Development
+
+7Table of Contents –ICH Q14 Main Guideline
+1.Introduction (Objective andScope oftheGuideline)
+2.General Considerations forAnalytical Procedures
+3.Analytical Target Profile
+4.Knowledge andRisk Management inAnalytical Procedure Development
+andContinual Improvement
+5.Evaluation ofRobustness and Parameter Ranges ofAnalytical
+Procedures
+6.Analytical Procedure Control Strategy
+-Established Conditions forAnalytical ProceduresICH Q14: Analytical Procedure Development
+
+8Table of Contents –ICH Q14 Main Guideline
+7.Lifecycle Management and Post -Approval Changes of Analytical 
+Procedures
+8.Development of Multivariate Analytical Procedures: Additional 
+Considerations
+9.Development of Analytical Procedures for Real Time Release Testing: 
+Additional Considerations
+10.Submission of Analytical Procedure Related Information
+11.Glossary
+12.References
+13.AnnexesICH Q14: Analytical Procedure Development
+
+9Table of Contents –ICH Q14 Annex
+•Annex A –Examples of Application of ICH Q14 Principles
+-Measurement of Stereoisomers as Specific Process Related Impurities 
+in a Small Molecule Drug Substance (DS)
+-Measurement of Potency for an anti -TNF-alpha Monoclonal Antibody
+•Annex B: Example of Multivariate Model Lifecycle ComponentsICH Q14: Analytical Procedure Development
+
+10Chapter 1.2: Scope
+•This guideline applies toanalytical procedures used forrelease
+and stability testing ofcommercial drug substances and
+products .
+•Theguideline canalso beapplied toother analytical procedures
+used aspart ofthecontrol strategy (ICH Q10Pharmaceutical
+Quality System) following arisk-based approach .
+•Thescientific principles described inthisguideline canbeapplied
+inaphase -appropriate manner toanalytical procedures used
+during clinical development .ICH Q14: Analytical Procedure Development
+
+11Chapter 2.1: Minimal versus Enhanced Approaches to 
+Analytical Procedure Development
+•Identifying attributes that need to 
+be tested
+•Selecting appropriate technology 
+and related instruments
+•Conducting appropriate 
+development studies
+•Documenting the analytical 
+procedure descriptionICH Q14: Analytical Procedure Development
+Minimal approach
+•Evaluating the sample properties
+•Defining the analytical target 
+profile (ATP)
+•Conducting risk assessment and 
+evaluating prior knowledge
+•Conducting uni-or multi -variate 
+experiments
+•Defining the analytical procedure 
+control strategyElements of the enhanced approach
+
+12ICH Q14: Analytical Procedure Development
+Chapter 2.2: Analytical Procedure Lifecycle
+
+
+13Chapter 3: Analytical Target Profile
+ATP isanelement oftheenhanced approach
+•Aprospective summary oftheperformance characteristics describing
+theintended purpose and theanticipated performance criteria ofan
+analytical measurement .
+•Facilitates theselection ofthetechnology, theprocedure design and
+development aswell asthesubsequent performance monitoring and
+continual improvement oftheanalytical procedure .
+•Multiple available analytical techniques may meet theperformance
+requirements .
+•Maintained over thelifecycle and canbeused asbasis forlifecycle
+management .
+•Examples described inAnnex A.ICH Q14: Analytical Procedure Development
+
+14Chapter 4: Knowledge and Risk Management in Analytical 
+Procedure Development and Continual Improvement
+Knowledge Management
+•Prior knowledge isexplicitly orimplicitly used forinforming decisions
+during analytical procedure development andlifecycle management .
+•Prior product knowledge plays animportant role inidentifying the
+appropriate analytical technique .
+•Knowledge ofbest practices andstate -of-the-arttechnologies aswell as
+regulatory expectations contributes totheselection ofthemost suitable
+technology foragiven purpose .
+•Platform analytical procedures canbeleveraged toevaluate theattributes
+ofaspecific product without conducting additional procedure
+development .
+•Knowledge related toanalytical procedures should beactively managed
+throughout theproduct lifecycle .ICH Q14: Analytical Procedure Development
+
+15Chapter 4: Knowledge and Risk Management in Analytical 
+Procedure Development and Continual Improvement
+Quality Risk Management (QRM)
+•Risk assessment tools as described in ICH Q9 can be used to identify 
+and assess analytical procedure parameters (factors and operational 
+steps) with potential impact on performance and prioritize them for 
+experimental investigation.
+•The analytical procedure control strategy can be established following 
+risk control principles.
+•Continual improvement of analytical procedure performance should be 
+supported by risk communication.ICH Q14: Analytical Procedure Development
+
+16Chapter 5: Evaluation of Robustness and 
+Parameter Ranges of Analytical Procedures
+•Therobustness ofananalytical procedure isameasure ofitscapacity
+tomeet theexpected performance requirements during normal use.
+•Robustness istypically conducted during development and does not
+necessarily need toberepeated during validation .
+•Depending onthedesign and outcome ofthedevelopment studies,
+proven acceptable ranges foranalytical procedures (PAR) ormethod
+operable design regions (MODR) may beestablished forasingle or
+multiple parameters .
+•Moving within anestablished parameter range (once approved) does
+notrequire regulatory notification .
+•The part ofaPAR oranMODR intended forroutine use must be
+covered byvalidation data.The extent ofvalidation tests should be
+justified .ICH Q14: Analytical Procedure Development
+
+17Chapter 6: Analytical Procedure Control Strategy
+•Ensures that theanalytical procedure isfitfortheintended purpose
+during routine usethroughout itslifecycle .
+•Includes analytical procedure parameters needing control and the
+system suitability test(SST) which ispart oftheanalytical procedure .
+TheSST isdesigned toverify selected analytical procedure attributes .
+•Sample suitability assessment may berequired toensure acceptable
+sample response inaddition toSST.
+•The analytical procedure should describe the steps necessary to
+perform each analytical test.The level ofdetail should enable askilled
+analyst toperform theanalysis andinterpret theresults .ICH Q14: Analytical Procedure Development
+
+18Chapter 6: Analytical Procedure Control Strategy
+Established Conditions (ECs) foranalytical procedures
+•InlinewithICHQ12.
+•Nature and extent ofECs depends ondevelopment approach,
+complexity oftheanalytical procedure anddemonstrated understanding .
+•With aminimal approach, thenumber ofECs may beextensive with
+fixed analytical procedure parameters andsetpoints .
+•Intheenhanced approach anincreased understanding ofanalytical
+procedure parameters and impact on performance facilitates
+identification ofwhich factors require control and thus enable amore
+appropriate setofECs (examples inAnnex A).
+•ECs could befocused onanalytical procedure performance .ICH Q14: Analytical Procedure Development
+
+19Chapter 6: Analytical Procedure Control Strategy
+ECs could consist of:
+•Performance characteristics andassociated criteria (e.g.,included in
+anATP)
+•Analytical procedure principle (i.e.,thephysicochemical basis or
+specific technology)
+•SST andsample suitability assessment criteria
+•Set points and/or ranges forone ormore analytical procedure
+parametersICH Q14: Analytical Procedure Development
+
+20Chapter 7: Lifecycle Management and Post -
+Approval Changes of Analytical Procedures
+•IfECs arenotproposed inthedossier, anychanges should bereported
+according toexisting regional reporting requirements .
+•The useofdifferent elements oftheenhanced approach canfacilitate
+management andregulatory communication ofpost-approval changes .
+•Incases where ECs areproposed, theriskassociated with prospective
+changes should beassessed upfront todefine theappropriate reporting
+category .Thereporting category should becommensurate withtherisk.
+•During implementation QRM canbeused tore-confirm thattheoriginally
+agreed reporting category isstillappropriate .The outcome ofthisrisk
+assessment informs thedesign and extent ofthestudies needed to
+support thechange including anappropriate bridging strategy .ICH Q14: Analytical Procedure Development
+
+21Chapter 7: Lifecycle Management and Post -
+Approval Changes of Analytical ProceduresICH Q14: Analytical Procedure Development
+1) Including analytical procedure control strategy
+2) In some cases, moderate risk changes proposed by the company may require prior 
+approval based on health authority feedback
+
+
+22Chapter 8: Development of Multivariate 
+Analytical Procedures: Additional Considerations
+•Expectations for the development of multivariate analytical procedures 
+are provided by describing the following important aspects:
+•Sample and sample population
+•Variable selection
+•Data transformation
+•Robustness
+•Recalibration and model maintenance
+•The multivariate model lifecycle is iterative and can be broken down into 3 
+major components: (1) model establishment, (2) routine use and (3) 
+model maintenance.
+•Example of Multivariate Model Lifecycle Components is provided in 
+Annex BICH Q14: Analytical Procedure Development
+
+23Chapter 9: Development of Analytical Procedures for 
+Real Time Release Testing: Additional Considerations
+•Real Time Release Testing (RTRT) canbebased onanappropriate
+combination ofone ormore process measurements and/or material
+attributes toprovide avalue foroneormore critical quality attributes
+(CQAs) andshould bespecific forthose CQAs .
+•Therelationship between theRTRT approach andtheCQAs, aswell
+asacceptance criteria, should befullyjustified .
+•AnRTRT analytical procedure should bevalidated asrecommended
+inICH Q2and itshould bedemonstrated that the process
+measurements have appropriate specificity forthetargeted quality
+attribute .
+•Consideration forsample andsample interface areprovided .
+•Theimpact onproduct specifications ifanRTRT approach isused is
+described .ICH Q14: Analytical Procedure Development
+
+24Chapter 10: Submission of Analytical Procedure Related 
+Information
+•Information tobeincluded intheCTD sections 3.2.S.4.2and3.2.P.5.2.
+•Theanalytical procedure description
+•Inthe enhanced approach :Performance characteristics and
+acceptance criteria andother elements oftheenhanced approach
+•Other analytical procedures used aspart ofthecontrol strategy can be
+included inrelevant CTD sections (e.g.,3.2.S.2,3.2.P.3and3.2.P.4).
+•Information tobeincluded intheCTD section 3.2.S.4.3and section
+3.2.P.5.3
+•Validation data
+•Additional development andadditional information needed tojustify the
+control strategy, ECs and their reporting categories tosupport the
+proposed lifecycle management strategy
+•Specific guidance forsubmission ofmultivariate analytical procedures and
+their validation isprovidedICH Q14: Analytical Procedure Development
+
+25Annex A: Examples of Application of ICH Q14 
+Principles
+Provides examples describing how
+•Analytical procedure performance characteristics derived from the
+product context andknowledge could besummarized inanATP, which
+canbeused toguide development oftheanalytical procedure
+•ECs foranalytical procedures canbeidentified (enhanced approach)
+•QRM andtheadherence toassociated criteria forrelevant performance
+characteristics can:
+•Help tojustify therespective reporting categories forECs;
+•Ensure thepost-change quality ofthemeasured result during post
+approval change management ofanalytical procedures .
+•Example 1:Measurement ofStereoisomers asSpecific Process Related
+Impurities inaSmall Molecule Drug Substance (DS)
+•Example 2:Measurement ofPotency forananti-TNF-alpha Monoclonal
+AntibodyICH Q14: Analytical Procedure Development
+
+26Guideline Objectives –ICH Q2
+•Presents elements forconsideration during thevalidation ofanalytical
+procedures included aspartofregistration applications .
+•Provides guidance onselection and evaluation ofthe various
+validation tests foranalytical procedures .
+•Includes acollection ofrelevant terms andtheir definitions .
+•Bridges thedifferences that often exist between various compendia
+anddocuments oftheICHmember regulatory authorities .
+•Provides anindication ofthedata which should bepresented ina
+regulatory submission .ICH Q2(R2): Validation of Analytical Procedures
+
+27Expected Benefits –ICH Q2(R2)ICH Q2(R2): Validation of Analytical Procedures
+•Encourages theuseofmore advanced analytical procedures leading to
+more robust quality oversight bypharmaceutical drug manufacturers .
+•Adequate validation data, resulting inreduction ofinformation requests
+andresponses, which candelay application approval .
+•Modernisation ofgeneral methodology toinclude analytical procedures
+and data evaluation forbiotechnological products, future modalities and
+statistical/multivariate data evaluations .
+•Enables efficient useofprior knowledge tosupport analytical procedure
+validation .
+
+28Table of Contents
+1 INTRODUCTION (including Objective and Scope)
+2 GENERAL CONSIDERATIONS FOR ANALYTICAL PROCEDURE VALIDATION
+2.1 Analytical Procedure Validation Study
+2.2   Validation During the Lifecycle of an Analytical Procedure
+2.3 Reportable Range
+2.4 Demonstration of Stability -Indicating Properties
+2.5 Considerations for Multivariate Analytical Procedures
+3 VALIDATION TESTS, METHODOLOGY AND EVALUATION
+3.1 Specificity/Selectivity
+3.2 Range
+3.3 Accuracy and Precision
+3.4 Robustness
+4 GLOSSARY
+5 REFERENCES
+6 ANNEX 1: SELECTION OF VALIDATION TESTS
+7 ANNEX 2: ILLUSTRATIVE EXAMPLES FOR ANALYTICAL TECHNIQUESICH Q2(R2): Validation of Analytical Procedures
+
+29Chapter 1.2 –Scope 
+•This guideline applies toanalytical procedures used forrelease
+andstability testing ofcommercial drug substances andproducts .
+•The guideline canalso beapplied toother analytical procedures
+used aspart ofthecontrol strategy (ICH Q10Pharmaceutical
+Quality System) following arisk-based approach .
+•Thescientific principles described inthisguideline canbeapplied
+inaphase -appropriate manner toanalytical procedures used
+during clinical development .ICH Q2(R2): Validation of Analytical Procedures
+
+30Chapter 2 –General Considerations for Analytical 
+Procedure ValidationICH Q2(R2): Validation of Analytical Procedures
+•Links ICHQ2andICHQ14.
+•Guidance onhow prior knowledge can beincorporated into the
+validation study design .
+•Validation approaches during the analytical procedure lifecycle
+(partial, co-validation) .
+•Expected reportable ranges for common uses ofanalytical
+procedures .
+•Contains Table 1:“Typical performance characteristics and related
+validation tests formeasured quality attributes .”
+
+31Chapter 2 –Table 1ICH Q2(R2): Validation of Analytical Procedures
+
+
+32Chapter 2 –Figure 1ICH Q2(R2): Validation of Analytical Procedures
+
+
+33Chapter 3 -Validation Tests, Methodology and Evaluation
+Chapter 3.1 -Specificity/SelectivityICH Q2(R2): Validation of Analytical Procedures
+•The specificity or selectivity ofananalytical procedure can be
+demonstrated through
+•absence ofinterference
+•comparison ofresults toanorthogonal procedure
+•inherently given bytheunderlying scientific principles ofthe
+analytical procedure .
+•Selectivity could bedemonstrated when theanalytical procedure is
+notspecific .
+•For identification tests, acritical aspect istodemonstrate the
+capability toidentify theanalyte ofinterest based onunique aspects
+ofitsmolecular structure and/or other specific properties .
+•The specificity/selectivity ofananalytical procedure should be
+demonstrated tofulfil theaccuracy requirements forthecontent or
+potency ofananalyte inthesample .
+
+34Chapter 3.2 -RangeICH Q2(R2): Validation of Analytical Procedures
+•Depending onthesample preparation (e.g.,dilutions) andtheanalytical
+procedure selected, thereportable range canlead toaspecific working
+range .
+•Linear response :Alinear relationship between analyte concentration and
+response should beevaluated across the range ofthe analytical
+procedure .
+•Non-linear response :Thesuitability ofthemodel should beassessed by
+means ofnon-linear regression analysis (e.g.,coefficient of
+determination) .
+•Multivariate response :Algorithms used forconstruction ofmultivariate
+calibration models canbelinear ornon-linear, aslong asthemodel is
+appropriate forestablishing therelationship between thesignal andthe
+quality attribute ofinterest .
+•Validation oflower range limits :Detection andQuantitation Limits canbe
+validated through signal -to-noise, Standard Deviation ofaLinear
+Response andaSlope orthrough Accuracy andPrecision atlower range
+limits .
+
+35Chapter 3.3 -Accuracy and PrecisionICH Q2(R2): Validation of Analytical Procedures
+•Accuracy andprecision canbeevaluated independently, each witha
+predefined acceptance criterion .
+•Accuracy should beestablished across thereportable range ofan
+analytical procedure andistypically demonstrated through reference
+material comparison ,aspiking study oranorthogonal procedure
+comparison .
+•Precision :Validation oftests forassay and forquantitative
+determination ofimpurity (purity) includes aninvestigation of
+precision .Repeatability and intermediate precision are typically
+determined .Investigation ofreproducibility isusually notrequired for
+regulatory submission .
+•Analternative toaseparate evaluation ofaccuracy andprecision is
+toconsider their total impact byassessing against acombined
+performance criterion .
+
+36Chapter 3.4 -RobustnessICH Q2(R2): Validation of Analytical Procedures
+•The evaluation oftheanalytical procedure’s suitability within the
+intended operational environment should beconsidered during the
+development phase and depends onthetype ofprocedure under
+study .
+•Robustness testing should show thereliability ofananalytical
+procedure inresponse todeliberate variations inanalytical
+procedure parameters including stability ofthesample preparation
+andreagents .
+•Therobustness evaluation canbesubmitted aspartofdevelopment
+data forananalytical procedure onacase -by-case basis orshould
+bemade available upon request .
+•Forfurther details, seeICHQ14.
+
+37Annex 1 -Selection of validation testsICH Q2(R2): Validation of Analytical Procedures
+
+
+38Annex 2 -Illustrative Examples for Analytical TechniquesICH Q2(R2): Validation of Analytical Procedures
+Specific non-binding examples forcommon techniques :
+•Separation techniques (e.g.,HPLC, GC,CE)forimpurities orassay
+•Separation techniques with relative areaquantitation, (e.g.,product -related
+substances such ascharge variants)
+•Elemental Impurities byICP-OES orICP-MS
+•Dissolution with HPLC asproduct performance testforanimmediate release
+dosage form
+•Quantitative1H-NMR (internal standard method) fortheassay ofadrug
+substance
+•Binding assay (e.g.,ELISA, SPR) orcell-based assay fordetermination of
+potency relative toareference
+•Quantitative PCR (quantitative analysis ofimpurities indrug substances or
+products)
+•Particle size measurement (dynamic light scattering ;laser diffraction
+measurement) asaproperty test
+•NIRanalytical procedure forcore tablet assay
+•Quantitative LC/MS analysis oftrace impurities inproduct
+
+39Considerations
+•The ICH Q14and ICH Q2(R2)guidelines should beapplied in
+conjunction with other existing and prospective ICH“Q”guidelines,
+including Q8–Q13.
+•Analytical procedure development can beperformed following a
+minimal orenhanced approach .Though notmandatory, theuse of
+individual elements oftheenhanced approach isencouraged tobe
+applied inanasneeded basis .
+•Tools andenablers discussed inICH Q12areapplicable toanalytical
+procedures, irrespective ofthedevelopment approach .
+•Examples inICH Q2Annex 2describe common analytical
+technologies .The principles, however, can beapplied inasimilar
+fashion toother analytical technologies .ICH Q14: Analytical Procedure Development
+ICH Q2(R2): Validation of Analytical Procedures
+
+40Conclusions
+•The ICH Q14and ICH Q2(R2)guidelines establish harmonised
+scientific and technical principles foranalytical procedures over the
+entire analytical procedure lifecycle .
+•Applying principles described inICH Q14can improve regulatory
+communication between industry and regulators and facilitate more
+efficient, sound scientific and risk-based approval aswell aspost-
+approval change management ofanalytical procedures .
+•ICH Q2(R2)willcontinue toprovide ageneral framework forthe
+principles ofanalytical procedure validation andhasbeen modernised
+toinclude newer technologies (e.g.,forbiological products or
+multivariate analytical procedures) .ICH Q14: Analytical Procedure Development
+ICH Q2(R2): Validation of Analytical Procedures
+
+41Contact
+•For any questions please contact the ICH Secretariat: 
+admin@ich.org ICH Q14: Analytical Procedure Development
+ICH Q2(R2): Validation of Analytical Procedures
+

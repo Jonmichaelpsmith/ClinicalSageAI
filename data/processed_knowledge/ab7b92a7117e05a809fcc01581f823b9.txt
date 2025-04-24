@@ -1,0 +1,811 @@
+CLINICAL 
+EVALUATION 
+REPORT
+STATE OF THE ART
+
+1
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+EXECUTIVE SUMMARY
+Providing evidence that corroborates conformity with the General Safety and Performance Requirements outlined in Annex I of EU 2017/745 MDR and EU 2017/746 IVDR is a complex process 
+that requires the identification, retrieval, appraisal and critical analysis of a wide range of data covering the entire lifetime of a medical device and/or an in-vitro diagnostic medical device. 
+DISCLAIMER 
+This white paper is issued for information only. It does not substitute Medical Device Regulations, Directives, official Guidance(s) and/or official or agreed advice from designated Notified Bodies. The views expressed are entirely those of its authors. All rights reserved. Except as permitted 
+under the Copyright, Designs and Patents Act 1988, no part of this publication may be reproduced without prior permission in writing from Evnia. Whilst every care has been taken in developing and compiling this publication, Evnia accepts no liability for any loss or damage caused, arising 
+directly or indirectly in connection with reliance on its contents except to the extent that such liability may not be excluded in law. Whilst every effort has been made to trace all copyright holders, anyone claiming copyright should get in touch with Evnia at any of the addresses of the last page. Preclinical studies, verification and validation data including design and manufacturing aspects, clinical investigations, post-market surveillance activities as well as up-to-date risk management data are pieces of a puzzle that is never complete without the clinical evaluation of the medical device.
+The clinical evaluation report (CER) in its turn, heavily relies on the State of the Art (SotA) discussion to identify whether
+ the medical and/or in-vitro diagnostic medical device achieves its intended purpose without exposing users and patients to unidentified risks and
+ the benefit/risk ratio for the medical device is acceptable when weighed against the benefits to the patient
+Nevertheless, there is no consensus on what State of the Art is or what it should discuss. In this paper
+ we will discuss the challenges a CER author will have to overcome while building up a SoTA section, we will discuss resources and practical solutions/best practices to 
+facilitate its preparation.
+
+2
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97THE CLINICAL 
+EVALUATION AS PART OF TECHNICAL DOCUMENTATION
+A Clinical Evaluation is the assessment and analysis of clinical data 
+pertaining to a medical device and/or in-vitro diagnostic medical device and is intended to document and verify all aspects of its clinical safety and performance as well as to confirm accuracy of the accompanying labelling. 
+Clinical evaluation is a risk-assessment based process taking into account 
+pre- and post-market clinical data from various sources (e.g. clinical investigations, vigilance databases, PMCF activities etc.) as well as verification and validation data of the device in scope, which are cross-checked with benchmark and/or equivalent devices with the same intended use. 
+The process, which is documented in a clinical evaluation report (hereinafter 
+CER) that is part of the Technical Documentation (TechDoc) of the medical device in scope, aims to provide conclusive evidence that the medical device 
+ fulfils the General Safety and Performance Requirements outlined inAnnex I of EU 2017/745 MDR
+1 and EU 2017/746 IVDR2
+ achieves its intended purpose without exposing users and patients tounidentified risks
+ the benefit/risk ratio for the medical device is acceptable whenweighed against the benefits to the patient.
+2 PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+
+3
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97STATE OF THE 
+ART AS PART OF 
+THE CLINICAL 
+EVALUATION 
+SCOPE OF THIS PAPER
+The State of the Art (hereinafter SotA) section stands in the core 
+of a Clinical Evaluation Report (CER) for Medical Devices prepared 
+under the requirements of EU 2017/745 MDR and EU 2017/746 
+IVDR. The regulatory demand for a coherent risk/benefit narrative 
+and a rigorous juxtaposition of systematically collected data 
+associated with all facets of the corresponding medical field 
+is one of the primary objectives of the CER author. However, 
+preparing a SotA section is often linked to a number of pitfalls and 
+challenges that may introduce delays, narrative ambivalence and 
+even jeopardize the credibility of conclusions drawn in the CER. 
+The purpose of this paper is to discuss such challenges, 
+identify their potential sources and propose solutions and/
+or some best practices that a CER author will be able to 
+implement in his/her everyday practice. Moreover, this paper 
+intents to provide some best practices for SotA writing in CERs.
+3 CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE
+
+4
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+
+
+5
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97DEFINING THE STATE 
+OF THE ART
+The term “State of the Art” is mentioned 12 times  in the EU 2017/745 MDR and 20 
+times in EU 2017/746 IVDR but lacks an explicit definition. There have been various 
+efforts to define “State of the Art” (see Table 1) but up until the time this paper was 
+published, there was no consensus over its definition. Even the recent MDCG 2020-
+133 document, intending to provide a guidance to Notified Bodies how to assess CERs, 
+provides a whole section with points on what should be included in a SotA without 
+actually defining what SotA is in the context of the new Medical Device Regulations!
+Nevertheless, although we know more about what SotA is not and less about how to frame 
+it (see Figure 1), all available definitions highlight that SotA is bounded by the intended 
+use of the medical device. As an integral part of the CER, SotA section is expected to 
+frame the intended medical field and identify alternative treatment options and potential 
+similar/benchmark and/or equivalent devices. Once identified, SotA discussion should 
+aim to retrieve evidence on risks associated with the intended use that will allow the the 
+comparison of device-specific risk management and vigilance data with alternative practices. 
+However, the purpose of a well-structured and MDR-compliant SotA section is not only to layout 
+hazards and complications but rather to identify the safety and performance endpoints to 
+be used for the assessment of clinical (and non-clinical when applicable, e.g. biomechanical) 
+data that will be used to determine the acceptability of the device’s benefit-risk profile. 
+iChpt I, Art. 1, par 2; Chpt VI, Art. 62; par. 4(I), Chpt VIII, Art. 106, par. 10(c, d); Annex I, Chpt 1, par.1; Annex I, Chpt1 & Chpt 4; Annex I, Chpt II, par. 17.2; Annex IX, Chpt I, par. 2; Annex XIV,  part A, par. 1(a); Annex XV, Chpt II, par. 3.2 & 3.4; Annex XV, Chpt III, par. 7Table 1: Various Definitions of “State of the Art”
+Figure 1: What is NOT State of the ArtWho defines it Definition
+ISO 14971, 20194Developed stage of technical capability at a given time as regards products, processes and 
+services, based on the relevant consolidated findings of science, technology and experience
+Note 1 to entry: The state of the art embodies what is currently and generally accepted 
+as good practice in technology and medicine. The state of the art does not necessarily 
+imply the most technologically advanced solution. The state of the art described 
+here is sometimes referred to as the “generally acknowledged state of the art’’. 
+MDCG 2020-6, 
+according to IMDRF/
+GRRP WG/N475Developed stage of current technical capability and/or accepted clinical 
+practice in regard to products, processes and patient management, based 
+on the relevant consolidated findings of science, technology and experience’.
+Note: The state of the art embodies what is currently and generally accepted as 
+good practice in technology and medicine. The state of the art does not necessarily 
+imply the most technologically advanced solution. The state of the art described 
+here is sometimes referred to as the “generally acknowledged state of the art.’’ 
+MEDDEV 2.7.1. rev46Includes applicable standards and guidance documents, data that relate to benchmark 
+devices, other devices, critical components and medical alternatives or to the specific 
+medical conditions and patient populations intended to be managed with the 
+device. The data are typically needed in order to - describe the clinical background 
+and identify the current knowledge/ state of the art in the corresponding medical 
+field, - identify potential clinical hazards (including hazards due to substances and 
+technologies, manufacturing procedures and impurity profiles), - justify the validity 
+of criteria used for the demonstration of equivalence (if equivalence is claimed), - 
+justify the validity of surrogate endpoints (if surrogate endpoints are used). […] A 
+review of the current knowledge/ the state of the art needed for the proper conduct 
+of the appraisal and analysis of the clinical data of the device under evaluation and 
+the equivalent device (i.e. applicable standards and guidance documents, information 
+on the medical conditions that are relevant to the clinical evaluation, therapeutic/ 
+management/ diagnostic options available for the intended patient population, etc.)
+STATE OF THE ART IS NOT
+• The most innovative
+• The most technologically advanced
+• The most expensive
+• The most frequently used
+• The less “dangerous” (use-associated risks) medical device and/
+or in vitro diagnostic deviceTherefore, it should be clear that the link of SotA to Risk Management is extremely 
+strong within the context of the new Medical Device Regulations. The two seemingly 
+unrelated sections of the CER need to fully align:  risk analysis should correspond to the 
+State of the Art and the State of the Art should confirm that there are no new/previously 
+unidentified risks  associated with the intended use of the device in scope (see Annex I, Chpt 
+1, par.1 & 4). This two-fold crosscheck enables the CER author (therefore the Manufacturer) 
+to provide adequate information on intended purpose, proper use and warnings about 
+risks to patients and healthcare professionals and to make an informed decision on 
+whether the Instructions of Use/labelling of the device in scope require a revision.
+
+6
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+•PICO process
+•Keywords
+•Search terms
+•Pilot searchesIdentify research 
+questions and search terms
+Review and 
+analysis of resultsSelect resources to be searched and filters to be used
+Search resources•
+Choice of data-bases
+•Applied filters (date range,types of articles, type of data)
+•
+Identification of results (Abstractscreening, full-text screening)
+•
+Appraisal of selected articles
+•Analysis of data
+•Revision of the search strategy ifnecessary
+Figure 2: Literature search cycle in the planning of a CER•Boolean operators
+•Proximity searching
+•Truncated searchesHOW TO DEVELOP A STATE 
+OF THE ART SECTION WHEN AUTHORING A CERState of the Art Section in CERs has a co-dependent relationship with 
+literature review. Technically, the CER SotA is something between 
+a systematic review and a meta-analysis (see Figure 2) as it 
+needs to set up a robust methodology to search, appraise, interpret and report both qualitative and quantitative data of the literature. 
+In the following pages, we describe how to build up a SoTA section 
+in ten steps and discuss the decisions that need to be made and 
+required resources.
+
+7
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97INTRODUCTION 
+WHAT TO DISCUSS
+The CER author has to frame the device in scope within the current medical landscape in order to justify that 
+it is at least equally safe with similar/benchmark and/or equivalent devices and does not introduce any new 
+or unidentified risks or hazards compared with alternative treatment options having the same intended use. 
+State of the Art is bounded by the intended use of the device and the intended medical field. Therefore, all 
+aspects of the medical condition intended to be treated by the device have to be discussed, including but not 
+limited to, epidemiology, pathogenesis, clinical manifestations and comorbidities (if applicable).
+Delimitation of the medical condition will enable the discussion of available treatments (similar/benchmark/
+equivalent devices and alternative treatment options). This strategy ensures that standards of care are 
+taken into consideration. 
+Identification and incorporation into the SotA of Clinical Practice Guidelines  and/or consensus statements 
+released by Medical Associations serves this cause by illustrating the benefit/risk profile of each approach and 
+providing a first summary of associated hazards and complications. Additionally, combination of guidelines 
+and meta-analyses data help the CER author formulate the list of safety and performance endpoints to 
+be considered during clinical data extraction for similar/ benchmark/equivalent devices and device in scope. 
+Their identification through SotA will maximize consistency across data analysis and will ensure that no 
+clinical aspects associated with the use of the medical device are oversighted.
+SotA should always identify the risks associated with both the intended medical field and intended 
+purpose of the device in scope. This is the stepping stone for the analysis of clinical data in the CER and 
+final conclusion on whether conformity with GSPRs is achieved. 
+The goal is to prove that a device remains state of the art without introducing new and/or non-
+mitigated risks when performing as intended. 
+Multiple sections of MEDDEV 2.7/1 rev 4 describe the content of a SotA section and MDCG 2020-13 also 
+provides such an overview (see Table 2) focusing on the need to collect and properly appraise clinical 
+data for benchmark and/or equivalent devices as well as for alternative treatment options. Table 2: What to discuss in an MDR-compliant SotA section
+  Clinical Background
+  Medical Field Concerned with the Devices under Evaluation
+  Associated Medical Conditions 
+• Pathogenesis
+• Clinical Manifestations
+  Epidemiological Data – Prevalence and Patterns of Use
+  Historical Aspects of the identified medical field
+  Alternative Treatments Options (available options / available 
+technologies: associated harms & hazards; benefit-risk profiles and 
+their acceptability, management of side effects and risk mitigation 
+approaches; diverging opinions related to available treatment options)
+• Classification/Overview of available products
+  Clinical Practice Guidelines
+• Diverging opinions of professionals as to the use of the alternative 
+treatment options (if applicable)
+  Similar Devices 
+• Device Identification
+• General Description
+• Clinical Data on Device XX
+• Schematic Overview of similar devices
+  Potential Hazards / Complications
+• Overview of hazards related to treatment options
+  Identification of Safety and Performance Endpoints
+
+8
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97FORMULATION OF RESEARCH QUESTIONS
+Table 3: Overview of PICO questions
+P I C O T
+Problem / Patient / 
+PopulationIntervention / 
+IndicatorCompare / Control OutcomeTime / Type of Study 
+of Question
+Who are the 
+users, patients 
+or population 
+being affected? 
+Consider any age, 
+sex, geographic 
+location, or specific 
+characteristics 
+that could have 
+an impact to the 
+answer of this 
+questionWhat is the 
+management 
+strategy (e.g. 
+surgical intervention, 
+screening, 
+rehabilitation, 
+drug co-
+administration etc.) 
+for the identified 
+population?Is there a control 
+group and/
+or alternative 
+treatment option 
+that should be taken 
+into consideration?What are the 
+patient-relevant 
+outcomes of 
+the studied 
+intervention?Are there specific 
+time periods that 
+are relevant to 
+the intervention/
+population 
+that  should be 
+considered?  
+What types 
+of studies are 
+most likely to 
+provide relevant 
+information?  Here is an example!  
+Research Question: Does the use of gloves among nursing staff reduce 
+hospital-acquired infections?
+When building a research question, start with the 
+Ps and the Is and try to be as broad as possible to 
+get a general idea of the intended medical fieldDescription
+P (Problem or Patient or 
+Population)hospital acquired infection / nursing staff / hand hygiene
+I (intervention / indicator) Use of gloves / disinfection of hands
+C (comparison) Disinfecting solutions, hand washing, control (bare hands)
+O (outcome of interest) reduced infection
+TIPTHE PICO PROCESS
+PICO is a format used for the development of proper clinical research questions  
+prior to start building a literature search strategy. Α CER author needs to build a 
+search plan that will enable identification of data related to the intended medical 
+field, population, treatment (including alternative ones) and potential complications 
+associated with the device in scope. These actually make up the four elements of the 
+PICO model: Patient/ Problem, Intervention, Comparison and Outcome (see Table 3) 
+Once a well-structured question is formulated, the CER author will be in position to search 
+the literature for evidence that will support the device’s performance/safety profile.
+
+
+9
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+PLANNING AND 
+EXECUTION OF THE 
+SEARCH STRATEGY
+SOURCES OF DATA
+Once the major elements of the research question have been identified, next 
+step is to “translate” the general terms to subject descriptors, i.e. MeSH or 
+EMTREE terms. To do this, clinical data sources should be identified in parallel. 
+Usually, SotA is built up from clinical literature from peer-reviewed journals, 
+clinical practice guidelines and/or standards and in some cases, clinical trials or 
+medical devices registries if extraction of comprehensive safety data is feasible.
+Keep in mind that terms/descriptors might differ significantly from one database to 
+another, which has an impact to the final search strategy and corresponding results.DescriptionGeneration of  
+MESH terms
+P (Problem or Patient 
+or Population)hospital acquired 
+infection / nursing staff / 
+hand hygiene• “Nursing Staff, 
+Hospital” [Mesh]
+• “Infections” [MeSH 
+Terms]
+• Hand Hygiene [Mesh](“Infections” [MeSH Terms] 
+AND (“Nursing Staff, 
+Hospital” [Mesh] OR “Hand 
+Hygiene” [Mesh])
+I (Intervention / 
+indicator)Use of gloves “Gloves, Protective” [Mesh] “Gloves, Protective” [Mesh]
+C (comparison) Disinfecting solutions, 
+hand washing, control 
+(bare hands)• “Hand Disinfection” 
+[Mesh]
+• “Hand Sanitizers” 
+[Mesh]
+• “Disinfectants” [Mesh]“Hand Disinfection” [Mesh] 
+OR “Hand Sanitizers” [Mesh] 
+OR “Disinfectants” [Mesh]
+O (outcome of 
+interest)reduced infection
+Search String Filter Results
+1(“Infections”[MeSH Terms] AND (“Nursing Staff, 
+Hospital”[Mesh] OR “Hand Hygiene”[Mesh])) AND “Gloves, 
+Protective”[Mesh]  AND  (“Hand Disinfection”[Mesh] 
+OR “Hand Sanitizers”[Mesh] OR “Disinfectants”[Mesh]) Meta-Analysis, 
+Systematic 
+Review, Review29
+2(“Infections”[MeSH Terms] AND (“Nursing Staff, 
+Hospital”[Mesh] OR “Hand Hygiene”[Mesh])) AND 
+(“Gloves”[tw]) AND ( “Hand Disinfection”[Mesh] OR 
+“Hand Sanitizers”[Mesh] OR “Disinfectants”[Mesh])Meta-Analysis, 
+Systematic 
+Review, Review39Note in this example that the search for Hospital Acquired infection  in the 
+MeSH database resulted in “Cross Infection”[Mesh] , which is defined by 
+PubMed as “Any infection which a patient contracts in a health-care institution” . 
+Since the MeSH term definition involved a different patient group than the 
+target population, search strategy has to be adapted in order to try to narrow 
+down the broader “Infections”[MeSH Terms] via the appropriate use of 
+parentheses, AND & OR Boolean terms in the P specific search string (see below).
+In this case, the outcome of interest which is “reduced infection” is sufficiently covered by 
+MeSH terms present in the P and the C part of the search string, (“Hand Hygiene”[Mesh])), 
+“Hand Disinfection”[Mesh])  and as such the search string can be considered complete. Of 
+note, that the word “Gloves” produced 10 more results when used as a text word and not 
+as a MeSH term. Therefore, the CER author might consider choosing search string No 2.
+
+10
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+AND narrows OR expands NOT excludes
+Each result contains all 
+search termsEach result contains at least 
+one search term.Results do not contain  the specified 
+terms.
+The search gloves and 
+nurses  finds items that 
+contain both gloves 
+and nursesThe search gloves or 
+disinfecting solutions finds 
+either items that contain 
+gloves or items that contain 
+disinfecting solutions .The search gloves not operating rooms 
+finds items that contain gloves but do 
+not contain  operating room.
+Tip: The NOT Boolean operator can 
+be very useful during initial, pilot 
+searches but it might be better to 
+avoid its use in the final search  string 
+to avoid interference with precision 
+and and/or amplification of other biasNear operator 
+(N) / nIndicates distance 
+between wards, but 
+not the orderglove n3 infection
+Finds glove within three words of infection
+Within operator 
+(W) / nTerms must appear 
+within n words 
+of one another in 
+the order in which 
+enteredExample: hospital w3 infection
+Finds records where the word hospital is 
+listed first, followed by the word infection, 
+and where no more than one word 
+separates the two terms.As seen already, an optimized search also requires the use of Boolean and/or 
+Proximity operators.  
+Boolean operators are the words “AND”, “OR” and “NOT’’ . When properly combined 
+with search terms, they refine results and minimize unnecessary “noise’’. To optimize 
+even further the use of Boolean operators, parentheses can be used to nest query terms.
+Proximity (or adjacency) operators allow to search by phrase or with two or more 
+words in relation to one another. 
+WILDCARDS AND  
+TRUNCATION SYMBOLS
+These refer to advanced search techniques used to substitute a symbol for one letter of a 
+word, which may be useful if a word is spelled in different ways, but still has the same meaning. 
+The most commonly used wildcard is the asterisk (*) used to specify any number 
+of characters. When used at the end of a root word, it is referred to as truncation . 
+This can be very useful when searching for variable endings of a root word.For example:   
+child*= child, childs, children, childrens, childhood  
+genetic* = genetic, genetics, genetically  
+A question mark (?) may be used to represent a single character, anywhere in the 
+word.  It is most useful when there are variable spellings for a word and the search has 
+to include all variants at once.  
+For example, searching for colo?r  would return both color and colour. 
+Truncation is database-specific and there may be differences in symbols and/or 
+selectivity across them. In most databases use of quotation arks around 
+the terms will allow them ot be searched as a 
+phrase, e.g. “disinfecting solutions”, “nursing staff” TIP
+
+11
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+It is always a good idea to run a few pilot searches before finalizing the 
+search algorithm you will be using to make sure you have developed 
+a strategy that minimizes “noise” without without interfering with 
+relevant data. For example reduce the “noise” by identifying search 
+terms that are also common to non-relevant medical fields, and 
+exclude them in the search string with a NOT Boolean operator.SELECTION OF DATABASES
+Combination of systematic searches in different databases with 
+potential hand searches is the optimal approach to identify information 
+pertinent to the level of data required for an MDR-compliant CER. 
+With this approach, specific articles and/or data known to the CER author 
+via other pathways (e.g. a given study that came to their attention in a 
+previous project and/or during research activities) are also retrieved.
+In this context, the most popular databases used are PubMed, Embase, 
+Cochrane library and Google Scholar7,8,9.
+MEDLINE® is the National Library of Medicine® (NLM®) journal citation 
+database, including citations from > 5,600 scholarly journals, which 
+are subject to review by a NIH-chartered advisory committee before 
+acceptance. PubMed, which has been available since 1996 and 
+focuses on Medicine/Biomedicine and satellite specialties is currently 
+estimated to have >25 mi references included in the MEDLINE database.
+EMBASE is an Elsevier database with > 32 mi citations from over 2,900 indexed 
+journals unique to EMBASE and > 2.4 mi conference abstracts indexed from > 
+7,000 conferences. EMBASE also focuses on Medicine/Biomedicine and satellite 
+specialties. The EMTREE function, a collection of standardized keywords within 
+Embase, allows organization of biomedical terms in a broader sense.  Emtree 
+terms are added to articles to describe the content of an article in a uniform 
+way. Articles entered in Embase are automatically assigned Emtree via an 
+algorithm and later manually checked and corrected by Embase indexers.
+Cochrane Library is a collection of databases that contain different types 
+of evidence, namely the Cochrane Central Register of Controlled Trials 
+(CENTRAL), the Cochrane Database of Systematic Reviews and the Health 
+Technology Assessment (HTA) Database. The library lies into the Cochrane 
+Database Systematic Reviews (CDSR), a database of peer-reviewed 
+systematic reviews in health care prepared by Cochrane Review Groups.
+Google Scholar  is a scientific search engine with an extremely wide range of 
+interdisciplinary results. Google Scholar searches the full text of articles and is 
+also likely to retrieve clinical data from non-peer-reviewed sources, which makes 
+it more suitable for hand searching information rather than systemic searches.TIP
+
+12
+• Although Clinical Trials Database (e.g. Clinicaltrial.gov) is NOT peer-reviewed, it represents a potential useful source 
+of clinical data especially in situations where data is limited and publication bias might emerge. The clinical trials 
+database may be searched for both similar / benchmark / equivalent device(s) and the device in scope. However, its 
+use in SotA section might not be necessary if a thorough systemic search is executed (searches in Chochrane library 
+will retrieve results from clinicaltrials.gov).
+• PubMed was rebuilt in May 2020 into a cloud-based service aiming to allow greater scalability. These changes have 
+resulted in increased number of returned hits compared with the legacy version, likely due to:
+• automatic term mapping,
+• removal of the previous limit to 600 iterations when using a wildcard (*) search, and
+• default search now ignores Boolean operations (AND, OR, etc.), and defers to PubMed’s own “best match” 
+algorithm.
+This has a major regulatory implication: replication of searches by Auditors and/or Competent Authorities will 
+eventualy not be possible although legacy PubMed will remain (inactively) available in this link: https://pmlegacy.
+ncbi.nlm.nih.gov/
+• Embase has featured a dedicated Section for medical devices with comprehensive content and search strategies 
+indexing trade names linked to Manufacturer names https://www.embase.com/search/medicalDevice
+• If you are looking to manage Google Scholar hits, consider using Publish or Perish, a software program that retrieves 
+and analyzes academic citations form a variety of data sources including Google Scholar. Get it here: https://harzing.
+com/resources/publish-or-perish. Keep in mind it might require a few pilot searches before finalizing the features 
+that match your search
+• Scopus database, developed by Elsevier, includes Cited References and incorporates searches of scientific web 
+pages through Scirus. It indexes Medline. Although it covers a very wide range of disciplines that may result in 
+increased noise, it is particularly useful when searching for proceedings of abstractsDID 
+YOU 
+KNOW?
+
+13
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+FILTERS
+Before executing a literature search, there is a number of decisions to make 
+with respect to potential filters that may or may not be applied in order to 
+ensure that State of the Art will be indeed reflected in the identified results.
+  Date range
+Depending on the novelty introduced by the device in scope and the 
+maturity of the intended medical field, searching the 5-10 last years is 
+usually sufficient to depict both standards of care and State of the Art.
+  Language restrictions
+New Medical Device Regulations allow no excuses for exclusion of data 
+due to language restrictions . This often adds an extra financial load to 
+Manufacturers but exclusion due to language might introduce bias and jeopardizes 
+comprehensiveness of evidence with respect to safety and performance data.   Types of articles
+To outline the State of the Art, a CER author will probably need to focus on 
+published studies in peer-reviewed journals providing high level of evidence (see 
+section Appraisal Criteria). Inclusion of unpublished studies may be considered 
+to avoid publication bias however, the CER author will have to ensure that 
+there is access to sufficient information for the assessment of methodology 
+and/or outcomes. When possible, SoTA searches should be limited in reviews, 
+systematic reviews, meta-analyses and Clinical Practice Guidelines 
+further delimited by data derived from studies in humans. Nevertheless, 
+depending on the special features of a medical device, the need to identify and 
+discuss biomechanical, pre-clinical and/or other technical issues might emerge.
+GUIDELINES 
+  Clinical Practice Guidelines are the core of a CER-related SotA section 
+because they collect and revise all alternative treatment options for a given 
+medical field from a clinical perspective. Therefore, their identification 
+and critical presentation is mandatory. Table 4 summarizes some 
+sources for retrieval of Guidelines but a CER author should keep in mind 
+that identification of clinical practice Guidelines usually requires hand 
+searches based on the nature of the intended purpose of a medical device.Make a habit of running a search for historical articles (there is 
+a dedicated checkbox for this in the new PubMed). This might 
+retrieve useful information on the evolution of the medical field 
+and the alternative treatment options that could explain why the 
+device in scope remains State of the Art!Make an informed decision on inclusion of articles based on 
+language criteria by taking into consideration the countries / 
+geographical areas a device is marketed in as well as respective 
+local clinical practice Guidelines because this might allow to draw 
+conclusions on specific practices that introduce hazards and risks.
+Want to search the new pubmed for a specific date range? Try this: 
+“your search string” AND YYYY / MO / DAY:YYY / MO / DAY [dp]TIP
+TIPTIP
+
+14
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97Before moving on to analysis of results, it is of utmost importance to run a control check and 
+identify potential errors in the search strategy that could affect the integrity of information 
+retrieved and therefore the reproducibility and validity of the systematic search approach. 
+A study by Sampson and McGowan10  identified that the commonest search 
+errors in search strategies using MEDLINE were associated with missed MeSH 
+terms (44.4%), whereas free text terms or irrelevant MeSH terms were also noted (28.6%). A well-established source for search strategy optimization is the 
+PRESS tool  where the CER author may verify his/her work through the available 
+checklist that addresses the research question, use of Boolean and proximity 
+operators, subject headings, text word search, spelling, syntax, limits and filters.Table 4: Guideline sources and depositories
+Source Description
+ECRI Guidelines Trust  
+https://www.ecri.org/library/A publicly available online repository. One must create an account to search for guidelines and consult original documentation. 
+Keep in mind that ECRI has inclusion criteria requirements for a clinical practice guideline to be included in the ECRI Guidelines Trust (e.g. to be available in English online for free or 
+for a fee and published within the last 5 years).
+Check the process here: https://guidelines.ecri.org/inclusion-criteria
+Guideline Central  
+https://www.guidelinecentral.com/
+summaries/>2600 free clinical practice guidelines. It requires a registration. It recently launched an android app with > 2,000 free guideline summaries, as well as 300 premium guideline titles.
+Guidelines International Network  
+www.g-i-n.net/library/international-
+guidelines-libraryInternational guideline library from the Guidelnes International Network (G-I-N) with > 6,500 documents from 96 organizations in 87 countries.  
+The International Guideline Library has both a public section and a restricted section available only to members.  
+Searches may be filtered per language and type of publication (e.g. guidelines, guideline clearing report, implementation tool etc.) and all documents are open access.
+Medscape Clinical Practice Guidelines  
+https://reference.medscape.com/features/
+guidelinesClinical Practice Guidelines are published monthly after evaluation of recently published guidelines.  
+Apart from a link to the actual document, Medscape, following systematic review, provides an abbreviated format  of the guidelines focusing on workup, diagnosis, and treatment. 
+EMA – European Medicines Agency 
+Scientific Guidelines  
+https://www.ema.europa.eu/en/human-
+regulatory/research-development/scientific-
+guidelines/clinical-efficacy-safety-guidelinesEMA prepares scientific guidelines in consultation with regulatory authorities in the European Union (EU) Member States, to help applicants prepare marketing-authorization 
+applications for human medicines. Guidelines provide a basis for practical harmonization of how the EU Member States and the Agency interpret and apply the detailed 
+requirements for the demonstration of quality, safety and efficacy that are in the Community directives.
+PubMed  
+https://pubmed.ncbi.nlm.nih.gov/In the new PubMed, go to “Additional filters” and under Article Type check the box “Guidelines”. Go back to the first page and select “Guideline” only under the “Article Type” feature.  
+Tip: You will still need to screen the results due to the new algorithm used by PubMed.
+CINAHL Plus 
+https://health.ebsco.com/products/cinahl-
+plusCINAHL is the online version of the Cumulative Index to Nursing and Allied Health Literature. Requires subscription to access it.  
+Type the condition/ clinical procedure in the search box on the Advanced Search page.  
+If you already know the name of the guideline, search by title. Select “Practice Guidelines” from the “Publication Type” menu in the Advanced Search or Limits section.
+NICE  
+https://www.nice.org.uk/about/what-we-
+do/our-programmes/nice-guidance/nice-
+guidelines#:~:text=NICE%20guidelines%20
+are%20evidence%2Dbased,prevent%20ill%20
+healthNICE guidelines are evidence-based recommendations for health and care in England.
+NIH 
+https://www.nih.gov/Includes guidelines within NIH’s 27 Institutes and Centers:  
+a) Select the Institute that pertains to your topic,  
+b) Search for practice guidelines by searching the websites of the Institutes within the National Institutes of Health network.
+Tip: Try using each website’s “Search” feature to look for “clinical practice guidelines”  
+Check this as well: https://www.nccih.nih.gov/health/providers/clinicalpractice
+
+15
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97ANALYSIS OF RESULTS 
+Upon completion of literature searches, articles are screened and selected for inclusion to the SotA discussion
+APPRAISAL CRITERIA
+Selection is usually progressing via a two-step process: a) Abstract screening b) Full-text 
+screening) on the basis of: 
+• Relation to the intended medical field 
+• Nature of data, which should be focusing on clinical evidence (see also section 
+Selection of databases-Types of articles ) pertinent to the intended purpose of the 
+device in scope 
+For identified clinical data on similar/benchmark/equivalent devices and/or alternative 
+treatment options, appraisal should be based on:• Data Suitability, i.e.  assessment of safety and performance endpoints of the 
+device in question and
+• Data Contribution, i.e. assessment of data quality 
+Criteria for data suitability and contribution (see Table 5) may vary according to the special 
+features of a medical device and intended medical field. Overall, there is no consensus on 
+appraisal plans but they all need to consider potential sources of bias associated with study 
+designs/reporting, sample sizes, clinical settings involved, sources of funding, variability of 
+results, comparisons, statistical methods and applicability to a specific medical device milieu. 
+Table 5: Appraisal Criteria
+Data contribution appraisal criteria Data suitability appraisal criteria
+Data source type Was the design of the study approrpriate? Appropriate deviceWere the data generated from the device in 
+question?
+Outcome measuresDo the outcome measures reported reflect the 
+intended performance of the device?Appropriate device application Was the device used for the same intended use?
+Follow-upIs the duration of follow-up long enough to assess 
+whether duration of treatment effects and identify 
+complications?Appropriate patient groupWhere the data generated from a patient group 
+that is representative of the intended treatment 
+population (e.g., age, sex, etc.) and clinical condition 
+(i.e., disease, including state and severity)?
+Statistical SignificanceHas a statistical analysis of the data been provided and 
+is it appropriate (to consider sample size)?Acceptable report/data 
+collectionDo the reports or collations of data contain sufficient 
+information to be able to undertake a rational and 
+objective assessment?
+Clinical SignificanceWas the magnitude of the treatment effect observed 
+clinically significant?
+
+16
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+Data source type related to the design of a study are graded based on levels 
+of evidence and determine whether the methods and results presented 
+answer the research question set by its authors and consequently, whether 
+this particular study will be analysed in a qualitative or quantitative way12.
+As already discussed above (see section Selection of databases - Filters), the SotA 
+section of an MDR-compliant CER should normally take into account high level of 
+evidence sources as described by OCEBM-Oxford Centre for Evidence-based Medicine13. 
+Higher level of evidence such as systematic reviews and meta-analyses are regularly 
+prioritized in the search strategy for the general SotA section offering a substantial overview 
+of the associated medical field. Most importantly, high quality meta-analysis reports can be a comprehensive source of scientifically valid comparative information for the benefits 
+and risks associated with different treatment options, contributing to a core requirement 
+of the section’s objective. The classification for levels of evidence provided in Figure 
+5 is a starting point for the initial evaluation of retrieved literature but it’s unequivocal 
+that the CER author should deploy analytical thought and apply objective appraisal 
+criteria  in order to assess the quality of each study.  It is also suggested that the CER 
+author consults some reference books that could help at this stage such as Finding What 
+Works in Healthcare (Standards for Systematic Reviews) and, of course, Cochrane Handbook 
+for Systematic Reviews of Interventions (the latter is also referred by Med. Dev 2.7.1 / Rev. 4). 
+Meta-Analysis: A systematic review that uses quantitative methods to 
+summarize the results.
+Systematic Review: Detailed and comprehensive plan and search strategy 
+derived a priori, with the goal of reducing bias by identifying appraisingm and 
+synthesizing all relevant studies on a specific topic.
+Review: Qualitative summary of multiple research studies evaluating and 
+summarizing individual research studies.
+Randomized Controlled Trials: A study design that randomly assigns 
+particpants into an experimental or a control group and follows up the 
+outcomes of interest.
+Cohort Study:  This study identifies a group of people and follows them over a 
+period of time to identify how their exposures affect their outcomes.
+Case-Report: An article that describes and interprets an inidividual case, often 
+written in the form of a detailed story.
+Background Information / Expert Opinion:  A scientific view or judgment 
+about something given by an expert or group of experts for a specific topic.
+Animal Research / Lab Studies: Use of non-human animals in experiments 
+that seek to control the variables that affect the behaviour or biological system 
+under study.
+Figure 5: Levels of Evidence
+
+
+17
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+NARRATIVE DEVELOPMENT
+Discussion and assembly of the SotA section is maybe the most critical part of the preparation 
+chain. This is the step where all data come to place and are presented in a coherent, critical 
+manner that will enable the reader to judge whether the purpose of the section has been served. 
+Consider the following when structuring the narrative:
+  Use a PRISMA-like flow diagram14  (see Figure 6) to visualize the results of your 
+literature search.
+  Check for plagiarism: although there are no explicit guidelines for plagiarism in 
+CERs, make sure you do not copy-paste from articles and cite properly providing 
+access to full-text. For more info on plagiarism in CERs, check our e-book 
+“Plagiarism In Clinical Evaluation Reports (CERs): What To Look Out For’’, available in 
+our website https://www.evnia.dk/
+  Make sure the final text is readable and fluent: watch out for lengthy sentences and 
+wrong choice of words. Match one thought in one sentence and avoid pompous 
+words.
+  Separate your themes by paragraphs and summarize when needed to help the 
+reader follow your writing rationale.
+  Use hyperlinks to guide the reader through the various CER sections and enhance 
+comprehension.
+  Be sure to add a conclusive statement that the device in scope is and/or 
+remains State of the Art.Records identified through 
+database searching  
+(n= )
+Records after duplicates removed 
+(n= )Identification Screening Eligibility IncludedRecords screened 
+(n= )
+Full-text articles 
+assessed for eligibility  
+(n= )
+Studies included in 
+qualitative synthesis  
+(n= )
+Studies included in 
+qualitative synthesis  
+(meta-analysis), (n= )Records excluded  
+(n= )
+Full-text articles 
+excluded, with reasons  
+(n= )Additional records identified 
+through other sources  
+(n= )
+Figure 6: PRISMA 2009 Flow Diagram
+17 CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE
+
+18
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+ARTIFICIAL INTELLIGENCE
+Although the last years penetration of Artificial Intelligence in all aspects 
+of Healthcare is constantly growing, there is currently no official guidance 
+on the use of AI-based extraction data software for the preparation 
+of MDR-compliant CERs. There are currently various such products 
+enabling the dynamic interaction of CER authors with software features 
+for maximization of extraction but no evidence is available to specify 
+their approval by Competent authorities. However, their use cannot be 
+excluded if the CER Author incorporates them into a robust appraisal plan.  REFERENCES MANAGEMENT
+Manual formatting of citations, especially within the context of a 
+regulatory document, such as a CER, can be very frustrating as well 
+as time-consuming. Familiarization of the CER author with a citation 
+management tool (see Figure 7) will allow import, organization and 
+management of citations and associated full-text articles in an almost 
+fully-automatic way. Currently available reference management software 
+, such as Endnote, Zotero, RefWorks, Mendeley can all import references 
+from various databases, create in-text citations and bibliographies 
+and import bibliographic information from web pages, while enabling 
+the user to transit between citation styles and the ability to edit them.
+• When choosing reference management software, consider the following:
+• Usability / ease of use
+• Compatibility with operating system and databases the user works with more 
+frequently
+• Support (availability of training courses, support, lines, e-forums)
+• Cost-features ratio
+• Avoid online citation builders. An MDR-compliant CER requires full access to referenced 
+articles, therefore a reference management software is a more efficient approach to 
+collect and provide access to your pool of literature data.
+• Keep a well-organized record, e.g. use separate folders for each general search category 
+and each executed search. It will enhance record keeping, deduplication of results and 
+systematic reporting for the SotA.
+Figure 7: Examples of reference management software and their main featuresREFERENCE MANAGEMENT SOFTWARE ALLOWS TO:
+• Manage all sources in one place and organize references into 
+folders more sufficiently
+• Upload and store full-text PDFs and other file types
+• Install plug-ins for word processors that accelerate insertion of 
+citations
+• Share libraries in private or open groups
+• Automatically remove duplicatesTIP
+
+
+19
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+TAKE-HOME MESSAGES
+Building up a SOTA section for a Clinical Evaluation Report is a multi-
+step process that requires solid scientific background, technical skills 
+and the ability to rationally design and execute a literature strategy. 
+In this paper, we have summarized this process in ten steps and we have 
+provided some practical solutions to enable the CER author to comply with 
+current regulatory requirements. Here are the keypoints: 
+Key Points
+  Use the PICO methodology to structure search strings that will 
+reduce the number of required searches and will enhance record 
+keeping.
+  Define eligibility criteria with precision and a rationale that 
+matches the profile of the device in scope.
+  Make a thorough search for Clinical Practice Guidelines and 
+discuss the findings in detail.
+  Invest time to fully identify alternative treatment options and 
+similar/benchmark and/or equivalent devices.
+  Do not underestimate the usefulness of pilot searches and 
+verification of search results.
+  Learn the tools: use a reference management software that will 
+allow consistency and access to your pool of data.
+Remember your goal:
+  A SotA section is expected to frame the intended medical field 
+in a way that will allow identification of alternative treatment 
+options and potential equivalent/benchmark devices. Therefore, 
+it should aim to retrieve data on risks associated with the 
+intended use in order to enable the comparison of device-specific 
+risk management and vigilance data with the broader field. 
+  The purpose of a well-structured, MDR-compliant SotA section is not 
+only to layout hazards and complications but rather to define and clarify 
+safety and performance endpoints to be used for the assessment of 
+clinical (and non-clinical when applicable, e.g. biomechanical) data.
+  Add a conclusive statement at the end of the SoTA determining 
+whether the device in scope is and/or remains State of the Art.
+19 PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97
+
+20
+CLINICAL EVALUATION REPORT, STATE OF THE ART PAGE www.evnia.dk | info@evnia.dk | 0045 88 82 57 97REFERENCES
+1Regulation (EU) 2017/745 of the European Parliament and of the Council of 5 April 2017 on medical devices, amending Directive 2001/83/EC, Regulation (EC)No 178/2002 and Regulation 
+(EC) No 1223/2009 and repealing Council Directives 90/385/EEC and 93/42/EE. 2017. https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32017R0745
+2Regulation (EU) 2017/746 of the European Parliament and of the Council of 5 April 2017 on in vitro diagnostic medical devices and repealing Directive 98/79/EC and Commission Decision 
+2010/227/EU (Text with EEA relevance). https://eur-lex.europa.eu/eli/reg/2017/746/oj
+3MDCG 2020-13 Clinical evaluation assessment report template July 2020. https://ec.europa.eu/health/sites/health/files/md_sector/docs/mdcg_clinical_evaluationtemplate_en.pdf
+4ISO 14971:2019. Medical devices — Application of risk management to medical devices. https://www.iso.org/standard/72704.html
+5MDCG 2020-6 Regulation (EU) 2017/745: Clinical evidence needed for medical devices previously CE marked under Directives 93/42/EEC or 90/385/EEC. A guide for manufacturers and 
+notified bodies. https://ec.europa.eu/docsroom/documents/40904
+6MEDDEV 2.7.1 Rev 4. Clinical Evaluation: A guide for manufacturers and Notified Bodies und er Directives 93/42/EEC and 90/385/EEC.
+7Falagas ME, Pitsouni EI, Malietzis GA, Pappas G. Comparison of PubMed, Scopus, Web of Sci ence, and Google Scholar: strengths and weaknesses. FASEB J. 2008;22(2):338-342. 
+doi:10.1096/fj.07-9492LSF
+8Bramer WM, Rethlefsen ML, Kleijnen J, Franco OH. Optimal database combinations for litera ture searches in systematic reviews: a prospective exploratory study. Syst Rev. 2017;6(1):245. 
+doi:10.1186/s13643-017-0644-y
+9Shariff SZ, Bejaimal SA, Sontrop JM, et al. Retrieving clinical evidence: a comparison of PubM ed and Google Scholar for quick clinical searches. J Med Internet Res. 2013;15(8):e164. 
+doi:10.2196/jmir.2624
+10Sampson M, McGowan J. Errors in search strategies were identified by type and frequency. J Clin Epidemiol. 2006 Oct;59(10):1057–63.
+11McGowan J, Sampson M, Salzwedel DM, Cogo E, Foerster V, Lefebvre C. PRESS Peer Review of Electronic Search Strategies: 2015 Guideline Statement. J Clin Epidemiol. 2016;75:40-46. 
+doi:10.1016/j.jclinepi.2016.01.021
+12Burns PB, Rohrich RJ, Chung KC. The levels of evidence and their role in evidence-based medicine. Plast Reconstr Surg. 2011;128(1):305-310. doi:10.1097/PRS.0b013e318219c171
+13OCEBM-Oxford Centre for Evidence-based Medicine. https://www.cebm.net/2016/05/ocebm-levels-of-evidence/
+14Moher D, Liberati A, Tetzlaff J, Altman DG, The PRISMA Group (2009). Preferred Reporting Items for Systematic Reviews and Meta-Analyses: The PRISMA Statement. PLoS Med 6(7): 
+e1000097. doi:10.1371/journal.pmed1000097
+15Ivey C, Crum J. Choosing the Right Citation Management Tool: Endnote, Mendeley, Refworks, or Zotero. J Med Libr Assoc. 2018;106(3):399-403. doi:10.5195/jmla.2018.468
+
+
+

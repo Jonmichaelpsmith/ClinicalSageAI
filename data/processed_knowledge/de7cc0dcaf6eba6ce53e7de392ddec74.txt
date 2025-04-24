@@ -1,0 +1,2191 @@
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 1
+TYPE Review
+PUBLISHED 03 June 2024
+DOI10.3389/fmed.2024.1400585
+OPEN ACCESS
+EDITED BY
+Khalid Saeed Khan,
+University of Granada, Spain
+REVIEWED BY
+Murtaza Hussain,
+Metrics Research Pvt. Ltd, Pakistan
+Donato Bonifazi,
+Consorzio per Valutazioni Biologiche e
+Farmacologiche, Italy
+*CORRESPONDENCE
+Galo Peralta
+direcciongestion@idival.org
+†These authors have contributed equally to
+this work
+RECEIVED 22 March 2024
+ACCEPTED 13 May 2024
+PUBLISHED 03 June 2024
+CITATION
+Peralta G and Sánchez-Santiago B (2024)
+Navigating the challenges of clinical trial
+professionals in the healthcare sector.
+Front. Med. 11:1400585.
+doi: 10.3389/fmed.2024.1400585
+COPYRIGHT
+© 2024 Peralta and Sánchez-Santiago. This is
+an open-access article distributed under the
+terms of the Creative Commons Attribution
+License (CC BY). The use, distribution or
+reproduction in other forums is permitted,
+provided the original author(s) and the
+copyright owner(s) are credited and that the
+original publication in this journal is cited, in
+accordance with accepted academic
+practice. No use, distribution or reproduction
+is permitted which does not comply with
+these terms.Navigating the challenges of
+clinical trial professionals in the
+healthcare sector
+Galo Peralta1*†and Blanca Sánchez-Santiago2†
+1Central Support Unit, Instituto de Investigación Marqués de Valdecilla (IDIVAL), Santander, Spain,
+2Clinical Pharmacology Service, Clinical Trials Unit, Hospital Universitario Marqués de Valdecilla,
+Instituto de Investigación Marqués de Valdecilla (IDIVAL), Santander, Spain
+Clinical trials (CTs) are essential for medical advancements but face signiﬁcant
+challenges, particularly in professional training and role clarity. Principal
+investigators, clinical research coordinators (CRCs), nurses, clinical trial
+pharmacists, and monitors are key players. Each faces unique challenges,
+such as maintaining protocol compliance, managing investigational products,
+and ensuring data integrity. Clinical trials’ complexity and evolving nature
+demand specialized and ongoing training for these professionals. Addressing
+these challenges requires clear role delineation, continuous professional
+development, and supportive workplace environments to improve retention and
+trial outcomes. Enhanced training programs and a collaborative approach are
+essential for the successful conduct of clinical trials and the advancement of
+medical research.
+KEYWORDS
+clinical trial, investigator, clinical research coordinator, clinical trial monitoring, nurse,
+pharmacist, ICH (international conference of harmonization) guidelines
+1 Introduction
+CTs are typically conducted within a healthcare setting where the researchers are
+usually clinicians, being the healthcare system responsible for two missions: improving
+patients’ health and advancing therapeutics, often in collaboration with the industry. This
+dual purpose of clinical assistance and research requires adequate support ecosystems
+characterized by a highly demanding organizational framework (1, 2) that has as a
+benchmark the Guideline for Good Clinical Practice (GCP) of the International Council
+for Harmonization of Technical Requirements for Pharmaceuticals for Human Use for
+Conducting Clinical Trials Guidelines (ICH) (3).
+GCP is the international standard for ethical and scientiﬁc quality in clinical trial
+design, conduct, and reporting to protect trial participants’ rights, safety, and well-being
+(4). On the other hand, diﬀerent regulations on CTs, such as Title 21, Chapter 1 of the Code
+of Federal Regulation (5) in the United States, and Regulation (EU) No 536/2014 of the
+European Parliament and of the Council of 16 April 2014 on clinical trials on medicinal
+products for human use (6) in Europe frame the deﬁnition of the responsibilities of the
+diﬀerent participants in CTs. These regulations emphasize the necessity for clinical trials to
+be conducted by professionals who are not only ethically and scientiﬁcally trained but also
+well-versed in the nuances of clinical trial execution.
+Frontiers in Medicine 01 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 2
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+In this sense, the Declaration of Helsinki highlights the need
+for adequately trained professionals. It explicitly indicates that
+“Medical research involving human subjects must be conducted only
+by individuals with the appropriate ethics and scientiﬁc education,
+training, and qualiﬁcations. Research on patients or healthy
+volunteers requires the supervision of a competent and appropriately
+qualiﬁed physician or other health care professional. ”(7).
+As regulation, complexity, and requirements in CTs are
+increasing, support structures and professional expertise are
+more demanding (8–10), especially in the deployment of initial
+phases of clinical research (11). Moreover, new challenges
+such as centering opportunities around people and equity,
+guaranteeing accountability, and improving eﬃciency must be
+addressed (12). In this scenario, speciﬁc professional proﬁles
+are recommended to provide adequate support for CTs, such
+as principal investigators, sub-investigators, clinical study nurses,
+clinical research coordinators, study coordinators, pharmacists,
+and clinical monitors (clinical research associates) (13–16).
+However, the literature recognizes that there are no standard
+deﬁnitions of the diﬀerent proﬁles involved in CTs, highlights an
+overlap of functions, and points out the lack of speciﬁc training
+for these professionals involved in the development of CTs and a
+standard organizational model for deﬁning high-quality support
+teams (2, 13, 17–19). Despite the relevance of the professional
+proﬁles and roles in CTs, there still needs to be literature reviews
+that address regulations, activities, proﬁles, qualiﬁcations required,
+training opportunities, and challenges in this ﬁeld.
+As we noted that the aggregate information available is quite
+limited, we consulted with Chat GPT-4, now recognized as a source
+of information for healthcare professionals (20). We asked Chat
+GPT-4: “Which are the main CT professional support proﬁles
+involved in implementing CTs in the clinical arena?” (21). The
+support proﬁles identiﬁed by Chat GPT-4 are reﬂected in Table 1 .
+During a conversation with Chat GPT-4, it came to our attention
+that not all of the professionals identiﬁed are necessarily directly
+involved in the clinical setting. So then, we asked Chat GPT-
+4 to provide us with the outstanding proﬁles of the referred
+inTable 1 . The second question launched to Chat GPT-4 was:
+Which of the proﬁles listed are the more relevant in the clinical
+arena? The top ﬁve proﬁles selected by Chat GPT-4 were: principal
+investigator, CRC, clinical research associate, biostatistician, and
+TABLE 1 Professional clinical trial support proﬁles in the clinical arena
+identiﬁed by Chat GPT-4.
+Principal investigator
+Clinical research coordinator or study coordinator
+Nurses and clinical staﬀ
+Clinical research associate
+Pharmacovigilance and safety oﬃcer
+Medical monitor
+Data manager
+Biostatistician
+Quality assurance professional
+Regulatory aﬀairs specialist
+IT and Informatics specialistsregulatory aﬀairs specialist. This result showed discrepancies with
+the information we had previously gathered from the literature
+review, underscoring the importance of reviewing multiple sources
+to understand this topic comprehensively.
+This paper aims to thoroughly explore the intricate roles and
+responsibilities that deﬁne the backbone of clinical trial operations.
+It discusses the distinct challenges these professionals face, from
+ensuring rigorous protocol compliance and managing sensitive
+investigational products to safeguarding participant well-being and
+data accuracy. Additionally, it highlights the critical need for
+ongoing professional development and robust institutional support
+to sustain workforce competence and morale amidst the pressures
+of clinical trial demands.
+2 Methods
+For the initial phase of the review, PubMed was utilized
+to identify relevant published literature between 2000 and 2023.
+The search strategy involved speciﬁc descriptors related to
+each of the professional proﬁles being analyzed (“investigator”,
+“Clinical Research Nurse”, Clinical Trial Nurse”, Clinical Research
+Coordinator”, “Clinical Trial Pharmacist”, “Clinical Trial Monitor”,
+“Clinical Research Associates”) with the following descriptors:
+“qualiﬁcations, ” “proﬁles, ” “roles, ” “challenges, ” and “training.” This
+approach ensured a focused retrieval of relevant literature.
+Additionally, the search included an examination of the
+existing literature reviews on the diﬀerent CT professional proﬁles
+and a thorough analysis of the bibliographies of the identiﬁed
+documents to capture further pertinent sources. This iterative
+process of reviewing bibliographies helped to identify additional
+relevant materials that might not have been captured in the initial
+database searches.
+Moreover, the review was extended to examine major
+international regulations pertinent to the professional proﬁles
+under discussion, speciﬁcally the guidelines from the International
+Council for Harmonization (ICH) and key regulations from
+European and US authorities. This aspect of the methodology
+ensured that the review was informed by current regulatory
+frameworks, which could impact professional roles and
+responsibilities.
+Original documents related to the topics being analyzed were
+also scrutinized to ensure the inclusion of primary sources and
+ﬁrsthand information, which provided a solid foundation for
+the analysis and conclusions of the review. This comprehensive
+methodological approach facilitated a thorough exploration of
+the professional proﬁles, highlighting various challenges and
+training needs within the context of current regulatory and
+professional standards.
+3 Principal investigator
+3.1 Principal investigator role
+GCP (3), the Code of Federal Regulations in the United States
+(22), Regulation (EU) No 536/2014 of the European Parliament
+(6), and other international standards, guidelines, and regulations
+Frontiers in Medicine 02 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 3
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+(23–28), establish that the principal investigator’s responsibilities
+in CTs are broad. They include adequate expertise, providing
+resources needed, deploying the trial tasks in compliance with the
+protocol accordingly regulation and reporting, and guaranteeing
+high standards of medical care ( Table 2 ).
+In the US, the investigator must sign Form FDA 1572, an
+agreement to provide certain information to the sponsor and
+to assure that he/she will comply with FDA regulations related
+to the conduct of a clinical investigation of an investigational
+drug or biologic (22, 25, 29) ( Table 3 ). The FDA 1572 has
+two purposes: (1) to provide the sponsor with information
+about the investigator’s qualiﬁcations and the clinical site
+that will enable the sponsor to establish and document that
+the investigator is qualiﬁed and the site is an appropriate
+location where to conduct the clinical investigation, and (2)
+to inform the investigator of his obligations and obtain the
+investigator’s commitment to follow pertinent FDA regulations
+(29).Accordingly to European (6) and US (5) regulations, the
+sponsor is responsible for selecting an investigator for each CT,
+who may further appoint one or more sub-investigators at the trial
+site to perform crucial trial-related procedures and make critical
+decisions. These sub-investigators could be associates, residents, or
+research fellows. However, it is of utmost importance that these
+tasks are performed in a manner that prioritizes the safety of the
+subjects and the reliability and robustness of the data generated at
+the CT site (3, 6, 30).
+The CT team is under the investigator’s responsibility. In this
+sense, the Food and Drug Administration (FDA) (28) and the
+GCP (3) emphasize this role in the designation and supervision,
+ensuring that any individual delegated is qualiﬁed by education,
+training, and experience. The CT team is responsible for managing
+the daily activities of the trial; however, the investigator is ultimately
+responsible for ensuring that the trial is conducted in compliance
+with European (6) and US (5) regulations and that accurate
+records are maintained. The investigator is responsible for protocol
+TABLE 2 Principal investigator responsibilities in clinical trials [adapted from (3)].
+Qualiﬁcations and Agreements: adequate qualiﬁcation to assume responsibility, thoroughly familiar with the appropriate use of the investigational product(s), aware of GCP
+and regulation, permit monitoring and inspections and maintain list of persons delegated
+Adequate Resources: recruiting capabilities, available time and qualiﬁed staﬀ for the CT, informed team, supervise delegated trial-related duties
+Medical Care of Trial Subjects: responsible for medical decisions and adequate adverse events management
+Communication with the Institutional Review Board (IRB): written approval from the IRB that must be informed of the CT documents
+Compliance with Protocol: sign the protocol and conduct the trial in compliance with the protocol without deviation without agreement by the sponsor and adequate
+explanations and documents
+Investigational Product(s): responsibility for investigational product accountability at the trial site (records delivery, inventory, storing, use and return unused) that may be
+delegated to a pharmacist.
+Randomization Procedures and Unblinding: the investigator should follow the trial’s randomization procedures
+Informed Consent of Trial Subjects: comply with the applicable regulatory requirements and should adhere to GCP and to the ethical principles. Stay vigilant to avoid
+unduly inﬂuence a subject to participate, use a non-technical understandable language. Obtain written informed consent prior to a subject’s participation.
+Records and Reports: maintain adequate and accurate source documents and trial records, ensuring the accuracy, completeness, legibility, and timeliness of data, tracing
+changes of Case Report Form.
+Progress Reports: submit written summaries of the trial status to the IRB periodically and when the IRB require them.
+Safety Reporting: report immediately all serious adverse events to the sponsor
+Premature Termination or Suspension of a Trial: inform the institution and IRB promptly to the termination
+Final Report(s) by Investigator: inform the institution, the IRB and regulatory authorities with a summary of the trial’s outcome.
+TABLE 3 Commitments assumed by the investigator in the FDA 1572 form (29).
+I agree to conduct the studies in accordance with the relevant, current protocol(s) and will only make changes in a protocol after notifying the sponsor, except when
+necessary to protect the safety, rights, or welfare of subjects.
+I agree to personally conduct or supervise the described investigation(s).
+I agree to inform any patients, or any persons used as controls, that the drugs are being used for investigational purposes and I will ensure that the requirements relating to
+obtaining informed consent and IRB review and approval are met.
+I agree to report to the sponsor adverse experiences that occur during the investigation in accordance with regulation. I have read and understand the information in the
+investigator’s brochure, including the potential risks and side eﬀects of the drug.
+I agree to ensure that all associates, colleagues, and employees assisting in the conduct of the studies are informed about their obligations in meeting the above commitments.
+I agree to maintain adequate and accurate records by regulation and to make those records available for inspection.
+I will ensure that an IRB that complies with the requirements of regulation will be responsible for the initial and continuing review and approval of the clinical investigation.
+I also agree to promptly report to the IRB all changes in the research activity and all unanticipated problems involving risks to human subjects or others. Additionally, I will
+not make any changes in the research without IRB approval, except where necessary to eliminate apparent immediate hazards to human subjects.
+I agree to comply with all other requirements regarding the obligations of clinical investigators and all other pertinent requirements
+Frontiers in Medicine 03 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 4
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+violations or discrepancies (25). The FDA speciﬁcally focuses on
+four areas of investigator’s supervision: adequate delegation of
+study-related tasks, adequate qualiﬁcation and training of the CT
+staﬀ to conduct and understand the study, adequate supervision
+and involvement in the ongoing study, and adequate supervision
+or oversight of any third parties involved (28).
+Informed consent is one of the critical responsibilities of the
+investigator in CTs (3, 30). Conducting research is an important
+endeavor, but it is crucial to prioritize the well-being of the
+participants and to ensure the purpose and risks of the study
+are disclosed and discussed with them. International regulation
+highlights that the investigator must inform through informed
+consent about the purpose of the research, the expected duration
+of the subject’s participation, the procedures to be followed, and
+any foreseeable risks or discomforts to the subject (5, 6, 31).
+Furthermore, it is the investigator’s responsibility to make it clear
+that patients’ decision to participate will not aﬀect their future
+medical care. It is indispensable to avoid any hint of coercion when
+presenting the study, as patients often trust their doctors and may
+feel compelled to participate if asked (32).
+The literature suggests that informed consent forms are often
+unclear and poorly understood by participants, emphasizing the
+need for improving communication and comprehension (33).
+Even more, some subjects may not even be aware that they are
+participating in research, highlighting the ethical imperative for
+investigators to ensure transparency and understanding (34). The
+investigator may delegate informed consent to team members
+adequately qualiﬁed by education, training, and experience.
+If present, information related to the investigator’s ﬁnancial
+relationships or interests must be provided to the participants
+through informed consent (35). The roles of investigators in the
+informed consent process are particularly important in some areas,
+such as pediatric oncology, where doctors must balance their
+clinical and research roles, highlighting the need for transparent
+communication and ethical behavior (36). Also, the context of
+emergency CTs has been challenging for investigators (37).
+Reporting is also a relevant responsibility of the investigator
+in CTs (3, 25). It includes reporting of adverse events by the
+investigator to the sponsor and the IRB (38), which is required
+by the diﬀerent regulatory agencies (5, 6). These reports of severe
+events must occur without undue delay as they can aﬀect the safety
+of the volunteers involved in the CTs and even the trial’s pertinence
+(39). Other reports that are the investigator’s responsibility are
+progress reports (usually annually) and the ﬁnal report to inform
+the Institution and the IRB (3, 5, 38). Financial disclosures to
+the sponsor are also relevant and should be updated during the
+investigation and after the completion of the study according to
+diﬀerent regulations (25).
+3.2 Principal investigator qualiﬁcation
+and training
+The FDA (5), the European regulation (6), and GCP (3) require
+investigators qualiﬁed by training, education, and experience,
+although these normative and recommendations do not detail the
+competencies requirements. Moreover, the qualiﬁcation standards
+for investigators vary widely among countries (40, 41). Generally,European countries demand GPC training every 2–3 years (41), and
+in the US, the National Center for Advancing Translational Science
+(NCATS) recommends undergoing training every 3 years (14).
+The IRB is responsible for reviewing the principal investigator’s
+qualiﬁcations as part of the trial application to the IRB and can ask
+questions and request documents such as curriculum vitae (3, 35).
+The investigator is usually a physician, although other proﬁles
+have been recognized as physician associates/assistants (42),
+pharmacists (43, 44), and nurses (45). However, the proportion of
+CTs with physician associates/assistants as investigators is low (14
+in 145.398 in the US 2007–2020) (42), and of pharmacists too (523
+in 2009 in the US) (46). Even more, some local regulations may
+prevent non-physician proﬁles as pharmacists from being principal
+investigators (47).
+Successful clinical research heavily relies on education and
+training, as highlighted by various studies (14, 48). However, the
+relevance of clinical research is typically only a tiny part of basic
+medical training (40). Clinical specialties provide a signiﬁcant
+opportunity for the training of new clinical researchers. Several
+medical specialty training requirements proposed by the European
+Union of Medical Specialists include mentions of clinical research
+with speciﬁc reference to CTs (49). Recent recommendations to
+improve CT investigator training promote using more eﬀective
+methods of adult learning and focus on real needs, changing
+the behavior of study personnel and considering the potential
+challenges associated with a particular protocol, as well as the
+most common deviations that have occurred in protocols similar
+in design or therapeutic area (50, 51).
+The sponsor usually certiﬁes investigator qualiﬁcations before
+participation in CTs through GCP training (3, 52). Most biopharma
+companies have developed their own GCP courses, requiring
+each trialist to attend as a condition for participating in their
+trials (40). These programs have signiﬁcant disparities and require
+substantial time that often does not prepare clinicians for the
+hands-on investigator responsibilities (53). Moreover, the current
+content of some GCP training materials is considered redundant,
+unengaging, and uninteresting (52). Various programs aim to
+qualify clinical research investigators through mentoring involving
+multiple activities and clinical departments (14, 54) ( Table 4 ).
+Despite these recognized drawbacks, investigator certiﬁcation is
+associated with improved data quality in clinical research (55).
+Recommendations to evaluate the impact of GPC training have also
+been proposed (14).
+It is worth noting that participating in a trial allows clinicians
+to be at the forefront of a particular area of medicine. It often
+enables researchers and their staﬀ to meet with researchers from
+the same country or worldwide to exchange ideas and plan future
+collaborations (56).
+3.3 Principal investigator challenges
+Investigators must be aware of their enormous responsibility
+as their workload signiﬁcantly increases with more legal,
+regulatory, ﬁnancial, and administrative issues (27). CTs demand
+strict adherence to the protocol, precise and comprehensive
+documentation of clinical care, and accountability for oversight of
+all activities related to managing the trial subjects and monitoring
+Frontiers in Medicine 04 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 5
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+TABLE 4 Examples of clinical research training investigator programs.
+Center Program Characteristics Reference
+FDA Clinical Investigator Training
+CourseVirtual. Two days. Recording available free. Focused on: FDA ’s
+approach to trial design, safety concerns, statistical issues in the
+analysis, clinical investigator responsibilities(229)
+Mayo Clinic Clinician Investigator Training
+ProgramTwo year. Comprehensive educational experience for residents and
+fellows interested in pursuing a career that includes research within a
+robust clinical practice.(230)
+Will Cornell Medicine CTSC advanced certiﬁcate in
+clinical & translational
+investigationOne-year program consisting of a multidisciplinary core
+competency-based curriculum (a total of 10 courses, 22 course
+credits).(231)
+Clinical Research Training Center.
+Washington University in St. LouisGraduate certiﬁcate in clinical
+investigation16-credit certiﬁcate program. For young investigators committed to
+pursuing academic careers in clinical research(51)
+Pharmatrain federation (22
+institutions or associations in Europe)Specialist in Medicines
+Development4-year modular curricula. (232)
+the investigational product. Increased trial complexity is derived,
+at least partly, from new designs that have resulted in signiﬁcant
+challenges for investigators, including multiple sample collections,
+multiple committee approvals, more stringent patient monitoring,
+complex drug administration, and multiple protocol modiﬁcations
+(57). This has contributed to increased disappointment, less
+interest in participating in multicenter trials, and a decline in
+clinicians willing to become clinical investigators (27, 28, 58).
+Diﬀerent barriers for investigators to participate in CTs have
+been identiﬁed as institutional support, infrastructure issues,
+staﬀ support, administrative burden, time requirements, workload
+balance, data and safety reporting requirements, and dissatisfaction
+with ﬁnance-related issues (58–61). Accordingly, to these identiﬁed
+barriers, the Clinical Trials Transformation Initiative (CTTI)
+Strengthening the Investigator Community Project (62) has
+developed some recommendations focused on reinforcement of
+four critical categories of site-based research activity: developing
+site-based research infrastructure and staﬀ, optimizing trial
+execution and conduct, improving site budget development
+and contract negotiations, and discovering opportunities for
+conducting additional trials (58, 63).
+The high turnover of CT investigators, believed to lead to
+ineﬃciency, instability, and increased costs in conducting CTs, is
+of concern. A study of the U.S. FDA ’s Bioresearch Monitoring
+Information System showed a decline by approximately one-
+third of investigators submitting a Form from 1999 to 2015. The
+proportion of investigators involved in only one trial increased,
+signaling potential adverse trends in the clinical investigator
+workforce (64), and yearly, about 40% of unique investigators
+decide not to participate in another FDA-regulated trial (61).
+One of the main operational challenges recognized for CT
+investigators is recruitment (58, 65). Some studies demonstrate
+that investigators are optimistic and overconﬁdent in predicting
+outcomes concerning the statistical signiﬁcance of their primary
+outcome and completing recruitment of their registered target
+enrollment by trial closure (66). Fulﬁlling patient eligibility criteria
+and ensuring no exclusion criteria apply before enrolling a patient
+in a study are two of the most common sources of signiﬁcant
+protocol violations (24). The main barriers investigators encounter
+in recruiting are institutional or clinic time, reimbursement
+constraints, perceived risk, and treatment preferences (67, 68).Proposals to increase the engagement of investigators other than
+ﬁnancial incentives to improve recruitment have been proposed as
+authorship and letters of accomplishment (66).
+Recruitment of under-represented populations in CTs is
+also a concern, with investigators identifying time constraints
+and implementation issues as barriers (69). Recommendations
+for investigators to address this issue have been developed to
+improve patient communication and provide resources such as
+transportation or speciﬁc apps (69). Published experiences indicate
+that it may be successfully tackled by oﬀering adequate tools
+for investigators and monitoring their impact (70). Some studies
+analyze gender distributions in participants in CTs, detecting a high
+disbalance with female under-representation (71–73), although this
+disbalance has improved in the last decade (74, 75). Studies indicate
+that this distribution is related to gender investigator bias as CT led
+by women enrolled more female participants (71).
+When a physician considers enrolling a patient in a trial, a
+new relationship develops between the patient and the physician.
+This relationship could conﬂict with the traditional doctor-patient
+relationship. When considering the various treatment arms of a
+trial (including any placebo arms), the investigator could doubt
+whether one arm or the other is more eﬀective (76). The “dual-
+role consent” physician-investigators is particularly relevant to
+informed consent, especially when they have preexisting treatment
+relationships, and present recommendations indicate the need to
+consider the ethical acceptability of dual-role consent that varies
+with the features of each study. This dual research participation,
+when approximates usual care, becomes increasingly acceptable—
+even preferable—for physicians to seek consent for research
+from their patients (77–79). In pediatric clinical research, the
+understanding of parents and adolescents is crucial, and the
+dual role of the physician/investigator presents challenges in
+communicating the goals of phase 1 trials to families (80).
+CTs are changing rapidly due to advancements in technology
+and new designs. Implementing these novel CT designs, such
+as basket, platform, and umbrella trials, which have become
+valuable tools in modern drug development and regulatory
+processes, adds complexity and new challenges (57, 81). Innovative
+approaches such as blockchain protocols have been proposed to
+enhance transparency and traceability of consent, reﬂecting the
+evolving landscape of informed consent in clinical research (82).
+Frontiers in Medicine 05 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 6
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+Artiﬁcial intelligence tools can combine patient data (demographic,
+laboratory, imaging, and other -omics) to match patients with those
+complex inclusion criteria, ensuring recruitment ﬁtness. They may
+help interpret data and transform it into usable insights to improve
+patient safety (83). Digital technologies can also improve informed
+consent and data collection, including patient-reported outcomes,
+endpoint generation, and compliance monitoring (84, 85).
+Digitalizing CTs is undoubtedly an opportunity to improve
+CTs’ participant access, engagement, trial-related metrics, and
+intervention eﬃciency. The use of digital technologies in CTs must
+consider user attitudes, practices, expectations, and preferences, as
+potential participants may view using their data (86). Investigators
+are generally willing to implement new technologies in CT.
+However, the use of various platforms, interoperability issues,
+limited technological support, and the potential increased burden
+caused by them are challenges identiﬁed by investigators for its
+implementation in CTs (87). Still, it also implies the need for new
+guidance for deploying CTs and new skills in the professionals
+involved (84, 88).
+4 Nurses in clinical trials
+4.1 Clinical trials nurses roles and proﬁles
+Although the need for clinical research nurses (CRNs) has
+emerged as the vanguard of public awareness during the COVID-19
+pandemic, this nursing specialty has supported clinical research for
+decades (89). An estimated 10,000 nurses are involved in clinical
+research work in the United States and around 12.000 in the
+United Kingdom, across a broad spectrum of roles and settings
+(90). Independent of the position, the demand for CT nurses is
+increasing (91, 92).
+Diﬀerent names are used to design nurses dedicated to clinical
+research, some related to speciﬁc roles of nurses in CTs, such as CT
+nurses, study nurses, research nurses, research nurse coordinators,
+and clinical research nurses (93–96). Concerning the job titles,
+a variety has been identiﬁed among nurses that give support to
+CTs as a biostatistician, clinical nurse specialist, clinical research
+associate, coverage analyst, medical data review manager, protocol
+interpreter, and rural nurse specialist, which reﬂects a broad
+spectrum of roles and positions of the nurses (89).
+The National Institutes of Health Clinical Center considers
+CRN a nursing practice focusing on clinical research. It includes
+care provided to research participants and activities supporting
+protocol implementation, data collection, and research participant
+protection. In addition to providing and coordinating clinical care,
+CRNs have a central role in assuring ongoing maintenance of
+informed consent, integrity of protocol procedures, accuracy of
+research data collection, and education of participants (96, 97).
+Some reviews classify CRN roles in four areas: participants
+and managers of CTs, caregivers and protectors of subjects,
+coordinators of research teams, and educators (96). In an
+international study, a variety of deployed roles of CRNs have
+been identiﬁed ( Table 5 ), being the ones more uniformly present
+in the nine countries involved, acting as a central contact for
+participants and the research team, documenting participant data,
+monitoring patient safety, educating participants, participate inTABLE 5 Main roles areas for CRNs and their level of deployment the
+world [Modiﬁed of (93)].
+CTN roles CRN
+involvement
+(1 to 5 +)
+Research teams: central contact, documents, monitor,
+team education, protocol management+ + + +
+IRB/independent ethics committee and informed
+consent development: informed consent evaluation,
+patient education, IRB member+ + +
+Protocol assessment tasks: protocol feasibility,
+submission, review+ +
+Study participants: informed consent, patient
+assessment, communication and advocate with
+participants, scheduling+ + + + +
+Study site management: monitor, documents care,
+communications, manages and negotiates budget,
+processing samples+ + + +
+the informed consent, assessing, and advocating participants in
+CTs, reporting adverse events, and documenting patient care
+and process specimens (93). Another recent European study
+identiﬁed that the most frequently assigned duty for CRNs
+was administering investigational medicinal products, processing
+blood samples, and shipping clinical samples (96). Concerning
+time spent by CRNs in CTs, patient care is the main task of
+CRNs, which includes monitoring patients for adverse events,
+teaching participants about the study, reporting potential patient
+adverse events, recording patient research data, or explaining study
+procedures to patients (98).
+The role of CRNs is particularly relevant in some CT activities
+that require clinical expertise, dialogue skills, and proximity to
+the patient, such as in the deployment of informed consent.
+CRNs can assist in designing, reviewing, and approving informed
+consent (96, 99). CRN guidance and organizational skills in
+communication and proximity to the patient are also relevant in
+educating participants about consent documentation and helping
+them understand the information on the consent form. This
+supporting role for informed consent is especially relevant in cases
+of limited health literacy that conditions a lack of comprehension
+of CT consent documents, increased anxiety during the informed
+consent process, and even the success in CT enrollment (100).
+The literature supports nurses’ relevance in CTs, as they
+promote an increase in recruitment (101), enhance subject
+retention (102), and increase general study eﬃciency (103). Nurses
+are also viewed as speciﬁcally relevant in deploying retention
+strategies based on individualizing and identifying threats to CT
+participants’ retention (102). Some experiences in the UK National
+Health Services highlight the role of CRNs in building local
+research, changing research culture, informing the communities,
+networking, and patient public involvement (104).
+Independently of the various roles and responsibilities of the
+CRNs, the literature highlights that they must continually balance
+the requirements for protocol integrity and data quality with
+the clinical needs, comfort, and safety of research participants
+(105, 106).
+In this plethora of roles, two are the central conceptual
+positions of nurses in clinical research: CRN and research nurse
+Frontiers in Medicine 06 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 7
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+coordinators (95). CRNs, or clinical research care nurses, are
+clinical research staﬀ nurses with a central focus on the care
+of research participants. They support study implementation
+within the context of the care delivery setting. Research nurse
+coordinators are primarily responsible for study coordination
+and data management, with particular focus in managing subject
+recruitment and enrollment, consistency of study implementation,
+data management and integrity, and compliance with regulatory
+requirements and reporting (107).
+4.2 Clinical trial nurses qualiﬁcation and
+training
+National Institutes of Health have diﬀerentiated CRNs’ skills
+into ﬁve categories: care coordination and continuity of clinical
+practice, human subjects’ protection, study management, and
+contribution to science (108). These ﬁve categories are deployed
+through 53 diﬀerent activities, which comprise the full range of
+practice of clinical nurses providing research-based patient care and
+study coordinators managing studies (108). Others have proposed
+an eight-dimensional model of CRNs: care, work-study, expert,
+lead, prepare, data, advance science, and ethics (98). More recently,
+an expert team has designed a CRN training model based on the
+theoretical basis of position competence through literature study,
+qualitative interviews, and the Delphi method (109).
+CRN was recognized as a specialty in the United States by the
+American Nurses Association in 2016, a relevant step that creates
+a conceptual basis for developing specialty practice tools such
+as job descriptions, practice standards, competency assessment,
+educational content, and certiﬁcation (110). In this sense, the
+creation of the International Association of Clinical Research
+Nurses (IACRN) as a professional nursing organization dedicated
+to deﬁning, validating, and advancing the specialty practice of
+clinical research nursing focused on “ maintaining the equilibrium
+between the care of the research participant and ﬁdelity to the
+research protocol ” has been a breakthrough. The IACRN supports
+the professional development of CRNs with speciﬁc resources and
+meetings (110) and has created a curriculum for nursing school
+adoption and integration of research nursing within accredited
+programs (111). Oncology CRN has been considered a subspecialty
+(112), and some speciﬁc resources have been developed, such as
+the Manual for Clinical Trials Nursing (113), a description of
+their competencies (114, 115), and a CTs Nurse Questionnaire
+used to determine the various activities of the CRNs within
+oncology (116).
+Australia, where CRN is also a specialty, has developed CRN
+standards ( Table 6 ). In Europe, a recent survey has identiﬁed the
+presence of speciﬁc educational courses for research nurses in the
+majority of countries. However, the length of the research nurse
+education and the providers of research nurse courses exhibited
+signiﬁcant variation, ranging from workers’ unions to individual
+institutions or hospitals. Completing the GCP course and renewing
+the GCP accreditation are regularly mandatory for CRNs in most
+countries (96).
+Speciﬁc CT training for nurses may positively impact their
+conﬁdence, ability to discuss CTs, and perceived behavioral norms
+surrounding such talks. A randomized CT demonstrated thatTABLE 6 CRN Australian standards for practice (233).
+Applies critical thinking and research knowledge to nursing practice, clinical
+care, and management of research participants.
+Establishes and maintains respectful, diverse, and collaborative professional
+relationships to promote person-centered research.
+Maintains proﬁciency of practice in both clinical and research disciplines.
+Plans nursing care for clinical research participants, applying evidence-based
+clinical skills and validated and standardized research processes.
+Delivers safe, appropriate, responsive, and cohesive care to clinical research
+participants.
+Applies specialized research and management skills to enable the delivery of
+high-quality clinical and research practice.
+Contributes to the advancement of evidence-based health care and the clinical
+research nurse specialty.
+an online video-based educational program increased oncology
+nurses’ intention to discuss CT with patients and increased
+self-reported discussions about CT compared to a text-based
+educational intervention (117).
+4.3 Clinical trials nurse challenges
+Recent data indicate that the number of CRNs in the
+United States is decreasing (118), which is a matter of concern
+(119), considering that few nursing schools describe research
+nursing as a potential career (111). While it’s important for nurse
+professionals to conduct research (120), CRNs may face diﬃculties
+balancing regulatory compliance requirements, research integrity,
+recruitment targets, and eligibility criteria with their responsibility
+to prioritize the needs of research subjects and advocate for them.
+More research is needed to address these challenges (121, 122).
+Transitioning from nurse to CRN is, per se, a challenge and takes
+time. It implies thinking like a researcher rather than a clinician,
+adapting to functioning independently, gain and using skills in data
+management (123).
+The perception of CRNs about their participation in CTs has
+been analyzed, concluding that most of them remark that they
+contribute to the clinical research enterprise through knowledge of
+the research process and nursing expertise in the care of clinical
+research participants, with an outstanding role in participant care
+and safety (89). Some studies have analyzed the main barriers for
+nurses participating in CTs. Lack of knowledge and conﬁdence,
+concerns about the skills needed to communicate eﬀectively in
+various patient situations, and the need for explicit norms regarding
+their role have been identiﬁed as relevant barriers (124). Issues like
+threats to voluntariness, measures to safeguard voluntariness as a
+time to consider participation, the inclusion of vulnerable groups,
+and the questionable exclusion of certain groups due to language or
+cognitive barriers concern CRNs (125).
+The decentralization of CTs boosted by the COVID-19
+pandemic implies a new model of working for nurses in CTs
+as home care is incorporated as standard practice. It implies
+that digital technologies are required, and updating nurses’
+competencies is essential in this new CT deployment model,
+implying an added eﬀort (111).
+Frontiers in Medicine 07 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 8
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+5 Clinical research coordinators
+5.1 Clinical research coordinator roles
+Clinical research coordinators (CRCs) are also known as “study
+coordinators, ” “data managers, ” “clinical trial administrators”, and
+“clinical research associates” (126–128). They are not described or
+deﬁned in the GCP (129). The Association of Clinical Research
+Professionals (ACRP) (130) states that a CRC, or Study Site
+Coordinator, works at a clinical research site under the immediate
+direction of a principal investigator whose research activities are
+conducted under Good Clinical Practice regulations.
+The tasks developed by the CRCs may be classiﬁed into
+eight domains ( Table 7 ) and are most frequently related to the
+domain of monitoring activities, to a lesser extent to administrative
+activities, being researcher-related activities tertiary (126). Among
+other delegated tasks, CRCs perform site preparation, patient
+screening and recruitment, patient enrollment, conduct and ensure
+the quality of case report forms, maintain source documents,
+and ensure site quality (11, 131–133). CRCs are complementary
+in providing informed consent to investigators (134, 135). So,
+although the investigator is responsible for the overall conduct of
+the CT, the CRCs are responsible for many of the daily activities
+(136). CRCs may also help in the protocol assessment during the CT
+conceptualization and evaluation regarding operational logistics or
+procedures issues (135).
+Although CRCs usually work in direct contact with healthcare,
+patients, and patient information, in Western countries, their
+hiring frequently depends on the investigator and is not linked
+directly to healthcare systems (137). In Japan, CRCs work under the
+discretion of their hospital and, in general, support clinical trials in
+various areas (138).
+From the organizational point of view, CRCs may have diﬀerent
+levels of responsibilities. Some clinical trial units have established
+ﬁrst and second levels of CRCs that are diﬀerentiated by the type of
+studies they manage (minimal risk vs. non-minimal risk CTs) and
+the kind of tasks (abstracting and screening vs. regulatory and start-
+up approval). Others have established four skill levels with diﬀerent
+experience and salaries (129, 139).
+Some critical elements for a good CRC have been considered
+related to the “ﬁve 5 Cs”: coordination, connection, commitment,
+communication, and collaboration, highlighting the relevance of
+their responsibilities and networking abilities in CTs (136). It has
+been valued that CRCs mobilize altruism to deploy their activities,
+motivate participants to adhere to study protocols, and manage the
+tension between research and care (140).
+Investigators recognize the critical role of the CRCs in the
+informed consent process, as they have more detailed knowledge
+of research-related logistics, such as the duration and frequency of
+visits, possible costs, and compensation, and can oﬀer information
+about the potential participation requirements. CRCs usually have
+more time for supporting information, oﬀer a more friendly
+language, and demonstrate a high degree of that may promote
+voluntariness (138). CT participants may be more comfortable
+saying no to coordinators than physician-investigators, which
+mitigates physician-investigators negative dual role (141). In this
+sense, CRC’s cultural and racial diversity may facilitate recruitmentTABLE 7 Clinical trial coordinator’s domains of activity and tasks.
+1. Administrative activities
+Management of IRB submission
+Management of Hospital Director submission
+Management Medicine Agency submission
+Medical history adaptation for the CT
+Scheduled protocol speciﬁed tests
+Scheduled patient’s CT appointments
+2. Clinical activities
+To identify potential eligible patients
+Assessment of inclusion/exclusion criteria
+Participation in informing of patients
+Participation in obtaining informed consent
+To assess response to therapy
+To assess toxicities
+Scales/questionnaires completion
+3. Monitoring activities
+Patient registration/randomization
+To deal with Hospital Pharmacy
+To deal with a central lab
+Recruitment follow-up
+CRF completion
+To act as CRA
+To collaborate with the CRA
+Queries resolution
+Reporting serious adverse events
+To handle the investigator ﬁle
+To prepare and/or attend audits
+4. Data management and statistics
+Database set-up
+Data entry
+Statistical analysis
+5. Researcher-related activities
+Participation in protocol/CRF design
+Participation in protocol/CRF review
+Attending investigators meeting Participation in Final Report
+Participation in CT publication
+and CT participant engagement and diminish bias in recruiting
+marginal populations (142).
+CRCs also facilitate adequate billing of CTs. Billing requires
+information and communication from many sources that must
+be coordinated, and complex decisions must be documented to
+avoid common pitfalls covered by the CRC’s role and expertise.
+Given the potential errors in this process, a CRC can provide the
+right information punctually to each stakeholder to facilitate an
+organized and transparent process (143).
+Frontiers in Medicine 08 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 9
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+CRCs’ responsibilities impact the quality of CTs in a relevant
+way, and some published audits highlight their relevance (144)
+and are considered an essential element for an optimal CT unit
+infrastructure. In an Italian survey, more than 80% of participating
+sites associated improving the quality of clinical research with
+implementing a coordinator as a team member (145). CRCs also
+positively impact scientiﬁc output (146).
+Diﬀerent CRC workload assessment tools have also been
+developed that consider CT complexity to deﬁne the optimal
+number of studies to be assigned to each CRC based on its
+complexity. These tools consider issues like type of funding (proﬁt
+or non-proﬁt CTs), frequency of visits, and number of on-site
+patient access and centralized procedures (147).
+5.2 Clinical research coordinators
+qualiﬁcation and training
+The Joint Task Force for Clinical Trial Competency of the
+Association of Clinical Research Professionals (ACRP) has deﬁned
+core competencies for Clinical Research Coordinators (148). These
+competencies are described in a guideline and a certiﬁcation
+pathway comprising eight domains. The domains are categorized
+as entry-level, intermediate, and senior CRCs. The guideline
+provides self-assessment and competence gap analysis tools for
+CRCs. The certiﬁcation pathway includes personalized professional
+development plans. The guideline and certiﬁcation pathway is a
+roadmap for research sites to support CRCs’ hiring, assessment, and
+development ( Table 8 ). These core competencies are diﬀerentiated
+by the clinical study method (observational vs. interventional) and
+are associated with potential utilization and outcomes, including
+training initiatives, job descriptions, and policy development (149).
+The literature has reﬂected some discussion about the optimal
+CRC background. Some consider nurses to be the best proﬁle for
+CRCs with the advantage of having a possible dual role (clinical
+and CTs support role) that allows them to act as delegates for
+the investigating physician (including concomitant medications
+and adverse events (150) while others believe that the general
+background is considered an advantage (126). Various general skills
+needed for CRCs are service orientation, negotiation, management
+of personnel resources, and instructing abilities (133).Speciﬁc CT training of CRCs is based on GCP as the
+international standard. Although diﬀerent formal programs are
+available, surveys to CRCs indicate that these are considered
+helpful in the initial introduction as a new employee and for
+refreshing baseline knowledge, although experience, day-to-day
+practice, observing peers and colleagues, and having mentors are
+the essential elements to learning (151). Formal training in GCP
+can improve protocol adherence and clinical trial quality, and one
+retrospective study data indicates that the number of protocol
+deviations was signiﬁcantly lower if the CRCs were certiﬁed in GCP
+(152). Also, educating and training senior CRCs of new teams is
+considered necessary (2).
+Diﬀerent tools for competency self-assessment have been
+developed as the various versions of the Competency Index
+for Clinical Research Professionals, with excellent psychometric
+properties and a good ability to distinguish between experienced
+and non-experienced CRCs (153).
+5.3 Clinical research coordinator
+challenges
+Despite CRCs’ recognized role in CT deployment, some
+discussions have been opened about their invisible role, and they
+have sometimes been referred to as “phantom investigators” (145).
+This is due, at least in part, to the fact that speciﬁc certiﬁcations
+infrequently recognize the CRC professional proﬁle (129), and no
+formal CRC position exists in institutions’ staﬀ, as required by
+national healthcare workforce regulations (127). For example, in
+the United States, the Bureau of Labor Statistics does not recognize
+CRCs (129). However, the demand growth in the market research
+management of CRCs is objectively relevant (154).
+Also, some studies reﬂect CRC’s inadequate professional
+identity, suboptimal remuneration, and lack of peer support
+and recognition (155). CRCs’ job satisfaction and retention have
+been issues of discussion as turnover is relatively high and
+impacts productivity and emotional costs. An adequate salary,
+greater respect, collaboration, and engagement from the principal
+investigator are signiﬁcantly associated with higher retention (155,
+156). Over-delegation of responsibilities and under-supervision to
+CRCs is another issue of discussion identiﬁed in warning letters
+TABLE 8 Group of Domains of competencies of clinical research coordinators developed by the Association of Clinical Research Professionals.
+Modiﬁed from (148).
+Scientiﬁc Concepts: Encompasses Knowledge of Scientiﬁc Concepts Related to the Design and Analysis of CT.
+Ethical and Participant Safety Concerns: Encompasses Care of Patients, Aspects of Human Subject Protection, and Safety in the Conduct of a CT.
+Investigational Products Development and Regulation: Encompasses Knowledge of How Investigational Products are Developed and Regulated.
+Clinical Study Operations (Good Clinical Practice): Encompasses Study Management and GCP Compliance; Safety Management (Adverse Event Identiﬁcation and
+Reporting, Post-Market Surveillance, and Pharmacovigilance), and Handling of Investigational Product.
+Study and Site Management: Encompasses Content Required at the Site Level to Run a Study (Financial and Personnel Aspects). Includes Site and Study Operations (Not
+Encompassing Regulatory/GCPs).
+Data Management and Informatics: Encompasses How Data are Acquired and Managed During a CT, Including Source Data, Data Entry, Queries, Quality Control, and
+Correction and the Concept of a Locked Database.
+Leadership and Professionalism: Encompasses the Principles and Practice of Leadership and Professionalism in Clinical Research.
+Communication and Teamwork: Encompasses All Elements of Communication Within the Site and Between the Site and Sponsor, CRO, and Regulators. Understanding of
+Teamwork Skills Necessary for Conducting a CT.
+Frontiers in Medicine 09 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 10
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+of the regulatory agencies (156). In this frame, some have warned
+about the risk of high turnover, lack of identity of job description,
+and lack of institutional support (157).
+Some proposals for clarifying the competencies for speciﬁc
+clinical research roles have been established by the Special
+Programme for Research and Training in Tropical Diseases (TDR)
+of the World Health Organization (158) and by the Multi-Regional
+CTs Center at Harvard University (13). As the CRC job is not
+well delineated and competencies are increasingly broad, diﬃculties
+have been described in its recruitment, due at least in part to
+its description in job oﬀers. A guideline for human resources
+units recruiting CRCs has been elaborated to overcome this
+barrier (139).
+Several challenges for the CRCs in CTs are related to
+recruitment, speciﬁcally in racial and ethnic minorities. Fronting to
+this population implies overcoming language and cultural barriers
+and emotional challenges associated with requesting participation
+from seriously ill patients. Adaptive and technical strategies to
+improve recruitment of underrepresented CT participants from the
+CRCs’ point of view have also been identiﬁed (159).
+CRCs’ burnout is a concern (160). Causes for CRCs’ burnout
+are diverse and associated with job dissatisfaction, perceived daily
+work overload, low endurance, and nurturance personality traits.
+As the burnout risk of CRCs has been identiﬁed with high rates
+accordingly, some studies about some team-based interventions
+have been developed demonstrating that they are aﬀordable with
+good results (139, 161).
+6 Clinical trial pharmacist
+6.1 Clinical trial pharmacists roles and
+proﬁles
+CT pharmacists have diﬀerentiating roles and expertise that
+impact the organization and activities of CTs (162). Some
+speciﬁcations about the pharmacist’s responsibilities in CTs are
+described in the GCP (3), which deﬁnes the need for dispensing
+records kept at the pharmacy and notes that an investigator
+should delegate responsibility for the storage and accountability
+of investigational products to an appropriate pharmacist. In the
+United States, the Code of Federal Regulations deﬁnes issues related
+to investigational product management (163).
+Pharmacists CT support is usually provided by an
+investigational drug research service (clinical research pharmacy)
+that can be a small-scale operation with a part-time pharmacist
+or a large-scale operation with a team of dedicated clinical
+research pharmacists, technicians, and coordinators. Usually, it
+is a component of a more prominent pharmacy organization,
+such as a hospital pharmacy (162). Speciﬁc investigational
+drug service pharmacists are present in many centres (164),
+and the literature highlights that investigational drug service
+management is especially relevant in supporting early-phase CTs
+(165). Guidelines (162), best practices standards (165, 166), and
+frameworks (164) for investigational drug services provided by
+pharmacists have been published, making medication management
+a central issue of their tasks.The Society of Hospital Pharmacists of Australia (166) deﬁnes
+standard roles ( Table 9 ), services ( Table 10 ), and the following
+objectives for investigational drug research services:
+Provide safe and ethical use of investigational products by
+ensuring they are appropriate for use and are procured,
+handled, stored, and used safely and correctly.
+Apply the principles of best pharmacy practice to evaluate new
+investigational products or medicines.
+Ensure that the pharmacy aspects of investigational product
+use comply with relevant legislation, standards, guidelines, and
+local or institutional policies.
+Consider the safety and welfare of participants and the
+protection of their legal and ethical rights, including
+conﬁdentiality and privacy.
+Diﬀerentiating requirements for investigational drug research
+services according to the complexity of the supported CTs has been
+proposed. For example, for ﬁrst-in-human CTs, adaptive trials, and
+multidrug regimens that have a high risk for adverse events or
+drug–drug interactions, high standards have been recommended.
+These imply the needing for an on-call investigational drug service
+pharmacist to conduct concomitant medication reviews, assess
+potential drug–drug interactions, monitor renal or hepatic function
+as a basis for dose adjustment, deliver initial patient education on
+the investigational drug, and advise patients on any necessary dose
+modiﬁcations (164).
+Some of the CT pharmacist’s roles are speciﬁc to investigational
+drug services such as frozen storage, drug accountability,
+expiration date tracking, manufacturing, compounding, labelling,
+blinding of investigational drugs, subject and patient training,
+dispensing and dosing, monitoring drug events, importation
+and distribution of investigational medicine material, and
+maintaining written and up-to-date Standard Operating
+Procedures for the handling of investigational products (164–
+169). However, other pharmacists’ roles may overlap with other
+CT support proﬁles, such as CT design, protocol development,
+volunteers’ recruitment, adverse drug reaction reporting, data
+collection and analysis, education, ﬁnancial management, or IRB
+participation (170, 171).
+TABLE 9 Role of the clinical trials pharmacist accordingly the Society of
+Hospital Pharmacists of Australia (166).
+Coordinating, collaborating, and providing support for the CT pharmacy service
+Delivery of pharmacy services that improve participant medication outcomes
+and add value to health care systems, while encouraging the ﬁnancial
+sustainability of healthcare
+Development of and input into policies, procedures, guidelines and resources
+Commentary on CT protocols
+Provision of education and training for healthcare
+professionals and students
+Provision of education and counselling to clinical
+trial participants, carers, medical and nursing staﬀ
+and other pharmacists
+Pharmacy research related to CT
+Frontiers in Medicine 10 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 11
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+In a national survey developed in the United States, 26
+pharmacy services supported cancer CTs over 61 centres.
+Services were classiﬁed as pretrial implementation support,
+trial implementation support, patient medication proﬁle review,
+medication therapy engagement, medication therapy management,
+and miscellaneous. The most common pharmacy-performed
+services (over 60% of respondents) were a clinical review of
+investigational drug prescribed orders before dispensing, the
+recommendation for dose adjustments, a review of trial protocol for
+scientiﬁc merit, the development of training material for research
+staﬀ, and pharmacist IRB membership. The least frequently
+performed services (under 10% of respondents) were presenting
+or publishing trial ﬁndings, serving as study co-investigator,
+consenting patients for trial participation, and serving as principal
+investigator (172).
+The potential impact of pharmacists in CTs is relevant in
+the medication reconciliation process and especially in identifying
+protocol-prohibited concomitant medications (173). Despite the
+TABLE 10 Minimum and additional services required for a clinical trials
+pharmacy service [adapted from (166)].
+Minimum pharmacy services
+Investigational product management including: receipt, storage, temperature
+control, quarantine, return, authorised destruction, preparation and dispensing
+of all investigational products. Interactive voice/web response system use.
+Involvement in compounding or manufacturing investigational products
+Provision of emergency 24-h access to the service
+Procedures to ensure compliance with protocols
+Liaising with the investigator(s), trial coordinators, and sponsor representatives
+Provision of information and education to participants and carers, medical and
+nursing staﬀ and other pharmacists as required
+Monitoring of participant compliance
+Provision of information to, and involvement in the institutional review of
+protocols, via membership of a scientiﬁc review committee and/or Human
+Research Ethics Committee (HREC)
+Retention and archiving of records
+Additional pharmacy services
+CT design
+Preparation of blinding plans and unblinding procedures
+Protocol development
+Randomisation codes (e.g. for blinded CT)
+Preparation of placebos and special dosage forms
+Adverse drug reaction reporting
+Literature searches
+Therapeutic drug monitoring
+Advising on regulatory and non-regulatory aspects of conducting CT
+Collection and analysis of data
+Education of pharmacists, pharmacy students, and other healthcare
+professionals
+Importation of investigational medicine material
+Distribution of investigational products to other study sites
+Management of the ﬁnancial aspects of the CTrecognized role of pharmacists in drug interaction screening during
+eligibility assessment, they are only sometimes involved in this
+phase. However, pharmacists were more frequently involved in
+drug interaction screening for enrolled patients with medication
+changes (174, 175).
+During a patient’s CT participation, pharmacists can create
+a personalized ‘concomitant medication review guide’ in table
+presentation. This guide can assist other clinicians in preventing
+and assessing drug-drug interactions by listing critical medication-
+use information (176). This has been considered of particular
+relevance in CTs as blind study participants to treatment groups
+impact product appearance and packaging, lacking diﬀerentiating
+features such as colour or font, being necessary, including a
+warning about investigational use (168).
+The comprehensive medication review, and speciﬁcally the
+resolution of drug–drug interactions, for participants in oncology
+CTs has been considered crucial as nearly 70% of the patients may
+have drug interactions (176, 177). The relevance of this role is
+reinforced by the fact that frequently the CTs protocols do not
+asses adequately the interactions (178) and that patients enrolling
+in CTs often require medication changes to meet eligibility
+requirements (177).
+In IRB participation, pharmacists add complementary relevant
+expertise (162, 179). For example, in the protocol design, a
+pharmacist may deﬁne the parts related to drug information
+and medication management, including investigational drug
+management. This would cover the drug information section of
+the research protocol, as well as the assessment of the informed
+consent form for appropriate language on beneﬁts and hazards
+related to adverse drug reactions, drug information supplements,
+patient logs, or other adherence procedures. In the review of
+the protocol for the IRB, pharmacists have speciﬁc training
+to evaluate the quality and practicability of the drug supply
+management, administration, and dosing strategy, the pertinence
+of additional regulatory requirements (e.g., Risk Evaluation and
+Mitigation Strategy programs), and medication safety strategies
+(165, 179, 180).
+Pharmacists may also participate in the screening, assessing,
+and recruiting volunteers in CTs (181–185). Several experiences
+involving pharmacists in managing patients in clinical research in
+primary care have been communicated, with studies focused on
+pharmacological treatment of acute low back pain (181), preventive
+intervention of cardiovascular events (185), atrial ﬁbrillation
+screening (183), and assessing outcomes of enhanced chronic
+disease care through patient education (186).
+The beneﬁts of pharmacist participation in CTs have been
+described. Diﬀerent surveys indicate that pharmacists consider
+that their participation in CTs implies improved relationships
+and communication with other healthcare professionals, enhanced
+training and knowledge, exploration of personal interests, and
+development of the pharmacy profession (172, 187, 188).
+New models of work using remote communication workﬂows
+have implied readaptation of the investigational drug services. Site
+qualiﬁcation visits, site initiation visits, sponsor monitoring visits
+during a clinical trial, mailing of oral investigational products to
+patients, and virtual sponsor audits have been widely implemented
+following the coronavirus disease 2019 (COVID-19) pandemic
+outbreak and are now standards. Its use must be adapted to the
+characteristics of each CT and patient (163).
+Frontiers in Medicine 11 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 12
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+6.2 Clinical trial pharmacists qualiﬁcation
+and training
+Speciﬁc certiﬁcations for clinical trial pharmacists are less
+abundant than other CT support proﬁles (189). The American
+Society of Health-System Pharmacists (ASHSP) has deﬁned ﬁve
+required competency areas, 14 goals, 51 objectives, and 305 criteria
+for investigational drugs services and research pharmacy residence
+programs ( Table 11 ). This program deﬁnes the 69 key topics
+designed to provide comprehensive training for the residents
+across a spectrum of research concepts, regulatory requirements,
+performance measures, information technology, and leadership
+principles (190, 191).
+Accordingly, several programs focused on Investigational
+Drugs & Research pharmacy residency training have been
+developed, some accredited by reference associations such as
+the ASHSP. The training program requires at least 3,000 h of
+fellowship devoted to research-related activities over 2 years.
+Detailed information about the research pharmacy residency in
+reference hospitals is accessible (192, 193).
+6.3 Clinical trial pharmacists challenges
+Implementing investigational drug services and high-quality
+drug management in CTs implies a comprehensive approach.
+It needs to provide adequate resources and implement detailed
+processes that involve computer software, barcoding, expiration
+date tracking, order templates, clinical decision support, and
+pharmacy-independent double checks at the point of dispensing,in addition to many of the legal and accreditation requirements
+already mentioned (165).
+One of the main concerns for CT pharmacists is medication
+safety. Safe practices in medication management in CTs have not
+been standardized, and several areas of the operative medication-
+use process may pose speciﬁc safety risks during clinical research.
+For example, the repackaging process implies contamination risks.
+Storing investigational drugs may require particular facilities as
+they must be separated by protocol and strength to reduce the risk
+of incorrect product selection during dispensing (165, 168).
+Perceptions toward practice-based research of pharmacists
+have also been analyzed in the literature, showing a consistently
+high degree of interest in research in general, with percentages of
+70–87%. However, studies show high variability in the proportion
+of pharmacists who had experience with practice-based research
+(30–77%) and were conﬁdent they could conduct practice-based
+research (34–73%) (172, 188). Diﬀerent surveys indicate that the
+main barriers identiﬁed are low research training and management
+priority, lack of funding, time, resources, and culture, as well as
+opportunities and awareness of opportunities (172, 187, 188).
+Although not speciﬁc to CTs, deploying computerized provider
+order entry systems is complex. It implies a straight collaboration
+framework with clinicians to contribute to the safer use of
+medications (194). Integrating electronic health records in CTs can
+increase generalizability, reduce costs and time, expand the research
+ﬁelds, and associate with various stakeholder beneﬁts (195).
+However, it poses signiﬁcant challenges, including infrastructure
+costs, interoperability, standardization, data quality, ethics, privacy,
+and data security considerations. The implementation involves
+diﬀerent stakeholders in the healthcare arena, CT pharmacists
+being one essential (196).
+TABLE 11 Required competency areas and goals deﬁned by the for investigational drugs and research pharmacy residencies (190).
+Competency Area R1. Patient Care
+Goal 1. In collaboration with the health care team, provide comprehensive medication management to research participants following a consistent patient care process.
+Goal 2. Ensure continuity of care during research participant transitions between care settings.
+Goal 3. Manage and facilitate delivery of investigational products to support safe and eﬀective drug therapy for research participants
+Competency Area R2: Advancing Practice and Improving Patient Care
+Goal 1. Manage the medication-use processes for investigational drug services, as applicable to the organization.
+Goal 2. Demonstrate ability to conduct a quality improvement or research project
+Competency Area 3. Research Protocols and Regulations
+Goal 1. Serve as an authoritative resource on the optimal use of investigational products used in clinical research.
+Goal 2. Demonstrate ability to assess the feasibility of research protocols for the organization.
+Goal 3. Serve as an authoritative source to the IRB) to ensure the safety of human subjects.
+Goal 4. Demonstrate the ability to evaluate the federal, state, and institution regulations as it pertains to CT.
+Competency Area R4: Leadership and Management
+Goal 1. Demonstrate leadership skills for successful self-development in the provision of care for research participants.
+Goal 2. Demonstrate management skills in the provision of care for research participants.
+Goal 3. Demonstrate skills in the ﬁnancial management and budgeting to conduct CT.
+Competency Area R5: Teaching, Education, and Dissemination of Knowledge
+Goal 1: Provide eﬀective CT and medication education to participants, caregivers, health care professionals, students, and the public (individuals and groups).
+Goal 2. Eﬀectively employ appropriate preceptor roles when engaged in teaching students, pharmacy technicians, or fellow health care professionals about care of research
+participants and investigational drug services.
+Frontiers in Medicine 12 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 13
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+3D printing helps facilitate rapid CT prototyping, automate
+compounding processes in pharmacies, and ensure precise dosages
+and drug combinations while enhancing precision, eﬃciency,
+and patient safety (197, 198). However, there are still obstacles,
+such as regulatory considerations, material selection, and quality
+control. Despite these challenges, 3D printing is a promising
+technology that can revolutionize pharmaceutical innovation due
+to ongoing advancements.
+7 Clinical trial monitor
+7.1 Clinical trial monitors proﬁle and roles
+The CT monitor (or clinical research associate) is responsible
+for overseeing the progress of a CT and ensuring that it is
+conducted, recorded, and reported according to the protocol,
+standard operation procedures, GCP (3), and the Medicines for
+Human Use Regulations (199). GCP (3) explicitly states that the
+sponsor should appoint monitors according to the extent and
+nature of monitoring based on considerations such as the objective,
+purpose, design, complexity, blinding, size, and endpoints of CTs.
+Information about monitoring principles and diﬀerent
+guidance are available on the websites of the leading international
+regulatory agencies such as the European Medicines Agency,
+FDA, Medicines and Healthcare Products Regulatory Agency,
+or other research or research supporting institutions such as
+CTs Transformation Initiative, Health Research Authority,
+International Council for Harmonisation of Technical
+Requirements for Pharmaceuticals for Human Use, National
+Institute for Health Research, TransCelerate Biopharma Inc or UK
+Trial Manager Network (199).
+Five main purposes have been deﬁned for CT monitors: that
+the rights and well-being of the human subjects are protected,
+the reported trial data are accurate, complete, and veriﬁable
+from source documents, the conduct of the trial is following
+the currently approved protocol/amendment(s), GCP and the
+applicable regulatory requirements, improve the way the trial is
+running and prevention of pitfalls (3, 199, 200). According to
+GCP (3), these ﬁve aims are deployed in a list of responsibilities
+(Table 12 ).
+In daily life, monitoring activity requires deploying all the
+skills related to the diﬀerent roles they are involved in, such
+as trainers, planners, trouble-shooters, negotiators, detectives, or
+psychologists (201). Some of the speciﬁc tasks of the monitor
+during the initial CT visit include determining whether the
+administrative ﬁle is complete and in order, checking that the
+protocol is signed, and attaching the investigator’s curriculum vitae.
+After this initial step, the monitor ensures the application and
+respect of good clinical practices, particularly strict adherence to the
+protocol, reviews the trial data after having consulted the clinical
+ﬁles, checks their authenticity and coherence, determines that the
+randomization order has been respected, assures the providing
+of the necessary products to the investigator for conducting the
+trial such as drug packages and materials for biological assays,
+and ensures that communication is maintained throughout the
+trial (200, 202–204).Each described CT monitor responsibility is deployed
+according to standard operating procedures that itemize every
+task that must be deployed. For example, pharmacy monitoring
+includes documentation and delegation log review, protocol and
+SOP compliance, investigational medicinal product storage check,
+labelling expiry dates randomization, accountability, and breaking
+blind procedure, and each of these elements includes detailed
+activities (200, 205).
+Planning is a relevant issue related to monitoring activities.
+A monitoring plan is a relevant part of the activity to ensure optimal
+monitoring of the CT, according to the speciﬁc risks to human
+subject protection and data integrity of each CT. The plan should
+describe the monitoring strategy, the responsibilities of all parties
+involved, the diﬀerent monitoring methods, and the rationale for
+their use. The plan should also emphasize monitoring critical data
+and processes (3).
+Although the monitors are external to the organizations, they
+must have direct access to the original medical records of the
+trial subjects to verify the trial procedures and/or data (199). This
+must be done without violating the subject’s conﬁdentiality, to
+the extent permitted by applicable laws and regulations, and the
+subject must authorize such access by signing a written informed
+consent form (3).
+The cost of monitoring is relevant. It has been estimated
+that the average cost per site visit of a monitor in an oncology
+CT is around 1.500$ (206), and about 25% of the cost of a CT
+is occasioned by on-site monitoring activities (207). Monitoring
+activity before, during, and after the CTs is usually developed on-
+site. However, central monitoring is also an option for speciﬁc
+circumstances considering each CT’s objective, purpose, design,
+complexity, blinding, size, and endpoints (3).
+7.2 Clinical trial monitor qualiﬁcation and
+training
+The Association of Clinical Research Professionals (ACRP)
+has deﬁned a Core Competency Framework for Clinical Study
+Monitoring with four diﬀerent levels (entry-level, intermediate,
+senior, and clinical lead), which include domain, competency, and
+expectation ( Table 13 ). More deeply considered issues are related to
+managing conﬁdential information, the informed consent process,
+and the need to communicate with the team’s participants in the
+CTs (130).
+Indeed, becoming a clinical trial monitor does not necessarily
+require formal education, as various pathways are available for
+anyone with a high school diploma or higher (208). Information
+concerning the academic background of the monitors is limited.
+In a Children’s Oncology Group report from the National Cancer
+Institute (209) that analyzed the cause of turnover in a survey of
+over 456 monitors, the level of education was a bachelor’s degree at
+47% and a graduate degree at 28% (210).
+Despite the absence of a certiﬁcation requirement, obtaining
+certiﬁcation in the United States can oﬀer more job prospects
+and even higher salaries (210). Various training programs for
+clinical trial monitor training are available (211, 212). The
+Society of Clinical Research Associates (SOCRA) (213, 214), the
+Association of Clinical Research Professionals (ACRP), Certiﬁed
+Frontiers in Medicine 13 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 14
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+TABLE 12 Monitor responsibilities [modiﬁed from (3)].
+Acting as the main line of communication between the sponsor and the investigator.
+Verifying that the investigator has adequate qualiﬁcations and resources
+Verifying, adequacy of the storage, supply and return, information given respect the investigational product(s)
+Verifying that written informed consent was obtained before each subject’s participation in the trial.
+Ensuring that the investigator receives the current Investigator’s Brochure, all documents, and all trial supplies needed to conduct the trial properly and to comply with the
+applicable regulatory requirement(s), and that the investigator and the investigator’s trial staﬀ are adequately informed about the trial.
+Verifying that the investigator’s trial staﬀ are performing the speciﬁed trial functions, enrolling only eligible subjects, and providing all the required reports, notiﬁcations,
+applications, and submissions, and that these documents are accurate, complete, timely, legible, dated, and identify the trial.
+Reporting the subject recruitment rate.
+Verifying that source documents are accurate and complete, and kept up-to-date and maintained and the accuracy and completeness of the CRF entries, source documents
+and other trial-related records against each other.
+Informing the investigator of any CRF entry error, omission, or illegibility.
+Determining whether all adverse events are appropriately reported.
+Determining whether the investigator is maintaining the essential documents.
+Communicating deviations from the protocol, to the investigator and taking appropriate action designed to prevent recurrence of the detected deviations.
+Clinical Research Professionals Society (CCRPS) (215), among
+others, provide certiﬁcations. Also, diﬀerent University programs
+are available (208).
+Updated statistics from the United States indicate that the
+average salary of a clinical trial monitor is $73,700/year (216).
+A senior clinical trial monitor (minimum 2 years of clinical
+monitoring experience, remote work) is around $ 120.000–135.000
+per year, and some employment oﬀers include a beneﬁts package
+and an annual performance bonus. A lead clinical trial monitor
+reaches salaries (accordingly published oﬀers in the United States)
+of around $150.000–170.000/year (217).
+7.3 Clinical trial monitor challenges
+There is a growing concern about the eﬀectiveness and
+eﬃciency of monitoring practices and a need for empirical
+evidence to determine which practices best achieve the goals of
+trial monitoring. Risk-based monitoring has been proposed as an
+eﬃcient way to cover most of the activities developed by on-site
+monitoring or even detect ﬂaws better and sooner than on-site
+monitoring (177, 178, 218, 219). Risk-based monitoring combines
+centralized follow-up for most of the reviews and on-site for further
+support and has been studied with results that suggest that it
+improves data quality regarding data points of major importance
+TABLE 13 Core competency framework for clinical study
+monitoring (130).
+Ethical and Participant Safety Considerations
+Medicines Development and Regulation
+CT Operations (GCPs)
+Study and Site Management
+Data Management and Informatics
+Leadership and Professionalism
+Communication and Teamworkto trial outcomes, eﬃcacy, and signiﬁcant safety requiring less
+than 50% of extensive on-site monitoring resources (204, 219–222).
+Based on this data, international recommendations promote risk-
+based monitoring (3, 223, 224), although most small single-site
+academic studies apply traditional approaches (91, 221, 225).
+CT monitor turnovers are high, and data from diﬀerent
+countries indicate that the percentage of annual turnover in 2015–
+2019 was around 25% due at least in part to a low salary,
+unmanageable workload, lack of career advancement, and limited
+research commitment from the medical team (226). The main
+factors considered to monitor for staying in their jobs are a
+supportive principal investigator and satisfaction working with
+colleagues (209).
+The CT monitor position and adaptation capability are
+recognized as valuable. On the other hand, CT monitor are
+motivated and excited about how they can contribute to the health
+and well-being of others and their career by rapidly learning
+critical skills and fast adaptation capabilities. During the COVID-
+19 pandemic, a rapid transition to decentralizing to monitoring
+activity has occurred (227). In this scenario, companies are creating
+retention programs focused on building more connections among
+professionals and reducing “travel fatigue”, creating a professional
+pathway and annual incentives (226).
+While CT monitors currently play a crucial role in healthcare,
+their importance is projected to diminish in centralized models
+where patients can provide much of the necessary information
+directly and through electronic health records in an automated
+way. Wearables have immense potential for automated patient
+monitoring and will be an integral part of the future of healthcare
+models alongside CT monitoring (228).
+8 Conclusion
+CTs are becoming increasingly complex and require trained
+teams of expert professionals to support various activities with
+maximum rigor, adhering to ethical and technical international
+requirements. Healthcare professionals, including principal
+Frontiers in Medicine 14 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 15
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+investigators, CRCs, nurses, pharmacists, and monitors, have
+pivotal roles in the successful execution of CT. Clearly deﬁning
+roles, providing adaptive and continuous professional training, and
+fostering a culture of collaboration and communication are pivotal
+in ensuring success in this ﬁeld. Addressing recruitment, retention,
+and professional growth challenges is also essential.
+Although professional proﬁles and roles of the experts involved
+in CTs are not well delineated, some roles and functions are
+recognized internationally as essential for its deployment, especially
+in highly complex CTs. In this sense, a relevant advance has
+taken place in recent years. As CTs gain weight as a relevant
+part of the activity of worldwide leader healthcare systems,
+better delineation of roles, training, and a higher degree of
+professionalization are desirable.
+Across all roles, there is a clear need for more standardized,
+formalized, and accessible training programs to ensure that
+professionals are equipped to meet the demands of their roles
+in clinical trials. Also, a collaborative approach and enhanced
+training programs tailored to each professional role’s speciﬁc
+needs and challenges within the CT framework are convenient.
+All professionals involved in clinical trials must navigate a
+complex landscape of ethical and regulatory requirements and
+new technology advances, underscoring the need for continuous
+education and adherence to ethical standards.
+Speciﬁc strategies are needed to front the challenges related to
+the professionals involved in CT in the healthcare arena. Principal
+investigators should focus on enhancing protocol compliance
+through rigorous training in GCP and regulatory updates, ensuring
+they are well-versed in the latest standards and delegated in
+adequately trained teams. For clinical research coordinators,
+implementing project management tools and comprehensive
+training in patient interaction and data management systems is
+advised to eﬀectively manage the trial’s increased complexity.
+Monitors could beneﬁt from advanced training in risk-based
+monitoring techniques and digital monitoring tools to enhance the
+eﬃciency and eﬀectiveness of site visits and remote monitoring
+tasks. Nurses, who often face direct patient care challenges, should
+receive ongoing support in patient management systems and be
+given access to continuous education in trial-speciﬁc procedures
+and treatments. These steps will enhance individual performance
+and improve clinical trials’ overall functioning, ensuring data
+integrity, participant safety, and regulatory compliance.
+Digitalization can streamline many aspects of CT processes,
+from patient recruitment and data collection to protocol
+compliance and real-time monitoring. This improves eﬃciency,
+enhances data integrity, and reduces the administrative burden
+on staﬀ. For instance, electronic health records and mobile healthapplications could be more extensively utilized to facilitate seamless
+communication and accurate data tracking.
+Future studies could explore the speciﬁc impacts of digital
+technologies on trial eﬃciency and participant safety, the
+eﬀectiveness of new training modalities, and the long-term beneﬁts
+of these innovations on clinical trial outcomes. Research into the
+development of a standardized framework for integrating digital
+tools across various stages of clinical trials could also provide
+valuable insights and guidance for the ﬁeld.
+Author contributions
+GP: Writing–review and editing, Writing–original draft,
+Visualization, Validation, Supervision, Software, Resources, Project
+administration, Methodology, Investigation, Funding acquisition,
+Formal analysis, Conceptualization. BS-S: Writing–review
+and editing, Writing–original draft, Visualization, Validation,
+Supervision, Software, Resources, Project administration,
+Methodology, Investigation, Funding acquisition, Formal analysis,
+Conceptualization.
+Funding
+The author(s) declare that ﬁnancial support was received for
+the research, authorship, and/or publication of this article. This
+study was supported by the Instituto de Investigación Marqués de
+Valdecilla (IDIV AL) (INT/A23).
+Conﬂict of interest
+The authors declare that the research was conducted in the
+absence of any commercial or ﬁnancial relationships that could be
+construed as a potential conﬂict of interest.
+Publisher’s note
+All claims expressed in this article are solely those of the
+authors and do not necessarily represent those of their aﬃliated
+organizations, or those of the publisher, the editors and the
+reviewers. Any product that may be evaluated in this article, or
+claim that may be made by its manufacturer, is not guaranteed or
+endorsed by the publisher.
+References
+1. Farber GK, Weiss L. Core facilities: Maximizing the return on investment. Sci
+Transl Med. (2011) 3:95cm21. doi: 10.1126/scitranslmed.3002421
+2. Croghan IT, Viker SD, Limper AH, Evans TK, Cornell AR, Ebbert JO,
+et al. Developing a clinical trial unit to advance research in an academic
+institution. Contemp Clin Trials. (2015) 45:270–6. doi: 10.1016/j.cct.2015.
+10.001
+3. ICH. Guideline for good clinical practice E6(R2) . Tinsukia: ICH (2016).4. Fleischmann R. Primer: Establishing a clinical trial unit – regulations and
+infrastructure. Nat Clin Pract Rheumatol. (2007) 3:234–9. doi: 10.1038/ncprheum0461
+5. Food and Drug Administration. Code of federal regulations 21 CFR chapter I
+subchapter D- drugs for human use . Silver Spring, MD: Food and Drug Administration
+(2023).
+6. European Commission. Regulation (EU) No 536/2014 of the European parliament
+and of the council of 16 april 2014 on clinical trials on medicinal products for
+Frontiers in Medicine 15 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 16
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+human use, and repealing directive 2001/20/EC . Brussels: European Commission
+(2014).
+7. World Medical Association. Declaration of Helsinki – Ethical Principles for Medical
+Research Involving Human Subjects . Ferney-Voltaire: World Medical Association
+(2022).
+8. Lee C, Werner TL, Deal AM, Krise-Confair CJ, Bentz TA, Cummings TM, et al.
+Clinical trial metrics: The complexity of conducting clinical trials in North American
+cancer centers. JCO Oncol Pract. (2021) 17:e77–93. doi: 10.1200/OP.20.00501
+9. Getz KA, Campo RA. Trial watch: Trends in clinical trial design complexity. Nat
+Rev Drug Discov. (2017) 16:307. doi: 10.1038/nrd.2017.65
+10. Jones HM, Curtis F, Law G, Bridle C, Boyle D, Ahmed T. Evaluating follow-
+up and complexity in cancer clinical trials (EFACCT): An eDelphi study of research
+professionals’ perspectives. BMJ Open. (2020) 10:e034269. doi: 10.1136/bmjopen-
+2019-034269
+11. Fujiwara N, Ochiai R, Shirai Y , Saito Y , Nagamura F, Iwase S, et al. Qualitative
+analysis of clinical research coordinators’ role in phase I cancer clinical trials. Contemp
+Clin Trials Commun. (2017) 8:156–61. doi: 10.1016/j.conctc.2017.09.009
+12. Wolinetz CD, Tabak LA. Transforming clinical research to meet health
+challenges. JAMA. (2023) 329:1740–1. doi: 10.1001/jama.2023.3964
+13. Sonstein SA, Jones CT. Joint task force for clinical trial competency and clinical
+research professional workforce development. Front Pharmacol. (2018) 9:1148. doi:
+10.3389/fphar.2018.01148
+14. Shanley TP , Calvin-Naylor NA, Divecha R, Wartak MM, Blackwell K, Davis JM,
+et al. Enhancing clinical research professionals’ training and qualiﬁcations (ECRPTQ):
+Recommendations for good clinical practice (GCP) training for investigators and study
+coordinators. J Clin Transl Sci. (2017) 1:8–15. doi: 10.1017/cts.2016.1
+15. Calvin-Naylor NA, Jones CT, Wartak MM, Blackwell K, Davis JM, Divecha
+R, et al. Education and training of clinical and translational study investigators
+and research coordinators: A competency-based approach. J Clin Transl Sci. (2017)
+1:16–25. doi: 10.1017/cts.2016.2
+16. Baer AR, Zon R, Devine S, Lyss AP. The clinical research team. J Oncol Pract.
+(2011) 7:188–92. doi: 10.1200/JOP.2011.000276
+17. Mora V , Colantuono S, Fanali C, Leonetti A, Wlderk G, Pirro MA, et al. Clinical
+research coordinators: Key components of an eﬃcient clinical trial unit. Contemp Clin
+Trials Commun. (2023) 32:101057. doi: 10.1016/j.conctc.2023.101057
+18. Tang C, Hess K, Sanders D, Davis S, Kurzrock R, Lee JJ, et al. Eﬃcient clinical
+research infrastructure and trial performance: Assessment of a dedicated clinical trials
+unit within an academic cancer center. Eur J Cancer. (2016) 69:779. doi: 10.1016/
+s0959-8049(16)32779-4
+19. Hind D, Reeves BC, Bathers S, Bray C, Corkhill A, Hayward C, et al. Comparative
+costs and activity from a sample of UK clinical trials units. Trials. (2017) 18:203.
+doi: 10.1186/s13063-017-1934-3
+20. Lee P , Goldberg C, Kohane I. The AI revolution in medicine: GPT-4 and beyond .
+Boston, MA: Pearson Education, Inc (2023).
+21. ChatGPT-4. Personal consultation . (2024).
+22. Food and Drug Administration. Code of federal regulations: 21 CFR Part 312
+subpart D – responsibilities of sponsors and investigators . Silver Spring, MD: Food and
+Drug Administration (2023).
+23. Polk HC, Bowden TA, Rikkers LF, Balch CM, Organ CH, Murie JA, et al.
+Scientiﬁc data from clinical trials: Investigators’ responsibilities and rights. Arch Surg.
+(2002) 137:1. doi: 10.1097/00005373-200206000-00001
+24. Baer AR, Devine S, Beardmore CD, Catalano R. Clinical investigator
+responsibilities. J Oncol Pract. (2011) 7:124–8. doi: 10.1200/JOP.2010.000216
+25. Feehan AK, Garcia-Diaz J. Investigator responsibilities in clinical research.
+Ochsner J. (2020) 20:44–9. doi: 10.31486/toj.19.0085
+26. Sweedler JV. So you want to be a principal investigator? Anal Chem. (2014)
+86:7159. doi: 10.1021/ac502543w
+27. Saleh M, Naik G. So you want to be a principal investigator. J Oncol Pract. (2018)
+14:e384–92. doi: 10.1200/JOP.18.00011
+28. Food and Drug Administration. Investigator Responsibilities - protecting the
+rights, safety, and welfare of study subjects . Silver Spring, MD: Food and Drug
+Administration (2009).
+29. Food and Drug Administration. Frequently asked questions – statement of
+investigator (form FDA 1572) information sheet guidance for irbs, clinical investigators,
+and sponsors . Silver Spring, MD: Food and Drug Administration (2010).
+30. Food and Drug Administration. Informed consent guidance for IRBs, clinical
+investigators, and sponsors . Silver Spring, MD: Food and Drug Administration (2023).
+31. Nijhawan LP , Janodia MD, Muddukrishna BS, Bhat KM, Bairy KL, Udupa N,
+et al. Informed consent: Issues and challenges. J Adv Pharm Technol Res. (2013)
+4:134–40. doi: 10.4103/2231-4040.116779
+32. Kelch RP. Maintaining the public trust in clinical research. N Engl J Med. (2002)
+346:285–7. doi: 10.1056/NEJM200201243460413
+33. Colombo C, Mayrhofer MT, Kubiak C, Battaglia S, Matei M, Lavitrano M, et al.
+The CORBEL matrix on informed consent in clinical studies: A multidisciplinaryapproach of research infrastructures building enduring life-science services. BMC Med
+Ethics. (2021) 22:95. doi: 10.1186/s12910-021-00639-x
+34. Joﬀe S, Cook EF, Cleary PD, Clark JW, Weeks JC. Quality of informed consent:
+A new measure of understanding among research subjects. J Natl Cancer Inst. (2001)
+93:139–47. doi: 10.1093/jnci/93.2.139
+35. Food and Drug Administration. IRB responsibilities for reviewing the
+qualiﬁcations of investigators, adequacy of research sites, and the determination of
+whether an IND/IDE is needed . Silver Spring, MD: Food and Drug Administration
+(2013).
+36. Dekking SA, van der Graaf R, Kars MC, Beishuizen A, de Vries MC, van Delden
+JJ. Balancing research interests and patient interests: A qualitative study into the
+intertwinement of care and research in paediatric oncology. Pediatr Blood Cancer.
+(2015) 62:816–22. doi: 10.1002/pbc.25444
+37. Carazo S, Folkesson E, Anglaret X, Beavogui AH, Berbain E, Camara AM,
+et al. Challenges in preparing and implementing a clinical trial at ﬁeld level in an
+Ebola emergency: A case study in Guinea, West Africa. PLoS Negl Trop Dis. (2017)
+11:e0005545. doi: 10.1371/journal.pntd.0005545
+38. Rivera SM. Clinical research from proposal to implementation: What every
+clinical investigator should know about the institutional review board. J Investig Med.
+(2008) 56:975–84. doi: 10.2310/JIM.0b013e31818e1da9
+39. Simon GE, Shortreed SM, Rossom RC, Penfold RB, Sperl-Hillen JAM, O’Connor
+P. Principles and procedures for data and safety monitoring in pragmatic clinical trials.
+Trials. (2019) 20:690. doi: 10.1186/s13063-019-3869-3
+40. Boeynaems JM, Canivet C, Chan A, Clarke MJ, Cornu C, Daemen E, et al. A
+European approach to clinical investigator training. Front Pharmacol. (2013) 4:112.
+doi: 10.3389/fphar.2013.00112
+41. Magnin A, Iversen VC, Calvo G, ˇCeˇcetková B, Dale O, Demlova R, et al.
+European survey on national training activities in clinical research. Trials. (2019)
+20:616. doi: 10.1186/s13063-019-3702-z
+42. Nalepinski CEG. PAs as principal investigators of FDA-regulated clinical trials.
+JAAPA. (2023) 36:40–2. doi: 10.1097/01.JAA.0000931416.49268.b2
+43. Bayat M, Davis L, Knoell D, Korth-Bradley J, Munger M, Shaefer M, et al. The
+clinical pharmacist as principal investigator: A commentary from the american college
+of clinical pharmacy. Pharmacotherapy. (2000) 20:35165. doi: 10.1592/phco.20.6.599.
+35165
+44. Ali S, Karakitsos D. Clinical pharmacists as principal investigators in clinical
+trials”. Encyclop Pharm Pract Clin Pharm. (2019) 18:444. doi: 10.1016/B978-0-128-
+12735-3.00144-8
+45. Rosenzweig MQ, Bender CM, Brufsky AM. The nurse as principal investigator
+in a pharmaceutically sponsored drug trial: Considerations and challenges. Oncol Nurs
+Forum. (2005) 32:293–9. doi: 10.1188/05.ONF.293-299
+46. Burton ME, Munger MA, Bednarczyk EM, Davis LE, Davis GA, Elliott ME, et al.
+Update: The clinical pharmacist as principal investigator. Pharmacotherapy. (2010)
+30:1314. doi: 10.1592/phco.30.12.1314
+47. Okubanjo T, Gonzalez LS. Pharmacists as investigators in FDA-regulated
+drug trials. Am J Health Syst Pharm. (2008) 65:1010–1. doi: 10.2146/ajhp07
+0649
+48. Glasziou P , Altman DG, Bossuyt P , Boutron I, Clarke M, Julious S, et al. Reducing
+waste from incomplete or unusable reports of biomedical research. Lancet. (2014)
+383:267–76. doi: 10.1016/S0140-6736(13)62228-X
+49. UEMS Home. European standards in medical training . Brussels: UEMS Home
+(2023).
+50. University of Maryland. Clinical investigator training course . College Park, MD:
+University of Maryland (2023).
+51. Washington University in St. Louis. Graduate certiﬁcate in clinical
+investigation | clinical research training center . St. Louis, MO: Washington University
+in St. Louis (2023).
+52. Swezey T, McGuire FH, Hurley P , Panhuis J, Goldstein K, Chuck T, et al.
+More than a box to check: Research sponsor and clinical investigator perspectives
+on making GCP training relevant. Contemp Clin Trials Commun. (2020) 19100606.
+doi: 10.1016/j.conctc.2020.100606
+53. Saleh M, Naik G, Jester P , Joiner C, Westfall E, Kimberlin DW, et al.
+Clinical investigator training program (CITP) – a practical and pragmatic approach
+to conveying clinical investigator competencies and training to busy clinicians.
+Contemp Clin Trials Commun. (2020) 19:100589. doi: 10.1016/j.conctc.2020.
+100589
+54. Moskowitz J, Thompson JN. Enhancing the clinical research pipeline: Training
+approaches for a new century. Acad Med. (2001) 76:307–15. doi: 10.1097/00001888-
+200104000-00004
+55. Akroyd D, Kathryn H. Does PI certiﬁcation make a diﬀerence?” Applied clinical
+trials . (2018). Available online at: https://www.appliedclinicaltrialsonline.com/view/
+does-pi-certiﬁcation-make-diﬀerence (accessed December 12, 2023).
+56. Lader EW, Cannon CP , Ohman EM, Newby LK, Sulmasy DP , Barst RJ, et al. The
+clinician as investigator: Participating in clinical trials in the practice setting: Appendix
+1: fundamentals of study design. Circulation. (2004) 109:e302–4. doi: 10.1161/01.CIR.
+0000128807.57602.61
+Frontiers in Medicine 16 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 17
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+57. Cecchini M, Rubin EH, Blumenthal GM, Ayalew K, Burris HA, Russell-Einhorn
+M, et al. Challenges with novel clinical trial designs: Master protocols. Clin Cancer Res.
+(2019) 25:2049–57. doi: 10.1158/1078-0432.CCR-18-3544
+58. Dombeck CB, Hinkley T, Fordyce CB, Blanchard K, Roe MT, Corneli A.
+Continued investigator engagement: Reasons principal investigators conduct multiple
+FDA-regulated drug trials. Contemp Clin Trials Commun. (2019) 17:100502. doi: 10.
+1016/j.conctc.2019.100502
+59. Corneli A, Pierre C, Hinkley T, Lin L, Fordyce CB, Hamre G, et al. One
+and done: Reasons principal investigators conduct only one FDA-regulated drug
+trial. Contemp Clin Trials Commun. (2017) 6:31–8. doi: 10.1016/j.conctc.2017.
+02.009
+60. Paget SP , Caldwell PH, Murphy J, Lilischkis KJ, Morrow AM. Moving beyond
+‘not enough time’: Factors inﬂuencing paediatric clinician’ participation in research.
+Intern Med J. (2017) 47:299–306. doi: 10.1111/imj.13351
+61. Getz K, Brown C, Stergiopoulos S, Beltre C. Baseline assessment of a global
+clinical investigator landscape poised for structural change. Ther Innov Regul Sci.
+(2017) 51:575–81. doi: 10.1177/2168479017701504
+62. CTTI. Strengthening the investigator community project . Islamabad: CTTI
+(2023).
+63. Fordyce CB, Malone K, Forrest A, Hinkley T, Corneli A, Topping J, et al.
+Improving and sustaining the site investigator community: Recommendations from
+the clinical trials transformation initiative. Contemp Clin Trials Commun. (2019)
+16:100462. doi: 10.1016/j.conctc.2019.100462
+64. Fordyce CB, Roe MT, Pierre C, Hinkley T, Hamre G, Tenaerts P , et al. Trends
+in clinical trial investigator workforce and turnover: An analysis of the U.S. FDA 1572
+BMIS database. Contemp Clin Trials Commun. (2019) 15:100380. doi: 10.1016/j.conctc.
+2019.100380
+65. Unger JM, Vaidya R, Hershman DL, Minasian LM, Fleury ME. Systematic review
+and meta-analysis of the magnitude of structural, clinical, and physician and patient
+barriers to cancer clinical trial participation. J Natl Cancer Inst. (2019) 111:245–55.
+doi: 10.1093/jnci/djy221
+66. Mentz RJ, Peterson ED. Site principal investigators in multicenter clinical trials:
+Appropriately recognizing key contributors. Circulation. (2017) 135:1185–7. doi: 10.
+1161/CIRCULATIONAHA.116.026650
+67. Somkin CP , Altschuler A, Ackerson L, Geiger AM, Greene SM, Mouchawar J,
+et al. Organizational barriers to physician participation in cancer clinical trials. Am J
+Manag Care. (2005) 11:413–21.
+68. Jacobs SR, Weiner BJ, Reeve BB, Weinberger M, Minasian LM, Good MJ.
+Organizational and physician factors associated with patient enrollment in cancer
+clinical trials. Clin Trials. (2014) 11:565–75. doi: 10.1177/1740774514536000
+69. Clark LT, Watkins L, Piña IL, Elmer M, Akinboboye O, Gorham M, et al.
+Increasing diversity in clinical trials: Overcoming critical barriers. Curr Probl Cardiol.
+(2019) 44:148–72. doi: 10.1016/j.cpcardiol.2018.11.002
+70. Parra A, Karnad AB, Thompson IM. Hispanic accrual on randomized cancer
+clinical trials: A call to arms. J Clin Oncol. (2014) 32:1871–3. doi: 10.1200/JCO.2013.51.
+7946
+71. Yong C, Suvarna A, Harrington R, Gummidipundi S, Krumholz HM, Mehran
+R, et al. Temporal trends in gender of principal investigators and patients in
+cardiovascular clinical trials. J Am Coll Cardiol. (2023) 81:428–30. doi: 10.1016/j.jacc.
+2022.10.038
+72. Luong VTT, Ho C, Aedo-Lopez V , Segelov E. Gender proﬁle of principal
+investigators in a large academic clinical trials group. Front Surg. (2022) 9:962120.
+doi: 10.3389/fsurg.2022.962120
+73. Nguyen Q, Luc JGY , Lawton JS, Chikwe J, Cornwell LD, Simpson K, et al.
+Sex representation among principal investigators in cardiac surgery clinical trials in
+the united states: The glass ceiling and room for improvement. Ann Surg. (2022)
+276:e1101–6. doi: 10.1097/SLA.0000000000004961
+74. Jou J, Brodsky A, Charo L, Binder P , Saenz C, Eskander RN, et al. Trends
+and geographic variation in women’s representation as principal investigators (PI)
+in phase 3 gynecologic oncology clinical trials. Gynecol Oncol. (2021) 162:389–93.
+doi: 10.1016/j.ygyno.2021.05.037
+75. Ludmir EB, Moningi S, Mainwaring W, Miller AB, Lin T, Jethanandani A,
+et al. Women’s Representation among Lead Investigators of clinical trials in oncology.
+Int J Radiat Oncol Biol Phys. (2019) 105:E465–6. doi: 10.1016/j.ijrobp.2019.06.
+1430
+76. Freedman B. Equipoise and the ethics of clinical research. In: Friedmann W,
+Sprecher DA editors. Human experimentation and research . Milton Park: Routledge
+(2017). doi: 10.4324/9781315244426-17
+77. American Medical Association. “AMA code of medical ethics’ opinions on clinical
+research | journal of ethics” . Chicago, IL: American Medical Association (2023).
+78. Morain SR, Joﬀe S, Largent EA. When is it ethical for physician-investigators
+to seek consent from their own patients? Am J Bioeth. (2019) 19:11–8. doi: 10.1080/
+15265161.2019.1572811
+79. CIOMS. Revised CIOMS international ethical guidelines for health-related
+research involving humans. JAMA. (2017) 317:135–6. doi: 10.1001/jama.2016.1897780. Baker JN, Leek AC, Salas HS, Drotar D, Noll R, Rheingold SR, et al. Suggestions
+from adolescents, young adults, and parents for improving informed consent in phase
+1 pediatric oncology trials. Cancer. (2013) 119:4154–61. doi: 10.1002/cncr.28335
+81. Eichler HG, Sweeney F. The evolution of clinical trials: Can we address the
+challenges of the future? Clin Trials. (2018) 15:27–32. doi: 10.1177/1740774518755058
+82. Benchouﬁ M, Porcher R, Ravaud P. Blockchain protocols in clinical trials:
+Transparency and traceability of consent. F1000Res. (2017) 6:66. doi: 10.12688/
+f1000research.10531.5
+83. Askin S, Burkhalter D, Calado G, El Dakrouni S. Artiﬁcial intelligence applied to
+clinical trials: Opportunities and challenges. Health Technol (Berl) . (2023) 13:203–13.
+doi: 10.1007/s12553-023-00738-2
+84. Inan OT, Tenaerts P , Prindiville SA, Reynolds HR, Dizon DS, Cooper-Arnold K,
+et al. Digitizing clinical trials. NPJ Digit Med. (2020) 3:101. doi: 10.1038/s41746-020-
+0302-y
+85. Tan RKJ, Wu D, Day S, Zhao Y , Larson HJ, Sylvia S, et al. Digital approaches
+to enhancing community engagement in clinical trials. NPJ Digit Med. (2022) 5:37.
+doi: 10.1038/s41746-022-00581-1
+86. Rosa C, Marsch LA, Winstanley EL, Brunner M, Campbell ANC. Using digital
+technologies in clinical trials: Current and future applications. Contemp Clin Trials.
+(2021) 100:106219. doi: 10.1016/j.cct.2020.106219
+87. Polhemus AM, Kadhim H, Barnes S, Zebrowski SE, Simmonds A, Masand
+SN, et al. Accelerating adoption of patient-facing technologies in clinical trials: A
+pharmaceutical industry perspective on opportunities and challenges. Ther Innov Regul
+Sci.(2019) 53:8–24. doi: 10.1177/2168479018801566
+88. De Brouwer W, Patel CJ, Manrai AK, Rodriguez-Chavez IR, Shah NR.
+Empowering clinical research in a decentralized world. NPJ Digit Med. (2021) 4:102.
+doi: 10.1038/s41746-021-00473-w
+89. Jones CT, Griﬃth CA, Fisher CA, Grinke KA, Keller R, Lee H, et al. Nurses
+in clinical trials: Perceptions of impact on the research enterprise. J Res Nurs. (2022)
+27:50–65. doi: 10.1177/17449871211073757
+90. ANA, IACRN. Clinical research nursing: Scope and standards of practice . Silver
+Spring, MD: American Nurses Association International Association of Clinical
+Research Nurses (2015).
+91. Olsen R, Bihlet AR, Kalakou F, Andersen JR. The impact of clinical trial
+monitoring approaches on data integrity and cost–a review of current literature. Eur J
+Clin Pharmacol. (2016) 72:399–412. doi: 10.1007/s00228-015-2004-y
+92. Park HJ, Yu S. The role of clinical trial nurses: Transitioning from clinicians
+to clinical research coordinators. Int J Nurs Pract. (2022) 28:e12943. doi: 10.1111/ijn.
+12943
+93. Brinkman-Denney S. An international comparison of the clinical trials nurse
+role. Nurs Manag (Harrow). (2013) 20:32–40. doi: 10.7748/nm2013.12.20.8.32.e1060
+94. Ness EA, Royce C. Clinical Trials and the Role of the Oncology Clinical Trials
+Nurse. Nurs Clin North Am. (2017) 52:133–48. doi: 10.1016/j.cnur.2016.10.005
+95. Braun-Inglis C, Boehmer LM, Zitella LJ, Hoﬀner B, Shvetsov YB, Berenberg JL,
+et al. Role of oncology advanced practitioners to enhance clinical research. J Adv Pract
+Oncol. (2022) 13:107–19. doi: 10.6004/jadpro.2022.13.2.2
+96. Salmanton-García J, Stewart FA, Wipﬂer P , Hofstraat SHI, Bruijning-Verhagen
+P , Cornely OA. Education pathways and key tasks for research nurses in Europe,
+results from a V ACCELERATE online survey. Nurse Educ Pract. (2024) 77:103953.
+doi: 10.1016/j.nepr.2024.103953
+97. NIH Clinical Center. Nursing at the NIH clinical center . Bethesda, MD: NIH
+Clinical Center (2024).
+98. Purdom MA, Petersen S, Haas BK. Results of an oncology clinical trial nurse role
+delineation study. Oncol Nurs Forum. (2017) 44:589–95. doi: 10.1188/17.ONF.589-595
+99. Poston RD, Buescher CR. The essential role of the clinical research nurse (CRN).
+Urol Nurs. (2010) 30:55–63. doi: 10.7257/1053-816x.2010.30.1.55
+100. Burks AC, Keim-Malpass J. Health literacy and informed consent for clinical
+trials: A systematic review and implications for nurses. Nurs Res Rev. (2019) 9:s207497.
+doi: 10.2147/nrr.s207497
+101. Isaacman DJ, Reynolds EA. Eﬀect of a research nurse on patient enrollment
+in a clinical study. Pediatr Emerg Care. (1996) 12:340–2. doi: 10.1097/00006565-
+199610000-00004
+102. Good M, Schuler L. Subject retention in a controlled clinical trial. J Adv Nurs.
+(1997) 26:351–5. doi: 10.1046/j.1365-2648.1997.1997026351.x
+103. McKinney J, Vermeulen W. Research nurses play a vital role in clinical trials.
+Oncol Nurs Forum. (2000) 27:28.
+104. NIHR. The role of the clinical research nurse . Melbourne, VI: NIHR (2023).
+105. Alt-White AC, Pranulis MF. Addressing nurses’ ethical concerns about research
+in critical care settings. Nurs Adm Q . (2006) 30:67–75. doi: 10.1097/00006216-
+200601000-00010
+106. Grady C, Edgerly M. Science, technology, and innovation: Nursing
+responsibilities in clinical research. Nurs Clin North Am. (2009) 44:471–81.
+doi: 10.1016/j.cnur.2009.07.011
+Frontiers in Medicine 17 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 18
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+107. Wallen G, Fisher C. Clinical research nursing: A new domain of practice:
+principles and practice of clinical research . Amsterdam: Elsevier (2018). doi: 10.1016/
+B978-0-12-849905-4.00039-3
+108. CRN Domain of Practice Committee. Building the foundation for clinical
+research nursing. domain of practice for the specialty of clinical research nursing .
+Bethesda, MD: CRN 2010 Domain of Practice Committee (2009).
+109. Sun J, Shan WC, Liu JM, Zhang QQ, Ye Y , Huang ST, et al. Construction of
+clinical research nurse training program based on position competence. World J Clin
+Cases. (2023) 11:7363–71. doi: 10.12998/wjcc.v11.i30.7363
+110. International Association of Clinical Research Nurses. About IACRN .
+Pittsburgh, PA: International Association of Clinical Research Nurses (2023).
+111. Capili B, Baker L, Thangthaeng N, Legor K, Larkin ME, Jones CT. Development
+and evaluation of a clinical research nursing module for undergraduate nursing
+schools: Expanding clinical research nurses’ outreach. J Res Nurs. (2022) 27:68–77.
+doi: 10.1177/17449871211070972
+112. Ness E. The oncology clinical research nurse study co-ordinator: Past, present,
+and future. Asia Pac J Oncol Nurs. (2020) 7:237–42. doi: 10.4103/apjon.apjon_10_20
+113. The Oncology Nursing Society. Manual for clinical trials nursing”. Controlled
+clinical trials . Pittsburgh, PA: The Oncology Nursing Society (2015).
+114. Lubejko B, Good M, Weiss P , Schmieder L, Leos D, Daugherty P. Oncology
+clinical trials nursing: Developing competencies for the novice. Clin J Oncol Nurs.
+(2011) 15:637–43. doi: 10.1188/11.CJON.637-643
+115. Ness E, Ermete R, Leos D, Schmieder L, Behrens L, Brassil KJ, et al. Oncology
+clinical trials nurse competencies . Pittsburgh, PA: Oncology Nursing Society (2016).
+116. Ehrenberger HE, Lillington L. Development of a measure to delineate the
+clinical trials nursing role. Oncol Nurs Forum. (2004) 31:E64–8. doi: 10.1188/04.ONF.
+E64-E68
+117. Margevicius S, Daly B, Schluchter M, Flocke S, Manne S, Surdam J, et al.
+Randomized trial of a web-based nurse education intervention to increase discussion
+of clinical trials. Contemp Clin Trials Commun. (2021) 22:100789. doi: 10.1016/j.
+conctc.2021.100789
+118. Smiley RA, Allgeyer RL, Shobo Y , Lyons KC, Letourneau R, Zhong E, et al. The
+2022 national nursing workforce survey. J Nurs Regul. (2023) 14:9. doi: 10.1016/S2155-
+8256(23)00047-9
+119. Johnson E. Trouble for trials – The worrying state of the research nurse
+workforce. Contemp Clin Trials. (2022) 120:106878. doi: 10.1016/j.cct.2022.106878
+120. Challinor JM, Alqudimat MR, Teixeira TOA, Oldenmenger WH. Oncology
+nursing workforce: Challenges, solutions, and future strategies. Lancet Oncol. (2020)
+21:e564–74. doi: 10.1016/S1470-2045(20)30605-7
+121. Larkin ME, Beardslee B, Cagliero E, Griﬃth CA, Milaszewski K, Mugford MT,
+et al. Ethical challenges experienced by clinical research nurses: A qualitative study.
+Nurs Ethics. (2019) 26:172–84. doi: 10.1177/0969733017693441
+122. Höglund AT, Helgesson G, Eriksson S. Ethical dilemmas and ethical
+competence in the daily work of research nurses. Health Care Anal. (2010) 18:239–51.
+doi: 10.1007/s10728-009-0126-z
+123. Shields AM, Larue EM. Transitioning from clinician to clinical research
+coordinator. Am J Nurs. (2010) 110:26–7. doi: 10.1097/01.NAJ.0000366159.25823.55
+124. Campagnaro EL, Margevicius S, Daly BJ, Eads JR, Kinzy TG, Liu TM, et al.
+Health care worker attitudes about clinical trials at a comprehensive cancer center. J
+Clin Oncol. (2013) 31:e20633. doi: 10.1200/jco.2013.31.15_suppl.e20633
+125. Godskesen T, Björk J, Juth N. Challenges regarding informed consent in
+recruitment to clinical research: A qualitative study of clinical research nurses’
+experiences. Trials. (2023) 24:801. doi: 10.1186/s13063-023-07844-6
+126. Rico-Villademoros F, Hernando T, Sanz JL, López-Alonso A, Salamanca O,
+Camps C, et al. The role of the clinical research coordinator–data manager–in oncology
+clinical trials. BMC Med Res Methodol. (2004) 4:6. doi: 10.1186/1471-2288-4-6
+127. Caminiti C, Maglietta G, Frau I, Peruzzotti G, Felisi M, van Dijk A. Presence
+and activities of clinical research coordinators at Italian Health Care Institutions: A
+national cross-sectional survey. J Clin Transl Sci. (2021) 6:e1. doi: 10.1017/cts.2021.872
+128. Vanhoﬀ D, Hesser T, Kelly KP , Freyer D, Stork S, Sung L. Facilitating accrual to
+cancer control and supportive care trials: The clinical research associate perspective.
+BMC Med Res Methodol. (2013) 13:154. doi: 10.1186/1471-2288-13-154
+129. Association of Clinical Research Professionals. Are clinical research
+coordinators recognized as professionals? Clin Res. (2021) 35:2056.
+130. Association of Clinical Research Professionals. ACRP Core competency
+framework for clinical study monitoring . Alexandria, V A: Association of Clinical
+Research Professionals (2021).
+131. Association of Clinical Research Professionals. (2023). Available online at: https:
+//acrpnet.org/ (accessed December 29, 2023).
+132. Campasano M, Itani KMF. Regulatory considerations: The clinical research
+coordinator. En Clinical trials design in operative and non operative invasive procedures .
+Cham: Springer (2017). doi: 10.1007/978-3-319-53877-8_33133. Cingi C, Muluk NB. The duties of a clinical research coordinator: Quick guide to
+good clinical practice . Switzerland: Springer (2017). doi: 10.1007/978-3-319-44344-7_
+10
+134. Loh WY , Butow PN, Brown RF, Boyle F. Ethical communication in clinical
+trials. Issues faced by data managers in obtaining informed consent. Cancer. (2002)
+95:2414–21. doi: 10.1002/cncr.10994
+135. Pelke S, Easa D. The role of the clinical research coordinator in multicenter
+clinical trials. J Obstet Gynecol Neonatal Nurs. (1997) 26:279–85. doi: 10.1111/j.1552-
+6909.1997.tb02143.x
+136. Willis C, Bratcher K, Kenworthy-Heinige T, McBurney C, Asghar A, Beck D,
+et al. The anatomy of a great clinical research coordinator. Clin Res. (2018) 32:4865.
+137. Cagnazzo C, Testoni S, Guarrera AS, Stabile S, Taverniti C, Federici I, et al.
+[Clinical research coordinators: A crucial resource]. Recenti Prog Med. (2019) 110:65–
+7. doi: 10.1701/3112.31000
+138. Y anagawa H, Akaishi A, Miyamoto T, Takai S, Nakanishi R, Irahara M. Role of
+clinical research coordinators in promoting clinical trials of drugs for surgical patients.
+Int Arch Med. (2008) 1:26. doi: 10.1186/1755-7682-1-26
+139. Fisher E, Thomas RS, Higgins MK, Williams CJ, Choi I, McCauley LA. Finding
+the right candidate: Developing hiring guidelines for screening applicants for clinical
+research coordinator positions. J Clin Transl Sci. (2021) 6:e20. doi: 10.1017/cts.2021.
+853
+140. Fisher JA, Kalbaugh CA. Altruism in clinical research: Coordinators’
+orientation to their professional roles. Nurs Outlook. (2012) 60:143–8. doi: 10.1016/
+j.outlook.2011.10.002
+141. Morain SR, Barlevy D, Joﬀe S, Largent EA. Physician-investigator, research
+coordinator, and patient perspectives on dual-role consent in oncology: A qualitative
+study. JAMA Netw Open. (2023) 6:e2325477. doi: 10.1001/jamanetworkopen.2023.
+25477
+142. Shihabuddin BS, Fritter J, Ellison AM, Cruz AT. Diversity among research
+coordinators in a pediatric emergency medicine research collaborative network. J Clin
+Transl Sci. (2022) 7:e46. doi: 10.1017/cts.2022.448
+143. Jackson M. Good ﬁnancial practice and clinical research coordinator
+responsibilities. Semin Oncol Nurs. (2020) 36:150999. doi: 10.1016/j.soncn.2020.
+150999
+144. MedCity. Top 10 FDA warning letter ﬁndings for 2011 . (2023). Available
+online at: https://medcitynews.com/2012/02/top-10-fda-warning-letter-ﬁndings-for-
+clinical-investigators-in-2011/ (accessed November 24, 2023).
+145. Cinefra M, Cagnazzo C, McMahon L, Arizio F, Campora S, Camisa R, et al. The
+critical role of the clinical research coordinator for clinical trials: A survey in oncology.
+Med Access Point Care. (2017) 1:15. doi: 10.5301/MAAPOC.0000015
+146. Otto C, Siewe J, Zarghooni K, Kaulhausen T, Sauerland S, Eysel P , et al. [Clinical
+research in orthopaedics–creation of a clinical trial unit in orthopaedics/trauma
+surgery]. Z Orthop Unfall. (2010) 148:145–8. doi: 10.1055/s-0029-1240660
+147. Fabbri F, Gentili G, Serra P , Vertogen B, Andreis D, Dall’Agata M, et al. How
+many cancer clinical trials can a clinical research coordinator manage? The clinical
+research coordinator workload assessment tool. JCO Oncol Pract. (2021) 17:e68–76.
+doi: 10.1200/JOP.19.00386
+148. Association of Clinical Research Professionals. Core competency guidelines
+for clinical research coordinators . Alexandria, V A: Association of Clinical Research
+Professionals (2023).
+149. Sonstein S, Seltzer J, Li R, Silva H, Jones CT, Daemen E. Moving from
+compliance to competency: A harmonized core competency framework for the clinical
+research professional. Clin Res. (2014) 28:3.
+150. Raybuck JA. The clinical nurse specialist as research coordinator in clinical drug
+trials. Clin Nurse Spec. (1997) 11:15–9. doi: 10.1097/00002800-199701000-00010
+151. Mozersky JT, Antes AL, Baldwin K, Jenkerson M, DuBois JM. How do
+clinical research coordinators learn Good Clinical Practice? A mixed-methods study of
+factors that predict uptake of knowledge. Clin Trials. (2020) 17:166–75. doi: 10.1177/
+1740774519893301
+152. Haeusler JMC. Certiﬁcation in good clinical practice and clinical trial quality: A
+retrospective analysis of protocol adherence in four multicenter trials in the USA. Clin
+Res Regul Aﬀairs. (2009) 26:1596. doi: 10.1080/10601330902911893
+153. Hornung CA, Kerr J, Gluck W, Jones CT. The competency of clinical research
+coordinators: The importance of education and experience. Ther Innov Regul Sci.
+(2021) 55:1231–8. doi: 10.1007/s43441-021-00320-w
+154. Association of Clinical Research Professionals. Special report: An assessment of
+the adequacy of the clinical research workforce . Alexandria, V A: Association of Clinical
+Research Professionals (2023).
+155. Buchanan DA, Goldstein J, Pfalzer AC, Lin YC, Kang H, Claassen DO.
+Empowering the clinical research coordinator in academic medical centers. Mayo Clin
+Proc Innov Qual Outcomes. (2020) 5:265–73. doi: 10.1016/j.mayocpiqo.2020.09.014
+156. Speicher LA, Fromell G, Avery S, Brassil D, Carlson L, Stevens E, et al. The
+critical need for academic health centers to assess the training, support, and career
+development requirements of clinical research coordinators: Recommendations from
+Frontiers in Medicine 18 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 19
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+the Clinical and Translational Science Award Research Coordinator Taskforce. Clin
+Transl Sci. (2012) 5:470–5. doi: 10.1111/j.1752-8062.2012.00423.x
+157. Stabile S, Cenna R, Sinna V , Veronica F, Mannozzi F, Federici I, et al. Clinical
+trial units and clinical research coordinators: A system facing crisis? AboutOpen. (2023)
+10:2508. doi: 10.33393/ao.2023.2508
+158. Julé A, Furtado T, Boggs L, van Loggerenberg F, Ewing V , Vahedi M,
+et al. Developing a globally applicable evidence-informed competency framework to
+support capacity strengthening in clinical research. BMJ Glob Health. (2017) 2:e000229.
+doi: 10.1136/bmjgh-2016-000229
+159. Haley SJ, Southwick LE, Parikh NS, Rivera J, Farrar-Edwards D, Boden-Albala
+B. Barriers and strategies for recruitment of racial and ethnic minorities: Perspectives
+from neurological clinical research coordinators. J Racial Ethn Health Disparities.
+(2017) 4:1225–36. doi: 10.1007/s40615-016-0332-y
+160. Gwede CK, Johnsson DJ, Roberts C, Cantor AB. Burnout in clinical research
+coordinators in the United States. Oncol Nurs Forum. (2005) 32:1123–30. doi: 10.1188/
+05.onf.1123-1130
+161. Mascaro JS, Palmer PK, Ash MJ, Peacock C, Sharma A, Escoﬀery C, et al.
+Feasibility, acceptability, and preliminary eﬀectiveness of a compassion-centered team
+intervention to improve clinical research coordinator resilience and well-being. JCO
+Oncol Pract. (2021) 17:e936–46. doi: 10.1200/OP.21.00120
+162. Kay SC, Luke DG, Tamer HR. ASHP guidelines for the management of
+investigational drug products. Am J Health Syst Pharm. (2018) 75:561–73. doi: 10.2146/
+ajhp170812
+163. Finnes HD, Child B, DeFrates S, Kinsman K, Thorne A, Lentz S, et al. Adapting
+investigational drug services during a pandemic: Recommendations for future
+preparedness from the hematology/oncology pharmacy association investigational
+drug services special interest group. Am J Health Syst Pharm. (2023) 80:e67–73. doi:
+10.1093/ajhp/zxac267
+164. Saunders J, Murli S, Rudek MA, Khandoobhai A, DeLisa A, Goodrich A, et al.
+Evaluation of clinical pharmacy services for phase 1 clinical trials. J Hematol Oncol
+Pharm. (2022) 12:131–7.
+165. Hematology/Oncology Pharmacy Association. Investigational drug service. Best
+practice standards . Milwaukee: Hematology/Oncology Pharmacy Association (2014).
+166. Slobodian P , Challen J, Ching M, Hong E, Nikolajevic-Sarunac J, Shum B, et al.
+Standard of practice in clinical trials for pharmacy services. J Pharm Pract Res. (2020)
+50:429–44. doi: 10.1002/jppr.1676
+167. Demotes-Mainard J, Chêne G, Libersa C, Pignon JP. Clinical research
+infrastructures and networks in France: Report on the French ECRIN workshop.
+Therapie. (2005) 60:183–99. doi: 10.2515/therapie:2005023
+168. Brown JN, Britnell SR, Stivers AP , Cruz JL. Medication safety in clinical trials:
+role of the pharmacist in optimizing practice, collaboration, and education to reduce
+errors. Yale J Biol Med. (2017) 90:125–33.
+169. Adcock S, Atiee G, Sramek J. Pharmacy services in a Phase I clinical research
+unit. Research Triangle Park, NC: World Clinica Data (2023).
+170. Brown A, Dixon D, Eatock J, Meenan BJ, Young T. A survey of success factors
+in new product development in the medical devices industry. Proceedings of the
+IEMC-Europe 2008 – 2008 IEEE international engineering management conference,
+Europe: Managing engineering, technology and innovation for growth . Berlin: (2008).
+doi: 10.1109/IEMCE.2008.4617987
+171. Raehl CL, Miller DE, Foster TS. Pharmacist involvement in institutional review
+of clinical trials. Am J Hosp Pharm. (1981) 38:334–9.
+172. Khandoobhai A, Poi M, Kelley K, Mirtallo J, Lopez B, Griﬃth N. National
+survey of comprehensive pharmacy services provided in cancer clinical trials. Am J
+Health Syst Pharm. (2017) 74:S35–41. doi: 10.2146/ajhp160628
+173. Redic KA, Skyles A, Zaccardelli J. Potential role of a pharmacist to enhance
+medication-related aspects of clinical trials conducted in a dedicated clinical research
+unit. Contemp Clin Trials Commun. (2017) 6:55–7. doi: 10.1016/j.conctc.2017.03.003
+174. Goodin S. Pharmacists’ critical role in cancer clinical trials. Am J Health Syst
+Pharm. (2018) 75:592–3. doi: 10.2146/ajhp180038
+175. Hertz DL, Siden R, Modlin J, Gabel LL, Wong SF. Drug interaction screening
+in SWOG clinical trials. Am J Health Syst Pharm. (2018) 75:607–12. doi: 10.2146/
+ajhp170449
+176. McGahey KE, Weiss GJ. Reviewing concomitant medications for participants
+in oncology clinical trials. Am J Health Syst Pharm. (2017) 74:580–6. doi: 10.2146/
+ajhp151052
+177. Wisinski KB, Cantu CA, Eickhoﬀ J, Osterby K, Tevaarwerk AJ, Heideman J,
+et al. Potential cytochrome P-450 drug-drug interactions in adults with metastatic solid
+tumors and eﬀect on eligibility for Phase I clinical trials. Am J Health Syst Pharm.
+(2015) 72:958–65. doi: 10.2146/ajhp140591
+178. Marcath LA, Coe TD, Hoylman EK, Redman BG, Hertz DL. Prevalence of
+drug-drug interactions in oncology patients enrolled on national clinical trials network
+oncology clinical trials. BMC Cancer. (2018) 18:1155. doi: 10.1186/s12885-018-5076-0
+179. Phillips MS, Abdelghany O, Johnston S, Rarus R, Austin-Szwak J, Kirkwood C.
+Navigating the institutional review board (IRB) process for pharmacy-related research.
+Hosp Pharm. (2017) 52:105–16. doi: 10.1310/hpj5202-105180. Donehew GR, Schaumberg JP. The pharmacist’s role as a member of the
+institutional review board. Hosp Pharm. (1979) 14:508–9.
+181. Abdel Shaheed C, Maher CG, Williams KA, McLachlan AJ. Participation of
+pharmacists in clinical trial recruitment for low back pain. Int J Clin Pharm . (2014)
+36:986–94. doi: 10.1007/s11096-014-9985-y
+182. Fletcher JM, Saunders-Smith T, Manns BJ, Tsuyuki R, Hemmelgarn BR, Tonelli
+M, et al. Pharmacist and patient perspectives on recruitment strategies for randomized
+controlled trials: A qualitative analysis. BMC Med Res Methodol. (2020) 20:270. doi:
+10.1186/s12874-020-01140-6
+183. Lowres N, Neubeck L, Salkeld G, Krass I, McLachlan AJ, Redfern J, et al.
+Feasibility and cost-eﬀectiveness of stroke prevention through community screening
+for atrial ﬁbrillation using iPhone ECG in pharmacies. The SEARCH-AF study.
+Thromb Haemost. (2014) 111:1167–76. doi: 10.1160/TH14-03-0231
+184. Peytremann-Bridevaux I, Bordet J, Santschi V , Collet TH, Eggli M, Burnand B.
+Community-based pharmacies: An opportunity to recruit patients? Int J Public Health.
+(2013) 58:319–22. doi: 10.1007/s00038-012-0383-8
+185. Tsuyuki RT, Al Hamarneh YN, Jones CA, Hemmelgarn BR. The eﬀectiveness
+of pharmacist interventions on cardiovascular risk: The multicenter randomized
+controlled RxEACH trial. J Am Coll Cardiol. (2016) 67:2846–54. doi: 10.1016/j.jacc.
+2016.03.528
+186. Campbell DJ, Tonelli M, Hemmelgarn B, Mitchell C, Tsuyuki R, Ivers N, et al.
+Assessing outcomes of enhanced chronic disease care through patient education and a
+value-based formulary study (ACCESS)-study protocol for a 2 2 factorial randomized
+trial. Implement Sci. (2016) 11:131. doi: 10.1186/s13012-016-0491-6
+187. Watson M, Bewick BM, Tharmanathan P. The current role and perceived
+beneﬁts and barriers of secondary care pharmacists facilitating patient participation
+in Clinical Trials of Investigational Medicinal Products (CTIMPs) conducted within
+the NHS: A cross-sectional survey. J Eval Clin Pract. (2020) 26:142–8. doi: 10.1111/jep.
+13104
+188. Reali S, Lee T, Bishop J, Mirkov S, Johnson J, McCourt E, et al. Attitudes,
+barriers and facilitators of hospital pharmacists conducting practice-based research:
+A systematic review. J Pharm Pract Res. (2021) 51:192–202. doi: 10.1002/jppr.1741
+189. American Society of Hospital Pharmacy. Investigational drug services certiﬁcate .
+Bethesda, MD: American Society of Health-System Pharmacists (2024).
+190. American Society of Health-System Pharmacists. Required competency areas,
+goals, and objectives for postgraduate year two (PGY2) investigational drugs and research
+pharmacy residencies . Bethesda, MD: American Society of Health-System Pharmacists
+(2023).
+191. Wascher M, Mighty J, Brown V , Ashby D, Rudek MA, Nesbit T, et al.
+Establishing an investigational drugs and research residency at an academic medical
+center. Am J Health Syst Pharm. (2019) 76:1862–7. doi: 10.1093/ajhp/zxz175
+192. Johns Hopkins Medicine. Investigational drug service | department of pharmacy .
+Baltimore, MD: Johns Hopkins Medicine (2023).
+193. University of Michigan. “(PGY1 and PGY2 Combined) investigational drugs and
+research pharmacy residency . Ann Arbor, MI: University of Michigan (2024).
+194. Vélez-Díaz-Pallarés M, Pérez-Menéndez-Conde C, Bermejo-Vicedo T.
+Systematic review of computerized prescriber order entry and clinical decision
+support. Am J Health Syst Pharm. (2018) 75:1909–21. doi: 10.2146/ajhp170870
+195. Lombardo G, Couvert C, Kose M, Begum A, Spiertz C, Worrell C, et al.
+Electronic health records (EHRs) in clinical research and platform trials: Application of
+the innovative EHR-based methods developed by EU-PEARL. J Biomed Inform. (2023)
+148:104553. doi: 10.1016/j.jbi.2023.104553
+196. McCord KA, Hemkens LG. Using electronic health records for clinical trials:
+Where do we stand and where can we go? CMAJ. (2019) 191:E128–33. doi: 10.1503/
+cmaj.180841
+197. Seoane-Viaño I, Trenﬁeld SJ, Basit AW, Goyanes A. Translating 3D printed
+pharmaceuticals: From hype to real-world clinical applications. Adv Drug Deliv Rev.
+(2021) 174:553–75. doi: 10.1016/j.addr.2021.05.003
+198. Huanbutta K, Burapapadh K, Sriamornsak P , Sangnim T. Practical application
+of 3D printing for pharmaceuticals in hospitals and pharmacies. Pharmaceutics. (2023)
+15:1877. doi: 10.3390/pharmaceutics15071877
+199. Love SB, Yorke-Edwards V , Ward E, Haydock R, Keen K, Biggs K, et al. What
+is the purpose of clinical trial monitoring? Trials. (2022) 23:836. doi: 10.1186/s13063-
+022-06763-2
+200. Molloy SF, Henley P. Monitoring clinical trials: A practical guide. Trop Med Int
+Health. (2016) 21:1602–11. doi: 10.1111/tmi.12781
+201. Shah KA. day in the life of a monitor! Perspect Clin Res. (2012) 3:32–4. doi:
+10.4103/2229-3485.92305
+202. Manasco P , Bhatt DL. Evaluating the evaluators – Developing evidence of
+quality oversight eﬀectiveness for clinical trial monitoring: Source data veriﬁcation,
+source data review, statistical monitoring, key risk indicators, and direct measure
+of high risk errors. Contemp Clin Trials. (2022) 117:106764. doi: 10.1016/j.cct.2022.
+106764
+203. Yeshaswini A, Allada TS, Mujeebuddin CS. Monitoring in clinical trial. Int J
+Pharm Sci Rev Res. (2020) 63:32–9.
+Frontiers in Medicine 19 frontiersin.org
+
+fmed-11-1400585 May 29, 2024 Time: 15:24 # 20
+Peralta and Sánchez-Santiago 10.3389/fmed.2024.1400585
+204. Klatte K, Pauli-Magnus C, Love SB, Sydes MR, Benkert P , Bruni N, et al.
+Monitoring strategies for clinical intervention studies. Cochrane Database Syst Rev.
+(2021) 12:MR000051. doi: 10.1002/14651858.MR000051.pub2
+205. UKCRC Registered CTU Network. Monitoring handbook – UKCRC CTU
+network guidance . Leeds: UKCRC Registered CTU Network (2021).
+206. Favalli G, Vermorken JB, Vantongelen K, Renard J, Van Oosterom AT, Pecorelli
+S. Quality control in multicentric clinical trials. An experience of the EORTC
+Gynecological Cancer Cooperative Group. Eur J Cancer. (2000) 36:1125–33. doi: 10.
+1016/s0959-8049(00)00090-3
+207. Eisenstein EL, Lemons PW, Tardiﬀ BE, Schulman KA, Jolly MK, Caliﬀ RM.
+Reducing the costs of phase III cardiovascular clinical trials. Am Heart J. (2005)
+149:482–8. doi: 10.1016/j.ahj.2004.04.049
+208. Coursera staﬀ. How to become a clinical research associate . Mountain View, CA:
+Coursera staﬀ (2023).
+209. Owens Pickle EE, Borgerson D, Espirito-Santo A, Wigginton S, Devine S, Stork
+S. the clinical research associate retention study: A report from the children’s oncology
+group. J Pediatr Oncol Nurs. (2017) 34:414–21. doi: 10.1177/1043454217723861
+210. Brewer B. How to become a clinical research associate . (2023). Available online
+at: https://www.medicaltechnologyschools.com/health-sciences/how-to-become-a-
+clinical-research-associate (accessed December 12, 2023).
+211. CCRPS. Clinical research associate certiﬁcation -CRA certiﬁcation . Jacksonville,
+FL: CCRPS (2024).
+212. Association of Clinical Research Professionals. Course catalog – training
+for clinical research professionals . Alexandria, V A: Association of Clinical Research
+Professionals (2024).
+213. The Society of Clinical Research Associates. SOCRA the society of clinical
+research associates . Chalfont, PA: The Society of Clinical Research Associates (2024).
+214. Association of Clinical Research Professionals. Certiﬁcation . Alexandria, V A:
+Association of Clinical Research Professionals (2023).
+215. CCRPS. Clinical research training - clinical research certiﬁcation . Jacksonville,
+FL: CCRPS (2023).
+216. Payscale. Clinical research associate (CRA) salary in 2024 . (2024). Available
+online at: https://www.payscale.com/research/US/Job=Clinical_Research_Associate_
+(CRA)/Salary (accessed February 18, 2024).
+217. LinkedIn. Employ oﬀers «clinical research associate» in the United States .
+(2024). Available online at: https://www.linkedin.com/jobs/search/?currentJobId=
+3818043745&geoId=103644278&keywords=Clinical%20Research%20Associate&
+location=United%20States (accessed February 18, 2024).
+218. Bakobaki JM, Rauchenberger M, Joﬀe N, McCormack S, Stenning S, Meredith
+S. The potential for central monitoring techniques to replace on-site monitoring:
+Findings from an international multi-centre clinical trial. Clin Trials. (2012) 9:257–64.
+doi: 10.1177/1740774511427325219. Brosteanu O, Schwarz G, Houben P , Paulus U, Strenge-Hesse A, Zettelmeyer
+U, et al. Risk-adapted monitoring is not inferior to extensive on-site monitoring:
+Results of the ADAMON cluster-randomised study. Clin Trials. (2017) 14:584–96.
+doi: 10.1177/1740774517724165
+220. Beever D, Swaby L. An evaluation of risk-based monitoring in pragmatic trials
+in UK clinical trials units. Trials. (2019) 20:556. doi: 10.1186/s13063-019-3619-6
+221. Hurley C, Sinnott C, Clarke M, Kearney P , Racine E, Eustace J, et al.
+Perceived barriers and facilitators to Risk Based Monitoring in academic-led clinical
+trials: A mixed methods study. Trials. (2017) 18:423. doi: 10.1186/s13063-017-
+2148-4
+222. Andersen JR, von Sehested C, Byrjalsen I, Popik S, Follin AB, Bihlet AR. Impact
+of monitoring approaches on data quality in clinical trials. Br J Clin Pharmacol . (2023)
+89:1756–66. doi: 10.1111/bcp.15615
+223. European Medicines Agency. Reﬂection paper on risk based quality management
+in clinical trials . Amsterdam: European Medicines Agency (2013).
+224. Food and Drug Administration. Guidance for industry oversight of clinical
+investigations — a risk-based approach to monitoring . Silver Spring, MD: Food and
+Drug Administration (2013).
+225. Houston L, Martin A, Yu P , Probst Y. Time-consuming and expensive data
+quality monitoring procedures persist in clinical trials: A national survey. Contemp
+Clin Trials. (2021) 103:106290. doi: 10.1016/j.cct.2021.106290
+226. BDO Alliance USA. 2020/2021 CRO INSIGHTS REPORT: While compensation
+levels and practices remain status quo, turnover continues to be high . Chicago, IL: BDO
+Alliance USA (2023).
+227. Studna A. Turnover for Clinical Monitoring Remains High. Appl Clin Trials.
+(2021) 30:4.
+228. Hardman TC, Aitchison R, Scaife R, Edwards J, Slater G. The future of clinical
+trials and drug development: 2050. Drugs Context. (2023) 12:2023. doi: 10.7573/dic.
+2023-2-2
+229. Food and Drug Administration. Clinical investigator training course (CITC) .
+Silver Spring, MD: Food and Drug Administration (2023).
+230. Mayo Clinic College of Medicine and Science. Clinician investigator
+training program – residencies and fellowships – mayo clinic college of medicine
+& science . Rochester, MN: Mayo Clinic College of Medicine and Science
+(2024).
+231. Weil Cornell Medicine. Advanced certiﬁcate program in clinical & translational
+investigation . New York, NY: Weil Cornell Medicine (2023).
+232. PharmaTrain. PharmaTrain federation . (2023). Available online at: https://
+www.pharmatrain.eu/index (accessed December 23, 2023).
+233. Australian College of Nursing. Clinical research nurse. Australian standards for
+practice . Parramatta NSW: ACN (2022).
+Frontiers in Medicine 20 frontiersin.org
+

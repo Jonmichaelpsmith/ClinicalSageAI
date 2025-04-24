@@ -1,0 +1,155 @@
+GUIDELINES FOR DESIGNING A CLINICAL STUDY PROTOCOL  
+ 
+(based on International Conference on Harmonization, GCP Guidelines for Clinical Trial Protocol development ) 
+ 
+ 
+To draft a sound scientific design of a clinical research study, the medical writer at the TGH, 
+Office of Clinical Research recommends that th e following information should be included in 
+a research protocol. It will help facilitate the applicatio n submission process and study 
+approval from the Office of Clinical Research and IRB.  
+ 
+Study Summary:  
+ 
+Study summary should include the following: 
+• Protocol title ( The title on related IRB submissions (e.g., applications for new study, changes in 
+procedure, research progress reports) must match the title of the protocol ) 
+• Study phase  
+• Duration of the study 
+• Methodology 
+• Study site 
+• Approximate number of subjects 
+• Name, title, address, and telephone number of the PI, Co-PI, sponsors and study 
+coordinators 
+• Investigator’s affiliation 
+ 
+List of Abbreviations: 
+ 
+Provide a list of abbreviation used in the study protocol. 
+ 
+Background Information/Significance:   
+ 
+• Name and description of the investigational product, and in case of retrospective 
+reviews, justification for the ch art and medical record reviews.  
+• Summary of results from prior clinical studies and clinical data to date.  
+• Human subjects risks and benefits.  
+• Description of the population to be studied.  
+• Description and justification for the dosing regimen and treatment period.  
+• A paragraph stating that the clinical study will be conducted in compliance with 
+the protocol, SOPs and the federa l, state and local regulations.  
+• Citations from the references and data re levant to the study that also provides 
+background for the trial.  
+ 
+Objectives/Rationale/Research Question: 
+ 
+• Include a detailed description of the primary and secondary objectives and the 
+purpose of the study and clearly state your  research hypothesis or your question. 
+• Discuss the project’s feasibility. 
+• Give details of resources, skills and experience to complete the study. 
+• Include any pilot study information. 
+ 
+Clinical Study Design: 
+ 
+• Primary and secondary endpoints, if any,  to be measured during the study. 
+• Include the information th at is needed to answer  the research question. 
+
+• Include the study design e.g. single, double-blind, observational, randomized, 
+retrospective etc. A schematic diagram of  the study design would be helpful. 
+• Include the amount of dosage, dosing  regimen of the drug, packaging and 
+labeling of the ex perimental drug. 
+• Explain how the study drug will  be stored and dispensed. 
+• Include the expected durati on of the study and sub ject’s participation and a 
+description of the sequence and duration of all study periods. 
+• Include any follow up visits. 
+• Describe when a subject’s participation in the trial may be discontinued. 
+• Maintenance of randomization codes and confidentiality. 
+• Describe the potential risks and step s taken to minimi ze the risks. 
+• Identify possible benefits of the study. 
+ 
+ 
+Inclusion and Exclusion cr iteria of the Subjects:   
+ 
+• Include subjects inclusion criteria. 
+• Include subjects exclusion criteria. Women of childbearing potential may not be 
+routinely excluded from participating in research, however, pregnant women 
+should be excluded unless there is a clear justification to include them.  
+• Include enrollment of persons of diverse racial and ethnic back grounds to ensure 
+that the benefits of the research study are distributed in an  equitable manner.  
+ 
+Informed consent form process: 
+ 
+• Provide information about the regulatory re quirements of the consent form and which 
+languages will be used. 
+• Include a discussion of additional safeguards taken if potentially vulnerable subjects will be 
+enrolled in the study e.g., children, prisoners, cognitively impaired and critically ill subjects.   
+• Specify Code of Ethics under which consent will be obtained. 
+• Include a copy of the proposed informed consent along with the protocol. 
+ 
+Adverse Event Reporting: 
+ 
+• Describe your plan to report any adverse event.  
+• Anticipated adverse events shou ld be clearly documented.  
+• Identify the type and duration of follow up and treatment for subjects that 
+experience an adverse event. 
+ 
+Assessment of Safety and Efficacy: 
+ 
+• Be specific about the efficacy parameters.  
+• Include the methods and timing for assessi ng, recording, and analyzing efficacy 
+parameters.  
+• Specify the safety parameters.  
+• Record and report properly all the ad verse events and inter current illnesses.  
+ 
+Treatment of Subjects: 
+ 
+• List all the treatments to be administer ed including product’s name, dose, route 
+of administration, and the treatment period for subjects.  
+
+• Include all medication pe rmitted before and during the clinical trial. 
+• Include the procedures for mo nitoring subject compliance.  
+ 
+Data Collection Plan: 
+ 
+• Define the type of data collection instrument that will be used and list all the 
+variables.  
+• Specify if computerized databases will be used.  
+• Identify what software will be used.  
+• Explain precautionary steps taken to secure the data.  
+ 
+Data Access:  
+• Inform who will have access to the data and how the data will be used. If data 
+with subject identifiers will  be released, specify the person(s) or agency to whom 
+the information will be released and the purpose of the release. 
+• Address all study related monitoring, au dits, and regulatory inspections.  
+ 
+Statistical Methods:  
+• Describe the statistical methods in detail.  
+• Include the number of subjects you are planning to enroll. For multi-center 
+studies, include the total number of si tes expected and the total number of 
+subjects to be enrolled across all sites.  
+• Provide the rationale for the sample size , the calculations on  the power of the 
+trial and the clinical justification.  
+• Procedure of accounting for mi ssing, unused and spurious data.  
+• Procedures for reporting deviations from the original statistical plan.  
+• Include the selections of subjects to be included in the analyses.  
+ 
+Conflict of Interest: 
+ 
+Identify and document clearly any consultative relationship  that the principal or co-
+investigators has with a non-USF entity related to the protocol that might be considered a 
+real or apparent conflict of interest. 
+ 
+Publication and Presentation Plans:  
+ 
+List any meetings or conference  you will be presenting the data and the results of your 
+study. 
+ 
+Timeline: 
+ 
+• A short paragraph stating when you plan  to start and complete the study. 
+• Include a description e.g. subjects enrollment within a month, data collection 
+within 6 months etc. 
+ 
+References: 
+ 
+List all the references used in the back ground section at the end of the protocol. 
+

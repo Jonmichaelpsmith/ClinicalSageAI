@@ -1,0 +1,1137 @@
+ 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+ 
+   
+ 
+ 
+  
+  
+ 
+  
+ 
+ 
+  
+  Processes and Practices 
+Applicable to 
+Bioresearch Monitoring 
+Inspections 
+Guidance for Industry 
+DRAFT GUIDANCE 
+This guidance document is being distributed for comment purposes only. 
+Comments and suggestions regarding this draft document should be submitted within 60 days of publication in the Federal Register  of the notice announcing the availability of the draft 
+guidance.  Submit electronic comments to https://www.regulations.gov. Submit written 
+comments to the Dockets Management Staff (HFA -305), Food and Drug Administration, 5630 
+Fishers Lane, Rm. 1061, Rockville, MD  20852. All comments should be identified with the 
+docket number listed in the notice of availability that publishes in the Federal Register . 
+For questions or information regarding this guidance, contact the Office of Regulatory Affairs (ORA), Office of Policy, Compliance, and Enforcement (OPCE), Food and Drug Administration 
+at ORAPolicyStaffs@fda.hhs.gov. 
+
+ 
+  
+    
+ 
+ 
+ 
+ 
+  
+ 
+ 
+   
+ 
+ 
+ 
+ 
+ U.S. Department of Health and Human Services 
+Food and Drug Administration 
+Office of Regulatory Affairs 
+Office of Clinical Policy 
+Center for Biologics Evaluation and Research 
+Center for Drug Evaluation and Research 
+Center for Devices and Radiological Health 
+Center for Food Safety and Applied Nutrition 
+Center for Tobacco Products 
+Center for Veterinary Medicine 
+June 2024 
+
+ 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+  
+ 
+  
+ 
+ 
+   
+  
+ 
+ 
+ 
+ 
+ 
+  
+   
+ 
+   
+ 
+ 
+ 
+ Processes and Practices 
+Applicable to 
+Bioresearch Monitoring 
+Inspections 
+Guidance for Industry 
+Additional copies are available from: 
+Office of Policy, Compliance, and Enforcement 
+Office of Regulatory Affairs 
+Food and Drug Administration 
+12420 Parklawn Drive, Element Building, Rockville, MD 20857 
+U.S. Department of Health and Human Services 
+Food and Drug Administration 
+Office of Regulatory Affairs 
+Office of Clinical Policy 
+Center for Biologics Evaluation and Research 
+Center for Drug Evaluation and Research 
+Center for Devices and Radiological Health 
+Center for Food Safety and Applied Nutrition 
+Center for Tobacco Products 
+Center for Veterinary Medicine 
+June 2024 
+
+ 
+  
+  
+ 
+   
+    
+  
+   
+    
+    
+   
+ 
+   
+    
+     
+     
+        
+      
+   
+ 
+  Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+TABLE OF CONTENTS 
+I. INTRODUCTION............................................................................................................. 1 
+II. BACKGROUND ............................................................................................................... 2 
+III. PROCESSES AND PRACTICES APPLICABLE TO BIORESEARCH 
+MONITORING INSPECTIONS ................................................................................................. 4 
+A. BIMO Processes and Practices ..................................................................................................... 4 
+B. Types of Inspections ....................................................................................................................... 5 
+C. International Inspections ............................................................................................................... 5 
+IV. BEST PRACTICES FOR COMMUNICATION BETWEEN THE FDA AND 
+INDUSTRY IN ADVANCE OF, DURING, OR AFTER AN INSPECTION ......................... 6 
+A. Pre-announcement Notice and Communication ......................................................................... 6 
+B. Inspection Timeframe and Duration ............................................................................................ 7 
+C. Communication During An Inspection ........................................................................................ 7 
+D. Communication After An Inspection ........................................................................................... 8 
+E. Who to Contact at FDA for More Information? ......................................................................... 9 
+RESOURCE GUIDE ............................................................................................................................ 11 
+
+ 
+  
+ 
+ 
+ 
+    
+ 
+ 
+ 
+ 
+  
+  
+  
+      
+  
+ 
+  
+  
+ 
+ 
+  
+   
+  
+   
+ 
+    
+ 
+   
+   
+  
+ 
+     
+ 
+      
+     
+   
+   
+  
+    
+       
+    
+      
+   
+    
+  
+ 
+   
+ 
+ Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+1 Processes and Practices Applicable to Bioresearch Monitoring 
+2 Inspections 
+3 Guidance for Industry1 
+4 
+5 
+6 This draft guidance, when finalized, will represent the current thinking of the Food and Drug 
+7 Administration ( FDA or Agency ) on this topic.  It does not establish any rights for any person and is not 
+8 binding on FDA or the public.  You can use an alternative approach if it satisfies the requirements of the 
+9 applicable statutes and regulations. To discuss an alternative approach, contact the FDA staff responsible 
+10 for this guidance as listed on the title page.  
+11 
+12 
+13 14 I. INTRODUCTION 
+15 16 FDA is issuing this guidance to comply with section 3612(b)(2) of the Food and Drug Omnibus 
+17 Reform Act of 2022 (FDORA), enacted as part of the Consolidated Appropriations Act, 2023.
+2 
+18 FDORA directs FDA to issue guidance describing the processes and practices applicable to 
+19 inspections of sites and facilities  described in section 704(a)(5) (C)(i) of the  Federal Food, Drug, 
+20 and Cosmetic Act (FD&C Act) ,3 to the extent not specified in existing publicly available FDA 
+21 guides and manuals for such inspections. Th ese establishments4 are inspected under FDA’ s 
+22 Bioresearch Monitoring (BIMO) program in accordance with section 704(a)(5) of the FD&C 
+23 Act. Specifically, t his guidanc e addresses the following (to the extent not publicly available in 
+24 FDA guides and manuals ): the types of records and information required to be provided, best 
+25 practices for communication between FDA  and industry in advance of or during an inspection or 
+26 request for records or other information, and other inspections- related conduct.5 
+27 28 In general, FDA ’s guidance documents do not establish legally enforceable responsibilities. 
+29 Instead , guidances describe the Agency’s current thinking on a topic and should be viewed only 
+1 This guidance has been prepared by the Office of Regulatory Affairs (ORA) in cooperation with the Office of 
+Clinical Policy (OCLiP ), the Center for Biologics Evaluation and Research (CBER) , the Center for Drug Evaluation 
+and Research (CDER) , the Center for Food Safety and Applied Nutrition (CFSAN) , the Center for Tobacco 
+Products (CTP), the Center for Devices and Radiological Health (CDRH) , and the Center for Veterinary Medicine 
+(CVM) at the Food and Drug Administration. 
+2 FDORA was enacted as title III of Division FF of Public Law No. 117 -328 (2022) . 
+3 Section 704(a)(5) of the FD&C Act clarified FDA ’s authority with respect to bioresearch related inspections. 
+4 In this guidance, the term “establishment” includes any entity, person, site , or facility, whether foreign or domestic, 
+within the scope of section 704(a)(5)(C) of the FD&C Act. 
+5 The following two guidances will be withdrawn upon finalization of this guidance (as their substance is superseded 
+by this draft guidance and other guidance s and related documents described in this draft guidance ): 
+“Information Sheet Guidance For IRBs, Clinical Investigators, and Sponsors: FDA Inspections of Clinical 
+Investigators,” available at  https://www.fda.gov/regulatory -information/search -fda-guidance -documents/fda -
+inspections -clinical- investigators , and “Information Sheet Guidance For IRBs, Clinical Investigators, and Sponsors: 
+FDA Institutional Review Board Inspections,” available at https://www.fda.gov/regulatory- information/search -fda-
+guidance -documents/fda -institutional- review -board- inspections . 
+1 
+
+ 
+  
+ 
+ 
+ 
+   
+  
+ 
+ 
+   
+ 
+  
+      
+  
+    
+   
+   
+  
+   
+ 
+     
+ 
+  
+ 
+ 
+ 
+    
+  
+ 
+ 
+ 
+   
+    
+ 
+ 
+      
+ 
+ 
+      
+        
+   
+    
+   
+   
+    
+  Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+30 as recommendations, unless specific regulatory or statutory requirements are cited. The use of 31 the word should in Agency guidances means that something is suggested or recommended, but 32 not required. 33 34 II. BACKGROUND 
+35 36 F DA’s BIMO program is a comprehensive portfolio of programs designed to assess and monitor 
+37 all aspects of the conduct and reporting of FDA- regulated research as well as certain 
+38 postmarketing activities  through on- site inspections, investigations,
+6 and R emote Regulatory 
+39 A ssessments (RRAs) . The BIMO program was established to assess the quality and integrity of 
+40 data submitted to the Agency in support of regulatory decision-making, as well as to provide for 
+41 protection of the rights, safety, and welfare of human trial participants7 and animal  subjects 
+42 involved in FDA- regulated research.8 The program assesses compliance with statutory 
+43 requirements and FDA’ s regulations  governing the conduct of nonclinical and clinical  studies, 
+44 and applicable postmarketing activitie s (e.g., in REMS  and PADE) .9 
+45 46 FDA is authorized at reasonable times to access, inspect, and copy records and other information 47 as described in section 704(a) of the FD&C Act (21 U.S.C. 374(a)). T he general authority for 
+48 establishment inspections is found in section 704(a)(1) of the FD&C Act (21 U.S.C. 374(a)(1)). 49 Section 704(a)(5) of the FD&C Act (21 U.S.C. 374(a)(5)), as added by FDORA, clarified
+10 and 
+50 detailed the Agency ’s authority for conducting BIMO inspections. Sp ecifically, in clarifying the 
+51 Agency ’s BIMO inspection authority, section 704(a)(5) includes, among other things, the 
+52 following: 53 
+54 • the establishments subject to BIMO inspection, e.g., those used by sponsors in connection 
+55 with developing an application or other submission to FDA for marketing authorization, 
+56 or those conducting a study related to such an application or submission; and 
+57 • the records and other information that may be inspected, e.g., information related to the 
+58 conduct, results, and analyses of studies, including those involving human trial 59 participants or animal subjects . 
+60 61 It also underscores that those subject to BIMO inspection must provide FDA with access to the 
+62 information to be inspected (including access to all paper and electronic records and access to 63 electronic information systems used to hold, analyze, process , or transfer that information), and 
+6 See “Bioresearch Monitoring Investigations ” under section 8.6 of the “Investigations Operatio ns Manual,” 
+available at https://www.fda.gov/inspections -compliance- enforcement -and-criminal- investigations/inspection-
+references/investigations -operations -manual . 
+7 In this document, the term “trial participant” is used and covers both human trial participants and animal subjects . 
+8 The t erms “research,” “ trial,” and “study,” are deemed to be synonymous for purposes of this guidance and include 
+both clinical research (also referred to as “clinical study, ” “clinical trial, ” and “clinical investigation ”) and 
+nonclinical research (also referred to as “nonclinical trial” and “nonclinical laboratory study”). 
+9 “REMS ” refers to Risk Evaluation and Mitigation Strategies, see s ection 505- 1 of the FD&C Act (21 U.S.C. 355-
+1). “PADE ” refers to Postmarketing Adverse Drug Experience , see e.g. 21 CFR 310.305 , 21 CFR 314.80, 21 CFR 
+329.100 ,  21 CFR 600.80 , and 21 CFR parts 803 and 806. 
+10 See section 704(a)(5)( F) of the FD&C Act. 
+2 
+
+ 
+  
+ 
+ 
+ 
+    
+ 
+ 
+ 
+  
+ 
+  
+ 
+  
+ 
+ 
+  
+  
+ 
+ 
+ 
+    
+ 
+   
+  
+    
+ 
+  
+     
+  
+  
+ 
+  
+   
+ 
+      
+  
+  
+    
+       
+ 
+   
+    
+  
+   
+  Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+64 permit FDA to inspect relevant facilities and equipment used in generating that information.11 At 
+65 the same time, section 704(a)(5) makes clear that existing safeguards12 against disclosure of 
+66 confidential commercial information  and trade secrets continue to apply, and that BIMO 
+67 inspections – like inspections generally – are to be conducted at reasonable times, within 68 reasonable limits, and in a reasonable manner.
+13 
+69 70 Generally, an inspection, such as described in section 704(a) of the FD&C Act, involves duly 
+71 designated officers or employees of FDA physically entering establishments subject to regulation 72 under the FD&C Act to determine compliance with applicable FDA require ments. FDA also uses 
+73 other oversight tools when appropriate, such as RRAs. An RRA is an examination of an FDA -
+74 regulated establishment and/or its records, conducted entirely remotely, to evaluate compliance 75 with applicable FDA requirements. RRAs under the BIMO Program may consist of : (1) Remote 
+76 Interactive Evaluations
+14 and (2) requests for records or other information under section 
+77 704(a)(4) of the FD&C Act from sites and facili ties subject to inspection under section 
+78 704(a)(5)(C)(i) (i.e., establishments  subject to BIMO inspections) in advance of or in lieu of such 
+79 inspections.15 
+80 81 82 83 
+11 See section 704(a)(5)(D)(i) of the FD&C Act. 
+12 See section 704(a)(5)(D)(ii) of the FD&C Act. 
+13 See section 704(a)(5)(D)(ii i) of the FD&C Act. Also see Department of Health and Human Services’ website for 
+information on permissible disclosures of protected health information to public health authorities (including FDA), 
+available at https://www.hhs.gov/hipaa/for -professionals/special -topics/public -health/index.html . 
+14 For more information on Remote Interactive Evaluations, see "Remote Interactive Evaluations of Drug 
+Manufacturing and Bioresearch Monitoring Facilities Guidance for Industry" available at 
+https://www.fda.gov/regulatory -information/search -fda-guidance -documents/remote -interactive -evaluations -drug-
+manufacturing -and-bioresearch -monitoring -facilities . We update guidances periodically. For the most recent version 
+of a guidance, check the FDA guidance web page at https://www.fda.gov/regulatory- information/search -fda-
+guidance -documents . 
+15 For more information on RRAs generally, including their applicability to BIMO sites and facilities, 
+communications between FDA and industry regarding requests for records or other information, and the distinction between an RRA and inspection s unde r sections 704(a)(1) and 704(a)(5) of the FD&C Act, see “Conducting Remote 
+Regulatory Assessments Questions and Answers Draft Guidance for Industry” (hereafter, the “Draft RRA 
+Guidance”), available at https://www.fda.gov/regulatory -information/search -fda-guidance -documents/conducting-
+remote -regulatory -assessments -questions -and-answers . Although an RRA is not an inspection and the Draft RRA 
+Guidance notes that the Agency does not intend to conduct a n RRA at the same time as an inspection, the Draft 
+RRA Guidance provides information about communications between industry and FDA during an RRA that may be relevant for communications during an inspection. Specifically, see the Draft RRA Guidance ’s discussion of records 
+security, file format (e.g., Portable Document Formats), and language translation. When finalized, that guidance will 
+represent the Agency’s current thinking on how RRAs apply generally to all FDA -regulated products. For additional 
+translation guidance, see the draft “Translation of GLP Study Reports: Questions and Answers” available at 
+https://www.fda.gov/regulatory -information/search -fda-guidance -documents/t ranslation -good- laboratory -practice-
+study- reports -questions -and-answers . 
+3 
+
+ 
+  
+ 
+ 
+ 
+        
+ 
+ 
+    
+ 
+    
+  
+  
+   
+ 
+ 
+   
+   
+    
+   
+     
+   
+ 
+ 
+ 
+    
+    
+  
+  
+    
+ 
+  
+  
+  
+   
+    
+  
+ 
+ 
+  
+   
+  
+ 
+    
+  
+ 
+ Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+84 III. PROCESSES AND PRACTICES APPLICABLE TO BIORESEARCH 
+85 MONITORING INSPECTIONS 
+86 87 A. BIMO Processes and Practices 
+88 89 The A gency ’s processes and practices applicable to BIMO i nspections are detailed in 
+90 its Investigations Operations Manual (IOM) , compliance programs, and the Regulatory 
+91 Procedures Manual (RPM). In general, for all domestic and foreign  BIMO inspections, FDA 
+92 follows the same processes and practices before and during the inspection, except as noted in this 
+93 guidance. 94 95 FDA ’s IOM
+16 is the primary operational reference for FDA investigators and other FDA 
+96 personnel to perform investigational activities in suppo rt of the Agency ’s public health mission 
+97 across all program areas . The BIMO compliance pr ograms were developed to provide uniform 
+98 and specific instructions for FDA personnel. They  describe the inspection focus and types of 
+99 records and information FDA  personnel evaluate to assess compliance with the relevant FDA 
+100 regulations and statutory requirements for each regulated entity or program.17 
+101 102 These compliance programs include: 
+103 
+104 • In Vivo Bioavailability -Bioequivalence Studies - Clinical 
+105 • In Vivo Bioavailability -Bioequivalence Studies - Analytical 
+106 • Inspection of Nonclinical Laboratories Conducting Animal Rule- Specific Studies 
+107 • Good Laboratory Practice (Nonclinical Laboratories) 
+108 • Good Laboratory Practice Program (Nonclinical Laboratories) EPA Data Audit 
+109 Inspections 110 • Institutional Review Board s 
+111 • Radioactive Drug Research Committees 
+112 • Sponsors and Contract Research Organizations 
+113 • Clinical Investigators and Sponsor-Investigators 
+114 • Postmarketing Adverse Drug Experience (PADE) Reporting Inspections 
+115 • Risk Evaluation and Mitigation Strategies (REMS) Reporting Inspections 
+116 
+16 See “Investigations Operations Manual,” available at https://www.fda.gov/inspections -compliance- enforcement -
+and-criminal- investigations/inspection -references/investigations -operations -manual . The IOM is reference material 
+for investigators and other FDA personnel. The document does not bind FDA and does not confer any rights, 
+privileges, benefits, or immunities for or on any person(s ). 
+17 See “Bioresearch Monitoring Program (BIMO) Compliance Programs,” available at 
+https://www.fda.gov/inspections -compliance- enforcement -and-criminal- investigations/compliance -program -
+manual/bioresearch -monitoring -program -bimo -compliance -programs . Compliance programs do not create or confer 
+any rights for or on any person and do not operate to bind FDA or the public. An alternative approach may be used 
+as long as the approach satisfies the requirements of the applicable statutes and regulations. 
+4 
+
+ 
+  
+ 
+ 
+ 
+    
+ 
+ 
+   
+     
+ 
+ 
+    
+ 
+ 
+    
+   
+  
+ 
+  
+ 
+ 
+     
+ 
+ 
+  
+  
+ 
+ 
+     
+  
+ 
+ 
+ 
+    
+ 
+  
+  
+ 
+   
+   
+  
+     
+    
+     
+   
+   Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+117 FDA's centers (CBER, CDER, CDRH, CFSAN, CTP, and CVM) and the Office of Bioresearch 118 Monitoring Operations (OBIMO), within the Office of Regulatory Affairs (ORA), administer the 119 applicable BIMO compliance programs. 
+120 121 For regulatory and enforcement matters , the RPM
+18 is a reference manual that provides internal 
+122 procedures and related information for FDA employe es to administer these matters in support of 
+123 the A gency ’s public health mission. The RPM includes information detailing administrative 
+124 actions such as clinical investigator disqualifications and related procedures such as a Notice of 
+125 Opportunity for Hearing (NOOH). 
+126 127 Although the IOM, compliance programs , and RPM are primarily used by FDA staff, all are 
+128 available publicly so regulated industry and other interested parties can better understand FDA 
+129 operations. W e note that FDA regularly reviews its processes and practices described in the 
+130 IOM, compliance programs, and RPM that are applicable to establishment inspections to 131 evaluate whether any updates are needed.
+19 
+132 133 See the Resource Guide , below, for further details on the IOM, compliance programs, and RPM 
+134 as well as additional resources on BIMO inspections and RRAs.     
+135 136 B. Types of Inspection s 
+137 138 FDA personnel conduct inspections to determine an establishment’s compliance with applicable 139 FDA statutory and regulatory requirements (e.g. with respect to  bioresearch inspections – to help 
+140 ensure trial participant safety, and to evaluate data reliability ). FDA BIMO inspections generally 
+141 include: inspections conducted in support of FDA’s review of specific submissions or marketing 
+142 applications; periodic inspections of establishments with on-going activities, such as nonclinical 143 laboratories or institutional review boards; or inspections conducted to evaluate potential 144 noncompliance or safety issues raised in a complaint  or required report (e.g. , from IRBs or 
+145 sponsors) pertaining to a study or establishment. Inspections may be comprehensive, covering all 146 operations of the establishment, or directed, covering a subset of operations. As explained in P art 
+147 IV below, FDA conducts both announced and unannounced BIMO inspections. 
+148 149 C. International Inspections 
+150 151 Product development and marketing are often global pursuits and therefore FDA ’s BIMO 
+152 inspections are not limited to the United States . International inspections may be conducted when 
+153 appropriate (e.g., when studies conducted outside the United States are in support of, or 
+18 See “Regulatory Procedures Manual,” available at https://www.fda.gov/inspections -compliance- enforcement -and-
+criminal- investigations/compliance -manuals/regulatory -procedures -manual . The RPM does not create or confer any 
+rights for or on any person and does not operate to bind FDA or the public. 
+19 In accordance with section 3612(b)(1) of FDORA , as part of developing this guidance, the Agency reviewed 
+“processes and practices in effect as of the date of enactment of this Act [i.e., FDORA] applicable to inspections of 
+foreign and domestic sites and facilities described” in section 704(a)(5)(C)(i) of the FD&C Act “to evaluate whether 
+any up dates are needed to facilitate the consistency of such processes and practices”. FDA makes needed updates on 
+a routine basis, as part of our regular review of processes and practices, as noted above. 
+5 
+
+ 
+  
+ 
+ 
+ 
+   
+    
+  
+     
+  
+  
+ 
+ 
+     
+  
+  
+ 
+   
+ 
+ 
+ 
+  
+ 
+ 
+ 
+   
+ 
+   
+       
+      
+   
+ 
+    
+      
+     
+    
+  
+ 
+    
+  
+     
+ 
+ 
+  
+    
+ 
+        
+   Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+154 otherwise related to , a marketing application submitted to FDA and provide data critical to 
+155 regulatory decision making). For  domestic inspections, a notice of inspection (e.g., Form FDA 
+156 48220) is issued at the time of inspection . During foreign inspections, FDA credentials are 
+157 presented to the top management official (or onsite designee) but FDA does not issue a notice of 
+158 inspection.21 With the exception of this difference  and those related to pre-announcement 
+159 procedur es described below22 inspections of foreign and domestic establishments are generally 
+160 the same in terms of processes and practices . 
+161 162 FDA has issued guidance
+23 relevant to the conduct of clinical studies, including guidance on 
+163 issues specific to studies conducted internationa lly.24 FDA also collaborates with certain 
+164 international regulatory partner agencies to conduct joint inspections, observe inspections, share 165 inspection information and develop policy.
+25 This collaboration is important to the BIMO 
+166 program. 167 168 IV. BEST PRACTICES FOR COMMUNICATION BETWEEN THE FDA AND 
+169 INDUSTRY IN ADVANCE OF, DURING, OR AFTER AN INSPECTION 
+170 171 A. Pre-announcement Notice and Communication 
+172 173 The Agency’s primary purpose for pre-announcing an inspection is to ensure the appropriate 
+174 records and establishment personnel will be available during the inspection. FDA may 
+175 communicate a general idea of the records that may be requested during the inspection (e.g., 176 regarding certain establishment procedures and any associated records). 
+177 178 P re-announcement practices depend on the type of inspectional activity being conducted and are 
+179 explained in each compliance program .
+26 During pre-announcement of FDA inspections, FDA 
+180 intends to make reasonable efforts to contact the establishment, including to discuss inspection 
+181 plans, and the inspection start date and time. Pre-announcement communications also include 
+182 discussions with the establishment to ensure the availability of r elevant establishment staff and 
+20 See section 5.5 of the IOM. 
+21 For additional information on FDA notice of inspection (e.g., Form FDA 482), see “Authority to Inspect” under 
+section 2.2 of the IOM. See also the Bioresearch Monitoring Program compliance programs. 
+22 See Part IV. A Pre -announcement Notice and Communication. 
+23 See “Search for FDA Guidance Documents,” available at https://www.fda.gov/regulatory- information/search -fda-
+guidance -documents . 
+24 FDA BIMO inspections include, but are not limited to, studies that are conducted under an FDA investigational 
+new drug application (IND) , as well as studies at non -U.S. establishments that are not conducted under an IND, an 
+investigational n ew animal drug (INAD) exemption, or under an investigational device exemption (IDE). See, for 
+example, the “Information Sheet Guidance for Sponsors, Clinical Investigators, and IRBs: Frequently Asked 
+Questions Statement of Investigator (Form FDA 1572),” discussing foreign clinical studies conducted under an IND 
+or as non -IND studies . 
+25 FDA may enter into cooperative arrangements and confidentiality commitments to facilitate international 
+partnerships with counterpart foreign government agencies. See “International Arrangements ,” available at 
+https://www.fda.gov/international -programs/international -arrangements . 
+26 See footnote 17 for more on compliance programs . Also see Part III of this guidance and 
+“Pre-Announcements”  under section 5.2 of the IOM. 
+6 
+
+ 
+  
+ 
+ 
+ 
+        
+  
+   
+    
+  
+   
+     
+     
+      
+   
+  
+       
+      
+    
+    
+    
+  
+     
+    
+  
+     
+    
+  
+  
+  
+    
+  
+   
+  
+     
+     
+     
+  
+  
+     
+  
+    
+     
+    
+ 
+   
+ 
+     
+    
+  
+   Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+183 the associated records and specific operations for review during the inspection, as applicable. 
+184 Establishments using electronic information systems to hold, analyze, process, or transfer 185 pertinent information should be prepared to provide access to FDA personnel upon their 186 arrival.
+27 
+187 188 FDA investigators routinely share their names, title s, contact information, and, when appropriate, 
+189 reasons for conducting the inspection. There may be instances in which FDA investigators may 
+190 not disclose specific reasons for conducting the inspection during pre -announcement. In such 
+191 cases , if appropriate, FDA investigators may inform the establishment representative that 
+192 additional details will be shared during the opening meeting of the inspection. 
+193 194 Establishment staff should also confirm arrival details with FDA investigators and provide a 
+195 contact phone number. FDA believes that an establishment’ s failure to acknowledge the pre -
+196 announcement notification should not be a reason to delay the start of an inspection. This pre-
+197 announcement notification should be provided within a reasonable time before the inspection is 
+198 scheduled to occur. FDA generally pre-announces both foreign and domestic inspections, but 
+199 pre-announcement for foreign inspections is generally further in advance of the inspection due to 
+200 country clearance requirements. In general, pre-announcements for domestic inspections will be 
+201 given via phone while for foreign inspections pre-announcements may be by phone and/or email. 202 203 Inspections, whether pre-announced or unannounced, are conducted consistent with our 
+204 compliance programs , the IOM, and applica ble statutory authority. The A gency may determine 
+205 to not pre-announce an inspection (foreign or domestic) if prior notification may impact the 206 inspection. 207 208 B. Inspection Timeframe and Duration 
+209 210 During the pre-announcement, FDA investigators intend to communicate with the establishment 211 the planned timeframe and duration of the inspection, including appropriate working hours 212 during which the inspection is likely to take place. Inspection duration i s impacted by a myriad 
+213 of factors , such as the complexities of the operations, availability of knowledgeable staff, the 
+214 nature of any observations, and if FDA needs to follow -up on complaints received by the 
+215 Agency. 216 217 C. Communication During An Inspection 
+218 219 When FDA personnel request records or other information as part of an inspection,
+28 the A gency 
+220 will typically provide an opportunity to discuss the nature, process , and timeline of the request. 
+221 The establishment may ask clarifying questions and should be prepared to provide the records in 
+222 a timely manner during the inspection. Details of the establishment's electronic information 
+27 See Part II. Background for additional detail. Access may be read -only. See “Read -Only Access to Electronic 
+Databases During Bioresearch Monitoring Inspection Assignments ” under section 5.1 4 of the IOM . 
+28 Such requests are distinct from requests for records or other information in advance of, or in lieu of, an inspection 
+under section 704(a)(4) of the FD&C Act. 
+7 
+
+ 
+  
+ 
+ 
+ 
+      
+  
+ 
+    
+ 
+     
+ 
+ 
+  
+  
+   
+ 
+         
+ 
+  
+ 
+     
+ 
+ 
+  
+ 
+   
+  
+  
+      
+  
+  
+   
+  
+ 
+   
+       
+ 
+   
+     
+  
+   
+ 
+     
+       
+    
+      Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+223 systems, including the technical capabilities for providing FDA access to electronic records, 
+224 should also be discussed. 225 226 FDA personnel can view electronic records via read -only access or other methods. Regardless of 
+227 the method(s) used to view records, establishments should be prepared to provide requested 
+228 copies from electronic systems  to FD A
+29 either electronically, via electronic storage media or as 
+229 paper copies. 230 231 When time and circumstances permit, FDA personnel should  discuss observations with the staff 
+232 in charge of the establishment as they are observed, or on a daily basis. These discussions may 233 address  findings not documented on the FDA “Inspectional Observations” (Form FDA  483) for 
+234 which FDA seeks clarification  during the inspection.
+30 
+235 236 D. Communication After An Inspection 
+237 238 At the end of an inspection, the FDA investigator conducts a closeout of the inspection with the 239 establishment representative that includes discussing the findings from the inspection
+31 and, if 
+240 appropriate , issu ing a written Form FDA 483 to the establishment. The Form FDA 483 is 
+241 intended for use in notifying the inspected establishment’s top management in writing of 242 “observations of objectionable conditions and practices”
+32 identified during an inspection in 
+243 order to “ assist firms inspected in co mplying with the Acts and regulations enforced by the Food 
+244 and Drug Administration.”33 
+245 246 If the establishment chooses to respond to the Form FDA 483 observations orally during the 
+247 closeout of the inspection, those responses may be incorporated into the inspection report.
+34 
+248 However, there may not be complete  information about corrective and preventative actions at the 
+249 time of closeout. Although there is no regulatory requirement for the inspected establishment to  250 respond to a Form FDA 483, a timely written response to the Form FDA 483 that includes 
+251 appropriate corrective and preventive actions could impact FDA’s determination of the need for 252 subsequent Agency action. FDA encourages establishments to provide written responses to the 
+253 observations within fifteen (15) U.S. business days after the end date of the inspection. 
+254 Responses submitted to FDA during that timeframe addressing the issues identified during the 255 inspection generally will be considered before further Agency action or decision.  
+29 See section 704(a)(5)(D) of the FD&C Act. 
+30 For additional detail on Form FDA 483, see Chapt er 5 of the IOM . See also the Bioresearch Monitoring Program 
+compliance programs. 
+31 Once the inspection is closed by the Agency, the inspected establishment will be provided a copy of the 
+Establishment Inspection Report . See  “ FMD -145 -Release of the Establishment Inspection Report (EIR)” available 
+at https://www.fda.gov/media/83055/download . 
+32 See  “Reports of Observations” and “General Discussion with Management” under sections 5.5 and 5.7 of the 
+IOM for more on discussing the objectionable conditions observed and the potential legal sanctions available to 
+FDA after further review by the Agency. 
+33 Language on back of FDA Form 483. There may be other objectionable conditions that exist at the establishment 
+that are not cited on the Form FDA 483. Also see the Bioresearch Monitoring Program compliance programs. 
+34 See “General Discussion with Management” under section 5. 7 of the IOM. 
+8 
+
+ 
+  
+ 
+ 
+ 
+   
+    
+ 
+   
+   
+   
+  
+  
+ 
+  
+  
+  
+  
+ 
+ 
+  
+  
+   
+  
+  
+ 
+ 
+ 
+ 
+ 
+  
+   
+ 
+  
+ 
+ 
+  
+    
+ 
+   
+ 
+    
+  
+  
+ 
+ 
+ 
+   
+ Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+256 For domestic inspections, if the establishment chooses to respond in writing to the observations 257 discussed or listed on the Form FDA 483, the response should be addressed to the FDA OBIMO 
+258 division contact which is listed on the Form FDA 483.  Hard copy responses may be mailed to 259 the address listed on the Form FDA 483 or emailed, with email being the preferred approach.
+35 It 
+260 is recommended that the respondent include the FDA Establishment Identification (FEI) of the 261 inspected location in its correspondence.
+36 For foreign inspections, if the establishment chooses 
+262 to respond in writing to the observations discussed or listed on the Form FDA 483, the response 263 should be addressed to the FDA center point of contact (POC) provided by the investigator. 
+264 265 There are several best practices for responding in writing to a Form  FDA 483. A response should 
+266 demonstrate the establishment’s acknowledgment and understanding of FDA’s observations. It 
+267 should also demonstrate the establishment’ s commitment to address the observations, including a 
+268 commitment from senior leadership. 
+269 270 Responses should be well-organized and structured to: 
+271 • Address each observation separately 
+272 • Note whether the establishment agree(s) or disagree(s), and why 
+273 • Provide both corrective and preventive actions and timelines for completion 
+274 • Provide both completed and planned actions and related timelines 
+275 • Provide a method of verifying or monitoring the effectiveness of the actions 
+276 • Submit documentation (e.g., training, Standard Operating Procedures  (SOPs ), corrective 
+277 action plans, records, etc. ) 
+278 
+279 E. Who to Contact at FDA for More Information? 
+280 281 If an inspected establishment  has any questions that the FDA personnel conducting the 
+282 inspection has not answered, the establishment may contact the ORA O BIMO management staff. 
+283 The FDA investigator who conducted the inspection should be able to provide the name and 
+284 telephone number of OBIMO division management to the establishment.
+37 Questions about the 
+285 inspection classification38 can be directed to the FDA  center POC identified in the post -
+286 inspection correspondence or in the relevant compliance program. Alternatively, t he ORA 
+35 Email appropriate division contacts depending on the location of establishment. See “ Office of Bioresearch 
+Monitoring Operations Map” available at https://www.fda.gov/media/104799/download?attachment for more on 
+district abbreviations and contact information. 
+36 For more on the FDA Establishment Identification , see “FEI Sea rch Portal ,” available at 
+https://www.accessdata.fda.gov/scripts/feiportal/index.cfm?action=portal.login . 
+37 FDA intends to provide an inspectional handout with contact information to the establishment during the 
+inspection. 
+38 Following an inspection, the Agency evaluates the inspection findings to determine if the establishment is in 
+compliance with applicable statutes and regulations and classifies the inspection according to three classifications 
+(No Action Indicated, Voluntary Action Indicated, Official Action Indicated). See “Inspection classifications” 
+available at https://www.fda.gov/inspections -complia nce-enforcement -and-criminal- investigations/inspection -
+basics/inspection -classifications and Chapter 4 of the RPM, available at https://www.fda.gov/inspections -
+compliance- enforcement -and-criminal- investigations/compliance -manuals/regulatory -procedures -manual#_top . 
+9 
+
+ 
+  
+ 
+ 
+ 
+     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+ 290 
+295 
+300 
+305 310 
+315 Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+287 Ombudsman Program is a communication resource for stakeholders facing unresolved concerns, 
+288 providing a confidential and impartial avenue to address and resolve their issues effectively.39 
+289 
+291 
+292 
+293 294 
+296 
+297 
+298 
+299 
+301 
+302 303 
+304 
+306 
+307 
+308 309 
+311 
+312 313 
+314 
+316 
+317 
+39 Contact informatio n can be found on the ORA Ombudsman webpage available at https://www.fda.gov/about -
+fda/contact -ora/ora -ombudsman . 
+10 
+
+ 
+  
+ 
+ 
+ 
+    
+ 
+ 
+   
+ 
+ 
+   
+  
+ 
+ 
+  
+ 
+   
+ 
+  
+ 
+  
+ 
+ 
+ 
+  
+  
+ 
+   
+  
+ 
+  
+ 
+  
+    
+ 
+  
+  
+  
+  
+ 
+  
+  
+ 
+    Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+BIMO Inspection and Program 
+Resources Summary of Resource Where can I 
+find this 
+information?40 
+BIMO Program Information The webpage provides an 
+overview of the program mission and vision. Other select resources 
+are covered, including: Application Integrity Policy, Compliance Lists, Compliance 
+Policy Guides , etc. FDA 
+Bioresearch Monitoring Information 
+Compliance Programs (CPs) The CPs provide uniform and 
+specific instructions to ORA OBIMO and FDA center 
+employees for conducting inspections and for gathering and preparing the evidence to support recommendations as part of the regulatory decision-making process. The CPs detail inspection operational procedures, types of interviews performed, and records 
+requested. Bioresearch 
+Monitoring Compliance Programs 
+Investigations Operations Manual 
+(IOM) The primary operation al reference 
+for FDA employees who perform field investigational activities. The IOM includes a discussion on 
+statutory authority and 
+establishment inspections. Investigations 
+Operations 
+Manual 
+BIMO Inspection Metric Reports The webpage provides annual 
+bioresearch monitoring inspection metrics by fiscal year. The webpage also covers compliance trends and “Inspectional Observations” ( Form FDA 483) 
+findings. BIMO 
+Inspection Metrics 
+FDA Guidance Documents Guidance documents represent 
+FDA ’s current thinking on a topic. 
+They do not create or confer any 
+rights for or on any person and do Search for FDA 
+Guidance Documents 
+(Browse by 
+40 Links in this column were last accessed: May 28, 202 4. 
+11 318 RESOURCE GUIDE 
+319 
+
+ 
+  
+ 
+ 
+ 
+     
+  
+  
+ 
+ 
+ 
+  
+   
+ 
+ 
+ 
+  
+   
+  
+ 
+   
+  
+ 
+ Contains Nonbinding Recommendations 
+Draft — Not for Implementation 
+not operate to bind FDA or the 
+public. You can use an alternative 
+approach if the approach satisfies the requirements of the applicable statutes and regulati ons. 
+Guidance documents describe FDA ’s interpretation of or policy 
+on a regulatory issue (21 CFR 
+10.115(b)). topic , e.g., 
+“Clinical Trials” or “Remote 
+Regulatory Assessments”) 
+Regulatory Procedures Manual 
+(RPM) A reference manual for FDA 
+employees. It provides employees with information on internal procedures to be used in processing regulatory and 
+enforcement matters. Regulatory 
+Procedures Manual 
+320 
+321 
+12 
+

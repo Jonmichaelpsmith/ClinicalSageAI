@@ -1,0 +1,766 @@
+Review Articles
+Perspectives on Participation in Clinical Trials Among
+Individuals With Pain, Depression, and/or Anxiety: An
+ACTTION Scoping Review
+McKenzie C. Ferguson, *Ewan McNicol,yBethea A. Kleykamp,zKarin Sandoval, *
+Simon Haroutounian,xKatherine J. Holzer,xRobert D. Kerns,{Christin Veasley,k
+Dennis C. Turk, **and Robert H. Dworkinz
+*School of Pharmacy, Southern Illinois University Edwardsville, Edwardsville, Illinois
+ySchool of Pharmacy, MCPHS University, Boston, Massachusetts
+zDepartment of Anesthesiology and Perioperative Medicine, University of Rochester Medical Center, Rochester, New York
+xDepartment of Anesthesiology, Washington University School of Medicine, St. Louis, Missouri
+{Departments of Psychiatry, Neurology and Psychology, Yale University, New Haven, Connecticut
+kCo-founder and Director, Chronic Pain Research Alliance, North Kingstown, Rhode Island
+**University of Washington School of Medicine, Seattle, Washington
+Abstract: For individuals experiencing pain, the decision to engage in clinical trials may be inﬂu-
+enced by a number of factors including current and past care, illness severity, physical functioning,ﬁnancial stress, and caregiver support. Co-occurring depression and anxiety may add to these chal-lenges. The aim of this scoping review was to describe perspectives about clinical trial participation,including recruitment and retention among individuals with pain and pain comorbidities, includingdepression and/or anxiety. We searched PubMed, CINAHL, PsycINFO, and Cochrane CENTRAL data-bases. Study features, sample demographics, perspectives, barriers and/or motivations were collected
+and described. A total of 35 assessments were included in this scoping review with 24 focused on
+individuals with pain (24/35, 68.6%), 9 on individuals with depression and/or anxiety (9/35, 25.7%),and 2 on individuals with pain and co-occurring depression/anxiety (2/35, 5.7%). Barriers among par-ticipants with pain and those with depression included: research team’s communication of informa-tion, fear of interventional risks, distrust (only among respondents with pain), too many procedures,fear of inadequate treatment, disease-life stressors, and embarrassment with study procedures (morecommonly reported in participants with depression). Facilitators in both groups included: altruismand supportive staff, better access to care, and the ability to have outcome feedback (more commonly
+among individuals with depression). Individuals with pain and depression experience challenges that
+affect trial recruitment and retention. Engaging individuals with pain within research planning mayassist in addressing these barriers and the needs of individuals affected by pain and/or depression.
+Perspective: This review highlights the need to address barriers and facilitators to participation in
+clinical trials, including the need for an assessment of perspectives from underserved or marginalizedpopulations.
+©2022 by United States Association for the Study of Pain, Inc.
+Keywords: Review, pain, depression, research participation, patient engagement, clinical trials.
+The ethical conduct of clinical trials is dependent
+on informed and voluntary participation fromrepresentative samples of persons likely to beneﬁt
+from experimental interventions. For individualsexperiencing pain, the decision to participate in clinical
+trials may be inﬂuenced by current and past clinicalConﬂict of Interest Statement: No authors have any conﬂicts of interest.
+Address reprint requests to McKenzie Ferguson, PharmD, Southern Illi-
+nois University Edwardsville www.siue.edu, 200 University Park Drive,
+Campus Box 2000, Edwardsville, Illinois, USA 62026, Phone: 618-650-5143. E-mail: mcfergu@siue.edu
+1526-5900/$36.00©2022 by United States Association for the Study of Pain, Inc.
+https://doi.org/10.1016/j.jpain.2022.09.001
+24
+The Journal of Pain, Vol 24, No 1 (January), 2023: pp 24 −37
+Available online at www.jpain.org andwww.sciencedirect.com
+
+care, severity of illness, physical functioning, ﬁnancial
+stress, and caregiver support, among other factors.
+Research outside the context of pain (eg, cancer, HIV,
+depression) has assessed barriers and facilitators thataffect trial participation.
+41Personal beneﬁt, altruism,
+and trust were found to be facilitating factors for studyparticipation, regardless of research setting and trialdesign. Barriers were commonly reported and variedamong different populations and severities of illness.Practical challenges were noted as well as barriers spe-ciﬁc to trial-based research, with participants expressingconcerns about randomization, treatment changes, andthe inherent uncertainty of trials.
+41Identifying if these
+features are similar among individuals with pain can
+assist researchers with study design and recruitment andretention, and in turn, research efﬁciency and generaliz-ability.
+A qualitative synthesis of 15 studies assessed factors
+that impact trial recruitment among patients withdepression.
+25Findings indicated that patients with
+depression are less likely to participate in research if itmight exacerbate their condition. Additionally, con-cerns about cognitive capacity for consent and patientwelfare, treatment preferences, and trial burden were
+all noted as barriers to participation. The symptoms and
+presentation of depression were a barrier noted amongmany studies. Although the assessment of trial-speciﬁcfactors affecting recruitment has been completedamong patients with depression, it has not been exam-ined within the context of pain.
+Pain and depression are conditions that often co-
+occur.
+2Observational research has suggested a bidirec-
+tional relationship among pain and mental illness, spe-ciﬁcally depression and anxiety.
+7Signs and symptoms of
+depression (eg, loss of motivation and interest, fatigue,
+etc.) and anxiety likely inﬂuence willingness to partici-
+pate and retention in clinical trials.25Addressing these
+factors may increase the efﬁciency of conducting trialsand reduce the negative impact on recruitment andretention within clinical studies.
+The purpose of this review is to describe perspectives
+about clinical trial participation, including barriers andfacilitators for trial recruitment and retention amongindividuals with pain-related conditions, depression,and/or anxiety. A scoping review was deemed appropri-ate due to the broad nature of the topic, the heteroge-
+neity and diversity of sample populations, and the
+varied methods (ie, qualitative and quantitative) to cap-ture individual perspectives. This review did not aim tocritically appraise evidence but instead describe perspec-tives as it relates to participation in clinical trials.
+36
+Because depression/anxiety and pain frequently co-occur, we hypothesized that there would be similar per-spectives between these conditions but also reportedany differences.
+Methods
+This scoping review was conducted according to the
+Preferred Reporting Items for Systematic reviews andMeta-Analyses extension for Scoping Reviews (PRISMA-
+ScR) Checklist (Appendix 1).48,40Given that the report
+represents a scoping review of the literature, registra-
+tion was not permitted according to PROSPERO guide-lines.
+Eligibility Criteria
+Studies were included if they assessed patient-speciﬁc
+preferences related to clinical trial participation, recruit-ment, or retention (barriers, facilitators, etc.) for thetreatment of any pain condition, depression, and/oranxiety. Facilitators were characteristics that motivatedtrial participation and/or supported participation for
+individuals. Exclusion criteria were: assessments of treat-
+ment preferences or goals of therapy only, assessmentsof researcher preferences, studies that assessed mixedsamples of patients and clinicians without separatingthe data, studies that only provided reasons for trialdropouts or attrition without any other data or qualita-tive component (ie, interview, survey or focus group), orabstracts without data if further information could notbe obtained.
+Although we did not speciﬁcally search for perspec-
+tives about treatment outcomes, upon review of full-
+texts, we decided to evaluate any that were within our
+search results. Much of that research has already beenaddressed by Initiative on Methods, Measurement, andPain Assessment in Clinical Trials (IMMPACT).
+49For stud-
+ies where pain, depression, and/or anxiety were second-ary to another condition, the perspective assessmentneeded to address something relevant to one of thosecomponents. Although literature searches were focusedon pain, depression, and/or anxiety, any psychiatric con-dition was included if it otherwise met criteria for inclu-sion.
+Information Sources
+PubMed, Cumulative Index to Nursing and Allied
+Health Literature (CINAHL), American PsychologicalAssociation PsycInfo and Cochrane CENTRAL weresearched from inception through December 14, 2020and February 5, 2021, respectively, using appropriatesearch terminology (Appendix 2). Authors of publishedabstracts were contacted for additional information.Reference lists of relevant articles were also reviewedfor additional studies.
+Data Review Process and Extraction
+Title/abstract screening and full-text review were per-
+formed independently by at least 2 review authors (MF,EM, AK, KS). Disagreement between reviewers wasresolved by discussion. When agreement could not bereached, a third author (MF, EM) adjudicated.
+Four authors (MF, EM, AK, KS) performed data extrac-
+tion. At least 2 authors independently extracted infor-mation from each article. A data extraction form waspiloted prior to use (Appendix 3). In addition, a codingmanual was developed to clarify entry and promoteconsistency in the evaluation of methodology.Ferguson et al The Journal of Pain 25
+
+Information related to study features, sample demo-
+graphics, perspectives related to trial design and bar-
+riers and/or motivating factors to trial participation
+were collected (Appendix 3). As part of project plan-ning, authors identiﬁed how other researchers (ie,O’Cathain 2013, Sheridan 2020, Cheung 2020) assignedperspectives into thematic categories. We approachedthe process in a similar fashion.
+10,38,41Where possible,
+we utilized coding/interpretations as they were pre-sented by the original authors. When articles did notprovide speciﬁc themes, we categorized perspectiveswithout duplicating across categories. Comparisons ofpreferences between pain, depression, and anxiety
+were planned if the sample for each was large enough.
+Critical appraisal of evidence quality was not conducted.Descriptive statistics were used, where applicable. Per-spectives related to study design were categorized bytheme.
+Results
+Search results identiﬁed 660 de-duplicated records
+from the initial search across all databases. Of these, 604
+(91.5%) were excluded due to lack of eligibility, based
+on title and abstract screening. A total of 61 full-textarticles were reviewed with 27 excluded ( Fig 1 ) for the
+following reasons: lack of data about preferencesrelated to clinical trial design (6/27, 22.2%); abstractwithout data (4/27, 14.8%); no pain or psychiatric condi-tion (4/27, 14.8%); focused on treatment preferencesonly (4/27, 14.8%); mixed sample without separation ofparticipant perspectives (3/27, 11.1%); duplicate
+research (1/27, 3.7%); assessment unrelated to pain or
+psychiatric condition (1/27, 3.7%); or other reasons (4/
+27, 14.8%). One study performed 2 separate phases ofdata collection, so each phase was extracted sepa-rately.
+49This yielded a total of 35 extracted assessments
+across 34 articles ( Table 1 , Appendix 4). For all results,
+the N=35 unless otherwise noted.
+Study Features
+Perspectives were obtained from individuals with pain
+(24/35, 68.6%); depression, and/or anxiety (9/35, 25.7%);or pain with some having co-occurring anxiety/depres-
+sion (2/35, 5.7%). Within assessments only reporting
+pain (N=24), pain was primarily chronic in nature andincluded: juvenile arthritis (3/24, 12.5%); osteoarthritis(3/24, 12.5%); pelvic pain (3/24, 12.5%); mixed chronicpain (2/24, 8.3%); headache (2/24, 8.3%); chronic painnot otherwise speciﬁed (2/24, 8.3%); back and/or jointpain not otherwise speciﬁed (1/24, 4.2%); chest painpost-acute coronary syndrome (1/24, 4.2%), cancer-related pain (1/24, 4.2%), Duchenne muscular dystrophy(1/24, 4.2%), rheumatoid arthritis (1/24, 4.2%), sicklecell disease (1/24, 4.2%), gout (1/24, 4.2%), spinal steno-
+sis (1/24, 4.2%), and end-of-life pain (1/24, 4.2%).
+Nine assessments obtained perspectives from individ-
+uals with both pain and with depression and/or anxiety,7/9 (77.8%) focused entirely on depression, while 2/9(22.2%) focused on depression and anxiety. One of the2 assessments focusing on depression and anxiety notedthe coexistence of anxiety without stating how manypatients also had anxiety
+12; the other obtained
+Figure 1. PRISMA ﬂow diagram (Color).
+From: Page MJ, McKenzie JE, Bossuyt PM, Boutron I, Hoffmann TC, Mulrow CD, et al. The PRISMA 2020 statement: an updated
+guideline for reporting systematic reviews. BMJ 2021;372:n71. doi: 10.1136/bmj.n71. For more information, visit: http://www.
+prisma-statement.org/26 The Journal of Pain Perspectives about Clinical Trial Design
+
+Table 1. Characteristics of Included Assessments of Perspectives Related to Study Design.
+REFERENCE SAMPLE SAMPLE COUNTRY PAIN AND PSYCHOLOGICAL
+FEATURESSAMPLE SIZEPROVIDING
+PERSPECTIVESDATACOLLECTION
+METHOD
+Ackerman 20131Adult Australia Pain only (100%
+osteoarthritis)258 patients Individual interview
+Barnes 20123Adult England,
+ScotlandDepression only (100%) 25 patients Interview & survey
+Bennett 20175Adult England Pain only (end-of-life) 19 total: 15 patients; 4
+caregiversInterview & survey
+Bove 20188Adult USA Pain only (100% spinal
+stenosis)50 participants Focus group
+Cheung 202010Adult USA Pain/depression: 177
+(35%) back pain; 215
+(43%) joint pain; 210
+(42%) depression501 participants Survey
+Cramer 201112Adult England Depression/anxiety:
+(100% depression; anxi-
+ety noted but not
+quantiﬁed)73 mix of patients and
+participantsIndividual interview
+DasMahapatra
+201713Adult Global Pain/depression: 241
+(15%) ﬁbromyalgia; 125(8%) rheumatoid arthri-
+tis; 91 (5%) depression1621 participants Survey
+Dennin 2020
+14Adult USA Depression/anxiety associ-
+ated with Parkinson’s
+disease16 total: 14 partici-
+pants; 2 care-
+partnersIndividual interview &
+focus group
+Denny 201815Adult England,
+ScotlandPain only (100% pelvic
+pain, including
+endometriosis)14 patients Individual interview &
+focus group
+Dowrick 200716Adult England Depression only (100%) 5 patients Individual interview
+Gaudiano 201320Adult USA Depression only (100%) 55 patients Other *
+Gaudiano 201619Adult USA Depression only (100%) 615 participants Survey
+Hislop Lennie
+201321Adult England Pain only (100%
+osteoarthritis)51 participants Survey
+Hissink Muller
+201822Mixed Netherlands Pain only (100% juvenile
+arthritis)Phase I: 15 parents, 7
+patients;
+Phase II: 23 parents, 7
+patientsSurvey (Phase 1) &
+interview (Phase 2)
+James 201926Not stated;
+assumed
+adultUSA Pain only (100% chronic
+pain not otherwise
+speciﬁed)190 survey respondents
+(mix of patients and
+participants):
+94 on opioids in last 6
+mo; 96 had no
+opioids in last 6 moSurvey
+Leinisch-Dahlke
+200428Adult Germany Pain only (100% head-
+ache, including
+migraine)486 patients Survey
+Lenguerrand 202029Adult England Pain only (100%
+osteoarthritis)142 patients Individual interview
+Lenze 201730Adult USA Depression only (100%) 20 patients Focus group & survey
+Middleton 201732Mixed England Pain only (100%
+endometriosis)14 patients Focus group (N=4) &
+interviews (N=10)
+Midgley 201633Pediatric England Depression only 76 adolescent patients Individual interview
+Morgan 201935Mixed Austria, Italy,
+USAPain only (100% juvenile
+arthritis)83 participants/parents Survey
+Nelson 201337Not stated;
+assumed
+adultEngland, Wales Pain only (100% cancer) 42 participants Individual interview
+Paterson 200839Adult Australia Pain only (100% head-
+ache, including
+migraine)10 participants Individual interview
+Sherratt 201742Mixed England Pain only (100% juvenile
+arthritis)28 patients and parents Individual interview
+(continued on next page )Ferguson et al The Journal of Pain 27
+
+perspectives of mental health outcomes, including
+depression and anxiety, in patients with Parkinson’sdisease.
+14
+Within the 2 assessments that focused on pain with
+some of the sample also reporting depression, 1 assess-ment reported perspectives from 1,621 participants
+with 9 different primary conditions, including: rheuma-
+toid arthritis (125/1621, 8%), ﬁbromyalgia (241/1621,15%), and depression (91/1621, 5%), among othersunrelated to pain or depression/anxiety.
+13The other
+study obtained perspectives from 501 patients withmore than 2 chronic conditions, with participants ableto select multiple chronic conditions. Of the 501 partici-pants in the sample with at least 2 chronic conditions,177/501 (35%) were noted to have back pain, 215/501
+(43%) had joint pain, and 210/501 (42%) had depres-
+sion.
+10Our sample was not sufﬁciently large nor descrip-
+tive enough to allow us to make comprehensiveTable 1. Continued
+REFERENCE SAMPLE SAMPLE COUNTRY PAIN AND PSYCHOLOGICAL
+FEATURESSAMPLE SIZEPROVIDING
+PERSPECTIVESDATACOLLECTION
+METHOD
+Smith 201643Adult USA Pain only (low back pain
+63, 42%; musculoskele-
+tal not speciﬁed as low
+back or osteoarthritis
+pain 26, 17%; neuro-
+pathic pain 20, 13%;
+osteoarthritis 9, 6%;
+ﬁbromyalgia 7, 5%;multiple conditions 7,
+5%; chronic regional
+pain syndrome 5, 3%;
+other 13, 9%)150 participants Other *
+Stamuli 2017
+44Adult UK Pain only (100% rheuma-
+toid arthritis)100 participants Survey
+Tallon 201145Adult England Depression only (100%) 252 patients Survey
+Taylor 201346Adult New Zealand Pain only (100% gout) 21 patients Other *
+Turk 2008 Phase 149Adult USA Pain only (100% chronic
+pain not otherwise
+speciﬁed)31 patients Focus group
+Turk 2008 Phase 249Adult USA Pain only (migraine or
+other chronic headache
+216, 22%: rheumatoid
+arthritis 50, 5%; osteo-
+arthritis 184, 19%; pain
+related to cancer 8, 1%;
+low back pain 523,
+55%; neck or shoulder
+pain 441, 46%; ﬁbromy-
+algia 269, 28%
+painful diabetic neurop-
+athy 26, 3%; other neu-
+ropathic pain 352, 37%;
+other 201, 21%)959 participants Survey
+van den Berg 20176Adult England Pain only (100% chest
+pain post-acute coro-
+nary syndrome)10 patients Individual interview
+Vercellini 201550Adult Italy Pain only (100% pelvic
+pain, including
+endometriosis)500 patients Survey
+Verhaart 201951Pediatric Australia, Can-
+ada, France,
+Italy, Nether-
+lands, UK, USAPain only (100% Duch-
+enne muscular
+dystrophy)78 participants and
+caregiversSurvey
+Voice of the Patient
+201447Mixed USA Pain only (100% sickle cell
+disease)Unclear Interview & survey
+Wu 201653Adult China Pain only (100% back or
+joint pain not otherwise
+speciﬁed)441 patients Survey
+*Single study with two data collection periods evaluated independently that utilized interviews and conjoint decision-making survey methods28 The Journal of Pain Perspectives about Clinical Trial Design
+
+comparisons of perspectives between individuals with
+pain versus depression versus anxiety or any combina-tion of these, but we have presented ﬁndings separatelyfor the assessments among individuals with pain versuspain and depression/anxiety versus depression/anxietyonly and noted differences where data were available.
+Perspectives were gathered from individuals with
+pain using survey-based methods (13/35, 37%), individ-ual interviews (9/35, 25.7%), mixed methods (ie, surveyand individual interviews, 8/35, 23%), and focus groups(2/35, 5.7%). Three studies (3/35, 8.6%) ( Table 1 ) utilized
+alternative methods. Of the studies using alternative
+methods, 2 studies captured perspectives via a conjointdecision-making exercise, and the other by having par-ticipants read 3 brief vignettes followed by questions onthe Credibility and Expectancy Scale.
+20,43,46
+Most studies obtained patient or caregiver perspec-
+tives as a primary objective (23/35, 65.7%), or wereembedded within pilot/feasibility studies (12/35,34.3%). Studies utilized mostly active and direct recruit-ment (23/35, 65.7%), largely from clinics, registries,mailed invitation, and practitioner referral. Studies alsoutilized passive recruitment (3/35, 8.5%) (eg, indirect
+strategies such as advertisements or ﬂyers), mixed
+recruitment strategies (5/25, 14.2%), or were notdescribed (4/35, 11.4%). A total of 17/35 (49%) of studiesincluded participants with current and/or past participa-tion in clinical research studies. Twelve included currentparticipation (100% of the sample) within pilot/feasibil-ity studies, and 5 studies reported some (but not all)past trial participation. Within these, the number withinthe sample ranged from 12% to 75%.
+Study sites were located in metropolitan areas (22/35,
+62.8%), listed as rural/urban/semi-urban
+35(1/35, 2.8%)
+or as location not described/other (12/35 34.2%). Other
+locations included no physical study site (ie, participantswere assessed via an online survey and/or by a mailed-insurvey). Locations of participants included respondents
+only within the U.S. (11/35, 31.4%), outside the U.S. (21/35, 60%) and mixed geographic locations (3/35, 8.5%).
+Sample Demographics
+Studies obtained adult perspectives (26/35, 74.2%),
+pediatric perspectives (2/35, 5.7%), both adult and pedi-atric perspectives (5/35,14.2%), or were not described(2/35, 5.7%). In the 2 studies that focused on pediatricperspectives, 1 was in childrenaffected by Duchennemuscular dystrophy and the other assessed adolescentsaffected by depression.
+33,51In the 5 studies with mixed
+samples, all perspectives were obtained from partici-
+pants with pain.22,32,35,42,47In the 2 studies that did not
+describe the age of the study sample, participants wereassumed to be adults based on the disease stateassessed.
+26,37Five studies (14.2%) included mostly older
+patients based on the average age of the sample, 3 ofwhich were in patients with pain, 1 in patients withdepression and 1 in patients with mental healthimpacted by Parkinson’s disease.
+5,8,14,21,30
+Among studies reporting gender (27/35, 77.1%), 14
+studies noted the sample was represented by >70%
+female participants. Eight studies (22.8%) did not reportgender or sex assigned at birth for the sample, and no
+studies reported other gender identities. Eleven assess-
+ments (31.4%) required English literacy as part of studyinclusion. One study (2.8%) purposefully sampledwomen experiencing economic hardship living withdepression from divested areas in England.
+12
+Racial/ethnic identity ( Fig 2 ) was reported for the sam-
+ple in only 15/35 (42.9%) studies. Within studies that col-lected information on racial/ethnic identity, the numberof studies with participants identifying as one of follow-ing races/ethnicities included: White (14/15, 93.3%),Black (9/15, 60%), Asian (8/15, 53.3%), Native-American
+Figure 2. Race distributions of participants providing perspectives, N=15 (Color).Ferguson et al The Journal of Pain 29
+
+(6/15, 40%), Hispanic/Latino (4/17, 23.5%), and multira-
+cial (3/15, 20%). Where reported, racial/ethnic percen-tages ranged from: 67 to 100% for White; 0 to 21% forBlack; 0 to13% for Asian; 0 to 5% for Hispanic/Latino; 0
+to 2.6% Native-American; and 0 to 3.5% for multiracial.
+Other study features were infrequently and inconsis-
+tently reported among studies, including level of educa-tion (12/35, 34.2%); participants living with someoneelse in the household (10/35, 28.6%); employment status(10/35, 28.6%); insurance status (1/35, 2.8%); and dis-ease duration (7/35, 20%) and severity (12/35, 34.2%).
+Barriers to Trial Participation
+Studies that reported barriers to clinical trial partici-
+pation are noted within Fig 3 and separated by individu-
+als with pain, depression, and mixed illness. Sevenstudies identiﬁed concerns related to the research
+team’s communication of information as barriers to par-
+ticipation, 4 of which were among individuals with painand 3 among individuals with depression and/or anxi-ety. Fear of interventional risks, distrust of healthcareproviders, concerns about too many study procedures,fear of inadequate treatment, and disease-life stressorswere more frequently noted as a barrier among patientswith pain. In 1 study that purposefully recruited partici-pants from divested areas among individuals experienc-ing economic hardship, some of the patients whodeclined to participate stated that they would not beable to attend any groups because of family commit-
+ments such as lack of regular childcare.
+12
+Embarrassment with study procedures was mostly
+noted among participants with depression. These con-cerns were expressed as feeling self-conscious, the intru-sive nature of the questions asked, embarrassment withbringing up the past, and symptoms of illness that cre-ated anxiety and embarrassment.
+3,12,14,33
+Distrust of providers was noted as feelings of skepti-
+cism with clinical research.1,8This barrier was exclusively
+reported in the studies of pain. One study noted theimportance of cultural sensitivity and awareness of thechallenges faced by individuals affected by the presence
+of sickle cell disease.
+47
+Among patients with chronic pain, disease-related
+stigma was noted as fear of labeling or judgment based
+upon past opioid use.26For patients with sickle cell dis-
+ease, this was described as being “relegated to the sta-tus of only a Black disease”.
+47For patients with mental
+health impacted by Parkinson’s disease, disease-relatedstigma was related to changes in bowel movements, sex-ual activity, and mood.
+14
+Motivations for Trial Participation
+Fig 4 depicts studies that addressed motivating factors
+to clinical trial participation. Fifteen studies noted thata desire to help others is a motivation to participate inclinical trials. Additionally, rapport of research staff ismotivating; notably staff that were empathetic, atten-tive listeners, trustworthy, and sociodemographicallyrepresentative of people normally affected by the con-dition. Better access to care was described more oftenamong patients with pain whereas receipt of outcomefeedback, such as sharing data relevant to progress orimprovement with participants was a motivator more
+commonly noted among patients with depression.
+Perspectives Related to Trial Design That
+Affect Willingness to Participate
+Recruitment, Randomization, and Blinding
+Personal referral from the patient’s primary care pro-
+vider was noted in 2 studies, both of which included indi-viduals with depression, as an inﬂuencing factor inwillingness to participate.
+12,13Four studies among individ-
+uals with pain, depression, and mixed samples noted con-cerns with blinding and reported that people with painwould not agree to participate in studies if they wereblinded.
+10,13,28,50Randomization was a source of concern,
+discomfort, and at times, confusion for participants. Threestudies noted that an element of choice within theFigure 3. Percentage and number of studies reporting barriers to clinical trial participation (Color).30 The Journal of Pain Perspectives about Clinical Trial Design
+
+randomization process would enhance willingness to
+participate.15,32,50Detailed communication of information
+about trial details, safety, and expectations of participa-
+tion was noted among many studies as a factor affecting
+willingness to participate.3,14,26,33,37,47,51
+Compensation, Time, and Transportation
+The ability to continue treatment after study comple-
+tion was noted in 1 study, particularly as it related topatient payment for therapy and rehabilitation serv-ices.
+8Another study noted that coverage for study-
+related injury was a factor that affected willingness toparticipate.
+13Other studies indicated that providing
+enough compensation was important10,14,26and 1 study
+suggested weekly compensation for time and travel waspreferred.
+43
+Concerns related to transportation were noted
+among 5 studies1,8,13,14,29, 2 of which were in older
+populations.8,14The ability to drive, access transporta-
+tion, and fears about the distance to study visits werenoted in the study of patients with mental healthaffected by Parkinson’s disease.
+14
+A lack of time for study visits, and the duration and
+frequency of study visits were concerns noted withinseveral studies. All concerns but one were reported byindividuals impacted by pain.
+1,5,8,10,15,32,43Comments
+related to too many study sessions, interference withwork or family, and suggestions to reduce the numberand duration of follow-up visits were described. Con-
+versely, for assessments in women with pelvic pain, a
+longer study duration (3-year) was widely noted asacceptable by patients to allow time for extra monitor-ing and time for “the body to adjust” and have breaksbetween adjustments.
+15,32
+Interventions and Access to Current and/or
+Past Treatments
+Willingness to participate based upon factors related
+to the interventions administered was affected by manyfactors. Fears of interventional risks were expressed as
+concerns about side effects and return ofsymptoms.
+13,15,22,26,42,47For studies involving patients
+with pain, the decision to participate was heavily inﬂu-
+enced by past experiences with treatment. Also, routeof administration was noted as a factor, particularlyamong parents, and within assessments of parenteraltherapies.
+15,42The inconvenience of administration of
+injections and impact on the ability to go to school andwork was noted.
+15In 1 study, patients who took opioids
+were generally willing to participate in an opioid taper-ing study.
+26For participants with headache, most sur-
+veyed would agree to take part in a placebo-controlledstudy and would not ﬁnd it unpleasant to learn if their
+symptoms responded to placebo.
+28Drugs with longer
+durations of action and the ability to decide when totreat acute attacks were preferred among individualswith headache.
+28
+Assessments of individuals with depression noted a
+preference for psychotherapy19,20, and 1 study indicated
+that patients were not interested in counseling.3In an
+assessment of a small cohort of patients with depres-sion, all agreed they would not be willing to participatein authorized deceptive design, in which individuals aretold in advance about a temporary deceptive element inthe trial. Nor willing to participate in post-hoc deceptive
+design, when a participant is notiﬁed after the trial is
+over that deception occurred.
+16In addition, patients
+indicated that the possibility of placebo or inadequatetreatment alternatives impacted their willingness toparticipate.
+13,16In individual interviews of 76 adoles-
+cents with depression, 50% noted it was difﬁcult toremember the differences among the 3 arms of psycho-logical therapy, and “few” had a clear understanding ofthe differences among each arm.
+33
+The desire to access past treatments was noted within
+fears of inadequate treatment and the ability to take
+current medications.1,3,15,22,26,30,42,40All of these assess-
+ments, except for one30, were in patients with pain.
+Fears related to withdrawal or unfair drug
+Figure 4. Percentage and number of studies reporting facilitators to clinical trial participation (Color).Ferguson et al The Journal of Pain 31
+
+discontinuation without other effective options for the
+management of chronic pain26or the desire to avoid
+past treatments that were ineffective1,3,15,22,42were
+noted. Among patients with depression, 1 studydescribed preference to tailor treatments based on pastexperience, symptoms, and side effects.
+30
+Outcomes and Data Collection
+Five studies focused entirely on outcome preferences
+within clinical trials among individuals withpain.
+35,44,46,49,53Outcome prioritization mostly focused
+on pain relief, functional improvement, and quality of
+life. In one study among patients with depression30, pre-
+ferred outcomes were psychological well-being andsymptomatic improvement as well as safety (ie, avoid-ance of fall-related injury) associated with antidepres-sants.
+In terms of data collection methods, four studies noted
+that in-home visits offered convenience, ﬂexibility and/orsupported rapport with research staff.
+5,33,37,45One study
+noted that electronic tablet-based assessments for self-reported psychological well-being were largely accept-able among participants.
+30Study participants preferred
+fewer study procedures including reduced number of
+assessments; less frequent assessments; and proceduresthat require less time.
+1,5,6,10,13−16,29,42,43,43,45One study
+among patients with depression noted that question-naires were lengthy, repetitive, and difﬁcult tounderstand.
+45
+Less invasive outcome assessments and forms of data
+collection are preferred.6,43,45,51One study noted that
+patients thought that trials that included more invasivemeasures (eg, biopsy and cold water sensory testing)warranted higher compensation.
+43
+No studies provided participant perspectives related
+to parallel vs crossover or pragmatic vs efﬁcacy designs.In addition, no studies assessed whether source of fund-ing affects trial participation.
+Discussion
+Our ﬁndings largely noted preferences among indi-
+viduals affected by pain and to a lesser extent preferen-ces among individuals with depression. We did notidentify any assessments solely focused on individualswith anxiety. Only 2 assessments noted anxiety co-occur-ring with depression and 2 assessments noted pain co-occurring with depression in proportion of the overallsample. Despite this, it is more than likely that some pro-
+portion of individuals in the “pain only” assessments
+also had co-occurring, but not reported, depression oranxiety and vice versa for the assessments of individualswith depression only.
+Outside of altruism and staff rapport, facilitators for
+trial participation largely reﬂect individuals with painwho may not be satisﬁed with current outcomes and/orseek alternative treatment options, which aligns withwho is generally recruited into clinical trials.
+4The bur-
+den of illness can affect trial participation, including theneed for enhanced social support and transportation ifmobility is impacted or if distance from clinical study
+sites is perceived as inconvenient. The impact of disease-
+related stigma and concerns related to privacy may also
+deter participation. For some populations with children,declining participation and dropouts are due to lack ofchildcare.
+12Among individuals with chronic pain,
+research has shown that a shift to telehealth may offersolutions to some of the barriers we identiﬁed. Tele-health may offer greater ﬂexibility as it relates to easeof access and convenience, while also promotingempowerment via self-knowledge and self-efﬁcacy.However, the delivery of telehealth presents its ownbarriers, including the impersonal aspects of delivery,
+challenges with technology, and the need for digital
+literacy.
+17,18
+Direct referral by a provider may also facilitate partici-
+pation in clinical trials.12,13Although it may be argued
+that added attention by providers may augment pla-cebo effects or be a source of bias, advocating for anindividualized approach should be the priority withpatient care and research alike. Increasing healthcareprovider knowledge of research opportunities and dis-ease-related stigma, along with recruiting via use ofsocial media and community networks were noted as
+important.
+47
+Most studies did not report additional comorbidities
+of the sample population, and as previously mentioned,it was likely that pain, depression, anxiety, and othermental health disorders coexisted among the study pop-ulations.
+2Post-hoc analysis of exclusion criteria from the
+24 studies that assessed ‘pain only’ revealed that noneof these studies explicitly excluded participants withmental health comorbidities. In fact, many formally orinformally assessed the effect of pain on mood. Manyassessments lacked consistent reporting of features that
+may be relevant for consideration in the context of
+patient or caregiver perspective. Population featuressuch as education, caregiver support, employment and/or disability, and pain severity were infrequently orinconsistently reported.
+There are several notable gaps to the literature. One
+notable gap was the lack of assessment from under-served or marginalized populations. Only 1 studydescribed recruitment strategies that deliberatelyinvolved reaching out to individuals experiencing eco-nomic hardship.
+12In addition, methodology within of
+some of the assessments, such as the requirement for
+internet access or for multiple onsite visits, may havereduced the ability or willingness of some populationsto engage. Where demographic data were presented, alack of diverse representation appeared to be con-ﬁrmed. For example, for studies that reported demo-graphics related to gender, most were heavilyrepresented by female views. For those that reportedrace, the participants were overwhelmingly white andwere disproportionately so in studies conducted in theUnited States. And, more than a third of studies (31%)required English literacy as part of participation. Based
+on a lack of reporting, we could not determine whether
+individuals living in rural settings, those without routineaccess to healthcare, those with lower education levels32 The Journal of Pain Perspectives about Clinical Trial Design
+
+or those not currently being paid for work were ade-
+quately represented. In addition, 17/35 (49%) of studies
+included participants with current and/or past participa-
+tion in clinical research studies, 12/35 (34.3%) of whichwere part within pilot/feasibility studies. Therefore, theperspectives within this review lack diversity and repre-sentation and may not reﬂect the opinions of individu-als who do not actively seek treatment.
+Given this, community-based recruitment efforts to
+address barriers and facilitators among individuals withpain outside the healthcare system are needed. Focus-ing on marginalized communities and rebuilding trustare necessary to more broadly reﬂect true community
+needs. Collecting reasons for declining participation
+may be helpful in these efforts as well as efforts to dif-ferentiate perspectives among individuals with past/cur-rent trial participation versus those without. We wereunable to make comparisons that need to be systemati-cally addressed in future research.
+Although few studies in our review reported comor-
+bid diagnoses, it is very likely that individuals withchronic pain have coexisting illnesses. The barriers andfacilitators identiﬁed in this review among individualswith pain and/or depression align with other research.
+41
+A systematic review of 26 different systematic reviewsexamined facilitators and barriers to research participa-tion for any medical condition. Personal beneﬁt andextra attention along with access to new therapies was
+noted most commonly as a facilitator followed by altru-
+ism, rapport, burden and convenience, and ﬁnancial
+beneﬁt. Barriers to participation noted within thatreview included fears related to safety; followed bypractical difﬁculties with time; transportation and cost;distrust; aversion to randomization; speciﬁc treatmentpreferences; stigma; uncertainty; and desire for choice.Some barriers were noted within speciﬁc populations.For example, distrust was reported as a barrier withinminoritized and marginalized groups and stigma was abarrier to recruitment for trials in HIV or mentalhealth.
+41Our ﬁndings about distrust were among indi-
+viduals with pain, 1 study was in patients with sickle cell
+disease and 2 studies had a population average ageover 70 years.
+1,6,8,26,47The lived experiences of patients
+who have experienced racialized discrimination addscontext for this distrust and underscores the need forantiracism practices in study design and disseminationof ﬁndings.
+34Within our ﬁndings, embarrassment with
+study procedures was more commonly noted amongstudies that included individuals with psychological ill-ness, including adults and adolescents withdepression.
+3,12,14,33Table 2 provides some considera-
+tions for engaging patients affected by pain and depres-
+sion into clinical trials.11,23,24,27,31,47
+A qualitative synthesis of 15 studies assessed factors
+that affect trial recruitment of patients with depres-sion.
+25Many of these studies included mixed samples of
+patient and researcher perspectives, which was outsidethe scope of our review. However, four studies from thisanalysis were included in our review.
+3,12,16,45Our ﬁnd-
+ings indicated that among individuals with depression,recruitment into trials was found to be affected bysymptoms of depression, the risk of the study to mental
+health
+3,16, stigma45, and participant welfare and vulner-
+ability16. Studies from the larger analysis also noted dif-
+ﬁculties in recruiting due to the burden andinconvenience of trial procedures, treatment preferen-ces, and the challenges with presenting research oppor-tunities to individuals with depression.
+3,16,25,45
+Rapport of the research team is a key component to
+retention in clinical trials. Also, the research teamshould be representative of the targeted population.Training and educating the team on cultural sensitivity,disease burden, and stigma may beneﬁt recruitment
+and retention within clinical trials. Some individuals
+who participate in clinical trials perceive themselves asvolunteers, and as such are hesitant to discuss other rel-evant medical issues due to it perhaps conﬂicting withthe research agenda. One study captured these feelingsin quotes such as “volunteer of my time, my body” and“we’re here for their research not my research”.
+39
+Concerns with randomization, blinding, and access to
+effective treatment were noted among individuals withpain and depression. Partially randomized study designshave been utilized to incorporate an element of partici-pant preference into the randomization process. In an
+assessment of treatment options for patients with endo-
+metriosis, Middleton et al utilized a ﬂexible-entry, adap-tive design model with a ﬁrst-phase feasibilityTable 2. Clinical Trial Design Considerations for
+Recruitment and Retention.
+Recruitment Considerations11,23,24,27,31,47
+/C15Direct and strategic recruitment to underserved and understudied patient
+populations is needed. Consider the use of patient partners to developrecruitment strategies.
+/C15Education of the public via press, internet, or social media regarding the
+importance of clinical trials and how to access research opportunities.
+/C15Providers may need education about how to connect patients with research
+opportunities.
+Trial Design Considerations38
+/C15The research team should be diverse and empathetic. Rapport with study
+participants may improve retention.
+/C15Researchers may consider adding an element of choice into trial design (e.g.,
+the ability to opt out of a non-preferred treatment).
+/C15Researchers may consider the addition of a qualitative component within
+clinical trials to assess engagement, perspectives related to design and pref-erences, and reasons for declining participation and dropouts.
+/C15Researchers may consider reporting reasons for and demographics of those
+declining participation as a way to better understand individual needs, par-ticularly those of marginalized communities.
+Trial Conduct Considerations
+/C15Researchers should utilize multiple strategies and modalities for communica-
+tion to deliver study-related information (e.g., written handouts, regularnewsletter updates, videos, etc.).
+/C15Engage participants, patient partners, or both to ensure appropriate com-
+pensation of time and travel and consider enabling access to treatment aftercompletion of the trial.Ferguson et al The Journal of Pain 33
+
+assessment to gauge willingness to core design features
+(randomization, control, etc.) followed by clinician and
+participant discussion about which drug within a class
+of options would be preferred.32Partially randomized
+designs assign those who were willing to be randomizedas usual, and those not willing to be randomized areassigned to treatment based on preferences, althoughthese design strategies are not very common amongindividuals with chronic pain.
+52In our ﬁndings, one
+study which evaluated a mixed sample of patients withback and joint pain, 42% of which also had depression,suggested that the average patient prefers personalizedtrials that are less burdensome in terms of cost and time
+commitment, but that patient preference in personal-
+ized trials is highly variable, suggesting that individualdifferences must be accounted for when recruiting par-ticipants.
+10Another recruitment consideration may be
+to offer an open-label extension to all participants whocomplete the blinded phase of a study.
+Input by individuals with pain adds value to clinical
+research. Such partners can assist with many aspects oftrial design including recruitment considerations andstrategies; adequate compensation for time and travel;modes and format of data collection; patient-oriented
+outcome measures; review and formatting of communi-
+cation of study information; and results dissemination.
+9
+Incorporating a qualitative component into study meth-ods at the pretrial stage as part of a pilot or feasibilitystudy should be considered. If engagement of potentialparticipants is not feasible before research is com-menced, strategies can be implemented within ongoingtrials or upon conclusion of participation.
+38The Patient
+Centered Outcomes Research Initiative (PCORI) in the U.S., Canada’s Strategy for Patient-Oriented Research(SPOR), and Patient and Public Involvement (PPI) within
+the United Kingdom highlight just a few of the interna-
+tional efforts to engage patients as partners in clinicaltrials.
+23Building research relationships with individuals
+with pain as life-long partners can beneﬁt all stakehold-ers.
+This scoping review provides the ﬁrst overview, to our
+knowledge, of patient and participant perspectives asthey relate to study participation, recruitment andretention in trials among patients with pain and depres-sion. A lack of information was found related to individ-uals with anxiety. We performed a broad search across
+multiple databases and included any painful condition
+across any age group. Limitations related to the per-spectives collected within this review have been noted.We employed identical search strategies for each of thedisease states of interest (pain, depression, and anxiety),yet it is likely some relevant literature was not foundgiven the scope of vocabulary for this topic. In addition,our review lacked formal evaluation of included studieswith respect to study quality and bias. Data collectionmethods (eg, open-ended questions, targeted ques-tions, etc.) could bias the ﬁndings. We also extractedand included data, such as insurance coverage
+(although not commonly noted), that may not be rele-
+vant to individuals outside of the U.S.Conclusions
+This review identiﬁed patient preferences that affect
+willingness to participate in clinical trials among individ-uals with pain and depression. Despite including anxietywithin our search, we did not ﬁnd sufﬁcient data aboutperspectives in the setting of anxiety. Although altruismand the rapport of the research team are motivatingreasons for participation among many individuals withpain, it is also important to recognize that chronic painand depression can present challenges to recruitment
+and retention within clinical trials. The assessment of
+perspectives, barriers, and facilitators in underservedpopulations is needed, as the current evidence lacksdiverse representation. Engaging individuals with painin the research planning process may assist in addressingthe barriers and the needs of individuals affected bypain and/or depression.
+Disclosures
+RHD: has received in the past 5 years research grants
+and contracts from the US Food and Drug Administra-tion and the US National Institutes of Health, and com-pensation for serving on advisory boards or consulting
+on clinical trial methods from Abide, Acadia, Adynxx,
+Analgesic Solutions, Aptinyx, Aquinox, Asahi Kasei,Astellas, Biogen, Biohaven, Biosplice, Boston Scientiﬁc,Braeburn, Cardialen, Celgene, Centrexion, Chiesi, Chro-mocell, Clexio, Collegium, Concert, Confo, Decibel, Edi-tas, Eli Lilly, Endo, Ethismos (equity), Eupraxia, Exicure,Glenmark, Gloriana, Grace, Hope, Lotus, Mainstay,Merck, Mind Medicine (also equity), Neumentum, Neu-rana, NeuroBo, Novaremed, Novartis, OliPass, Pﬁzer, Q-State, Reckitt Benckiser, Regenacy (also equity), San-gamo, Saniﬁt, Scilex, Semnur, SIMR Biotech, Sinfonia,
+SK Biopharmaceuticals, Sollis, SPRIM, Teva, Theranexus,
+Toray, Vertex, Vizuri, and WCG.
+AK: During the last 36 months, BAK has received com-
+pensation for full-time work from ACTTION and theAmerican Society of Addiction Medicine. She has alsoreceived compensation for freelance science writingand consulting from the health technology assessmentcompany Hayes, Inc., the real-world evidence company,STATinMED, the government contractor, Palladian Asso-ciates, Filter Magazine, and the healthcare consultingcompany, PinneyAssociates. Her work for PinneyAssoci-
+ates focused on regulatory submissions related to psy-
+chedelic drugs. None of her work, including workcompleted for PinneyAssociates, was supported byfunding from the tobacco or e-cigarette industry.
+MCF: During the last 36 months, MCF has received
+compensation for consultant work from ACTTION.
+KH: During the past 36 months, KH has received
+research grants from the US National Institutes ofHealth and Department of Defense.
+SH: During the past 36 months, SH has received
+research grants from the US National Institutes of
+Health, Department of Defense, and from Disarm Thera-
+peutics; and has received compensation for consultant34 The Journal of Pain Perspectives about Clinical Trial Design
+
+work from ACTTION, Rafa Laboratories, Vertex Pharma-
+ceuticals, and GW Pharma.
+RDK: During the past 36 months, RDK has received
+research grants and contracts from the US Departmentof Veterans Affairs, the US National Institutes of Health,and the US Patient Centered Outcome Research Initia-tive, and he has received honoraria as a member of theCanadian Chronic Pain Centre of Excellence ScientiﬁcAdvisory Board, as Executive Editor (formerly Senior Edi-tor) of the journal Pain Medicine , and as a consultant
+for ACTTION.
+EM: During the last 36 months, EM has received com-
+pensation for consultant work from ACTTION.
+KS:No disclosures.
+DT: During than the last 36 months, DCT has received
+research grants and contracts from the US Food and DrugAdministration and US National Institutes of Health andhas received compensation for consulting on clinical trialand patient preferences from Eli Lilly & Company, Flex-ion, Novartis/GlaxoSmithKline, and Pﬁzer.
+CV: During the past 36 months, CV has received hono-
+raria for serving on advisory boards at the National Insti-tutes of Health, Department of Defense and academicinstitutions conducting research studies that have been
+funded by the National Institutes of Health, Patient-Centered Outcomes Research Institute, Department of
+Veterans Affairs, Department of Defense and the US
+Food and Drug Administration.
+Acknowledgments
+Preparation of this narrative review was supported by
+the Analgesic, Anesthetic, and Addiction Clinical TrialTranslations, Innovations, Opportunities, and Networks(ACTTION) public-private partnership with the US Foodand Drug Administration (FDA). ACTTION has receivedcontracts, grants, or other revenue from the FDA, multi-ple pharmaceutical and device companies, royalties, phi-
+lanthropy, and other sources. The views expressed in
+this article are those of the authors and no ofﬁcialendorsement by the FDA or the pharmaceutical anddevice companies that provided unrestricted grants tosupport the activities of the ACTTION public-privatepartnership should be inferred.
+Supplementary data
+Supplementary data related to this article can be
+found at https://doi.org/10.1016/j.jpain.2022.09.001 .
+REFERENCES
+1.Ackerman IN, Buchbinder R, Osborne RH: Factors limit-
+ing participation in arthritis self-management programmes:an exploration of barriers and patient preferences within arandomized controlled trial. Rheumatol Oxf Engl England;52:472-479, 2013
+2.Bair MJ, Robinson RL, Katon W, Kroenke K: Depression
+and pain comorbidity: A literature review. Arch Intern Med163:2433, 2003
+3.Barnes M, Wiles N, Morrison J, Kessler D, Williams C,
+Kuyken W, Lewis G, Turner K: Exploring patients’ reasonsfor declining contact in a cognitive behavioural therapyrandomised controlled trial in primary care. Br J Gen Pract62:e371-e377, 2012
+4. Basics about clinical trials [Internet]: U.S. Food & Drug
+Administration. FDA, 2014. [cited 2022 Jan 7]. Availablefrom: https://www.fda.gov/patients/clinical-trials-what-
+patients-need-know/basics-about-clinical-trials . Accessed
+November 14, 2022
+5.Bennett MI, Mulvey MR, Campling N, Latter S, Richard-
+son A, Bekker H, Blenkinsopp A, Carder P, Closs J, Farrin A,Flemming K, Gallagher J, Meads D, Morley S, O’Dwyer J,Wright-Hughes A, Hartley S: Self-management toolkit anddelivery strategy for end-of-life pain: The mixed-methodsfeasibility study. Health Technol Assess Winch Engl 21:1-292, 2017
+6.van den Berg P, Kendal S, Alderson HV, Body R: An
+exploration of patients’ experiences of participation in arandomised controlled trial of the Manchester Acute Coro-
+nary Syndromes (MACS) decision rule. Emerg Med J BMJ
+Publishing Group; 34:593-598, 2017
+7.Bondesson E, Larrosa Pardo F, Stigmar K, Ringqvist A
+/C14,
+Petersson IF, J €oud A, Schelin MEC: Comorbidity betweenpain and mental illness - Evidence of a bidirectional rela-
+tionship. Eur J Pain 22:1304-1311, 2018
+8.Bove AM, Lynch AD, Ammendolia C, Schneider M:
+Patients’ experience with non-surgical treatment for lum-
+bar spinal stenosis: A qualitative study. Spine J 18:639-647,2017
+9.Chambers CT: From evidence to inﬂuence: Dissemination
+and implementation of scientiﬁc knowledge for improved
+pain research and management. Pain 159:S56-S64, 2018
+10.Cheung YK, Wood D, Zhang K, Ridenour TA, Derby L, St
+Onge T, Duan N, Duer-Hefele J, Davidson KW, Kronish I,Moise N: Personal preferences for personalised trials amongpatients with chronic diseases: an empirical Bayesian analy-sis of a conjoint survey. BMJ Open 10:e036056, 2020
+11. Clinical Trials: The Heart and Soul of Science [Internet].
+The Louisiana Community Engagement Alliance againstCOVID-19 Disparities (LA-CEAL) [cited 2022 Jun 15]. Avail-able from: https://www.youtube.com/watch?v=5j8Ppc
+4Ti8w . Accessed November 14, 2022.
+12.Cramer H, Salisbury C, Conrad J, Eldred J, Araya R:
+Group cognitive behavioural therapy for women withdepression: Pilot and feasibility study for a randomised con-
+trolled trial using mixed methods. BMC Psychiatry 11:82,
+2011
+13.DasMahapatra P, Raja P, Gilbert J, Wicks P: Clinical trials
+from the patient perspective: Survey in an online patientcommunity. BMC Health Serv Res 17:166, 2017
+14. Dennin MD: Enhancing patient engagement in
+Parkinson’s disease mental health research [Internet] Pro-
+Quest Information & Learning, 2020. Available from:https://login.libproxy.siue.edu/login?url=http://search.ebs-cohost.com/login.aspx?direct=true&db=psyh&AN=2020-04049-039&site=ehost-live&scope=siteFerguson et al The Journal of Pain 35
+
+15.Denny E, Weckesser A, Jones G, Bibila S, Daniels J, Bhat-
+tacharya S: Women’s experiences of medical treatment forendometriosis and its impact on PRE-EMPT trial participa-tion: a qualitative study. Pilot Feasibility Stud 4:168, 2018
+16.Dowrick CF, Hughes JG, Hiscock JJ, Wigglesworth M,
+Walley TJ: Considering the case for an antidepressant drugtrial involving temporary deception: A qualitative enquiryof potential participants. BMC Health Serv Res 7:64, 2007
+17.Fernandes LG, Devan H, Fioratti I, Kamper SJ, Williams
+CM, Saragiotto BT: At my own pace, space, and place: A sys-tematic review of qualitative studies of enablers and bar-riers to telehealth interventions for people with chronicpain. Pain 163:e165-e181, 2022
+18.Fritz JM, Davis AF, Burgess DJ, Coleman B, Cook C, Farro-
+khi S, Goertz C, Heapy A, Lisi AJ, McGeary DD, Rhon DI, TaylorSL, Zeliadt S, Kerns RD: Pivoting to virtual delivery for manag-ing chronic pain with nonpharmacological treatments: Impli-cations for pragmatic research. Pain 162:1591-1596, 2021
+19. Gaudiano BA, Ellenberg SR, Schoﬁeld CA, Rifkin LS: A
+randomized survey of the public’s expectancies and willing-ness to participate in clinical trials of antidepressants versuspsychotherapy for depression. Prim Care Companion CNSDisord 18, 2016. https://doi.org/10.4088/PCC.15m01879
+20.Gaudiano BA, Hughes JA, Miller IW: Patients’ treatment
+expectancies in clinical trials of antidepressants versus psy-chotherapy for depression: A study using hypotheticalvignettes. Compr Psychiatry 54:28-33, 2013
+21.Hislop Lennie K, Barbosa Boucas S, Adams J, Hutt
+Greenyer C: Patient and public involvement (PPI) in inform-
+ing the osteoarthritis of the thumb therapy (OTTER) pilottrial: what matters most to people with thumb base osteo-arthritis otter collaborations. Ann Rheum Dis [Internet]72:778, 2013
+22.Hissink Muller PCE, Yildiz B, Allaart CF, Brinkman DMC,
+van Rossum M, van Suijlekom-Smit LWA, van den Berg JM,Ten Cate R, de Vries MC: Participation in a single-blindedpediatric therapeutic strategy study for juvenile idiopathicarthritis: are parents and patient-participants in equipoise?BMC Med Ethics 19:96, 2018
+23.Holzer KJ, Veasley C, Kerns RD, Edwards RR, Gewandter
+JS, Langford D, Yaeger L, McNicol E, Ferguson M, Turk DC,Dworkin RH, Haroutounian S: Partnering with patients inclinical trials of pain treatments: A narrative review. Pain163:1862-1873, 2022
+24.Hood AM, Booker SQ, Morais CA, Goodin BR, Letzen JE,
+Campbell LC, Merriwether EN, Aroke EN, Campbell CM,Mathur VA, Janevic MR: Confronting racism in all forms ofpain research: A shared commitment for engagement,diversity, and dissemination. J Pain 23:913-928, 2022
+25.Hughes-Morley A, Young B, Waheed W, Small N, Bower
+P: Factors affecting recruitment into depression trials: Sys-tematic review, meta-synthesis and conceptual framework.J Affect Disord 172:274-290, 2015
+26.James J, Lai B, Witt T: Patient engagement survey
+regarding future double-blinded, randomized controlledtrial of tapering of chronic opioid therapy. J Prim Care Com-munity Health 10, 2019. Thousand Oaks, California: SagePublications Inc.N.PAG-N.PAG
+27.Janevic MR, Mathur VA, Booker SQ, Morais C, Meints
+SM, Yeager KA, Meghani SH: Making pain research more
+inclusive: Why and how. J Pain 23:707-728, 202228.Leinisch-Dahlke E, Akova- €Ozt€urk E, Bertheau U,
+Isberner I, Evers S, May A: Patient preference in clinical trialsfor headache medication: the patient’s view. Cephalalgia24:347-355, 2004
+29.Lenguerrand E, Artz N, Marques E, Sanderson E, Lewis
+K, Murray J, Parwez T, Bertram W, Beswick AD, Burston A,Gooberman-Hill R, Blom AW, Wylde V: Effect of group-based outpatient physical therapy on function after totalknee replacement: Results from a multicenter randomizedcontrolled trial. Arthritis Care Res 72:768-777, 2020
+30.Lenze SN, Potts MA: Brief Interpersonal Psychotherapy
+for depression during pregnancy in a low-income popula-tion: A randomized controlled trial. J Affect Disord210:151-157, 2017
+31.Letzen JE, Mathur VA, Janevic MR, Burton MD, Hood
+AM, Morais CA, Booker SQ, Campbell CM, Aroke EN,Goodin BR, Campbell LC, Merriwether EN: Confronting rac-ism in all forms of pain research: Reframing study designs. JPain 23:893-912, 2022
+32.Middleton LJ, Daniels JP, Weckesser A, Bhattacharya S:
+PRE-EMPT trial collaborative group. Preventing recurrenceof endometriosis by means of long-acting progestogentherapy (PRE-EMPT): report of an internal pilot, multi-arm,randomised controlled trial incorporating ﬂexible entrydesign and adaption of design based on feasibility ofrecruitment. Trials 18:121, 2017
+33.Midgley N, Isaacs D, Weitkamp K, Target M: The experi-
+ence of adolescents participating in a randomised clinicaltrial in the ﬁeld of mental health: a qualitative study. Trials
+17:364, 2016
+34.Morais CA, Aroke EN, Letzen JE, Campbell CM, Hood
+AM, Janevic MR, Mathur VA, Merriwether EN, GoodinBR, Booker SQ, Campbell LC: Confronting racism in painresearch: A call to action. J Pain, 2022. S1526590022000293
+35.Morgan EM, Munro JE, Horonjeff J, Horgan B, Shea B,
+Feldman BM, Clairman H, Bingham CO 3rd, Thornhill S,Strand V, Alongi A, Magni-Manzoni S, van Rossum MAJ,Vesely R, Vojinovic J, Brunner HI, Harris JG, Horton DB,Lovell DJ, Mannion M, Rahimi H, Ravelli A, Ringold S,Ruperto N, Schrandt MS, Shenoi S, Shiff NJ, Toupin-April K,Tzaribachev N, Weiss P, Consolaro A: Establishing anupdated core domain set for studies in juvenile idiopathicarthritis: A report from the OMERACT 2018 JIA workshop. JRheumatol Canada; 46:1006-1013, 2019
+36.Munn Z, Peters MDJ, Stern C, Tufanaru C, McArthur A,
+Aromataris E: Systematic review or scoping review? Guid-ance for authors when choosing between a systematic orscoping review approach. BMC Med Res Methodol 18:143,2018
+37.Nelson A, Fenlon D, Morris J, Sampson C, Harrop E,
+Murray N, Wheatley D, Hood K, Grifﬁths G, Barrett-Lee P:QUALZICE: A QUALitative exploration of the experiences ofthe participants from the ZICE clinical trial (metastaticbreast cancer) receiving intravenous or oral bisphospho-nates. Trials 14, 2013. 325 −325
+38.O’Cathain A, Thomas KJ, Drabble SJ, Rudolph A, Hewi-
+son J: What can qualitative research do for randomised con-trolled trials? A systematic mapping review. BMJ Open 3:e002889, 2013
+39.Paterson C, Zheng Z, Xue C, Wang Y: Playing their
+parts”: The experiences of participants in a randomized36 The Journal of Pain Perspectives about Clinical Trial Design
+
+sham-controlled acupuncture trial. J Altern Complement
+Med 14:199-208, 2008. New Rochelle, New York: Mary AnnLiebert, Inc.
+40. Preferred Reporting Items for Systematic reviews and
+Meta-Analyses extension for Scoping Reviews (PRISMA-ScR)Checklist [Internet]. PRISMA, 2021. [cited 2021 Nov 2]. Avail-able from: http://www.prisma-statement.org/Extensions/
+ScopingReviews . Accessed November 14, 2022
+41.Sheridan R, Martin-Kerry J, Hudson J, Parker A, Bower
+P, Knapp P: Why do patients take part in research? An over-view of systematic reviews of psychosocial barriers andfacilitators. Trials 21:259, 2020
+42.Sherratt FC, Roper L, Baildam E, Beresford MW, Stones SR,
+Ramanan A, Foster H, McErlan e F, Rooney M, Peak M, Young
+B: Families’ views on the feasib ility of a corticosteroid trial in
+JIA: A qualitative study. Pediatr Rheumatol 15:132, 2017
+43.Smith SM, Gewandter JS, Kitt RA, Markman JD,
+Vaughan JA, Cowan P, Kopecky EA, Malamut R, Sadosky A,Tive L, Turk DC, Dworkin RH: Participant preferences forpharmacologic chronic pain treatment trial characteristics:An ACTTION adaptive choice-based conjoint study. J PainUnited States; 17:1198-1206, 2016
+44.Stamuli E, Torgerson D, Northgraves M, Ronaldson S,
+Cherry L: Identifying the primary outcome for a randomisedcontrolled trial in rheumatoid arthritis: the role of a dis-crete choice experiment. J Foot Ankle Res 10:57, 2017
+45.Tallon D, Mulligan J, Wiles N, Thomas L, Peters TJ, Elgie
+R, Sharp D, Lewis G: Involving patients with depression in
+research: Survey of patients’ attitudes to participation. Br J
+Gen Pract 61:e134-e141, 2011
+46.Taylor WJ, Brown M, Aati O, Weatherall M, Dalbeth N:
+Do patient preferences for core outcome domains for chronicgout studies support the validity of composite response crite-ria? Arthritis Care Res United States 65:1259-1264, 201347. The Voice of the Patient. Sickle Cell Disease [Internet]:
+US Food and Drug Administration, Patient-Focused DrugDevelopment Initiative. FDA, 2014 Oct. Available from:https://www.fda.gov/media/89898/download . Accessed
+November 14, 2022
+48.Tricco AC, Lillie E, Zarin W, O’Brien KK, Colquhoun H,
+Levac D, Moher D, Peters MDJ, Horsley T, Weeks L, HempelS, Akl EA, Chang C, McGowan J, Stewart L, Hartling L, Ald-croft A, Wilson MG, Garritty C, Lewin S, Godfrey CM, Mac-donald MT, Langlois EV, Soares-Weiser K, Moriarty J,Clifford T, €O Tun ¸calp, Straus SE: PRISMA extension for scop-
+ing reviews (PRISMA-ScR): Checklist and explanation. AnnIntern Med 169:467-473, 2018
+49.Turk DC, Dworkin RH, Revicki D, Harding G, Burke LB,
+Cella D, Cleeland CS, Cowan P, Farrar JT, Hertz S, Max MB,
+Rappaport BA: Identifying important outcome domains forchronic pain clinical trials: an IMMPACT survey of peoplewith pain. Pain United States; 137:276-285, 2008
+50.Vercellini P, Somigliana E, Cortinovis I, Bracco B, de
+Braud L, Dridi D, Milani S: “You can’t always get what youwant”: from doctrine to practicability of study designs forclinical investigation in endometriosis. BMC WomensHealth BioMed Central; 15:1-9, 2015
+51.Verhaart IEC, Johnson A, Thakrar S, Vroom E, De
+Angelis F, Muntoni F, Aartsma-Rus AM, Niks EH: Musclebiopsies in clinical trials for Duchenne muscular dystrophy -Patients’ and caregivers’ perspective. Neuromuscul DisordNMD England; 29:576-584, 2019
+52.Wasmann KA, Wijsman P, van Dieren S, Bemelman W,
+Buskens C: Partially randomised patient preference trials as
+an alternative design to randomised controlled trials: system-atic review and meta-analyses. BMJ Open 9:e031151, 2019
+53.Wu D: Patient preference of pain measurements: a cross-
+sectional study based on chronic low back pain populationin china. J Altern Complement Med N Y N 22:A139, 2016Ferguson et al The Journal of Pain 37
+

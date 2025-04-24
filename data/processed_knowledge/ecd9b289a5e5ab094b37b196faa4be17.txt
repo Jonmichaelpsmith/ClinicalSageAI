@@ -1,0 +1,1819 @@
+The guides are part of the Patient Engagement Management Suite - a hub for effective and practical patient engagement.How-to Guide on Patient 
+Engagement in Clinical 
+Trial Protocol Design
+
+
+  2  2
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Table of contents  
+Introduction and overview of the work  
+How was it developed?  
+Who is this guide for?
+How to use this How-to Guide?
+Context  
+Step 1  - Preparations for setting up partnership and collaboration 
+1.1 Define partnership and collaboration goals 
+1.2  Identify patient partners and initiate a partnership 
+Identify patient partners 
+Initiating a partnership 
+Step 2 - Building a partnership for optimal patient engagement  
+2.1 Clarify the project plan and goals 
+2.2 Define the project timelines 
+2.3 Contracting considerations 
+2.4 Managing expectations and other considerations
+2.5 Deciding on the methods and formats for sponsor–patient partner interactions
+Interaction formats 
+Methods and approaches for patient engagement
+2.6 Involving others in the partnership activities  
+Step 3 - Patient Engagement in the Clinical Trial Protocol Design 
+3.1 Collecting patient partners insights for Clinical Trial Protocol Design
+Additional considerations
+3.2 Key questions and considerations for the development of a clinical trial protocol with 
+patient partners 
+3.3 Analysis of patient partner insights  
+Step 4 - Feedback and follow-up  
+Advantages of long-term patient engagement
+Considerations for Patient Engagement
+Acknowledgements
+Annex 1  I  Patient Engagement Quality criteria definitions   
+References
+Glossary of terms 2
+3
+3
+4
+5
+6
+7
+7
+8
+8
+9
+11
+11
+12
+13
+15
+16
+17
+17
+18
+20
+20
+22
+22
+29
+30
+31
+32
+35
+37
+39
+42Table of contentsTable of contents
+
+  3  3
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Introduction and overview of the work
+1 Access at: https://pemsuite.org/how-to-guides/
+2 Please find the Patient Engagement Quality Guidance resources here: https://pemsuite.org/peqg/.  The Patient Engagement 
+Quality Guidance can support the preparation and planning of a partnership in the process of Clinical Trial Protocol Design. 
+The seven criteria of the PEQG have been adapted to fit the scenarios, type of activities and stakeholders involved. The Patient 
+Engagement Quality Guidance (PEQG) has two scenarios with respective considerations; scenario 1 for planning PE activities 
+and scenario 2 for assessing ongoing and completed projects for their PE quality. Link to scenario 1 (planning PE): http://
+patientfocusedmedicine.org/peqg/patient-engagement-quality-guidance-scenario-1.pd
+3 Deane, K., Delbecque, L., Gorbenko, O. et al. on behalf of the PFMD Patient Engagement Meta-framework Co-creation Team. 
+Co-creation of patient engagement quality guidance for medicines development: an international multi stakeholder initiative. 
+BMJ Innovations 2019;5:43-55.Patient Focused Medicines Development (PFMD) partners with patients to design and improve global 
+healthcare. PFMD focuses on making patient engagement a systematic reality by co-creating much-
+needed resources that enable all stakeholders to embark on and enhance their patient engagement 
+journey. PFMD involved multi-stakeholder working groups in developing the How-to Guides series1. 
+These How-to Guides build on the Patient Engagement Quality Guidance (PEQG2,3) tool and provide 
+step by step recommendations to involve patient partners in specific activities and/or phases in 
+the drug development continuum. Each How-to Guide functions as a standalone tool but can also 
+be easily combined with the other How-to Guides to form a comprehensive roadmap for patient 
+engagement activities. 
+The following How-to Guides are currently available:
+ ●How-to Guide for Patient Engagement in the Early Discovery and Preclinical phases ;
+ ●Plain language summaries (PLS) of peer-reviewed publications and conference presentations: 
+practical ‘How-To’ Guide for multi-stakeholder co-creation.
+How was it developed? 
+The Guide is a true example of co-creation, having involved more than 35 multi-stakeholders 
+contributors from more than 26 organizations, including patient experts, the pharmaceutical industry, 
+clinical research organizations, and external consultants with the relevant experience/expertise in 
+the activity. Each draft of this particular How-To Guide was reviewed internally, tested and agreed 
+upon by the group, and further validated during external consultations. The Patient Engagement 
+Quality Guidance (PEQG) is proposed as a reference in planning and preparing for involving patients 
+in the process of designing a clinical trial protocol. The seven Criteria of the PEQG have been specially 
+adapted to fit the scenarios, type of activities and stakeholders involved. Introduction and overview of the work 
+How was it developed?
+
+  4  4
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+This How-to Guide has been developed for anyone who needs to be involved in the implementation 
+of Patient Engagement in the design of a clinical trial protocol. Specifically, this Guide has been          
+co-created to:
+ ●Allow for comprehensive guidance to be outlined in a single document.
+ ●Compile information related to specific steps in the patient engagement process in sequential 
+sections, even if information is repeated, in order to eliminate the need to consult multiple 
+documents.
+The guide will give more clarity, instructions and the key terminology to Patients, Carers, Patient 
+Organizations, Industry (Pharma, Biotech, Devices), Academia, Researchers, Contract Research 
+Organisations (CROs) on how to co-create a clinical trial protocol with patients.
+In the guide, the use of the terminology of “Sponsor” makes reference to a person, company, 
+academic institution or other organization that initiates, manages (including collecting and 
+analyzing the data) or finances a clinical trial.  Who is this guide for? 
+Figure 1.  Relevant stakeholders in patient engagement in the clinical trial protocol designPolicymakers Patient 
+Organizations and 
+associations
+Regulators
+PayersHealthcare 
+professionalsPatients and 
+carers
+Patient advocates, 
+patient organizations 
+and associationsIndustry (Pharma, 
+Biotech, Devices)OtherContract 
+Research 
+Organizations 
+ResearchersWho is this guide for?
+
+  5  5
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+This How-to Guide should always be used in a relevant and applicable manner to the project at 
+hand. This How-to Guide (as with all PFMD How-to Guides) has been built to be used alongside the 
+PFMD Patient Engagement Quality Guidance (PEQG), which defines seven Quality Criteria for good 
+patient engagement. The PEQG should be used as a reference in setting up partnerships, planning, 
+and preparing for involving patients as partners in your research. The seven Quality Criteria can help 
+consider others’ expectations and manage them. 
+This How-to Guide is organized around 4 steps that outline key moments and aspects for patient 
+engagement in clinical trial protocol design, including:
+ ●Step 1 - Preparations for setting up partnership and collaboration
+This step focuses on the definition of collaboration goals to prepare for a meaningful partnership. 
+This also includes the identification and selection of the partnership activities.
+ ●Step 2 -Building a partnership for optimal patient engagement
+This step focuses on defining the scope, expectations and project timelines for a beneficial 
+partnership, including the methods and formats for the engagement activities. It also considers 
+other stakeholders that can be involved to understand patients’ perspectives and drive 
+successful outcomes from patient engagement.
+ ●Step 3 -Patient Engagement in the Clinical Trial Protocol Design
+This step focuses on ensuring that the protocol is co-developed with patient partners in order to 
+take into account the practicalities, logistics, unmet needs, safety, ethics, and data collection that 
+add value and adequately capture meaningful endpoints and patient outcome.
+ ●Step 4 -Feedback and follow-up
+This step focuses on providing guidance on ways to continue the collaboration after the formal 
+ending of the initial project.How to use this How-to Guide?How to use this How-to Guide?
+The technical terms (in bold red text) have a definition in the Glossary section.Figure 2. How-to Guide on PE in Clinical Trial Protocol Design
+
+
+  6  6
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+A successful clinical trial is a key milestone of the medicine development continuum. There is strong 
+evidence that a well designed clinical trial protocol can not only impact patient recruitment but 
+also help overcome retention issues. Patients’ continued involvement throughout a clinical trial can 
+also lead to an increase in use and uptake of research results by other patients and the healthcare 
+system as a whole4. Patient engagement in clinical trial protocol design ensures that a clinical trial is 
+designed to consider the patient’s perspective. 
+A well-designed protocol takes into account the  unmet needs, safety, ethics, and data collection 
+that add value and adequately capture meaningful endpoints and patient outcomes5 but also the  
+practicalities and logistics aspects. In addition, it is gathering  information to strengthen study designs 
+and optimize clinical trial procedures & execution, clinical endpoints, and data generation so that 
+they are seen as valuable to and address the needs and preferences of the  patients, while also being 
+supportive for subsequent regulatory and reimbursement discussions if applicable. 
+The role of patient partners6 helping the sponsors with the co-design of the clinical trial protocol is 
+becoming recognized as a good practice to establish systematically. However, little is known on how 
+to proceed with the engagement of patient partners, and when the partnership should be initiated to 
+generate the highest impact. 
+This How-to Guide builds on existing guidelines (PCORI, Transcelerate, CTTI) and provides             
+directions for meaningful patient engagement throughout the process of the development of the 
+clinical trial protocol. ContextContext
+4 Patient-Centered Outcomes Research Institute (PCORI). (2018) The value of Engagement. Available at:  pcori.org/engagement/
+value-engagement
+5 For more information, check the How-to Guide on Patient Engagement in the Development of a Clinical Outcome Assessment 
+(COA) strategy. Available at: link available when How-to Guide will be finalized. 
+6 Which differ from the clinical trial participants.
+
+  7  7
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Step 1
+Preparations for setting up partnership and collaborationPreparations for setting up 
+partnership and collaboration
+1.1. Define partnership and collaboration goalsThe objective of this step is to:
+ ●Define partnership and collaboration goals to prepare for meaningful, effective and respectful 
+interactions and a mutually beneficial partnership. 
+ ●Identify, select and invite patient partners for the partnership activities and prepare your 
+research team.
+Establishing meaningful long-term relationships, understanding patients’ views on collaboration 
+with sponsors and recognizing the value for both groups are critical to successful collaborations in 
+medicines R&D. The timing of the initial interaction and the steps leading up to it are both critical. 
+There are different ways in which initial conversations about patient engagement in clinical trials may 
+arise between patient partners and sponsors. Sponsors may have a specific project or program on 
+which they wish to seek input from patients. A patient organization may be looking for opportunities 
+for their members to shape the direction of drug development. Opportunities may also arise out of 
+existing patient engagement partnerships in other stages of drug development.
+A key part of identifying opportunities is having an open and honest conversation about the purpose 
+of working together and what each stakeholder hopes to achieve. Stakeholders should work together 
+to scope ideas and opportunities and agree on a shared purpose for the collaboration. 
+Even if the sponsor has pre-defined the scope of the collaboration, they should still, when 
+possible, discuss and define each step with the patient partners.Figure 3.  Step 1 of the How-to Guide
+
+
+  8  8
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Preparations for setting up 
+partnership and collaboration
+1.2. Identify patient partners and initiate a partnership
+Identify patient partners 
+This step bridges the gap between patient organizations and sponsors to set the stage for the 
+selection of suitable partners. Patient organizations know their patients and thus can often 
+recommend to sponsors patient partners who may be interested. However, the objective of the 
+collaboration may sometimes require partnership with various profiles of patients to approximate 
+representability of the global population.
+To meaningfully conduct a patient engagement activity, the right patient partners need to be identified. 
+Patient organizations - where they exist - are the first and key point of contact to identify individuals           
+and/or experts to engage to ensure the the right match for the right activity. 
+The patient organization and sponsors should also consider:
+ ●Does their infrastructure allow them to set up a partnership easily? Or would support be needed to 
+make collaboration happen?
+ ●Are the project timelines, expected duration, frequency of interactions, and technology used feasible?
+Brief considerations for identifying a list of potential patient partners: 
+ ●The type of patient partner profile needed (i.e., ‘naive’ patient, patient advocate, patient expert, 
+carer or family member, patient community). 
+ ●The level of research expertise the patient partner should have (and if any training or education 
+may be needed). 
+ ●The role the patient partner will take and how complex it is. (See the description of the four levels 
+of patient partner contribution below)
+ ●The patient partner’s medical condition profile.
+ ●The patient partner’s ability to mobilize their community. For example, what is the size, scope, 
+and geographical footprint of their network?
+ ●Other capabilities and competencies needed from the patient partner7.
+7 Access at: http://imi-paradigm.eu/PEtoolbox/pe-capabilities/. See also “Tackling Representativeness” from the National 
+Health Council. Add footnote: NCH “Tackling Representativeness” Available at: https://nationalhealthcouncil.org/wp-content/
+uploads/2019/12/Representativeness%20in%20Patient%20Engagement.pdf
+8 Access via: PARADIGM. (2020) Patient engagement in medicines development: Recommendations on how to find the right match 
+for the right patient engagement activity. Available at: https://synapse.pfmd.org/resources/patient-engagement-in-medicines-
+development-recommendations-on-how-to-find-the-right-match-for-the-right-patient-engagement-activity , pages 9-10
+See ‘Patient engagement in medicines development: Recommendations on how to find the 
+right match for the right patient engagement activity.‘ to support identifying the right patient 
+partners8. 
+
+  9  9
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Preparations for setting up 
+partnership and collaboration
+Initiating a partnership
+Initiating the partnership is about establishing contact between the sponsor and the patient partners. 
+Establishing the relationship gives teams time to prepare. 
+The patient partner will need time to understand the project and to build trust in the sponsor. Equally, 
+the sponsor will need time to build trust, as well as understand its capacity and interest to deliver.  
+When deciding the best time to set up a sponsor–patient partnership in research, apply the general 
+principle of ‘as early as possible’. Ideally, establish contacts a year before embarking on the design of 
+the clinical trial protocol, especially if the patient partner side has no prior experience and needs to be 
+trained. Equally, all industry contributors need to be trained on the value of patient engagement and 
+how to engage patients9.
+When initiating contact with selected patient partners, a brief description of the role of the patient 
+partner to be involved in the project should be prepared in advance, outlining the expected level 
+of contribution. This role description can later be co-developed and shaped further with input from 
+patient partners in Step 2.
+Initial contact before developing a pre-collaboration plan should facilitate confirming the patient 
+partners interest, explain and agree on goals and expectations, establish transparency (for what 
+will the research team use the information obtained through the partnership/collaboration, why it 
+is important to obtain patient input, ensure the patient partner would make a good candidate for 
+project participation, etc.) and establish a co-creation relationship.
+Taking careful consideration of the patient partners to collaborate with and avoiding selection bias 
+are both very important. Select patient partners who value independence and who can review and 
+advise the sponsor’s strategy objectively. 
+Approach a registered patient organization. While a ‘naive’ individual patient perspective may be 
+beneficial at times, engaging individuals without ties to a patient organization may lead to input that 
+is not representative of the patient community. 
+Patient partner diversity is also important, including from a geographical perspective. The patient 
+experience can vary from Western to Eastern Europe, for example, and choosing a single patient from 
+Western Europe is likely to lead to some perspectives being left out. 
+Depending on the context or in case of no existing patient organizations in the field of interest, patient 
+pools or networks that are organized around public institutions may provide a good reference to 
+patient experts to engage in research projects. For example, the European Patients Academy (EUPATI) 
+provides a matchmaking service to connect with patient experts10.
+9 Patient Engagement Training, an innovative learning program that will concretely help you start your patient engagement 
+journey or take it to the next level. Available here: https://pemsuite.org/patient-engagement-training/
+10 European Patients Academy (EUPATI, 2000 (https://collaborate.eupati.eu/)
+
+  10  10
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Four levels of contribution, each increasing in complexity:  
+1. Patients can provide insights into the disease burden, the patient pathway, patient needs and 
+preferences for clinical trials/research methodology;
+2. Patients can provide generic insights such as assessing if the clinical visit schedule is too heavy 
+and whether there could be transportation issues;
+3. Patients can provide input on study design, including inclusion/exclusion criteria and endpoints; 
+are familiar with the design of a clinical trial protocol  and can co-create patient interview 
+guides and plain-language summaries for clinical trial participants;
+4. Patients have vocational backgrounds relevant to medicines development.Preparations for setting up 
+partnership and collaboration
+
+  11  11
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Step 2
+Building a partnership for optimal patient engagement Building a partnership for 
+optimal patient engagement
+The objective of this step is to:
+ ●Define the scope, expectations and project timelines for a mutually agreed and beneficial 
+partnership. 
+ ●Define the methods and formats for the patient engagement activities.
+ ●Consider involving others in the partnership activities to understand patients’ perspectives and 
+driving successful outcomes from patient engagement.
+This step sets out the process for the successful initiation of a patient engagement partnership. The 
+key principles of patient engagement can be openly discussed and further applied (see Annex 1 - PE 
+Quality Guidance), including also practical considerations of the patients’ perspective and  preparing 
+patients for an optimal  project kick-off.  
+Building a partnership between patients and sponsors will help build the trust that is critical to 
+successful collaborations in medicines research and development. Patient partners’ involvement 
+should not simply be a ‘tick-box’ exercise for regulatory approval. The trust built in this step could 
+potentially lead to a long-term relationship that can effectively support communication around the 
+project itself, the recruitment and retention plan for a clinical trial, and dissemination of the study 
+results. Long-term partnerships with the patient community can also have a positive impact on a 
+company’s reputation, public trust in the company, and overall community willingness to partner.
+2.1. Clarify the project plan and goals
+Once mutual interest between patient partners and the sponsor has been established, further 
+planning of activities and clarification of the goals of the collaboration for both partners need to            
+be agreed. Figure 4.  Step 2 of the How-to Guide
+
+
+  12  12
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Building a partnership for 
+optimal patient engagement
+Sponsors may refer to the PARADIGM EUPATI industry guidance and suggested working practices11 or the 
+National Health Council’s Rubric for Good Patient Engagement as practical tools to guide preparation 
+and interactions when project planning with patient partners. 
+In setting up a project plan and goals, partners should address the following:
+ ●Use of the Patient Engagement Quality Guidance12 to help plan the project and engagement 
+activities, collectively review the relevant considerations;.
+ ○Discuss and agree on the shared purpose within the research project and the stakeholders to 
+be involved to reach the common goals and objectives;
+ ○Commit to transparent, respectful, and continuous communication during the project;
+ ●Ensure all partners recognize and understand the value they contribute and understand each 
+other well; patients are experts in their condition and sponsors have the knowledge and expertise 
+of the clinical trial process. Both add value.
+ ○Define the responsibilities of all contributors and identify respective leaders for collaboration 
+and define accountability to avoid multiple sources interacting in an uncoordinated way;
+ ○Identify if sponsors and patient partners need additional support or capacity building to 
+properly engage and collaborate. This may include  training and education on clinical trials in 
+general and, more specifically, on clinical trial protocols and their design. 
+It will be helpful to define the following considerations from the outset of the collaboration:
+ ●What impact will partners’ inputs have on the overall project? 
+ ●What are the sponsors hoping to gain from patient engagement? 
+ ●How will the greater patient community benefit from the collaboration?
+ ●How will partners work together with their respective experience and knowledge?
+The patient community needs to know how their input made a difference and how they 
+influenced the decision-making, reporting, and dissemination process. Patient partners should 
+also know when their input could not be considered and the reasons should be explained to 
+them. Sponsors should be prepared to proactively provide feedback to patient partners. 
+12 Access at: http://imi-paradigm.eu/PEtoolbox/EUPATI/PARADIGM-Suggested-Working-Practices.pdf and at: https://
+nationalhealthcouncil.org/wp-content/uploads/2019/12/NHC_Patient_Engagement_Rubric.pdf
+13 Access at: https://pemsuite.org/peqg/2.2. Define the project timelines
+Long-term relationships between sponsors and patient partners are desirable to create strong 
+collaborations for ongoing research. However, short-term collaborations are sometimes the only option. 
+The duration of the collaboration should be defined and key milestones agreed in advance. Whatever 
+the length of the relationship, patient partners should be involved as much as possible at every stage  
+of the drug development process and the sponsor should manage their expectations throughout. When 
+the project ends, the relationship between the sponsor and patient partner may continue  through 
+ongoing communication. Create a communication plan and define the structure, content, governance, 
+and duration in advance. 
+
+  13  13
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Building a partnership for 
+optimal patient engagement
+Patient partners
+ ●Setting up partnerships might take time and resources from patient organizations in many 
+aspects: identifying the right partners for projects, setting up processes for patients to be 
+involved and defining contractual needs just to name a few. In addition, sponsors might be 
+struggling with tight deadlines which in turn might translate into unrealistic timeline expectations 
+towards patient partners and patient engagement activities.
+ ●It is important for patient partners to understand that research might take time and resources 
+and projects might extend beyond the original estimates. Whatever the case, concerns 
+should be possible to voice at any time during the project; either to the sponsors or patient 
+organizations involved.
+Sponsors
+ ●Ensure to have the necessary resources required to support patient engagement                        
+activities - consider the people, time, and funding needed to engage with patient partners.
+Share the project plan and timelines with the patient partners so they can prepare for the 
+collaboration. Do not underestimate the amount of time needed for administrative aspects, 
+such as agreeing on contracts, and compliance processes. Involve the people needed for 
+these tasks early in the process to avoid delays where delays are inevitable, and ensure clear 
+communication with the patient partners within the project. This will increase the likelihood that 
+they will contribute valuable ideas and critical observations for the clinical trial protocol design.Considerations for resources and time required
+2.3. Contracting considerations
+The sponsor-patient partner relationship is often defined and governed by a legal agreement or 
+contract. In some instances, an additional Confidentiality Agreement (CDA) is required if the topics 
+covered in the patient engagement activities are commercially sensitive to the sponsor. Needless 
+to say, all contractual arrangements must comply with the legal framework in the region or country 
+concerned. 
+Once the patient partners have been identified and the project scope, roles and responsibilities, 
+are defined the contracting process can begin. The legal agreement will outline aspects such as 
+compensation and reimbursement, among other things. 
+Sponsors may use the checklist below as a guide and should also consider if patient partners 
+may require legal support, should they need it. Any problems13 and anxiety experienced during this 
+phase can be alleviated by an honest and straightforward conversation about the process and 
+potential difficulties.
+13 See Survey by WECAN. WECAN (2018) Guiding Principles on Reasonable Agreements between Patient Advocates and 
+Pharmaceutical Companies. Available at: https://wecanadvocate.eu/wp-content/uploads/2019/03/Guiding-Principles_final-
+document6.2_clean.pdf  
+
+  14  14
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Checklist: Questions for sponsors to consider 
+when setting up a contact between patient 
+partners and sponsorsComments/Notes
+Has my organization worked with this patient/
+patient organization before?
+If yes,
+Have we previously had a contract in place for 
+collaboration, can this speed up the contracting 
+process?
+If no,
+Connect with the legal , compliance, data 
+privacy teams to enquire about the time 
+requirement to set up contracts and relay this 
+information to patient partners
+ »What is the time requirement to review 
+contracts for the partners?
+ »Are the contracts fit for this collaboration 
+and understandable? Check the co-created 
+guidelines and agreements
+ »Are there considerations around 
+confidentiality, and, if so, is a confidentiality 
+agreement needed or can this be covered 
+within the contract?Building a partnership for 
+optimal patient engagement
+Resources: 
+The use of co-created guides and agreements will also help to focus contracts on the essential 
+elements and can support understanding and negotiating legal agreements. These include:
+ ●Guiding Principles on Reasonable Agreements between Patient Advocates and Pharmaceutical 
+Companies, developed by the Workgroup of European Cancer Patient Advocacy Networks 
+(WECAN), Myeloma Patients Europe and PFMD
+ ●Patient Engagement Agreements Explained for collaborations between the patient community 
+and stakeholders in healthcare systems, developed by IMI PARADIGM
+ ●Principles for Contracting between Patients/Patient Groups and Pharmaceutical Companies for 
+Patient Engagement Activities, developed for use in the USA by the National Health Council 
+
+  15  15
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Building a partnership for 
+optimal patient engagement
+14 For more information: NHC. Patient Engagement Compensation and Contracting Toolbox. Available from: https://
+nationalhealthcouncil.org/patient-engagement-compensation-and-contracting/ (For USA)
+15 See section 8 on WeCAN. (2018) “Financial compensation and reimbursement of expenses” Available at: https://
+wecanadvocate.eu/wp-content/uploads/2019/03/Guiding-Principles_final-document6.2_clean.pdf  Checklist: Questions for sponsors to consider 
+when setting up a contact between patient 
+partners and sponsorsComments/Notes
+Is there internal guidance for reimbursing and 
+compensating patient partners? 
+(If no, refer to the National Health Council’s Patient 
+Engagement Compensation and Contracting 
+Toolbox14 and the Guiding Principles on Legal 
+Agreements.15)
+ »Discuss reimbursement and compensation 
+with patient partners and the potential 
+implications if they accept compensation 
+(e.g., impact on benefits, taxation)
+ »Discuss the potential costs for the patient 
+partners and how they will be reimbursed 
+(e.g., are they paid up front or for each time 
+they travel?) 
+ »Discuss with the patient partners the time 
+and effort required to be involved in the 
+project (e.g., preparation time, meetings, 
+travel, independent work, reporting, and 
+other communication as relevant)
+Have the lead times and deadlines been defined 
+and agreed with the patient partner(s)?
+Have the roles and responsibilities and other 
+rules of collaboration been defined with the 
+patient partner(s)?
+2.4. Managing expectations and other considerations
+It is important that patients, carers, and patient organizations are aware that clinical research is 
+usually a lengthy process. Frequently, the results of early clinical research mean that the next steps 
+of clinical development, and ultimately the launch of a new medicine or health care solution, 
+may not happen. It is equally important that sponsors are aware that engaging patient partners 
+requires proper resources and time input.
+
+  16  16
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+ ●Consider whether your patient partners would benefit from a basic introduction to or training 
+in medicines research and development before the collaboration project begins. This might 
+include typical timeframes for each phase, development of a protocol design and patient 
+partner inclusion in a clinical development program. 
+ ●Establish an understanding of where the clinical trial protocol fits into the overall development of 
+a product, and how patients can have an impact.
+ ○Even if the clinical trial does not progress to the next clinical stage, patients need to know 
+that their involvement in the design was still important, and that all results generate useful 
+insights that will help clinical research in the future. 
+ ●Patient organizations should explore whether capacity building or an orientation meeting with 
+sponsors would be useful for preparing patient partners for a meaningful collaboration. 
+ ●Accommodate a wide range of views and ideas from all stakeholders involved. 
+ ○Patient organizations may have their own view and that may or may not coincide with 
+patient partners and other patient organizations. 
+ ○No one can speak for all patients with a particular disease. Patient organizations need to 
+make reasonable efforts to reflect a diversity of opinions.
+ ●Consider global, multi-cultural feedback as views vary depending on region/language/customs 
+in different areas.
+ ●Identify if sponsor research teams need to be trained on the value of the patient engagement 
+and how to engage patients16Considerations for managing expectations
+2.5. Deciding on the methods and formats for sponsor–patient 
+partner interactions
+Sponsor–patient partner relationships are founded on trust and ongoing transparent dialogue. There 
+are different ways to interact for generating relevant and meaningful insights. Selecting interaction 
+methods and formats that will deliver outcomes based on the objectives of the patient engagement 
+is important. Moreover, minimizing the burden on the patient community is crucial, as well as 
+ensuring that their input is respected and acted upon.Put in place a predetermined plan with a clear communication plan to manage expectations if the 
+medicine fails. Considering the potential psychological impact of this and maintaining trust among 
+the stakeholders are crucial.Building a partnership for 
+optimal patient engagement
+Agree meeting rules and set out a clear goal at the start of each meeting.
+16 Patient Engagement Training, an innovative learning program that will concretely help you start your patient engagement 
+journey or take it to the next level. Available here: https://pemsuite.org/patient-engagement-training/
+
+  17  17
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Building a partnership for 
+optimal patient engagement
+Interaction formats
+Partners should frequently assess whether the interaction method and formats are the best way to 
+achieve the project objectives.
+Methods and approaches for patient engagement
+There are several approaches to patient engagement that can be used to collect patient partner 
+insights and inputs in the co-design and co-development of the clinical trial protocol. Stakeholders 
+can serve on ad hoc working groups to prioritize unanswered research questions, co-develop and 
+review the clinical trial protocol. They can also have more sustained involvement once the clinical trial 
+begins, providing their input and guidance by serving on an advisory committee or a co-investigator. 
+Much like the approaches, there is also variability with respect to level or intensity in which partners 
+are engaged. Engagement often occurs along a continuum ranging from stakeholder input, to 
+consultation, to collaboration or shared leadership. A selection of different methods and approaches 
+for patient engagement are introduced in the figure on the next page17. 
+This selection of approaches need not to be viewed as mutually exclusive. An organization with fully 
+developed patient engagement capacity is likely to rely on a variety of approaches combined to 
+design a clinical trial protocol collaboratively with patient partners. For example, a sponsor may 
+establish a Patient Advisory Board (PAB) to oversee the entire development program within a 
+disease area and may also attend Community Advisory Boards (CAB) for strategic input to the 
+development program according to patient community priorities. 
+Moreover, regular implementation of wider surveys informed by PAB and CAB members’ experiences 
+and advice, in order to stay in touch with views of the patient population at large. Additionally, the 
+sponsor may host focus groups or consult with a patient partner directly to tackle specific aspects of 
+a clinical trial protocol in development.  
+ ●How frequently will the team meet? Where? 
+ ●How much time and effort does this require from patient partners in addition to the meetings?
+ ●Are in-person meetings always necessary or are virtual meetings possible, and, if so, which 
+platforms are used?
+ ●Would communicating in English be a problem for some of the patient partners? If yes, how will it 
+be managed? 
+ ●What burden does participating in meetings place on patient partners? (e.g. with regards to their 
+health, for their carers, or impact on professional and private life) 
+ ●What costs for the patient partners are to be covered?
+ ●Are the patient partner groups big enough that the meetings are not affected by last minute 
+cancellations, but not too big that everyone has the opportunity to share their inputs?Checklist of practical considerations for patient engagement
+17 For additional information please check the James Lind Priority setting partnerships guidance.
+
+  18  18
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Example of engagement type18Description
+Patient Advisory Boards / 
+Community Advisory BoardsLive meeting. A single meeting or series of facilitated meetings to 
+capture patient partners’ perspectives, experiences and advice. 
+Interviews/Focus GroupsLive meeting. Provide deeper insight into patient partners’ priorities, 
+preferences and motivations and allow for elaborated conversation. 
+Surveys/QuestionnairesEngaging with patient partners in a live meeting or virtually via a 
+series of questions/ratings to gain patient feedback.
+Figure 5. Example of engagement types
+For sponsors: 
+Consult internal knowledge and secondary data sources focused on patients and insights from 
+previous patient engagement activities prior to engaging with patient partners to avoid duplication of 
+effort and to build on insights and gaps previously identified. 
+The diverse approaches for involving patient partners in clinical trial protocol design vary, depending 
+on the level of engagement. They range from gathering insights via surveys or consultation to shared 
+leadership and partnership and can be used independently or simultaneously. 
+For patient partners: 
+When possible, do internal research on insights gathered in previous engagement activities with other 
+sponsors  (or even the same sponsor) and share these insights in a transparent dialogue. 
+18 Table elaborated from Transcelerate, Examples Methods of Engagement.       
+Available at: https://www.transceleratebiopharmainc.com/ppet/select-patients-appropriate-engagement-method/  Building a partnership for 
+optimal patient engagement
+2.6. Involving others in the partnership activities
+Sponsors should consider which internal representatives need to be involved in or informed of 
+engagement activities with patient partners and at what stage. This might include departments or 
+functions such as: patient advocacy/engagement team, medical affairs, clinical operations, market 
+access, regulatory affairs, health economics, psychometricians, epidemiologists, statisticians, legal 
+and compliance teams.
+ ●Clinical research teams: This includes relevant individuals in the sponsor organization that are 
+working on the clinical development program or clinical trial. It is important to consider if the 
+clinical research team understands and recognizes the benefits of incorporating the learning 
+
+  19  19
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Building a partnership for 
+optimal patient engagement
+from patient engagement, as well as how to incorporate patient insights into the decision 
+making. 
+ ●Healthcare professionals (e.g. doctors, pharmacists, dentists, nurses):  This includes any 
+trained health professional involved in the medical care of patients who may or may not be 
+directly involved in research projects. Their role is to advise the sponsor team about clinical 
+aspects of the condition, the current clinical practices including the aspects of patients 
+management with a particular condition, feedback from patients to certain investigations and 
+methods, and to share their experience in medicines development and public health policies. 
+ ●Medicine and diagnostic solutions developers: These include any public or private organization 
+involved in research, development, manufacturing, marketing and/or distribution of medicinal 
+products and/or other health products (i.e., medical devices, diagnostics and digital 
+solutions). Their main role is as the sponsor of research projects, including clinical trial protocol 
+development responsibility, and, if required, training for patients on these specific matters.
+ ●Contract research organizations and consultancy companies: These organizations provide 
+services related to clinical studies. They provide support for the sponsors and may act on their 
+behalf to establish collaboration with patient partners. These partners should be trained on 
+Patient Engagement to ensure they have the right approach.
+ ●Application builders, health literacy experts and digital experts: These experts may be in 
+charge of the development of services for patients in clinical research and development projects 
+when relevant for the final. 
+
+  20  20
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Step 3
+Patient Engagement in the Clinical Trial Protocol Design
+The objective of this step is to:
+ ●Gather information to strengthen study designs and optimize clinical trial procedures and 
+execution, clinical endpoints, and data generation. 
+ ●Ensure that the target populations see these as valuable and that they address their needs 
+and preferences while also supporting subsequent regulatory and reimbursement discussions 
+(if applicable). A well-designed protocol is co-developed with patient partners and takes into 
+account the practicalities, logistics, unmet needs, safety, ethics, and data collection that add 
+value and adequately capture meaningful endpoints and patient outcomes.20Step 3 focuses on the importance of reflecting patient partners’ input together with the sponsor in the 
+design of a clinical trial protocol through co-creation principles. A clinical trial protocol is ‘a document 
+that describes the objective(s), design, methodology, statistical considerations, and organization of a 
+[clinical] trial. The protocol usually also gives the background and rationale for the trial.19
+19 National Institute of Health (NIH). (n/a) NIA Glossary of Clinical Research Terms. Available at: https://www.nia.nih.gov/
+research/dgcg/nia-glossary-clinical-research-terms
+20 For more information, check the How-to Guide on Patient Engagement in the Development of a Clinical Outcome Assessment 
+(COA) strategy: link available when How-to Guide will be finalized. 
+21 For additional information on the methods for collecting patients’ insights please check the section Deciding on the formats 
+for sponsor–patient partner interactionPatient Engagement in the 
+Clinical Trial Protocol Design
+Figure 6. Step 3 of the How-to Guide
+3.1. Collecting patient partners insights for Clinical Trial Protocol Design
+Collecting patient partners’ insights via the most appropriate methods21 is crucial. Some sponsors 
+may have no previous experience in working with patient partners. Involving patient partners with 
+varying degrees of exposure to/involvement in clinical trials protocol development is important for 
+gaining a diversity of perspectives that will help improve the clinical trial design. Also, involving patient 
+
+
+  21  21
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+The following considerations specific to clinical trial participants should be discussed with the 
+patient partners involved in the clinical trial protocol design to ensure it is implemented optimally: 
+ ●Are we addressing an unmet need with this research?
+ ●Are the inclusion and exclusion criteria appropriate? Are we excluding certain populations, for 
+safety, for instance? 
+ ●Have we included Patient Reported Outcome Measures? If so, are they appropriately timed and/
+or appropriately chosen?
+ ●Are there any geographic, cultural, age, gender, race, language, socio-economic status specific 
+considerations that we need to address when we identify participants for the clinical trial?
+ ●Have we considered all possible clinical trial sites, or can we consider new sites? Depending on 
+the scope of the study (international, regional, country-specific), the specific considerations may 
+be tailored and adapted with the support of the patient partners. 
+ ●Are there specific considerations that may impact the clinical trial participants (e.g., drug 
+packaging or the use of (unfamiliar) devices for administration)? 
+ ●Are there specific considerations that may impact a clinical trial participants’ life (e.g., frequent 
+travel to hospital, hospital stays, privacy impacts)?
+ ●Will the clinical trial include any invasive procedures? Could these have a negative affect on 
+willingness to participate? 
+ ●Are there special considerations where children or vulnerable populations are involved?
+ ●Is the therapeutic area one that may provoke sensitivities? 
+ ●If the study participants will be using a new digital tool (e.g., smartwatch, tablet, smartphone, 
+etc.), are there practical implications (e.g., is training needed)? For Sponsors and Patient Partners
+22 Soekhai, V. et al, (2018) Discrete Choice Experiments in Health Economics: Past, Present and Future. PharmacoEconomics, 37, 
+(201–226). Available at: https://link.springer.com/article/10.1007/s40273-018-0734-2Patient Engagement in the 
+Clinical Trial Protocol Design
+partners who have never taken part in a clinical trial before can be insightful. Current approaches for 
+collecting patient feedback may vary; however, ‘translating’ those insights back to the study sponsor 
+and research team can still be challenging. 
+To fully integrate patient insights into the protocol design, attention is needed on how those insights 
+are communicated so they can be actioned for a patient-centric trial design. The barriers sponsors 
+face in collecting patient insights need to be overcome for this information to have a meaningful 
+impact on the protocol and overall study design. 
+This includes not only support from the internal organization but also an understanding of timelines 
+and any need for additional research to identify practical methods that support how patient insights 
+on the protocol can have a positive impact on the trial across all stakeholders. 
+Such methods are increasingly being used to support other healthcare decision making, including 
+predicting patient update of treatments.22
+
+  22  22
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+ ●Could timing/volume of procedures in a clinical study have negative practical implications for 
+clinical trial participants or disrupt their quality of life? If so, can the schedule and/or operational 
+set-up of the clinical trial be redesigned to address this23?
+ ●Will there be lay language materials (e.g., brochures, booklets, videos, etc.) to help clinical trial 
+participants understand the clinical trial and the Informed Consent documents?
+ ●Will the sponsor implement electronic Informed Consent for the clinical trial (e.g., eConsent or 
+ePRO) and are there any special considerations needed?
+ ●Is there a clear commitment from the sponsor to sharie the study results in an understandable 
+format (leaflets, brochures, ad hoc communication at conferences) and in plain language?
+ ●How will the sponsor share study progress in terms of enrollment of clinical trial participants, 
+active clinical trial sites, and timelines?
+23 Please find more resources in the TransCelerate Patient Protocol Engagement Toolkit. Available at: https://www.
+transceleratebiopharmainc.com/ppet/planning-for-patient-engagement/
+24 NIH-FDA. Clinical Trial Protocol Template v0.1 20160205. Available at: https://osp.od.nih.gov/wp-content/uploads/2014/01/
+Protocol_Template_05Feb2016_508.pdfAdditional considerations
+Planning and assuring a timely outcome so the findings collected from patient partners can be 
+embedded before the protocol is finalized. In this planning phase, linking in parallel to the collection of 
+site feedback would be useful.
+Managing expectations: As clinical trial protocols are based on templates aligned with legal and 
+regulatory requirements, there will be some aspects that cannot be changed significantly based on 
+the input from the patient partners. To manage expectations, sponsors should be transparent about 
+these instances from the outset and as part of the feedback and follow-up. 
+Manage conflicts of interest: Patient partners providing input in the clinical trial design might also be 
+interested in and eligible to take part in that clinical trial later on. Consider how to avoid any potential 
+conflicts of interest around this from the outset (e.g., by keeping patient partners anonymous or 
+communicating with patient partners indirectly via a patient organization).Patient Engagement in the 
+Clinical Trial Protocol Design
+3.2 Key questions and considerations for the development of a clinical 
+trial protocol with patient partners 
+Patient partners can be engaged to develop a clinical trial protocol from the start, or they may be 
+asked to review a clinical trial protocol that has already been drafted. In either case, the sponsor will 
+need to ensure that the patient partner understands the context of the clinical development plans 
+relevant to the clinical trial at hand. 
+Patient engagement in clinical trial protocol design should allow for insights to be implemented; 
+therefore, early engagement with patient partners and outlining the timelines are critical. Table 1 
+outlines the typical sections of a clinical trial protocol, adapted from a standard template24.
+
+  23  23
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Clinical trial 
+protocol 
+sectionWhat is addressed in the 
+section of the protocol?Questions and considerations that are relevant to 
+clinical trial participants and/or aspects where patient 
+partners can provide protocol advice
+Objectives and 
+purposeThis section of the protocol 
+provides a detailed 
+description of the primary 
+(and secondary) objectives 
+of the study. The objective 
+is based on the scientific 
+questions to be answered 
+and the reason for 
+performing the clinical trial. ●Why is there a need for the study? What, if any, is the 
+current standard of treatment?
+ ●Do the study objectives address an area of unmet 
+need?
+ ●What is important to the patient in the treatment/
+maintenance of their condition? 
+ ●What would a patient (or carer) hope to get out of 
+study participation?
+ ●Is it a novel treatment? 
+ ●What would the patient like to see a drug/device 
+bring to them to make living with their disease 
+easier?
+ ●What is meaningful for the patient for treatment/
+maintenance of their condition?
+Study design 
+and endpointsThe design of the study 
+(e.g., type of study, phase, 
+single, multicenter or 
+decentralized) and the 
+study primary, secondary 
+(and exploratory) 
+endpoint(s) should be 
+drawn up based on the 
+study objective(s). Overall Study Design
+ ●Is the study design appropriate?
+ ●Is there a need for a ‘study partner’ (carer or family 
+member)? If so, is their role and responsibility during 
+visits explained clearly?
+ ●What changes to the design could be implemented 
+to minimize the burden on the patient participant? 
+Investigational product/placebo/standard care
+ ●Does the clinical trial have a placebo? Does the 
+trial have different randomization strata? If so, what 
+considerations are needed for explaining these to 
+the clinical trial participant? 
+ ●Is the use of the comparator treatment or placebo 
+justified? 
+ ●Assuming this is a blinded clinical trial, it is 
+Important that patients do not unintentionally 
+unblind it. Sharing study-specific information on 
+social media is probably not advisable. Patient Engagement in the 
+Clinical Trial Protocol Design
+It provides a series of questions and considerations relevant to each section of the clinical trial 
+protocol that can be discussed and designed with patient partners. 
+This table does not provide an exhaustive list of all aspects to be addressed in designing the clinical 
+trial protocol; however, it does provide a starting point for sponsors and patient partners to help take 
+patient engagement into account in clinical trial protocol design. 
+
+  24  24
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Clinical trial 
+protocol 
+sectionWhat is addressed in the 
+section of the protocol?Questions and considerations that are relevant to 
+clinical trial participants and/or aspects where patient 
+partners can provide protocol advice
+Study design 
+and endpointsStudy Endpoints
+ ●Is the study endpoint meaningful to the patient 
+population? 
+ ●Which study outcomes are most important to the 
+patient? Do the primary/secondary endpoints in the 
+protocol map to this? 
+ ●How important are patient-relevant endpoints? Are 
+the current measurement approaches appropriate? 
+Or is there a lack of patient-relevant endpoints? 
+ ●What patient-reported outcomes or other patient 
+experience measures are appropriate?
+ ●Are the patient-reported measures captured in a 
+practical way (i.e. on paper, tablet, etc.)? 
+ ●Will any study endpoints be related to patient-
+reported outcomes data?
+Additional measures
+ ●Are there requirements in the study that may add 
+additional burden? (e.g., colon prep agents)
+Study 
+enrollment 
+and 
+withdrawalThis section of the protocol 
+encompasses the study 
+population, the inclusion 
+and exclusion criteria, 
+and the recruitment and 
+retention approaches 
+of the study, and how 
+participants may withdraw 
+or be discontinued from the 
+study.Inclusion/Exclusion criteria
+ ●Is the study population appropriate (also in terms of 
+diversity: gender, age, sex, ethnicity)?
+ ●Do the inclusion/exclusion criteria present a barrier 
+to recruitment?
+Patient Screening/Recruitment
+ ●Are the patient-facing documents, such as 
+recruitment materials and Informed Consent 
+Forms (ICF), clearly written and understandable for 
+patients?
+ ●Are the benefits and risks clarified in the ICF? If not, 
+have the potential benefits and risks of participation 
+been identified for the patient? And for their 
+caregivers?
+ ●Are support services offered during the screening 
+process?
+ ●What happens if, following screening, a potential 
+clinical trial participant is not eligible?Patient Engagement in the 
+Clinical Trial Protocol Design
+
+  25  25
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Clinical trial 
+protocol 
+sectionWhat is addressed in the 
+section of the protocol?Questions and considerations that are relevant to 
+clinical trial participants and/or aspects where patient 
+partners can provide protocol advice
+Study 
+enrollment 
+and 
+withdrawalThis section of the protocol 
+encompasses the study 
+population, the inclusion 
+and exclusion criteria, 
+and the recruitment and 
+retention approaches 
+of the study, and how 
+participants may withdraw 
+or be discontinued from the 
+study. ●What kind of support services would be helpful when 
+participating in the clinical study? 
+ ●What type of information would patients like to 
+receive as part of a clinical trial, and from whom? 
+(e.g., peer, doctor, patient organization, family 
+member)
+ ●What value does the patient see from the clinical 
+trial for them and other patients with the condition?
+ ●Is there a recruitment strategy and recruitment tools 
+for patients, sites, clinics?
+Participant withdrawal
+ ●Are the procedures for withdrawing from the study 
+clearly communicated?
+ ●How will patients be appropriately followed up if they 
+discontinue the study?
+Patient Remuneration
+ ●Are any clinical trial participation costs reimbursed? 
+And are their other financial or non-financial 
+incentives for participation (e.g., vouchers, medical 
+or technological devices, etc.)?
+ ●How will the burden on the clinical trial participant 
+and carers be alleviated (e.g., clinical assessment 
+and travel, meals, accommodation reimbursement, 
+child care, if applicable)?
+Management of care
+ ●How will the study impact the patients’ current care?
+ ●What are the other conditions of participation?
+ ●When will the study begin, and how long will it last?
+After the trial
+ ●What are the procedures when a clinical trial 
+participant needs to leave the study (e.g., 
+withdrawal or termination), and how will they be 
+followed-up?
+ ●What will happen from the clinical trial participants 
+perspective when the study ends?
+ ●Will the study drug be provided after the trial? If so, 
+for how long? Is there an added cost or how?
+ ●What happens to the patient data during the study 
+or when the clinical trial is completed/discontinued?
+
+  26  26
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Patient Engagement in the 
+Clinical Trial Protocol Design
+Clinical trial 
+protocol 
+sectionWhat is addressed in the 
+section of the protocol?Questions and considerations that are relevant to 
+clinical trial participants and/or aspects where patient 
+partners can provide protocol advice
+Study 
+enrollment 
+and 
+withdrawalOther
+ ●What study assurance is needed in case of medical 
+problems due to the study? Are the risks mentioned 
+and explained to the study participants?
+ ●What are the barriers and motivators to 
+participating in a particular study?
+Study agent  
+(if applicable)The study agent is the 
+intervention being studied 
+(e.g., drug, device). The 
+dosing and administration 
+schedule should be 
+described (e.g., dose, time 
+of day and interval, route of 
+administration) and should 
+include conditions for dose 
+adjustments/modifications/
+delays and the duration of 
+the therapy.Dosing
+ ●What is the daily dose?
+ ●How might participants feel about dose escalations 
+or scheduling changes?
+ ●How will possible dose adjustments/delays affect 
+the patient?
+Mode of Administration
+ ●How will the study agent be delivered? (e.g., oral, 
+intravenous, etc.)
+ ●Are there practical considerations around the 
+administration (e.g., length of visits, suitable 
+formulation for study population)?
+Treatment duration
+ ●What is the expected duration of treatment?
+Other relevant questions
+ ●How does the treatment differ from the current (if 
+any) standard of treatment?
+ ●Is there a process for patients to ask questions about 
+the agent?
+ ●Are any new technologies being used in the study? 
+And are there related practical considerations?
+Study 
+procedures 
+and schedule 
+(if applicable)Procedures and scheduling 
+for the collection of data 
+(medical history, height, 
+weight, BMI , sex, age, 
+demographic group, health 
+status of participants), 
+including clinical, laboratory 
+and imaging results, and 
+questionnaires, should be 
+defined. ●What does taking part mean to the patients (‘What’s 
+going to happen to me and what impact will it have 
+on my life?’)?
+ ●Is the schedule of events feasible in terms of 
+screening, enrollment/baseline, and follow-ups?
+ ●Is the visit schedule feasible (e.g., frequency of visits, 
+length of visits, at-home requirements)? 
+
+  27  27
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Patient Engagement in the 
+Clinical Trial Protocol Design
+Clinical trial 
+protocol 
+sectionWhat is addressed in the 
+section of the protocol?Questions and considerations that are relevant to 
+clinical trial participants and/or aspects where patient 
+partners can provide protocol advice
+Study 
+procedures 
+and schedule 
+(if applicable) ●What does taking part mean to the patients 
+(‘What’s going to happen to me and what impact 
+will it have on my life?’)?
+ ●Is the schedule of events feasible in terms of 
+screening, enrollment/baseline, and follow-ups?
+ ●Is the visit schedule feasible (e.g., frequency of visits, 
+length of visits, at-home requirements)? 
+ ●Is the order of the tests and procedures during visits 
+realistic for patients (e.g., urine testing isn’t the first 
+test if people have a long distance to drive to the 
+site or have a bladder control issue and cannot hold 
+it for their travel distance)?
+ ●Are the tests and procedures included needed 
+to answer the study objectives? Or are they more 
+‘exploratory’ in nature?
+ ●Is the frequency of the tests and procedures 
+realistic? (e.g., minimize the number of lumbar 
+punctures, propose optional sub-groups for specific 
+tests and procedures)
+ ●Are the geographical locations and number of sites 
+enrolling participants appropriate?
+ ●What are the considerations when choosing study 
+sites, testing, accessibility, and diversity of the 
+patient population?
+ ●How many questionnaires will participants need to 
+complete at each visit?
+ ●How and when will patients receive their test 
+results?
+ ●Would alternatives to study visits (nurse home 
+visits or telemedicine) would improve patient 
+participation?
+ ●How long are patients willing to spend on answering 
+questionnaires (e.g., are there multiple PROMs/
+questionnaires each visit)? 
+ ●Does the patient need to attend the clinic, or can 
+they complete the questionnaires at home?
+ ●How are you going to gather patient feedback, 
+specifically on patient-reported outcome 
+questionnaires (e.g., clarity of language, 
+comprehension, appropriateness of questions
+
+  28  28
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Patient Engagement in the 
+Clinical Trial Protocol Design
+Clinical trial 
+protocol 
+sectionWhat is addressed in the 
+section of the protocol?Questions and considerations that are relevant to 
+clinical trial participants and/or aspects where patient 
+partners can provide protocol advice
+Study 
+procedures 
+and schedule 
+(if applicable)asked) and on devices used (e.g., whether the use 
+of a hand-held device is easy or difficult)?
+ ●Is there a questionnaire for the caregiver? (if yes, 
+the same questions as above would be applicable)
+Assessment of 
+safetyThis section of the protocol 
+outlines the assessments 
+and procedures related to 
+risks and safety, and the 
+steps that will be taken to 
+ensure the safety of clinical 
+trial participants and 
+minimize risk.  ●What information is provided to clinical trial 
+participants to help them understand possible side 
+effects?
+ ●How will adverse events be classified and reported?
+ ●Are there any risks to individuals other than the 
+clinical trial participants (e.g., carers or close 
+contacts)?
+ ●Is the process for reporting side effects clear for 
+patients? 
+ ●How will the patient contact the study coordinator 
+throughout the study with concerns, worries, or side 
+effects, including during evenings and at weekends?
+Ethics Clinical trials of human 
+participants must conform 
+to ethical standards. 
+This section of the 
+protocol outlines the 
+ethical considerations, 
+including, among many 
+considerations, information 
+on the Informed Consent 
+procedures and participant 
+and data confidentiality.  ●What are the Informed Consent procedures?
+ ●Are there supplemental materials available to help 
+clinical trial participants (and carers) understand 
+the study and the Informed Consent Form(s)?
+ ●What considerations are needed around Informed 
+Consent or assent in paediatrics or those who 
+cannot consent for themselves?
+ ●Will any of the data or samples collected in the 
+clinical trial be used elsewhere?
+ ●Will an independent review board approve the study 
+protocol?
+Data handling 
+and recording 
+keepingThis section of the protocol 
+outlines the data handling 
+and record-keeping for the 
+clinical trial, including study 
+records retention. ●Who is responsible for the collection and 
+management of the clinical trial participants’ data? 
+For how long will it be retained?
+ ●Will clinical trial participants be able to request their 
+data at a later date?
+ ●Are the personal data used in accordance with GDPR 
+(in Europe)?
+
+  29  29
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+3.3 Analysis of patient partner insights
+The analysis of patient partner insights will serve the adaptation/amendment of the clinical trial 
+protocol before the start of the clinical trial recruitment. Patient partners’ inputs are essential in 
+determining what is important and the importance of specific aspects for the patient population, 
+which are often then analyzed qualitatively. 
+In addition to sharing their insights, patient partners can play an integral role in developing the 
+operational plan as a research partner. Refining the clinical trial design based on patient partner 
+input means the research will cover aspects valued by the patient population. Doing so will likely 
+have a positive effect on recruitment speed and retention of clinical trial participants. 
+ ●Create a ‘knowledge library’ of patient partners’ insights, with their consent, so learnings are shared 
+more broadly and can inform work on future clinical trials.
+ ●Summarize storage of patient insights for regulatory filing. 
+ ●Communicate with patient partners throughout the study duration; this may include sharing press 
+releases, clinical trial updates and published data, including any reasons for study discontinuation.
+ ●Inform patient partners if their input to a single clinical trial protocol is applied to other related 
+clinical trials or clinical development programs. Good practices for Sponsors:Patient Engagement in the 
+Clinical Trial Protocol Design
+
+  30  30
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Step 4
+Feedback and follow-up
+The objective of this step is to:
+ ●Provide guidance on ways to continue the collaboration after the formal ending of the initial 
+project. The sponsor and patient partners should be considered equal partners with meaningful 
+follow-up emphasizing the value placed on the inputs and relationship. Furthermore, an ethical 
+rationale goes with involving and informing the populations that are providing feedback.
+Once the clinical trial protocol has been completed, sponsors should share information with patient 
+partners on the specific areas where inputs were incorporated and how they influenced the clinical 
+trial protocol or other study elements. 
+The sponsor should equally explain to patient partners, as appropriate, why certain insights could not 
+be incorporated. Sponsors should also be clear about timelines for the clinical trial and when they 
+expect it to be complete and the results published.Step 4 encompasses reasons for the sponsor to stay in touch with patient partners. It is an important 
+step for the future of patient-centric clinical trials. Maintaining the relationship beyond the project 
+enhances the likelihood of future collaborations and increases the efficiency of patient engagement 
+activities, which will help increase their impact.
+Patient partners can continue to be engaged and informed once a clinical trial is underway. Examples 
+of continued engagement and information sharing can include:
+ ●Informing the patient partners on the progress of the clinical trial, including recruitment, 
+completion and/or publicationsFeedback and follow-up
+Figure 7. Step 4 of the How-to Guide
+
+
+  31  31
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+ ●Asking patient partners to contribute to the Plain Language Summary25 of the clinical trial
+ ●Including patient partners in the process of manuscript/abstract writing and/or review.
+Advantages of long-term patient engagement
+There are many advantages to keeping the sponsor–patient partners collaboration going. The 
+sponsor can reflect on past projects and support patient partners to disseminate clinical trial 
+outcomes to the wider community, highlighting how their contribution made a difference to the 
+outcomes. Opportunities to circulate results via publications or conferences should be shared with 
+the contributing patient partners as they can help to get the right messages to the relevant patient 
+communities. 
+Plan with the patient partners how best to keep in contact after the project. See whether a debrief 
+is possible/practical after a certain period of time or specific milestones are achieved to reflect on 
+and assess the impact of the collaboration. This would also be an ideal opportunity to gauge how             
+far-reaching the benefits of the partnership have been and should be outlined in the contract created 
+at the beginning of the partnership.
+25 More information available on the Plain language summaries (PLS)of peer-reviewed publications and conference 
+presentations: practical ‘How-To’ Guide for multi-stakeholder co-creation at this link: https://pemsuite.org/How-to-Guides/
+WG5.pdfFeedback and follow-up
+
+  32  32
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Considerations for Patient Engagement
+Below you can find Considerations for quality PE for each step of this How-to Guide on PE in Clinical 
+Trial Protocol Design. Access the Annex 1 for more considerations on the PEQG and definitions of the 
+7 criteria. The Patient Engagement Quality Guidance (PEQG) tool26 provides a useful discussion guide 
+and partnership-setting framework to help set up the new partnership and keep it on track. Considerations for Patient Engagement
+Considerations for Step 1:
+Preparations for setting up partnership and collaboration
+In the preparation of the partnership between patients and sponsors it can be valuable to enable 
+stakeholders to exchange views openly, in order to understand the scope and objectives of the future 
+collaborations, acknowledging that some of their objectives may differ. 
+All parties concerned should also have a shared written description of the common goals of the 
+project (Criterion 1: Shared Purpose).
+26 Find here more information on the Patient Engagement Quality Guidance tool.
+Figure 8.  The PEQG tool has 7 quality criteria
+
+  33  33
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Consideration for Patient Engagement
+Considerations for Step 2:
+Building a partnership for optimal patient engagement
+Considerations for Step 3:
+PE in Clinical Trial Protocol designDuring this phase, roles and responsibilities should be acknowledged by all parties ( Criterion 4: 
+Roles and Responsibilities), described in a written format, addressing that all aspects of the project 
+need to be revisited regularly. Capacity for engagement (Criterion 5: Capacity and Capabilities 
+for engagement) refers to the critical point of having the relevant and dedicated resources from all 
+stakeholders. 
+This includes for example foreseeing and defining a main point of contact for the patients involved 
+in the projects for the entire duration of the established partnership. It also entails having realistically 
+estimated and communicated the patient partners’ time availability for a qualitative contribution. In 
+the context of design of the partnership for the clinical protocol design, developing the capabilities for 
+all stakeholders (Criterion 5) to enable meaningful engagement is critical. 
+In fact, the success of the PE partnership is based on a sufficient level of knowledge, access to 
+the right expertise, and training resources (e.g. material and dedicated support functions) for all 
+stakeholders (patients and sponsors). Capability requirements may vary depending on the project 
+nature and complexity, and should be clearly addressed. It requires a strong assessment process 
+during the establishment of the partnership.
+During the collection of patients’ insights, the good conditions to allow openness to and inclusion of 
+individuals and communities without discrimination is critical (Criterion 2: Respect and accessibility). 
+Make sure that people involved are reflecting the needs and limitations of the patient population 
+when developing the clinical protocol, and the interests of those who may benefit from being enrolled 
+in the clinical trial. Consider diversity in demographics, cultural, health conditions and other relevant 
+criteria for inclusion. 
+When selecting patient partners, attention will be given to awareness of the diversity and expertise 
+required to achieve a visible representative voice and provide tangible positive benefits on the future 
+design of the protocol. It is recommended to have one accountable person from the sponsor for 
+patient interactions. While there will be several people interacting, there should be one delegate, who 
+has the overview and central accountability (Criterion 3: Representativeness of Stakeholders).
+A transparent and open communication process must be established at the beginning of the 
+collaboration with the patient partners and will continue throughout the entire lifecycle of clinical trial 
+included in the steps of data results collection, dissemination and external communication. 
+Transparent means to include changes to study design, outcomes, rationale for choices, etc. 
+Confidentiality agreement needed to protect information shared by both parties, sponsor and patient 
+(Criterion  6: Transparency in Communication and Documentation).
+
+  34  34
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Consideration for Patient Engagement
+Considerations for Step 4:
+Feedback and Follow-up
+The follow-up actions regarding the analysis of the insights need a proactive communication process 
+with the patient partners that must be open, honest and complete. 
+For any insights collected from the patient partners that cannot be taken into consideration in 
+the development of the protocol there is a need to install a systematic feedback mechanism 
+with clear explanations provided by the sponsor (Criterion 6: Transparency in Communication 
+and Documentation). When possible, the relationships between the patient partners involved 
+and sponsors of the clinical trial will continue beyond the project (Criterion 7: Continuity and 
+sustainability) to create the basis of a long-term partnership.
+
+  35  35
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Acknowledgements
+This How-to guide was co-developed with a large community of stakeholders (more than 35 
+individuals from 26 organizations), representing patient organizations, pharmaceutical industry, 
+academics, researchers and external experts. 
+Special thanks to the Core team for drafting, editing, reviewing and maintaining momentum to deliver 
+the guide, present it on multiple occasions and disseminate it even further than their own internal 
+networks. We would like to also acknowledge all contributors* of this working group and everyone 
+who reviewed the multiple iterations of this guide during 2019 and 2020. Your contribution made a 
+difference and resulted in the How-to Guide in your hands today.
+Core team authors (in alphabetical order)
+Adit Bassi GenerationR Liverpool YPAG Member
+Rob Camp EURORDIS
+Thierry Escudier Pierre Fabre
+Marta Garcia Servier
+Angi Gillen Gilead
+Ronella Grootens Dutch Clinical Research Foundation
+Jennifer PrestonUniversity of Liverpool: GenerationR Liverpool YPAG/
+eYPAGnet
+Janine Ann Reed Retired nurse/ NKF and Alport Syndrome Foundation
+Jeanette Ryan GSK
+Kerry Rosenfeld SolidBio
+Duane Sunwold Patient, patient advocate/ NKF
+Severine Wollenschneider Roche
+Olga Zvonareva Maastricht UniversityAcknowledgments
+* Elena Cardenal (Dravet Syndrome Foundation), Nigel Cook (Novartis), Clint Crowell (Gilead), Ashley Duenas (Evidera), Lisa 
+D’Amato (Gilead), Jucinda Fenn-Hodson (Roche), Pauline Frank (Novartis), David Haerry, Tony Hoos, Arti Jassal Konopka 
+(Incyte), Annekatrin Krause (Novartis), Tamika Lang (MPE), Susanna Leto di Priolo (Marakoi), Kevin Marsh (Evidera), Tomohide 
+Mishiba (Novartis), Veronica van Nederveen (Dutch Clinical Research Foundation), Gerrit Oostenveld (Dutch Clinical Research 
+Foundation), Lisa Phelan (Gilead), Berkeley Philips (Pfizer), Lea Proulx (Roche), Thomas Schindler (Boehringer-Ingelheim), Carole 
+Scrafton (FibroFlutters), Janette Turner (Gilead), Kay Warner (GSK), Tracy Wild Dachenhausen (Gilead), Jamie Zagorski (Gilead).
+
+  36  36
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Acknowledgments
+
+
+  37  37
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+The Patient Engagement Quality Guidance (PEQG27) was 
+co-created to help all stakeholders set up partnerships 
+and projects collaboratively. 
+Criteria 1 : Shared purpose 
+This refers to the project’s aims and outcomes that all 
+stakeholders taking part should agree on before starting 
+the project. Consider putting in place processes to 
+help facilitate discussions between all stakeholders to 
+identify each other’s values, expectations and objectives, 
+and review and discuss priorities in the planning of the 
+project. It can be valuable to enable stakeholders to 
+exchange views openly to understand the scope and 
+objectives of the project, acknowledging that some of 
+their objectives may differ. All parties concerned should 
+also have a shared written description of the common 
+goals of the project.
+Criteria 2: Respect and accessibility
+This refers to (1) respecting each other, and respectful interactions within the project to be established 
+among partners, and (2) openness to and inclusion of individuals and communities (to the project) 
+without discrimination. Considerations to ensure good conditions to implement the project should be 
+made from the beginning. For example: 
+ ●simplification of wording
+ ●budget and payment considerations
+ ●cultural adaptations to procedures
+ ●practicalities such as meeting timing, location and format
+ ●accessibility of project materials
+ ●written co-developed rules of conduct 
+Accessibility to participate may be facilitated by enabling multiple ways to involve stakeholders who 
+could benefit from and/ or contribute to the project. For example, patients with cognitive impairment 
+might need more time to go through project material, or need printed versions rather than electronic 
+documents or PDFs for easier reading.Annex 1
+Patient Engagement Quality criteria definitions 
+27 PFMD. (2018) Patient Engagement Quality Guidance Tool. Patient Focused Medicines Development. Available at: https://
+pemsuite.org/peqg/Patient Engagement Quality criteria definitions
+
+  38  38
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Criteria 3: Representativeness of stakeholders 
+This refers to the mix of people you involve, which should reflect the needs of the project, and the 
+interests of those who may benefit from project outputs (for example, target population). Consider 
+diversity in expertise, experience, demographics, and other relevant criteria for inclusion. When 
+selecting Patient Engagement stakeholders, patients, attention will be given to awareness of the 
+diversity required to achieve visible representative voice.
+Criteria 4: Roles and responsibilities 
+This refers to the need for clearly agreed, and ideally co-created roles and responsibilities, in writing, 
+addressing that all aspects of project needs will be established upfront and revisited regularly
+Criteria 5 : Capacity and capability for engagement
+This refers to (1) capacity as having relevant and dedicated resources from all stakeholders (for 
+example, providing a dedicated point of contact by the sponsor and having allocated sufficient 
+time by all stakeholders to allow genuine engagement); and (2) capabilities for all stakeholders 
+to enable meaningful engagement (for example, the level of knowledge, expertise and training 
+stakeholders might need to deliver Patient Engagement activities throughout the project). Consider 
+supporting stakeholders to build the required capacity and capabilities for this project in different 
+forms of training both with sponsor organizations and with each stakeholder (for example, helping to 
+understand the context, processes, relevant terminology etc.). Both capacity and capability building 
+are intended to facilitate participation and lower barriers to collaborate.
+Stakeholders can be given access to learning resources and given dedicated support (if needed).
+Capability needs may vary depending on the project needs, but also e.g. personal circumstances of 
+Patient Engagement representatives.
+Criteria 6: Transparency in communication and documentation 
+This refers to the establishment of a communication plan and ongoing project documentation 
+that can be shared with stakeholders. Communication among stakeholders must be open, honest 
+and complete. In addition, adequate up-to-date documentation must facilitate communication 
+with all stakeholders throughout the project. Consider proactively and openly sharing progress 
+updates throughout the project externally. In addition, communicating outcomes of the project to all 
+stakeholders and how their contribution was of value to the success of the project is critical.
+Criteria 7: Continuity and sustainability 
+This refers to the smooth progression of the project, as well as efforts to maintain ongoing 
+relationships with stakeholders. Consideration should be given for the role of stakeholders beyond 
+a single project. When starting the project, consider including in your project plan the actions 
+needed for maintaining expected flow of the project from beginning to end. Create a plan to nurture 
+relationships with your partners and stakeholders involved during the project, and when needed and 
+requested, beyond the project as well. For all stakeholders successful planning and personal and 
+organizational resilience should be anticipated.ANNEX 1 | PE Quality criteria definitions 
+
+  39  39
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+FDA
+FDA-NIH Biomarker Working Group. BEST (Biomarkers, EndpointS, and other Tools) Resource [Internet]. 
+Silver Spring (MD): Food and Drug Administration (US); 2016-. Glossary. 2016 Jan 28 [Updated 2020 Aug 4].
+Available at: https://www.ncbi.nlm.nih.gov/books/NBK338448/
+PCORI
+Patient-Centered Outcomes Research Institute (PCORI). (2018). The value of Engagement.
+Available at: https://www.pcori.org/engagement/value-engagement
+Patient-Centered Outcomes Research Institute (PCORI). (2015). Financial Compensation of Patients, 
+Caregivers, and Patient/Caregiver Organizations Engaged in PCORI-Funded Research as Engaged 
+Research Partners.
+Available at: https://www.pcori.org/sites/default/files/PCORI-Compensation-Framework-for-Engaged-
+Research-Partners.pdf
+Patient-Centered Outcomes Research Institute (PCORI). (n.a.). Research Fundamentals: Preparing You  
+to Successfully Contribute to Research.
+Available at: https://www.pcori.org/engagement/research-fundamentals
+Patient-Centered Outcomes Research Institute (PCORI). (n.a.). Engagement Resources.
+Available at: https://www.pcori.org/engagement/engagement-resources
+Clinical Trials Transformation Initiative (CTTI)
+Clinical Trials Transformation Initiative (CTTI). (2019). CTTI Launches New Tools to Help Identify High  
+Value Patient Engagement Opportunities.
+Available at: https://www.ctti-clinicaltrials.org/news/ctti-launches-new-tool-help-identify-high-value-
+patient-engagement-opportunities
+Clinical Trials Transformation Initiative (CTTI). (2019). Patient Group Organizational Expertise and      
+Assets Evaluation Tool.
+Available at: https://www.ctti-clinicaltrials.org/sites/www.ctti-clinicaltrials.org/files/8-tool_1-pg_
+evaluation_tool-09jul2019.pdf
+Clinical Trials Transformation Initiative (CTTI). (2015). CTTI Recommendations: Effective Engagement   
+with Patient Groups Around Clinical Trials.
+Available at: https://www.ctti-clinicaltrials.org/files/pgctrecs.pdfReferences
+Guidance DocumentsReferences
+
+  40  40
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Clinical Trials Transformation Initiative (CTTI). (2018). Engage Early, Engage Often. Realizing the Value of 
+Effective Patient Group Engagement. 
+Available at: https://www.ctti-clinicaltrials.org/projects/patient-groups-clinical-trials
+CTTI. Prioritization Tool for Sponsors and Patient Groups. 
+Available at: https://prioritizationtool.ctti-clinicaltrials.org/
+TransCelerate
+TransCelerate. (2020) Clinical Template Suite. 
+Available at: https://www.transceleratebiopharmainc.com/initiatives/clinical-content-reuse/#clinical-
+template-suite
+TransCelerate. Patient Protocol Engagement Toolkit. 
+Available at: https://www.transceleratebiopharmainc.com/ppet/planning-for-patient-engagement/ 
+EUPATI
+EUPATI. (2013). Guidance for Patient Involvement in Industry-led Medicines R&D.  
+Available at: https://toolbox.eupati.eu/wp-content/uploads/sites/4/2020/07/EUPATI-Guidance-for-
+patient-involvement-in-industry-led-medicines-RD-EN-v1.pdf
+The Professional Society for Health Economics and Outcomes Research (ISPOR)
+Harrington, R. L., Hanna, M. L., Oehrlein, E. M., et al. (2020). Defining Patient Engagement in Research: 
+Results of a Systematic Review and Analysis: Report of the ISPOR Patient-Centered Special Interest 
+Group. Value Health; 23(6): 677–688. https://doi.org/10.1016/j.jval.2020.01.019 
+PARADIGM
+PARADIGM. (2020) Recommendations on the required capabilities for patient engagement.  
+Available at: https://imi-paradigm.eu/PEtoolbox/pe-capabilities.pdf
+PARADIGM. (2020). Guidance to Patients and Engaging Stakeholders. 
+Available at: https://imi-paradigm.eu/petoolbox/conflict-of-interest/
+PARADIGM. (2020). Raising Awareness on Managing Competing Interests in a Multi-stakeholder 
+Environment: Guidance to Patients and Engaging Stakeholders. 
+Available at: https://imi-paradigm.eu/PEtoolbox/COI-Guidance-tools.pdf
+PARADIGM. (2020). Patient Engagement Agreements Explained for Collaborations between the Patient 
+Community and Stakeholders in Healthcare Systems. 
+Available at: http://imi-paradigm.eu/petoolbox/contract-templates/ References
+
+  41  41
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+PARADIGM. (2020). Patient Engagement in Medicines Development: Recommendations on How to 
+Find the Right Match for the Right Patient Engagement Activity. 
+Available at: https://imi-paradigm.eu/PEtoolbox/identification-of-patient-representatives.pdf 
+PARADIGM. (2020). Recommendations on the Required Capabilities for Patient Engagement. 
+Available at: https://imi-paradigm.eu/PEtoolbox/pe-capabilities.pdf
+Working Group of the European Cancer patient Advocacy Network (WECAN)
+WECAN (2018) Guiding Principles on Reasonable Agreements between Patient Advocates and 
+Pharmaceutical Companies. 
+Available at: https://wecanadvocate.eu/wp-content/uploads/2019/03/Guiding-Principles_final-
+document6.2_clean.pdf 
+NIH - FDA
+NIH-FDA. Clinical Trial Protocol Template v0.1 20160205. 
+Available at: https://osp.od.nih.gov/wp-content/uploads/2014/01/Protocol_
+Template_05Feb2016_508.pdf 
+NHC
+NHC. Patient Engagement Fair-Market Value Calculator. 
+Available from: https://nationalhealthcouncil.org/fair-market-value-calculator/
+NHC & Genetic Alliance. (2017). Patient-Focused Drug Development – Recommended Language for 
+Use in Guidance Document Development. 
+Available at: https://nationalhealthcouncil.org/wp-content/uploads/2019/12/NHC-GA%20Feb2017.pdf
+PFMD
+PFMD. (2020) Reasonable agreements between patient advocates and pharmaceutical companies.  
+Available at: https://patientfocusedmedicine.org/reasonable-legal-agreements/ 
+PFMD. (2020) Patient Engagement Quality Guidance Tool. Patient Focused Medicines Development.
+Available at: https://pemsuite.org/peqg/References
+
+  42  42
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+This glossary represents the words used in this How-to Guide and intends to provide more clarification 
+or explanation to the terminology used. The explanations should by no means be taken as the sole 
+meaning as context might influence the understanding of these terms. The list at the end references 
+the resources that were used to create this glossary.Glossary of terms
+Terminology Explanation
+A
+Adverse 
+effects/eventsAny untoward or unfavorable medical occurrence in a clinical research study 
+participant, including any abnormal sign (e.g. abnormal physical exam or laboratory 
+finding), symptom or disease, temporarily associated with the participants’ involvement 
+in the research, whether or not considered related to participation in the research. 
+(Source: NIH, NIA Glossary of Clinical Research Terms)
+B
+Blinded    
+clinical trialBlinding is a procedure in which one or more parties in a trial are kept unaware of which 
+treatment arms participants have been assigned to, in other words, which treatment 
+was received. (EUPATI, The concept of blinding in clinical trials)
+C
+Clinical 
+developmentClinical development is one step in the process of bringing new medicines or treatments 
+to the market. They follow different phases designated as Phase I, II, III (and IV after 
+marketing authorization). (Source: EUPATI, Toolbox: Glossary)
+Clinical Trial 
+ParticipantsIndividuals that participate in a clinical trial. 
+Compassionate 
+useExpanded access, also called “compassionate use”, provides a pathway for patients to 
+gain access to investigational drugs, biologics and medical devices for serious diseases 
+or conditions. Investigational drugs and devices have not yet been approved by the 
+regulatory bodies, e.g., the US Food and Drug Administration, and they have not been 
+proven to be safe and effective. 
+Therefore, they may be effective in the treatment of a condition, or they may not. It is 
+important to remember that the drug/biologic/medical device may have unexpected 
+serious side effects and that patients need to consider all the possible risks when 
+seeking access to an investigational medical product (Source: FDA, 2019).
+Control group The group of participants that receives standard treatment or a placebo. The control 
+group may also be made up of healthy volunteers.
+Researchers compare results from the control group with results from the experimental 
+group to find and learn from any differences (Source: FDA, 2019).Glossary of terms
+
+  43  43
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Terminology Explanation
+C
+Contract 
+Research 
+Organization 
+(CRO)A person or an organization (commercial, academic, or other) contracted by the 
+sponsor to perform one or more of a sponsor’s trial-related duties and functions                          
+(Source: EMA, 2017).
+E
+Endpoint Principal indicator(s) used for assessing the primary question (i.e., hypothesis) of a clinical 
+trial. A variable that pertains to the efficacy or safety evaluations of a trial. An endpoint is 
+more specific as compared to an outcome since it relates to the planned objective of the 
+study (Source: FDA, n/a).
+Ethics 
+committeeAn independent body made up of a range of individuals including medical or scientific 
+professionals and non-medical or non-scientific members (e.g., patients or lay members). 
+An ethics committee may operate within an institution, or it may be national, or 
+supranational or private. Ethics committees have a responsibility to ensure the protection 
+of the rights, safety and wellbeing of research participants, as well as assuring the public 
+of that protection. It operates, among other things, expressing an opinion on the clinical 
+trial protocol, the suitability of the investigators involved in the trial, the adequacy of 
+facilities, and on the methods and documents to be used to inform trial participants and 
+obtain their informed consent. A trial should only begin when a favorable opinion by an 
+ethics committee has been given. Ethics committees may also monitor studies once they 
+have begun and after they are complete. (Source: EUPATI Toolbox: Glossary)
+Exclusion 
+criteriaCharacteristics that exclude people from taking part in a trial. For example, depending 
+on the requirements of the trial, exclusion criteria might include age, sex, type or stage of 
+disease, and the presence or absence of other medical conditions. Exclusion criteria (and 
+inclusion criteria) are an important part of a trial protocol. If they are properly defined, 
+exclusion and inclusion criteria will increase the chances of a trial producing reliable 
+results. They also protect participants from harm and help avoid exploitation of vulnerable 
+people (such as those unable to provide informed consent). The reasons for choosing the 
+exclusion criteria should be documented with the trial protocol. Exclusion of certain groups 
+can affect how realistic it is to generalize the trial results to the relevant patient population 
+(external validity). This should be considered by researchers when they are designing a 
+trial, and unnecessary exclusions should be avoided. (Source: EUPATI, Toolbox: Glossary)
+I
+Inclusion 
+criteriaCharacteristics that potential participants must have in order to be considered for 
+participation in a trial. They describe the patient population and patient selection criteria. 
+Inclusion criteria should specify the type of testing used to make the patients’ diagnoses, 
+as well as specific disease requirements (for example, how severe the disease is, failure or 
+success with previous treatments, plus any other factors that might affect prognosis such 
+as age, sex, or ethnicity). The inclusion criteria (and exclusion criteria) are important parts 
+of a trial protocol. If they are properly defined, inclusion and exclusion criteria will increase 
+the chances that the trial produces reliable results. They also protect participants from 
+harm and minimize the risks. (Source: EUPATI, Toolbox: Glossary)Glossary of terms
+
+  44  44
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Terminology Explanation
+I
+Informed 
+consent form 
+(ICF)A document that describes the rights of a study participant and provides details about  
+the study, such as its purpose, duration, required procedures, and key contacts. Risks 
+and potential benefits are explained in the informed consent document. (Source: NIH, NIA 
+Glossary of Clinical Research Terms)
+M
+Multicenter 
+TrialA clinical trial that is carried out at more than one medical institution. (Source: NIH, NCI 
+Glossary of Cancer Terms)
+P
+Patient  ●Individual patients: Persons with individual experience of living with the disease or 
+pre-identified presenting risk factors. Technical knowledge in research, development 
+and regulatory is not required as the main role is to contribute with their subjective 
+experience on the disease, diagnostics and treatment.
+ ●Carers: Persons supporting individual patients such as family members, paid or 
+volunteer helpers. 
+ ●Patient advocates: Persons who have insight and experience in supporting a larger 
+population of patients living with a disease. They contribute with the experience 
+acquired personally and from the group they represent.
+ ●Patient experts: Persons with individual experience in the disease and additional 
+technical knowledge in medicines R&D and regulatory affairs through training or 
+experience. 
+ ●Patient organizations: Not-for-profit legal organizations (including the umbrella 
+organizations that it belongs to) mainly composed of patients and/or carers. They 
+provide support to patients and advice to clinical research teams.
+ ●Patient organization representatives: Persons who are mandated to represent and 
+express the collective views of a patient organization on a specific issue or disease 
+area. These individuals may or may not be patients or carers themselves. 
+ ●Patient partners: patients that partner with the sponsor and are actively involved in 
+the development of the clinical trial protocol.
+Patient-
+reported 
+outcome 
+(PRO)Measures of the subjective experience or view of a participant in a clinical study. It is not a 
+clinical measure, or an assessment made by anyone else involved in the study. PROs are 
+commonly collected by asking patients to fill in questionnaires, or by interviewing patients. 
+Questionnaires or interview guides used as part of clinical studies should undergo 
+extensive testing to ensure they are reliable and valid. PROs can be used to assess, for 
+example, symptoms as experienced by the patient, e.g., disability, quality of life and other 
+health perceptions. There are many published PRO questionnaires dealing with aspects 
+of quality of life. Some have been developed for specific conditions or treatments. Some 
+are designed to be general, such as the ‘EuroQoL’ or ‘EQ-5D’, which has been translated 
+into many languages and is used extensively in clinical trials. (Source: EUPATI, Toolbox: 
+Glossary)
+Placebo An inactive substance or other intervention that looks the same as, and is given the same 
+way as, an active drug or treatment being tested. The effects of the active drug or other 
+intervention are compared to the effects of the placebo. (NCI Dictionary of Cancer Terms)Glossary of terms
+
+  45  45
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+Terminology Explanation
+P
+Plain Language 
+SummaryA non-technical summary of clinical trial results or other content in a journal 
+article or congress presentation. This How-To guide refers to PLS for publications 
+and conferences and does not include PLSs that are created per EU regulations               
+(e.g., layperson summaries) that follow a certain regulatory rigor (Source: EMA, 2017)
+Primary 
+endpointsThe main result that is measured at the end of a study to see if a given treatment 
+worked (e.g., the number of deaths or the difference in survival between the treatment 
+group and the control group). What the primary endpoint will be is decided before the 
+study begins. (NCI Dictionary of Cancer Terms)
+Protocol A detailed plan of a scientific or medical experiment, treatment, or procedure. In 
+clinical trials, it states what the study will do, how it will be done, and why it is being 
+done. It explains how many people will be in the study, who is eligible to take part in it, 
+what study drugs or other interventions will be given, what tests will be done and how 
+often, and what information will be collected. (NCI’s Dictionary of Cancer Terms).
+R
+Randomization The process of assigning clinical trial participants to treatment or control groups 
+using an element of chance to determine the assignments in order to reduce bias.            
+(Source: NIH, NIA Glossary of Clinical Research Terms)
+Recruitment Active efforts by investigators to identify subjects who may be suitable for enrollment 
+into a clinical trial. 
+Subjects are selected on the basis of the protocol’s inclusion and exclusion criteria 
+during the clinical trial recruitment period. In multicenter studies, each investigator has 
+a recruitment target or defined number of subjects to be recruited (Source: FDA, n/a)
+Recruitment plan The plan that outlines how individuals will be recruited for the study and how the study 
+will reach the recruitment goal. (Source: NIH, NIA Glossary of Clinical Research Terms)
+S
+Secondary 
+endpoint(s) Result(s) that are measured at the end of a study, in addition to the main result 
+(primary endpoint) to see if a given treatment worked. Secondary endpoints can 
+explore other aspects of the treatment (Source: EMA, 2010).
+Side effect An unintended response to a medication. Side effects, or adverse reactions, are 
+generally regarded as being harmful, and may occur after a single dose or prolonged 
+administration. They might result from the normal use of a medicine or from the use of 
+a medicine in a way unintended by the marketing authorization holder (MAH) – such 
+as taking an overdose or from the combination of two or more medicines being taken 
+at once. (Source: EUPATI, Toolbox: Glossary)Glossary of terms
+
+  46  46
+Preparations for setting up 
+partnership and collaborationBuilding a partnership for 
+optimal patient engagementPatient Engagement in the 
+Clinical Trial Protocol DesignFeedback and follow-upStep 1 Step 2 Step 3 Step 4 Glossary
+References for the terms presented in this glossary can be found in the 
+following resources:
+EU. European Medicines Agency. (2017) Summaries of Clinical Trial Results for Laypersons. 
+Available at: https://ec.europa.eu/health/sites/health/files/files/eudralex/vol-10/2017_01_26_
+summaries_of_ct_results_for_laypersons.pdf  
+EU. European Medicines Agency. (2010) EU Clinical Trials Register Glossary. 
+Available at: https://www.clinicaltrialsregister.eu/doc/EU_Clinical_Trials_Register_Glossary.pdf    
+EU. European Medicines Agency (EMA) (1997) Good Clinical Practice: Consolidated guideline. 
+Available at: https://ec.europa.eu/health//sites/health/files/files/eudralex/vol-10/3cc1aen_en.pdf
+EUPATI. Toolbox: Glossary. 
+Available at: https://toolbox.eupati.eu/glossary/  
+National Cancer Institute (NCI). NCI Dictionary of Cancer Terms. 
+Available at: https://www.cancer.gov/publications/dictionaries/cancer-terms/
+National Institute of Health (NIH). (n/a) National Institute on Aging (NIA) Glossary of Clinical 
+Research Terms. 
+Available at: https://www.nia.nih.gov/research/dgcg/nia-glossary-clinical-research-terms  
+US. Food and Drug Administration. (2019) Clinical Trials: What Patients need to know, Glossary of 
+Terms. 
+Available at: https://www.fda.gov/patients/clinical-trials-what-patients-need-know/glossary-terms   
+US. Food and Drug Administration (FDA) (2018) Step 3: Clinical Research. 
+Available at: https://www.fda.gov/patients/drug-development-process/step-3-clinical-
+research#phases 
+US. Food and Drug Administration (FDA) (n/a) Glossary of terms on Clinical Trials for Patient 
+Engagement Advisory Committee. 
+Available at: https://www.fda.gov/media/108378/download#:~:text=Active%20efforts%20by%20
+investigators%20to,the%20clinical%20trial%20recruitment%20period.  Glossary of terms
+

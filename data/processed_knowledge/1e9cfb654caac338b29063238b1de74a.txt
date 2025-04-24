@@ -1,0 +1,653 @@
+Clinical study reports submission  
+ 
+1 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Quick guide 
+Clinical Study Report s 
+submission 
+CTIS Training Programme – Module 13 
+Version 1.2 – November 2023 
+ 
+ 
+ Learning Objectives 
+ 
+• Remember what a Clinical Study Report (CSR)  is 
+• Understand how to create  and submit a CSR  
+• Understand how to view, download, update and withdraw a CSR  
+• Understand the roles and permissions involved in managing a CSR  
+• Understand how to request the MAH Admin role  
+ 
+ © European Medicines Agency, 2021  
+ 
+Reproduction and/or distribution of the content of these training materials for non -commercial or 
+commercial purposes is authorised, provided the European Medicines Agency is acknowledged as the source of the materials.  
+ The European Medicines Agency developed this training material to enhance public access to information on the Clinical Trial Information System (CTIS). This material describes a preliminary version of CTIS and may therefore not entirely describe the system  as it is at the time of use of this 
+material. The Agency does not warrant or accept any liability in relation to the use (in part or in whole) or the interpretation of the information contained in this training material by third parties
+. 
+
+
+Clinical study reports submission  
+ 
+2 
+  
+Record of updated versions  
+The table below describes the updated versions after CTIS go -live (January 2022): 
+ 
+ 
+  Version  Version description  Date  
+1.2 Update of references and links. November 
+2023 
+1.1 Minor changes applied (e.g. mistyping errors). Process of 
+requesting MAH Admin role has been added . October  2022 
+1.0 First version  (CTIS go -live version). March 2021 
+
+Clinical study reports submission  
+ 
+3 
+  
+Introduction 
+ 
+Where a clinical trial is  intended to be used for obtaining a marketing authorisation for an  
+investigational medicinal product, the sponsor must submit a Marketing Authorisation Application  
+(MAA) . The European Regulatory  Authorities  are responsible for evaluating those  applications in 
+the European Union (EU).  Once granted, the authorisation  allows sponsor to commercialise  a 
+medicine and make it available to patients and healthcare professionals across the European 
+Economic Area.  The process for evaluation of the MAA is not performed in CTIS  and therefore it 
+will not be the focus of this module . 
+As per  Article 37 of the CT Regulation , the marketing authorisation  applicants/ holders  must 
+submit  a ‘Clinical Study Report’  (CSR)  to CTIS, within 30 days  after the day the marketing 
+authorisation has been granted, the procedure for granting the marketing authorisation has been 
+completed, or the applicant for the marketing authorisation has withdrawn the application.   
+A CSR is a report of an individual study of an investigational medicinal product, in which the 
+clinical and statistical description, presentations, and analyses are integrated1. The CSR includes 
+a title page; a synopsis; a table of contents for the individual clinical study report; a list of abbreviations and definitions of terms; the ethics of the clinical study; the investigators and study administrative structure; the study objectives; the investigational plan; the study patients; 
+the efficacy evaluation; and the safety evaluation.  At the moment of the submission, the 
+information contained in the CSR will become  public . 
+In CTIS , the users responsible for this action are the Marketing Authorisation Holder users 
+(MAH) within the sponsor workspace . 
+ 
+ 
+Article 37 (4) of the CT Regulation  also describes that i rrespective of the outcome of a clinical 
+trial, the sponsor must submit  to CTIS  a summary of the results of the trial, within one year from 
+the end of a clinical trial in all Member States concerned or within six months for  a trial in 
+paediatric population.  The summary of results shall be accompanied by a summary written in a 
+manner that is understandable to laypersons.  
+It should be noted that while the summary of results and the layperson summary are to be 
+provided by the sponsor  users  after the end of each clinical trial in the EU, the CSR s are to be 
+ 
+1 ICH Topic E 3 Structure and Content of Clinical Study Reports, July 1996, European Medicines Agency. 
+Available at: https://www.ema.europa.eu/en/documents/scientific -guideline/ich-e-3- structure -content-
+clinical- study -reports -step-5_en.pdf   
+
+
+Clinical study reports submission  
+ 
+4 
+ submitted by the MA H users only, in the case th at a clinical trial is intended to be used for 
+obtaining a marketing authorisation for the investigational medicinal product.  As these process es 
+are indepen dent and performed by different users, they are explained in dedicated modules: the 
+focus of this module  is the submission of the CSR , while f or more information regarding 
+the summary of results, users can refer to Module 5: How to manage a CT ( Notifications, Ad Hoc 
+assessment, Corrective measures,  and Trial results ). 
+ 
+ 
+Sections of th is quick guide  
+This quick guide is structured in four sections:   
+ 
+  
+  
+ 
+   
+Roles and 
+permissions  
+ 
+ 
+This section provides a n explanation of 
+which roles can view, submit, update and 
+withdraw a CSR  and how to request the 
+MAH Admin role.   
+Update , 
+download  and 
+withdraw  a CSR 
+ 
+ 
+ 
+This section outlines  the steps that  users  
+need to follow to update, download  or 
+withdraw  a CSR .  
+  
+Search for a CSR  
+ 
+ This section outlines the steps that users 
+need to follow  to search for a CSR  
+(including an explanation of the different fields of search).  
+ 
+Create and 
+submit a CSR  
+ 
+This section outlines the steps that users 
+need to follow to create and submit new 
+CSRs.  
+
+
+Clinical study reports submission  
+ 
+5 
+  
+ 
+Create and submit a CSR  
+ 
+ 
+ 
+MAH users can access the  Clinical study reports  tab from the sponsor workspace . 
+Within this tab, users with specific roles ( see section 4: Roles and permissions) can 
+create  and submit  a new CSR . 
+1. To do so, they need to select the ‘New’ button displayed on the left of the 
+screen.   
+2. After user s have clicked on the ‘New’ button, a search  interface is displayed 
+where users can  search for the C linical Trial (CT) for which the y intend to 
+submit the  CSR. This search functionality allows users to find the CT by 
+populating one or more of the following fields:  
+ 
+• EU CT Number: Number assigned by the system to a specific CT . 
+• Member State Concerned: Member State of the European Union in which 
+the CT was carried out .  
+• Title: Title of the CT . 
+• Submission date: Date of submission of the Initial application dossier . 
+• Sponsor: Organisation submitting the Initial application dossier . 
+• Decision date: Dat e in which the MSCs provided a decision on the 
+authorisation of the CT in question.  
+3. After the search is launched, users are able to  select one trial and then click 
+on the ‘Confirm’  button at the end of the results page.  
+4. Once confirmed, a pop -up window is  displayed in which  users can populate the 
+CSR form (including the fields MAA procedure outcome, procedure type, date of the outcome, and MAA reference ID), upload the appropriate document(s) 
+and click on  the ‘Submit’ b utton.
+  
+ 
+#CTIS  
+insights  
+ 
+Users can create a CSR 
+for authorised Clinical Trials only.  
+ 
+Create and 
+submit a CSR  
+A new CSR for an 
+already existing Clinical 
+Trial can be created and 
+uploaded from the 
+Clinical study reports tab 
+using the ‘ + New’ 
+button.  
+ 
+If users want to cancel 
+the submission they 
+need to select the button 
+‘Close’.  
+‘New’ 
+button  
+EU CT 
+Number  
+Member 
+State 
+Concerned  Title 
+Submission 
+date Sponsor  
+Decision 
+date ‘Search’ 
+button  
+Date of 
+procedure 
+outcome  MAA 
+procedure 
+outcome  
+Procedure 
+type 
+‘Add’ 
+document 
+button  
+‘Submit’ 
+button  
+
+Clinical study reports submission  
+ 
+6 
+  
+Search for a CSR  
+ 
+ 
+MAH users  of the sponsor workspace  have the Clinical study reports tab 
+available  in CTIS . 
+      
+1. From the Clinical study reports t ab, users can open the search functionality by 
+clicking on the  drop-down  button displayed on the right side of the ‘Search’ 
+field. 
+ 
+2. Once the search functionality is opened, users can search for a specific CSR 
+that has been already submitted, withdrawn  or that is in draft status, by 
+populating one or more of the available search fields. The  fields include:  
+ 
+• EU CT Number : Unique identifier of the clinical trial to which the CSR 
+corresponds to.  
+• Title: Trial title . 
+• Procedure number  (MAA reference ID ): MAA procedure number . 
+• MAA procedure outcome:  Decision that the awarding body has provided 
+to the applicant for the application.  These can be: MA granted, Procedure 
+for MA completed, and MA withdrawn by the applicant ( see section 3: 
+Update and withdraw a CSR  for more information ). 
+• Submission date : Date when CSR was submitted, as applicable . 
+• Status : This s hows the status of a given CSR . These can be submitted,  
+draft, or  withdrawn.  
+ 
+3. Once the search is launched, a list of the CSRs matching the populated fields is  
+displayed.  Users can select a specific CSR from the results page  by clicking on 
+the checkbox located on the left of each CSR . 
+ 
+ 
+CTIS Training 1  
+ Test 
+ Test product  
+ 
+#CTIS  
+insights  
+ 
+The search interface of the CSR differs from that 
+of other t abs as it only 
+includes an Advanced 
+search functionality . 
+ 
+Search for a 
+CSR 
+MAH users can search 
+for a specific CSR, from 
+the Clinical study reports 
+tab, providing they have 
+the appropriate roles .  
+ 
+Check -box 
+
+Clinical study reports submission  
+ 
+7 
+                                                                                                                                                         
+Update a CSR  
+ 
+ 
+MAH users (with specific roles, more details on the last section ) can also update  an 
+existing CSR.  
+1. To do so, they need to search for a CSR (see section 2 : Search for a CSR) . Once 
+the search is launched, the CSR matching the data populated in the search fields 
+is displayed.  
+ 
+2. Once users have identified the CSR to be updated, the y can click on the ‘Update’ 
+icon (pencil) on the right side of the CSR .  
+ 
+3. After users click on the update icon, a pop -up window is  displayed where the 
+fields that are required to complete are marked with an asterisk (*). The se fields 
+include : 
+ 
+• Date of procedure outcome  
+• Procedure number (MAA 
+reference ID)  
+• MAA procedure outcome  
+• Procedure type  
+• Related documents  
+ 
+ 
+ 
+4. After user s have updated the necessary fields , they can click on the 
+‘Update’ button on the bottom left corner of the pop- up window.  
+ 
+5. The system will display a message  requesting active confirmation of the update 
+of the CSR. 
+ 
+ 
+    
+     
+  
+CTIS Training 1  
+ 
+#CTIS  
+insights  
+Users can save drafts of 
+uncompleted CSRs by 
+selecting the ‘Save’ 
+button. They can access those draft versions 
+and complete them via 
+the ‘Clinical study 
+reports’ tab. 
+Details ( date of 
+procedure, Procedure 
+type, etc. ) pertaining 
+to CSR  can be 
+updated from the 
+Clinical study reports 
+tab using the ‘Update’  
+icon (pencil).  
+Update  a CSR  
+Date of 
+procedure 
+outcome  MAA 
+procedure 
+outcome  
+Procedure 
+type 
+Procedure 
+number  
+Related 
+document  ‘Update’ 
+button  
+
+Clinical study reports submission  
+ 
+8 
+  
+Download a CSR 
+ 
+ 
+Users have three options to download a CSR:  
+I. From the overview page of the CSR:   
+1. Search the CSR from the search functionality of the Clinical study reports tab .  
+2. Select the ‘ View’ icon on 
+the right side of the CSR .  
+3. After selecting the ‘V iew’ icon, a 
+pop-up window is  displayed with all 
+the information of the CSR included 
+the uploaded document(s).  
+4. Users can download the documents 
+by selecting the ‘ Download ’ 
+icon. 
+ 
+II. From the Trial results  sub-tab of the Clinical t rial p age:  
+1. Search a specific CT from the Clinical trials t ab and click on the EU CT number . 
+2. Select the Trial results sub -tab of the Clinical t rial page. 
+3. Go to the section ‘Clinical Study R eports’ . 
+4. Select the ‘View’ icon on the right side of the CSR . 
+5. After selecting the view icon, a pop -up window is displayed with all the 
+information of the CSR , including  the uploaded document(s) . 
+6. Users can download the documents by selecting the ‘ Download ’ icon. 
+ 
+III. Downloading the documentation from the CT:  
+1. Search a specific CT from the Clinical trials Tab and click on the EU CT number . 
+2. Select  the download  button on the top -right corner of a Clinical 
+trial page. 
+3. Select the ‘ Clinical Study Report s’ section . 
+4. Click on the S tart Download button.  
+ 
+  
+ 
+#CTIS  
+insights  
+Users can download a 
+specific CSR from the 
+Trial summary sub -tab 
+of the CT page, by 
+clicking on the EU CT 
+number listed on the 
+search results from the 
+Clinical trials tab .  
+CSRs data can be 
+downloaded  through 
+three paths , providing 
+users have CSR 
+related roles (more 
+details on the last 
+section) : 
+1) From the overview 
+page of the CSR  
+2) From the Trial 
+results sub -tab of the 
+Clinical trial page  
+3) Downloading all 
+the documentation 
+from the CT  
+ 
+Download a 
+CSR 
+View icon  
+‘Start 
+download’ 
+button  
+Clinical Study 
+Reports 
+section  Download 
+icon 
+
+
+Clinical study reports submission  
+ 
+9 
+  
+ 
+Withdraw a CSR  
+ 
+ 
+ 
+ 
+MAH roles can also withdraw  a CSR2:  
+1. To do so, they  need to search for a CSR ( see section 1: Search for a CSR). Once 
+the search is launched, the CSR matching the data populated in the search fields 
+is displayed.  
+ 
+2. Once user s have identified  the CSR to be withdrawn , they can click on the 
+‘Update’ icon on the right side of the CSR.  
+ 
+3. After user s click on the update button, a pop -up window is  displayed. In order to 
+withdraw a CSR,  a justification for its withdrawal is required. 
+ 
+ 
+4. After providing the justification user s can click on the ‘Withdraw’ button at the 
+bottom right corner of the pop -up window.  
+ 
+5. After user s have clicked on the ‘W ithdraw ’ button, a message requesting the 
+active confirmation for the withdrawal will appear.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+2 For more information  on the implications of the withdrawal of a CSR, refer to the FAQs 
+document of this module.  
+ 
+#CTIS  
+insights  
+A notice will be 
+generated informing the sponsor responsible of the CT (and 
+providing the user has 
+CSR related roles) that 
+a CSR correspond ing to 
+it has been submitted or withdrawn in CTIS.  
+Users can withdraw a 
+submitted CSR. To do 
+so, they are required 
+to provide  a suitable 
+justification for the 
+withdrawal.  
+Withdraw a 
+CSR 
+
+
+Clinical study reports submission  
+ 
+10 
+ Roles and permissions  
+ 
+CTIS is a role -based system  that enables users to perform different actions 
+depending on the permission s attached  to the  roles assigned to them by a user 
+from their organisation  with administrator permissions.  
+ 
+In relation to the CSR process , three roles  (from the MAH user group) are  involved:  
+Marketing Authorisation Holder  Admin (MAH Admin), CSR Viewer , and CSR 
+Submitter.  
+ Users can request the MAH Admin role by raising a ticket to CTIS User Service Desk . 
+In their tickets, they need to attach an affiliation letter (a template provided by 
+EMA), signed by a representative of the MAH/MAA.  Us ers need to fill in the affiliation 
+letter details such as the clinical trial for which the MAH Admin role is requested, as 
+well as personal data (full name, email) and sponsor organisation data. 
+ 
+E
+MA, after receiving the request, will validate it and will proceed with assigning the 
+MAH Admin role for the trials, listed in the affiliation letter.  The MAH A dmin user is 
+able to assign the role s of CSR S ubmitter or V iewer to other CTIS users.  This can 
+be done for one or several trials.  
+ 
+The MAH Admin or the CSR  Submitter  users can then submit the CSR for the trials 
+for which the role ha ve been granted, as well as update or  withdraw CSR(s) . The 
+CSR Viewers can only view  CSRs (including the  drafts) but cannot submit, update 
+or withdraw CSRs . 
+  
+ 
+ 
+ 
+Matching of  roles and permissions with the actions to be performed in CTIS  
+ 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+#CTIS  
+insights  
+The permission 
+levels are structured in a cascade system 
+where the lowest 
+level is  viewing 
+permissions, and the 
+highest level is  
+submitting 
+permissions.  
+Roles and 
+permissions  
+There are three roles 
+in the MAH user 
+group :  
+1) MAH Admin  
+2) CSR Submitter  
+3) CSR Viewer  
+ 
+
+
+Clinical study reports submission  
+ 
+11 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+European Medicines Agency  
+Domenico Scarlattilaan 6  
+1083 HS Amsterdam 
+The Netherlands  
+Telephone +31 (0)88 781 6000  
+Send a question www.ema.europa.eu/contact  
+www.ema.europa.eu  
+ 
+ 
+ 
+ 
+ 
+ 
+Clinical Trials Information System (CTIS) 
+Quick guide: Clinical Study Report 
+submission . 
+ 
+© European Medicines Agency, 2021 . 
+

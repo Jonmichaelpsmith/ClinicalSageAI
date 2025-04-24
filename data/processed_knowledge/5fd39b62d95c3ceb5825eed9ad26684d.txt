@@ -1,0 +1,1985 @@
+Clinical Study Report 
+Covance CRU Study No. 7694-105 
+ 
+ Confidential 
+Sponsor Protocol No. SM 08-01
+16.1.2 Sample Case Report Form 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                1 RDC  CASE REPORT FORM 
+ 
+ 
+ 
+A CONTROLLED STUDY OF THE ABIL ITY OF A TRADITIONAL SWEDISH 
+SMOKELESS TOBACCO PRODUCT (“SNUS”)  TO INCREASE THE QUIT RATE 
+AMONG CIGARETTE SMOKERS WHO WISH TO STOP SMOKING 
+ 
+ 
+ 
+ 
+Protocol No. SM 08-01 
+Covance Study No. 7694-105  
+ 
+ 
+ 
+for 
+ 
+SWEDISH MATCH AB 
+ROSENLUNDSGATAN 36 
+SE-118 85 STOCKHOLM 
+SWEDEN 
+  
+ 
+ 
+ 
+ 
+by 
+ 
+Covance Clinical Research Unit Inc. 
+3402 Kinsman Blvd 
+Madison, Wisconsin 53704 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.1:27MAR2009                                2 INCLUSION CRITERIA  
+    
+Subjects who meet the following criteria may be included in the study. Did the subject 
+meet the following criteria requirements for inclusion? ( 9 Yes or No) Yes 
+1 No* 
+2 
+01 The subject is male or female, between 25 and 65 years of age, inclusive. If 
+female, the subject has a negative urine pregnancy test and is not lactating, or 
+has not been of childbearing potential for at least 3 months prior to use of study 
+product.  To be considered to be not of ch ildbearing potential, the subject must be 
+postmenopausal for at least 2 years; have had a hysterectomy or bilateral tubal 
+ligation, or be proven to be otherwise incapable of pr egnancy.  If of childbearing 
+potential, the subject must have been prac ticing one of the following methods of 
+contraception consistently for at least 1 month prior to study entry and agree to 
+continue practicing it during the study:  hormonal contraceptives, intrauterine 
+device, spermicide and barrier, spouse/part ner sterility; or is practicing abstinence 
+and agrees to continue abstinence or to start an acceptable method of 
+contraception from the above list if  sexual activity commences.     
+02 The subject smokes > 9 cigarettes per day (average daily consumption during 
+past month).   
+03 The subject has smoked daily for > 1 year.   
+04 The subject is motivated to quit smoki ng with the help of a smokeless tobacco 
+alternative.   
+05 The subject is in good general health as evidenced  by medical history, physical 
+examination, routine blood c hemistry (Hb, total WBC, transaminases, creatinine, 
+electrolytes) , and an ECG   
+06 The subject practices, by self-report, good oral hygiene (including brushing teeth 
+at least twice per day and having regular dental check-ups).   
+07 The subject is able and willing to provide written informed consent.   
+08 The subject agrees to comply with the requirements of the pr otocol and complete 
+study measures.   
+09 The subject has stable residence and telephone.   
+*If No, document on Subject Eligibility Page. 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                3 EXCLUSION CRITERIA  
+ 
+The following will exclude potential subject s from the study. Does the subject have any 
+of the following? ( 9 Yes or No) Yes* 
+1 No 
+2 
+01 The subject is a current user of ST ( defined as daily usage during more than 1 week 
+within  past 6 months) or is unable to re frain from NRT or any other non-protocol 
+treatment during the study.  Use of pipes, ci gars, cigarillos, snuff, and chewing tobacco 
+is also prohibited during the study.   
+02 The subject is a female who is pregnant or lactating.   
+03 The subject has oral conditions that coul d potentially be made wo rse by use of study 
+product, for instance, exposed dental cervices in the upper sulcus.   
+04 The subject has used any type of pharmaceut ical (including some psychotropics, e.g., 
+wellbutrin) or other produc ts for smoking cessation within the past 3 months.   
+05 The subject has a history of clinically si gnificant renal, hepatic, neurological, or chronic 
+pulmonary disease that in the judgment of the investigator precludes participation.   
+06 The subject has a history of cardiovascular disease, including myocardial infarction 
+within the last 3 months, significant ca rdiac arrhythmias, or poorly controlled 
+hypertension (defined as a diastolic pressu re of more than 90 mm Hg or a systolic 
+pressure of more than 140 mm Hg) that in t he judgment of the inve stigator precludes 
+participation.   
+07 The subject has a history of alcohol or   substance abuse or dependence  other than 
+cigarette smoking within the past year   
+08 Use of any illicit drug or smoked mar ijuana in the last 3 months.      
+09 The subject is unwilling to be randomized  into active or placebo conditions, or be 
+available for follow-up assessments.   
+10 The subject resides in a household where anot her member is currently participating in 
+the study.   
+*If Yes, document on Subject Eligibility Page. 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                4 INFORMATION SESSION  IE} 
+ 
+Date of Information Session Did the subject attend the 
+Information Session?    Comments  
+____/_____/______ 
+    DD/MMM/YYYY  1  Yes    
+2  No (explain, if No)  
+ 
+ 
+SUBJECT ELIGIBILITY  
+ 
+Date the Subject Signed the Informed Consent Form:    
+                                                                              ____/_____/______ 
+    DD/MMM/YYYY  
+Did the subject meet all of the inclusion/exclusion criteria?   1  Yes   2  No  
+If the subject did not meet all of the Inclusion/Exclusion criter ia, provide criterion number and 
+explanation below.  
+Category 
+ Inclusion/ 
+Exclusion  
+No.  Explanation 
+ Exemption 
+Granted? 
+ If Yes,  
+Date Granted 
+DD/MMM/YYYY        
+1 Inclusion    
+2 Exclusion    1 Yes    
+2 No  ____/_____/______  
+1 Inclusion    
+2 Exclusion    1 Yes    
+2 No  ____/_____/______  
+1 Inclusion    
+2 Exclusion    1 Yes    
+2 No  ____/_____/______  
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                5 SCREENING  
+  
+DEMOGRAPHICS                       
+ 
+Date                       
+DD/MMM/YYYY   Date of Birth    
+DD/MMM/YYYY    Gender   Ethnicity   
+____/_____/______      ____/_____/______   1  Male 
+2  Female 1   Hispanic or Latino 
+2   Not Hispanic or Latino 
+Race   
+1  White 
+2  Black or African American 
+3  Asian 4  Native Hawaiian or Other Pacific Islander 
+5  American Indian/Alaskan Native 
+6  Other:___________ ___________________ SCORRES  
+ 
+BODY MEASUREMENTS 
+ 
+Were Body Measurements Collected? Date                       
+DD/MMM/YYYY  
+1  Yes   2  No ____/_____/______      
+Parameter                        Unit                         Result                        
+Height in _____ _____ _____ . _____ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                6 SCREENING   
+ 
+VITAL SIGNS                       
+ 
+Were vital signs collected?  Date  
+DD/MMM/YYYY  Actual Time    
+24-hour clock Was Subject seated 
+for 5 minutes?  
+1  Yes   2  No  ____/_____/______    
+  __ __ : __ __ 1  Yes    
+2  No 
+Parameter   Unit    Result    
+Systolic Blood Pressure mmHg _____ _____ _____  
+Diastolic Blood Pressure mmHg _____ _____ _____  
+Heart Rate beats/minute _____ _____ _____  
+Respiratory Rate breaths/minute _____ _____  
+Body Temperature ºC _____ _____ . _____  
+Weight lb _____ _____ _____ . _____   
+ 
+ 
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                7 SCREENING   
+ 
+LABORATORY EVALUATIONS                       
+ 
+Were the scheduled laboratory samples obtained?                         Date  
+DD/MMM/YYYY  
+1  Yes   
+2  No (Specify samples not done, reason): _____________________ ____________ 
+                                                                            ____/_____/______   
+Evaluation: Safety Urine & Blood Tests; Biomarker Blood Tests   
+Requisition Number 1 : ______________________ 
+Requisition Number 2 (if applicable) : ______________________ 
+Requisition Number 3 (if applicable) : ______________________  
+Were there any clinically significant labs?  1  Yes (specify below)  2  No  
+Requisition Number  Test Name  Test Code ID 
+   
+   
+Note: Attach copy of signed laboratory report. 
+ 
+URINE PREGNANCY TEST 
+ 
+Result 
+1  Positive  2  Negative  9  N/A, Male or Woman of  Non-childbearing Potential 
+ 
+URINE DRUG SCREEN 
+ 
+Drug Screen Result* 
+1  Positive  2  Negative  
+*If result derived from test performed by a clinical labor atory, attach copy of signed laboratory report to the CRF. 
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                8 SCREENING   
+  
+12-LEAD ELECTROCARDIOGRAM REPORT  
+ 
+Was ECG performed?  Was Subject Supine at  
+Least 5 Minutes? Date   
+DD/MMM/YYYY   Actual Time   
+24-hour clock        
+1  Yes   2  No       1  Yes   2  No       ____/_____/______  __ __ : __ __  
+ECG Interpretation:     1  Normal     2  Abnormal, NCS      3  Abnormal, CS          
+                             
+Comments Regarding CS Findings:   CO 
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                9 SCREENING   
+ 
+MEDICAL HISTORY 
+ 
+Does the subject have any relevant medical history?  Date  
+DD/MMM/YYYY  
+1   Yes     2   No ____/_____/______      
+Diagnosis/Procedure  Date of Onset 
+DD/MMM/YYYY  Date of Resolution  
+DD/MMM/YYYY  
+1.   ___/_____/_____ ___/_____/_____ 9  ONGOING  
+2.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+3.   ___/_____/_____ ___/_____/_____ 9  ONGOING  
+4.   ___/_____/_____ ___/_____/_____ 9  ONGOING  
+5.   ___/_____/_____ ___/_____/_____ 9  ONGOING  
+6.   ___/_____/_____ ___/_____/_____ 9  ONGOING  
+7.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+8.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+9.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+10.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+11.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+12.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+13.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+14.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+15.  ___/_____/_____ ___/_____/_____ 9  ONGOING  
+Consider the following system s when performing the assessment:  
+• Skin 
+• Ears, Eyes, Nose, Throat (EENT)  
+• Breasts  
+• Respiratory  
+• Cardiovascular  • Lymphatic/Hematologic  
+• Gastrointestinal  
+• Genitourinary  
+• Musculoskeletal  
+• Endocrine  • Neurological  
+• Immunological  
+• Psychological  
+• Allergies  
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                10 SCREENING   
+  
+SMOKING HISTORY 
+ 
+Was Smoking History collected?  Date   
+DD/MMM/YYYY    
+1  Yes   2  No       ____/_____/______   
+Parameter     Result   Comments  
+Age subject began smoking daily _____ _____  
+Average number of cigarettes 
+smoked per day over the past year _____ _____  
+Has subject used smokeless tobacco in the past? 
+1  Yes   2  No        
+Has the subject attempted to quit 
+with the use of Nicotine Replacement Therapy (NRT)? List details of NRT products used in Comments  section. 1  Yes   2  No       
+If yes, how many times? _____ _____   
+Has the subject attempted to quit 
+with the use of pharmaceuticals 
+other than NRTs? List details of other pharmaceuticals used in the Comments  section. 1  Yes   2  No       
+If yes, how many times? _____ _____   
+Has the subject attempted to quit 
+with the use of other smoking cessation aids? List details of other 
+smoking cessation aids used in the 
+Comments  section. 1  Yes   2  No       
+If yes, how many times? _____ _____  
+Has the subject made any other 
+attempts to quit smoking? List details of other quit attempts in the Comments  section. 1  Yes   2  No       
+If yes, how many times? _____ _____   
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                11 SCREENING   
+ 
+ORAL HEALTH EXAMINATION 
+ 
+Date 
+DD/MMM/YYYY  Procedure Findings* Findings 
+___/____/_____  Evidence of Leukoplakia 1  Yes  2  No  9  NE  
+ Exposed dental cervices in upper sulcus? 1  Yes  2  No  9  NE   
+ Other Oral Keratosis 1  Yes  2  No  9  NE  
+*Indicate NE if system was not examined. 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                12 SCREENING   
+  
+PHYSICAL EXAMINATIONS 
+ 
+Does the subject have any abnormal findings?  Date  
+DD/MMM/YYYY  
+1   Yes     2   No ____/_____/______      
+Findings 
+1.   
+2.  
+3.   
+4.   
+5.   
+6.   
+7.  
+8.  
+9.  
+10.  
+11.  
+12.  
+13.  
+14.  
+15.  
+Consider the following system s when performing the assessment:  
+• Oral Cavity  
+• General Appearance  
+• Skin 
+• HEENT  • Neck (including thyroid)  
+• Lungs  
+• Heart   
+• Abdomen  • Extremities  
+• Neurologic/Nervous System  
+• Lymph Nodes  
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                13 SCREENING   
+  
+BEHAVIORAL COUNSELING 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Behavioral Counseling 
+Given?  1  Yes  2  No    
+ Was “Cleaning the Air” booklet 
+provided? 1  Yes  2  No    
+  
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.2:31MAR2009                                14 BASELINE, WEEK 0 
+  
+EXPIRED CARBON MONOXIDE 
+ 
+Date  
+DD/MMM/YYYY  Actual Time 
+24-hour clock  ECO Level 
+ppm %COHb 
+ Comments 
+____/_____/______     __ __ : __ __ _____ _____ _____ _____ _____ . _____  
+ 
+BEHAVIORAL COUNSELING 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Behavioral Counseling 
+Given?  1  Yes  2  No    
+  
+QUESTIONNAIRES 
+ 
+Date  
+DD/MMM/YYYY   
+____/_____/______       
+Questionnaire Was Questionnaire Administered?  
+FTND 1  Yes  2  No   
+MNWS 1  Yes  2  No   
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                15 BASELINE, WEEK 0   
+RANDOMIZATION 
+ 
+Date  
+DD/MMM/YYYY  Actual Time   
+24-hour clock 
+____/_____/______      __ __ : __ __ 
+Was Subject randomized? 1  Yes  2  No   
+ 
+PRODUCT DISPENSATION 
+ 
+Date  
+DD/MMM/YYYY  
+____/_____/______      
+Product Amount Dispensed  
+0.5 g of snus or matching placebo ___ ___ ___ logs 
+1.0 g of snus or matching placebo ___ ___ ___ logs 
+ 
+DIARY DISTRIBUTION 
+ 
+Date  
+DD/MMM/YYYY  
+____/_____/______      
+Did subject receive diary and 
+usage instructions?  1  Yes  2  No   
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.3:16APR2009                                16 STUDY PRODUCT TEST PERIOD 
+WEEKS 1 THROUGH 4 
+STATUS REVIEW 
+ 
+Date  
+DD/MMM/YYYY Scheduled 
+Timepoint Parameter Result Comments 
+___/____/_____ Week 1 Was Subject contacted by telephone? 1  Yes  2  No    
+  Was Subject’s smoking status reviewed? 1  Yes  2  No    
+  Was Subject’s use of study product reviewed? 1  Yes  2  No    
+  Approximately how many cigarettes did the subject 
+smoke that week? _____ _____ _____  
+  Was Behavioral Counseling Given? 1  Yes  2  No    
+___/____/_____ Week 2 Was Subject contacted by telephone? 1  Yes  2  No    
+  Was Subject’s smoking status reviewed? 1  Yes  2  No    
+  Was Subject’s use of study product reviewed? 1  Yes  2  No    
+  Approximately how many cigarettes did the subject 
+smoke that week? _____ _____ _____  
+  Was Behavioral Counseling Given? 1  Yes  2  No    
+___/____/_____ Week 3 Was Subject contacted by telephone? 1  Yes  2  No    
+  Was Subject’s smoking status reviewed? 1  Yes  2  No    
+  Was Subject’s use of study product reviewed? 1  Yes  2  No    
+  Approximately how many cigarettes did the subject 
+smoke that week? _____ _____ _____  
+  Was Behavioral Counseling Given? 1  Yes  2  No    
+___/____/_____ Week 4 Was Subject contacted by telephone? 1  Yes  2  No    
+  Was Subject’s smoking status reviewed? 1  Yes  2  No    
+  Was Subject’s use of study product reviewed? 1  Yes  2  No    
+  Approximately how many cigarettes did the subject 
+smoke that week? _____ _____ _____  
+  Was Behavioral Counseling Given? 1  Yes  2  No    
+  Was Subject reminded about the complete switch from 
+cigarettes no later than the first day of Week 5? 1  Yes  2  No    
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                17 INTERVENTION PHASE 
+WEEK 6  
+STATUS REVIEW 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Subject asked HDYF? question during Week 5? 1  Yes  
+2  No    
+ 
+VITAL SIGNS                       
+ 
+Were vital signs collected?  Date  
+DD/MMM/YYYY  Actual Time    
+24-hour clock Was Subject seated 
+for 5 minutes?  
+1  Yes   2  No  ____/_____/______    
+  __ __ : __ __ 1  Yes    
+2  No 
+Parameter   Unit    Result    
+Systolic Blood Pressure mmHg _____ _____ _____  
+Diastolic Blood Pressure mmHg _____ _____ _____  
+Heart Rate beats/minute _____ _____ _____  
+Respiratory Rate breaths/minute _____ _____  
+Body Temperature ºC _____ _____ . _____  
+Weight lb _____ _____ _____ . _____   
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                18 INTERVENTION PHASE 
+WEEK 6 
+LABORATORY EVALUATIONS                       
+ 
+Were the scheduled laboratory samples obtained?    Date  
+DD/MMM/YYYY  
+1  Yes   
+2  No (Specify samples not done, reason): _____________________ ____________ 
+                                                                            ____/_____/______   
+Evaluation: Biomarker Blood Tests   
+Requisition Number 1 : ______________________ 
+Requisition Number 2 (if applicable) : ______________________ 
+Requisition Number 3 (if applicable) : ______________________  
+Were there any clinically significant labs?  1  Yes (specify below)  2  No  
+Requisition Number  Test Name  Test Code ID 
+   
+   
+Note: Attach copy of signed laboratory report. 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.2:31MAR2009                                19 INTERVENTION PHASE 
+WEEK 6 
+ 
+EXPIRED CARBON MONOXIDE 
+ 
+Date  
+DD/MMM/YYYY  Actual Time 
+24-hour clock  ECO Level 
+ppm %COHb 
+ Comments 
+____/_____/______     __ __ : __ __ _____ _____ _____ _____ _____ . _____  
+ 
+BEHAVIORAL COUNSELING 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Behavioral Counseling 
+Given?  1  Yes  2  No    
+  
+QUESTIONNAIRES 
+ 
+Date  
+DD/MMM/YYYY   
+____/_____/______       
+Questionnaire Was Questionnaire Administered?  
+MNWS 1  Yes  2  No   
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                20 INTERVENTION PHASE 
+WEEK 6  
+PRODUCT DISPENSATION 
+ 
+Date  
+DD/MMM/YYYY  
+____/_____/______      
+Product Amount Dispensed  
+0.5 g of snus or matching placebo ___ ___ ___ logs 
+1.0 g of snus or matching placebo ___ ___ ___ logs 
+ 
+STATUS REVIEW 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Subject’s smoking status reviewed? 1  Yes  2  No    
+ Was Subject compliant? 1  Yes  2  No    
+ If Subject was not compliant, approximately how many 
+cigarettes did the subject smoke that week? _____ _____ _____  
+ Was Subject asked HDYF? question? 1  Yes  2  No    
+ 
+DIARY DISTRIBUTION 
+ 
+Date  
+DD/MMM/YYYY  
+____/_____/______      
+Did subject receive diary and 
+usage instructions?  1  Yes  2  No   
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                21 INTERVENTION PHASE 
+WEEK 8 
+STATUS REVIEW 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Subject contacted by telephone?  1  Yes  2  No    
+ Was Subject’s smoking status reviewed? 1  Yes  2  No    
+ Was Subject’s use of study product reviewed? 1  Yes  2  No    
+ Was Subject compliant? 1  Yes  2  No    
+ If Subject was not compliant, approximately 
+how many cigarettes did the subject smoke 
+that week? _____ _____ _____  
+ Was Behavioral Counseling Given? 1  Yes  2  No    
+ Was Subject asked HDYF? question? 1  Yes  2  No    
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                22 INTERVENTION PHASE 
+WEEK 10 
+VITAL SIGNS                       
+ 
+Were vital signs collected?  Date  
+DD/MMM/YYYY  Actual Time    
+24-hour clock Was Subject seated 
+for 5 minutes?  
+1  Yes   2  No  ____/_____/______    
+  __ __ : __ __ 1  Yes    
+2  No 
+Parameter   Unit    Result    
+Systolic Blood Pressure mmHg _____ _____ _____  
+Diastolic Blood Pressure mmHg _____ _____ _____  
+Heart Rate beats/minute _____ _____ _____  
+Respiratory Rate breaths/minute _____ _____  
+Body Temperature ºC _____ _____ . _____  
+Weight lb _____ _____ _____ . _____   
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.2:31MAR2009                                23 INTERVENTION PHASE 
+WEEK 10 
+ 
+EXPIRED CARBON MONOXIDE 
+ 
+Date  
+DD/MMM/YYYY  Actual Time 
+24-hour clock  ECO Level 
+ppm %COHb 
+ Comments 
+____/_____/______     __ __ : __ __ _____ _____ _____ _____ _____ . _____  
+ 
+BEHAVIORAL COUNSELING 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Behavioral Counseling 
+Given?  1  Yes  2  No    
+  
+QUESTIONNAIRES 
+ 
+Date  
+DD/MMM/YYYY   
+____/_____/______       
+Questionnaire Was Questionnaire Administered?  
+MNWS 1  Yes  2  No   
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                24 INTERVENTION PHASE 
+WEEK 10  
+PRODUCT DISPENSATION 
+ 
+Date  
+DD/MMM/YYYY  
+____/_____/______      
+Product Amount Dispensed  
+0.5 g of snus or matching placebo ___ ___ ___ logs 
+1.0 g of snus or matching placebo ___ ___ ___ logs 
+ 
+STATUS REVIEW 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Subject’s smoking status reviewed? 1  Yes  2  No    
+ Was Subject’s use of study product reviewed? 1  Yes  2  No    
+ Was Subject compliant? 1  Yes  2  No    
+ If Subject was not compliant, approximately how many 
+cigarettes did the subject smoke that week? _____ _____ _____  
+ Was Subject asked HDYF? question? 1  Yes  2  No    
+ 
+DIARY DISTRIBUTION 
+ 
+Date  
+DD/MMM/YYYY  
+____/_____/______      
+Did subject receive diary and 
+usage instructions?  1  Yes  2  No   
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                25 INTERVENTION PHASE 
+WEEK 13 
+STATUS REVIEW 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Subject contacted by telephone?  1  Yes  2  No    
+ Was Subject’s smoking status reviewed? 1  Yes  2  No    
+ Was Subject’s use of study product reviewed? 1  Yes  2  No    
+ Was Subject compliant? 1  Yes  2  No    
+ If Subject was not compliant, approximately 
+how many cigarettes did the subject smoke 
+that week? _____ _____ _____  
+ Was Behavioral Counseling Given? 1  Yes  2  No    
+ Was Subject asked HDYF? question? 1  Yes  2  No    
+ Was Subject instructed to cut down on product 
+use during upcoming Weeks 14 – 16 to avoid a 
+too abrupt ending of nicotine uptake? 1  Yes  2  No    
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                26 INTERVENTION PHASE 
+WEEK 16 
+VITAL SIGNS                       
+ 
+Were vital signs collected?  Date  
+DD/MMM/YYYY  Actual Time    
+24-hour clock Was Subject seated 
+for 5 minutes?  
+1  Yes   2  No  ____/_____/______    
+  __ __ : __ __ 1  Yes    
+2  No 
+Parameter   Unit    Result    
+Systolic Blood Pressure mmHg _____ _____ _____  
+Diastolic Blood Pressure mmHg _____ _____ _____  
+Heart Rate beats/minute _____ _____ _____  
+Respiratory Rate breaths/minute _____ _____  
+Body Temperature ºC _____ _____ . _____  
+Weight lb _____ _____ _____ . _____   
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                27 INTERVENTION PHASE 
+WEEK 16 
+LABORATORY EVALUATIONS                       
+ 
+Were the scheduled laboratory samples obtained?    Date  
+DD/MMM/YYYY  
+1  Yes   
+2  No (Specify samples not done, reason): _____________________ ____________ 
+                                                                            ____/_____/______   
+Evaluation: Biomarker Blood Tests   
+Requisition Number 1 : ______________________ 
+Requisition Number 2 (if applicable) : ______________________ 
+Requisition Number 3 (if applicable) : ______________________  
+Were there any clinically significant labs?  1  Yes (specify below)  2  No  
+Requisition Number  Test Name  Test Code ID 
+   
+   
+Note: Attach copy of signed laboratory report. 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                28 INTERVENTION PHASE 
+WEEK 16 
+ 
+ORAL HEALTH EXAMINATION 
+ 
+Date 
+DD/MMM/YYYY  Procedure Findings* Findings 
+___/____/_____  Evidence of Leukoplakia 1  Yes  2  No  9  NE  
+ Exposed dental cervices in upper sulcus? 1  Yes  2  No  9  NE   
+ Other Oral Keratosis 1  Yes  2  No  9  NE  
+*Indicate NE if system was not examined. 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.1:27MAR2009                                29 INTERVENTION PHASE 
+WEEK 16   
+PHYSICAL EXAMINATIONS 
+ 
+Does the subject have any abnormal findings?  Date  
+DD/MMM/YYYY  
+1   Yes     2   No ____/_____/______      
+Findings 
+1.   
+2.  
+3.   
+4.   
+5.   
+6.   
+7.  
+8.  
+9.  
+10.  
+11.  
+12.  
+13.  
+14.  
+15.  
+Consider the following system s when performing the assessment: PETEST  
+• Oral Cavity  
+• General Appearance  
+• Skin 
+• HEENT  • Neck (including thyroid)  
+• Lungs  
+• Heart   
+• Abdomen  • Extremities  
+• Neurologic/Nervous System  
+• Lymph Nodes  
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.2:31MAR2009                                30 INTERVENTION PHASE 
+WEEK 16 
+ 
+EXPIRED CARBON MONOXIDE 
+ 
+Date  
+DD/MMM/YYYY  Actual Time 
+24-hour clock  ECO Level 
+ppm %COHb 
+ Comments 
+____/_____/______     __ __ : __ __ _____ _____ _____ _____ _____ . _____  
+ 
+BEHAVIORAL COUNSELING 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Behavioral Counseling 
+Given?  1  Yes  2  No    
+  
+QUESTIONNAIRES 
+ 
+Date  
+DD/MMM/YYYY   
+____/_____/______       
+Questionnaire Was Questionnaire Administered?  
+FTND 1  Yes  2  No   
+MNWS 1  Yes  2  No   
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.4:12MAY2009                                31 INTERVENTION PHASE 
+WEEK 16  
+  
+ 
+STATUS REVIEW 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Subject’s smoking status reviewed? 1  Yes  2  No    
+ Was Subject’s use of study product reviewed? 1  Yes  2  No    
+ Was Subject compliant? 1  Yes  2  No    
+ If Subject was not compliant, approximately how many 
+cigarettes did the subject smoke that week? _____ _____ _____  
+ Was Subject asked HDYF? question? 1  Yes  2  No    
+ 
+DIARY DISTRIBUTION 
+ 
+Date  
+DD/MMM/YYYY  
+____/_____/______      
+Did subject receive diary and usage instructions?  
+1  Yes  2  No   
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                32 FOLLOW-UP PHASE 
+WEEKS 20 AND 24 
+STATUS REVIEW 
+ 
+Date 
+DD/MMM/YYYY  Scheduled 
+Timepoint Parameter Result Comments 
+___/____/_____ Week 20 Was Subject contacted by telephone?  1  Yes  2  No    
+  Was Subject’s smoking status reviewed? 1  Yes  2  No    
+  Was Subject compliant? 1  Yes  2  No    
+  
+ If Subject was not compliant, approximately 
+how many cigarettes did the subject smoke 
+that week? _____ _____ _____  
+  Was Behavioral Counseling Given? 1  Yes  2  No    
+  Was Subject asked HDYF? question? 1  Yes  2  No    
+___/____/_____ Week 24 Was Subject contacted by telephone?  1  Yes  2  No    
+  Was Subject’s smoking status reviewed? 1  Yes  2  No    
+  Was Subject compliant? 1  Yes  2  No    
+  
+ If Subject was not compliant, approximately 
+how many cigarettes did the subject smoke 
+that week? _____ _____ _____  
+  Was Behavioral Counseling Given? 1  Yes  2  No    
+  Was Subject asked HDYF? question? 1  Yes  2  No    
+ 
+ 
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                33 FOLLOW-UP PHASE 
+WEEK 28 
+VITAL SIGNS                       
+ 
+Were vital signs collected?  Date  
+DD/MMM/YYYY  Actual Time    
+24-hour clock Was Subject seated 
+for 5 minutes?  
+1  Yes   2  No  ____/_____/______    
+  __ __ : __ __ 1  Yes    
+2  No 
+Parameter   Unit    Result    
+Systolic Blood Pressure mmHg _____ _____ _____  
+Diastolic Blood Pressure mmHg _____ _____ _____  
+Heart Rate beats/minute _____ _____ _____  
+Respiratory Rate breaths/minute _____ _____  
+Body Temperature ºC _____ _____ . _____  
+Weight lb _____ _____ _____ . _____   
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                34 FOLLOW-UP PHASE 
+WEEK 28  
+LABORATORY EVALUATIONS                       
+ 
+Were the scheduled laboratory samples obtained?    Date  
+DD/MMM/YYYY  
+1  Yes   
+2  No (Specify samples not done, reason): _____________________ ____________ 
+                                                                            ____/_____/______   
+Evaluation: Biomarker Blood Tests   
+Requisition Number 1 : ______________________ 
+Requisition Number 2 (if applicable) : ______________________ 
+Requisition Number 3 (if applicable) : ______________________  
+Were there any clinically significant labs?  1  Yes (specify below)  2  No  
+Requisition Number  Test Name  Test Code ID 
+   
+   
+Note: Attach copy of signed laboratory report. 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                35 FOLLOW-UP PHASE 
+WEEK 28 
+ 
+ORAL HEALTH EXAMINATION 
+ 
+Date 
+DD/MMM/YYYY  Procedure Findings* Findings 
+___/____/_____  Evidence of Leukoplakia 1  Yes  2  No  9  NE  
+ Exposed dental cervices in upper sulcus? 1  Yes  2  No  9  NE   
+ Other Oral Keratosis 1  Yes  2  No  9  NE  
+*Indicate NE if system was not examined. 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.1:27MAR2009                                36 FOLLOW-UP PHASE 
+WEEK 28  
+PHYSICAL EXAMINATIONS 
+ 
+Does the subject have any abnormal findings?  Date  
+DD/MMM/YYYY  
+1   Yes     2   No ____/_____/______      
+Findings 
+1.   
+2.  
+3.   
+4.   
+5.   
+6.   
+7.  
+8.  
+9.  
+10.  
+11.  
+12.  
+13.  
+14.  
+15.  
+Consider the following system s when performing the assessment: PETEST  
+• Oral Cavity  
+• General Appearance  
+• Skin 
+• HEENT  • Neck (including thyroid)  
+• Lungs  
+• Heart   
+• Abdomen  • Extremities  
+• Neurologic/Nervous System  
+• Lymph Nodes  
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.2:31MAR2009                                37 FOLLOW-UP PHASE 
+WEEK 28 
+ 
+EXPIRED CARBON MONOXIDE 
+ 
+Date  
+DD/MMM/YYYY  Actual Time 
+24-hour clock  ECO Level 
+ppm %COHb 
+ Comments 
+____/_____/______     __ __ : __ __ _____ _____ _____ _____ _____ . _____  
+ 
+BEHAVIORAL COUNSELING 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____ Was Behavioral Counseling 
+Given?  1  Yes  2  No    
+  
+QUESTIONNAIRES 
+ 
+Date  
+DD/MMM/YYYY   
+____/_____/______       
+Questionnaire Was Questionnaire Administered?  
+FTND 1  Yes  2  No   
+MNWS 1  Yes  2  No   
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                38 FOLLOW-UP PHASE 
+WEEK 28   
+STATUS REVIEW 
+ 
+Date 
+DD/MMM/YYYY  Parameter Result Comments 
+___/____/_____  Was Subject’s smoking status reviewed? 1  Yes  2  No    
+ Was Subject compliant? 1  Yes  2  No    
+ If Subject was not compliant, approximately how many 
+cigarettes did the subject smoke that week? _____ _____ _____  
+ Was Subject asked HDYF? question? 1  Yes  2  No    
+ 
+  
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.1:27MAR2009                                39  PREVIOUS AND CONCOMITANT MEDICATIONS   
+ 
+Has the subject taken any medications prior to the first dos e and/or during the study as re stricted by the protocol? 
+1  Yes, list below.    2  No 
+Drug Name:  
+Indication:  
+Dose:   
+Unit:   Select only one  
+1  grams 
+2  micrograms 
+3  milligrams 
+4  milliliter 
+5  tablet 
+6  other 
+ Frequency:   Select only one  
+1   one time 
+2   whenever necessary 
+3   every morning 
+4   at bedtime 
+5   every day 
+6   twice daily 
+ 7   three times daily   
+8   four times daily 
+10  every four hours 
+11  every other day 
+12  every week 
+13  other, specify 
+Start Date1    
+DD/MMM/YYYY  Stop Date1  
+DD/MMM/YYYY  
+____/_____/______  ____/_____/______  9  ONGOING   
+Drug Name:  
+Indication:  
+Dose: 
+Unit:   Select only one  
+1  grams 
+2  micrograms 
+3  milligrams 
+4  milliliter 
+5  tablet 
+ Frequency: 
+ Select only one  
+1   one time 
+2   whenever necessary 
+3   every morning 
+4   at bedtime 
+5   every day 
+6   twice daily 
+ 7   three times daily   
+8   four times daily 
+10  every four hours 
+11  every other day 
+12  every week 
+13  other, specify 
+Start Date1 
+DD/MMM/YYYY  Stop Date1 
+DD/MMM/YYYY  
+____/_____/______       ____/_____/______   9  ONGOING   
+1START AND STOP DATE:   If medication is given on a regular schedule, repor t start date only once. If dose regimen changes, report 
+as a new line of information. Report start and stop dates for each change in dose regimen  
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.1:27MAR2009                                40 ADVERSE EVENTS  
+ 
+Did the subject experience any adverse events?     1  Yes, list below.    2  No 
+Adverse Event:  
+Onset Date   
+DD/MMM/YYYY  Onset Time   
+24-hour clock  Resolved Date   
+DD/MMM/YYYY  Resolved Time   
+24-hour clock  
+____/_____/______     __ __ : __ __   ____/_____/______   
+9  ONGOING   __ __ : __ __  
+Serious Event:   Select only one  
+1  Yes 
+2  No Severity:   Select only one  
+1  Mild 
+2  Moderate 
+3  Severe Relationship  
+to Product:   
+ Select only one  
+1  Not Related 
+2  Unlikely 
+3  Possibly Related 
+4  Probably Related 
+5  Definitely Related 
+Action Taken:   Select only one  
+1  None 
+2  Other Drug Therapy, Specify as Con. Med. 
+3  Other Treatment or Procedure, Specify:  
+______________________ ________________ 
+4  Discontinuation of Drug Therapy  
+5  Discontinuation from Study Outcome to 
+Date:   
+  Select only one  
+1  Recovered 
+2  Continuing without 
+Treatment 
+3  Continuing with 
+Treatment 
+4  Death 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                41 ADDITIONAL ASSESSMENTS - 12-LE AD ELECTROCARDIOGRAM REPORT 
+ 
+Were any additional 12-lead ECGs collected?     1  Yes, list below.  2  No 
+Date  
+DD/MMM/YYYY   Actual Time 
+24-hour clock  ECG Interpretation: Comments Regarding  
+CS Findings 
+___/____/_____ __ __ : __ __ 1  Normal     2  Abnormal, NCS     3  Abnormal, CS   
+___/____/_____ __ __ : __ __ 1  Normal     2  Abnormal, NCS     3  Abnormal, CS   
+___/____/_____ __ __ : __ __ 1  Normal     2  Abnormal, NCS     3  Abnormal, CS   
+___/____/_____ __ __ : __ __ 1  Normal     2  Abnormal, NCS     3  Abnormal, CS   
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                42 ADDITIONAL ASSESSMENTS - LABORATORY EVALUATIONS 
+  
+Were any additional laboratory evaluations collected?     1  Yes, list below.  2  No                                                 
+Date  
+DD/MMM/YYYY   Requisition 
+Number Clinically 
+Significant?  Test Name 
+CS Labs Only  Test Code ID 
+CS Labs Only  Comments 
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+___/____/_____  1  Yes  
+2  No      
+Note: Attach copy of signed laboratory report. 
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                43 ADDITIONAL ASSESSMENTS - VITAL SIGNS 
+ 
+Were any additional vital signs collected?     1  Yes, list below.  2  No 
+Date    
+DD/MMM/YYYY   Actual Time 
+24-hour clock  Position Parameter Unit Result 
+Systolic Blood Pressure mmHg _____ _____ _____  
+Diastolic Blood Pressure mmHg _____ _____ _____  
+Heart Rate beats/minute _____ _____ _____  
+Respiratory Rate breaths/minute _____ _____ _____  
+Body Temperature ºC _____ _____ _____  ____/_____/______  __ __ : __ __  1 Standing 
+2 Supine 
+3 Seated 
+4 Other, 
+Specify:_________  
+Comments:  
+Systolic Blood Pressure mmHg _____ _____ _____  
+Diastolic Blood Pressure mmHg _____ _____ _____  
+Heart Rate beats/minute _____ _____ _____  
+Respiratory Rate breaths/minute _____ _____ _____  
+Body Temperature ºC _____ _____ _____  ____/_____/______  __ __ : __ __  1 Standing 
+2 Supine 
+3 Seated 
+4 Other, 
+Specify:_________  
+Comments:  
+Systolic Blood Pressure mmHg _____ _____ _____  
+Diastolic Blood Pressure mmHg _____ _____ _____  
+Heart Rate beats/minute _____ _____ _____  
+Respiratory Rate breaths/minute _____ _____ _____  
+Body Temperature ºC _____ _____ _____  ____/_____/______  __ __ : __ __  1 Standing 
+2 Supine 
+3 Seated 
+4 Other, 
+Specify:_________  
+Comments:  
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                44 ADDITIONAL ASSESSMENTS - PHYSICAL EXAMINATIONS 
+ 
+Does the subject have any abnormal findings?  Date  
+DD/MMM/YYYY  
+1   Yes     2   No ____/_____/______      
+Findings 
+1.   
+2.  
+3.   
+4.   
+5.   
+6.   
+7.  
+8.  
+9.  
+10.  
+11.  
+12.  
+13.  
+14.  
+15.  
+Consider the following systems when performing the assessment:  
+• Oral Cavity  
+• General Appearance  
+• Skin 
+• HEENT  • Neck (including thyroid)  
+• Lungs  
+• Heart   
+• Abdomen  • Extremities  
+• Neurologic/Nervous System  
+• Lymph Nodes  
+ 
+ 
+ 
+
+SWEDISH MATCH AB Subject Number:     
+____________        
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials:      
+____. ____. ____. 
+ 
+V1.0:16MAR2009                                45 ORAL HEALTH EXAMINATION 
+ 
+Date 
+DD/MMM/YYYY  Procedure Findings* Findings 
+___/____/_____  Evidence of Leukoplakia 1  Yes  2  No  9  NE  
+ Exposed dental cervices in upper sulcus? 1  Yes  2  No  9  NE   
+ Other Oral Keratosis 1  Yes  2  No  9  NE  
+___/____/_____  Evidence of Leukoplakia 1  Yes  2  No  9  NE  
+ Exposed dental cervices in upper sulcus? 1  Yes  2  No  9  NE   
+ Other Oral Keratosis 1  Yes  2  No  9  NE  
+___/____/_____  Evidence of Leukoplakia 1  Yes  2  No  9  NE  
+ Exposed dental cervices in upper sulcus? 1  Yes  2  No  9  NE   
+ Other Oral Keratosis 1  Yes  2  No  9  NE  
+*Indicate NE if system was not examined. 
+
+SWEDISH MATCH AB  Subject Number: 
+____________ 
+Protocol Number : SM 08-01      
+Covance Study Number : 7694-105 Investigator : _____________ 
+Site: ____________________ Subject Initials: 
+____. ____. ____. 
+ 
+V1.0:16MAR2009       46 STUDY COMPLETION  
+ 
+ 
+Date the subject completed OR  withdrew from the study:   ____/_____/______   
+                                          DD/MMM/YYYY  
+ Reason for Withdrawal (check one): 
+99  NA, Completed Study  
+1  Adverse Event, specify:            
+2  Terminated by Sponsor  
+3  Consent Withdrawn  
+4  Lost to Follow–up  
+9  O t h e r ,  s p e c i f y :            
+ 
+ 
+Investigator Comments (if none, leave blank) :  CO                  
+                            
+                            
+                             
+  
+I have reviewed the data in this case report and found them to be complete and accurate. 
+(To be signed and dated after the subject has ended participation in the study.)  
+ 
+ 
+Principal Investigator  Date 
+DD/MMM/YYYY  
+ 
+
+E7694105D
+CRF Book:Blank Case Report Form for Study:
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_1 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_2 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_3 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_4 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_5 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_6 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_7 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_8 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_9 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_10 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_11 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_12 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_13 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_14 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_15 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+I have not experienced an Adverse Event7. I think the Adverse Event is related to the snus product:6. I have experienced the following Adverse Events:5. I have consumed on average the following number of snus sachets per day:nicotine products [e.g., lozenges])?cessation products this week?
+If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], other4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smokingYes-please specify:3. I have smoked tobacco products other than cigarettes:2. I have smoked on average cigarettes per day
+No
+NoYes
+Large (1g)Sachet Size:
+Small (0.5g)
+Correct
+Incorrect
+Don't Know1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+LockedPage Version No.WEEK_16 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_17 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_18 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_19 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_20 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_21 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_22 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_23 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_24 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_25 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_26 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_27 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
+Study # 7694-105 / Protocol # SM 08-01
+Initials: Subject #:
+Is Blank
+Correct Incorrect
+nicotine products [e.g., lozenges])?If yes, what type (smokeless tobacco, pharmaceutical nicotine replacement products [gum / patch / other], otherNoYescessation products this week?4. Did you use smokeless tobacco products, nicotine-containing products (e.g., gum or patch), or other smoking3. I have smoked tobacco products other than cigarettes:
+Yes-please specify:No2. I have smoked on average1. I have not smoked any cigarettes at all during the past week (1 or 2 puffs = 1 cigarette)STUDY PRODUCT USE DIARY
+During the past week: Date of completion:
+cigarettes per day
+LockedPage Version No.WEEK_28 (v1, 25-MAR-2009)Verified
+Document NumberFrozen Approved
+
