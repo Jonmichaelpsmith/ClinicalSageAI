@@ -369,6 +369,21 @@ export default function App() {
                   </ProtectedRoute>
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/cer-module">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CER Module" />}>
+                  <LazyStreamingCERGenerator />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/regulatory-module">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Regulatory Module" />}>
+                  <LazyValidationHubEnhanced />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/use-cases">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Use Cases" />}>
+                  <LazyUseCaseLibrary />
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/solutions/cmc-insights">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CMC Insights" />}>
                   <ProtectedRoute>
