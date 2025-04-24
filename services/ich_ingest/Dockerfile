@@ -1,42 +1,33 @@
 FROM python:3.11-slim
-
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    tesseract-ocr \
-    poppler-utils \
-    libpq-dev \
+# System dependencies (including OCR support)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        tesseract-ocr \
+        libsm6 libxext6 libxrender1 \
+        git curl \
+        poppler-utils \
+        build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app
-
-# Copy requirements first to leverage Docker cache
-COPY requirements.txt .
+# Copy requirements first for better caching
+COPY services/ich_ingest/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . /app/services/ich_ingest/
+COPY . .
 
-# Create necessary directories
-RUN mkdir -p /app/csr_uploads /app/services/ich_ingest/guidelines
+# Setup directories
+RUN mkdir -p /data/csr_uploads /data/guidelines
 
-# Set up environment defaults
-ENV ICH_BASE_URL="https://www.ich.org/page/articles-procedures" \
-    CSR_DIR="/app/csr_uploads/" \
-    GUIDELINES_DIR="/app/services/ich_ingest/guidelines/" \
-    PROCESSED_LOG="/app/services/ich_ingest/processed.json" \
-    PINECONE_ENV="us-west1-gcp" \
-    PINECONE_INDEX="ich-specialist" \
-    INGEST_INTERVAL_SEC=86400 \
-    CSR_POLL_INTERVAL_SEC=60
-
-# Expose the API port
+# Expose API port
 EXPOSE 8000
 
-# Command to run the application
-CMD ["uvicorn", "services.ich_ingest.agent:app", "--host", "0.0.0.0", "--port", "8000"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Start the service (can be overridden with Docker CMD)
+CMD ["uvicorn", "services.ich_ingest.agent:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "services/ich_ingest/logging_config.json"]
