@@ -568,6 +568,137 @@ const ProtocolReview = () => {
     };
   };
   
+  // Render dialog for detailed section alignment analysis
+  const renderAlignmentDetailsDialog = () => {
+    const { key, score } = currentSection;
+    const regulatoryRef = getRegulatoryReference(key);
+    const methodology = getMethodologyDescription(key);
+    const improvementSuggestions = getImprovementSuggestions(key, score);
+    const literatureReferences = getLiteratureReferences(key);
+    
+    return (
+      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg flex items-center">
+              <BookMarked className="h-5 w-5 mr-2" />
+              <span className="capitalize">{key.replace(/_/g, ' ')}</span> - Scientific Analysis
+            </DialogTitle>
+            <DialogDescription>
+              Detailed scientific breakdown of alignment assessment with regulatory context and citations
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 mt-4">
+            {/* Score and visualization */}
+            <div className="bg-gray-50 p-4 rounded-lg border">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium">Alignment Score</h3>
+                <Badge 
+                  className={
+                    score >= 80 ? "bg-green-100 text-green-800" : 
+                    score >= 60 ? "bg-yellow-100 text-yellow-800" : 
+                    "bg-red-100 text-red-800"
+                  }
+                >
+                  {score}% Aligned
+                </Badge>
+              </div>
+              <div className="relative h-4 bg-gray-200 rounded-full overflow-hidden mb-2">
+                <div 
+                  className={`absolute top-0 left-0 h-full ${
+                    score >= 80 ? 'bg-green-500' : 
+                    score >= 60 ? 'bg-yellow-500' : 
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${score}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-gray-600 italic">
+                {score >= 80 ? 'Well aligned with regulatory expectations and precedent.' : 
+                 score >= 60 ? 'Partially aligned, with specific areas for improvement.' : 
+                 'Significant alignment issues detected.'}
+              </p>
+            </div>
+            
+            {/* Assessment methodology */}
+            <div>
+              <h3 className="text-md font-medium mb-2">Alignment Assessment Methodology</h3>
+              <p className="text-sm text-gray-700">{methodology}</p>
+            </div>
+            
+            {/* Regulatory reference */}
+            <div>
+              <h3 className="text-md font-medium mb-2">Regulatory Reference</h3>
+              <div className="bg-blue-50 p-3 rounded-md border border-blue-100">
+                <div className="font-medium">{regulatoryRef.title}</div>
+                <div className="text-sm mt-1">{regulatoryRef.section}</div>
+                <p className="text-sm text-gray-700 mt-2">{regulatoryRef.description}</p>
+                <div className="mt-2">
+                  <a 
+                    href={regulatoryRef.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline inline-flex items-center"
+                  >
+                    View guideline
+                    <ArrowRight className="h-3 w-3 ml-1" />
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            {/* Improvement suggestions */}
+            {improvementSuggestions.length > 0 && (
+              <div>
+                <h3 className="text-md font-medium mb-2">Improvement Suggestions</h3>
+                <div className="space-y-3">
+                  {improvementSuggestions.map((suggestion, index) => (
+                    <div key={index} className="bg-yellow-50 p-3 rounded-md border border-yellow-100">
+                      <div className="font-medium">{suggestion.title}</div>
+                      <p className="text-sm text-gray-700 mt-1">{suggestion.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Literature references */}
+            <div>
+              <h3 className="text-md font-medium mb-2">Scientific Literature</h3>
+              <div className="space-y-3">
+                {literatureReferences.map((ref, index) => (
+                  <div key={index} className="p-3 rounded-md border">
+                    <div className="font-medium">{ref.title}</div>
+                    <div className="text-sm text-gray-700 mt-1">{ref.authors}</div>
+                    <div className="text-sm flex items-center justify-between mt-1">
+                      <span>{ref.journal}, {ref.year}</span>
+                      <a 
+                        href={`https://doi.org/${ref.doi}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline text-xs"
+                      >
+                        DOI: {ref.doi}
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="flex items-center justify-between mt-6">
+            <div className="text-xs text-gray-500">
+              Analysis generated with TrialSage™ Protocol Intelligence v2.5
+            </div>
+            <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+  
   // Render the upload UI
   const renderUploadUI = () => {
     return (
