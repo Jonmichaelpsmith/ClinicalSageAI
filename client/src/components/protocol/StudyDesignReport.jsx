@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useSearchParams } from 'wouter/use-location';
+import { useLocation, useSearch } from 'wouter';
 import {
   Card,
   CardContent,
@@ -46,7 +46,9 @@ import { toast } from 'react-hot-toast';
  * - Statistical recommendations
  */
 const StudyDesignReport = () => {
-  const [params] = useSearchParams();
+  const [location] = useLocation();
+  const search = useSearch();
+  const params = new URLSearchParams(search);
   const reportId = params.get('id') || 'unknown';
   const [isLoading, setIsLoading] = useState(true);
   const [openAILoading, setOpenAILoading] = useState(true);
