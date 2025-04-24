@@ -61,7 +61,7 @@ export default function HomeMarketingPage() {
       {/* Certara-style header */}
       <header className="relative z-40">
         {/* Top utility bar with solutions alongside other nav items */}
-        <div className="bg-[#003057] text-white">
+        <div className="bg-[#002240] text-white">
           <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
             {/* Company info */}
             <div className="flex items-center">
@@ -73,7 +73,7 @@ export default function HomeMarketingPage() {
               <Link to="/enterprise-csr-intelligence" className="text-white hover:text-gray-200">
                 <Search className="h-4 w-4" />
               </Link>
-              <Link to="/auth" className="text-[12px] bg-white/20 rounded px-3 py-1 text-white hover:bg-white/30 transition">
+              <Link to="/auth" className="text-[12px] bg-white/30 rounded px-3 py-1 text-white font-medium hover:bg-white/40 transition">
                 Sign In
               </Link>
             </div>
@@ -99,7 +99,7 @@ export default function HomeMarketingPage() {
                 {/* Primary Navigation Items */}
                 <ul className="flex items-center space-x-4">
                   <li className="group relative">
-                    <Link to="/use-case-library" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/use-case-library" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
                       Solutions
                       <ChevronDown className="ml-1 h-3 w-3 transition" />
                     </Link>
@@ -125,13 +125,13 @@ export default function HomeMarketingPage() {
                   </li>
                   
                   <li className="group relative">
-                    <Link to="/ind-wizard" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/ind-wizard" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
                       IND Wizard
                     </Link>
                   </li>
                   
                   <li className="group relative">
-                    <Link to="/enterprise-csr-intelligence" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/enterprise-csr-intelligence" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
                       CSR Intelligence
                     </Link>
                   </li>
@@ -146,57 +146,57 @@ export default function HomeMarketingPage() {
                 {/* Secondary Navigation Items (Moved from top bar) */}
                 <ul className="flex items-center space-x-4">
                   <li>
-                    <Link to="/analytics-dashboard" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/analytics-dashboard" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
                       Analytics
                     </Link>
                   </li>
                   
                   <li>
-                    <Link to="/ask-lumen" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/ask-lumen" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
                       Ask Lumen™
                     </Link>
                   </li>
                   
                   <li>
-                    <Link to="/enterprise-csr-intelligence" className="text-[14px] text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/enterprise-csr-intelligence" className="text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
                       News
                     </Link>
                   </li>
                   
                   <li>
-                    <Link to="/document-management" className="text-[14px] text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/document-management" className="text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
                       Resources
                     </Link>
                   </li>
                   
                   <li>
-                    <Link to="/team-signup" className="text-[14px] text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/team-signup" className="text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
                       Contact
                     </Link>
                   </li>
                   
                   <li className="relative group">
-                    <a className="text-[14px] flex items-center text-[#333] hover:text-[#0078d4] transition cursor-pointer">
+                    <a className="text-[14px] flex items-center font-semibold text-[#111] hover:text-[#0078d4] transition cursor-pointer">
                       English
                       <ChevronDown className="ml-1 h-3 w-3" />
                     </a>
                     <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1 rounded">
-                      <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">English</a>
-                      <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">French</a>
-                      <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">German</a>
+                      <a className="block px-4 py-1 text-[12px] font-medium text-[#222] hover:bg-gray-50">English</a>
+                      <a className="block px-4 py-1 text-[12px] font-medium text-[#222] hover:bg-gray-50">French</a>
+                      <a className="block px-4 py-1 text-[12px] font-medium text-[#222] hover:bg-gray-50">German</a>
                     </div>
                   </li>
                 </ul>
               </nav>
 
-              {/* Right utilities - Certara style */}
+              {/* Right utilities - Improved contrast */}
               <div className="flex items-center space-x-4">
-                <Link to="/auth" className="text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition pr-4">
+                <Link to="/auth" className="text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition pr-4">
                   Sign In
                 </Link>
                 
                 <Link to="/auth">
-                  <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2 px-4 text-[14px] font-medium transition">
+                  <button className="bg-[#0066bb] hover:bg-[#005299] text-white py-2 px-4 text-[14px] font-semibold transition">
                     Get Started
                   </button>
                 </Link>
@@ -239,12 +239,12 @@ export default function HomeMarketingPage() {
               </div>
               <div className="flex space-x-3">
                 <Link to="/ind-wizard">
-                  <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2 px-4 text-sm font-medium rounded-md transition">
+                  <button className="bg-[#0066bb] hover:bg-[#005299] text-white py-2 px-4 text-sm font-semibold rounded-md transition">
                     Start IND Wizard™
                   </button>
                 </Link>
                 <Link to="/use-case-library">
-                  <button className="bg-white hover:bg-gray-50 text-[#333] border border-gray-300 py-2 px-4 text-sm font-medium rounded-md transition">
+                  <button className="bg-white hover:bg-gray-50 text-[#111] border border-gray-300 py-2 px-4 text-sm font-semibold rounded-md transition">
                     View Solutions
                   </button>
                 </Link>
