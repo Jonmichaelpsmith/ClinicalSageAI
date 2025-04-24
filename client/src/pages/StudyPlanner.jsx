@@ -57,6 +57,7 @@ import {
   ClipboardList, 
   Download, 
   FileText, 
+  Filter,
   Folder, 
   FolderPlus, 
   HelpCircle, 

@@ -266,7 +266,7 @@ export default function HomeMarketingPage() {
                     <p className="text-[11px] text-gray-600">AI-powered CER generation in 5 minutes</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <Link to="/cer-module" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/CERGenerator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
                         <FileText className="h-3 w-3 text-green-700" />
                       </div>
@@ -275,7 +275,7 @@ export default function HomeMarketingPage() {
                         <div className="text-[10px] text-gray-500">Standard CER builder</div>
                       </div>
                     </Link>
-                    <Link to="/enterprise-grade-cer-generator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/EnterpriseGradeCERGenerator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
                         <Sparkles className="h-3 w-3 text-blue-700" />
                       </div>
