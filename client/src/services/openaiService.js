@@ -249,6 +249,128 @@ export const analyzeFormulation = async (formulationData) => {
  * This function is for development and demo purposes only.
  * In a production environment, this would be replaced with actual API calls.
  */
+/**
+ * Generate CMC content with GPT-4o
+ * 
+ * @param {Object} contentData - CMC section and content requirements
+ * @returns {Promise<Object>} Generated CMC content
+ */
+export const generateCMCContent = async (contentData) => {
+  try {
+    // In a production implementation, this would call a backend endpoint
+    console.log('Generating CMC content with GPT-4o', contentData);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    // Return simulated response
+    return {
+      title: `CMC Section: ${contentData.section}`,
+      content: `Generated content for ${contentData.section} would appear here.`,
+      generatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error generating CMC content:', error);
+    throw new Error('Failed to generate CMC content: ' + (error.message || 'Unknown error'));
+  }
+};
+
+/**
+ * Analyze manufacturing process with GPT-4o
+ * 
+ * @param {Object} processData - Manufacturing process details
+ * @returns {Promise<Object>} Analysis results
+ */
+export const analyzeManufacturingProcess = async (processData) => {
+  try {
+    // In a production implementation, this would call a backend endpoint
+    console.log('Analyzing manufacturing process with GPT-4o', processData);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    // Return simulated response
+    return {
+      recommendations: [],
+      riskFactors: [],
+      optimizationSuggestions: [],
+      generatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error analyzing manufacturing process:', error);
+    throw new Error('Failed to analyze manufacturing process: ' + (error.message || 'Unknown error'));
+  }
+};
+
+/**
+ * Assess regulatory compliance with GPT-4o
+ * 
+ * @param {Object} documentData - Document to assess for compliance
+ * @returns {Promise<Object>} Compliance assessment results
+ */
+export const assessRegulatoryCompliance = async (documentData) => {
+  try {
+    // In a production implementation, this would call a backend endpoint
+    console.log('Assessing regulatory compliance with GPT-4o', documentData);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    // Return simulated response
+    return {
+      compliance: {
+        fda: 90,
+        ema: 85,
+        ich: 92,
+        who: 88
+      },
+      findings: [],
+      recommendations: [],
+      generatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error assessing regulatory compliance:', error);
+    throw new Error('Failed to assess regulatory compliance: ' + (error.message || 'Unknown error'));
+  }
+};
+
+/**
+ * Generate risk analysis with GPT-4o
+ * 
+ * @param {Object} riskData - Risk assessment parameters
+ * @returns {Promise<Object>} Risk analysis results
+ */
+export const generateRiskAnalysis = async (riskData) => {
+  try {
+    // In a production implementation, this would call a backend endpoint
+    console.log('Generating risk analysis with GPT-4o', riskData);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    // Return simulated response
+    return {
+      riskFactors: [],
+      mitigationStrategies: [],
+      overallRiskLevel: 'Medium',
+      generatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error generating risk analysis:', error);
+    throw new Error('Failed to generate risk analysis: ' + (error.message || 'Unknown error'));
+  }
+};
+
+/**
+ * Generate method validation protocol with GPT-4o
+ * 
+ * @param {Object} methodData - Method details and validation parameters
+ * @returns {Promise<Object>} Generated validation protocol
+ */
+export const generateMethodValidationProtocol = async (methodData) => {
+  return generateValidationProtocol(methodData);
+};
+
 export const simulateOpenAIResponse = async (type, data) => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 2000));
@@ -264,6 +386,14 @@ export const simulateOpenAIResponse = async (type, data) => {
       return generateImage(data);
     case 'formulation':
       return analyzeFormulation(data);
+    case 'cmc-content':
+      return generateCMCContent(data);
+    case 'manufacturing':
+      return analyzeManufacturingProcess(data);
+    case 'compliance':
+      return assessRegulatoryCompliance(data);
+    case 'risk':
+      return generateRiskAnalysis(data);
     default:
       throw new Error(`Unknown simulation type: ${type}`);
   }
