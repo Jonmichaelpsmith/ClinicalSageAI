@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { setupRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from "./data-importer";
+import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from "./simplified-data-importer";
 
 // Try to load the fastapi_bridge module if available
 let registerFastapiProxy: any = () => {

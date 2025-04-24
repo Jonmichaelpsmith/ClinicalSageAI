@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import csvParser from 'csv-parser';
-import { db } from './db';
-import { pool } from './db';
+import { pool, query } from './db';
 import { sql } from 'drizzle-orm';
-import { csrReports, csrDetails } from './sage-plus-service';
+import { csrReports, csrDetails } from '../shared/schema';
+import { db } from './drizzle';
 
 // Define types for CSR data
 export type InsertCsrReport = typeof csrReports.$inferInsert;

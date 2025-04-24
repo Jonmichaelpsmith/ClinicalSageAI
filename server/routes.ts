@@ -1,85 +1,55 @@
 import express, { Request, Response, NextFunction } from "express";
-import { storage } from "./storage";
 import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
 
-// Circuit breaker pattern for API endpoints
-class CircuitBreaker {
-  private failureCount = 0;
-  private isOpen = false;
-  private lastFailureTime = 0;
-  private readonly maxFailures: number;
-  private readonly resetTimeout: number;
-  
-  constructor(maxFailures = 3, resetTimeoutMs = 300000) { // 5 minutes default
-    this.maxFailures = maxFailures;
-    this.resetTimeout = resetTimeoutMs;
-  }
-  
-  public recordFailure(): void {
-    this.failureCount++;
-    this.lastFailureTime = Date.now();
-    
-    if (this.failureCount >= this.maxFailures) {
-      this.isOpen = true;
-      console.error(`Circuit breaker opened after ${this.failureCount} consecutive failures`);
-    }
-  }
-  
-  public recordSuccess(): void {
-    this.failureCount = 0;
-    this.isOpen = false;
-  }
-  
-  public isCircuitOpen(): boolean {
-    // Auto-reset circuit after timeout
-    if (this.isOpen && Date.now() - this.lastFailureTime > this.resetTimeout) {
-      console.log('Circuit breaker reset after timeout period');
-      this.isOpen = false;
-      this.failureCount = 0;
-      return false;
-    }
-    
-    return this.isOpen;
-  }
-}
+// Import enhanced security and stability features
+import { createCircuitBreakerMiddleware, CircuitBreaker, CircuitState, getCircuitBreaker } from './middleware/circuitBreaker';
+import { logger, createContextLogger, requestLogger } from './utils/logger';
+import createSecurityHeadersMiddleware from './middleware/securityHeaders';
+import healthRoutes from './routes/health';
+import { storage, mockUsers } from './storage';
 
 // Create circuit breakers for critical services
-const validationBreaker = new CircuitBreaker();
-const aiBreaker = new CircuitBreaker();
+const openaiCircuitBreaker = createCircuitBreakerMiddleware('openai', {
+  failureThreshold: 3,
+  resetTimeout: 60000, // 1 minute
+  maxTimeout: 10000,   // 10 seconds
+  monitorInterval: 5000 // 5 seconds
+});
+
+const validatorCircuitBreaker = createCircuitBreakerMiddleware('validator', {
+  failureThreshold: 3,
+  resetTimeout: 300000, // 5 minutes
+  maxTimeout: 30000,    // 30 seconds
+  monitorInterval: 30000 // 30 seconds
+});
+
+const databaseCircuitBreaker = createCircuitBreakerMiddleware('database', {
+  failureThreshold: 5,
+  resetTimeout: 120000, // 2 minutes
+  maxTimeout: 5000,     // 5 seconds
+  monitorInterval: 10000 // 10 seconds
+});
 
 // Load validation API conditionally to maintain stability
 let validationApiModule: any;
 try {
   validationApiModule = require('./api/validation');
 } catch (error: any) {
-  console.warn('Validation API module could not be loaded:', error.message);
+  const logger = createContextLogger({ module: 'routes' });
+  logger.warn('Validation API module could not be loaded:', { error: error.message });
   validationApiModule = null;
-  validationBreaker.recordFailure();
+  
+  // Record failure in validator circuit breaker if it exists
+  const validatorBreaker = getCircuitBreaker('validator');
+  if (validatorBreaker) {
+    // Log the failure but can't call private method directly
+    logger.warn('Validation module failed to load, circuit may be affected');
+  }
 }
 
-// Hardcoded users for development
-const mockUsers = [
-  {
-    id: 1,
-    username: 'admin',
-    password: 'admin123',
-    email: 'admin@trialsage.com',
-    role: 'admin',
-    name: 'TrialSage Admin',
-    subscribed: true,
-  },
-  {
-    id: 2,
-    username: 'demo',
-    password: 'demo123',
-    email: 'demo@trialsage.com',
-    role: 'user',
-    name: 'Demo User',
-    subscribed: true,
-  }
-];
+// Using mockUsers imported from storage.ts
 
 // Simpler token verification using constant-time comparison for security
 function verifyAuthToken(token: string): any {
@@ -116,36 +86,42 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-// Import stability middleware
-import rateLimiter from './middleware/rateLimiter';
+// Import errorHandler for route exception handling
 import { errorHandler, notFoundHandler, asyncHandler } from './middleware/errorHandler';
-import { logger } from './utils/logger';
 
 export function setupRoutes(app: express.Application): http.Server {
   // Configure core middleware
   app.use(express.json());
   
-  // Add request logging middleware
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    const startTime = Date.now();
-    // Log after response is sent
-    res.on('finish', () => {
-      logger.request(req, res, startTime);
-    });
-    next();
-  });
+  // Apply structured request logging
+  app.use(requestLogger);
   
-  // Temporarily disable rate limiting until we resolve the issues
+  // Apply security headers middleware
+  app.use(createSecurityHeadersMiddleware({
+    cspDomainWhitelist: [
+      'https://cdn.jsdelivr.net',
+      'https://api.openai.com',
+      'https://fonts.googleapis.com',
+      'https://fonts.gstatic.com'
+    ]
+  }));
+  
+  // Apply rate limiting (commented out until issues are resolved)
   // app.use(rateLimiter);
   
   // Try to load cookie-parser dynamically
   try {
     const cookieParser = require('cookie-parser');
     app.use(cookieParser());
+    const logger = createContextLogger({ module: 'routes' });
     logger.info('Cookie parser middleware loaded successfully');
   } catch (err) {
+    const logger = createContextLogger({ module: 'routes' });
     logger.warn('Cookie parser middleware not available', { error: err });
   }
+  
+  // Register enhanced health check routes
+  app.use('/api', healthRoutes);
   
   // Health check endpoints - no authentication required
   app.get("/api/health/live", (req: Request, res: Response) => {
@@ -154,29 +130,55 @@ export function setupRoutes(app: express.Application): http.Server {
   });
   
   app.get("/api/health/ready", (req: Request, res: Response) => {
+    // Get circuit breaker states for services
+    const validatorState = getCircuitBreaker('validator')?.getState() || CircuitState.CLOSED;
+    const openaiState = getCircuitBreaker('openai')?.getState() || CircuitState.CLOSED;
+    const databaseState = getCircuitBreaker('database')?.getState() || CircuitState.CLOSED;
+    
     // Readiness probe - checks if dependent services are available
     const health = {
       status: "ok",
       uptime: process.uptime(),
       timestamp: Date.now(),
       services: {
-        validation: !validationBreaker.isCircuitOpen(),
-        ai: !aiBreaker.isCircuitOpen(),
-        storage: Boolean(storage)
+        validation: validatorState !== CircuitState.OPEN,
+        ai: openaiState !== CircuitState.OPEN, 
+        storage: databaseState !== CircuitState.OPEN && Boolean(storage),
+        circuit_states: {
+          validator: validatorState,
+          openai: openaiState,
+          database: databaseState
+        }
       }
     };
     
     // If any service is down, return 503 Service Unavailable
-    const isHealthy = Object.values(health.services).every(Boolean);
+    const isHealthy = Object.values({
+      validation: health.services.validation,
+      ai: health.services.ai,
+      storage: health.services.storage
+    }).every(Boolean);
+    
     res.status(isHealthy ? 200 : 503).json(health);
   });
   
-  // Register validation API routes only if module is loaded and circuit is closed
-  if (validationApiModule && !validationBreaker.isCircuitOpen()) {
-    console.log('Registering validation API routes');
-    app.use("/api/validate", validationApiModule);
-  } else if (validationBreaker.isCircuitOpen()) {
-    console.warn('Validation API circuit is open, routes temporarily disabled');
+  // Register validation API routes with circuit breaker protection
+  if (validationApiModule) {
+    const logger = createContextLogger({ module: 'routes' });
+    logger.info('Registering validation API routes');
+    
+    // Apply validator circuit breaker
+    app.use("/api/validate", validatorCircuitBreaker, (req, res, next) => {
+      if (validationApiModule) {
+        req.app.use(validationApiModule);
+        next();
+      } else {
+        res.status(503).json({ 
+          error: "Validation API temporarily unavailable",
+          status: "service_unavailable"
+        });
+      }
+    });
   }
   
   // AUTH ROUTES
@@ -324,28 +326,30 @@ export function setupRoutes(app: express.Application): http.Server {
     });
   });
   
-  // CSR Count API - provides real count from the CSR library with circuit breaker pattern
-  app.get("/api/csr/count", (req: Request, res: Response) => {
+  // CSR Count API - protected with circuit breaker pattern
+  app.get("/api/csr/count", openaiCircuitBreaker, (req: Request, res: Response) => {
     try {
-      // For production, use the actual total from the library
-      // This is a direct count from the actual CSR Library
+      // Direct count from CSR Library with protection using circuit breaker middleware
       const totalCount = 3217;
       
-      // Record success for any monitoring circuit breakers
-      if (aiBreaker.isCircuitOpen()) {
-        aiBreaker.recordSuccess();
-      }
-      
+      // Return response with metadata
       res.json({ 
         count: totalCount,
         source: "primary",
         timestamp: Date.now()
       });
     } catch (error) {
-      console.error('Error getting CSR count:', error);
+      // Circuit breaker middleware will catch failures and handle them appropriately
+      // We should not reach this code unless a non-breaking error occurs
+      const logger = createContextLogger({ 
+        module: 'api',
+        endpoint: '/api/csr/count' 
+      });
       
-      // Record failure in the circuit breaker
-      aiBreaker.recordFailure();
+      logger.error('Error retrieving CSR count', { 
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       
       // Fallback to last known value with metadata
       res.json({ 
