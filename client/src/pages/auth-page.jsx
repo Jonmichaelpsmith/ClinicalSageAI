@@ -20,7 +20,7 @@ const AuthPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      setLocation("/account/subscribed-solutions");
+      setLocation("/portal/client");
     }
   }, [isAuthenticated, setLocation]);
 
@@ -94,7 +94,7 @@ const AuthPage = () => {
       
       if (success) {
         // Manual redirect instead of relying on useEffect
-        setLocation("/account/subscribed-solutions");
+        setLocation("/portal/client");
       }
     } catch (error) {
       console.error("Authentication error:", error);
