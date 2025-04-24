@@ -1,1014 +1,965 @@
 import React, { useState } from 'react';
-import Layout from '../components/Layout';
-import { useToast } from '../hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '../lib/queryClient';
 import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Upload, 
   FileText, 
-  UploadCloud, 
-  Check, 
-  AlertCircle, 
-  ChevronRight, 
-  ChevronDown, 
-  Search, 
-  Lightbulb,
-  Brain,
-  BookOpen,
-  Beaker,
-  FileCheck,
-  ListChecks,
-  Heart,
+  RefreshCw, 
+  Download, 
+  Sparkles, 
+  Microscope, 
+  ClipboardList, 
+  BookOpen, 
+  ArrowRight, 
+  CheckCircle, 
+  BarChart4, 
+  XCircle,
   Clock,
-  Users,
-  Award,
-  Settings,
+  AlertCircle,
+  Info,
+  Scale,
+  Check,
+  Plus,
+  ChevronRight,
+  ArrowUpDown,
+  ChevronDown,
+  Loader2,
   HelpCircle,
-  Upload,
-  Download,
-  GraduationCap,
-  TrendingUp,
-  CheckCircle
+  ShieldCheck,
+  Beaker,
+  BookMarked
 } from 'lucide-react';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+// Import the subcomponents we created
+import ProtocolBlueprintGenerator from '../components/protocol/ProtocolBlueprintGenerator';
+import AdaptiveDesignSimulator from '../components/protocol/AdaptiveDesignSimulator';
+import IntelligentEndpointAdvisor from '../components/protocol/IntelligentEndpointAdvisor';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-
-// Wrap the component with auth guard for security
-import withAuthGuard from '../utils/withAuthGuard';
-
-// Analysis recommendation component
-const RecommendationCard = ({ title, category, confidence, description, examples, references }) => {
-  const [expanded, setExpanded] = useState(false);
-  
-  const getConfidenceColor = () => {
-    if (confidence >= 90) return "bg-green-100 text-green-800";
-    if (confidence >= 70) return "bg-blue-100 text-blue-800";
-    return "bg-yellow-100 text-yellow-800";
-  };
-  
-  const getCategoryIcon = () => {
-    switch (category) {
-      case 'Design':
-        return <Settings className="h-4 w-4 mr-1.5" />;
-      case 'Endpoints':
-        return <TrendingUp className="h-4 w-4 mr-1.5" />;
-      case 'Statistical':
-        return <BarChart className="h-4 w-4 mr-1.5" />;
-      case 'Safety':
-        return <Heart className="h-4 w-4 mr-1.5" />;
-      case 'Eligibility':
-        return <Users className="h-4 w-4 mr-1.5" />;
-      case 'Regulatory':
-        return <FileCheck className="h-4 w-4 mr-1.5" />;
-      case 'Precedent':
-        return <BookOpen className="h-4 w-4 mr-1.5" />;
-      case 'Academic':
-        return <GraduationCap className="h-4 w-4 mr-1.5" />;
-      default:
-        return <Lightbulb className="h-4 w-4 mr-1.5" />;
-    }
-  };
-  
-  return (
-    <Card className="mb-4 border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
-      <CardHeader className="py-3">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <div className="flex items-center">
-              <div className="flex items-center">
-                {getCategoryIcon()}
-                <Badge variant="outline" className="mr-2">
-                  {category}
-                </Badge>
-              </div>
-              <Badge className={getConfidenceColor()}>
-                {confidence}% Confidence
-              </Badge>
-            </div>
-            <CardTitle className="text-lg mt-1.5">{title}</CardTitle>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setExpanded(!expanded)}
-            className="text-xs"
-          >
-            {expanded ? "Show Less" : "Show More"}
-            {expanded ? 
-              <ChevronUp className="h-4 w-4 ml-1" /> : 
-              <ChevronDown className="h-4 w-4 ml-1" />
-            }
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="py-0">
-        <p className="text-sm text-gray-700 dark:text-gray-300">
-          {description}
-        </p>
-        
-        {expanded && (
-          <div className="mt-4 space-y-3">
-            {examples.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium mb-1">Examples from successful protocols:</h4>
-                <ul className="text-sm space-y-1 pl-5 list-disc">
-                  {examples.map((example, i) => (
-                    <li key={i} className="text-gray-700 dark:text-gray-300">{example}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {references.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium mb-1">References:</h4>
-                <ul className="text-sm space-y-1 pl-5 list-disc">
-                  {references.map((ref, i) => (
-                    <li key={i} className="text-gray-700 dark:text-gray-300">{ref}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="py-3 flex justify-end space-x-2">
-        <Button size="sm" variant="outline" className="text-xs">
-          <Download className="h-3.5 w-3.5 mr-1" />
-          Save
-        </Button>
-        <Button size="sm" className="text-xs">
-          <Check className="h-3.5 w-3.5 mr-1" />
-          Apply
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-};
-
-// Similar studies component
-const SimilarStudyCard = ({ title, sponsor, phase, therapeutic, participants, success, insights }) => {
-  return (
-    <Card className="mb-4 hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center space-x-2 mb-1">
-              <Badge variant="outline">Phase {phase}</Badge>
-              <Badge variant="outline">{therapeutic}</Badge>
-              {success ? (
-                <Badge className="bg-green-100 text-green-800">Successful</Badge>
-              ) : (
-                <Badge className="bg-red-100 text-red-800">Challenges</Badge>
-              )}
-            </div>
-            <CardTitle className="text-md">{title}</CardTitle>
-            <CardDescription>{sponsor}</CardDescription>
-          </div>
-          <div className="text-sm text-gray-500">
-            <Users className="h-4 w-4 inline mr-1" />
-            {participants} participants
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <div className="text-sm">
-          <p className="text-gray-700 dark:text-gray-300 mb-2">
-            <strong>Key Insights:</strong>
-          </p>
-          <ul className="pl-5 list-disc space-y-1">
-            {insights.map((insight, i) => (
-              <li key={i} className="text-gray-700 dark:text-gray-300">{insight}</li>
-            ))}
-          </ul>
-        </div>
-      </CardContent>
-      <CardFooter className="pt-2 flex justify-end">
-        <Button variant="outline" size="sm" className="text-xs">
-          <FileText className="h-3.5 w-3.5 mr-1" />
-          View Details
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-};
-
-// Regulatory insight component
-const RegulatoryInsightCard = ({ authority, title, relevance, summary, recommendations }) => {
-  return (
-    <Card className="mb-4 hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center">
-              <Badge variant="outline" className="mr-2">{authority}</Badge>
-              <Badge className={relevance >= 8 ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}>
-                {relevance}/10 Relevance
-              </Badge>
-            </div>
-            <CardTitle className="text-md mt-1">{title}</CardTitle>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-          {summary}
-        </p>
-        <div className="text-sm">
-          <p className="font-medium mb-1">Recommendations:</p>
-          <ul className="pl-5 list-disc space-y-1">
-            {recommendations.map((rec, i) => (
-              <li key={i} className="text-gray-700 dark:text-gray-300">{rec}</li>
-            ))}
-          </ul>
-        </div>
-      </CardContent>
-      <CardFooter className="pt-2 flex justify-end">
-        <Button variant="outline" size="sm" className="text-xs">
-          <ExternalLink className="h-3.5 w-3.5 mr-1" />
-          View Source
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-};
-
-// Protocol element component 
-const ProtocolElement = ({ title, content, suggestions, score }) => {
-  return (
-    <Accordion type="single" collapsible className="mb-2">
-      <AccordionItem value="item-1" className="border rounded-md">
-        <AccordionTrigger className="px-4 py-2 hover:no-underline">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center">
-              <span className="font-medium">{title}</span>
-            </div>
-            <div className="flex items-center">
-              <span className={`px-2 py-0.5 rounded-full text-xs mr-4 ${
-                score >= 85 ? "bg-green-100 text-green-800" :
-                score >= 70 ? "bg-blue-100 text-blue-800" : 
-                "bg-yellow-100 text-yellow-800"
-              }`}>
-                {score}% Alignment
-              </span>
-            </div>
-          </div>
-        </AccordionTrigger>
-        <AccordionContent className="px-4 pb-3 pt-1">
-          <div className="text-sm text-gray-700 dark:text-gray-300 mb-3">
-            <p><strong>Current Content:</strong></p>
-            <div className="bg-gray-50 dark:bg-gray-800 p-2 rounded-md mt-1">
-              {content}
-            </div>
-          </div>
-          
-          {suggestions.length > 0 && (
-            <div className="text-sm">
-              <p><strong>Suggestions:</strong></p>
-              <ul className="pl-5 list-disc space-y-1 mt-1">
-                {suggestions.map((suggestion, i) => (
-                  <li key={i} className="text-gray-700 dark:text-gray-300">{suggestion}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  );
-};
-
-// Main Protocol Review Component
+/**
+ * Protocol Review Page Component
+ * 
+ * Provides a comprehensive interface for analyzing protocol drafts against
+ * CSR libraries, regulatory guidelines, and academic best practices.
+ */
 const ProtocolReview = () => {
   const [activeTab, setActiveTab] = useState('upload');
-  const [fileName, setFileName] = useState('');
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [analysisResults, setAnalysisResults] = useState(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [activeResultTab, setActiveResultTab] = useState('overview');
   
-  // Simulated analysis data
-  const mockAnalysisResults = {
-    overallScore: 78,
-    sections: {
-      studyDesign: 84,
-      endpoints: 72,
-      eligibilityCriteria: 80,
-      statisticalConsiderations: 76,
-      safetyMonitoring: 82,
-    },
-    elements: [
-      {
-        title: "Primary Endpoint",
-        content: "Change from baseline in HbA1c at Week 26.",
-        suggestions: [
-          "Consider including additional time points (Week 12, Week 52) to better assess the durability of effect.",
-          "Recent successful Phase III studies in this therapeutic area have used a continuous variable with MMRM analysis."
-        ],
-        score: 72
-      },
-      {
-        title: "Inclusion Criteria",
-        content: "Adults aged 18-75 with T2DM and HbA1c 7.0-10.0%.",
-        suggestions: [
-          "Consider expanding the upper age limit to 80 years, as recent successful studies have included older populations.",
-          "The HbA1c range is appropriate and aligns with regulatory expectations."
-        ],
-        score: 85
-      },
-      {
-        title: "Sample Size Calculation",
-        content: "120 subjects per arm to provide 90% power to detect a 0.5% difference in HbA1c.",
-        suggestions: [
-          "Recent trials with similar endpoints have required larger sample sizes (150-180 per arm) due to higher than expected variability.",
-          "Consider increasing sample size by 10-15% to account for regional regulatory requirements that may require subgroup analyses."
-        ],
-        score: 68
-      },
-      {
-        title: "Safety Monitoring",
-        content: "Adverse events, laboratory assessments, and physical examinations at each visit.",
-        suggestions: [],
-        score: 92
+  const { toast } = useToast();
+  
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type === 'application/pdf' || file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        setUploadedFile(file);
+        toast({
+          title: "File uploaded successfully",
+          description: `"${file.name}" has been uploaded and is ready for analysis.`,
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Invalid file format",
+          description: "Please upload a PDF or Word document (.doc, .docx).",
+          variant: "destructive"
+        });
       }
-    ],
-    recommendations: [
-      {
-        title: "Consider Adaptive Design Elements",
-        category: "Design",
-        confidence: 85,
-        description: "Based on similar successful studies, incorporating an interim analysis with sample size re-estimation could improve the probability of success while managing resources efficiently.",
-        examples: [
-          "The ADVANCE-1 study implemented sample size re-estimation after 40% enrollment, which allowed for protocol adjustments that improved ultimate study success.",
-          "The DELIVER trial used an adaptive approach that saved approximately 8 months of study time."
-        ],
-        references: [
-          "FDA Guidance on Adaptive Designs for Clinical Trials of Drugs and Biologics (2019)",
-          "Chen et al. (2023). Adaptive designs in late-phase diabetes clinical trials: A systematic review."
-        ]
-      },
-      {
-        title: "Enhance Endpoint Selection",
-        category: "Endpoints",
-        confidence: 92,
-        description: "Consider adding time-in-range as a secondary endpoint using continuous glucose monitoring data, which aligns with recent regulatory interest and successful submissions.",
-        examples: [
-          "The SURPASS-4 study included time-in-range as a key secondary endpoint, which provided valuable supportive data for regulatory review.",
-          "Studies that included both HbA1c and time-in-range had a 28% higher success rate in recent submissions."
-        ],
-        references: [
-          "FDA CDER/CBER joint guidance on CGM endpoints (2023)",
-          "International Consensus on Time in Range (2022)",
-          "EMA reflection paper on glucose metrics beyond HbA1c in diabetes clinical trials"
-        ]
-      },
-      {
-        title: "Update Statistical Analysis Approach",
-        category: "Statistical",
-        confidence: 78,
-        description: "Recent successful protocols in this therapeutic area have adopted more sophisticated missing data handling approaches. Consider implementing multiple imputation methods rather than LOCF.",
-        examples: [
-          "The AWARD series of trials successfully implemented reference-based multiple imputation techniques.",
-          "The PIONEER trials utilized tipping-point sensitivity analyses to strengthen conclusions."
-        ],
-        references: [
-          "FDA guidance on missing data in clinical trials (2022 update)",
-          "National Academy of Sciences report on missing data handling best practices"
-        ]
-      }
-    ],
-    similarStudies: [
-      {
-        title: "Phase III Study of Novel GLP-1/GIP Dual Agonist in T2DM",
-        sponsor: "PharmaLeader Inc.",
-        phase: "III",
-        therapeutic: "Diabetes",
-        participants: 1402,
-        success: true,
-        insights: [
-          "Stratification by baseline HbA1c (<8.5%, ≥8.5%) improved analysis power",
-          "Extended follow-up period (52 weeks) was critical for safety database",
-          "Inclusion of CGM substudy provided supportive data valued by regulators"
-        ]
-      },
-      {
-        title: "SGLT2 Inhibitor Renal Outcomes Study",
-        sponsor: "Global Therapeutics",
-        phase: "III",
-        therapeutic: "Diabetes",
-        participants: 4736,
-        success: true,
-        insights: [
-          "Event-driven design with composite endpoint improved efficiency",
-          "Independent adjudication committee for outcomes strengthened results",
-          "Enrichment strategy targeting high-risk patients reduced required sample size"
-        ]
-      },
-      {
-        title: "Novel DPP-4 Combination Therapy Trial",
-        sponsor: "InnoMed Pharmaceuticals",
-        phase: "II",
-        therapeutic: "Diabetes",
-        participants: 342,
-        success: false,
-        insights: [
-          "Insufficient study duration (16 weeks) failed to demonstrate durability",
-          "Eligibility criteria were too restrictive, leading to slow enrollment",
-          "Placebo response was higher than expected, reducing treatment difference"
-        ]
-      }
-    ],
-    regulatoryInsights: [
-      {
-        authority: "FDA",
-        title: "Recent FDA Feedback on Glycemic Endpoints",
-        relevance: 9,
-        summary: "Recent FDA communications indicate increased scrutiny on the clinical meaningfulness of HbA1c reductions smaller than 0.5%. Protocols should clearly justify endpoint selection and include additional measures of glycemic control.",
-        recommendations: [
-          "Include CGM-based metrics as secondary endpoints",
-          "Add responder analyses (e.g., % achieving HbA1c <7.0%)",
-          "Consider patient-reported outcomes related to glycemic control"
-        ]
-      },
-      {
-        authority: "EMA",
-        title: "EMA Position on Cardiovascular Outcome Requirements",
-        relevance: 7,
-        summary: "The EMA has recently emphasized the need for adequate CV safety data even for non-CV focused diabetes medications. This may impact the overall development program requirements.",
-        recommendations: [
-          "Ensure meta-analysis of CV events is pre-specified in the protocol",
-          "Consider including additional CV biomarkers",
-          "Address long-term CV monitoring in the development plan"
-        ]
-      }
-    ]
-  };
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFileName(file.name);
     }
   };
-
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    
-    if (!fileName) {
+  
+  // Start protocol analysis
+  const startAnalysis = () => {
+    if (!uploadedFile) {
       toast({
-        title: "No file selected",
-        description: "Please select a protocol file to upload.",
+        title: "No file uploaded",
+        description: "Please upload a protocol document first.",
         variant: "destructive"
       });
       return;
     }
     
-    setIsUploading(true);
+    setIsAnalyzing(true);
+    setAnalysisProgress(0);
     
-    // Simulate progress
+    // Simulate progress updates
     const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
+      setAnalysisProgress((prev) => {
         if (prev >= 95) {
           clearInterval(progressInterval);
           return 95;
         }
-        return prev + 5;
+        return prev + Math.floor(Math.random() * 5) + 1;
       });
-    }, 150);
+    }, 500);
     
-    // Simulate upload completion
+    // Simulate analysis completion after 8 seconds
     setTimeout(() => {
       clearInterval(progressInterval);
-      setUploadProgress(100);
+      setAnalysisProgress(100);
+      
+      // Generate mock analysis results
+      const mockResults = generateMockAnalysisResults();
       
       setTimeout(() => {
-        setIsUploading(false);
-        setActiveTab('analyze');
+        setAnalysisResults(mockResults);
+        setIsAnalyzing(false);
+        setAnalysisComplete(true);
+        setActiveTab('results');
         
         toast({
-          title: "Upload Complete",
-          description: "Your protocol has been uploaded successfully.",
+          title: "Protocol analysis complete",
+          description: "Your protocol has been analyzed against our comprehensive database of clinical trials and regulatory guidance.",
           variant: "default"
         });
       }, 500);
-    }, 3000);
+    }, 8000);
   };
-
-  const handleStartAnalysis = async () => {
-    setIsAnalyzing(true);
+  
+  // Reset the analysis
+  const resetAnalysis = () => {
+    setUploadedFile(null);
+    setIsAnalyzing(false);
+    setAnalysisProgress(0);
+    setAnalysisComplete(false);
+    setAnalysisResults(null);
+    setActiveTab('upload');
     
-    // Simulate analysis process
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setAnalysisComplete(true);
-      setAnalysisResults(mockAnalysisResults);
-      setActiveTab('results');
-      
-      toast({
-        title: "Analysis Complete",
-        description: "Your protocol has been analyzed successfully.",
-        variant: "default"
-      });
-    }, 5000);
-  };
-
-  const handleGenerateReport = () => {
     toast({
-      title: "Generating Report",
-      description: "Your comprehensive report is being generated and will be available for download shortly.",
+      title: "Analysis reset",
+      description: "You can now upload a new protocol for analysis.",
       variant: "default"
     });
-    
-    // Simulate report generation
-    setTimeout(() => {
-      toast({
-        title: "Report Ready",
-        description: "Your report has been generated and is ready to download.",
-        variant: "default"
-      });
-    }, 3000);
   };
-
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Protocol Review & Intelligence</h1>
-          <p className="text-gray-600 mt-2">
-            Upload and analyze your clinical protocol drafts against our library of past studies, 
-            academic best practices, and current regulatory guidelines.
-          </p>
-        </div>
+  
+  // Generate mock analysis results
+  const generateMockAnalysisResults = () => {
+    const alignmentScores = {
+      overall: 79,
+      primary_endpoint: 85,
+      secondary_endpoints: 72,
+      inclusion_criteria: 88,
+      exclusion_criteria: 93,
+      study_population: 75,
+      treatment_duration: 65,
+      dosing_regimen: 82,
+      safety_monitoring: 90,
+      statistical_approach: 76
+    };
+    
+    const regulatoryFindings = [
+      { 
+        category: "Primary Endpoint", 
+        description: "The specified primary endpoint is aligned with FDA guidance for this therapeutic area. Consider adding time frame specificity.",
+        severity: "minor",
+        reference: "FDA Guidance (2022): Clinical Trial Endpoints for this Indication"
+      },
+      { 
+        category: "Sample Size", 
+        description: "Sample size calculation lacks justification based on expected effect size. This is commonly cited in FDA Complete Response Letters.",
+        severity: "major",
+        reference: "ICH E9 Statistical Principles for Clinical Trials, Section 3.5"
+      },
+      { 
+        category: "Exclusion Criteria", 
+        description: "Overly restrictive exclusion criteria may limit generalizability of results. Consider revising per ICH E9 R1 guidance.",
+        severity: "moderate",
+        reference: "ICH E9(R1) Addendum on Estimands and Sensitivity Analysis"
+      },
+      { 
+        category: "Safety Monitoring", 
+        description: "Safety monitoring plan meets current expectations for this therapeutic area and phase.",
+        severity: "compliant",
+        reference: "ICH E6(R2) GCP Guidelines Section 5.18"
+      },
+      { 
+        category: "Statistical Analysis", 
+        description: "Multiple testing correction method is not specified for secondary endpoint analyses.",
+        severity: "minor",
+        reference: "EMA Points to Consider on Multiplicity Issues in Clinical Trials"
+      }
+    ];
+    
+    const similarTrials = [
+      {
+        nctId: "NCT04256473",
+        title: "Randomized Phase 2 Study of Intervention X in Population Y",
+        sponsor: "Major Pharmaceutical Company",
+        phase: "Phase 2",
+        status: "Completed",
+        enrollment: 230,
+        startDate: "2021-03-15",
+        completionDate: "2022-08-24",
+        primaryEndpoint: "Change from baseline in disease activity score at Week 24",
+        designNotes: "Placebo-controlled, 1:1:1 randomization with three dose groups",
+        similarityScore: 92
+      },
+      {
+        nctId: "NCT03892864",
+        title: "Efficacy and Safety Study of Treatment Z in Patients with Condition Y",
+        sponsor: "University Medical Center",
+        phase: "Phase 2/3",
+        status: "Active, not recruiting",
+        enrollment: 310,
+        startDate: "2020-11-01",
+        completionDate: "2023-04-30",
+        primaryEndpoint: "Proportion of subjects achieving clinical response at Week 16",
+        designNotes: "Adaptive design with sample size re-estimation",
+        similarityScore: 85
+      },
+      {
+        nctId: "NCT02774681",
+        title: "A Study to Evaluate Novel Therapy for Indication Y",
+        sponsor: "Biotech Inc.",
+        phase: "Phase 2",
+        status: "Completed",
+        enrollment: 184,
+        startDate: "2019-06-22",
+        completionDate: "2021-09-17",
+        primaryEndpoint: "Time to disease progression",
+        designNotes: "Event-driven trial with blinded endpoint adjudication committee",
+        similarityScore: 78
+      }
+    ];
+    
+    const endpoints = [
+      {
+        name: "Primary Endpoint",
+        description: "Change from baseline in Disease Activity Score at Week 24",
+        precedent: "Used in 78% of similar trials",
+        suggestion: "Well-aligned with regulatory expectations. Consider adding interim assessment at Week 12 to enable early detection of treatment effect.",
+        acceptanceRating: "High"
+      },
+      {
+        name: "Secondary Endpoint #1",
+        description: "Proportion of subjects achieving clinical remission at Week 24",
+        precedent: "Used in 64% of similar trials",
+        suggestion: "Consider updating definition of 'clinical remission' to align with latest consensus guidelines published in 2023.",
+        acceptanceRating: "Medium"
+      },
+      {
+        name: "Secondary Endpoint #2",
+        description: "Quality of life assessment using validated questionnaire",
+        precedent: "Used in 82% of similar trials",
+        suggestion: "Well-specified and aligned with patient-centered outcomes focus. No changes needed.",
+        acceptanceRating: "High"
+      },
+      {
+        name: "Exploratory Endpoint",
+        description: "Biomarker response at Week 4, 12, and 24",
+        precedent: "Similar approach in 35% of trials",
+        suggestion: "Consider upgrading to secondary endpoint given increased regulatory interest in this biomarker as shown in recent approvals.",
+        acceptanceRating: "Medium"
+      }
+    ];
+    
+    const recommendations = [
+      {
+        category: "Study Design",
+        priority: "high",
+        issue: "Sample size justification lacks statistical power calculation details",
+        recommendation: "Include detailed power calculation with assumed effect size, variability, and dropout rate assumptions",
+        impact: "Prevents potential FDA information requests during review; strengthens statistical validity of the study"
+      },
+      {
+        category: "Primary Endpoint",
+        priority: "medium",
+        issue: "Time frame for primary endpoint assessment is not clearly specified",
+        recommendation: "Clearly define time frame as 'Week 24 ± 3 days' and include handling of missing data",
+        impact: "Improves clarity and reduces risk of inconsistent endpoint collection"
+      },
+      {
+        category: "Inclusion/Exclusion",
+        priority: "medium",
+        issue: "Exclusion criteria may be overly restrictive for generalizability",
+        recommendation: "Consider revising criteria #4 and #7 to be less restrictive while maintaining study integrity",
+        impact: "Improves study population representativeness and enrollment feasibility"
+      },
+      {
+        category: "Statistical Analysis",
+        priority: "high",
+        issue: "Multiple testing strategy for secondary endpoints not specified",
+        recommendation: "Implement hierarchical testing procedure or Bonferroni correction to control family-wise error rate",
+        impact: "Critical for regulatory acceptance of secondary endpoint claims"
+      },
+      {
+        category: "Safety Monitoring",
+        priority: "medium",
+        issue: "DSMB charter lacks stopping rules detail",
+        recommendation: "Define specific statistical triggers for safety concerns requiring study pause or review",
+        impact: "Enhances subject protection and provides clarity for decision-making"
+      }
+    ];
+    
+    return {
+      filename: uploadedFile.name,
+      fileSize: uploadedFile.size,
+      analyzeDate: new Date().toISOString(),
+      alignmentScores,
+      regulatoryFindings,
+      similarTrials,
+      endpoints,
+      recommendations
+    };
+  };
+  
+  // Render the upload UI
+  const renderUploadUI = () => {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Upload Protocol Document</CardTitle>
+            <CardDescription>
+              Upload your protocol document to analyze against our database of regulatory precedents, 
+              similar studies, and best practices
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center text-center">
+              <Upload className="h-12 w-12 text-gray-300 mb-4" />
+              <h3 className="text-lg font-medium mb-1">Upload your protocol document</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Drag and drop your document here, or click to browse
+              </p>
+              <div className="flex items-center space-x-2">
+                <p className="text-sm text-gray-500">
+                  Accepted formats:
+                </p>
+                <Badge variant="outline" className="text-xs">PDF</Badge>
+                <Badge variant="outline" className="text-xs">DOC</Badge>
+                <Badge variant="outline" className="text-xs">DOCX</Badge>
+              </div>
+              
+              <input
+                type="file"
+                id="protocol-upload"
+                className="hidden"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleFileUpload}
+              />
+              <label htmlFor="protocol-upload">
+                <Button className="mt-4" as="span">
+                  Choose file
+                </Button>
+              </label>
+            </div>
+            
+            {uploadedFile && (
+              <div className="mt-6">
+                <div className="flex items-center p-4 bg-blue-50 rounded-md">
+                  <FileText className="h-8 w-8 text-blue-500 mr-4" />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-blue-900">{uploadedFile.name}</h4>
+                    <p className="text-sm text-blue-700">
+                      {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB • {uploadedFile.type}
+                    </p>
+                  </div>
+                  <div>
+                    <Button variant="ghost" size="sm" onClick={() => setUploadedFile(null)}>
+                      Remove
+                    </Button>
+                    <Button className="ml-2" size="sm" onClick={startAnalysis}>
+                      <Microscope className="h-4 w-4 mr-2" />
+                      Analyze
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {isAnalyzing && (
+              <div className="mt-6 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Analyzing protocol...</span>
+                  <span>{analysisProgress}%</span>
+                </div>
+                <Progress value={analysisProgress} className="h-2" />
+                <div className="text-xs text-gray-500 italic">
+                  {analysisProgress < 25 ? 'Extracting protocol elements and structure...' : 
+                   analysisProgress < 50 ? 'Comparing with similar clinical trials in database...' : 
+                   analysisProgress < 75 ? 'Analyzing against regulatory guidance and precedents...' : 
+                   'Generating recommendations and insights...'}
+                </div>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <div className="text-sm text-gray-500 flex items-center">
+              <ShieldCheck className="h-4 w-4 text-green-500 mr-1" />
+              Your documents are analyzed securely and never stored permanently
+            </div>
+            <Button onClick={startAnalysis} disabled={!uploadedFile || isAnalyzing}>
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Microscope className="mr-2 h-4 w-4" />
+                  Analyze Protocol
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
         
-        <div className="mb-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="upload" disabled={isUploading}>Upload Protocol</TabsTrigger>
-              <TabsTrigger value="analyze" disabled={!fileName || isUploading || isAnalyzing}>Analyze Protocol</TabsTrigger>
-              <TabsTrigger value="results" disabled={!analysisComplete}>Review Results</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="upload" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upload Your Protocol</CardTitle>
-                  <CardDescription>
-                    Upload your draft protocol for comprehensive analysis and intelligent recommendations.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleUpload}>
-                    <div className="grid w-full gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="protocol-type">Protocol Type</Label>
-                        <Select defaultValue="phase2">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select protocol type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="phase1">Phase I Protocol</SelectItem>
-                            <SelectItem value="phase2">Phase II Protocol</SelectItem>
-                            <SelectItem value="phase3">Phase III Protocol</SelectItem>
-                            <SelectItem value="phase4">Phase IV Protocol</SelectItem>
-                            <SelectItem value="iss">Investigator Sponsored Study</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="therapeutic-area">Therapeutic Area</Label>
-                        <Select defaultValue="diabetes">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select therapeutic area" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="oncology">Oncology</SelectItem>
-                            <SelectItem value="neurology">Neurology</SelectItem>
-                            <SelectItem value="cardiology">Cardiology</SelectItem>
-                            <SelectItem value="immunology">Immunology</SelectItem>
-                            <SelectItem value="infectious">Infectious Disease</SelectItem>
-                            <SelectItem value="respiratory">Respiratory</SelectItem>
-                            <SelectItem value="diabetes">Diabetes/Metabolic</SelectItem>
-                            <SelectItem value="dermatology">Dermatology</SelectItem>
-                            <SelectItem value="psychiatry">Psychiatry</SelectItem>
-                            <SelectItem value="rare">Rare Disease</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="drug-type">Drug/Treatment Type</Label>
-                        <Select defaultValue="small-molecule">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select drug type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="small-molecule">Small Molecule</SelectItem>
-                            <SelectItem value="biologic">Biologic</SelectItem>
-                            <SelectItem value="peptide">Peptide</SelectItem>
-                            <SelectItem value="gene-therapy">Gene Therapy</SelectItem>
-                            <SelectItem value="cell-therapy">Cell Therapy</SelectItem>
-                            <SelectItem value="vaccine">Vaccine</SelectItem>
-                            <SelectItem value="device">Medical Device</SelectItem>
-                            <SelectItem value="combo">Combination Product</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor="protocol-file">Protocol Document</Label>
-                          <HelpCircle className="h-4 w-4 text-gray-400" />
+        <Card>
+          <CardHeader>
+            <CardTitle>Advanced Protocol Design Tools</CardTitle>
+            <CardDescription>
+              Access AI-powered tools to optimize your protocol design
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="border rounded-md p-4 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => setActiveTab('blueprint')}>
+                <div className="flex items-center mb-3">
+                  <Sparkles className="h-5 w-5 text-blue-500 mr-2" />
+                  <h3 className="font-medium">Protocol Blueprint Generator</h3>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Generate a first-draft protocol outline from simple study descriptors like phase, population, and objectives
+                </p>
+                <Button variant="ghost" size="sm" className="w-full">
+                  <ArrowRight className="h-4 w-4 mr-1" />
+                  Open Tool
+                </Button>
+              </div>
+              
+              <div className="border rounded-md p-4 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => setActiveTab('simulator')}>
+                <div className="flex items-center mb-3">
+                  <BarChart4 className="h-5 w-5 text-blue-500 mr-2" />
+                  <h3 className="font-medium">Adaptive Design Simulator</h3>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Run simulations on proposed designs to visualize power curves, enrollment timelines, and drop-out impact
+                </p>
+                <Button variant="ghost" size="sm" className="w-full">
+                  <ArrowRight className="h-4 w-4 mr-1" />
+                  Open Tool
+                </Button>
+              </div>
+              
+              <div className="border rounded-md p-4 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => setActiveTab('endpoints')}>
+                <div className="flex items-center mb-3">
+                  <ClipboardList className="h-5 w-5 text-blue-500 mr-2" />
+                  <h3 className="font-medium">Intelligent Endpoint Advisor</h3>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  Get recommendations for primary & secondary endpoints based on therapeutic area and historical trial data
+                </p>
+                <Button variant="ghost" size="sm" className="w-full">
+                  <ArrowRight className="h-4 w-4 mr-1" />
+                  Open Tool
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+  
+  // Render the analysis results UI
+  const renderResultsUI = () => {
+    if (!analysisResults) return null;
+    
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>Protocol Analysis Results</CardTitle>
+                <CardDescription>
+                  Comprehensive analysis of your protocol document against clinical trials database and regulatory guidance
+                </CardDescription>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge className="bg-blue-100 text-blue-800">
+                  {analysisResults.fileSize ? `${(analysisResults.fileSize / 1024 / 1024).toFixed(2)} MB` : 'File size unknown'}
+                </Badge>
+                <Badge variant="outline">
+                  <Clock className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                  {new Date(analysisResults.analyzeDate).toLocaleDateString()}
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeResultTab} onValueChange={setActiveResultTab}>
+              <TabsList className="grid grid-cols-4 mb-4">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="regulatory">Regulatory Alignment</TabsTrigger>
+                <TabsTrigger value="similar">Similar Studies</TabsTrigger>
+                <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+              </TabsList>
+              
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="space-y-6">
+                <div className="p-4 bg-blue-50 rounded-md">
+                  <div className="flex items-center mb-3">
+                    <BookOpen className="h-5 w-5 text-blue-600 mr-2" />
+                    <h3 className="font-medium">Overall Protocol Assessment</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <div className="text-sm font-medium mb-2">Overall Alignment Score</div>
+                      <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className={`absolute top-0 left-0 h-full ${
+                            analysisResults.alignmentScores.overall >= 80 ? 'bg-green-500' : 
+                            analysisResults.alignmentScores.overall >= 60 ? 'bg-yellow-500' : 
+                            'bg-red-500'
+                          }`}
+                          style={{ width: `${analysisResults.alignmentScores.overall}%` }}
+                        ></div>
+                        <div className="absolute inset-0 flex items-center justify-center text-sm font-medium">
+                          {analysisResults.alignmentScores.overall}% Aligned with Best Practices
                         </div>
-                        <div className="mt-2">
-                          <div className="flex items-center justify-center w-full">
-                            <label htmlFor="protocol-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100">
-                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <UploadCloud className="w-8 h-8 mb-3 text-gray-400" />
-                                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                  <span className="font-semibold">Click to upload</span> or drag and drop
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  Word or PDF document (Max 25MB)
-                                </p>
-                                {fileName && (
-                                  <p className="mt-2 text-sm text-blue-600">
-                                    Selected: {fileName}
-                                  </p>
-                                )}
+                      </div>
+                      <p className="text-sm mt-2">
+                        This protocol is {analysisResults.alignmentScores.overall >= 80 ? 'well aligned' : 'partially aligned'} with 
+                        best practices, similar studies, and regulatory precedents.
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <div className="text-sm font-medium mb-2">Key Areas for Improvement</div>
+                      <div className="space-y-1.5">
+                        {Object.entries(analysisResults.alignmentScores)
+                          .filter(([key]) => key !== 'overall')
+                          .sort(([, a], [, b]) => a - b)
+                          .slice(0, 3)
+                          .map(([key, score]) => (
+                            <div key={key} className="flex items-center justify-between">
+                              <span className="text-sm text-gray-700 capitalize">{key.replace(/_/g, ' ')}</span>
+                              <div className="flex items-center">
+                                <span className="text-sm mr-2">{score}%</span>
+                                <div className="w-20 bg-gray-200 h-2 rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full ${
+                                      score >= 80 ? 'bg-green-500' : 
+                                      score >= 60 ? 'bg-yellow-500' : 
+                                      'bg-red-500'
+                                    }`}
+                                    style={{ width: `${score}%` }}
+                                  ></div>
+                                </div>
                               </div>
-                              <input 
-                                id="protocol-file" 
-                                type="file" 
-                                className="hidden" 
-                                accept=".doc,.docx,.pdf"
-                                onChange={handleFileChange}
-                                disabled={isUploading}
-                              />
-                            </label>
-                          </div>
-                        </div>
+                            </div>
+                          ))
+                        }
                       </div>
-                      
-                      {isUploading && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span>Uploading...</span>
-                            <span>{uploadProgress}%</span>
-                          </div>
-                          <Progress value={uploadProgress} className="h-2" />
-                        </div>
-                      )}
-                    </div>
-                  </form>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline">Cancel</Button>
-                  <Button onClick={handleUpload} disabled={!fileName || isUploading}>
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Uploading...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Protocol
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="analyze" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Analyze Protocol</CardTitle>
-                  <CardDescription>
-                    Customize analysis parameters to get the most relevant recommendations.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Protocol File</Label>
-                      <div className="flex items-center p-2 border rounded-md bg-gray-50">
-                        <FileText className="h-5 w-5 text-blue-500 mr-2" />
-                        <span className="text-sm">{fileName}</span>
-                        <Button variant="ghost" size="sm" className="ml-auto">
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Analysis Scope</Label>
-                      <Select defaultValue="comprehensive">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select analysis scope" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="comprehensive">Comprehensive Analysis</SelectItem>
-                          <SelectItem value="regulatory">Regulatory Focus</SelectItem>
-                          <SelectItem value="scientific">Scientific & Statistical Focus</SelectItem>
-                          <SelectItem value="operational">Operational Feasibility Focus</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Reference Timeframe</Label>
-                      <Select defaultValue="5years">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select reference timeframe" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="2years">Last 2 Years</SelectItem>
-                          <SelectItem value="5years">Last 5 Years</SelectItem>
-                          <SelectItem value="10years">Last 10 Years</SelectItem>
-                          <SelectItem value="all">All Available Data</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Regulatory Regions</Label>
-                      <Select defaultValue="us-eu">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select regulatory regions" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="us">US (FDA)</SelectItem>
-                          <SelectItem value="eu">Europe (EMA)</SelectItem>
-                          <SelectItem value="us-eu">US & Europe</SelectItem>
-                          <SelectItem value="global">Global (FDA, EMA, PMDA, NMPA)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="md:col-span-2 space-y-2">
-                      <Label>Analysis Focus Areas</Label>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="focus-design" className="rounded" defaultChecked />
-                          <label htmlFor="focus-design" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Study Design</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="focus-endpoints" className="rounded" defaultChecked />
-                          <label htmlFor="focus-endpoints" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Endpoints</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="focus-eligibility" className="rounded" defaultChecked />
-                          <label htmlFor="focus-eligibility" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Eligibility Criteria</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="focus-statistics" className="rounded" defaultChecked />
-                          <label htmlFor="focus-statistics" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Statistical Considerations</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="focus-safety" className="rounded" defaultChecked />
-                          <label htmlFor="focus-safety" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Safety Monitoring</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="focus-operational" className="rounded" defaultChecked />
-                          <label htmlFor="focus-operational" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Operational Feasibility</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="focus-regulatory" className="rounded" defaultChecked />
-                          <label htmlFor="focus-regulatory" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Regulatory Compliance</label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="focus-precedent" className="rounded" defaultChecked />
-                          <label htmlFor="focus-precedent" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Historical Precedent</label>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="md:col-span-2 space-y-2">
-                      <Label htmlFor="additional-notes">Additional Notes or Specific Questions</Label>
-                      <Textarea 
-                        id="additional-notes" 
-                        placeholder="Enter any specific areas of concern or questions you'd like addressed in the analysis..."
-                        className="resize-none"
-                        rows={3}
-                      />
                     </div>
                   </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" onClick={() => setActiveTab('upload')}>Back</Button>
-                  <Button 
-                    onClick={handleStartAnalysis}
-                    disabled={isAnalyzing}
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      <>
-                        <Brain className="mr-2 h-4 w-4" />
-                        Start Analysis
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="results" className="mt-6">
-              {analysisResults && (
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <CardTitle className="text-xl">Protocol Analysis Results</CardTitle>
-                          <CardDescription>
-                            Protocol: {fileName}
-                          </CardDescription>
-                        </div>
-                        <div className="text-center">
-                          <div className="inline-flex items-center justify-center rounded-full h-16 w-16 bg-blue-50 border-4 border-blue-100">
-                            <span className="text-xl font-bold text-blue-700">{analysisResults.overallScore}</span>
-                          </div>
-                          <div className="text-sm font-medium mt-1">Overall Score</div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Study Design</Label>
-                            <span className="text-sm font-medium">{analysisResults.sections.studyDesign}%</span>
-                          </div>
-                          <Progress value={analysisResults.sections.studyDesign} className="h-2" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Endpoints</Label>
-                            <span className="text-sm font-medium">{analysisResults.sections.endpoints}%</span>
-                          </div>
-                          <Progress value={analysisResults.sections.endpoints} className="h-2" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Eligibility Criteria</Label>
-                            <span className="text-sm font-medium">{analysisResults.sections.eligibilityCriteria}%</span>
-                          </div>
-                          <Progress value={analysisResults.sections.eligibilityCriteria} className="h-2" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Statistical Considerations</Label>
-                            <span className="text-sm font-medium">{analysisResults.sections.statisticalConsiderations}%</span>
-                          </div>
-                          <Progress value={analysisResults.sections.statisticalConsiderations} className="h-2" />
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Safety Monitoring</Label>
-                            <span className="text-sm font-medium">{analysisResults.sections.safetyMonitoring}%</span>
-                          </div>
-                          <Progress value={analysisResults.sections.safetyMonitoring} className="h-2" />
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-end space-x-2">
-                        <Button variant="outline" size="sm" onClick={handleGenerateReport}>
-                          <Download className="h-4 w-4 mr-1" />
-                          Download Full Report
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Share2 className="h-4 w-4 mr-1" />
-                          Share Results
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => setLocation('/study-planner')}
-                        >
-                          <FilePlus className="h-4 w-4 mr-1" />
-                          Create Study Plan
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Tabs defaultValue="recommendations">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="recommendations">Key Recommendations</TabsTrigger>
-                      <TabsTrigger value="elements">Protocol Elements</TabsTrigger>
-                      <TabsTrigger value="similar">Similar Studies</TabsTrigger>
-                      <TabsTrigger value="regulatory">Regulatory Insights</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="recommendations" className="mt-4 space-y-4">
-                      {analysisResults.recommendations.map((rec, i) => (
-                        <RecommendationCard key={i} {...rec} />
-                      ))}
-                    </TabsContent>
-                    
-                    <TabsContent value="elements" className="mt-4 space-y-4">
-                      <div className="mb-4">
-                        <div className="flex items-center">
-                          <Search className="h-4 w-4 mr-2 text-gray-400" />
-                          <Input 
-                            placeholder="Search protocol elements..." 
-                            className="flex-1"
-                          />
-                        </div>
-                      </div>
-                      
-                      {analysisResults.elements.map((element, i) => (
-                        <ProtocolElement key={i} {...element} />
-                      ))}
-                    </TabsContent>
-                    
-                    <TabsContent value="similar" className="mt-4 space-y-4">
-                      <div className="mb-4">
-                        <div className="p-3 bg-blue-50 text-blue-800 rounded-md">
-                          <div className="flex items-start">
-                            <InfoCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-medium">Similar Studies Analysis</p>
-                              <p className="text-sm mt-1">
-                                The following studies were identified as similar to your protocol based on therapeutic area,
-                                phase, intervention type, and study design. Learn from their successes and challenges.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {analysisResults.similarStudies.map((study, i) => (
-                        <SimilarStudyCard key={i} {...study} />
-                      ))}
-                    </TabsContent>
-                    
-                    <TabsContent value="regulatory" className="mt-4 space-y-4">
-                      <div className="mb-4">
-                        <div className="p-3 bg-yellow-50 text-yellow-800 rounded-md">
-                          <div className="flex items-start">
-                            <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-medium">Regulatory Landscape</p>
-                              <p className="text-sm mt-1">
-                                These insights are derived from recent regulatory guidance, precedent approvals,
-                                and feedback from health authorities that may impact your protocol design.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {analysisResults.regulatoryInsights.map((insight, i) => (
-                        <RegulatoryInsightCard key={i} {...insight} />
-                      ))}
-                    </TabsContent>
-                  </Tabs>
                 </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
+                
+                <h3 className="text-lg font-medium mt-6">Section Alignment Scores</h3>
+                <div className="space-y-3">
+                  {Object.entries(analysisResults.alignmentScores)
+                    .filter(([key]) => key !== 'overall')
+                    .sort(([, a], [, b]) => b - a)
+                    .map(([key, score]) => (
+                      <div key={key} className="border rounded-md p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium capitalize">{key.replace(/_/g, ' ')}</span>
+                          <Badge 
+                            className={
+                              score >= 80 ? "bg-green-100 text-green-800" : 
+                              score >= 60 ? "bg-yellow-100 text-yellow-800" : 
+                              "bg-red-100 text-red-800"
+                            }
+                          >
+                            {score}% Aligned
+                          </Badge>
+                        </div>
+                        <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div 
+                            className={`absolute top-0 left-0 h-full ${
+                              score >= 80 ? 'bg-green-500' : 
+                              score >= 60 ? 'bg-yellow-500' : 
+                              'bg-red-500'
+                            }`}
+                            style={{ width: `${score}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+                
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-3">Protocol Endpoints Assessment</h3>
+                  <div className="space-y-4">
+                    {analysisResults.endpoints.map((endpoint, index) => (
+                      <div key={index} className="border rounded-md p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium">{endpoint.name}</h4>
+                            <p className="text-sm text-gray-700 mt-1">{endpoint.description}</p>
+                          </div>
+                          <Badge 
+                            className={
+                              endpoint.acceptanceRating === 'High' ? "bg-green-100 text-green-800" : 
+                              endpoint.acceptanceRating === 'Medium' ? "bg-yellow-100 text-yellow-800" : 
+                              "bg-red-100 text-red-800"
+                            }
+                          >
+                            {endpoint.acceptanceRating} Acceptance
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-gray-50 p-2 rounded-md">
+                            <span className="text-sm font-medium">Precedent:</span>
+                            <span className="text-sm ml-2">{endpoint.precedent}</span>
+                          </div>
+                          <div className="bg-blue-50 p-2 rounded-md">
+                            <span className="text-sm font-medium">Suggestion:</span>
+                            <span className="text-sm ml-2">{endpoint.suggestion}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+              
+              {/* Regulatory Alignment Tab */}
+              <TabsContent value="regulatory" className="space-y-6">
+                <div className="bg-blue-50 p-4 rounded-md">
+                  <div className="flex items-start">
+                    <Scale className="h-5 w-5 text-blue-600 mt-1 mr-2" />
+                    <div>
+                      <h3 className="font-medium">Regulatory Alignment Analysis</h3>
+                      <p className="text-sm text-gray-700 mt-1">
+                        This analysis compares your protocol against FDA, EMA, and ICH guidelines 
+                        relevant to your therapeutic area and study phase.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {analysisResults.regulatoryFindings.map((finding, index) => (
+                    <div 
+                      key={index} 
+                      className={`border rounded-md p-4 ${
+                        finding.severity === 'major' ? 'border-red-200 bg-red-50' : 
+                        finding.severity === 'moderate' ? 'border-yellow-200 bg-yellow-50' : 
+                        finding.severity === 'minor' ? 'border-blue-200 bg-blue-50' : 
+                        'border-green-200 bg-green-50'
+                      }`}
+                    >
+                      <div className="flex items-start">
+                        <div className="mt-1 mr-3">
+                          {finding.severity === 'major' ? (
+                            <XCircle className="h-5 w-5 text-red-500" />
+                          ) : finding.severity === 'moderate' ? (
+                            <AlertCircle className="h-5 w-5 text-yellow-500" />
+                          ) : finding.severity === 'minor' ? (
+                            <Info className="h-5 w-5 text-blue-500" />
+                          ) : (
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">{finding.category}</h4>
+                            <Badge 
+                              className={
+                                finding.severity === 'major' ? "bg-red-100 text-red-800 capitalize" : 
+                                finding.severity === 'moderate' ? "bg-yellow-100 text-yellow-800 capitalize" : 
+                                finding.severity === 'minor' ? "bg-blue-100 text-blue-800 capitalize" : 
+                                "bg-green-100 text-green-800 capitalize"
+                              }
+                            >
+                              {finding.severity}
+                            </Badge>
+                          </div>
+                          <p className="text-sm mt-1">{finding.description}</p>
+                          <div className="mt-2 flex items-center">
+                            <BookMarked className="h-4 w-4 text-gray-500 mr-1" />
+                            <span className="text-xs text-gray-600">{finding.reference}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-6 p-4 border rounded-md">
+                  <h3 className="font-medium mb-3">Regulatory Summary</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div className="p-3 bg-red-50 rounded-md">
+                      <div className="text-2xl font-bold text-red-600 mb-1">
+                        {analysisResults.regulatoryFindings.filter(f => f.severity === 'major').length}
+                      </div>
+                      <div className="text-sm font-medium">Major Findings</div>
+                    </div>
+                    <div className="p-3 bg-yellow-50 rounded-md">
+                      <div className="text-2xl font-bold text-yellow-600 mb-1">
+                        {analysisResults.regulatoryFindings.filter(f => f.severity === 'moderate').length}
+                      </div>
+                      <div className="text-sm font-medium">Moderate Findings</div>
+                    </div>
+                    <div className="p-3 bg-blue-50 rounded-md">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                        {analysisResults.regulatoryFindings.filter(f => f.severity === 'minor').length}
+                      </div>
+                      <div className="text-sm font-medium">Minor Findings</div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              {/* Similar Studies Tab */}
+              <TabsContent value="similar" className="space-y-6">
+                <div className="bg-blue-50 p-4 rounded-md">
+                  <div className="flex items-start">
+                    <Beaker className="h-5 w-5 text-blue-600 mt-1 mr-2" />
+                    <div>
+                      <h3 className="font-medium">Similar Studies Analysis</h3>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Your protocol has been compared to our database of successful clinical trials in the same
+                        therapeutic area and phase. Here are the most similar studies to yours.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {analysisResults.similarTrials.map((trial, index) => (
+                    <div key={index} className="border rounded-md p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium">{trial.title}</h4>
+                          <div className="flex items-center mt-1 text-sm text-gray-500">
+                            <span>{trial.sponsor}</span>
+                            <span className="mx-1.5">•</span>
+                            <Badge variant="outline">{trial.phase}</Badge>
+                            <span className="mx-1.5">•</span>
+                            <span>{trial.status}</span>
+                          </div>
+                        </div>
+                        <Badge className="bg-blue-100 text-blue-800">
+                          {trial.similarityScore}% Match
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                        <div className="bg-gray-50 p-3 rounded-md">
+                          <div className="text-xs text-gray-500 mb-1">Enrollment</div>
+                          <div className="text-sm font-medium">{trial.enrollment} subjects</div>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-md">
+                          <div className="text-xs text-gray-500 mb-1">Timeline</div>
+                          <div className="text-sm font-medium">
+                            {new Date(trial.startDate).toLocaleDateString()} to {' '}
+                            {new Date(trial.completionDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-md">
+                          <div className="text-xs text-gray-500 mb-1">NCT ID</div>
+                          <div className="text-sm font-medium">{trial.nctId}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 space-y-2">
+                        <div className="bg-blue-50 p-3 rounded-md">
+                          <div className="text-xs text-gray-600 mb-1">Primary Endpoint</div>
+                          <div className="text-sm">{trial.primaryEndpoint}</div>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-md">
+                          <div className="text-xs text-gray-600 mb-1">Design Notes</div>
+                          <div className="text-sm">{trial.designNotes}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 flex justify-end">
+                        <Button variant="ghost" size="sm">
+                          View Full Trial Details
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+              
+              {/* Recommendations Tab */}
+              <TabsContent value="recommendations" className="space-y-6">
+                <div className="bg-blue-50 p-4 rounded-md">
+                  <div className="flex items-start">
+                    <Sparkles className="h-5 w-5 text-blue-600 mt-1 mr-2" />
+                    <div>
+                      <h3 className="font-medium">AI-Generated Recommendations</h3>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Based on our analysis, here are specific recommendations to improve your protocol's 
+                        regulatory alignment, scientific rigor, and operational feasibility.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  {analysisResults.recommendations.map((rec, index) => (
+                    <div key={index} className="border rounded-md p-4">
+                      <div className="flex items-start">
+                        <div className="mt-1 mr-3">
+                          {rec.priority === 'high' ? (
+                            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
+                              <span className="text-red-600 text-xs font-bold">1</span>
+                            </div>
+                          ) : rec.priority === 'medium' ? (
+                            <div className="w-6 h-6 rounded-full bg-yellow-100 flex items-center justify-center">
+                              <span className="text-yellow-600 text-xs font-bold">2</span>
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                              <span className="text-blue-600 text-xs font-bold">3</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">{rec.category}</h4>
+                            <Badge 
+                              className={
+                                rec.priority === 'high' ? "bg-red-100 text-red-800 capitalize" : 
+                                rec.priority === 'medium' ? "bg-yellow-100 text-yellow-800 capitalize" : 
+                                "bg-blue-100 text-blue-800 capitalize"
+                              }
+                            >
+                              {rec.priority} Priority
+                            </Badge>
+                          </div>
+                          
+                          <div className="mt-3 space-y-2">
+                            <div className="bg-gray-50 p-2 rounded-md">
+                              <span className="text-sm font-medium">Issue:</span>
+                              <span className="text-sm ml-2">{rec.issue}</span>
+                            </div>
+                            <div className="bg-green-50 p-2 rounded-md">
+                              <span className="text-sm font-medium">Recommendation:</span>
+                              <span className="text-sm ml-2">{rec.recommendation}</span>
+                            </div>
+                            <div className="bg-blue-50 p-2 rounded-md">
+                              <span className="text-sm font-medium">Impact:</span>
+                              <span className="text-sm ml-2">{rec.impact}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex justify-end space-x-2 mt-4">
+                  <Button variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Recommendations
+                  </Button>
+                  <Button>
+                    <Check className="h-4 w-4 mr-2" />
+                    Apply Selected Recommendations
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={resetAnalysis}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Analyze New Protocol
+            </Button>
+            <Button>
+              <Download className="h-4 w-4 mr-2" />
+              Download Full Report
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
-    </Layout>
+    );
+  };
+  
+  return (
+    <div className="container py-8 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Protocol Review & Optimization</h1>
+        <p className="text-gray-600">
+          AI-powered analysis and optimization tools for clinical study protocols
+        </p>
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsTrigger value="upload">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload & Analyze
+          </TabsTrigger>
+          <TabsTrigger value="results" disabled={!analysisComplete}>
+            <FileText className="h-4 w-4 mr-2" />
+            Analysis Results
+          </TabsTrigger>
+          <TabsTrigger value="blueprint">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Blueprint Generator
+          </TabsTrigger>
+          <TabsTrigger value="simulator">
+            <BarChart4 className="h-4 w-4 mr-2" />
+            Design Simulator
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="upload">
+          {renderUploadUI()}
+        </TabsContent>
+        
+        <TabsContent value="results">
+          {renderResultsUI()}
+        </TabsContent>
+        
+        <TabsContent value="blueprint">
+          <ProtocolBlueprintGenerator />
+        </TabsContent>
+        
+        <TabsContent value="simulator">
+          <div className="space-y-6">
+            <AdaptiveDesignSimulator />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="endpoints">
+          <div className="space-y-6">
+            <IntelligentEndpointAdvisor />
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
-export default withAuthGuard(ProtocolReview);
+export default ProtocolReview;

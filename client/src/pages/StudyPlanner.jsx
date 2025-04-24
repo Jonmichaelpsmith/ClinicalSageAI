@@ -1,1589 +1,1643 @@
 import React, { useState } from 'react';
-import Layout from '../components/Layout';
-import { useToast } from '../hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '../lib/queryClient';
-import { useLocation } from 'wouter';
 import { 
-  FileText, 
-  Plus, 
-  Check, 
-  CalendarCheck, 
-  ChevronRight, 
-  ChevronDown,
-  ChevronUp,
-  Search, 
-  Download,
-  Upload,
-  Clipboard,
-  ClipboardCheck,
-  ClipboardList,
-  AlertTriangle,
-  Users,
-  FilePlus,
-  FileCheck,
-  CalendarDays,
-  Calendar,
-  User,
-  Building,
-  Settings,
-  Globe,
-  HelpCircle,
-  BookOpen,
-  BarChart3,
-  FileSymlink,
-  Trash2,
-  Pencil,
-  Lock,
-  Folder,
-  FolderPlus,
-  ArrowRight,
-  ExternalLink,
-  Layers,
-  CheckSquare,
-  XCircle,
-  PlusCircle,
-  Repeat,
-  Info,
-  Workflow,
-  Clock,
-  AlertCircle,
-  CheckCircle
-} from 'lucide-react';
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
 } from '@/components/ui/card';
-
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import {
+import { 
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-
+} from "@/components/ui/select";
+import { 
+  CalendarIcon, 
+  Check, 
+  CheckCircle2, 
+  ChevronRight, 
+  ClipboardList, 
+  Download, 
+  FileText, 
+  Folder, 
+  FolderPlus, 
+  HelpCircle, 
+  Link2, 
+  ListChecks,
+  Plus,
+  Search,
+  Settings,
+  Share2,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  Upload,
+  Users,
+  X,
+  XCircle,
+  AlertCircle,
+  BarChart4,
+  LineChart,
+  PieChart,
+  Cable,
+  FileUp,
+  Eye,
+  Copy,
+  Archive,
+  Clock,
+  Info,
+  MoreHorizontal,
+  Calendar,
+  Star,
+  StarHalf
+} from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-
-// Wrap the component with auth guard for security
-import withAuthGuard from '../utils/withAuthGuard';
-
-// Protocol Deviation Component
-const ProtocolDeviationLog = () => {
-  const [deviations, setDeviations] = useState([
-    {
-      id: 1,
-      subject: 'Subject-101',
-      site: 'Site 03',
-      date: '2025-04-12',
-      category: 'Inclusion/Exclusion',
-      description: 'Subject enrolled with HbA1c of 6.8%, below minimum inclusion criterion of 7.0%',
-      impact: 'Low - Subject remains eligible for all study procedures and assessments',
-      status: 'Identified',
-      mitigation: 'Subject to remain in study with protocol deviation documented. Data to be analyzed in both ITT and PP populations.',
-      preventable: true
-    },
-    {
-      id: 2,
-      subject: 'Subject-118',
-      site: 'Site 05',
-      date: '2025-04-08',
-      category: 'Study Procedures',
-      description: 'Visit window exceeded by 4 days for Week 12 visit',
-      impact: 'Medium - May affect interpretation of time-dependent endpoints',
-      status: 'Resolved',
-      mitigation: 'Statistical analysis plan updated to account for visit window deviations. Site retrained on scheduling procedures.',
-      preventable: true
-    },
-    {
-      id: 3,
-      subject: 'Subject-205',
-      site: 'Site 11',
-      date: '2025-03-28',
-      category: 'Informed Consent',
-      description: 'Updated ICF version not obtained prior to additional procedures',
-      impact: 'High - Ethical and regulatory concern',
-      status: 'Reported',
-      mitigation: 'Reported to EC/IRB. Subject re-consented with correct ICF. Site audit conducted and comprehensive retraining completed.',
-      preventable: true
-    },
-    {
-      id: 4,
-      subject: 'N/A',
-      site: 'Site 08',
-      date: '2025-03-15',
-      category: 'Investigational Product',
-      description: 'Temperature excursion for drug product storage (15°C for 8 hours, below required 20°C minimum)',
-      impact: 'Medium - Potential product stability concern',
-      status: 'Resolved',
-      mitigation: 'QA review confirmed stability unaffected within documented excursion parameters. Site retrained on storage requirements.',
-      preventable: true
-    },
-  ]);
-
-  const [newDeviation, setNewDeviation] = useState({
-    subject: '',
-    site: '',
-    date: '',
-    category: '',
-    description: '',
-    impact: '',
-    mitigation: '',
-    preventable: true
-  });
-
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [filterCategory, setFilterCategory] = useState('All');
-  const [filterSite, setFilterSite] = useState('All');
-
-  const handleAddDeviation = () => {
-    setDeviations([...deviations, { ...newDeviation, id: deviations.length + 1, status: 'Identified' }]);
-    setNewDeviation({
-      subject: '',
-      site: '',
-      date: '',
-      category: '',
-      description: '',
-      impact: '',
-      mitigation: '',
-      preventable: true
-    });
-    setShowAddForm(false);
-  };
-
-  const filteredDeviations = deviations.filter(d => {
-    return (filterCategory === 'All' || d.category === filterCategory) &&
-           (filterSite === 'All' || d.site === filterSite);
-  });
-
-  const getImpactBadge = (impact) => {
-    switch (impact.split(' ')[0]) {
-      case 'Low':
-        return <Badge className="bg-green-100 text-green-800">Low</Badge>;
-      case 'Medium':
-        return <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>;
-      case 'High':
-        return <Badge className="bg-red-100 text-red-800">High</Badge>;
-      default:
-        return <Badge>{impact}</Badge>;
-    }
-  };
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'Identified':
-        return <Badge className="bg-blue-100 text-blue-800">Identified</Badge>;
-      case 'Reported':
-        return <Badge className="bg-purple-100 text-purple-800">Reported</Badge>;
-      case 'Resolved':
-        return <Badge className="bg-green-100 text-green-800">Resolved</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Protocol Deviation Log</h3>
-        <Button 
-          size="sm" 
-          onClick={() => setShowAddForm(!showAddForm)}
-        >
-          {showAddForm ? (
-            <>
-              <X className="w-4 h-4 mr-1" />
-              Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4 mr-1" />
-              Add Deviation
-            </>
-          )}
-        </Button>
-      </div>
-
-      {showAddForm && (
-        <Card className="mb-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-md">Add New Protocol Deviation</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject ID</Label>
-                <Input 
-                  id="subject" 
-                  value={newDeviation.subject} 
-                  onChange={e => setNewDeviation({...newDeviation, subject: e.target.value})}
-                  placeholder="e.g., Subject-101" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="site">Site</Label>
-                <Select 
-                  onValueChange={value => setNewDeviation({...newDeviation, site: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select site" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Site 01">Site 01</SelectItem>
-                    <SelectItem value="Site 03">Site 03</SelectItem>
-                    <SelectItem value="Site 05">Site 05</SelectItem>
-                    <SelectItem value="Site 08">Site 08</SelectItem>
-                    <SelectItem value="Site 11">Site 11</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="date">Date Identified</Label>
-                <Input 
-                  id="date" 
-                  type="date" 
-                  value={newDeviation.date} 
-                  onChange={e => setNewDeviation({...newDeviation, date: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  onValueChange={value => setNewDeviation({...newDeviation, category: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Inclusion/Exclusion">Inclusion/Exclusion</SelectItem>
-                    <SelectItem value="Informed Consent">Informed Consent</SelectItem>
-                    <SelectItem value="Study Procedures">Study Procedures</SelectItem>
-                    <SelectItem value="Investigational Product">Investigational Product</SelectItem>
-                    <SelectItem value="Visit Schedule">Visit Schedule</SelectItem>
-                    <SelectItem value="Adverse Event Reporting">Adverse Event Reporting</SelectItem>
-                    <SelectItem value="Documentation">Documentation</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="impact">Impact Assessment</Label>
-                <Select
-                  onValueChange={value => setNewDeviation({...newDeviation, impact: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select impact" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Low - Minimal impact on safety or data integrity">Low</SelectItem>
-                    <SelectItem value="Medium - Moderate impact on data analysis">Medium</SelectItem>
-                    <SelectItem value="High - Significant impact on safety or data integrity">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={newDeviation.description}
-                onChange={e => setNewDeviation({...newDeviation, description: e.target.value})}
-                placeholder="Describe the protocol deviation in detail..."
-                rows={2}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="mitigation">Corrective/Preventive Action</Label>
-              <Textarea
-                id="mitigation"
-                value={newDeviation.mitigation}
-                onChange={e => setNewDeviation({...newDeviation, mitigation: e.target.value})}
-                placeholder="Describe actions taken to mitigate this deviation and prevent recurrence..."
-                rows={2}
-              />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="preventable" 
-                checked={newDeviation.preventable}
-                onCheckedChange={(checked) => setNewDeviation({...newDeviation, preventable: checked})}
-              />
-              <label 
-                htmlFor="preventable" 
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Preventable deviation
-              </label>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="mr-2" onClick={() => setShowAddForm(false)}>Cancel</Button>
-            <Button onClick={handleAddDeviation}>Add Deviation</Button>
-          </CardFooter>
-        </Card>
-      )}
-
-      <div className="flex items-center space-x-4 mb-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Search deviations..."
-            className="max-w-sm"
-            prefix={<Search className="w-4 h-4 mr-2" />}
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="category-filter" className="whitespace-nowrap">Category:</Label>
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger id="category-filter" className="w-[180px]">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Categories</SelectItem>
-              <SelectItem value="Inclusion/Exclusion">Inclusion/Exclusion</SelectItem>
-              <SelectItem value="Informed Consent">Informed Consent</SelectItem>
-              <SelectItem value="Study Procedures">Study Procedures</SelectItem>
-              <SelectItem value="Investigational Product">Investigational Product</SelectItem>
-              <SelectItem value="Visit Schedule">Visit Schedule</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="site-filter" className="whitespace-nowrap">Site:</Label>
-          <Select value={filterSite} onValueChange={setFilterSite}>
-            <SelectTrigger id="site-filter" className="w-[150px]">
-              <SelectValue placeholder="Filter by site" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Sites</SelectItem>
-              <SelectItem value="Site 03">Site 03</SelectItem>
-              <SelectItem value="Site 05">Site 05</SelectItem>
-              <SelectItem value="Site 08">Site 08</SelectItem>
-              <SelectItem value="Site 11">Site 11</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Subject</TableHead>
-            <TableHead className="w-[100px]">Site</TableHead>
-            <TableHead className="w-[100px]">Date</TableHead>
-            <TableHead className="w-[150px]">Category</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="w-[100px]">Impact</TableHead>
-            <TableHead className="w-[100px]">Status</TableHead>
-            <TableHead className="w-[150px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredDeviations.map((deviation) => (
-            <TableRow key={deviation.id}>
-              <TableCell className="font-medium">{deviation.subject}</TableCell>
-              <TableCell>{deviation.site}</TableCell>
-              <TableCell>{deviation.date}</TableCell>
-              <TableCell>{deviation.category}</TableCell>
-              <TableCell className="max-w-[300px] truncate" title={deviation.description}>
-                {deviation.description}
-              </TableCell>
-              <TableCell>{getImpactBadge(deviation.impact)}</TableCell>
-              <TableCell>{getStatusBadge(deviation.status)}</TableCell>
-              <TableCell>
-                <div className="flex space-x-1">
-                  <Button variant="ghost" size="icon">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <FileText className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-};
-
-// TMF Document Manager Component
-const TMFDocumentManager = () => {
-  const [documents, setDocuments] = useState([
-    { 
-      id: 1, 
-      title: 'Final Protocol v1.0', 
-      category: 'Protocol', 
-      version: '1.0',
-      date: '2025-03-10',
-      status: 'Approved',
-      required: true,
-      available: true,
-      zone: 'Trial Management' 
-    },
-    { 
-      id: 2, 
-      title: 'ICF Template - Main Study', 
-      category: 'Informed Consent', 
-      version: '1.0',
-      date: '2025-03-12',
-      status: 'Approved',
-      required: true,
-      available: true,
-      zone: 'Ethics' 
-    },
-    { 
-      id: 3, 
-      title: 'Statistical Analysis Plan', 
-      category: 'Statistics', 
-      version: 'Draft',
-      date: '2025-03-25',
-      status: 'In Development',
-      required: true,
-      available: false,
-      zone: 'Data Management' 
-    },
-    { 
-      id: 4, 
-      title: 'Lab Manual', 
-      category: 'Laboratory', 
-      version: '1.0',
-      date: '2025-03-18',
-      status: 'Approved',
-      required: true,
-      available: true,
-      zone: 'Clinical Operations' 
-    },
-    { 
-      id: 5, 
-      title: 'Monitoring Plan', 
-      category: 'Monitoring', 
-      version: '1.0',
-      date: '2025-03-22',
-      status: 'In Review',
-      required: true,
-      available: false,
-      zone: 'Clinical Operations' 
-    },
-    { 
-      id: 6, 
-      title: 'Investigator Brochure', 
-      category: 'Investigational Product', 
-      version: '2.1',
-      date: '2025-02-15',
-      status: 'Approved',
-      required: true,
-      available: true,
-      zone: 'Trial Management' 
-    },
-    { 
-      id: 7, 
-      title: 'Case Report Form', 
-      category: 'Data Collection', 
-      version: 'Draft',
-      date: '2025-03-28',
-      status: 'In Development',
-      required: true,
-      available: false,
-      zone: 'Data Management' 
-    },
-    { 
-      id: 8, 
-      title: 'Safety Management Plan', 
-      category: 'Safety', 
-      version: '1.0',
-      date: '2025-03-20',
-      status: 'In Review',
-      required: true,
-      available: false,
-      zone: 'Safety' 
-    },
-  ]);
-
-  const [selectedZone, setSelectedZone] = useState('All');
-  const [selectedStatus, setSelectedStatus] = useState('All');
-  const [tmfCompleteness, setTmfCompleteness] = useState(62);
-
-  // Filter documents based on selected filters
-  const filteredDocuments = documents.filter(doc => {
-    return (selectedZone === 'All' || doc.zone === selectedZone) &&
-           (selectedStatus === 'All' || doc.status === selectedStatus);
-  });
-
-  // Calculate TMF completeness
-  const requiredDocs = documents.filter(doc => doc.required).length;
-  const availableDocs = documents.filter(doc => doc.required && doc.available).length;
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'Approved':
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
-      case 'In Review':
-        return <Badge className="bg-yellow-100 text-yellow-800">In Review</Badge>;
-      case 'In Development':
-        return <Badge className="bg-blue-100 text-blue-800">In Development</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Trial Master File</h3>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <div className="text-sm font-medium">TMF Completeness:</div>
-            <div className="w-32 h-2.5 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full rounded-full" 
-                style={{ 
-                  width: `${tmfCompleteness}%`, 
-                  backgroundColor: tmfCompleteness < 50 ? '#ef4444' : tmfCompleteness < 80 ? '#f59e0b' : '#22c55e' 
-                }}
-              />
-            </div>
-            <div className="text-sm font-medium">{tmfCompleteness}%</div>
-          </div>
-          <Button size="sm">
-            <Plus className="w-4 h-4 mr-1" />
-            Add Document
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex items-center space-x-4 mb-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Search documents..."
-            className="max-w-sm"
-            prefix={<Search className="w-4 h-4 mr-2" />}
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="zone-filter" className="whitespace-nowrap">TMF Zone:</Label>
-          <Select value={selectedZone} onValueChange={setSelectedZone}>
-            <SelectTrigger id="zone-filter" className="w-[200px]">
-              <SelectValue placeholder="Filter by TMF zone" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Zones</SelectItem>
-              <SelectItem value="Trial Management">Trial Management</SelectItem>
-              <SelectItem value="Ethics">Ethics</SelectItem>
-              <SelectItem value="Data Management">Data Management</SelectItem>
-              <SelectItem value="Clinical Operations">Clinical Operations</SelectItem>
-              <SelectItem value="Safety">Safety</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="status-filter" className="whitespace-nowrap">Status:</Label>
-          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger id="status-filter" className="w-[170px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Statuses</SelectItem>
-              <SelectItem value="Approved">Approved</SelectItem>
-              <SelectItem value="In Review">In Review</SelectItem>
-              <SelectItem value="In Development">In Development</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[300px]">Document</TableHead>
-            <TableHead className="w-[150px]">Category</TableHead>
-            <TableHead className="w-[80px]">Version</TableHead>
-            <TableHead className="w-[120px]">Date</TableHead>
-            <TableHead className="w-[120px]">Status</TableHead>
-            <TableHead className="w-[150px]">TMF Zone</TableHead>
-            <TableHead className="w-[150px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredDocuments.map((doc) => (
-            <TableRow key={doc.id}>
-              <TableCell className="font-medium">{doc.title}</TableCell>
-              <TableCell>{doc.category}</TableCell>
-              <TableCell>{doc.version}</TableCell>
-              <TableCell>{doc.date}</TableCell>
-              <TableCell>{getStatusBadge(doc.status)}</TableCell>
-              <TableCell>{doc.zone}</TableCell>
-              <TableCell>
-                <div className="flex space-x-1">
-                  {doc.available ? (
-                    <>
-                      <Button variant="ghost" size="icon">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <FileText className="h-4 w-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <Button variant="ghost" size="icon">
-                      <Upload className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="icon">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <div className="bg-blue-50 p-3 rounded-md">
-        <div className="flex items-start">
-          <Info className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-          <div className="text-sm text-blue-700">
-            <p className="font-medium">TMF Readiness: {availableDocs} of {requiredDocs} required documents available ({Math.round(availableDocs/requiredDocs*100)}%)</p>
-            <p className="mt-1">
-              The Trial Master File (TMF) is essential for inspection readiness. Ensure all required documents are prepared, 
-              reviewed, and properly filed according to ICH GCP and regulatory requirements.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Protocol Deviation Prevention Plan Component
-const DeviationPreventionPlan = () => {
-  const [strategies, setStrategies] = useState([
-    {
-      id: 1,
-      category: 'Inclusion/Exclusion Criteria',
-      riskLevel: 'High',
-      preventionStrategy: 'Implement pre-screening checklist with automated validation rules to prevent eligibility errors',
-      implementation: 'Study start-up phase',
-      responsible: 'Clinical Operations',
-      status: 'Implemented'
-    },
-    {
-      id: 2,
-      category: 'Visit Schedule Adherence',
-      riskLevel: 'Medium',
-      preventionStrategy: 'Automated visit scheduling system with calendar integration and proactive reminders (14-day, 7-day, 2-day)',
-      implementation: 'Prior to first patient enrolled',
-      responsible: 'Data Management',
-      status: 'In Progress'
-    },
-    {
-      id: 3,
-      category: 'Data Collection Completeness',
-      riskLevel: 'Medium',
-      preventionStrategy: 'EDC edit checks and field validation rules to ensure required data fields cannot be skipped',
-      implementation: 'Study start-up phase',
-      responsible: 'Data Management',
-      status: 'Implemented'
-    },
-    {
-      id: 4,
-      category: 'Protocol Understanding',
-      riskLevel: 'High',
-      preventionStrategy: 'Protocol walkthrough training with knowledge assessment quiz and protocol design justification explanations',
-      implementation: 'Investigator Meeting',
-      responsible: 'Clinical Operations/Medical Affairs',
-      status: 'Planned'
-    },
-    {
-      id: 5,
-      category: 'Investigational Product Management',
-      riskLevel: 'High',
-      preventionStrategy: 'Temperature monitoring with real-time alerts and comprehensive IP accountability training',
-      implementation: 'Site initiation',
-      responsible: 'Clinical Supply/Monitoring',
-      status: 'In Progress'
-    },
-    {
-      id: 6,
-      category: 'Informed Consent Process',
-      riskLevel: 'Critical',
-      preventionStrategy: 'Detailed consent process workflow with documentation checkpoints and remote consent monitoring',
-      implementation: 'Prior to first patient enrolled',
-      responsible: 'Clinical Operations',
-      status: 'Planned'
-    },
-    {
-      id: 7,
-      category: 'Adverse Event Reporting',
-      riskLevel: 'High',
-      preventionStrategy: 'Mobile app for immediate SAE reporting with automated email cascades and follow-up tracking',
-      implementation: 'Study start-up phase',
-      responsible: 'Safety/Pharmacovigilance',
-      status: 'In Progress'
-    },
-  ]);
-
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newStrategy, setNewStrategy] = useState({
-    category: '',
-    riskLevel: '',
-    preventionStrategy: '',
-    implementation: '',
-    responsible: '',
-    status: 'Planned'
-  });
-
-  const [filterRisk, setFilterRisk] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All');
-
-  const handleAddStrategy = () => {
-    setStrategies([...strategies, { ...newStrategy, id: strategies.length + 1 }]);
-    setNewStrategy({
-      category: '',
-      riskLevel: '',
-      preventionStrategy: '',
-      implementation: '',
-      responsible: '',
-      status: 'Planned'
-    });
-    setShowAddForm(false);
-  };
-
-  const filteredStrategies = strategies.filter(s => {
-    return (filterRisk === 'All' || s.riskLevel === filterRisk) &&
-           (filterStatus === 'All' || s.status === filterStatus);
-  });
-
-  const getRiskBadge = (risk) => {
-    switch (risk) {
-      case 'Low':
-        return <Badge className="bg-green-100 text-green-800">Low</Badge>;
-      case 'Medium':
-        return <Badge className="bg-blue-100 text-blue-800">Medium</Badge>;
-      case 'High':
-        return <Badge className="bg-yellow-100 text-yellow-800">High</Badge>;
-      case 'Critical':
-        return <Badge className="bg-red-100 text-red-800">Critical</Badge>;
-      default:
-        return <Badge>{risk}</Badge>;
-    }
-  };
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'Implemented':
-        return <Badge className="bg-green-100 text-green-800">Implemented</Badge>;
-      case 'In Progress':
-        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-      case 'Planned':
-        return <Badge className="bg-gray-100 text-gray-800">Planned</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Protocol Deviation Prevention Plan</h3>
-        <Button 
-          size="sm" 
-          onClick={() => setShowAddForm(!showAddForm)}
-        >
-          {showAddForm ? (
-            <>
-              <X className="w-4 h-4 mr-1" />
-              Cancel
-            </>
-          ) : (
-            <>
-              <Plus className="w-4 h-4 mr-1" />
-              Add Prevention Strategy
-            </>
-          )}
-        </Button>
-      </div>
-
-      {showAddForm && (
-        <Card className="mb-4">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-md">Add New Prevention Strategy</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Potential Deviation Category</Label>
-                <Select
-                  onValueChange={value => setNewStrategy({...newStrategy, category: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Inclusion/Exclusion Criteria">Inclusion/Exclusion Criteria</SelectItem>
-                    <SelectItem value="Visit Schedule Adherence">Visit Schedule Adherence</SelectItem>
-                    <SelectItem value="Data Collection Completeness">Data Collection Completeness</SelectItem>
-                    <SelectItem value="Protocol Understanding">Protocol Understanding</SelectItem>
-                    <SelectItem value="Investigational Product Management">Investigational Product Management</SelectItem>
-                    <SelectItem value="Informed Consent Process">Informed Consent Process</SelectItem>
-                    <SelectItem value="Adverse Event Reporting">Adverse Event Reporting</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="riskLevel">Risk Level</Label>
-                <Select
-                  onValueChange={value => setNewStrategy({...newStrategy, riskLevel: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select risk level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Critical">Critical</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="preventionStrategy">Prevention Strategy</Label>
-              <Textarea
-                id="preventionStrategy"
-                value={newStrategy.preventionStrategy}
-                onChange={e => setNewStrategy({...newStrategy, preventionStrategy: e.target.value})}
-                placeholder="Describe the strategy to prevent this type of deviation..."
-                rows={2}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="implementation">Implementation Timepoint</Label>
-                <Input 
-                  id="implementation" 
-                  value={newStrategy.implementation} 
-                  onChange={e => setNewStrategy({...newStrategy, implementation: e.target.value})}
-                  placeholder="e.g., Study start-up phase" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="responsible">Responsible Party</Label>
-                <Select
-                  onValueChange={value => setNewStrategy({...newStrategy, responsible: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select responsible party" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Clinical Operations">Clinical Operations</SelectItem>
-                    <SelectItem value="Data Management">Data Management</SelectItem>
-                    <SelectItem value="Medical Affairs">Medical Affairs</SelectItem>
-                    <SelectItem value="Safety/Pharmacovigilance">Safety/Pharmacovigilance</SelectItem>
-                    <SelectItem value="Clinical Supply/Monitoring">Clinical Supply/Monitoring</SelectItem>
-                    <SelectItem value="Multiple Departments">Multiple Departments</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="mr-2" onClick={() => setShowAddForm(false)}>Cancel</Button>
-            <Button onClick={handleAddStrategy}>Add Strategy</Button>
-          </CardFooter>
-        </Card>
-      )}
-
-      <div className="flex items-center space-x-4 mb-4">
-        <div className="flex-1">
-          <Input
-            placeholder="Search prevention strategies..."
-            className="max-w-sm"
-            prefix={<Search className="w-4 h-4 mr-2" />}
-          />
-        </div>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="risk-filter" className="whitespace-nowrap">Risk Level:</Label>
-          <Select value={filterRisk} onValueChange={setFilterRisk}>
-            <SelectTrigger id="risk-filter" className="w-[150px]">
-              <SelectValue placeholder="Filter by risk" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Risks</SelectItem>
-              <SelectItem value="Low">Low</SelectItem>
-              <SelectItem value="Medium">Medium</SelectItem>
-              <SelectItem value="High">High</SelectItem>
-              <SelectItem value="Critical">Critical</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="status-filter" className="whitespace-nowrap">Status:</Label>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger id="status-filter" className="w-[150px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Statuses</SelectItem>
-              <SelectItem value="Implemented">Implemented</SelectItem>
-              <SelectItem value="In Progress">In Progress</SelectItem>
-              <SelectItem value="Planned">Planned</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[200px]">Category</TableHead>
-            <TableHead className="w-[100px]">Risk Level</TableHead>
-            <TableHead>Prevention Strategy</TableHead>
-            <TableHead className="w-[150px]">Implementation</TableHead>
-            <TableHead className="w-[150px]">Responsible</TableHead>
-            <TableHead className="w-[120px]">Status</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredStrategies.map((strategy) => (
-            <TableRow key={strategy.id}>
-              <TableCell className="font-medium">{strategy.category}</TableCell>
-              <TableCell>{getRiskBadge(strategy.riskLevel)}</TableCell>
-              <TableCell className="max-w-[300px]">{strategy.preventionStrategy}</TableCell>
-              <TableCell>{strategy.implementation}</TableCell>
-              <TableCell>{strategy.responsible}</TableCell>
-              <TableCell>{getStatusBadge(strategy.status)}</TableCell>
-              <TableCell>
-                <div className="flex space-x-1">
-                  <Button variant="ghost" size="icon">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <CheckCircle className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <div className="bg-yellow-50 p-3 rounded-md">
-        <div className="flex items-start">
-          <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" />
-          <div className="text-sm text-yellow-700">
-            <p className="font-medium">Protocol Deviation Prevention</p>
-            <p className="mt-1">
-              Proactive prevention of protocol deviations is critical for study success. This plan focuses on identifying 
-              potential risk areas and implementing targeted prevention strategies. Remember that the most effective 
-              approach is to simplify protocol requirements when possible.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Main Study Planner Component
+/**
+ * Study Planner Page Component
+ * 
+ * Provides a comprehensive interface for protocol deviation management
+ * and Trial Master File (TMF) integration.
+ */
 const StudyPlanner = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // Study details
-  const [studyDetails, setStudyDetails] = useState({
-    title: 'Phase II Study of XYZ-123 in Type 2 Diabetes Mellitus',
-    phase: 'Phase II',
-    sponsor: 'XYZ Pharmaceuticals',
-    indication: 'Type 2 Diabetes Mellitus',
-    studyType: 'Interventional',
-    design: 'Randomized, Double-Blind, Placebo-Controlled',
-    duration: '26 weeks',
-    targetSites: 25,
-    targetEnrollment: 220,
-    status: 'In Planning',
-    targetMilestones: [
-      { name: 'Final Protocol', date: '2025-05-15', status: 'Pending' },
-      { name: 'First Site Activated', date: '2025-06-30', status: 'Pending' },
-      { name: 'First Patient In', date: '2025-07-15', status: 'Pending' },
-      { name: 'Last Patient In', date: '2025-12-30', status: 'Pending' },
-      { name: 'Last Patient Out', date: '2026-06-30', status: 'Pending' },
-      { name: 'Database Lock', date: '2026-07-30', status: 'Pending' },
-      { name: 'Final CSR', date: '2026-10-30', status: 'Pending' }
-    ]
+  const [activeTab, setActiveTab] = useState('deviation-log');
+  const [deviations, setDeviations] = useState(generateMockDeviations());
+  const [tmfDocuments, setTmfDocuments] = useState(generateMockTMFDocuments());
+  const [showNewDeviationDialog, setShowNewDeviationDialog] = useState(false);
+  const [selectedDeviation, setSelectedDeviation] = useState(null);
+  const [newDeviationData, setNewDeviationData] = useState({
+    title: '',
+    description: '',
+    protocol_section: '',
+    impact_level: 'medium',
+    site: '',
+    reported_date: new Date(),
+    status: 'open',
+    capa_plan: '',
+    preventative_measures: ''
   });
-
-  const getMilestoneStatusBadge = (status) => {
-    switch (status) {
-      case 'Completed':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
-      case 'In Progress':
-        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-      case 'Pending':
-        return <Badge className="bg-gray-100 text-gray-800">Pending</Badge>;
-      case 'Delayed':
-        return <Badge className="bg-red-100 text-red-800">Delayed</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
+  const [showNewDocumentDialog, setShowNewDocumentDialog] = useState(false);
+  const [newDocumentData, setNewDocumentData] = useState({
+    title: '',
+    type: '',
+    zone: '',
+    section: '',
+    version: '1.0',
+    status: 'draft',
+    uploadDate: new Date()
+  });
+  
+  const [deviationStats, setDeviationStats] = useState({
+    total: 24,
+    open: 8,
+    closed: 16,
+    byCategory: {
+      'Protocol': 9,
+      'Study Procedures': 6,
+      'Informed Consent': 4,
+      'Eligibility': 3,
+      'Other': 2
+    },
+    byImpact: {
+      'high': 4,
+      'medium': 14,
+      'low': 6
     }
-  };
-
-  const handleSaveStudy = () => {
-    toast({
-      title: "Study plan updated",
-      description: "Your changes have been saved successfully.",
+  });
+  
+  const { toast } = useToast();
+  
+  // Generate mock deviation data
+  function generateMockDeviations() {
+    return [
+      {
+        id: 'DEV-2024-001',
+        title: 'Missed Laboratory Assessment at Visit 3',
+        description: 'Subject 1004 did not have the Week 8 chemistry panel collected during the scheduled visit.',
+        protocol_section: 'Section 7.2.3 - Laboratory Assessments',
+        impact_level: 'medium',
+        site: 'Site 002 - Metro Medical Center',
+        reported_date: '2024-03-15',
+        status: 'open',
+        capa_plan: 'Site retraining completed on protocol requirements for laboratory assessments. Subject scheduled for additional visit within window to collect missing labs.',
+        preventative_measures: 'Updated site visit checklist to include verification of all required labs prior to subject departure. Monitoring frequency increased for this site.'
+      },
+      {
+        id: 'DEV-2024-002',
+        title: 'Inclusion Criteria Deviation',
+        description: 'Subject 2003 was enrolled despite not meeting inclusion criterion #4 (disease duration > 6 months).',
+        protocol_section: 'Section 4.1 - Inclusion Criteria',
+        impact_level: 'high',
+        site: 'Site 003 - University Research Hospital',
+        reported_date: '2024-03-10',
+        status: 'closed',
+        capa_plan: 'Subject was discontinued from the study. Site PI and study coordinator received additional training on eligibility criteria.',
+        preventative_measures: 'Implemented enhanced eligibility verification process requiring second reviewer prior to randomization.'
+      },
+      {
+        id: 'DEV-2024-003',
+        title: 'Protocol-defined Visit Window Exceeded',
+        description: 'Subject 1008 completed Visit 5 seven days outside the protocol-defined visit window.',
+        protocol_section: 'Section 6.1 - Schedule of Assessments',
+        impact_level: 'low',
+        site: 'Site 001 - Regional Medical Center',
+        reported_date: '2024-02-22',
+        status: 'closed',
+        capa_plan: 'Protocol deviation documented in subject file. All assessments were collected as required despite the timing deviation.',
+        preventative_measures: 'Site coordinators now receiving automated reminders for upcoming visit windows. More flexible scheduling options provided to subjects.'
+      },
+      {
+        id: 'DEV-2024-004',
+        title: 'Missing Informed Consent Documentation',
+        description: 'Unable to locate signed informed consent document for Subject 3002 during monitoring visit.',
+        protocol_section: 'Section 10.1 - Informed Consent',
+        impact_level: 'high',
+        site: 'Site 004 - Community Research Associates',
+        reported_date: '2024-04-02',
+        status: 'open',
+        capa_plan: 'Urgent search for missing document in progress. If not found, ethics committee will be notified and appropriate steps taken.',
+        preventative_measures: 'Implementing electronic consent system to prevent future documentation loss. Required verification of consent prior to any study procedures.'
+      },
+      {
+        id: 'DEV-2024-005',
+        title: 'Medication Dispensing Error',
+        description: 'Subject 2010 received incorrect study medication kit at Visit 2.',
+        protocol_section: 'Section 5.5 - Study Drug Administration',
+        impact_level: 'medium',
+        site: 'Site 003 - University Research Hospital',
+        reported_date: '2024-03-28',
+        status: 'closed',
+        capa_plan: 'Error identified before subject took medication. Correct kit dispensed and subject instructed appropriately.',
+        preventative_measures: 'Updated medication dispensing procedure to include barcode verification of kit number against randomization system before providing to subject.'
+      }
+    ];
+  }
+  
+  // Generate mock TMF documents data
+  function generateMockTMFDocuments() {
+    return [
+      {
+        id: 'TMF-001',
+        title: 'Protocol v1.0',
+        type: 'Protocol',
+        description: 'Approved study protocol',
+        zone: 'Trial Management',
+        section: 'Essential Documents',
+        version: '1.0',
+        status: 'approved',
+        uploadDate: '2024-01-10',
+        approvalDate: '2024-01-15',
+        fileSize: '2.3 MB',
+        uploadedBy: 'John Smith',
+        relatedDocuments: ['TMF-004', 'TMF-008']
+      },
+      {
+        id: 'TMF-002',
+        title: 'Informed Consent Template',
+        type: 'Informed Consent',
+        description: 'Master ICF template for sites',
+        zone: 'Ethics',
+        section: 'Subject Information',
+        version: '1.0',
+        status: 'approved',
+        uploadDate: '2024-01-12',
+        approvalDate: '2024-01-18',
+        fileSize: '1.5 MB',
+        uploadedBy: 'Sarah Johnson',
+        relatedDocuments: ['TMF-009']
+      },
+      {
+        id: 'TMF-003',
+        title: 'Monitoring Plan',
+        type: 'Plan',
+        description: 'Clinical monitoring plan',
+        zone: 'Monitoring',
+        section: 'Oversight',
+        version: '1.0',
+        status: 'approved',
+        uploadDate: '2024-01-20',
+        approvalDate: '2024-01-25',
+        fileSize: '1.8 MB',
+        uploadedBy: 'Michael Brown',
+        relatedDocuments: ['TMF-011']
+      },
+      {
+        id: 'TMF-004',
+        title: 'Protocol Amendment 1',
+        type: 'Protocol',
+        description: 'First protocol amendment',
+        zone: 'Trial Management',
+        section: 'Essential Documents',
+        version: '2.0',
+        status: 'approved',
+        uploadDate: '2024-02-15',
+        approvalDate: '2024-02-28',
+        fileSize: '2.5 MB',
+        uploadedBy: 'John Smith',
+        relatedDocuments: ['TMF-001', 'TMF-008']
+      },
+      {
+        id: 'TMF-005',
+        title: 'Investigator Meeting Slides',
+        type: 'Training',
+        description: 'Presentation slides from investigator meeting',
+        zone: 'Training',
+        section: 'Investigator Training',
+        version: '1.0',
+        status: 'final',
+        uploadDate: '2024-01-30',
+        approvalDate: '2024-01-30',
+        fileSize: '5.7 MB',
+        uploadedBy: 'Lisa Williams',
+        relatedDocuments: []
+      },
+      {
+        id: 'TMF-006',
+        title: 'Safety Monitoring Committee Charter',
+        type: 'Plan',
+        description: 'SMC charter outlining responsibilities',
+        zone: 'Safety',
+        section: 'Oversight',
+        version: '1.0',
+        status: 'approved',
+        uploadDate: '2024-01-22',
+        approvalDate: '2024-02-01',
+        fileSize: '1.2 MB',
+        uploadedBy: 'Robert Chen',
+        relatedDocuments: ['TMF-012']
+      },
+      {
+        id: 'TMF-007',
+        title: 'Laboratory Manual',
+        type: 'Manual',
+        description: 'Central laboratory procedures manual',
+        zone: 'Trial Management',
+        section: 'Laboratory',
+        version: '1.0',
+        status: 'approved',
+        uploadDate: '2024-01-25',
+        approvalDate: '2024-02-02',
+        fileSize: '4.3 MB',
+        uploadedBy: 'Jennifer Adams',
+        relatedDocuments: []
+      },
+      {
+        id: 'TMF-008',
+        title: 'Protocol Amendment 2',
+        type: 'Protocol',
+        description: 'Second protocol amendment',
+        zone: 'Trial Management',
+        section: 'Essential Documents',
+        version: '3.0',
+        status: 'draft',
+        uploadDate: '2024-03-10',
+        approvalDate: null,
+        fileSize: '2.6 MB',
+        uploadedBy: 'John Smith',
+        relatedDocuments: ['TMF-001', 'TMF-004']
+      }
+    ];
+  }
+  
+  // Handle new deviation submission
+  const handleSubmitDeviation = () => {
+    if (!newDeviationData.title || !newDeviationData.description || !newDeviationData.protocol_section) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill out all required fields before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const deviationId = selectedDeviation 
+      ? selectedDeviation.id 
+      : `DEV-2024-${String(deviations.length + 1).padStart(3, '0')}`;
+    
+    const newDeviation = {
+      ...newDeviationData,
+      id: deviationId,
+      reported_date: format(newDeviationData.reported_date, 'yyyy-MM-dd')
+    };
+    
+    if (selectedDeviation) {
+      // Update existing deviation
+      setDeviations(deviations.map(dev => 
+        dev.id === selectedDeviation.id ? newDeviation : dev
+      ));
+      
+      toast({
+        title: "Deviation updated",
+        description: `Protocol deviation ${deviationId} has been updated successfully.`,
+        variant: "default"
+      });
+    } else {
+      // Add new deviation
+      setDeviations([...deviations, newDeviation]);
+      
+      toast({
+        title: "Deviation logged",
+        description: `Protocol deviation ${deviationId} has been logged successfully.`,
+        variant: "default"
+      });
+    }
+    
+    // Update stats
+    setDeviationStats(prev => ({
+      ...prev,
+      total: prev.total + (selectedDeviation ? 0 : 1),
+      open: newDeviationData.status === 'open' 
+        ? prev.open + (selectedDeviation && selectedDeviation.status !== 'open' ? 1 : selectedDeviation ? 0 : 1)
+        : prev.open - (selectedDeviation && selectedDeviation.status === 'open' ? 1 : 0),
+      closed: newDeviationData.status === 'closed'
+        ? prev.closed + (selectedDeviation && selectedDeviation.status !== 'closed' ? 1 : selectedDeviation ? 0 : 1)
+        : prev.closed - (selectedDeviation && selectedDeviation.status === 'closed' ? 1 : 0),
+    }));
+    
+    // Reset form
+    setShowNewDeviationDialog(false);
+    setSelectedDeviation(null);
+    setNewDeviationData({
+      title: '',
+      description: '',
+      protocol_section: '',
+      impact_level: 'medium',
+      site: '',
+      reported_date: new Date(),
+      status: 'open',
+      capa_plan: '',
+      preventative_measures: ''
     });
   };
-
-  const handleExportStudy = () => {
+  
+  // Handle editing a deviation
+  const handleEditDeviation = (deviation) => {
+    setSelectedDeviation(deviation);
+    setNewDeviationData({
+      ...deviation,
+      reported_date: new Date(deviation.reported_date)
+    });
+    setShowNewDeviationDialog(true);
+  };
+  
+  // Handle new TMF document submission
+  const handleSubmitDocument = () => {
+    if (!newDocumentData.title || !newDocumentData.type || !newDocumentData.zone) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill out all required fields before submitting.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const documentId = `TMF-${String(tmfDocuments.length + 1).padStart(3, '0')}`;
+    
+    const newDocument = {
+      ...newDocumentData,
+      id: documentId,
+      uploadDate: format(newDocumentData.uploadDate, 'yyyy-MM-dd'),
+      approvalDate: null,
+      fileSize: '1.2 MB', // Mock file size
+      uploadedBy: 'Current User',
+      relatedDocuments: []
+    };
+    
+    setTmfDocuments([...tmfDocuments, newDocument]);
+    
     toast({
-      title: "Exporting study plan",
-      description: "Your study plan is being prepared for export.",
+      title: "Document uploaded",
+      description: `TMF document ${documentId} has been uploaded successfully.`,
+      variant: "default"
     });
     
-    setTimeout(() => {
-      toast({
-        title: "Export complete",
-        description: "Study plan has been exported successfully.",
-      });
-    }, 2000);
+    // Reset form
+    setShowNewDocumentDialog(false);
+    setNewDocumentData({
+      title: '',
+      type: '',
+      zone: '',
+      section: '',
+      version: '1.0',
+      status: 'draft',
+      uploadDate: new Date()
+    });
   };
-
+  
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Study Planner</h1>
-            <p className="text-gray-600 mt-2">
-              Plan and manage your clinical study with intelligent tools for protocol development, 
-              deviation management, and TMF preparation.
-            </p>
-          </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={handleExportStudy}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Plan
-            </Button>
-            <Button onClick={handleSaveStudy}>
-              <Save className="h-4 w-4 mr-2" />
-              Save Plan
-            </Button>
-          </div>
-        </div>
+    <div className="container py-8 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Study Planner</h1>
+        <p className="text-gray-600">
+          Manage protocol deviations, TMF documents, and site monitoring activities
+        </p>
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="deviation-log">
+            <ShieldAlert className="h-4 w-4 mr-2" />
+            Protocol Deviation Log
+          </TabsTrigger>
+          <TabsTrigger value="prevention-plan">
+            <ShieldCheck className="h-4 w-4 mr-2" />
+            Prevention Plan
+          </TabsTrigger>
+          <TabsTrigger value="tmf-documents">
+            <Folder className="h-4 w-4 mr-2" />
+            TMF Documents
+          </TabsTrigger>
+        </TabsList>
         
-        <Card className="mb-6">
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-start">
-              <div>
-                <Badge className="mb-2">{studyDetails.phase}</Badge>
-                <CardTitle className="text-xl">{studyDetails.title}</CardTitle>
-                <CardDescription>
-                  {studyDetails.sponsor} | {studyDetails.indication} | {studyDetails.design}
-                </CardDescription>
-              </div>
-              <Badge 
-                className={
-                  studyDetails.status === 'Active' ? 'bg-green-100 text-green-800' :
-                  studyDetails.status === 'In Planning' ? 'bg-blue-100 text-blue-800' :
-                  'bg-gray-100 text-gray-800'
-                }
-              >
-                {studyDetails.status}
-              </Badge>
+        {/* Protocol Deviation Log Tab */}
+        <TabsContent value="deviation-log" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold">Protocol Deviation Log</h2>
+              <p className="text-sm text-gray-500">
+                Track and manage protocol deviations across all study sites
+              </p>
             </div>
-          </CardHeader>
-          <CardContent className="py-2">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <div className="text-sm text-gray-500">Study Type</div>
-                <div className="font-medium">{studyDetails.studyType}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">Duration</div>
-                <div className="font-medium">{studyDetails.duration}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">Target Sites</div>
-                <div className="font-medium">{studyDetails.targetSites}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">Target Enrollment</div>
-                <div className="font-medium">{studyDetails.targetEnrollment} patients</div>
-              </div>
+            <div className="flex gap-2">
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export Log
+              </Button>
+              <Button onClick={() => setShowNewDeviationDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Log New Deviation
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-        
-        <div className="mb-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-1 md:grid-cols-5">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="deviations">Protocol Deviations</TabsTrigger>
-              <TabsTrigger value="prevention">Deviation Prevention</TabsTrigger>
-              <TabsTrigger value="tmf">TMF Documents</TabsTrigger>
-              <TabsTrigger value="integration">Document Integration</TabsTrigger>
-            </TabsList>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="p-4 bg-blue-50 rounded-md flex items-center justify-between">
+              <div>
+                <div className="text-sm text-blue-600">Total Deviations</div>
+                <div className="text-2xl font-bold">{deviationStats.total}</div>
+              </div>
+              <ClipboardList className="h-8 w-8 text-blue-500" />
+            </div>
             
-            <TabsContent value="overview" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="md:col-span-2">
-                  <CardHeader>
-                    <CardTitle>Key Milestones</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {studyDetails.targetMilestones.map((milestone, index) => (
-                        <div key={index} className="flex items-center justify-between border-b pb-2 last:border-0">
-                          <div className="flex items-center">
-                            <div className={`w-3 h-3 rounded-full mr-3 ${
-                              milestone.status === 'Completed' ? 'bg-green-500' :
-                              milestone.status === 'In Progress' ? 'bg-blue-500' :
-                              milestone.status === 'Delayed' ? 'bg-red-500' :
-                              'bg-gray-300'
-                            }`} />
-                            <div>
-                              <div className="font-medium">{milestone.name}</div>
-                              <div className="text-sm text-gray-500">{milestone.date}</div>
-                            </div>
-                          </div>
-                          <div>
-                            {getMilestoneStatusBadge(milestone.status)}
+            <div className="p-4 bg-yellow-50 rounded-md flex items-center justify-between">
+              <div>
+                <div className="text-sm text-yellow-600">Open Deviations</div>
+                <div className="text-2xl font-bold">{deviationStats.open}</div>
+              </div>
+              <AlertCircle className="h-8 w-8 text-yellow-500" />
+            </div>
+            
+            <div className="p-4 bg-green-50 rounded-md flex items-center justify-between">
+              <div>
+                <div className="text-sm text-green-600">Closed Deviations</div>
+                <div className="text-2xl font-bold">{deviationStats.closed}</div>
+              </div>
+              <CheckCircle2 className="h-8 w-8 text-green-500" />
+            </div>
+            
+            <div className="p-4 bg-purple-50 rounded-md flex items-center justify-between">
+              <div>
+                <div className="text-sm text-purple-600">High Impact</div>
+                <div className="text-2xl font-bold">{deviationStats.byImpact.high}</div>
+              </div>
+              <BarChart4 className="h-8 w-8 text-purple-500" />
+            </div>
+          </div>
+          
+          <Card>
+            <CardHeader className="px-6 py-4">
+              <div className="flex justify-between items-center">
+                <CardTitle>Current Deviations</CardTitle>
+                <div className="flex gap-2">
+                  <div className="relative w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                    <Input
+                      placeholder="Search deviations..."
+                      className="pl-8"
+                    />
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Filter
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>Filter By</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <div className="flex items-center justify-between w-full">
+                          <span>Status: Open</span>
+                          <Check className="h-4 w-4" />
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <span>Status: Closed</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <div className="flex items-center justify-between w-full">
+                          <span>Impact: High</span>
+                          <Check className="h-4 w-4" />
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <span>Impact: Medium</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <span>Impact: Low</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Site</TableHead>
+                    <TableHead>Impact</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date Reported</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {deviations.map((deviation) => (
+                    <TableRow key={deviation.id}>
+                      <TableCell className="font-medium">{deviation.id}</TableCell>
+                      <TableCell>{deviation.title}</TableCell>
+                      <TableCell>{deviation.site ? deviation.site.split(' - ')[0] : 'N/A'}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          className={
+                            deviation.impact_level === 'high' ? "bg-red-100 text-red-800" : 
+                            deviation.impact_level === 'medium' ? "bg-yellow-100 text-yellow-800" : 
+                            "bg-blue-100 text-blue-800"
+                          }
+                        >
+                          {deviation.impact_level.charAt(0).toUpperCase() + deviation.impact_level.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          className={
+                            deviation.status === 'open' ? "bg-yellow-100 text-yellow-800" : 
+                            "bg-green-100 text-green-800"
+                          }
+                        >
+                          {deviation.status.charAt(0).toUpperCase() + deviation.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{deviation.reported_date}</TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditDeviation(deviation)}>
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                              {deviation.status === 'open' ? 'Close Deviation' : 'Reopen Deviation'}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+            <CardFooter className="flex justify-between px-6 py-4">
+              <div className="text-sm text-gray-500">
+                Showing {deviations.length} of {deviations.length} deviations
+              </div>
+              <div className="flex gap-1">
+                <Button variant="outline" size="sm" disabled>
+                  Previous
+                </Button>
+                <Button variant="outline" size="sm" disabled>
+                  Next
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        {/* Prevention Plan Tab */}
+        <TabsContent value="prevention-plan" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold">Protocol Deviation Prevention Plan</h2>
+              <p className="text-sm text-gray-500">
+                Proactive measures to minimize protocol deviations
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export Plan
+              </Button>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Measure
+              </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Prevention Measures by Category</CardTitle>
+                <CardDescription>
+                  Targeted prevention strategies based on deviation categories
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="eligibility">
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center">
+                        <Badge className="mr-2 bg-blue-100 text-blue-800">High Risk</Badge>
+                        Eligibility Criteria
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-4 pl-4">
+                        <div className="border-l-2 border-blue-500 pl-4">
+                          <h4 className="font-medium">Double Review of Eligibility</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement a dual review process for all subject eligibility assessments, requiring sign-off from both the investigator and study coordinator before randomization.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Site PI, Study Coordinator</span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                        
+                        <div className="border-l-2 border-blue-500 pl-4">
+                          <h4 className="font-medium">Eligibility Checklist Implementation</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Develop comprehensive eligibility checklists with required source documentation for each criterion listed. Require completion before subject enrollment.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Clinical Operations</span>
+                          </div>
+                        </div>
+                        
+                        <div className="border-l-2 border-blue-500 pl-4">
+                          <h4 className="font-medium">Pre-Screening Log Review</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement weekly review of pre-screening logs to identify potential eligibility issues before formal screening visits.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Clinical Research Associates</span>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="informed_consent">
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center">
+                        <Badge className="mr-2 bg-blue-100 text-blue-800">High Risk</Badge>
+                        Informed Consent Process
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-4 pl-4">
+                        <div className="border-l-2 border-blue-500 pl-4">
+                          <h4 className="font-medium">Consent Process Training</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Conduct specialized training for all sites on informed consent documentation requirements, including video training and role-playing exercises.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Clinical Operations</span>
+                          </div>
+                        </div>
+                        
+                        <div className="border-l-2 border-blue-500 pl-4">
+                          <h4 className="font-medium">Consent Verification Call</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement post-consent verification calls for remote monitoring of the consent process quality and participant understanding.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Clinical Research Associates</span>
+                          </div>
+                        </div>
+                        
+                        <div className="border-l-2 border-blue-500 pl-4">
+                          <h4 className="font-medium">Electronic Consent System</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement eConsent system with automated checks for completeness and proper documentation.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Data Management</span>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="medication">
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center">
+                        <Badge className="mr-2 bg-yellow-100 text-yellow-800">Medium Risk</Badge>
+                        Study Medication
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-4 pl-4">
+                        <div className="border-l-2 border-yellow-500 pl-4">
+                          <h4 className="font-medium">IWRS Verification Process</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement dual-verification process for all IWRS transactions, requiring two staff members to confirm correct kit assignment before dispensing.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Site Pharmacy, Study Coordinator</span>
+                          </div>
+                        </div>
+                        
+                        <div className="border-l-2 border-yellow-500 pl-4">
+                          <h4 className="font-medium">Medication Handling Training</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Conduct specialized training on study drug handling, storage, and accountability procedures for all site staff involved.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Clinical Operations</span>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="procedures">
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center">
+                        <Badge className="mr-2 bg-yellow-100 text-yellow-800">Medium Risk</Badge>
+                        Study Procedures
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-4 pl-4">
+                        <div className="border-l-2 border-yellow-500 pl-4">
+                          <h4 className="font-medium">Visit Checklist Implementation</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Develop visit-specific checklists detailing all required procedures and assessments for each protocol-defined visit.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Clinical Operations</span>
+                          </div>
+                        </div>
+                        
+                        <div className="border-l-2 border-yellow-500 pl-4">
+                          <h4 className="font-medium">EDC Edit Checks</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement real-time edit checks in the EDC system to flag missing or out-of-range data at the time of entry.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Data Management</span>
+                          </div>
+                        </div>
+                        
+                        <div className="border-l-2 border-yellow-500 pl-4">
+                          <h4 className="font-medium">Central Laboratory Notifications</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement automated notification system for missing laboratory samples or results.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Central Laboratory, Data Management</span>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="visit_windows">
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center">
+                        <Badge className="mr-2 bg-blue-100 text-blue-800">Low Risk</Badge>
+                        Visit Windows
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-4 pl-4">
+                        <div className="border-l-2 border-green-500 pl-4">
+                          <h4 className="font-medium">Visit Scheduling Calendar</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement centralized visit scheduling system with automated reminders for upcoming visits and visit window boundaries.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Study Coordinators</span>
+                          </div>
+                        </div>
+                        
+                        <div className="border-l-2 border-green-500 pl-4">
+                          <h4 className="font-medium">Subject Reminder System</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Implement automated subject reminder system (SMS/email) for upcoming visits with configurable lead times.
+                          </p>
+                          <div className="flex items-center mt-2 text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-1" />
+                            <span>Responsible: Clinical Operations</span>
+                          </div>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Prevention Planning Metrics</CardTitle>
+                <CardDescription>
+                  Monitor the effectiveness of prevention strategies
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium">Eligibility Deviations</span>
+                    <span className="text-sm font-medium text-green-600">-42%</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500" style={{ width: '58%' }}></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Since prevention plan implementation</span>
+                  </div>
+                </div>
                 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <Button variant="outline" className="w-full justify-start" onClick={() => setLocation('/protocol-review')}>
-                        <FileText className="h-4 w-4 mr-2" />
-                        Review Protocol Draft
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <FilePlus className="h-4 w-4 mr-2" />
-                        Create New Document
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <Users className="h-4 w-4 mr-2" />
-                        Manage Study Team
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <CalendarDays className="h-4 w-4 mr-2" />
-                        Visit Schedule
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <ClipboardList className="h-4 w-4 mr-2" />
-                        Edit Eligibility Criteria
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        Statistical Design
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <Folder className="h-4 w-4 mr-2" />
-                        Document Manager
-                      </Button>
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium">Informed Consent Deviations</span>
+                    <span className="text-sm font-medium text-green-600">-35%</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500" style={{ width: '65%' }}></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Since prevention plan implementation</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium">Study Medication Deviations</span>
+                    <span className="text-sm font-medium text-green-600">-28%</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500" style={{ width: '72%' }}></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Since prevention plan implementation</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium">Overall Deviation Rate</span>
+                    <span className="text-sm font-medium text-green-600">-31%</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500" style={{ width: '69%' }}></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Since prevention plan implementation</span>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 p-3 rounded-md mt-4">
+                  <div className="flex items-start">
+                    <Info className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-medium text-blue-800">Prevention Plan Impact</h4>
+                      <p className="text-xs text-blue-700 mt-1">
+                        Prevention measures have reduced overall protocol deviations by 31% since implementation, with the most significant impact seen in eligibility criteria deviations.
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Site-Specific Prevention Measures</CardTitle>
+              <CardDescription>
+                Targeted prevention strategies based on site-specific deviation patterns
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Site</TableHead>
+                    <TableHead>Risk Level</TableHead>
+                    <TableHead>Top Deviation Category</TableHead>
+                    <TableHead>Preventative Measures</TableHead>
+                    <TableHead>Implementation Status</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">Site 001</TableCell>
+                    <TableCell>
+                      <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>
+                    </TableCell>
+                    <TableCell>Visit Windows</TableCell>
+                    <TableCell>
+                      <ul className="list-disc list-inside text-sm">
+                        <li>Enhanced visit scheduling system</li>
+                        <li>Weekly coordinator check-in calls</li>
+                      </ul>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-green-100 text-green-800">Implemented</Badge>
+                    </TableCell>
+                    <TableCell>2024-03-10</TableCell>
+                  </TableRow>
+                  
+                  <TableRow>
+                    <TableCell className="font-medium">Site 002</TableCell>
+                    <TableCell>
+                      <Badge className="bg-red-100 text-red-800">High</Badge>
+                    </TableCell>
+                    <TableCell>Laboratory Procedures</TableCell>
+                    <TableCell>
+                      <ul className="list-disc list-inside text-sm">
+                        <li>Visit checklist implementation</li>
+                        <li>Lab coordinator training program</li>
+                        <li>Bi-weekly monitoring visits</li>
+                      </ul>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-green-100 text-green-800">Implemented</Badge>
+                    </TableCell>
+                    <TableCell>2024-03-22</TableCell>
+                  </TableRow>
+                  
+                  <TableRow>
+                    <TableCell className="font-medium">Site 003</TableCell>
+                    <TableCell>
+                      <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>
+                    </TableCell>
+                    <TableCell>Eligibility Criteria</TableCell>
+                    <TableCell>
+                      <ul className="list-disc list-inside text-sm">
+                        <li>Dual eligibility verification process</li>
+                        <li>PI training refresher</li>
+                      </ul>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>
+                    </TableCell>
+                    <TableCell>2024-04-05</TableCell>
+                  </TableRow>
+                  
+                  <TableRow>
+                    <TableCell className="font-medium">Site 004</TableCell>
+                    <TableCell>
+                      <Badge className="bg-red-100 text-red-800">High</Badge>
+                    </TableCell>
+                    <TableCell>Informed Consent</TableCell>
+                    <TableCell>
+                      <ul className="list-disc list-inside text-sm">
+                        <li>eConsent implementation</li>
+                        <li>Consent process retraining</li>
+                        <li>Remote consent monitoring</li>
+                      </ul>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-blue-100 text-blue-800">Planned</Badge>
+                    </TableCell>
+                    <TableCell>2024-04-15</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* TMF Documents Tab */}
+        <TabsContent value="tmf-documents" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold">Trial Master File Documents</h2>
+              <p className="text-sm text-gray-500">
+                Manage and organize all essential study documents
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline">
+                <Link2 className="h-4 w-4 mr-2" />
+                TMF Portal
+              </Button>
+              <Button onClick={() => setShowNewDocumentDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Document
+              </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="md:col-span-3">
+              <CardHeader className="px-6 py-4">
+                <div className="flex justify-between items-center">
+                  <CardTitle>Document Repository</CardTitle>
+                  <div className="flex gap-2">
+                    <div className="relative w-64">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                      <Input
+                        placeholder="Search documents..."
+                        className="pl-8"
+                      />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Filter className="h-4 w-4 mr-2" />
+                          Filter
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>Filter By</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <div className="flex items-center justify-between w-full">
+                            <span>Status: Approved</span>
+                            <Check className="h-4 w-4" />
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <span>Status: Draft</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <div className="flex items-center justify-between w-full">
+                            <span>Type: Protocol</span>
+                            <Check className="h-4 w-4" />
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <span>Type: Informed Consent</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <span>Type: Plan</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Version</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Upload Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tmfDocuments.map((document) => (
+                      <TableRow key={document.id}>
+                        <TableCell className="font-medium">{document.title}</TableCell>
+                        <TableCell>{document.type}</TableCell>
+                        <TableCell>v{document.version}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            className={
+                              document.status === 'approved' ? "bg-green-100 text-green-800" : 
+                              document.status === 'final' ? "bg-blue-100 text-blue-800" : 
+                              "bg-yellow-100 text-yellow-800"
+                            }
+                          >
+                            {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{document.uploadDate}</TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Eye className="h-4 w-4 mr-2" />
+                                View
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem>
+                                <FileUp className="h-4 w-4 mr-2" />
+                                Upload New Version
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Copy className="h-4 w-4 mr-2" />
+                                Copy Link
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem>
+                                <Archive className="h-4 w-4 mr-2" />
+                                Archive
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <CardFooter className="flex justify-between px-6 py-4">
+                <div className="text-sm text-gray-500">
+                  Showing {tmfDocuments.length} of {tmfDocuments.length} documents
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="outline" size="sm" disabled>
+                    Previous
+                  </Button>
+                  <Button variant="outline" size="sm" disabled>
+                    Next
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+            
+            <div className="space-y-4">
+              <Card>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-sm">TMF Metrics</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Total Documents</span>
+                      <span className="font-medium">{tmfDocuments.length}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Approved Documents</span>
+                      <span className="font-medium">{tmfDocuments.filter(d => d.status === 'approved').length}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Draft Documents</span>
+                      <span className="font-medium">{tmfDocuments.filter(d => d.status === 'draft').length}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>TMF Completeness</span>
+                      <span className="font-medium">84%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="h-1 bg-gray-100 rounded-full overflow-hidden mt-4">
+                    <div className="h-full bg-green-500" style={{ width: '84%' }}></div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-sm">Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0 space-y-3">
+                  <div className="border-l-2 border-blue-500 pl-3">
+                    <div className="text-xs text-gray-500 flex items-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>Today, 9:45 AM</span>
+                    </div>
+                    <div className="text-sm">Protocol Amendment 2 uploaded</div>
+                  </div>
+                  
+                  <div className="border-l-2 border-green-500 pl-3">
+                    <div className="text-xs text-gray-500 flex items-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>Yesterday, 3:12 PM</span>
+                    </div>
+                    <div className="text-sm">Safety Monitoring Charter approved</div>
+                  </div>
+                  
+                  <div className="border-l-2 border-purple-500 pl-3">
+                    <div className="text-xs text-gray-500 flex items-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>Apr 12, 2024</span>
+                    </div>
+                    <div className="text-sm">3 site-specific ICFs uploaded</div>
+                  </div>
+                  
+                  <div className="border-l-2 border-orange-500 pl-3">
+                    <div className="text-xs text-gray-500 flex items-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>Apr 10, 2024</span>
+                    </div>
+                    <div className="text-sm">Statistical Analysis Plan updated to v2.0</div>
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-0 pb-3">
+                  <Button variant="ghost" size="sm" className="w-full text-xs">
+                    View All Activity
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-sm">Upcoming Deadlines</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0 space-y-3">
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 text-red-500 mr-2" />
+                    <div>
+                      <div className="text-sm font-medium">Apr 28, 2024</div>
+                      <div className="text-xs text-gray-500">DSMB Charter Review Due</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 text-yellow-500 mr-2" />
+                    <div>
+                      <div className="text-sm font-medium">May 10, 2024</div>
+                      <div className="text-xs text-gray-500">Annual Protocol Review</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 text-blue-500 mr-2" />
+                    <div>
+                      <div className="text-sm font-medium">May 15, 2024</div>
+                      <div className="text-xs text-gray-500">IRB Continuing Review</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+      
+      {/* New Deviation Dialog */}
+      <Dialog open={showNewDeviationDialog} onOpenChange={setShowNewDeviationDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{selectedDeviation ? 'Edit Protocol Deviation' : 'Log New Protocol Deviation'}</DialogTitle>
+            <DialogDescription>
+              {selectedDeviation 
+                ? 'Update the details of the existing protocol deviation'
+                : 'Enter the details of the protocol deviation to log and track it'
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Deviation Title <span className="text-red-500">*</span></Label>
+              <Input 
+                id="title" 
+                value={newDeviationData.title}
+                onChange={(e) => setNewDeviationData({...newDeviationData, title: e.target.value})}
+                placeholder="Brief title describing the deviation"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="protocol_section">Protocol Section <span className="text-red-500">*</span></Label>
+              <Input 
+                id="protocol_section" 
+                value={newDeviationData.protocol_section}
+                onChange={(e) => setNewDeviationData({...newDeviationData, protocol_section: e.target.value})}
+                placeholder="e.g., Section 4.2 - Exclusion Criteria"
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="description">Description <span className="text-red-500">*</span></Label>
+              <Textarea 
+                id="description" 
+                value={newDeviationData.description}
+                onChange={(e) => setNewDeviationData({...newDeviationData, description: e.target.value})}
+                placeholder="Detailed description of the protocol deviation"
+                rows={3}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="impact_level">Impact Level</Label>
+              <Select
+                value={newDeviationData.impact_level}
+                onValueChange={(value) => setNewDeviationData({...newDeviationData, impact_level: value})}
+              >
+                <SelectTrigger id="impact_level">
+                  <SelectValue placeholder="Select impact level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="site">Site</Label>
+              <Input 
+                id="site" 
+                value={newDeviationData.site}
+                onChange={(e) => setNewDeviationData({...newDeviationData, site: e.target.value})}
+                placeholder="e.g., Site 001 - Metro Medical Center"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="reported_date">Date Reported</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {newDeviationData.reported_date ? format(newDeviationData.reported_date, 'PPP') : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <CalendarComponent
+                    mode="single"
+                    selected={newDeviationData.reported_date}
+                    onSelect={(date) => setNewDeviationData({...newDeviationData, reported_date: date})}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={newDeviationData.status}
+                onValueChange={(value) => setNewDeviationData({...newDeviationData, status: value})}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="capa_plan">CAPA Plan</Label>
+              <Textarea 
+                id="capa_plan" 
+                value={newDeviationData.capa_plan}
+                onChange={(e) => setNewDeviationData({...newDeviationData, capa_plan: e.target.value})}
+                placeholder="Corrective and preventive action plan"
+                rows={3}
+              />
+            </div>
+            
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="preventative_measures">Preventative Measures</Label>
+              <Textarea 
+                id="preventative_measures" 
+                value={newDeviationData.preventative_measures}
+                onChange={(e) => setNewDeviationData({...newDeviationData, preventative_measures: e.target.value})}
+                placeholder="Measures to prevent similar deviations in the future"
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewDeviationDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitDeviation}>
+              {selectedDeviation ? 'Update Deviation' : 'Log Deviation'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* New TMF Document Dialog */}
+      <Dialog open={showNewDocumentDialog} onOpenChange={setShowNewDocumentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New TMF Document</DialogTitle>
+            <DialogDescription>
+              Upload a new document to the Trial Master File
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Document Title <span className="text-red-500">*</span></Label>
+              <Input 
+                id="title" 
+                value={newDocumentData.title}
+                onChange={(e) => setNewDocumentData({...newDocumentData, title: e.target.value})}
+                placeholder="Document title"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="type">Document Type <span className="text-red-500">*</span></Label>
+                <Select
+                  value={newDocumentData.type}
+                  onValueChange={(value) => setNewDocumentData({...newDocumentData, type: value})}
+                >
+                  <SelectTrigger id="type">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Protocol">Protocol</SelectItem>
+                    <SelectItem value="Informed Consent">Informed Consent</SelectItem>
+                    <SelectItem value="Plan">Plan</SelectItem>
+                    <SelectItem value="Manual">Manual</SelectItem>
+                    <SelectItem value="Training">Training</SelectItem>
+                    <SelectItem value="Report">Report</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>AI-Powered Study Guidance</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-3 bg-blue-50 rounded-md">
-                        <div className="flex">
-                          <Lightbulb className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-blue-800">Study Design Recommendation</p>
-                            <p className="text-sm text-blue-700 mt-1">
-                              Consider adding a 12-week open-label extension period to your 26-week study. 
-                              Based on similar studies in T2DM, this would provide valuable long-term safety data 
-                              and may reduce dropout rates by allowing all patients access to active treatment.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="p-3 bg-green-50 rounded-md">
-                        <div className="flex">
-                          <BookOpen className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-green-800">Regulatory Insight</p>
-                            <p className="text-sm text-green-700 mt-1">
-                              Recent FDA feedback for T2DM studies suggests including continuous glucose monitoring 
-                              as a secondary endpoint. 7 out of 8 recent approved protocols included this approach.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="p-3 bg-yellow-50 rounded-md">
-                        <div className="flex">
-                          <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-yellow-800">Risk Alert</p>
-                            <p className="text-sm text-yellow-700 mt-1">
-                              Your target enrollment timeline may be optimistic based on historical recruitment rates 
-                              for similar T2DM studies. Consider extending the recruitment period or expanding site network.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      <HelpCircle className="h-4 w-4 mr-2" />
-                      Get More AI Insights
-                    </Button>
-                  </CardFooter>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Study Team & Responsibilities</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="border rounded-md p-3">
-                          <div className="flex items-center mb-2">
-                            <User className="h-4 w-4 mr-2 text-blue-500" />
-                            <div className="text-sm font-medium">Medical Director</div>
-                          </div>
-                          <div className="text-sm text-gray-500">Jane Smith, MD, PhD</div>
-                          <div className="text-xs mt-1">Protocol design, medical monitoring</div>
-                        </div>
-                        
-                        <div className="border rounded-md p-3">
-                          <div className="flex items-center mb-2">
-                            <Clipboard className="h-4 w-4 mr-2 text-green-500" />
-                            <div className="text-sm font-medium">Study Manager</div>
-                          </div>
-                          <div className="text-sm text-gray-500">Robert Johnson, MPH</div>
-                          <div className="text-xs mt-1">Operations, timeline management</div>
-                        </div>
-                        
-                        <div className="border rounded-md p-3">
-                          <div className="flex items-center mb-2">
-                            <BarChart3 className="h-4 w-4 mr-2 text-purple-500" />
-                            <div className="text-sm font-medium">Statistician</div>
-                          </div>
-                          <div className="text-sm text-gray-500">Maria Garcia, PhD</div>
-                          <div className="text-xs mt-1">Statistical design, analysis plan</div>
-                        </div>
-                        
-                        <div className="border rounded-md p-3">
-                          <div className="flex items-center mb-2">
-                            <FileCheck className="h-4 w-4 mr-2 text-orange-500" />
-                            <div className="text-sm font-medium">Regulatory Lead</div>
-                          </div>
-                          <div className="text-sm text-gray-500">David Chen, RAC</div>
-                          <div className="text-xs mt-1">Regulatory strategy, submissions</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      <Users className="h-4 w-4 mr-2" />
-                      View Full Team
-                    </Button>
-                  </CardFooter>
-                </Card>
+              <div className="space-y-2">
+                <Label htmlFor="version">Version</Label>
+                <Input 
+                  id="version" 
+                  value={newDocumentData.version}
+                  onChange={(e) => setNewDocumentData({...newDocumentData, version: e.target.value})}
+                  placeholder="e.g., 1.0"
+                />
               </div>
-            </TabsContent>
+            </div>
             
-            <TabsContent value="deviations" className="mt-6">
-              <ProtocolDeviationLog />
-            </TabsContent>
-            
-            <TabsContent value="prevention" className="mt-6">
-              <DeviationPreventionPlan />
-            </TabsContent>
-            
-            <TabsContent value="tmf" className="mt-6">
-              <TMFDocumentManager />
-            </TabsContent>
-            
-            <TabsContent value="integration" className="mt-6">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Document Management Integration</CardTitle>
-                    <CardDescription>
-                      Connect your study plan with TrialSage's Document Management System
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 border rounded-md">
-                        <div className="flex items-center">
-                          <Folder className="h-5 w-5 text-blue-500 mr-3" />
-                          <div>
-                            <div className="font-medium">Study Documents Folder</div>
-                            <div className="text-sm text-gray-500">
-                              12 documents, last updated 2 hours ago
-                            </div>
-                          </div>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          <FolderPlus className="h-4 w-4 mr-1" />
-                          Open
-                        </Button>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="border rounded-md p-4">
-                          <div className="flex items-center mb-3">
-                            <FileText className="h-5 w-5 text-blue-500 mr-2" />
-                            <div className="font-medium">Protocol Documents</div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                                <span className="text-sm">Protocol v1.0 Draft</span>
-                              </div>
-                              <Button variant="ghost" size="sm">
-                                <ArrowRight className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                                <span className="text-sm">Protocol Synopsis</span>
-                              </div>
-                              <Button variant="ghost" size="sm">
-                                <ArrowRight className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                                <span className="text-sm">Protocol Review Notes</span>
-                              </div>
-                              <Button variant="ghost" size="sm">
-                                <ArrowRight className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="border rounded-md p-4">
-                          <div className="flex items-center mb-3">
-                            <ClipboardList className="h-5 w-5 text-green-500 mr-2" />
-                            <div className="font-medium">Study Plans</div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                                <span className="text-sm">Monitoring Plan</span>
-                              </div>
-                              <Button variant="ghost" size="sm">
-                                <ArrowRight className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                                <span className="text-sm">Data Management Plan</span>
-                              </div>
-                              <Button variant="ghost" size="sm">
-                                <ArrowRight className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                                <span className="text-sm">Statistical Analysis Plan</span>
-                              </div>
-                              <Button variant="ghost" size="sm">
-                                <ArrowRight className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="p-4 bg-blue-50 rounded-md">
-                        <div className="flex items-start">
-                          <Info className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-                          <div className="text-sm text-blue-700">
-                            <p className="font-medium">Document Synchronization</p>
-                            <p className="mt-1">
-                              All documents created or modified in this study plan are automatically synchronized with the 
-                              Document Management System. This ensures a single source of truth and maintains compliance 
-                              with your organization's document control procedures.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button variant="outline" onClick={() => setLocation('/document-management')}>
-                      <Folder className="h-4 w-4 mr-2" />
-                      Open Document Manager
-                    </Button>
-                    <Button>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload New Document
-                    </Button>
-                  </CardFooter>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Protocol Review Integration</CardTitle>
-                    <CardDescription>
-                      Connect with Protocol Review & Intelligence for comprehensive analysis
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="border rounded-md p-4">
-                        <div className="flex items-start">
-                          <FileCheck className="h-5 w-5 text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <div>
-                            <div className="font-medium">Protocol Analysis History</div>
-                            <div className="text-sm text-gray-500 mb-3">
-                              Previous protocol reviews and analysis results
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between border-b pb-2">
-                                <div>
-                                  <div className="text-sm font-medium">Protocol v0.8 Analysis</div>
-                                  <div className="text-xs text-gray-500">Completed on April 15, 2025</div>
-                                </div>
-                                <Button variant="outline" size="sm">
-                                  <ExternalLink className="h-3.5 w-3.5 mr-1" /> View
-                                </Button>
-                              </div>
-                              
-                              <div className="flex items-center justify-between border-b pb-2">
-                                <div>
-                                  <div className="text-sm font-medium">Protocol v0.9 Analysis</div>
-                                  <div className="text-xs text-gray-500">Completed on April 20, 2025</div>
-                                </div>
-                                <Button variant="outline" size="sm">
-                                  <ExternalLink className="h-3.5 w-3.5 mr-1" /> View
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="border rounded-md p-4">
-                        <div className="flex items-start">
-                          <Brain className="h-5 w-5 text-purple-500 mt-1 mr-3 flex-shrink-0" />
-                          <div>
-                            <div className="font-medium">AI-Generated Protocol Improvements</div>
-                            <div className="text-sm text-gray-500 mb-3">
-                              Intelligence-driven suggestions from your last protocol analysis
-                            </div>
-                            
-                            <div className="space-y-3">
-                              <div className="p-2 bg-gray-50 rounded">
-                                <div className="text-sm font-medium">Primary Endpoint Optimization</div>
-                                <div className="text-xs mt-1">
-                                  Recommendation to include time-in-range CGM metrics as a co-primary endpoint
-                                </div>
-                                <div className="flex justify-end mt-2">
-                                  <Button variant="ghost" size="sm" className="h-7 text-xs">Dismiss</Button>
-                                  <Button size="sm" className="h-7 text-xs ml-2">Apply</Button>
-                                </div>
-                              </div>
-                              
-                              <div className="p-2 bg-gray-50 rounded">
-                                <div className="text-sm font-medium">Statistical Analysis Approach</div>
-                                <div className="text-xs mt-1">
-                                  Recommendation to use multiple imputation instead of LOCF for missing data
-                                </div>
-                                <div className="flex justify-end mt-2">
-                                  <Button variant="ghost" size="sm" className="h-7 text-xs">Dismiss</Button>
-                                  <Button size="sm" className="h-7 text-xs ml-2">Apply</Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" onClick={() => setLocation('/protocol-review')}>
-                      <FileCheck className="h-4 w-4 mr-2" />
-                      Analyze Current Protocol Draft
-                    </Button>
-                  </CardFooter>
-                </Card>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="zone">TMF Zone <span className="text-red-500">*</span></Label>
+                <Select
+                  value={newDocumentData.zone}
+                  onValueChange={(value) => setNewDocumentData({...newDocumentData, zone: value})}
+                >
+                  <SelectTrigger id="zone">
+                    <SelectValue placeholder="Select zone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Trial Management">Trial Management</SelectItem>
+                    <SelectItem value="Ethics">Ethics</SelectItem>
+                    <SelectItem value="Regulatory">Regulatory</SelectItem>
+                    <SelectItem value="Safety">Safety</SelectItem>
+                    <SelectItem value="Clinical">Clinical</SelectItem>
+                    <SelectItem value="Monitoring">Monitoring</SelectItem>
+                    <SelectItem value="Training">Training</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </Layout>
+              
+              <div className="space-y-2">
+                <Label htmlFor="section">TMF Section</Label>
+                <Input 
+                  id="section" 
+                  value={newDocumentData.section}
+                  onChange={(e) => setNewDocumentData({...newDocumentData, section: e.target.value})}
+                  placeholder="e.g., Essential Documents"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={newDocumentData.status}
+                onValueChange={(value) => setNewDocumentData({...newDocumentData, status: value})}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="final">Final</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Upload Document</Label>
+              <div className="border-2 border-dashed rounded-md p-4 flex flex-col items-center justify-center text-center">
+                <Upload className="h-8 w-8 text-gray-300 mb-2" />
+                <p className="text-sm text-gray-500 mb-2">
+                  Drag and drop your file here, or click to browse
+                </p>
+                <Button size="sm" variant="outline">
+                  Choose File
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewDocumentDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmitDocument}>
+              Upload Document
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
-export default withAuthGuard(StudyPlanner);
+export default StudyPlanner;
