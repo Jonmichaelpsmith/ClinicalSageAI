@@ -64,6 +64,7 @@ const LazyCMCModule = React.lazy(() => import('./pages/CMCModule'));
 const LazyCMCBlueprintGenerator = React.lazy(() => import('./pages/CMCBlueprintGenerator'));
 const LazyLumenBioDashboard = React.lazy(() => import('./pages/LumenBioDashboard'));
 const LazyLumenBioReports = React.lazy(() => import('./pages/LumenBioReports'));
+const LazyLumenBioLanding = React.lazy(() => import('./pages/LumenBioLanding'));
 const LazySimpleLearningInterface = React.lazy(() => import('./components/SimpleLearningInterface'));
 // Add Protocol Review and Study Planner pages
 const LazyProtocolReview = React.lazy(() => import('./pages/ProtocolReview'));
@@ -311,6 +312,11 @@ export default function App() {
               <Route path="/lumen-bio/reports">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Lumen Bio Reports" />}>
                   <LazyLumenBioReports />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/lumen-bio">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Lumen Bio Landing" />}>
+                  <LazyLumenBioLanding />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/walkthroughs">
