@@ -366,6 +366,13 @@ export default function App() {
                   </ProtectedRoute>
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/portal/client">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Client Portal" />}>
+                  <ProtectedRoute>
+                    <LazyClientPortal />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/admin-profile">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Admin Profile" />}>
                   <LazyAdminProfile />
