@@ -47,6 +47,8 @@ const LazyAdaptiveLearning = React.lazy(() => import('./pages/AdaptiveLearning')
 const LazyDocumentRiskPrediction = React.lazy(() => import('./pages/DocumentRiskPrediction'));
 // Add Document Management with DocuShare integration
 const LazyDocumentManagement = React.lazy(() => import('./pages/DocumentManagement'));
+// Add Clinical Metadata Repository with AI-driven capabilities
+const LazyClinicalMetadataRepository = React.lazy(() => import('./pages/ClinicalMetadataRepository'));
 // Add Enterprise Document Vault with comprehensive showcase
 const LazyEnterpriseDocumentVault = React.lazy(() => import('./pages/EnterpriseDocumentVault'));
 // Add AI Chat Panel for document Q&A
@@ -427,6 +429,13 @@ export default function App() {
               <Route path="/regulatory-module">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Regulatory Module" />}>
                   <LazyValidationHubEnhanced />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/cmdr">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Clinical Metadata Repository" />}>
+                  <ProtectedRoute>
+                    <LazyClinicalMetadataRepository />
+                  </ProtectedRoute>
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/use-cases">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,13 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  Progress 
+} from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Database, 
   Search, 
@@ -23,7 +30,13 @@ import {
   Clipboard, 
   RefreshCw, 
   AlertTriangle,
-  BarChart
+  BarChart,
+  Brain,
+  Sparkles,
+  Wand2,
+  Zap,
+  FileJson,
+  AlertCircle
 } from 'lucide-react';
 
 const ClinicalMetadataRepository = () => {
@@ -157,6 +170,107 @@ const ClinicalMetadataRepository = () => {
         </section>
 
         {/* Use Cases */}
+        {/* Advanced AI-Powered Features - Goes beyond Certara's offering */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-3">Advanced AI-Powered Capabilities</h2>
+          <p className="text-gray-600 mb-6">Our CMDR leverages OpenAI's latest models to deliver intelligence beyond traditional metadata management.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-blue-50">
+              <CardHeader className="pb-3 border-b border-gray-100">
+                <CardTitle className="flex items-center text-emerald-800">
+                  <Brain className="h-5 w-5 mr-2 text-emerald-600" />
+                  Semantic Metadata Analysis
+                </CardTitle>
+                <CardDescription>
+                  AI-powered semantic understanding of metadata relationships
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <Sparkles className="h-5 w-5 text-emerald-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Cross-Trial Consistency Analysis</h4>
+                      <p className="text-sm text-gray-600">GPT-4o powered analysis identifies inconsistencies across trial metadata that traditional systems miss.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Zap className="h-5 w-5 text-emerald-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Intelligent Data Mapping</h4>
+                      <p className="text-sm text-gray-600">Advanced algorithms map semantically similar fields even with different naming conventions.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Wand2 className="h-5 w-5 text-emerald-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Automated Standardization</h4>
+                      <p className="text-sm text-gray-600">AI suggests standardization improvements based on industry best practices and regulatory requirements.</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="bg-white bg-opacity-50 pt-3 pb-4">
+                <Button className="bg-emerald-600 hover:bg-emerald-700">
+                  Explore AI Capabilities
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <Card className="overflow-hidden border-0 shadow-lg">
+              <div className="bg-gray-50 p-4">
+                <h3 className="text-lg font-medium mb-2">Metadata Intelligence Demo</h3>
+                <div className="rounded-md bg-white border border-gray-200 p-4">
+                  <div className="mb-4">
+                    <Label htmlFor="metadataInput">Enter CRF field description:</Label>
+                    <Textarea 
+                      id="metadataInput" 
+                      placeholder="E.g. Patient blood pressure measured in mmHg using standard cuff, supine position"
+                      className="mt-1"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex justify-between mb-4">
+                    <Button size="sm" variant="outline" className="text-xs">
+                      <FileJson className="h-3 w-3 mr-1" />
+                      JSON Output
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Validation Check
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs">
+                      <GitBranch className="h-3 w-3 mr-1" />
+                      Find Similar
+                    </Button>
+                  </div>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                    Generate Intelligent Mapping
+                  </Button>
+                  
+                  <div className="mt-4 border-t border-gray-100 pt-4">
+                    <div className="text-xs text-gray-500 mb-2">Analysis Results (Sample)</div>
+                    <div className="bg-gray-50 rounded p-3 text-xs font-mono">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">SDTM Mapping:</span>
+                        <span className="font-medium">VS.VSTESTCD=BP, VS.VSPOS=SUPINE</span>
+                      </div>
+                      <div className="flex justify-between mt-1">
+                        <span className="text-gray-600">CDISC Compliance:</span>
+                        <span className="font-medium text-green-600">98% Match</span>
+                      </div>
+                      <div className="mt-1 text-blue-600">
+                        Semantic matches: 3 similar fields found in current repository
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </section>
+
         <section className="mb-12">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Key Use Cases</h2>
           <Tabs defaultValue="forms">
@@ -577,5 +691,107 @@ const ClinicalMetadataRepository = () => {
     </div>
   );
 };
+
+        {/* Advanced Vector Search - Beyond Certara's capabilities */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Advanced Vector Search with OpenAI</h2>
+          
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              <div className="lg:col-span-3">
+                <h3 className="text-xl font-medium text-gray-900 mb-3">Semantic Metadata Search</h3>
+                <p className="text-slate-700 mb-4">
+                  Leverage OpenAI's GPT-4o and embeddings to search for metadata based on meaning rather than just keywords.
+                  This AI-powered approach enables finding relevant metadata even when terminology varies across studies.
+                </p>
+                
+                <div className="mb-6">
+                  <Label htmlFor="semanticSearch">Search clinical metadata semantically:</Label>
+                  <div className="flex mt-2">
+                    <Input 
+                      id="semanticSearch" 
+                      placeholder="E.g. find all blood pressure measurements in pediatric studies"
+                      className="flex-1 rounded-r-none"
+                    />
+                    <Button className="rounded-l-none bg-blue-600 hover:bg-blue-700">
+                      <Search className="h-4 w-4 mr-2" />
+                      Search
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Powered by OpenAI's embeddings technology for contextual understanding
+                  </p>
+                </div>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-start">
+                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Vector-Based Similarity Search</h4>
+                      <p className="text-sm text-gray-600">Using embeddings to transform metadata into high-dimensional vectors for accurate similarity detection.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Cross-Study Semantic Inference</h4>
+                      <p className="text-sm text-gray-600">Identify semantically related metadata across studies even when naming conventions differ.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start">
+                    <Sparkles className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">Natural Language Metadata Queries</h4>
+                      <p className="text-sm text-gray-600">Write queries in plain English to find relevant metadata across your organization.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Learn More About Vector Search
+                </Button>
+              </div>
+              
+              <div className="lg:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-medium text-gray-900 mb-3">Sample Results</h4>
+                <div className="space-y-3">
+                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
+                    <div className="text-sm font-medium text-blue-700 mb-1">VS.VSTESTCD=BP (98% match)</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      Blood pressure measurement - Study XYZ-001
+                    </div>
+                    <div className="bg-blue-50 text-xs p-1 rounded">
+                      <span className="font-medium">Semantic context:</span> Vital sign, cardiovascular assessment
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
+                    <div className="text-sm font-medium text-blue-700 mb-1">PEDIATRIC.VS.BPSYS (94% match)</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      Systolic blood pressure - Pediatric Study ABC-123
+                    </div>
+                    <div className="bg-blue-50 text-xs p-1 rounded">
+                      <span className="font-medium">Semantic context:</span> Pediatric vital sign
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-3 rounded shadow-sm border border-gray-100">
+                    <div className="text-sm font-medium text-blue-700 mb-1">CARDIO.HEMO.BP (89% match)</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      Hemodynamic blood pressure - Study DEF-789
+                    </div>
+                    <div className="bg-blue-50 text-xs p-1 rounded">
+                      <span className="font-medium">Semantic context:</span> Cardiovascular assessment
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 text-xs text-gray-500">
+                  <Progress value={42} className="h-1 mb-1" />
+                  42 additional semantically similar metadata elements found across 18 studies
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
 export default ClinicalMetadataRepository;
