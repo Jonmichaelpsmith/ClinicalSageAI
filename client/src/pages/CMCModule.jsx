@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
@@ -656,6 +657,150 @@ const CMCModule = () => {
     }
   };
 
+  // Compliance Analysis Component
+  const ComplianceAnalysis = ({ data, loading, onGenerateReport }) => {
+    if (loading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="mt-4 text-sm text-gray-500">Analyzing regulatory compliance across regions...</p>
+        </div>
+      );
+    }
+
+    if (!data) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-4 rounded-full bg-gray-100 p-4 dark:bg-gray-800">
+            <Shield className="h-8 w-8 text-gray-400" />
+          </div>
+          <h3 className="mb-2 text-lg font-medium">Compliance Analysis</h3>
+          <p className="mb-4 text-sm text-gray-500 max-w-md">
+            Generate a comprehensive compliance analysis for your CMC documentation 
+            across global regulatory regions.
+          </p>
+          <Button onClick={onGenerateReport}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate Compliance Report
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-medium text-lg">Global Compliance Analysis</h3>
+          <Button size="sm" variant="outline" onClick={onGenerateReport}>
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Refresh Analysis
+          </Button>
+        </div>
+        
+        <Card className="border-0 shadow-none">
+          <CardContent className="p-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {Object.entries(data.summary).map(([region, score]) => (
+                <Card key={region} className="border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                  <div className="h-1.5 bg-gradient-to-r from-blue-400 to-blue-600" style={{width: `${score}%`}}></div>
+                  <CardContent className="p-3">
+                    <div className="flex justify-between items-center mb-1">
+                      <h4 className="text-sm font-medium">{region}</h4>
+                      <span className="text-sm font-bold">{score}%</span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {score >= 85 ? 'Fully compliant' : 
+                       score >= 70 ? 'Minor gaps identified' : 
+                       'Significant gaps'}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Critical Gap Analysis</CardTitle>
+            <CardDescription>Issues requiring immediate attention</CardDescription>
+          </CardHeader>
+          <CardContent className="pb-3">
+            <div className="divide-y dark:divide-gray-700">
+              {data.criticalGaps.map((gap, i) => (
+                <div key={i} className="py-3 first:pt-0 last:pb-0">
+                  <div className="flex gap-3 items-start">
+                    <div className="flex-shrink-0">
+                      <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">{gap.title}</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                        {gap.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {gap.regions.map((region, j) => (
+                          <Badge key={j} variant="outline" className="text-xs">
+                            {region}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between pt-0">
+            <Button variant="outline" size="sm" className="text-xs">
+              Download Full Report
+            </Button>
+            <Button size="sm" className="text-xs">
+              Create Action Plan
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  };
+
+  // Sample regulatory submissions data
+  const submissions = [
+    {
+      id: 'FDA-EXP-2025-0042',
+      name: 'Examplinostat NDA Submission',
+      region: 'FDA',
+      status: 'In Preparation',
+      submissionDate: null,
+      targetApprovalDate: 'August 15, 2025',
+      sections: ['S.2.2', 'S.2.4', 'S.3.2', 'P.7'],
+      moduleType: 'New Drug Application (NDA)',
+      progress: 68
+    },
+    {
+      id: 'EMA-EXP-2025-0021',
+      name: 'Examplinostat MAA',
+      region: 'EMA',
+      status: 'Submitted',
+      submissionDate: 'March 10, 2025',
+      targetApprovalDate: 'December 20, 2025',
+      sections: ['3.2.S', '3.2.P'],
+      moduleType: 'Marketing Authorization Application',
+      progress: 100
+    },
+    {
+      id: 'NMPA-2025-XYZ-0076',
+      name: 'Examplinostat China Filing',
+      region: 'NMPA',
+      status: 'In Preparation',
+      submissionDate: null,
+      targetApprovalDate: 'September 30, 2025',
+      sections: ['2.3.S', '2.3.P'],
+      moduleType: 'Import Drug License Application',
+      progress: 42
+    }
+  ];
+
   // Sample data
   const cmcSections = [
     {
@@ -973,14 +1118,14 @@ const CMCModule = () => {
       </div>
 
       <Tabs defaultValue="sections" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 mb-6">
+        <TabsList className="grid w-full grid-cols-6 mb-6">
           <TabsTrigger value="sections" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span>CMC Sections</span>
           </TabsTrigger>
           <TabsTrigger value="processes" className="flex items-center gap-2">
             <Factory className="h-4 w-4" />
-            <span>Manufacturing Processes</span>
+            <span>Manufacturing</span>
           </TabsTrigger>
           <TabsTrigger value="risk-analysis" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
@@ -988,11 +1133,15 @@ const CMCModule = () => {
           </TabsTrigger>
           <TabsTrigger value="regulatory" className="flex items-center gap-2">
             <Landmark className="h-4 w-4" />
-            <span>Regulatory Compliance</span>
+            <span>Compliance</span>
+          </TabsTrigger>
+          <TabsTrigger value="submissions" className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4" />
+            <span>Submissions</span>
           </TabsTrigger>
           <TabsTrigger value="visualizations" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
-            <span>AI Visualizations</span>
+            <span>AI Insights</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1146,6 +1295,21 @@ const CMCModule = () => {
                 </Button>
               </CardFooter>
             </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="submissions" className="mt-0">
+          <div className="space-y-4">
+            <SubmissionTracking 
+              submissions={submissions} 
+              onAddNew={() => {
+                toast({
+                  title: "New Submission",
+                  description: "Creating a new regulatory submission...",
+                });
+                setShowNewSubmissionDialog(true);
+              }}
+            />
           </div>
         </TabsContent>
         
@@ -1307,6 +1471,135 @@ const CMCModule = () => {
           </div>
         </TabsContent>
       </Tabs>
+      
+      {/* New Submission Dialog */}
+      <Dialog open={showNewSubmissionDialog} onOpenChange={setShowNewSubmissionDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <ClipboardCheck className="h-5 w-5 text-indigo-600" /> 
+              Create New Regulatory Submission
+            </DialogTitle>
+            <DialogDescription>
+              Configure the details for a new regulatory submission package.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="submission-name">Submission Name</Label>
+                <Input id="submission-name" placeholder="e.g., Examplinostat NDA Initial Submission" />
+              </div>
+                
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="submission-region">Target Region</Label>
+                  <Select defaultValue="FDA">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select region" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="FDA">FDA (US)</SelectItem>
+                      <SelectItem value="EMA">EMA (EU)</SelectItem>
+                      <SelectItem value="PMDA">PMDA (Japan)</SelectItem>
+                      <SelectItem value="NMPA">NMPA (China)</SelectItem>
+                      <SelectItem value="Health Canada">Health Canada</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="submission-type">Submission Type</Label>
+                  <Select defaultValue="nda">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="nda">New Drug Application (NDA)</SelectItem>
+                      <SelectItem value="maa">Marketing Authorization Application</SelectItem>
+                      <SelectItem value="bla">Biologics License Application</SelectItem>
+                      <SelectItem value="anda">Abbreviated NDA (ANDA)</SelectItem>
+                      <SelectItem value="ind">Investigational New Drug (IND)</SelectItem>
+                      <SelectItem value="variation">Variation/Amendment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Required CMC Sections</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="section-s1" defaultChecked />
+                    <Label htmlFor="section-s1" className="text-sm font-normal">S.1 General Information</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="section-s2" defaultChecked />
+                    <Label htmlFor="section-s2" className="text-sm font-normal">S.2 Manufacture</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="section-s3" defaultChecked />
+                    <Label htmlFor="section-s3" className="text-sm font-normal">S.3 Characterization</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="section-s4" defaultChecked />
+                    <Label htmlFor="section-s4" className="text-sm font-normal">S.4 Control of Drug Substance</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="section-p1" />
+                    <Label htmlFor="section-p1" className="text-sm font-normal">P.1 Description and Composition</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="section-p2" />
+                    <Label htmlFor="section-p2" className="text-sm font-normal">P.2 Pharmaceutical Development</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="section-p3" />
+                    <Label htmlFor="section-p3" className="text-sm font-normal">P.3 Manufacture</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="section-p4" />
+                    <Label htmlFor="section-p4" className="text-sm font-normal">P.4 Control of Excipients</Label>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="submission-date">Planned Submission Date</Label>
+                  <Input type="date" id="submission-date" />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="approval-date">Target Approval Date</Label>
+                  <Input type="date" id="approval-date" />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="additional-notes">Additional Notes</Label>
+                <Textarea id="additional-notes" placeholder="Enter any additional information about this submission..." />
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewSubmissionDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              toast({
+                title: "Submission Created",
+                description: "New regulatory submission has been created successfully",
+              });
+              setShowNewSubmissionDialog(false);
+            }}>
+              Create Submission
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Help Button */}
       <Dialog open={showHelp} onOpenChange={setShowHelp}>
