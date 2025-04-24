@@ -10,6 +10,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from routes.study import router as study_router
+from routes.enzymax_study import router as enzymax_router
+from routes.simulation import router as simulation_router
 
 # Configure logging
 logging.basicConfig(
@@ -36,6 +38,8 @@ app.add_middleware(
 
 # Register routers
 app.include_router(study_router)
+app.include_router(enzymax_router)
+app.include_router(simulation_router)
 
 @app.get("/")
 async def root():
@@ -46,7 +50,15 @@ async def root():
         "status": "active",
         "endpoints": [
             "/api/study/simulate",
-            "/api/study/sample-size"
+            "/api/study/sample-size",
+            "/api/enzymax/functional-dyspepsia",
+            "/api/enzymax/chronic-pancreatitis",
+            "/api/enzymax/functional-dyspepsia/power-curve",
+            "/api/enzymax/chronic-pancreatitis/power-curve",
+            "/api/enzymax/sample-scenarios",
+            "/api/simulation/monte-carlo",
+            "/api/simulation/adaptive-design",
+            "/api/simulation/methods"
         ]
     }
 
