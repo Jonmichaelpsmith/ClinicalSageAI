@@ -1,0 +1,100 @@
+import React from 'react';
+import { Link } from 'wouter';
+import {
+  FileText,
+  Rocket,
+  RefreshCw,
+  Table,
+  Lightbulb,
+  Folder,
+  CheckCircle,
+  XCircle
+} from 'lucide-react';
+import CSRCounter from '../components/CSRCounter';
+import SolutionsGrid from '../components/landing/SolutionsGrid';
+import ComparisonTable from '../components/landing/ComparisonTable';
+
+// Main landing page layout
+function Layout({ children }) {
+  return (
+    <div className="bg-white min-h-screen">
+      <header className="bg-[#003057] text-white py-4">
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center">
+            <span className="font-bold text-xl">CONCEPT2CURE.AI</span>
+            <span className="ml-2 text-sm opacity-80">TrialSage</span>
+          </div>
+          <nav>
+            <ul className="flex space-x-6">
+              <li><Link href="#" className="text-sm hover:text-gray-300">SOLUTIONS</Link></li>
+              <li><Link href="#" className="text-sm hover:text-gray-300">NEWS</Link></li>
+              <li><Link href="#" className="text-sm hover:text-gray-300">RESOURCES</Link></li>
+              <li><Link href="#" className="text-sm hover:text-gray-300">CONTACT</Link></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+      <main>
+        {children}
+      </main>
+      <footer className="bg-[#003057] text-white py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <p className="text-gray-300 text-sm">© 2025 CONCEPT2CURE.AI. All rights reserved.</p>
+            </div>
+            <div className="flex space-x-6">
+              <Link href="#" className="text-gray-300 hover:text-white text-sm">Privacy Policy</Link>
+              <Link href="#" className="text-gray-300 hover:text-white text-sm">Terms of Service</Link>
+              <Link href="#" className="text-gray-300 hover:text-white text-sm">Compliance</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+// Main Page Export
+export default function HomeMarketingPage() {
+  return (
+    <Layout>
+      {/* Hero Section */}
+      <section className="bg-white">
+        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
+          <h1 className="text-5xl font-extrabold text-blue-900">
+            TrialSage™
+            <br />
+            <span className="text-green-600">AI-Powered Regulatory Intelligence</span>
+          </h1>
+          <p className="mt-4 text-xl text-gray-700">
+            From Protocol to Approval—Unify CSR, CMC, CER, IND, and Submission Workflows in One Secure SaaS Platform.
+          </p>
+          <p className="mt-2 text-gray-600">
+            Analyze over <CSRCounter className="mx-1" /> with deep semantic intelligence
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <a
+              href="#demo"
+              className="px-6 py-3 bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-lg shadow hover:from-green-300 hover:to-blue-400 transition"
+            >
+              Request a Demo
+            </a>
+            <a
+              href="#features"
+              className="px-6 py-3 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition"
+            >
+              Explore Features
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Solutions Grid Component */}
+      <SolutionsGrid />
+
+      {/* Comparison Table Component */}
+      <ComparisonTable />
+    </Layout>
+  );
+}
