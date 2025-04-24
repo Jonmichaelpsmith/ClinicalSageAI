@@ -58,14 +58,13 @@ export let ioRTC = null;
  * @param {Server} server - HTTP server instance
  * @returns {object} Socket.io server instance or mock
  */
-export function initWs(server) {
+export async function initWs(server) {
   console.log('[WS] Initializing WebSocket server...');
   
   let Server;
   try {
-    // Try to dynamically import socket.io - this won't work if it's an ES module
-    // but we need to handle both cases
-    const socketModule = require('socket.io');
+    // Use dynamic import for ES modules
+    const socketModule = await import('socket.io');
     Server = socketModule.Server;
     console.log('[WS] Socket.io successfully loaded');
   } catch (error) {
