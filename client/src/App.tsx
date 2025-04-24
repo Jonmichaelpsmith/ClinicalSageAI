@@ -65,6 +65,9 @@ const LazyCMCBlueprintGenerator = React.lazy(() => import('./pages/CMCBlueprintG
 const LazyLumenBioDashboard = React.lazy(() => import('./pages/LumenBioDashboard'));
 const LazyLumenBioReports = React.lazy(() => import('./pages/LumenBioReports'));
 const LazySimpleLearningInterface = React.lazy(() => import('./components/SimpleLearningInterface'));
+// Add Protocol Review and Study Planner pages
+const LazyProtocolReview = React.lazy(() => import('./pages/ProtocolReview'));
+const LazyStudyPlanner = React.lazy(() => import('./pages/StudyPlanner'));
 // Admin Profile with role-switching capabilities
 const LazyAdminProfile = React.lazy(() => import('./pages/AdminProfile'));
 
@@ -173,7 +176,7 @@ export default function App() {
               </Route>
               <Route path="/solutions/protocol-optimization">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Protocol Optimization" />}>
-                  <LazyAdaptiveLearning />
+                  <LazyProtocolReview />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/ind-wizard">
@@ -358,6 +361,16 @@ export default function App() {
               <Route path="/enterprise-vault">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Enterprise Document Vault" />}>
                   <LazyEnterpriseDocumentVault />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/protocol-review">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Protocol Review" />}>
+                  <LazyProtocolReview />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/study-planner">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Study Planner" />}>
+                  <LazyStudyPlanner />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/analytics-dashboard">
