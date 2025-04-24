@@ -98,11 +98,14 @@ class SimpleErrorBoundary extends React.Component<
 
 // Removed TopNav import as we're using layout component instead
 // Import auth components and context providers
-import { AuthProvider } from './hooks/use-auth';
+import { AuthProvider, useAuth } from './hooks/use-auth';
+import { useLocation } from 'wouter';
 import AuthPage from './pages/auth-page';
 import { ProtectedRoute } from './components/ProtectedRoute';
 // Import onboarding context provider
 import { OnboardingProvider } from './contexts/OnboardingContext';
+// Import AuthRedirector component for authenticated user routing
+import AuthRedirector from './components/AuthRedirector';
 // Import NotFound page
 const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
 // Import Versions page
@@ -410,10 +413,23 @@ export default function App() {
                   <LazyVersions />
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/account">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Account Portal" />}>
+                  <ProtectedRoute>
+                    {/* Redirect account to client portal automatically */}
+                    <AuthRedirector>
+                      <LazyClientPortal />
+                    </AuthRedirector>
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/account/subscribed-solutions">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Subscribed Solutions" />}>
                   <ProtectedRoute>
-                    <LazySubscribedSolutions />
+                    {/* Redirect old subscribed solutions to client portal */}
+                    <AuthRedirector>
+                      <LazyClientPortal />
+                    </AuthRedirector>
                   </ProtectedRoute>
                 </SimpleErrorBoundary>
               </Route>
@@ -464,7 +480,9 @@ export default function App() {
                       </div>
                     }
                   >
-                    <LazyHomeMarketingPage />
+                    <AuthRedirector>
+                      <LazyHomeMarketingPage />
+                    </AuthRedirector>
                   </React.Suspense>
                 </SimpleErrorBoundary>
               </Route>
