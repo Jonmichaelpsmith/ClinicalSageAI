@@ -115,11 +115,12 @@ import withAuthGuard from '../utils/withAuthGuard';
 const StatusBadge = ({ status, text, details }) => {
   const getStatusColor = () => {
     switch (status) {
-      case 'success': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-900';
-      case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-900';
-      case 'error': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900';
-      case 'info': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-900';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+      // Enhanced contrast for light and dark modes
+      case 'success': return 'bg-green-100 text-green-900 border-green-300 dark:bg-green-800 dark:text-green-50 dark:border-green-700';
+      case 'warning': return 'bg-yellow-100 text-yellow-900 border-yellow-300 dark:bg-yellow-800 dark:text-yellow-50 dark:border-yellow-700';
+      case 'error': return 'bg-red-100 text-red-900 border-red-300 dark:bg-red-800 dark:text-red-50 dark:border-red-700';
+      case 'info': return 'bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-800 dark:text-blue-50 dark:border-blue-700';
+      default: return 'bg-gray-100 text-gray-900 border-gray-300 dark:bg-gray-700 dark:text-gray-50 dark:border-gray-600';
     }
   };
 
@@ -155,10 +156,11 @@ const StatusBadge = ({ status, text, details }) => {
 const RegulatoryCheck = ({ requirement, status, region, details }) => {
   const getStatusColor = () => {
     switch (status) {
-      case 'compliant': return 'text-green-600 dark:text-green-400';
-      case 'partial': return 'text-yellow-600 dark:text-yellow-400';
-      case 'non-compliant': return 'text-red-600 dark:text-red-400';
-      default: return 'text-gray-600 dark:text-gray-400';
+      // Enhanced contrast for better readability
+      case 'compliant': return 'text-green-800 dark:text-green-200';
+      case 'partial': return 'text-yellow-800 dark:text-yellow-200';
+      case 'non-compliant': return 'text-red-800 dark:text-red-200';
+      default: return 'text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -248,9 +250,10 @@ const ProcessCard = ({ title, description, status, progress, linkedRecords }) =>
 const RiskAnalysisCard = ({ title, severity, probability, description, recommendations, impact }) => {
   const getRiskLevelColor = () => {
     const riskScore = severity * probability;
-    if (riskScore >= 15) return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800';
-    if (riskScore >= 8) return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800';
-    return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800';
+    // Enhanced contrast for better readability in both light and dark modes
+    if (riskScore >= 15) return 'bg-red-100 text-red-900 border-red-300 dark:bg-red-800 dark:text-red-50 dark:border-red-700';
+    if (riskScore >= 8) return 'bg-yellow-100 text-yellow-900 border-yellow-300 dark:bg-yellow-800 dark:text-yellow-50 dark:border-yellow-700';
+    return 'bg-green-100 text-green-900 border-green-300 dark:bg-green-800 dark:text-green-50 dark:border-green-700';
   };
 
   const getRiskLevel = () => {
@@ -354,6 +357,148 @@ const CMCTemplate = ({ title, section, status, content, nextRevision, feedbackCo
   );
 };
 
+// Regulatory submission tracking component
+const SubmissionTracking = ({ submissions, onAddNew }) => {
+  const regions = {
+    "FDA": "#003057", // FDA blue
+    "EMA": "#0078d4", // EMA blue
+    "PMDA": "#b01116", // PMDA red
+    "NMPA": "#bd0102", // NMPA red
+    "Health Canada": "#c22234" // Health Canada red
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="font-medium text-lg">Active Submissions</h3>
+        <Button size="sm" onClick={onAddNew}>
+          <Plus className="h-4 w-4 mr-1" /> New Submission
+        </Button>
+      </div>
+      
+      <div className="space-y-3">
+        {submissions.map((submission, index) => (
+          <Card key={index} className="relative overflow-hidden">
+            <div 
+              className="absolute top-0 bottom-0 left-0 w-1" 
+              style={{ backgroundColor: regions[submission.region] || "#6366F1" }}
+            ></div>
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {submission.name}
+                    <Badge 
+                      className="text-white" 
+                      style={{ 
+                        backgroundColor: regions[submission.region] || "#6366F1",
+                        color: "#FFFFFF" // Ensuring high contrast with white text
+                      }}
+                    >
+                      {submission.region}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>Submission ID: {submission.id}</CardDescription>
+                </div>
+                <div className="text-sm font-medium">
+                  {submission.status === 'Submitted' ? (
+                    <span className="flex items-center text-amber-700 dark:text-amber-400">
+                      <Clock className="h-4 w-4 mr-1" /> Under Review
+                    </span>
+                  ) : submission.status === 'Approved' ? (
+                    <span className="flex items-center text-green-700 dark:text-green-400">
+                      <CheckCircle className="h-4 w-4 mr-1" /> Approved
+                    </span>
+                  ) : (
+                    <span className="flex items-center text-blue-700 dark:text-blue-400">
+                      <Edit className="h-4 w-4 mr-1" /> In Preparation
+                    </span>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pb-2">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">Submission Date:</span>
+                  <span className="ml-1 font-medium">{submission.submissionDate || 'Not submitted'}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">Target Approval:</span>
+                  <span className="ml-1 font-medium">{submission.targetApprovalDate}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">CMC Sections:</span>
+                  <span className="ml-1 font-medium">{submission.sections.join(', ')}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400">Module Type:</span>
+                  <span className="ml-1 font-medium">{submission.moduleType}</span>
+                </div>
+              </div>
+              
+              <div className="mt-3">
+                <div className="flex justify-between text-xs mb-1">
+                  <span>Submission Readiness</span>
+                  <span>{submission.progress}%</span>
+                </div>
+                <Progress value={submission.progress} className="h-1.5" />
+              </div>
+            </CardContent>
+            <CardFooter className="pt-2 flex justify-between">
+              <div className="flex gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                        <MessageSquare className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Reviewer Comments</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Timeline</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>View Documents</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              
+              <Button size="sm">
+                Manage Submission
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Enhanced CMC Module Component
 const CMCModule = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
@@ -369,11 +514,22 @@ const CMCModule = () => {
   const [showHelp, setShowHelp] = useState(false);
   const [generatingVisualization, setGeneratingVisualization] = useState(false);
   const [crystallineStructure, setCrystallineStructure] = useState(null);
+  const [showNewSubmissionDialog, setShowNewSubmissionDialog] = useState(false);
+  const [showCompliance, setShowCompliance] = useState(false);
+  const [complianceAnalysis, setComplianceAnalysis] = useState(null);
+  const [complianceLoading, setComplianceLoading] = useState(false);
+  const [documentCount, setDocumentCount] = useState(17);
+  const [documentSearch, setDocumentSearch] = useState('');
+  
+  // Enhanced with more molecule details
   const [moleculeDetails, setMoleculeDetails] = useState({
     name: 'Examplinostat',
     formula: 'C21H28N4O3',
     structureType: 'crystalline',
-    properties: 'Salt form, hygroscopic'
+    properties: 'Salt form, hygroscopic',
+    polymorph: 'Form A (stable)',
+    solubility: 'Poorly soluble in water, freely soluble in ethanol',
+    stability: 'Sensitive to light and oxygen'
   });
   
   // OpenAI integration
