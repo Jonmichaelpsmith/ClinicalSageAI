@@ -18,6 +18,8 @@ const EmergencyFallback = ({ pageName }: { pageName: string }) => (
 // Lazy load all components to prevent dependency issues
 const LazyHomeMarketingPage = React.lazy(() => import('./pages/HomeMarketingPage'));
 const LazySubmissionBuilder = React.lazy(() => import('./pages/SubmissionBuilder'));
+const LazyCSRPage = React.lazy(() => import('./pages/csr'));
+const LazyMetadataRepositoryPage = React.lazy(() => import('./pages/metadata'));
 const LazyIndSequenceDetail = React.lazy(() => import('./pages/IndSequenceDetail'));
 const LazyIndSequenceManager = React.lazy(() => import('./pages/IndSequenceManager'));
 const LazyHomeLanding = React.lazy(() => import('./pages/HomeLandingProtected'));
@@ -225,6 +227,16 @@ export default function App() {
               <Route path="/solutions/csr-intelligence">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CSR Intelligence" />}>
                   <LazyCSRIntelligence />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/csr">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CSR Module" />}>
+                  <LazyCSRPage />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/metadata">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Metadata Repository" />}>
+                  <LazyMetadataRepositoryPage />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/use-case-library">
