@@ -175,6 +175,13 @@ export default function App() {
                   </React.Suspense>
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/solutions/ind-wizard">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                  <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                    <LazyINDWizard />
+                  </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/ind-wizard">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard" />}>
                   <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard" />}>
@@ -195,6 +202,11 @@ export default function App() {
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/csr-intelligence">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CSR Intelligence" />}>
+                  <LazyCSRIntelligence />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/solutions/csr-intelligence">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CSR Intelligence" />}>
                   <LazyCSRIntelligence />
                 </SimpleErrorBoundary>
@@ -249,6 +261,11 @@ export default function App() {
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/ask-lumen">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Ask Lumen" />}>
+                  <LazyAskLumen />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/solutions/ask-lumen">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Ask Lumen" />}>
                   <LazyAskLumen />
                 </SimpleErrorBoundary>
@@ -342,6 +359,13 @@ export default function App() {
               </Route>
               <Route path="/cmc-module">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CMC Module" />}>
+                  <ProtectedRoute>
+                    <LazyCMCModule />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/solutions/cmc-insights">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CMC Insights" />}>
                   <ProtectedRoute>
                     <LazyCMCModule />
                   </ProtectedRoute>
