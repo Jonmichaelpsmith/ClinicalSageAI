@@ -32,7 +32,7 @@ import {
   Share2,
   FileCheck,
   CheckSquare,
-  Workflow,
+  GitMerge as Workflow,
   ShieldCheck,
   User,
   Users,

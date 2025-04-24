@@ -61,7 +61,7 @@ import {
   ArrowRightLeft,
   MessageSquare,
   GitMerge,
-  Workflow,
+  GitMerge as Workflow,
   Settings,
   Zap,
   Calendar,
