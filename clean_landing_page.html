@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ by Concept2Cures - Regulatory Intelligence Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --secondary: #FF6B35;
+            --secondary-dark: #E55A2B;
+            --secondary-light: #FF8C64;
+            --background: #FFFFFF;
+            --background-alt: #F8FAFC;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --text-lighter: #94A3B8;
+            --border: #E2E8F0;
+            --surface: #FFFFFF;
+            --surface-hover: #F1F5F9;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            line-height: 1.5;
+            background-color: var(--background);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: var(--primary-dark);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: 1px solid var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+            border: 1px solid var(--secondary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-dark);
+            border-color: var(--secondary-dark);
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-lighter);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-1px);
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.125rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.875rem;
+            font-size: 0.875rem;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--surface);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text);
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.2s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 400px;
+            height: 100vh;
+            background-color: var(--surface);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            transition: right 0.3s ease;
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .close-menu {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .mobile-nav-link {
+            color: var(--text);
+            font-weight: 500;
+            font-size: 1.125rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 5rem 0;
+            background-color: var(--primary-lighter);
+            background-image: linear-gradient(135deg, var(--primary-lighter) 0%, #F8FAFC 100%);
+        }
+
+        .hero-content {
+            max-width: 700px;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .hero-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .hero-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section-alt {
+            background-color: var(--background-alt);
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-light);
+        }
+
+        /* Module Cards */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .module-card {
+            background-color: var(--surface);
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .module-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.5rem;
+            background-color: var(--primary-lighter);
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .module-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .module-description {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .module-features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .module-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text);
+        }
+
+        .module-feature i {
+            color: var(--primary);
+            font-size: 1rem;
+            margin-top: 0.125rem;
+        }
+
+        .module-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: auto;
+        }
+
+        .module-link i {
+            transition: transform 0.2s ease;
+        }
+
+        .module-link:hover i {
+            transform: translateX(3px);
+        }
+
+        /* Features Section */
+        .features-container {
+            display: flex;
+            gap: 4rem;
+            align-items: center;
+            margin-bottom: 5rem;
+        }
+
+        .features-container:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .features-content {
+            flex: 1;
+        }
+
+        .features-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .features-description {
+            font-size: 1.125rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .feature-icon {
+            color: var(--primary);
+            font-size: 1.25rem;
+            margin-top: 0.125rem;
+        }
+
+        .feature-text {
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .features-image {
+            flex: 1;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            background-color: var(--primary-lighter);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .features-placeholder {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 5rem 0;
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .btn-white {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid white;
+        }
+
+        .btn-white:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-outline-white {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+        }
+
+        .btn-outline-white:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--background-alt);
+            padding: 5rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .footer-description {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background-color: var(--primary-lighter);
+            color: var(--primary);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .social-icon:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .footer-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .footer-link {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copyright {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .legal-link {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .features-container {
+                flex-direction: column;
+                gap: 3rem;
+            }
+
+            .features-container:nth-child(even) {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .hero-stats {
+                flex-wrap: wrap;
+                gap: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-menu {
+                display: none;
+            }
+            
+            .hamburger {
+                display: block;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+
+            .hero {
+                padding: 4rem 0;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+
+            .section {
+                padding: 4rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo">TrialSage™ by Concept2Cures</a>
+                
+                <ul class="nav-menu">
+                    <li><a href="#modules" class="nav-link">Modules</a></li>
+                    <li><a href="#features" class="nav-link">Features</a></li>
+                    <li><a href="#about" class="nav-link">About</a></li>
+                    <li><a href="/demo" class="btn btn-primary">Request Demo</a></li>
+                </ul>
+                
+                <button class="hamburger" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">TrialSage™</a>
+            <button class="close-menu" id="close-menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="mobile-nav">
+            <a href="#modules" class="mobile-nav-link">Modules</a>
+            <a href="#features" class="mobile-nav-link">Features</a>
+            <a href="#about" class="mobile-nav-link">About</a>
+            <a href="/demo" class="btn btn-primary" style="margin-top: 1rem;">Request Demo</a>
+        </nav>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Accelerate Regulatory Submissions with AI</h1>
+                <p class="hero-subtitle">TrialSage™ transforms pharmaceutical regulatory processes with AI-powered document generation, automated compliance checks, and real-time intelligence.</p>
+                
+                <div class="hero-buttons">
+                    <a href="/demo" class="btn btn-primary btn-lg">Request Demo</a>
+                    <a href="#modules" class="btn btn-outline btn-lg">Explore Platform</a>
+                </div>
+                
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">3,217+</span>
+                        <span class="hero-stat-label">CSRs Analyzed</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">75%</span>
+                        <span class="hero-stat-label">Faster Submission</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">98%</span>
+                        <span class="hero-stat-label">First-time Acceptance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" id="modules">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Comprehensive Regulatory Platform</h2>
+                <p class="section-subtitle">Our integrated suite of AI-powered modules empowers your regulatory teams to achieve higher quality submissions in less time.</p>
+            </div>
+            
+            <div class="modules-grid">
+                <div class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="module-title">CSR Intelligence™</h3>
+                    <p class="module-description">Leverage our database of 3,217+ parsed clinical study reports to gain unprecedented insights from historical data.</p>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Searchable by indication, phase, and endpoints</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>AI-powered pattern detection across studies</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Historical protocol benchmarking</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Statistical significance analyzer</span>
+                        </div>
+                    </div>
+                    <a href="/solutions/csr-intelligence" class="module-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h3 class="module-title">IND Wizard™</h3>
+                    <p class="module-description">Streamline IND application creation with guided questionnaires and intelligent document assembly.</p>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Smart form templates with auto-population</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Real-time FDA requirement validation</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Automatic document generation</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Error-free FDA submission packages</span>
+                        </div>
+                    </div>
+                    <a href="/solutions/ind-wizard" class="module-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3 class="module-title">Vault™ Workspace</h3>
+                    <p class="module-description">Secure, collaborative document management system designed specifically for regulatory teams.</p>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Version control with audit trails</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Role-based access controls</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Real-time collaborative editing</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Automated document workflows</span>
+                        </div>
+                    </div>
+                    <a href="/solutions/vault-workspace" class="module-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 class="module-title">ICH Wiz™</h3>
+                    <p class="module-description">Your digital compliance coach for navigating complex global regulatory guidelines.</p>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Real-time ICH guideline tracking</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Multi-region compliance monitoring</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Implementation gap analysis</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Automated compliance reports</span>
+                        </div>
+                    </div>
+                    <a href="/solutions/ich-wiz" class="module-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                    <h3 class="module-title">Clinical Metadata Repository</h3>
+                    <p class="module-description">Centralize and standardize clinical data definitions across your entire portfolio.</p>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>CDISC standards management</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Cross-study metadata harmonization</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Controlled terminology management</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Automated standards validation</span>
+                        </div>
+                    </div>
+                    <a href="/solutions/cmdr" class="module-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="module-card">
+                    <div class="module-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <h3 class="module-title">Study Architect™</h3>
+                    <p class="module-description">AI-driven protocol design with statistical simulation capabilities for optimal study design.</p>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Monte Carlo statistical simulations</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Optimized inclusion/exclusion criteria</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Endpoint sensitivity analysis</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check"></i>
+                            <span>Population modeling and forecasting</span>
+                        </div>
+                    </div>
+                    <a href="/solutions/study-architect" class="module-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section section-alt" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Transform Your Regulatory Workflow</h2>
+                <p class="section-subtitle">TrialSage™ delivers a comprehensive suite of capabilities designed to revolutionize how pharmaceutical companies approach regulatory submissions.</p>
+            </div>
+            
+            <div class="features-container">
+                <div class="features-content">
+                    <h3 class="features-title">AI-Powered Document Generation</h3>
+                    <p class="features-description">Create submission-ready documents in a fraction of the time with our advanced AI technology.</p>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Automated generation of protocols, INDs, CSRs, and other regulatory documents</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Smart templates with contextual guidance from historical submissions</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Consistency checking across all submission documents</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Automatic formatting to regulatory standards</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-image">
+                    <div class="features-placeholder">
+                        AI Document Generation
+                    </div>
+                </div>
+            </div>
+            
+            <div class="features-container">
+                <div class="features-content">
+                    <h3 class="features-title">Real-Time Compliance Validation</h3>
+                    <p class="features-description">Ensure your submissions meet the latest regulatory requirements across global authorities.</p>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Continuous monitoring of FDA, EMA, PMDA, and NMPA guidelines</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Automatic validation against current requirements</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Intelligent compliance recommendations</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Historical approval pattern analysis</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-image">
+                    <div class="features-placeholder">
+                        Compliance Validation
+                    </div>
+                </div>
+            </div>
+            
+            <div class="features-container">
+                <div class="features-content">
+                    <h3 class="features-title">Protocol Optimization</h3>
+                    <p class="features-description">Design better clinical protocols with data-driven insights from our CSR database.</p>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Statistical simulations for endpoint selection</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Optimized inclusion/exclusion criteria based on historical data</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Sample size and power calculations</div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check feature-icon"></i>
+                            <div class="feature-text">Protocol amendment reduction strategies</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features-image">
+                    <div class="features-placeholder">
+                        Protocol Optimization
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta">
+        <div class="container">
+            <h2 class="cta-title">Ready to Transform Your Regulatory Process?</h2>
+            <p class="cta-subtitle">Schedule a demo today and see how TrialSage™ can help your team submit faster with higher quality.</p>
+            
+            <div class="cta-buttons">
+                <a href="/demo" class="btn btn-white btn-lg">Request Demo</a>
+                <a href="/contact" class="btn btn-outline-white btn-lg">Contact Sales</a>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <div class="footer-logo">TrialSage™</div>
+                    <p class="footer-description">Advanced AI-powered regulatory intelligence platform for faster, more accurate regulatory submissions in life sciences.</p>
+                    
+                    <div class="footer-social">
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">Solutions</h4>
+                    <div class="footer-links">
+                        <a href="/solutions/csr-intelligence" class="footer-link">CSR Intelligence™</a>
+                        <a href="/solutions/ind-wizard" class="footer-link">IND Wizard™</a>
+                        <a href="/solutions/vault-workspace" class="footer-link">Vault™ Workspace</a>
+                        <a href="/solutions/cmdr" class="footer-link">Clinical Metadata Repository</a>
+                        <a href="/solutions/ich-wiz" class="footer-link">ICH Wiz™</a>
+                        <a href="/solutions/study-architect" class="footer-link">Study Architect™</a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">Use Cases</h4>
+                    <div class="footer-links">
+                        <a href="/use-cases/ectd-submissions" class="footer-link">eCTD Submissions</a>
+                        <a href="/use-cases/protocol-design" class="footer-link">Protocol Design</a>
+                        <a href="/use-cases/regulatory-intelligence" class="footer-link">Regulatory Intelligence</a>
+                        <a href="/use-cases/clinical-data-standards" class="footer-link">Clinical Data Standards</a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">Company</h4>
+                    <div class="footer-links">
+                        <a href="/about" class="footer-link">About Us</a>
+                        <a href="/careers" class="footer-link">Careers</a>
+                        <a href="/blog" class="footer-link">Blog</a>
+                        <a href="/contact" class="footer-link">Contact</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2025 Concept2Cures. All rights reserved.</p>
+                
+                <div class="footer-legal">
+                    <a href="/privacy" class="legal-link">Privacy Policy</a>
+                    <a href="/terms" class="legal-link">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Mobile menu functionality
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeMenu = document.getElementById('close-menu');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const overlay = document.getElementById('overlay');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        function closeMenuHandler() {
+            mobileMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        closeMenu.addEventListener('click', closeMenuHandler);
+        overlay.addEventListener('click', closeMenuHandler);
+        
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', closeMenuHandler);
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    const headerHeight = document.querySelector('header').offsetHeight;
+                    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

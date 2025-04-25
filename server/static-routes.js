@@ -7,6 +7,17 @@ import fs from 'fs';
 // Create a router to handle static page routes
 export function setupStaticRoutes(app) {
   console.log('[StaticRoutes] Setting up static routes for key pages');
+  
+  // Serve the main landing page
+  app.get('/', (req, res) => {
+    console.log('[StaticRoutes] Serving clean landing page');
+    const cleanLandingPath = path.join(process.cwd(), 'clean_landing_page.html');
+    if (fs.existsSync(cleanLandingPath)) {
+      res.sendFile(cleanLandingPath);
+    } else {
+      res.status(404).send('Landing page not found');
+    }
+  });
 
   // Define routes that should get static fallback pages
   const staticRoutes = [
@@ -255,6 +266,22 @@ export function setupStaticRoutes(app) {
     } else {
       // Fallback to generated page if file doesn't exist
       const route = staticRoutes.find(r => r.path === '/solutions/csr-intelligence');
+      const html = generateStaticPage(route);
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+    }
+  });
+  
+  // Custom route for IND Wizard
+  app.get('/solutions/ind-wizard', (req, res) => {
+    console.log('[StaticRoutes] Serving custom IND Wizard page');
+    // Serve our custom IND Wizard page
+    const customHtmlPath = path.join(process.cwd(), 'solutions_ind_wizard.html');
+    if (fs.existsSync(customHtmlPath)) {
+      res.sendFile(customHtmlPath);
+    } else {
+      // Fallback to generated page if file doesn't exist
+      const route = staticRoutes.find(r => r.path === '/solutions/ind-wizard');
       const html = generateStaticPage(route);
       res.set('Content-Type', 'text/html');
       res.send(html);
