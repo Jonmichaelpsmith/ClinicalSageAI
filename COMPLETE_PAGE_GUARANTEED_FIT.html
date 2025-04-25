@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:sans-serif;}
+
+body {
+  font-size: 5px;
+  background: #f8f8f8;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  padding: 5px;
+}
+
+h1, h2, h3 {
+  color: #0B6E4F;
+  margin-bottom: 2px;
+  font-size: 7px;
+}
+
+p {
+  font-size: 5px;
+  color: #555;
+  margin-bottom: 3px;
+}
+
+/* Top section */
+.header {
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+/* Document Manager */
+.doc-card {
+  background: white;
+  border-radius: 3px;
+  padding: 5px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  margin-bottom: 5px;
+}
+
+.features {
+  margin: 3px 0;
+}
+
+.feature {
+  font-size: 4px;
+  margin-bottom: 1px;
+  padding-left: 4px;
+  position: relative;
+  color: #555;
+}
+
+.feature:before {
+  content: "◦";
+  position: absolute;
+  left: 0;
+  color: #0B6E4F;
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+  margin-top: 3px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 6px;
+  font-weight: bold;
+  color: #0B6E4F;
+}
+
+.stat-label {
+  font-size: 4px;
+  color: #777;
+}
+
+/* Features section */
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.feature-box {
+  background: white;
+  border-radius: 3px;
+  padding: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.feature-title {
+  color: #0B6E4F;
+  font-size: 5px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.feature-desc {
+  font-size: 4px;
+  color: #666;
+}
+
+/* Navigator section */
+.navigator-section {
+  margin-top: 8px;
+}
+
+.navigator-title {
+  color: #0B6E4F;
+  margin-bottom: 2px;
+}
+
+.navigator-desc {
+  font-size: 4px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.nav-boxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.nav-box {
+  background: white;
+  border-radius: 3px;
+  padding: 3px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.nav-box-title {
+  color: #0B6E4F;
+  font-size: 5px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.nav-feature {
+  font-size: 4px;
+  margin-bottom: 1px;
+  padding-left: 4px;
+  position: relative;
+  color: #555;
+}
+
+.nav-feature:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #0B6E4F;
+  font-size: 3px;
+}
+
+.nav-preview {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  margin: 5px 0;
+  overflow: hidden;
+}
+
+.preview-header {
+  background: #f5f5f5;
+  padding: 2px 3px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 4px;
+}
+
+.preview-body {
+  display: flex;
+  font-size: 3px;
+}
+
+.preview-sidebar {
+  width: 25%;
+  border-right: 1px solid #eee;
+  padding: 2px;
+}
+
+.preview-main {
+  width: 75%;
+  padding: 2px;
+  display: flex;
+}
+
+.preview-docs {
+  width: 45%;
+  border-right: 1px solid #eee;
+  padding: 2px;
+}
+
+.preview-content {
+  width: 55%;
+  padding: 2px;
+}
+
+.folder, .doc {
+  padding: 1px 0;
+}
+
+.folder.active, .doc.active {
+  color: #0B6E4F;
+}
+
+.preview-title {
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.preview-section {
+  margin-bottom: 3px;
+}
+
+.preview-heading {
+  font-weight: bold;
+  margin-bottom: 1px;
+}
+
+.ai-box {
+  background: #f0f7f4;
+  border-left: 2px solid #0B6E4F;
+  padding: 2px;
+  margin-top: 2px;
+  font-size: 3px;
+}
+
+/* AI actions */
+.ai-actions {
+  background: white;
+  border-radius: 3px;
+  padding: 3px;
+  margin-top: 5px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.ai-title {
+  color: #0B6E4F;
+  font-size: 5px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.action {
+  font-size: 4px;
+  margin-bottom: 1px;
+  padding-left: 5px;
+  position: relative;
+  color: #555;
+}
+
+.action:before {
+  content: "○";
+  position: absolute;
+  left: 0;
+  color: #E52DA0;
+}
+
+.btn {
+  display: inline-block;
+  background: #E52DA0;
+  color: white;
+  border-radius: 3px;
+  padding: 2px 5px;
+  font-size: 4px;
+  margin-top: 3px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Unified Content Management & Intelligent Search</h1>
+    <p>Streamlined document organization, storage and intelligent retrieval with AI</p>
+  </div>
+  
+  <!-- Document Management -->
+  <div class="doc-card">
+    <h3>Document Management</h3>
+    
+    <div class="features">
+      <div class="feature">Clinical Documentation</div>
+      <div class="feature">Regulatory Submissions</div>
+      <div class="feature">FDA Form 1571 tool</div>
+      <div class="feature">Protocol v2.3.docx</div>
+      <div class="feature">Manufacturing Records</div>
+    </div>
+    
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">3,217+</div>
+        <div class="stat-label">Documents</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">17+</div>
+        <div class="stat-label">Submission Types</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">21</div>
+        <div class="stat-label">CFR Part</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Features -->
+  <div class="features-grid">
+    <div class="feature-box">
+      <div class="feature-title">Content Search & Discovery</div>
+      <div class="feature-desc">AI-powered semantic search with automatic tagging</div>
+    </div>
+    <div class="feature-box">
+      <div class="feature-title">Regulatory Intelligence</div>
+      <div class="feature-desc">Real-time validation against FDA, EMA guidelines</div>
+    </div>
+    <div class="feature-box">
+      <div class="feature-title">Auto-Classification</div>
+      <div class="feature-desc">Automatically sorts and tags incoming content</div>
+    </div>
+  </div>
+  
+  <!-- File Navigator -->
+  <div class="navigator-section">
+    <h3 class="navigator-title">TrialSage File Navigator™</h3>
+    <p class="navigator-desc">Advanced document management with intelligent organization and AI analysis</p>
+    
+    <div class="nav-boxes">
+      <div class="nav-box">
+        <div class="nav-box-title">Hierarchical Tree Explorer</div>
+        <div class="nav-feature">Collapsible folder tree</div>
+        <div class="nav-feature">Tagged documents</div>
+        <div class="nav-feature">Drag-and-drop functionality</div>
+        <div class="nav-feature">Right-click contextual actions</div>
+      </div>
+      <div class="nav-box">
+        <div class="nav-box-title">Document Intelligence</div>
+        <div class="nav-feature">Hover preview with annotations</div>
+        <div class="nav-feature">Version timeline visualization</div>
+        <div class="nav-feature">Previous draft access</div>
+        <div class="nav-feature">AI-powered document analysis</div>
+      </div>
+      <div class="nav-box">
+        <div class="nav-box-title">Module Linking & Filtering</div>
+        <div class="nav-feature">Filter by module, author, tag, date</div>
+        <div class="nav-feature">Smart document tagging</div>
+        <div class="nav-feature">Module-specific file scoping</div>
+        <div class="nav-feature">Cross-module file linking</div>
+      </div>
+      <div class="nav-box">
+        <div class="nav-box-title">DocuShare Integration</div>
+        <div class="nav-feature">Automatic DocuShare syncing</div>
+        <div class="nav-feature">PDF ingestion from Xerox</div>
+        <div class="nav-feature">DocuShare ID tracking</div>
+        <div class="nav-feature">Audit-ready file management</div>
+      </div>
+    </div>
+    
+    <!-- Preview -->
+    <div class="nav-preview">
+      <div class="preview-header">
+        <div>TrialSage File Navigator™</div>
+        <div>□ □ □</div>
+      </div>
+      
+      <div class="preview-body">
+        <div class="preview-sidebar">
+          <div style="color:#777;margin-bottom:1px;">FOLDERS</div>
+          <div class="folder">CMC Documents</div>
+          <div class="folder">Drug Substance</div>
+          <div class="folder">Drug Product</div>
+          <div class="folder">Specifications</div>
+          <div class="folder active">Validation</div>
+          <div class="folder">Regulatory</div>
+          <div class="folder">Quality</div>
+        </div>
+        
+        <div class="preview-main">
+          <div class="preview-docs">
+            <div style="color:#777;margin-bottom:1px;">VALIDATION DOCUMENTS</div>
+            <div class="doc">Method Validation Report.docx</div>
+            <div class="doc">Stability Protocol v2.docx</div>
+            <div class="doc">Equipment Qualification.pdf</div>
+            <div class="doc active">Process Validation Protocol.docx</div>
+          </div>
+          
+          <div class="preview-content">
+            <div class="preview-title">Process Validation Protocol v2.1</div>
+            
+            <div class="preview-section">
+              <div class="preview-heading">1. Purpose</div>
+              <div>This protocol defines the approach and acceptance criteria for validating the manufacturing process for TS-273 Tablets...</div>
+            </div>
+            
+            <div class="preview-section">
+              <div class="preview-heading">2. Scope</div>
+              <div>This protocol applies to the validation of the manufacturing process for TS-273 Tablets at the designated site...</div>
+            </div>
+            
+            <div class="ai-box">
+              <b>AI-Generated Insights:</b> This protocol aligns with FDA Process Validation guidance. Similar protocols have passed regulatory review.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AI Actions -->
+    <div class="ai-actions">
+      <div class="ai-title">AI-Powered Document Actions</div>
+      
+      <div class="action">"Summarize this document"</div>
+      <div class="action">"Compare this to v3"</div>
+      <div class="action">"Explain this section"</div>
+      <div class="action">"Suggest edit for FDA phrasing"</div>
+      
+      <div class="btn">Explore File Navigator</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
