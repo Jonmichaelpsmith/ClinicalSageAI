@@ -1,0 +1,2563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ by C2C.AI - The Future of Regulatory Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #4CAF50;
+            --primary-light-alpha: rgba(76, 175, 80, 0.15);
+            --primary-dark: #1B5E20;
+            --secondary: #FF8F00;
+            --secondary-light: #FFB74D;
+            --secondary-dark: #EF6C00;
+            --tertiary: #3b82f6;
+            --tertiary-light: #60a5fa;
+            --tertiary-dark: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --neutral-50: #fafafa;
+            --neutral-100: #f4f4f5;
+            --neutral-200: #e4e4e7;
+            --neutral-300: #d4d4d8;
+            --neutral-400: #a1a1aa;
+            --neutral-500: #71717a;
+            --neutral-600: #52525b;
+            --neutral-700: #3f3f46;
+            --neutral-800: #27272a;
+            --neutral-900: #18181b;
+            --border-radius-sm: 4px;
+            --border-radius: 8px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 24px;
+            --border-radius-2xl: 32px;
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--neutral-800);
+            background: linear-gradient(120deg, rgba(242, 252, 242, 0.4) 0%, rgba(255, 255, 255, 1) 100%);
+            overflow-x: hidden;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            color: var(--primary-dark);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .container-wide {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .section {
+            padding: 6rem 0;
+        }
+
+        .text-gradient {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-gradient-secondary {
+            background: linear-gradient(90deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bg-light-gradient {
+            background: linear-gradient(120deg, rgba(242, 252, 242, 0.7) 0%, rgba(255, 255, 255, 1) 100%);
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: var(--shadow-sm);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        header.scrolled {
+            box-shadow: var(--shadow);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-img {
+            height: 42px;
+            margin-right: 0.75rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            font-size: 1rem;
+            color: var(--neutral-700);
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            background: var(--primary);
+            bottom: -4px;
+            left: 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+
+        .btn-outline {
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-light-alpha);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(46, 125, 50, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.35);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(255, 143, 0, 0.25);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 143, 0, 0.35);
+        }
+
+        .btn-large {
+            padding: 0.875rem 2rem;
+            font-size: 1.125rem;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--neutral-700);
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 10rem 0 6rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            right: 0;
+            background-image: url('https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.03;
+            z-index: 0;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, rgba(76, 175, 80, 0.15) 0%, rgba(27, 94, 32, 0.05) 100%);
+            top: -400px;
+            right: -200px;
+            z-index: 0;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--primary-light-alpha);
+            border-radius: var(--border-radius-xl);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .hero-badge i {
+            margin-right: 0.5rem;
+        }
+
+        .hero h1 {
+            font-size: 3.75rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            color: var(--neutral-900);
+            letter-spacing: -1px;
+        }
+
+        .hero h1 span {
+            color: var(--primary);
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--neutral-600);
+            margin-bottom: 2.5rem;
+            max-width: 540px;
+            line-height: 1.7;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .hero-image {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-image img {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-xl);
+            transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+        }
+
+        .hero-image::before {
+            content: '';
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border-radius: var(--border-radius-lg);
+            background: linear-gradient(120deg, var(--primary-light) 0%, var(--primary) 100%);
+            top: 10%;
+            left: 10%;
+            z-index: -1;
+            filter: blur(30px);
+            opacity: 0.3;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--neutral-600);
+            font-weight: 500;
+        }
+
+        .hero-clients {
+            margin-top: 3rem;
+        }
+
+        .hero-clients h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--neutral-500);
+            margin-bottom: 1.5rem;
+        }
+
+        .clients-logos {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .client-logo {
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            filter: grayscale(100%);
+        }
+
+        .client-logo:hover {
+            opacity: 1;
+            filter: grayscale(0%);
+        }
+
+        .client-logo img {
+            max-height: 35px;
+            width: auto;
+        }
+
+        /* Solutions Section */
+        .solutions {
+            padding: 8rem 0;
+            background-color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .solutions::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, rgba(76, 175, 80, 0.05) 0%, rgba(27, 94, 32, 0.02) 100%);
+            bottom: -300px;
+            left: -200px;
+            z-index: 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--primary-light-alpha);
+            border-radius: var(--border-radius-xl);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-badge i {
+            margin-right: 0.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--neutral-900);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+
+        .section-header p {
+            font-size: 1.25rem;
+            color: var(--neutral-600);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .solution-card {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--neutral-200);
+        }
+
+        .solution-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .solution-card::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--primary) 100%);
+            top: 0;
+            left: 0;
+            transition: all 0.3s ease;
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+
+        .solution-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .solution-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            border-radius: var(--border-radius-lg);
+            background: linear-gradient(135deg, var(--primary-light-alpha) 0%, rgba(46, 125, 50, 0.1) 100%);
+            color: var(--primary);
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .solution-card:hover .solution-icon {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .solution-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--neutral-800);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .solution-card p {
+            color: var(--neutral-600);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .solution-link {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .solution-link i {
+            transition: all 0.3s ease;
+        }
+
+        .solution-link:hover i {
+            transform: translateX(4px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 8rem 0;
+            background: linear-gradient(120deg, rgba(242, 252, 242, 0.7) 0%, rgba(255, 255, 255, 1) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .features::after {
+            content: '';
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, rgba(255, 143, 0, 0.08) 0%, rgba(239, 108, 0, 0.04) 100%);
+            top: 10%;
+            right: -350px;
+            z-index: 0;
+        }
+
+        .features-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-row {
+            display: flex;
+            align-items: center;
+            gap: 6rem;
+        }
+
+        .feature-row:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .feature-image {
+            flex: 1;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+        }
+
+        .feature-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: all 0.5s ease;
+        }
+
+        .feature-image:hover img {
+            transform: scale(1.03);
+        }
+
+        .feature-image::before {
+            content: '';
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border-radius: var(--border-radius-lg);
+            background: linear-gradient(120deg, var(--primary-light) 0%, var(--primary) 100%);
+            top: 10%;
+            left: 10%;
+            z-index: -1;
+            filter: blur(30px);
+            opacity: 0.2;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--primary-light-alpha);
+            border-radius: var(--border-radius-xl);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-badge i {
+            margin-right: 0.5rem;
+        }
+
+        .feature-content h3 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 1.5rem;
+            color: var(--neutral-900);
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+
+        .feature-content p {
+            font-size: 1.125rem;
+            color: var(--neutral-600);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.5rem;
+            width: 32px;
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-text h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+            margin-bottom: 0.5rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .feature-text p {
+            font-size: 1rem;
+            color: var(--neutral-600);
+            margin-bottom: 0;
+            line-height: 1.7;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 8rem 0;
+            background-color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonials::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, rgba(76, 175, 80, 0.05) 0%, rgba(27, 94, 32, 0.02) 100%);
+            top: -300px;
+            right: -200px;
+            z-index: 0;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid var(--neutral-200);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .testimonial-rating {
+            display: flex;
+            gap: 0.25rem;
+            color: var(--secondary);
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .testimonial-content {
+            font-size: 1.125rem;
+            color: var(--neutral-700);
+            margin-bottom: 2rem;
+            flex: 1;
+            line-height: 1.7;
+            position: relative;
+        }
+
+        .testimonial-content::before {
+            content: '"';
+            font-size: 5rem;
+            line-height: 1;
+            font-family: 'Georgia', serif;
+            color: var(--primary-light-alpha);
+            position: absolute;
+            top: -1rem;
+            left: -0.5rem;
+            z-index: -1;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .author-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .author-info h4 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 0.25rem;
+        }
+
+        .author-info p {
+            font-size: 0.875rem;
+            color: var(--neutral-500);
+            font-weight: 500;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 8rem 0;
+            background: linear-gradient(120deg, rgba(242, 252, 242, 0.7) 0%, rgba(255, 255, 255, 1) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing::after {
+            content: '';
+            position: absolute;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, rgba(76, 175, 80, 0.08) 0%, rgba(27, 94, 32, 0.04) 100%);
+            bottom: -350px;
+            left: -200px;
+            z-index: 0;
+        }
+
+        .pricing-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 3rem 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .toggle-label {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--neutral-600);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-label.active {
+            color: var(--primary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 32px;
+            margin: 0 1rem;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--primary-light-alpha);
+            border-radius: 34px;
+            transition: .4s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(28px);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            padding: 3rem;
+            border: 1px solid var(--neutral-200);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card.popular {
+            transform: scale(1.05);
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-lg);
+            z-index: 1;
+        }
+
+        .pricing-card.popular::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: 1.5rem;
+            right: -4.5rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transform: rotate(45deg);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .pricing-card.popular:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        .pricing-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+            margin-bottom: 1rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .pricing-price {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1;
+            margin-bottom: 0.75rem;
+        }
+
+        .pricing-price span {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--neutral-500);
+        }
+
+        .pricing-description {
+            font-size: 1rem;
+            color: var(--neutral-600);
+        }
+
+        .pricing-features {
+            margin-bottom: 2.5rem;
+        }
+
+        .pricing-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .pricing-feature i {
+            color: var(--primary);
+            font-size: 1.25rem;
+            margin-top: 0.125rem;
+        }
+
+        .pricing-feature span {
+            font-size: 1rem;
+            color: var(--neutral-700);
+            line-height: 1.5;
+        }
+
+        .pricing-cta {
+            text-align: center;
+        }
+
+        /* FAQ Section */
+        .faq {
+            padding: 8rem 0;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .faq::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: linear-gradient(120deg, rgba(255, 143, 0, 0.05) 0%, rgba(239, 108, 0, 0.02) 100%);
+            bottom: -300px;
+            right: -200px;
+            z-index: 0;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            position: relative;
+            z-index: 2;
+            margin-top: 4rem;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--neutral-200);
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .faq-question {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+            margin-bottom: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .faq-question i {
+            color: var(--primary);
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question.active i {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            font-size: 1rem;
+            color: var(--neutral-600);
+            line-height: 1.7;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-answer.active {
+            max-height: 500px;
+            margin-top: 1rem;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 8rem 0;
+            background: linear-gradient(120deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.05;
+            z-index: 0;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .cta p {
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.7;
+            opacity: 0.9;
+        }
+
+        .cta-card {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-xl);
+            padding: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cta-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--neutral-900);
+            margin-bottom: 1.5rem;
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+        }
+
+        .cta-form {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cta-form input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 1px solid var(--neutral-300);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .cta-form input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light-alpha);
+        }
+
+        .cta-btns {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 3rem;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--primary);
+            border: 1px solid white;
+            box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-white:hover {
+            background: var(--neutral-100);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-outline-white {
+            border: 2px solid white;
+            color: white;
+            background: transparent;
+        }
+
+        .btn-outline-white:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--neutral-900);
+            color: white;
+            padding: 6rem 0 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            background: rgba(46, 125, 50, 0.03);
+            top: -400px;
+            left: -200px;
+            z-index: 0;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 4rem;
+            margin-bottom: 5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-logo img {
+            height: 40px;
+            margin-right: 0.75rem;
+        }
+
+        .footer-logo span {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .footer-desc {
+            font-size: 1rem;
+            color: var(--neutral-400);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+            max-width: 400px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-column h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .footer-links a {
+            color: var(--neutral-400);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-links a i {
+            font-size: 0.75rem;
+            opacity: 0;
+            transform: translateX(-5px);
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            transform: translateX(3px);
+        }
+
+        .footer-links a:hover i {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .copyright {
+            font-size: 0.875rem;
+            color: var(--neutral-500);
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-legal a {
+            font-size: 0.875rem;
+            color: var(--neutral-500);
+            transition: all 0.3s ease;
+        }
+
+        .footer-legal a:hover {
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-xl);
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--neutral-800);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--neutral-500);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        .demo-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--neutral-700);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.875rem 1.25rem;
+            border: 1px solid var(--neutral-300);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light-alpha);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .animate-fadeInLeft {
+            animation: fadeInLeft 0.6s ease forwards;
+        }
+
+        .animate-fadeInRight {
+            animation: fadeInRight 0.6s ease forwards;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1280px) {
+            .hero h1 {
+                font-size: 3.25rem;
+            }
+
+            .section-header h2 {
+                font-size: 2.5rem;
+            }
+
+            .solutions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .pricing-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1.5rem;
+            }
+
+            .pricing-card.popular {
+                transform: scale(1.03);
+            }
+
+            .pricing-card.popular:hover {
+                transform: scale(1.03) translateY(-10px);
+            }
+
+            .pricing-card {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .hero-image {
+                order: -1;
+            }
+
+            .feature-row {
+                flex-direction: column;
+                gap: 3rem;
+            }
+
+            .feature-row:nth-child(even) {
+                flex-direction: column;
+            }
+
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 3rem;
+            }
+
+            .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+
+            .pricing-card.popular {
+                grid-column: span 2;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links, .auth-buttons {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero {
+                padding: 8rem 0 4rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.125rem;
+            }
+
+            .hero-btns {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .section {
+                padding: 5rem 0;
+            }
+
+            .section-header h2 {
+                font-size: 2.25rem;
+            }
+
+            .solutions {
+                padding: 5rem 0;
+            }
+
+            .solutions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features {
+                padding: 5rem 0;
+            }
+
+            .features-container {
+                gap: 5rem;
+            }
+
+            .testimonials {
+                padding: 5rem 0;
+            }
+
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing {
+                padding: 5rem 0;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card.popular {
+                grid-column: span 1;
+                transform: scale(1);
+            }
+
+            .pricing-card.popular:hover {
+                transform: translateY(-10px);
+            }
+
+            .faq {
+                padding: 5rem 0;
+            }
+
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta {
+                padding: 5rem 0;
+            }
+
+            .cta h2 {
+                font-size: 2.25rem;
+            }
+
+            .cta-form {
+                flex-direction: column;
+            }
+
+            .cta-btns {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+            .footer-legal {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.75rem;
+            }
+
+            .clients-logos {
+                flex-direction: column;
+                gap: 2rem;
+                align-items: center;
+            }
+
+            .pricing-price {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="https://img.freepik.com/premium-vector/green-health-logo_7888-106.jpg" alt="TrialSage Logo" class="logo-img">
+                    <span class="logo-text text-gradient">TrialSage™</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#solutions">Solutions</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <button class="btn btn-outline">Log In</button>
+                    <button class="btn btn-primary">Sign Up</button>
+                </div>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-content" data-aos="fade-right">
+                    <div class="hero-badge">
+                        <i class="fas fa-star"></i> #1 Regulatory Intelligence Platform
+                    </div>
+                    <h1>Transform Your <span>Regulatory</span> Submissions Process</h1>
+                    <p>TrialSage™ is an AI-powered SaaS platform revolutionizing clinical and pharmaceutical document workflows, with specialized focus on ECTD submission management, intelligent protocol design, and CSR analytics.</p>
+                    <div class="hero-btns">
+                        <button class="btn btn-primary btn-large">Request Demo</button>
+                        <button class="btn btn-outline btn-large">Explore Features</button>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">3,217+</div>
+                            <div class="stat-label">Parsed Study Reports</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">98%</div>
+                            <div class="stat-label">Submission Acceptance</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">40%</div>
+                            <div class="stat-label">Time Savings</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-image" data-aos="fade-left">
+                    <img src="https://img.freepik.com/free-photo/scientist-researcher-wearing-glasses-lab-coat-looking-test-tube-with-reagent-biochemistry-concept-with-dna-molecule-structure_482257-9438.jpg" alt="TrialSage Dashboard">
+                </div>
+            </div>
+            <div class="hero-clients" data-aos="fade-up">
+                <h4>Trusted by leading pharmaceutical companies</h4>
+                <div class="clients-logos">
+                    <div class="client-logo">
+                        <img src="https://www.freepnglogos.com/uploads/pfizer-logo-png/pfizer-logo-pills-pills-6.png" alt="Pfizer">
+                    </div>
+                    <div class="client-logo">
+                        <img src="https://logowik.com/content/uploads/images/merck-and-co4635.jpg" alt="Merck">
+                    </div>
+                    <div class="client-logo">
+                        <img src="https://cdn.freebiesupply.com/logos/large/2x/roche-logo-png-transparent.png" alt="Roche">
+                    </div>
+                    <div class="client-logo">
+                        <img src="https://www.freepnglogos.com/uploads/novartis-logo-png/novartis-company-logos-5.png" alt="Novartis">
+                    </div>
+                    <div class="client-logo">
+                        <img src="https://www.freepnglogos.com/uploads/johnson-and-johnson-logo-png/johnson-and-johnson-logo-johnson-johnson-logos-download-0.png" alt="Johnson & Johnson">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section class="solutions section" id="solutions">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-badge">
+                    <i class="fas fa-lightbulb"></i> Intelligent Solutions
+                </div>
+                <h2>Comprehensive Regulatory Suite</h2>
+                <p>Our platform provides a complete set of tools to accelerate and optimize your regulatory submission process from start to finish.</p>
+            </div>
+            <div class="solutions-grid">
+                <div class="solution-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="solution-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h3>ICH Wiz™</h3>
+                    <p>Our Digital Compliance Coach provides real-time guidance on ICH guidelines implementation, ensuring your submissions meet global standards across FDA, EMA, PMDA, and NMPA.</p>
+                    <a href="#" class="solution-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="solution-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="solution-icon">
+                        <i class="fas fa-vial"></i>
+                    </div>
+                    <h3>IND Wizard™</h3>
+                    <p>Streamline your Investigational New Drug application process with guided questionnaires and intelligent templates that adapt to your specific therapeutic area and study design.</p>
+                    <a href="#" class="solution-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="solution-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="solution-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>CSR Intelligence™</h3>
+                    <p>Access our database of 3,217+ parsed clinical study reports to extract valuable insights, benchmarks, and regulatory precedents to inform your submission strategy.</p>
+                    <a href="#" class="solution-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="solution-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="solution-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Vault™ Workspace</h3>
+                    <p>Secure, collaborative document management with version control, audit trails, and automated document routing to streamline your regulatory workflows.</p>
+                    <a href="#" class="solution-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="solution-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="solution-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>Clinical Metadata Repository</h3>
+                    <p>Centralized management of clinical trial metadata to ensure consistency across submissions, with automated validation against CDISC standards.</p>
+                    <a href="#" class="solution-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="solution-card" data-aos="fade-up" data-aos-delay="600">
+                    <div class="solution-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Study Architect™</h3>
+                    <p>AI-driven protocol design with statistical simulation capabilities to optimize your clinical trial design based on historical data and regulatory precedents.</p>
+                    <a href="#" class="solution-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features section" id="features">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-badge">
+                    <i class="fas fa-rocket"></i> Powerful Features
+                </div>
+                <h2>Accelerate Your Regulatory Submissions</h2>
+                <p>Our platform offers a comprehensive suite of features designed to optimize your regulatory submission process and ensure compliance.</p>
+            </div>
+            <div class="features-container">
+                <div class="feature-row">
+                    <div class="feature-content" data-aos="fade-right">
+                        <div class="feature-badge">
+                            <i class="fas fa-bolt"></i> Intelligent Automation
+                        </div>
+                        <h3>AI-Powered Document Generation</h3>
+                        <p>Generate high-quality regulatory documents in minutes instead of days with our advanced natural language processing and domain-specific AI models.</p>
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Smart Templates</h4>
+                                    <p>Pre-built, regulatory-compliant templates that adapt to your specific needs and therapeutic areas.</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Natural Language Generation</h4>
+                                    <p>Convert structured data into coherent, regulatory-compliant narratives with our advanced NLG technology.</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Multi-Format Export</h4>
+                                    <p>Export documents in multiple formats including Word, PDF, and XML for seamless integration with submission systems.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-image" data-aos="fade-left">
+                        <img src="https://img.freepik.com/free-photo/molecules-background-with-man-with-tablet_23-2149393924.jpg?w=1060&t=st=1714060161~exp=1714060761~hmac=74dcc8fda4c83c73cfc6cd3bebb9583de62ef4b1be2bd53af5fe21fcaadc52d8" alt="AI-Powered Document Generation">
+                    </div>
+                </div>
+                <div class="feature-row">
+                    <div class="feature-content" data-aos="fade-left">
+                        <div class="feature-badge">
+                            <i class="fas fa-shield-alt"></i> Compliance Assurance
+                        </div>
+                        <h3>Regulatory Intelligence Engine</h3>
+                        <p>Stay compliant with global regulatory requirements with our advanced intelligence engine that monitors and adapts to changing guidelines.</p>
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Real-Time Updates</h4>
+                                    <p>Automatic updates on regulatory changes across FDA, EMA, PMDA, and NMPA with impact assessments.</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Compliance Validation</h4>
+                                    <p>Automated validation checks ensure your submissions meet the latest regulatory requirements.</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Historical Precedents</h4>
+                                    <p>Access to a database of successful submissions and regulatory precedents to inform your strategy.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-image" data-aos="fade-right">
+                        <img src="https://img.freepik.com/free-photo/scientist-doing-clinical-process-disease-looking-tablet-while-colleagues-are-solving-medical-tasks_482257-17486.jpg?w=1060&t=st=1714060215~exp=1714060815~hmac=e9a7f4b6c1cc97e499eafef3c25d2f1301ab0f2fca8a5f8f55ec6a1cad5fabc1" alt="Regulatory Intelligence Engine">
+                    </div>
+                </div>
+                <div class="feature-row">
+                    <div class="feature-content" data-aos="fade-right">
+                        <div class="feature-badge">
+                            <i class="fas fa-analytics"></i> Data-Driven Insights
+                        </div>
+                        <h3>Advanced Analytics Platform</h3>
+                        <p>Gain valuable insights from your regulatory data with our comprehensive analytics dashboard and reporting tools.</p>
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Submission Metrics</h4>
+                                    <p>Track submission timelines, approval rates, and review cycles across all your regulatory activities.</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Predictive Analytics</h4>
+                                    <p>AI-powered forecasting of submission outcomes based on historical data and similar products.</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h4>Customizable Dashboards</h4>
+                                    <p>Create personalized dashboards to monitor the KPIs that matter most to your organization.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-image" data-aos="fade-left">
+                        <img src="https://img.freepik.com/free-photo/scientific-medical-with-molecules-blurred-medical-background_34200-302.jpg?w=1060&t=st=1714060243~exp=1714060843~hmac=c3e0ed93bb4fae0bcb5e44a9bd11e51ab08fb7cf06dcc071e82ed001fe8f0e6c" alt="Advanced Analytics Platform">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials section" id="testimonials">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-badge">
+                    <i class="fas fa-quote-right"></i> Client Success Stories
+                </div>
+                <h2>What Our Clients Say</h2>
+                <p>Hear from pharmaceutical companies who have transformed their regulatory submission process with TrialSage™.</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "TrialSage™ reduced our IND preparation time by 45% while improving the quality of our submissions. The ICH Wiz™ feature ensures we're always compliant with the latest guidelines, saving us countless hours of manual research."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Sarah Johnson">
+                        </div>
+                        <div class="author-info">
+                            <h4>Sarah Johnson</h4>
+                            <p>Regulatory Affairs Director, Novartis</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "The CSR Intelligence™ module has been a game-changer for our clinical development team. Having access to thousands of parsed study reports has allowed us to optimize our protocol designs and anticipate regulatory questions before they arise."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="Michael Chen">
+                        </div>
+                        <div class="author-info">
+                            <h4>Michael Chen</h4>
+                            <p>Chief Medical Officer, BioGenix</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="testimonial-content">
+                        "Study Architect™ helped us design a more efficient Phase 3 trial based on historical data. The statistical simulation capabilities allowed us to optimize sample size and endpoint selection, ultimately saving millions in development costs."
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">
+                            <img src="https://randomuser.me/api/portraits/women/64.jpg" alt="Elizabeth Rodriguez">
+                        </div>
+                        <div class="author-info">
+                            <h4>Elizabeth Rodriguez</h4>
+                            <p>VP Clinical Development, Merck</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing section" id="pricing">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-badge">
+                    <i class="fas fa-tag"></i> Flexible Plans
+                </div>
+                <h2>Pricing That Scales With Your Needs</h2>
+                <p>Choose the plan that fits your organization's regulatory submission requirements and budget.</p>
+            </div>
+            <div class="pricing-toggle" data-aos="fade-up">
+                <span class="toggle-label active">Monthly</span>
+                <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Annual <small>(Save 20%)</small></span>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="pricing-header">
+                        <div class="pricing-name">Starter</div>
+                        <div class="pricing-price">$1,499<span>/month</span></div>
+                        <div class="pricing-description">Perfect for small biotech companies and startups</div>
+                    </div>
+                    <div class="pricing-features">
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>IND Wizard™ Basic</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>ICH Wiz™ with Monthly Updates</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Limited CSR Intelligence™ Access (500 reports)</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Basic Document Management</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>5 User Licenses</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Email Support</span>
+                        </div>
+                    </div>
+                    <div class="pricing-cta">
+                        <button class="btn btn-outline">Get Started</button>
+                    </div>
+                </div>
+                <div class="pricing-card popular" data-aos="fade-up" data-aos-delay="200">
+                    <div class="pricing-header">
+                        <div class="pricing-name">Professional</div>
+                        <div class="pricing-price">$3,999<span>/month</span></div>
+                        <div class="pricing-description">Ideal for mid-sized pharmaceutical companies</div>
+                    </div>
+                    <div class="pricing-features">
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Full IND Wizard™ Suite</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>ICH Wiz™ with Real-Time Updates</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Full CSR Intelligence™ Access</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Vault™ Workspace (100GB)</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Study Architect™ Basic</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>20 User Licenses</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Priority Support with 24-hour Response</span>
+                        </div>
+                    </div>
+                    <div class="pricing-cta">
+                        <button class="btn btn-primary">Get Started</button>
+                    </div>
+                </div>
+                <div class="pricing-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="pricing-header">
+                        <div class="pricing-name">Enterprise</div>
+                        <div class="pricing-price">Custom<span>/year</span></div>
+                        <div class="pricing-description">Tailored for large pharmaceutical corporations</div>
+                    </div>
+                    <div class="pricing-features">
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>All Professional Features</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Advanced Study Architect™ with Statistical Engine</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Clinical Metadata Repository</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Vault™ Workspace (Unlimited)</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>API Access for System Integration</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Unlimited User Licenses</span>
+                        </div>
+                        <div class="pricing-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Dedicated Account Manager & 24/7 Support</span>
+                        </div>
+                    </div>
+                    <div class="pricing-cta">
+                        <button class="btn btn-outline">Contact Sales</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq section" id="faq">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-badge">
+                    <i class="fas fa-question-circle"></i> Common Questions
+                </div>
+                <h2>Frequently Asked Questions</h2>
+                <p>Find answers to commonly asked questions about TrialSage™ and our regulatory intelligence platform.</p>
+            </div>
+            <div class="faq-grid">
+                <div class="faq-column" data-aos="fade-up" data-aos-delay="100">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How does TrialSage™ ensure regulatory compliance?</span>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            TrialSage™ maintains a comprehensive database of regulatory guidelines from major authorities (FDA, EMA, PMDA, NMPA) that is continuously updated. Our ICH Wiz™ module provides real-time compliance checks against these guidelines, ensuring your documents meet the latest requirements. Additionally, our system learns from successful submissions to provide insights on approval pathways.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Can TrialSage™ integrate with our existing systems?</span>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Yes, TrialSage™ offers robust API capabilities that allow for seamless integration with your existing document management systems, CTMS, EDC platforms, and other regulatory tools. Our Enterprise plan includes dedicated integration support to ensure a smooth transition and interoperability with your current workflows.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How does the CSR Intelligence™ module work?</span>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            CSR Intelligence™ utilizes advanced natural language processing to analyze over 3,200 clinical study reports from public databases and anonymized client submissions. The system extracts key elements such as study design, endpoints, inclusion/exclusion criteria, and regulatory outcomes to provide insights for your submissions. You can search for precedents in your therapeutic area or query specific regulatory questions.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>What security measures does TrialSage™ implement?</span>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            TrialSage™ employs enterprise-grade security including SOC 2 Type II compliance, HIPAA compliance, end-to-end encryption, multi-factor authentication, and regular security audits. All data is stored in secure, redundant data centers with 99.99% uptime. We also offer private cloud deployments for Enterprise customers with specific security requirements.
+                        </div>
+                    </div>
+                </div>
+                <div class="faq-column" data-aos="fade-up" data-aos-delay="200">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How long does it take to implement TrialSage™?</span>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Implementation timelines vary based on your organization's size and specific requirements. Typically, Starter and Professional plans can be fully operational within 2-4 weeks, while Enterprise implementations may take 4-8 weeks depending on the extent of customization and integration needed. Our dedicated implementation team works closely with you to ensure a smooth onboarding process.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Can TrialSage™ handle submissions for multiple regions?</span>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Yes, TrialSage™ is designed to support global regulatory submissions across major markets including FDA (US), EMA (Europe), PMDA (Japan), NMPA (China), Health Canada, and other regional authorities. Our platform automatically adapts document templates and formats to meet region-specific requirements while maintaining consistency in core content.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>What training and support do you provide?</span>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            All plans include comprehensive onboarding training for users. Professional and Enterprise plans include role-based training sessions, admin training, and customized workflow configuration. Our support options range from email support for Starter plans to 24/7 dedicated support for Enterprise customers. We also provide a comprehensive knowledge base, regular webinars, and an active user community.
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How does Study Architect™ optimize clinical trial design?</span>
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Study Architect™ leverages historical clinical trial data and regulatory precedents to suggest optimal protocol designs. The system uses statistical modeling to simulate different trial scenarios, helping you optimize sample size, endpoint selection, inclusion/exclusion criteria, and statistical analysis plans. This can significantly reduce protocol amendments and increase the likelihood of regulatory approval.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta section" id="contact">
+        <div class="container">
+            <div class="cta-content" data-aos="fade-up">
+                <h2>Ready to Transform Your Regulatory Process?</h2>
+                <p>Join leading pharmaceutical companies who have accelerated their submissions and improved approval rates with TrialSage™.</p>
+                <div class="cta-card" data-aos="fade-up" data-aos-delay="100">
+                    <h3>Request a Demo</h3>
+                    <form class="cta-form">
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit" class="btn btn-primary">Get Started</button>
+                    </form>
+                </div>
+                <div class="cta-btns">
+                    <button class="btn btn-white btn-large">Contact Sales</button>
+                    <button class="btn btn-outline-white btn-large">Learn More</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <img src="https://img.freepik.com/premium-vector/green-health-logo_7888-106.jpg" alt="TrialSage Logo">
+                        <span>TrialSage™</span>
+                    </div>
+                    <div class="footer-desc">
+                        TrialSage™ by C2C.AI is revolutionizing regulatory submissions with AI-powered tools that streamline document creation, ensure compliance, and provide data-driven insights to accelerate your regulatory approval process.
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Solutions</h4>
+                    <div class="footer-links">
+                        <a href="#"><i class="fas fa-chevron-right"></i> ICH Wiz™</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> IND Wizard™</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> CSR Intelligence™</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Vault™ Workspace</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Clinical Metadata Repository</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Study Architect™</a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <div class="footer-links">
+                        <a href="#"><i class="fas fa-chevron-right"></i> Case Studies</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Whitepapers</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Blog</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Webinars</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Documentation</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> API Reference</a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <div class="footer-links">
+                        <a href="#"><i class="fas fa-chevron-right"></i> About Us</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Leadership</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Careers</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Partners</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Press</a>
+                        <a href="#"><i class="fas fa-chevron-right"></i> Contact</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="copyright">
+                    © 2025 TrialSage™ by C2C.AI. All rights reserved.
+                </div>
+                <div class="footer-legal">
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Security</a>
+                    <a href="#">Cookie Settings</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <a href="#" class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+
+    <!-- Request Demo Modal -->
+    <div class="modal" id="demoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Request a Demo</h3>
+                <button class="modal-close" id="modalClose"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="demo-form">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Work Email</label>
+                    <input type="email" id="email" placeholder="Enter your work email">
+                </div>
+                <div class="form-group">
+                    <label for="company">Company</label>
+                    <input type="text" id="company" placeholder="Enter your company name">
+                </div>
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role">
+                        <option value="" disabled selected>Select your role</option>
+                        <option value="regulatory">Regulatory Affairs</option>
+                        <option value="clinical">Clinical Development</option>
+                        <option value="medical">Medical Affairs</option>
+                        <option value="it">IT/Technology</option>
+                        <option value="executive">Executive Leadership</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">How can we help?</label>
+                    <textarea id="message" rows="4" placeholder="Tell us about your regulatory challenges"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AOS Animation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true,
+                mirror: false
+            });
+
+            // Header scroll effect
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+
+            // FAQ Accordions
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    const answer = this.nextElementSibling;
+                    this.classList.toggle('active');
+                    answer.classList.toggle('active');
+                });
+            });
+
+            // Demo Modal
+            const demoButtons = document.querySelectorAll('.btn-primary');
+            const demoModal = document.getElementById('demoModal');
+            const modalClose = document.getElementById('modalClose');
+
+            demoButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    demoModal.classList.add('active');
+                });
+            });
+
+            modalClose.addEventListener('click', function() {
+                demoModal.classList.remove('active');
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === demoModal) {
+                    demoModal.classList.remove('active');
+                }
+            });
+
+            // Pricing toggle
+            const pricingToggle = document.querySelector('.toggle-switch input');
+            const pricingLabels = document.querySelectorAll('.toggle-label');
+
+            pricingToggle.addEventListener('change', function() {
+                pricingLabels.forEach(label => {
+                    label.classList.toggle('active');
+                });
+                // Here you would typically update the pricing values
+            });
+        });
+    </script>
+</body>
+</html>
