@@ -1,0 +1,450 @@
+/* Mobile-first responsive styles */
+
+/* Body state when mobile navigation is active */
+body.mobile-nav-active {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Enhanced touch targets for mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  .btn, 
+  .nav-link,
+  .mobile-toggle,
+  .nav-dropdown-toggle,
+  .faq-question {
+    min-height: 44px; /* Apple recommends minimum 44px touch targets */
+  }
+  
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
+
+/* Base adjustments for small devices */
+html {
+  -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape */
+}
+
+/* Common adjustments for all mobile devices */
+@media (max-width: 1024px) {
+  .container, .container-wide, .container-fluid {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  
+  .hero-content {
+    max-width: 100%;
+  }
+  
+  .feature-row {
+    flex-direction: column;
+    gap: 3rem;
+    margin-bottom: 5rem;
+  }
+  
+  .feature-row.reverse {
+    flex-direction: column;
+  }
+  
+  .feature-image {
+    order: -1;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-row.reverse .feature-image {
+    order: -1;
+  }
+  
+  .pricing-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .tab-content-inner {
+    flex-direction: column;
+    gap: 3rem;
+  }
+  
+  .tab-image {
+    order: -1;
+  }
+  
+  .case-studies-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Navigation adjustments */
+  .nav-menu {
+    gap: 1rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+  
+  .container, .container-wide, .container-fluid {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  h1 {
+    font-size: 2.5rem !important;
+  }
+  
+  h2 {
+    font-size: 2rem !important;
+  }
+  
+  h3 {
+    font-size: 1.75rem !important;
+  }
+  
+  h4 {
+    font-size: 1.25rem !important;
+  }
+  
+  .display {
+    font-size: 3rem !important;
+  }
+  
+  .lead {
+    font-size: 1.125rem !important;
+  }
+  
+  .hero {
+    padding: 7rem 0 4rem;
+  }
+  
+  .section {
+    padding: 4rem 0;
+  }
+  
+  .section-lg {
+    padding: 5rem 0;
+  }
+
+  /* Header/navbar mobile styling */
+  .logo-img {
+    height: 36px;
+  }
+  
+  .logo-text {
+    font-size: 1.25rem;
+  }
+  
+  .nav-menu {
+    display: none;
+    position: fixed;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 70px);
+    background-color: white;
+    flex-direction: column;
+    padding: 2rem;
+    z-index: 999;
+    overflow-y: auto;
+  }
+  
+  .nav-menu.active {
+    display: flex;
+  }
+  
+  .mobile-toggle {
+    display: flex;
+  }
+  
+  .nav-item {
+    width: 100%;
+  }
+  
+  .nav-link {
+    font-size: 1.25rem;
+    padding: 1rem 0;
+    width: 100%;
+    border-bottom: 1px solid var(--neutral-100);
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .case-studies-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tabs {
+    flex-wrap: wrap;
+  }
+  
+  .faq-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Forms and buttons */
+  .btn {
+    padding: 0.625rem 1.25rem;
+  }
+  
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Mobile phone adjustments */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .container, .container-wide, .container-fluid {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  h1 {
+    font-size: 2rem !important;
+  }
+  
+  h2 {
+    font-size: 1.75rem !important;
+  }
+  
+  h3 {
+    font-size: 1.5rem !important;
+  }
+  
+  .display {
+    font-size: 2.5rem !important;
+  }
+  
+  /* Header elements */
+  .navbar {
+    padding: 0.75rem 0;
+  }
+  
+  .logo-img {
+    height: 32px;
+  }
+  
+  .logo-text {
+    font-size: 1.125rem;
+  }
+
+  /* Hero section adjustments */
+  .hero {
+    padding: 6rem 0 3rem;
+    text-align: center;
+  }
+  
+  .hero-content {
+    text-align: center;
+  }
+  
+  .hero-buttons {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .hero-buttons .btn {
+    width: 100%;
+  }
+  
+  /* Remove decorative elements that can cause overflow */
+  .feature-image::before {
+    display: none;
+  }
+  
+  /* Adjust paddings */
+  .feature-card, 
+  .pricing-card, 
+  .testimonial-card, 
+  .case-study-content {
+    padding: 1.5rem;
+  }
+  
+  /* Reduce whitespace */
+  .feature-row {
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  /* Fix testimonial layout */
+  .testimonial-author {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  /* Fix pricing display */
+  .pricing-price {
+    font-size: 2.5rem;
+  }
+  
+  /* Stack comparison table */
+  .comparison-header,
+  .comparison-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .comparison-header-item:not(:first-child),
+  .comparison-value:not(:first-child) {
+    border-top: 1px solid var(--neutral-200);
+  }
+  
+  /* Fix FAQ display */
+  .faq-question span {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  
+  /* Fix CTA spacing */
+  .cta {
+    padding: 4rem 0;
+  }
+  
+  .cta h2 {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* iPhone SE and Extra Small Devices */
+@media (max-width: 375px) {
+  body {
+    font-size: 13px;
+  }
+  
+  .container, .container-wide, .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  h1 {
+    font-size: 1.75rem !important;
+  }
+  
+  h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  .hero-buttons .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .logo-img {
+    height: 28px;
+  }
+  
+  .logo-text {
+    font-size: 1rem;
+  }
+  
+  /* Further reduce paddings */
+  .feature-card, 
+  .pricing-card, 
+  .testimonial-card, 
+  .case-study-content {
+    padding: 1.25rem;
+  }
+  
+  /* Stack all grid elements */
+  .feature-list {
+    gap: 1.25rem;
+  }
+  
+  .feature-item {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  /* Ensure proper spacing */
+  .section {
+    padding: 3rem 0;
+  }
+  
+  .section-lg {
+    padding: 4rem 0;
+  }
+  
+  /* Fix button text overflow */
+  .btn {
+    white-space: normal;
+    height: auto;
+    min-height: 42px;
+  }
+}
+
+/* Fix for notched iPhones and devices with safe areas */
+@supports (padding: max(0px)) {
+  .navbar {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+  
+  .container, .container-wide, .container-fluid {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+  
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Add mobile menu toggle button styling */
+.mobile-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  z-index: 1001;
+}
+
+@media (max-width: 768px) {
+  .mobile-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+  }
+  
+  .mobile-toggle span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: var(--primary-700);
+    transition: all 0.3s ease;
+  }
+  
+  .mobile-toggle.active span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+  
+  .mobile-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+  
+  .mobile-toggle.active span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+}
