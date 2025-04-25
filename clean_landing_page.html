@@ -45,90 +45,100 @@
             box-sizing: border-box;
         }
         
-        /* YPrime-style Navigation */
-        .yprime-nav {
-            display: flex;
-            justify-content: center;
-            background-color: #fff;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f0f0f0;
+        /* YPrime-style Top Navigation */
+        .top-nav {
+            border-bottom: 1px solid #f1f1f1;
+            padding: 8px 0;
+            background: #fff;
+            position: relative;
+            z-index: 999;
         }
         
-        .yprime-nav-container {
-            width: 100%;
+        .top-nav-container {
             max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 1rem;
+            padding: 0 20px;
         }
         
-        .yprime-nav-group {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .company-logo {
+            height: 30px;
+            width: auto;
         }
         
-        .yprime-nav-item {
+        .top-nav-links {
             display: flex;
             align-items: center;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #333;
-            text-decoration: none;
-            padding: 0.2rem 0.5rem;
+            gap: 40px;
+        }
+        
+        .nav-dropdown {
             position: relative;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #333;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s;
         }
         
-        .yprime-nav-item:after {
+        .nav-dropdown:hover {
+            color: #666;
+        }
+        
+        .nav-dropdown::after {
             content: "";
             display: inline-block;
-            width: 0.5rem;
-            height: 0.5rem;
-            margin-left: 0.25rem;
-            border: solid #999;
-            border-width: 0 1px 1px 0;
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid #666;
+            border-bottom: 2px solid #666;
             transform: rotate(45deg);
-            transition: transform 0.2s ease;
+            margin-top: -4px;
         }
         
-        .yprime-nav-item:hover:after {
-            transform: rotate(-135deg);
+        .action-buttons {
+            display: flex;
+            gap: 8px;
         }
         
-        .yprime-btn {
-            font-size: 0.8rem;
+        .action-button {
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-size: 14px;
             font-weight: 500;
-            padding: 0.25rem 0.75rem;
-            border-radius: 2rem;
-            border: 1px solid;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            border: 1px solid;
+            transition: all 0.2s;
         }
         
-        .yprime-btn-primary {
-            background-color: var(--bitcoin-orange);
+        .action-button.primary {
+            background-color: #E6007D; /* Pink from YPrime */
             color: white;
-            border-color: var(--bitcoin-orange);
+            border-color: #E6007D;
         }
         
-        .yprime-btn-primary:hover {
-            background-color: #e07c00;
-            border-color: #e07c00;
-            color: white;
+        .action-button.primary:hover {
+            background-color: #d1006f;
+            border-color: #d1006f;
         }
         
-        .yprime-btn-outline {
+        .action-button.secondary {
             background-color: transparent;
-            color: var(--bitcoin-orange);
-            border-color: var(--bitcoin-orange);
+            color: #333;
+            border-color: #ccc;
         }
         
-        .yprime-btn-outline:hover {
-            background-color: rgba(247, 147, 26, 0.1);
-            color: var(--bitcoin-orange);
+        .action-button.secondary:hover {
+            background-color: #f5f5f5;
         }
 
         body {
@@ -1122,21 +1132,25 @@
     </style>
 </head>
 <body>
-    <!-- YPrime-style top navigation bar -->
-    <div class="yprime-nav">
-        <div class="yprime-nav-container">
-            <a href="/" class="logo">TrialSage™ by <span class="concept2cures">Concept2Cures</span></a>
+    <!-- YPrime-style top navigation bar - exact replica -->
+    <div class="top-nav">
+        <div class="top-nav-container">
+            <a href="/">
+                <span class="logo">TrialSage™ by <span class="concept2cures">Concept2Cures</span></span>
+            </a>
             
-            <div class="yprime-nav-group">
-                <a href="#solutions" class="yprime-nav-item">Solutions</a>
-                <a href="#expertise" class="yprime-nav-item">Expertise</a>
-                <a href="#resources" class="yprime-nav-item">Resources</a>
-                <a href="#company" class="yprime-nav-item">Company</a>
-                <a href="#contact" class="yprime-nav-item">Contact Us</a>
+            <div class="top-nav-links">
+                <a href="#solutions" class="nav-dropdown">Solutions</a>
+                <a href="#expertise" class="nav-dropdown">Expertise</a>
+                <a href="#resources" class="nav-dropdown">Resources</a>
+                <a href="#company" class="nav-dropdown">Company</a>
+                <a href="#contact" class="nav-dropdown">Contact Us</a>
                 
-                <a href="/rfp" class="yprime-btn yprime-btn-outline">RFP</a>
-                <a href="/demo" class="yprime-btn yprime-btn-primary">Demo</a>
-                <a href="/support" class="yprime-btn yprime-btn-outline">Support</a>
+                <div class="action-buttons">
+                    <a href="/rfp" class="action-button secondary">RFP</a>
+                    <a href="/demo" class="action-button primary">Demo</a>
+                    <a href="/support" class="action-button secondary">Support</a>
+                </div>
             </div>
         </div>
     </div>
