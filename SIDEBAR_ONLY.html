@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:sans-serif;}
+
+body {
+  font-size: 5px;
+  color: #333;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #eee;
+}
+
+.logo {
+  color: #0B6E4F;
+  font-weight: bold;
+  font-size: 5px;
+}
+
+.actions {
+  display: flex;
+  gap: 3px;
+}
+
+.btn {
+  width: 6px;
+  height: 6px;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 1px;
+}
+
+/* Main content */
+.body {
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 60px;
+  border-right: 1px solid #eee;
+}
+
+.sidebar-header {
+  padding: 3px;
+  color: #666;
+  font-weight: 500;
+  background: #f5f5f5;
+}
+
+.folders {
+  padding: 2px 0;
+}
+
+.folder {
+  padding: 2px 3px;
+  display: flex;
+  align-items: center;
+}
+
+.folder.active {
+  color: #0B6E4F;
+  background: #f0f7f4;
+}
+
+.folder-icon {
+  width: 4px;
+  margin-right: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">TrialSage File Navigator™</div>
+  <div class="actions">
+    <div class="btn"></div>
+    <div class="btn"></div>
+    <div class="btn"></div>
+  </div>
+</div>
+
+<div class="body">
+  <div class="sidebar">
+    <div class="sidebar-header">FOLDERS</div>
+    <div class="folders">
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>CMC Documents</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Drug Substance</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Drug Product</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Specifications</span>
+      </div>
+      <div class="folder active">
+        <span class="folder-icon">□</span>
+        <span>Validation</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Regulatory</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Quality</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
