@@ -3,6 +3,39 @@ import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// Import standalone landing page module
+const standaloneModule = {
+  injectStandaloneLandingPage: (app: express.Application) => {
+    // Keep track of whether we're serving the main app or standalone
+    let useStandalone = true;
+    
+    // Route to serve the standalone landing page at the root URL
+    app.use('/', (req: Request, res: Response, next: NextFunction) => {
+      // If the path is exactly '/' and we're in standalone mode, serve our custom landing page
+      if (req.path === '/' && useStandalone) {
+        try {
+          const htmlPath = path.join(process.cwd(), 'standalone_landing_page.html');
+          
+          if (fs.existsSync(htmlPath)) {
+            return res.sendFile(htmlPath);
+          } else {
+            console.error('[Standalone] Landing page HTML not found at:', htmlPath);
+            // Fall through to next handler if file not found
+          }
+        } catch (error) {
+          console.error('[Standalone] Error serving landing page:', error);
+          // Fall through to next handler on error
+        }
+      }
+      
+      // For all other routes, continue to next middleware
+      next();
+    });
+    
+    console.log('[Standalone] Standalone landing page route registered');
+  }
+};
+
 // Import enhanced security and stability features
 import { createCircuitBreakerMiddleware, CircuitBreaker, CircuitState, getCircuitBreaker } from './middleware/circuitBreaker';
 import { logger, createContextLogger, requestLogger } from './utils/logger';
@@ -90,6 +123,9 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
 import { errorHandler, notFoundHandler, asyncHandler } from './middleware/errorHandler';
 
 export function setupRoutes(app: express.Application): http.Server {
+  // Register standalone landing page handler first, before any other middleware
+  standaloneModule.injectStandaloneLandingPage(app);
+  
   // Configure core middleware
   app.use(express.json());
   
