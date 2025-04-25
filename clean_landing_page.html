@@ -160,8 +160,9 @@
 
         .nav-menu {
             display: flex;
-            gap: 2rem;
+            gap: 3.5rem;
             align-items: center;
+            padding-right: 2rem;
         }
 
         .nav-link {
@@ -286,10 +287,10 @@
         }
 
         .mobile-nav-link {
-            color: var(--text);
-            font-weight: 500;
-            font-size: 1.125rem;
-            padding: 0.5rem 0;
+            color: var(--bitcoin-orange);
+            font-weight: 600;
+            font-size: 1.5rem;
+            padding: 0.75rem 0;
             border-bottom: 1px solid var(--border);
         }
         
@@ -990,7 +991,6 @@
                 
                 <ul class="nav-menu">
                     <li class="dropdown">
-                        <a href="#" class="nav-link">Solutions <i class="fas fa-chevron-down"></i></a>
                         <div class="dropdown-menu">
                             <a href="/solutions/csr-intelligence" class="dropdown-item">CSR Intelligence™</a>
                             <a href="/solutions/ind-wizard" class="dropdown-item">IND Wizard™</a>
@@ -999,10 +999,9 @@
                             <a href="/solutions/study-architect" class="dropdown-item">Study Architect™</a>
                         </div>
                     </li>
-                    <li><a href="#modules" class="nav-link">Modules</a></li>
                     <li><a href="#features" class="nav-link">Features</a></li>
                     <li><a href="#about" class="nav-link">About</a></li>
-                    <li><a href="/demo" class="btn btn-primary">Request Demo</a></li>
+                    <li><a href="/demo" class="btn btn-primary btn-lg">Request Demo</a></li>
                 </ul>
                 
                 <button class="hamburger" id="menu-toggle">
@@ -1021,10 +1020,6 @@
         </div>
         
         <nav class="mobile-nav">
-            <div class="mobile-submenu-toggle">
-                <span>Solutions</span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
             <div class="mobile-submenu">
                 <a href="/solutions/csr-intelligence" class="mobile-nav-link">CSR Intelligence™</a>
                 <a href="/solutions/ind-wizard" class="mobile-nav-link">IND Wizard™</a>
@@ -1032,10 +1027,9 @@
                 <a href="/solutions/vault-workspace" class="mobile-nav-link">Vault™ Workspace</a>
                 <a href="/solutions/study-architect" class="mobile-nav-link">Study Architect™</a>
             </div>
-            <a href="#modules" class="mobile-nav-link">Modules</a>
             <a href="#features" class="mobile-nav-link">Features</a>
             <a href="#about" class="mobile-nav-link">About</a>
-            <a href="/demo" class="btn btn-primary" style="margin-top: 1rem;">Request Demo</a>
+            <a href="/demo" class="btn btn-primary btn-lg" style="margin-top: 1rem;">Request Demo</a>
         </nav>
     </div>
     
