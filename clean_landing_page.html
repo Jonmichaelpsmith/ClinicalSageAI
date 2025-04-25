@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrialSage™ by Concept2Cures - Regulatory Intelligence Platform</title>
+    <style>
+        .concept2cures {
+            color: var(--bitcoin-orange);
+            font-weight: bold;
+        }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,6 +23,7 @@
             --secondary: #FF6B35;
             --secondary-dark: #E55A2B;
             --secondary-light: #FF8C64;
+            --bitcoin-orange: #F7931A; /* Bitcoin Orange color for Concept2Cures */
             --background: #FFFFFF;
             --background-alt: #F8FAFC;
             --text: #1E293B;
@@ -29,8 +36,8 @@
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --hero-gradient-start: rgba(11, 110, 79, 0.9);
-            --hero-gradient-end: rgba(8, 86, 61, 0.8);
+            --hero-gradient-start: rgba(34, 139, 87, 0.9); /* Lighter green */
+            --hero-gradient-end: rgba(255, 165, 0, 0.8); /* Light orange */
         }
 
         * {
@@ -61,9 +68,9 @@
 
         .container {
             width: 100%;
-            max-width: 800px; /* Dramatically reduced from 1200px */
-            margin: 0 auto;
-            padding: 0 1rem; /* Reduced padding */
+            max-width: 100%; /* Fill the entire width */
+            margin: 0;
+            padding: 0 0.5rem; /* Minimal padding */
         }
 
         .btn {
@@ -158,16 +165,19 @@
         }
 
         .nav-link {
-            color: var(--text);
-            font-weight: 500;
+            color: var(--bitcoin-orange); /* Orange color */
+            font-weight: 600; /* Bolder */
             position: relative;
             display: flex;
             align-items: center;
             gap: 0.375rem;
+            font-size: 0.9rem; /* 50% larger */
+            transform: scale(1.5); /* Make 50% larger */
+            margin: 0 0.5rem; /* Add spacing between larger buttons */
         }
 
         .nav-link:hover {
-            color: var(--primary);
+            color: var(--secondary-dark);
         }
 
         .nav-link::after {
@@ -177,7 +187,7 @@
             bottom: -4px;
             width: 0;
             height: 2px;
-            background-color: var(--primary);
+            background-color: var(--bitcoin-orange);
             transition: width 0.2s ease;
         }
 
@@ -215,14 +225,15 @@
         .dropdown-item {
             display: block;
             padding: 0.75rem 1.5rem;
-            color: var(--text);
-            font-size: 0.9375rem;
+            color: var(--bitcoin-orange); /* Orange color */
+            font-size: 1.4rem; /* 50% larger */
+            font-weight: 600;
             transition: all 0.2s ease;
         }
         
         .dropdown-item:hover {
             background-color: var(--primary-lighter);
-            color: var(--primary);
+            color: var(--secondary-dark);
         }
 
         .hamburger {
@@ -975,7 +986,7 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="/" class="logo">TrialSage™ by Concept2Cures</a>
+                <a href="/" class="logo">TrialSage™ by <span class="concept2cures">Concept2Cures</span></a>
                 
                 <ul class="nav-menu">
                     <li class="dropdown">
@@ -1714,7 +1725,7 @@
             </div>
             
             <div class="footer-bottom">
-                <p class="copyright">&copy; 2025 Concept2Cures. All rights reserved.</p>
+                <p class="copyright">&copy; 2025 <span class="concept2cures">Concept2Cures</span>. All rights reserved.</p>
                 
                 <div class="footer-legal">
                     <a href="/privacy" class="legal-link">Privacy Policy</a>
