@@ -1122,6 +1122,26 @@
     </style>
 </head>
 <body>
+    <!-- YPrime-style top navigation bar -->
+    <div class="yprime-nav">
+        <div class="yprime-nav-container">
+            <a href="/" class="logo">TrialSage™ by <span class="concept2cures">Concept2Cures</span></a>
+            
+            <div class="yprime-nav-group">
+                <a href="#solutions" class="yprime-nav-item">Solutions</a>
+                <a href="#expertise" class="yprime-nav-item">Expertise</a>
+                <a href="#resources" class="yprime-nav-item">Resources</a>
+                <a href="#company" class="yprime-nav-item">Company</a>
+                <a href="#contact" class="yprime-nav-item">Contact Us</a>
+                
+                <a href="/rfp" class="yprime-btn yprime-btn-outline">RFP</a>
+                <a href="/demo" class="yprime-btn yprime-btn-primary">Demo</a>
+                <a href="/support" class="yprime-btn yprime-btn-outline">Support</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main navigation header -->
     <header>
         <div class="container">
             <nav class="navbar">
@@ -1129,6 +1149,7 @@
                 
                 <ul class="nav-menu">
                     <li class="dropdown">
+                        <a href="#solutions" class="nav-link">Solutions</a>
                         <div class="dropdown-menu">
                             <a href="/solutions/csr-intelligence" class="dropdown-item">CSR Intelligence™</a>
                             <a href="/solutions/ind-wizard" class="dropdown-item">IND Wizard™</a>
@@ -1158,7 +1179,10 @@
         </div>
         
         <nav class="mobile-nav">
-            <div class="mobile-submenu">
+            <div class="mobile-submenu-toggle" id="solutions-toggle">
+                Solutions <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="mobile-submenu" id="solutions-submenu">
                 <a href="/solutions/csr-intelligence" class="mobile-nav-link">CSR Intelligence™</a>
                 <a href="/solutions/ind-wizard" class="mobile-nav-link">IND Wizard™</a>
                 <a href="/solutions/ich-wiz" class="mobile-nav-link">ICH Wiz™</a>
