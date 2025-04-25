@@ -3,6 +3,10 @@ import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// Import static routes module for solution pages
+// @ts-ignore - Ignore the missing type definitions
+import { setupStaticRoutes } from './static-routes';
+
 // Import standalone landing page module
 const standaloneModule = {
   injectStandaloneLandingPage: (app: express.Application) => {
@@ -202,6 +206,9 @@ export function setupRoutes(app: express.Application): http.Server {
   try {
     // Register standalone landing page handler first, before any other middleware
     standaloneModule.injectStandaloneLandingPage(app);
+    
+    // Register static routes for key solution pages
+    setupStaticRoutes(app);
     
     // Configure core middleware
     app.use(express.json());
