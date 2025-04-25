@@ -346,8 +346,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: linear-gradient(to right, var(--hero-gradient-start), var(--hero-gradient-end)), 
-                              url('landing-assets/hero-bg.jpg');
+            background-image: linear-gradient(to right, var(--hero-gradient-start), var(--hero-gradient-end));
             background-size: cover;
             background-position: center;
             opacity: 0.85;
@@ -1313,46 +1312,70 @@
         const mobileMenu = document.getElementById('mobile-menu');
         const overlay = document.getElementById('overlay');
         const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        const mobileSubmenuToggle = document.querySelector('.mobile-submenu-toggle');
+        const mobileSubmenu = document.querySelector('.mobile-submenu');
         
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.add('active');
-            overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
+        // Mobile submenu toggle
+        if (mobileSubmenuToggle && mobileSubmenu) {
+            mobileSubmenuToggle.addEventListener('click', () => {
+                mobileSubmenuToggle.classList.toggle('active');
+                mobileSubmenu.classList.toggle('active');
+            });
+        }
+        
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.add('active');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
         
         function closeMenuHandler() {
-            mobileMenu.classList.remove('active');
-            overlay.classList.remove('active');
+            if (mobileMenu) mobileMenu.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
             document.body.style.overflow = '';
         }
         
-        closeMenu.addEventListener('click', closeMenuHandler);
-        overlay.addEventListener('click', closeMenuHandler);
+        if (closeMenu) {
+            closeMenu.addEventListener('click', closeMenuHandler);
+        }
+        
+        if (overlay) {
+            overlay.addEventListener('click', closeMenuHandler);
+        }
         
         mobileNavLinks.forEach(link => {
-            link.addEventListener('click', closeMenuHandler);
+            if (link.getAttribute('href').startsWith('#')) {
+                link.addEventListener('click', closeMenuHandler);
+            }
         });
         
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    const headerHeight = document.querySelector('header').offsetHeight;
-                    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+            if (anchor.getAttribute('href') !== '#') {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
                     
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            });
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        const headerHeight = document.querySelector('header').offsetHeight;
+                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                        
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Close mobile menu if open
+                        closeMenuHandler();
+                    }
+                });
+            }
         });
     </script>
 </body>
