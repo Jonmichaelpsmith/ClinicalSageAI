@@ -1,0 +1,221 @@
+/* Video Section Styles */
+.video-section {
+    position: relative;
+    padding: 8rem 0;
+    background: linear-gradient(120deg, var(--primary-800), var(--primary-950));
+    color: white;
+    overflow: hidden;
+}
+
+.video-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://assets.website-files.com/62b95756cd93e1e278fb7ff4/62cc3a61e6ec87f6d8ba8e34_pattern-bg-2.svg');
+    background-position: center;
+    background-size: cover;
+    opacity: 0.05;
+    z-index: 0;
+}
+
+.video-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.video-header {
+    max-width: 800px;
+    margin-bottom: 4rem;
+}
+
+.video-header h2 {
+    color: white;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.video-header p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.25rem;
+    line-height: 1.7;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-2xl);
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.video-wrapper:hover .video-overlay {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.video-play-button {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--primary-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+}
+
+.video-play-button i {
+    font-size: 2rem;
+    color: white;
+    margin-left: 5px;
+}
+
+.video-overlay:hover .video-play-button {
+    transform: scale(1.1);
+    background-color: var(--primary-500);
+}
+
+.video-thumbnail {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.video-iframe {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: none;
+}
+
+.video-caption {
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 1.5rem;
+    font-size: 1rem;
+}
+
+/* Additional styles for video modal */
+.video-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.video-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.video-modal-content {
+    width: 90%;
+    max-width: 1000px;
+    position: relative;
+}
+
+.video-modal-close {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--primary-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    border: none;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+}
+
+.video-modal-close:hover {
+    background-color: var(--primary-500);
+    transform: rotate(90deg);
+}
+
+@media (max-width: 992px) {
+    .video-header h2 {
+        font-size: 2.5rem;
+    }
+    
+    .video-play-button {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .video-play-button i {
+        font-size: 1.75rem;
+    }
+    
+    .video-modal-close {
+        top: -50px;
+        right: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .video-section {
+        padding: 5rem 0;
+    }
+    
+    .video-header h2 {
+        font-size: 2rem;
+    }
+    
+    .video-header p {
+        font-size: 1.125rem;
+    }
+    
+    .video-play-button {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .video-play-button i {
+        font-size: 1.5rem;
+    }
+}
+
+/* Animation for the video section */
+.video-section .video-header {
+    animation: slideUp 1s ease forwards;
+}
+
+.video-section .video-wrapper {
+    animation: fadeIn 1.2s ease forwards;
+}
