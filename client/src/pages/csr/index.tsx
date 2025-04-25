@@ -1,5 +1,5 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from "../lightweight-wrappers.js";
 import CSRIngest from '../../components/csr/CSRIngest';
 import CSRSearchBar from '../../components/csr/CSRSearchBar';
 import CSRChatPanel from '../../components/csr/CSRChatPanel';

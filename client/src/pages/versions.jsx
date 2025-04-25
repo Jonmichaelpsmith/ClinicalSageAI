@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FileText, Download, Clock, Eye, X, GitCompare, RefreshCw } from "lucide-react";
 import Navigation from "../components/Navigation";
-import ReactDiffViewer from "react-diff-viewer-continued";
+import ReactDiffViewer from "../lightweight-wrappers.js";
 import withAuthGuard from "../utils/withAuthGuard";
 import axiosWithToken from "../utils/axiosWithToken";
 import { toast } from "../hooks/use-toast";

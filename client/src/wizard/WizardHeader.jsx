@@ -9,7 +9,7 @@ import { Gauge, ShieldCheck, UploadCloud, ChevronUp, ChevronDown, DollarSign } f
 import clsx from "clsx";
 import { useState, useEffect } from "react";
 import { useTranslation } from "../utils/i18n-stub.js";
-import { Sparklines, SparklinesLine } from "react-sparklines";
+import { Sparklines, SparklinesLine } from "../lightweight-wrappers.js";
 import { ResponsiveContainer, ComposedChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 export default function WizardHeader({ kpi }) {

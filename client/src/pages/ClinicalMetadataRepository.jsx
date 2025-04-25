@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import { Helmet } from "../lightweight-wrappers.js";
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { 

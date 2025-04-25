@@ -24,9 +24,9 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Sparkline } from 'react-sparklines';
+import { Sparkline } from "../lightweight-wrappers.js";
 import { Link } from 'wouter';
-import { toast } from 'react-hot-toast';
+import { toast } from "../lightweight-wrappers.js";
 
 /**
  * StudyDesignReport Component

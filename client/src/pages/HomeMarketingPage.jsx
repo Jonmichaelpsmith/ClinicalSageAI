@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { Helmet } from 'react-helmet';
+import { Helmet } from "../lightweight-wrappers.js";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Database, FileText, Brain, BarChart, Lock, Zap, Globe, Shield, Beaker, FileSpreadsheet } from 'lucide-react';

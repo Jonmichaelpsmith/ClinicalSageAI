@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useTable, useSortBy, useFilters, usePagination, useGlobalFilter } from 'react-table';
+import { useTable, useSortBy, useFilters, usePagination, useGlobalFilter } from "../lightweight-wrappers.js";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

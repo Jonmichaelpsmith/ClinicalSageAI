@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { useSortable } from "../lightweight-wrappers.js";
+import { CSS } from "../lightweight-wrappers.js";
 import { FileText, Download, Eye, Diff } from 'lucide-react';
 
 interface SortableItemProps {
