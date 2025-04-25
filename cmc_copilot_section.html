@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMC CoPilot™ Section</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --border-color: #EFEFEF;
+            --border-light: #F5F5F5;
+            --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-size: 11px;
+            color: var(--text-dark);
+            background-color: black;
+            padding: 15px;
+        }
+        
+        /* CMC CoPilot Section */
+        .copilot-section {
+            background-color: var(--primary);
+            border-radius: 6px;
+            padding: 12px;
+            color: white;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .copilot-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .copilot-icon {
+            width: 24px;
+            height: 24px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .copilot-title {
+            font-weight: 600;
+            font-size: 11px;
+            flex: 1;
+        }
+        
+        .copilot-badge {
+            background-color: white;
+            color: var(--primary);
+            font-size: 7px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .copilot-description {
+            font-size: 9px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .copilot-features {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .copilot-feature {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 6px;
+            flex: 1;
+        }
+        
+        .copilot-feature-title {
+            font-size: 9px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .copilot-feature-title i {
+            font-size: 8px;
+        }
+        
+        .copilot-feature-text {
+            font-size: 8px;
+            opacity: 0.8;
+        }
+        
+        .conversation-sample {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        
+        .message-avatar {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            flex-shrink: 0;
+        }
+        
+        .message-avatar.ai {
+            background-color: white;
+            color: var(--primary);
+        }
+        
+        .message-content {
+            font-size: 8px;
+            opacity: 0.9;
+            flex: 1;
+        }
+        
+        .learn-more-button {
+            background-color: white;
+            color: var(--primary);
+            border: none;
+            border-radius: 12px;
+            padding: 4px 8px;
+            font-size: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            width: fit-content;
+        }
+    </style>
+</head>
+<body>
+    <div class="copilot-section">
+        <div class="copilot-header">
+            <div class="copilot-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="copilot-title">CMC CoPilot™: Your 24/7 Intelligent Partner</div>
+            <div class="copilot-badge">EXCLUSIVE</div>
+        </div>
+        
+        <div class="copilot-description">
+            Available in every screen, CMC CoPilot integrates with your data to provide contextual guidance and expert-level insights.
+        </div>
+        
+        <div class="copilot-features">
+            <div class="copilot-feature">
+                <div class="copilot-feature-title">
+                    <i class="fas fa-search"></i> Contextual Search
+                </div>
+                <div class="copilot-feature-text">
+                    Instantly finds documents, queries data
+                </div>
+            </div>
+            
+            <div class="copilot-feature">
+                <div class="copilot-feature-title">
+                    <i class="fas fa-magic"></i> Automated Drafting
+                </div>
+                <div class="copilot-feature-text">
+                    Generates compliant sections, SOPs
+                </div>
+            </div>
+            
+            <div class="copilot-feature">
+                <div class="copilot-feature-title">
+                    <i class="fas fa-shield-alt"></i> Regulatory Coach
+                </div>
+                <div class="copilot-feature-text">
+                    Identifies gaps and suggests remediation
+                </div>
+            </div>
+        </div>
+        
+        <div class="conversation-sample">
+            <div class="message">
+                <div class="message-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="message-content">
+                    "Summarize all validation gaps before our PMDA submission."
+                </div>
+            </div>
+            
+            <div class="message">
+                <div class="message-avatar ai">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    "I found 3 critical validation gaps for the PMDA submission: (1) Missing stability data for drug product, (2) Incomplete process validation for Batch #247, (3) Required PMDA-specific container testing not completed."
+                </div>
+            </div>
+        </div>
+        
+        <button class="learn-more-button">Learn More About TrialSage AI-CMC Module™ →</button>
+    </div>
+</body>
+</html>
