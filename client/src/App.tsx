@@ -130,6 +130,8 @@ const LazyClientPortal = React.lazy(() => import('./pages/ClientPortal'));
 const LazyTeamSignup = React.lazy(() => import('./pages/TeamSignup'));
 // Case Studies page with authentic customer success stories
 const LazyCaseStudies = React.lazy(() => import('./pages/CaseStudies'));
+// Import MinimalEntryPage with no external dependencies
+import MinimalEntryPage from './pages/MinimalEntryPage';
 // Currently using a fallback for DemoStart page until we implement it fully
 const LazyDemoStart = () => {
   // Redirects user to home if they're not logged in
@@ -551,7 +553,7 @@ export default function App() {
                     }
                   >
                     <AuthRedirector>
-                      <LazyCSRIntelligence />
+                      <MinimalEntryPage />
                     </AuthRedirector>
                   </React.Suspense>
                 </SimpleErrorBoundary>
