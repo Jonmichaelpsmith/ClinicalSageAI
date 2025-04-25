@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Timeline, TimelineItem } from 'vertical-timeline-component-for-react';
+import { Timeline, TimelineItem } from "../lightweight-wrappers.js";
 import { FileText, Calendar, Download, Edit, History, Info, Code, ArrowLeft, Tags, Lock, CheckCircle, Users, BookOpen, Database, BellRing } from 'lucide-react';
 import { useToast } from "../../hooks/use-toast";
 

@@ -1,11 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { toast, Toaster } from 'react-hot-toast';
-import Select from 'react-select';
+import { useDropzone } from "../lightweight-wrappers.js";
+import { toast, Toaster } from "../lightweight-wrappers.js";
+import Select from "../lightweight-wrappers.js";
 import clsx from 'clsx';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { useSortable } from "../lightweight-wrappers.js";
+import { CSS } from "../lightweight-wrappers.js";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "../lightweight-wrappers.js";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import axiosWithToken from '../../utils/axiosWithToken';
 import {

@@ -27,7 +27,7 @@ import {
   fetchVectorInsights,
   generateAIRecommendations
 } from '../../services/simulationService';
-import { toast } from 'react-hot-toast';
+import { toast } from "../lightweight-wrappers.js";
 
 /**
  * StatisticalDesign component for the TrialSage Study Architect module

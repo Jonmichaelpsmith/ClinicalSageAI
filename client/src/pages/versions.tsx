@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axiosWithToken from "../utils/axiosWithToken";
 import { FileText, Download, Eye, Diff, Loader2, ShieldCheck } from "lucide-react";
-import ReactDiffViewer from "react-diff-viewer-continued";
+import ReactDiffViewer from "../lightweight-wrappers.js";
 import toast, { Toaster } from "react-hot-toast";
 import Layout from "../components/Layout";
 import VersionsTour from "../components/VersionsTour";
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "../lightweight-wrappers.js";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "../lightweight-wrappers.js";
 import SortableItem from "../components/SortableItem";
 
 // Sample data for development purposes

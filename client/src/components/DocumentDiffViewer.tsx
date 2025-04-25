@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ReactDiffViewer from 'react-diff-viewer-continued';
+import ReactDiffViewer from "../lightweight-wrappers.js";
 import { useToast } from '../App';
 
 // Define DiffType enum since it's not exported from the library

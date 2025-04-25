@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
-import { SplitPane } from 'react-multi-split-pane';
+import { Helmet } from "../lightweight-wrappers.js";
+import { SplitPane } from "../lightweight-wrappers.js";
 import { useToast } from '@/hooks/use-toast';
 
 import { 

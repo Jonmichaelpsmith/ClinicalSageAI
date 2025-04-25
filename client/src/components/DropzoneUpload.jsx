@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone } from "../lightweight-wrappers.js";
 import { uploadDoc } from "../hooks/useDocuShare";
 import { useDocAI } from "../hooks/useDocAI";
-import { toast } from "react-hot-toast";
+import { toast } from "../lightweight-wrappers.js";
 
 export default function DropzoneUpload({ onComplete, showAiSummary = false }) {
   const [processingResults, setProcessingResults] = useState(null);

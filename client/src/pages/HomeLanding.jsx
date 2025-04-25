@@ -2,9 +2,9 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, ShieldCheck, BarChart2, UploadCloud, BookOpen, FileText, ChartPie, Clipboard, Users, Microscope, Database, ZapOff } from 'lucide-react';
-import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+import Slider from "../lightweight-wrappers.js";
+// import 'slick-carousel/slick/slick.css' - commented out by resolver;
+// import 'slick-carousel/slick/slick-theme.css' - commented out by resolver;
 
 const logos = [
   'fda.svg','ema.svg','pmda.svg','mhra.svg','tga.svg','nmpa.svg','korea_mfds.svg'

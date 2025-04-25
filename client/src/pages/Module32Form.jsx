@@ -3,7 +3,7 @@ import withAuthGuard from '../utils/withAuthGuard';
 import axiosWithToken from '../utils/axiosWithToken';
 import { Link } from 'wouter';
 import { ExternalLink, History, FileText, Download } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from "../lightweight-wrappers.js";
 import Layout from '../components/Layout';
 import Module32Tour from '../components/Module32Tour';
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DocsChecklist from "./DocsChecklist";
-import { toast } from "react-hot-toast";
+import { toast } from "../lightweight-wrappers.js";
 
 const REQUIRED = ["Protocol.pdf", "IB.pdf", "DSUR.pdf", "CMC.pdf"];
 
