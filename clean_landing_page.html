@@ -546,70 +546,73 @@
             box-shadow: var(--shadow);
             overflow: hidden;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            min-height: 300px;
+            grid-template-columns: 1.5fr 1fr;
+            min-height: 250px; /* Reduced height by 50px */
             border: 1px solid var(--border);
         }
         
         .module-info {
-            padding: 2rem;
+            padding: 1.5rem;
             position: relative;
         }
         
         .module-header {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         .module-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--primary);
             font-weight: 600;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
         .module-name {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--text);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
         }
         
         .module-description {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             color: var(--text-light);
-            margin-bottom: 1.25rem;
-            line-height: 1.5;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
         }
         
         .module-features {
             display: flex;
-            flex-direction: column;
-            gap: 0.625rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
         
         .module-feature {
             display: flex;
-            align-items: flex-start;
-            gap: 0.5rem;
-            font-size: 0.8125rem;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
             color: var(--text);
+            background: rgba(44, 140, 108, 0.05);
+            padding: 0.35rem 0.75rem;
+            border-radius: 1rem;
+            flex: 0 0 auto;
         }
         
         .module-feature i {
             color: var(--primary);
-            font-size: 0.875rem;
-            margin-top: 0.125rem;
+            font-size: 0.75rem;
         }
         
         .module-actions {
             display: flex;
             gap: 0.75rem;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
         }
         
         .module-btn {
@@ -624,7 +627,7 @@
         }
         
         .module-btn-primary {
-            background-color: var(--primary);
+            background-color: var(--bitcoin-orange);
             color: white;
         }
         
@@ -635,18 +638,18 @@
         
         .module-btn-secondary {
             background-color: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
+            color: var(--bitcoin-orange);
+            border: 1px solid var(--bitcoin-orange);
         }
         
         .module-btn-secondary:hover {
-            background-color: var(--primary-lighter);
+            background-color: rgba(255, 165, 0, 0.1);
             transform: translateY(-1px);
         }
         
         .module-visual {
-            background-color: var(--primary-lighter);
-            padding: 2rem;
+            background-color: white;
+            padding: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -661,24 +664,74 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(44, 140, 108, 0.1) 0%, rgba(44, 140, 108, 0.05) 100%);
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.05) 0%, rgba(44, 140, 108, 0.05) 100%);
             z-index: 1;
         }
         
-        .module-visual-placeholder {
+        .module-visual-demo {
             position: relative;
             z-index: 2;
-            font-weight: 500;
-            color: var(--primary-dark);
-            text-align: center;
-            font-size: 0.875rem;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
-        .module-visual-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .module-demo-header {
+            display: flex;
+            align-items: center;
+            background: var(--bitcoin-orange);
+            padding: 0.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .module-demo-content {
+            flex: 1;
+            border: 1px solid #eee;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            background: white;
+            padding: 0.5rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .module-demo-query {
+            background: #f8f8f8;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--bitcoin-orange);
+        }
+        
+        .module-demo-response {
+            background: #f1f7f5;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            color: #333;
+            border-left: 3px solid var(--primary);
+            flex: 1;
+        }
+        
+        .module-demo-metric {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+        
+        .module-demo-metric i {
             color: var(--primary);
-            opacity: 0.7;
+            font-size: 0.75rem;
         }
 
         /* Features Section */
@@ -1136,9 +1189,25 @@
                     </div>
                     
                     <div class="module-visual">
-                        <div class="module-visual-placeholder">
-                            <i class="fas fa-comments-alt module-visual-icon"></i>
-                            <div>Ask questions like "Show me safety results for Drug X in the 300mg cohort" and get instant, accurate answers</div>
+                        <div class="module-visual-demo">
+                            <div class="module-demo-header">
+                                <i class="fas fa-robot" style="margin-right: 0.5rem;"></i> Clinical Data Assistant
+                            </div>
+                            <div class="module-demo-content">
+                                <div class="module-demo-query">
+                                    <i class="fas fa-search" style="margin-right: 0.375rem; color: var(--bitcoin-orange);"></i>
+                                    Show me safety results for Drug X in the 300mg cohort
+                                </div>
+                                <div class="module-demo-response">
+                                    <b>Result:</b> In the 300mg cohort (n=42), Drug X showed 3 SAEs (7.1%) vs. placebo (n=40) with 5 SAEs (12.5%). Most common AE was headache (18.2% vs 15.0% placebo). No treatment discontinuations due to AEs.
+                                </div>
+                                <div class="module-demo-metric">
+                                    <i class="fas fa-bolt"></i> Response time: 0.8s
+                                </div>
+                                <div class="module-demo-metric">
+                                    <i class="fas fa-link"></i> Source: 3 study reports, 5 citations
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
