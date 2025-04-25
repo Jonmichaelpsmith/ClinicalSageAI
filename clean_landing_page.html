@@ -2112,8 +2112,68 @@
             </div>
             
             <div style="border-top: 1px solid #555; padding-top: 20px; text-align: center;">
-                <p style="color: #999; font-size: 14px;">&copy; 2025 TrialSage™ by Concept2Cures. All rights reserved.</p>
+                <p style="color: #999; font-size: 14px;">&copy; 2025 TrialSage™ by Concept2Cures. All rights reserved. <a href="#" id="about-us-link" style="color: #bbb; text-decoration: underline; font-size: 14px; margin-left: 10px;">About Us</a></p>
             </div>
+            
+            <!-- About Us Modal -->
+            <div id="about-us-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+                <div style="background-color: white; margin: 5% auto; padding: 20px; border-radius: 10px; width: 80%; max-width: 800px; max-height: 80vh; overflow-y: auto; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <span id="close-modal" style="position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer; color: #777;">&times;</span>
+                    
+                    <h2 style="color: var(--primary); font-size: 28px; margin-bottom: 20px; text-align: center;">About Concept2Cure</h2>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: var(--yprime-pink); font-size: 22px; margin-bottom: 15px;">Our Story</h3>
+                        <p style="color: #555; line-height: 1.8; margin-bottom: 15px;">
+                            Concept2Cure was born from a visionary quest to eliminate bottlenecks in bringing medical innovations to patients. Our journey began with inspiration from industry trailblazers who proved that fresh perspectives can revolutionize biotech.
+                        </p>
+                        <p style="color: #555; line-height: 1.8; margin-bottom: 15px;">
+                            After an extensive global research effort spanning North America, Europe, and Asia, our founder identified a universal pain point in life sciences: the slow, siloed process that stretches from a laboratory concept to an actual cure.
+                        </p>
+                        <p style="color: #555; line-height: 1.8; margin-bottom: 15px;">
+                            This insight led to the creation of Concept2Cure and our flagship platform, TrialSage™ — a comprehensive solution designed to accelerate every stage of therapeutic development while ensuring regulatory compliance and scientific rigor.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: var(--yprime-pink); font-size: 22px; margin-bottom: 15px;">Our Mission</h3>
+                        <p style="color: #555; line-height: 1.8; margin-bottom: 15px;">
+                            Concept2Cure's mission is simple yet bold: to accelerate the development of life-saving therapies from the earliest concept to the final cure. We exist to empower scientists, biotech firms, and pharmaceutical companies to bring innovations to patients faster than ever before.
+                        </p>
+                        <p style="color: #555; line-height: 1.8; margin-bottom: 15px;">
+                            We believe that cutting-edge technology can eliminate traditional inefficiencies in R&D and regulatory processes. By leveraging advanced AI and intelligent automation, we strive to transform how therapeutic innovations reach patients.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                // About Us Modal functionality
+                document.addEventListener('DOMContentLoaded', function() {
+                    const modal = document.getElementById('about-us-modal');
+                    const modalLink = document.getElementById('about-us-link');
+                    const closeButton = document.getElementById('close-modal');
+                    
+                    modalLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        modal.style.display = 'block';
+                        document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+                    });
+                    
+                    closeButton.addEventListener('click', function() {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = 'auto'; // Re-enable scrolling
+                    });
+                    
+                    // Close modal when clicking outside the content
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            modal.style.display = 'none';
+                            document.body.style.overflow = 'auto';
+                        }
+                    });
+                });
+            </script>
         </div>
     </footer>
 
