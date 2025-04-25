@@ -29,6 +29,8 @@
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --hero-gradient-start: rgba(11, 110, 79, 0.9);
+            --hero-gradient-end: rgba(8, 86, 61, 0.8);
         }
 
         * {
@@ -156,6 +158,9 @@
             color: var(--text);
             font-weight: 500;
             position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
         }
 
         .nav-link:hover {
@@ -175,6 +180,46 @@
 
         .nav-link:hover::after {
             width: 100%;
+        }
+        
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 125%;
+            left: 0;
+            min-width: 220px;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            padding: 0.75rem 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+        
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--text);
+            font-size: 0.9375rem;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--primary-lighter);
+            color: var(--primary);
         }
 
         .hamburger {
@@ -233,6 +278,37 @@
             padding: 0.5rem 0;
             border-bottom: 1px solid var(--border);
         }
+        
+        .mobile-submenu-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 1.125rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+        
+        .mobile-submenu-toggle i {
+            transition: transform 0.2s ease;
+        }
+        
+        .mobile-submenu-toggle.active i {
+            transform: rotate(180deg);
+        }
+        
+        .mobile-submenu {
+            display: none;
+            padding-left: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mobile-submenu.active {
+            display: block;
+        }
 
         .overlay {
             position: fixed;
@@ -252,57 +328,136 @@
             visibility: visible;
         }
 
-        /* Hero Section */
+        /* Hero Section - Apple Style */
         .hero {
-            padding: 5rem 0;
-            background-color: var(--primary-lighter);
-            background-image: linear-gradient(135deg, var(--primary-lighter) 0%, #F8FAFC 100%);
+            min-height: 760px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(to right, var(--hero-gradient-start), var(--hero-gradient-end)), 
+                              url('landing-assets/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.85;
+            z-index: 1;
         }
 
         .hero-content {
-            max-width: 700px;
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 0 2rem;
+            z-index: 2;
+        }
+
+        .hero-eyebrow {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 0.03em;
         }
 
         .hero-title {
-            font-size: 3rem;
+            font-size: 3.75rem;
             font-weight: 800;
-            line-height: 1.2;
+            line-height: 1.1;
             margin-bottom: 1.5rem;
-            color: var(--text);
+            color: #fff;
+            letter-spacing: -0.02em;
         }
 
         .hero-subtitle {
-            font-size: 1.25rem;
-            color: var(--text-light);
-            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: 400;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .hero-buttons {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 3rem;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 160px;
+            padding: 0.875rem 1.75rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            border-radius: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .hero-btn-primary {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--primary-dark);
+        }
+
+        .hero-btn-primary:hover {
+            background-color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-btn-secondary {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .hero-btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
         }
 
         .hero-stats {
             display: flex;
-            gap: 3rem;
-            margin-top: 2rem;
+            justify-content: center;
+            gap: 4rem;
+            margin-top: 1rem;
         }
 
         .hero-stat {
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
         .hero-stat-value {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 700;
-            color: var(--primary);
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 0.5rem;
         }
 
         .hero-stat-label {
-            font-size: 0.875rem;
-            color: var(--text-light);
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
         }
 
         /* Section Styles */
@@ -722,6 +877,16 @@
                 <a href="/" class="logo">TrialSage™ by Concept2Cures</a>
                 
                 <ul class="nav-menu">
+                    <li class="dropdown">
+                        <a href="#" class="nav-link">Solutions <i class="fas fa-chevron-down"></i></a>
+                        <div class="dropdown-menu">
+                            <a href="/solutions/csr-intelligence" class="dropdown-item">CSR Intelligence™</a>
+                            <a href="/solutions/ind-wizard" class="dropdown-item">IND Wizard™</a>
+                            <a href="/solutions/ich-wiz" class="dropdown-item">ICH Wiz™</a>
+                            <a href="/solutions/vault-workspace" class="dropdown-item">Vault™ Workspace</a>
+                            <a href="/solutions/study-architect" class="dropdown-item">Study Architect™</a>
+                        </div>
+                    </li>
                     <li><a href="#modules" class="nav-link">Modules</a></li>
                     <li><a href="#features" class="nav-link">Features</a></li>
                     <li><a href="#about" class="nav-link">About</a></li>
@@ -744,6 +909,17 @@
         </div>
         
         <nav class="mobile-nav">
+            <div class="mobile-submenu-toggle">
+                <span>Solutions</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="mobile-submenu">
+                <a href="/solutions/csr-intelligence" class="mobile-nav-link">CSR Intelligence™</a>
+                <a href="/solutions/ind-wizard" class="mobile-nav-link">IND Wizard™</a>
+                <a href="/solutions/ich-wiz" class="mobile-nav-link">ICH Wiz™</a>
+                <a href="/solutions/vault-workspace" class="mobile-nav-link">Vault™ Workspace</a>
+                <a href="/solutions/study-architect" class="mobile-nav-link">Study Architect™</a>
+            </div>
             <a href="#modules" class="mobile-nav-link">Modules</a>
             <a href="#features" class="mobile-nav-link">Features</a>
             <a href="#about" class="mobile-nav-link">About</a>
@@ -753,30 +929,30 @@
     
     <div class="overlay" id="overlay"></div>
 
+    <!-- Apple-style Hero Section -->
     <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="hero-title">Accelerate Regulatory Submissions with AI</h1>
-                <p class="hero-subtitle">TrialSage™ transforms pharmaceutical regulatory processes with AI-powered document generation, automated compliance checks, and real-time intelligence.</p>
-                
-                <div class="hero-buttons">
-                    <a href="/demo" class="btn btn-primary btn-lg">Request Demo</a>
-                    <a href="#modules" class="btn btn-outline btn-lg">Explore Platform</a>
+        <div class="hero-content">
+            <div class="hero-eyebrow">Introducing TrialSage™</div>
+            <h1 class="hero-title">Transform Regulatory Submissions with AI-Powered Intelligence</h1>
+            <p class="hero-subtitle">The life sciences industry often relies on slow, manual processes for regulatory compliance. TrialSage™ revolutionizes regulatory document creation and validation with advanced AI, accelerating submissions by up to 75% while ensuring compliance.</p>
+            
+            <div class="hero-buttons">
+                <a href="/demo" class="hero-btn hero-btn-primary">Request Demo</a>
+                <a href="#modules" class="hero-btn hero-btn-secondary">Explore Platform</a>
+            </div>
+            
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-value">3,217+</span>
+                    <span class="hero-stat-label">CSRs Analyzed</span>
                 </div>
-                
-                <div class="hero-stats">
-                    <div class="hero-stat">
-                        <span class="hero-stat-value">3,217+</span>
-                        <span class="hero-stat-label">CSRs Analyzed</span>
-                    </div>
-                    <div class="hero-stat">
-                        <span class="hero-stat-value">75%</span>
-                        <span class="hero-stat-label">Faster Submission</span>
-                    </div>
-                    <div class="hero-stat">
-                        <span class="hero-stat-value">98%</span>
-                        <span class="hero-stat-label">First-time Acceptance</span>
-                    </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">75%</span>
+                    <span class="hero-stat-label">Faster Submissions</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">98%</span>
+                    <span class="hero-stat-label">First-time Acceptance</span>
                 </div>
             </div>
         </div>
