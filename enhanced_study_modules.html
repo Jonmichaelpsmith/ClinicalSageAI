@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ Enhanced Study Modules</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --ind-color: #E02287;
+            --ind-bg: #FDF2F8;
+            --study-color: #0B6E4F;
+            --study-bg: #E6F3EF;
+            --ich-color: #0561D3;
+            --ich-bg: #F0F7FF;
+            --csr-color: #2089E0;
+            --csr-bg: #F2F9FF;
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --text-light: #898989;
+            --border-color: #EEEEEE;
+            --gray-bg: #F7F8FA;
+            --white: #FFFFFF;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            color: var(--text-dark);
+            background-color: white;
+            font-size: 8px;
+            line-height: 1.4;
+        }
+        
+        .container {
+            padding: 10px;
+            max-width: 400px;
+        }
+        
+        .page-title {
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .page-subtitle {
+            color: var(--text-medium);
+            font-size: 7px;
+            margin-bottom: 10px;
+            max-width: 380px;
+        }
+        
+        /* Process Timeline */
+        .process-timeline {
+            display: flex;
+            gap: 0;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: visible;
+            min-width: 380px;
+        }
+        
+        .process-timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 14px;
+            right: 14px;
+            height: 2px;
+            background-color: #E5E7EB;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+        
+        .timeline-stop {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 58px;
+        }
+        
+        .stop-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--white);
+            border: 2px solid;
+            margin-bottom: 4px;
+        }
+        
+        .stop-circle i {
+            font-size: 10px;
+        }
+        
+        .stop-label {
+            font-size: 6px;
+            font-weight: 500;
+            text-align: center;
+            width: 100%;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+        
+        /* Circular colors */
+        .protocol-dev .stop-circle {
+            border-color: #79CDFF;
+            color: #79CDFF;
+        }
+        
+        .peer-review .stop-circle {
+            border-color: #1F94E9;
+            color: #1F94E9;
+        }
+        
+        .ethics-approval .stop-circle {
+            border-color: #4D7EDE;
+            color: #4D7EDE;
+        }
+        
+        .trial-registration .stop-circle {
+            border-color: #00365E;
+            color: #00365E;
+        }
+        
+        .trial-operations .stop-circle {
+            border-color: #001D34;
+            color: #001D34;
+        }
+        
+        /* Module Cards */
+        .modules-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .module-card {
+            flex: 1;
+            min-width: 140px;
+            max-width: calc(50% - 4px);
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-header {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .module-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .module-icon i {
+            font-size: 6px;
+        }
+        
+        .module-title {
+            font-size: 7px;
+            font-weight: 600;
+            flex: 1;
+            line-height: 1.2;
+        }
+        
+        .card-content {
+            padding: 6px 8px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .module-description {
+            font-size: 6px;
+            color: var(--text-medium);
+            margin-bottom: 6px;
+            flex: 1;
+            line-height: 1.3;
+        }
+        
+        .module-features {
+            margin-bottom: 5px;
+        }
+        
+        .module-feature {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 5px;
+            color: var(--text-medium);
+            margin-bottom: 2px;
+        }
+        
+        .module-feature i {
+            color: var(--primary);
+            font-size: 4px;
+        }
+        
+        .module-metrics {
+            display: flex;
+            gap: 5px;
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 4px;
+        }
+        
+        .module-metric {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 7px;
+            font-weight: 600;
+            margin-bottom: 1px;
+        }
+        
+        .metric-label {
+            font-size: 4px;
+            color: var(--text-light);
+        }
+        
+        /* Module colors */
+        .study-architect {
+            border-color: var(--study-color);
+        }
+        
+        .study-architect .module-icon {
+            background-color: var(--study-color);
+        }
+        
+        .study-architect .metric-value {
+            color: var(--study-color);
+        }
+        
+        .ind {
+            border-color: var(--ind-color);
+        }
+        
+        .ind .module-icon {
+            background-color: var(--ind-color);
+        }
+        
+        .ind .metric-value {
+            color: var(--ind-color);
+        }
+        
+        .ich {
+            border-color: var(--ich-color);
+        }
+        
+        .ich .module-icon {
+            background-color: var(--ich-color);
+        }
+        
+        .ich .metric-value {
+            color: var(--ich-color);
+        }
+        
+        .csr {
+            border-color: var(--csr-color);
+        }
+        
+        .csr .module-icon {
+            background-color: var(--csr-color);
+        }
+        
+        .csr .metric-value {
+            color: var(--csr-color);
+        }
+        
+        /* Value Proposition Section */
+        .value-section {
+            margin-top: 5px;
+            background-color: var(--gray-bg);
+            border-radius: 8px;
+            padding: 8px;
+            position: relative;
+        }
+        
+        .value-title {
+            font-size: 8px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .value-card {
+            background-color: white;
+            border-radius: 6px;
+            padding: 8px;
+            box-shadow: var(--shadow);
+        }
+        
+        .value-card-title {
+            font-size: 6px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .value-card-title i {
+            color: var(--primary);
+        }
+        
+        .value-description {
+            font-size: 5px;
+            color: var(--text-medium);
+            line-height: 1.3;
+        }
+        
+        .value-metric {
+            margin-top: 4px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .value-metric-label {
+            font-size: 5px;
+            color: var(--text-medium);
+        }
+        
+        .value-metric-value {
+            font-size: 7px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">TrialSage™ Study Modules</h1>
+        <p class="page-subtitle">Comprehensive AI-powered tools for optimizing trial design, regulatory compliance, and documentation across the entire study lifecycle.</p>
+        
+        <!-- Process Timeline -->
+        <div class="process-timeline">
+            <div class="timeline-stop protocol-dev">
+                <div class="stop-circle">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stop-label">Protocol Development</div>
+            </div>
+            
+            <div class="timeline-stop peer-review">
+                <div class="stop-circle">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stop-label">Peer Review</div>
+            </div>
+            
+            <div class="timeline-stop ethics-approval">
+                <div class="stop-circle">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stop-label">Ethics Approval</div>
+            </div>
+            
+            <div class="timeline-stop trial-registration">
+                <div class="stop-circle">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stop-label">Trial Registration</div>
+            </div>
+            
+            <div class="timeline-stop trial-operations">
+                <div class="stop-circle">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <div class="stop-label">Trial Operations</div>
+            </div>
+        </div>
+        
+        <!-- Module Cards - First Row -->
+        <div class="modules-row">
+            <div class="module-card study-architect">
+                <div class="card-header">
+                    <div class="module-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3 class="module-title">Study Architect™</h3>
+                </div>
+                <div class="card-content">
+                    <p class="module-description">Advanced protocol development tool leveraging AI and historical data to design optimized, compliant clinical trial protocols with built-in ICH recommendations.</p>
+                    
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Accelerated protocol development</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>AI-optimized trial design recommendations</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Real-time regulatory validation</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Endpoint selection optimization</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Statistical power analysis integration</span>
+                        </div>
+                    </div>
+                    
+                    <div class="module-metrics">
+                        <div class="module-metric">
+                            <div class="metric-value">68%</div>
+                            <div class="metric-label">Faster Protocol Development</div>
+                        </div>
+                        <div class="module-metric">
+                            <div class="metric-value">42%</div>
+                            <div class="metric-label">Fewer Protocol Amendments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="module-card ind">
+                <div class="card-header">
+                    <div class="module-icon">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <h3 class="module-title">IND Wizard™</h3>
+                </div>
+                <div class="card-content">
+                    <p class="module-description">Comprehensive IND preparation platform with AI-guided document generation, regulatory validation, and submission readiness assessment for accelerated FDA authorization.</p>
+                    
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Auto-generated Form 1571 and 1572</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>CMC preparation assistance</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Investigator Brochure builder</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Pre-IND meeting guidance</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>FDA submission error detection</span>
+                        </div>
+                    </div>
+                    
+                    <div class="module-metrics">
+                        <div class="module-metric">
+                            <div class="metric-value">75%</div>
+                            <div class="metric-label">Faster IND Preparation</div>
+                        </div>
+                        <div class="module-metric">
+                            <div class="metric-value">95%</div>
+                            <div class="metric-label">First-time Authorization Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module Cards - Second Row -->
+        <div class="modules-row">
+            <div class="module-card ich">
+                <div class="card-header">
+                    <div class="module-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="module-title">ICH Wiz™</h3>
+                </div>
+                <div class="card-content">
+                    <p class="module-description">Intelligent compliance assistant embedding all ICH guidelines with real-time validation, remediation suggestions, and cross-reference guidance for global regulatory submissions.</p>
+                    
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Complete ICH guideline library</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Real-time compliance validation</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Document-specific compliance checks</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Region-specific regulation integration</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Automatic compliance reporting</span>
+                        </div>
+                    </div>
+                    
+                    <div class="module-metrics">
+                        <div class="module-metric">
+                            <div class="metric-value">98%</div>
+                            <div class="metric-label">Compliant Documents</div>
+                        </div>
+                        <div class="module-metric">
+                            <div class="metric-value">40+</div>
+                            <div class="metric-label">ICH Guidelines Covered</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="module-card csr">
+                <div class="card-header">
+                    <div class="module-icon">
+                        <i class="fas fa-analytics"></i>
+                    </div>
+                    <h3 class="module-title">CSR Intelligence™</h3>
+                </div>
+                <div class="card-content">
+                    <p class="module-description">Advanced Clinical Study Report generation platform utilizing structured data capture, automated statistical analysis, and narrative generation for high-quality CSRs.</p>
+                    
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Automated CSR generation</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>E3 guideline compliance</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Statistical reporting automation</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Automated adverse event narratives</span>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Consistent table/figure generation</span>
+                        </div>
+                    </div>
+                    
+                    <div class="module-metrics">
+                        <div class="module-metric">
+                            <div class="metric-value">82%</div>
+                            <div class="metric-label">Reduced CSR Authoring Time</div>
+                        </div>
+                        <div class="module-metric">
+                            <div class="metric-value">8wks</div>
+                            <div class="metric-label">Average Timeline Reduction</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Value Proposition Section -->
+        <div class="value-section">
+            <h3 class="value-title">Transformative Value Proposition</h3>
+            
+            <div class="value-grid">
+                <div class="value-card">
+                    <h4 class="value-card-title">
+                        <i class="fas fa-bolt"></i>
+                        Accelerated Development
+                    </h4>
+                    <p class="value-description">Slash protocol development timelines by 68% and accelerate IND-to-FIH timelines with AI-powered automation that streamlines regulatory document preparation.</p>
+                    <div class="value-metric">
+                        <span class="value-metric-label">Avg. Time Savings</span>
+                        <span class="value-metric-value">16+ weeks</span>
+                    </div>
+                </div>
+                
+                <div class="value-card">
+                    <h4 class="value-card-title">
+                        <i class="fas fa-chart-line"></i>
+                        Optimized Trial Design
+                    </h4>
+                    <p class="value-description">Leverage insights from 3,200+ successful trials to design optimized protocols with reduced amendments, higher enrollment rates, and better endpoint selection.</p>
+                    <div class="value-metric">
+                        <span class="value-metric-label">Protocol Amendment Reduction</span>
+                        <span class="value-metric-value">42%</span>
+                    </div>
+                </div>
+                
+                <div class="value-card">
+                    <h4 class="value-card-title">
+                        <i class="fas fa-shield-check"></i>
+                        Regulatory Confidence
+                    </h4>
+                    <p class="value-description">Achieve 95% first-time acceptance rates with continuous compliance validation against FDA, EMA, PMDA, and ICH guidelines embedded throughout the workflow.</p>
+                    <div class="value-metric">
+                        <span class="value-metric-label">First-time Acceptance</span>
+                        <span class="value-metric-value">95%</span>
+                    </div>
+                </div>
+                
+                <div class="value-card">
+                    <h4 class="value-card-title">
+                        <i class="fas fa-dollar-sign"></i>
+                        Cost Efficiency
+                    </h4>
+                    <p class="value-description">Dramatically reduce resource requirements and operational costs while accelerating timelines through automation, integration, and intelligent workflows.</p>
+                    <div class="value-metric">
+                        <span class="value-metric-label">Average Cost Reduction</span>
+                        <span class="value-metric-value">$4.2M</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
