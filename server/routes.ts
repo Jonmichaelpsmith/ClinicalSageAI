@@ -18,7 +18,7 @@ const standaloneModule = {
       // Only serve the standalone landing page at the exact root path
       if (useStandalone) {
         try {
-          const htmlPath = path.join(process.cwd(), 'premium_landing_page.html');
+          const htmlPath = path.join(process.cwd(), 'clean_landing_page.html');
           
           if (fs.existsSync(htmlPath)) {
             console.log('[Standalone] Serving landing page from:', htmlPath);
@@ -151,7 +151,7 @@ function createMinimalServer() {
   const server = http.createServer((req: any, res: any) => {
     if (req.url === '/' || req.url === '/index.html') {
       try {
-        const htmlPath = path.join(process.cwd(), 'premium_landing_page.html');
+        const htmlPath = path.join(process.cwd(), 'clean_landing_page.html');
         if (fs.existsSync(htmlPath)) {
           const content = fs.readFileSync(htmlPath);
           res.writeHead(200, { 'Content-Type': 'text/html' });
