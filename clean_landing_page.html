@@ -239,7 +239,23 @@
         .solutions-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        /* Full-Width Solutions */
+        .full-width-solution {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
             gap: 20px;
+            background-color: white;
+            box-shadow: var(--box-shadow);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            padding: 20px 25px;
         }
         
         .solution-card {
@@ -1206,26 +1222,36 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Document Preview Hover - Enhanced Version -->
-                            <div style="position: absolute; top: 170px; right: 20px; background-color: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); padding: 20px; width: 400px; z-index: 10; border: 1px solid #e0e0e0;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                    <div style="font-weight: 600; font-size: 16px; color: #333;">Process Validation Protocol.docx</div>
-                                    <div>
-                                        <img src="https://img.icons8.com/color/24/000000/google-docs--v1.png" alt="Document Icon" style="height: 20px; width: auto;">
-                                    </div>
-                                </div>
-                                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; font-size: 14px; line-height: 1.5; color: #333; margin-bottom: 15px; border: 1px solid #eee;">
-                                    <p style="margin-bottom: 10px;"><strong>This document outlines the validation protocol for the manufacturing process of Drug X, including testing parameters, acceptance criteria, and sampling methods...</strong></p>
-                                    <p>The validation protocol for the manufacturing process of Drug X, including testing parameters, acceptance criteria, and sampling methods...</p>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <!-- Document Preview Card - Exact Match to Screenshot -->
+                            <div style="position: relative; right: -60px; top: 20px; background-color: white; border-radius: 6px; box-shadow: 0 3px 12px rgba(0,0,0,0.15); width: 600px; z-index: 10; border: 1px solid #e0e0e0; overflow: hidden;">
+                                <!-- Document Header -->
+                                <div style="background-color: #f5f5f5; padding: 10px 15px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div style="font-size: 13px; color: #666;">Version: <strong>1.2</strong></div>
-                                        <span style="color: #888;">|</span>
-                                        <div style="font-size: 13px; color: #666;"><strong>3</strong> previous versions</div>
+                                        <img src="https://img.icons8.com/color/48/000000/google-docs--v1.png" alt="Document Icon" style="height: 20px; width: auto;">
+                                        <span style="font-weight: 600; font-size: 15px; color: #333;">Process Validation Protocol.docx</span>
                                     </div>
-                                    <div>
-                                        <span style="font-size: 12px; padding: 4px 8px; background-color: #e8f5e9; color: #2e7d32; border-radius: 12px;">Updated yesterday</span>
+                                    <div style="display: flex; gap: 10px;">
+                                        <img src="https://img.icons8.com/material/24/555555/download--v1.png" alt="Download" style="height: 18px; width: auto; opacity: 0.6;">
+                                        <img src="https://img.icons8.com/material/24/555555/share--v1.png" alt="Share" style="height: 18px; width: auto; opacity: 0.6;">
+                                    </div>
+                                </div>
+                                
+                                <!-- Document Content -->
+                                <div style="padding: 20px 30px;">
+                                    <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 15px;">This document outlines the validation protocol for the manufacturing process of Drug X, including testing parameters, acceptance criteria, and sampling methods.</p>
+                                    
+                                    <p style="color: #555; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">The validation protocol for the manufacturing process of Drug X, including testing parameters, acceptance criteria, and sampling methods...</p>
+                                
+                                    <!-- Document Footer Info -->
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                                        <div>
+                                            <span style="font-size: 13px; color: #666;">Version: <strong>1.2</strong></span>
+                                            <span style="color: #ccc; margin: 0 8px;">|</span>
+                                            <span style="font-size: 13px; color: #666;"><strong>3</strong> previous versions</span>
+                                        </div>
+                                        <div>
+                                            <span style="font-size: 12px; padding: 3px 8px; background-color: #e8f5e9; color: #2e7d32; border-radius: 12px;">Updated yesterday</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
