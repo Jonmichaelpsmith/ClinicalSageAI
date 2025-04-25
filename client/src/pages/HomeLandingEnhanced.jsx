@@ -2,9 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { motion } from 'framer-motion';
-import Layout from '../components/Layout';
-
 import { 
   FileText, 
   BarChart2, 
@@ -108,9 +105,11 @@ const DisruptionCard = ({ icon, title, legacy, summary, caseStudies }) => {
   );
 };
 
+import AppPackagesBanner from '../components/AppPackagesBanner';
 // SimpleSolutionBundles section removed as requested
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
-
+{/* Removed CSRLibraryMetrics import - now integrated in AppPackagesBanner */}
+import { apiRequest } from '../lib/queryClient';
 
 const TAGLINES = [
   'Turning Concepts into Cures – 2× faster INDs',
@@ -183,38 +182,38 @@ const METRICS = [
 
 export default function HomeLandingEnhanced() {
   const [location] = useLocation();
+  const [csrCount, setCsrCount] = useState(3021);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Using a stable hardcoded value to prevent API failures
-  // This eliminates the UI flashing entirely by removing the API call
-  const csrCount = 3021; // Authenticated value from the database on mount
+  useEffect(() => {
+    const fetchCSRCount = async () => {
+      setIsLoading(true);
+      try {
+        const response = await apiRequest('GET', '/api/reports/count');
+        const data = await response.json();
+        if (data && data.count) {
+          setCsrCount(data.count);
+        }
+      } catch (error) {
+        console.error('Error fetching CSR count:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCSRCount();
+  }, []);
 
   return (
-    <Layout>
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">      
-      {/* Hero Section - Enhanced with Animated Gradient Blobs (No Video) */}
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
+      {/* Application Packages Banner */}
+      <AppPackagesBanner currentPath={location} />
+      
+      {/* Hero Section - Compact Version */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-900 via-blue-900 to-blue-800 text-white">
-        {/* Animated gradient blobs */}
-        <motion.div initial={{opacity:0, scale:0.8}} animate={{opacity:1, scale:1}} transition={{duration:1}} className="absolute inset-0 -z-0">
-          <motion.div 
-            className="absolute w-[40rem] h-[40rem] bg-regulatory-500/30 rounded-full filter blur-3xl" 
-            style={{top:"-10%", left:"-10%"}} 
-            animate={{y:[0, 50, -30, 0], x:[0, -30, 30, 0]}} 
-            transition={{repeat:Infinity, duration:20, ease:"easeInOut"}}
-          />
-          <motion.div 
-            className="absolute w-[30rem] h-[30rem] bg-indigo-400/20 rounded-full filter blur-3xl" 
-            style={{bottom:"-5rem", right:"-4rem"}} 
-            animate={{y:[0, -40, 40, 0], x:[0, 30, -20, 0]}} 
-            transition={{repeat:Infinity, duration:23, ease:"easeInOut"}}
-          />
-          <motion.div 
-            className="absolute w-[25rem] h-[25rem] bg-blue-300/20 rounded-full filter blur-3xl" 
-            style={{top:"30%", right:"20%"}} 
-            animate={{y:[0, 30, -50, 0], scale:[1, 1.1, 0.9, 1]}} 
-            transition={{repeat:Infinity, duration:18, ease:"easeInOut"}}
-          />
-        </motion.div>
-        
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[url('https://raw.githubusercontent.com/Concepts2Cures/assets/main/dna-pattern.svg')] bg-repeat opacity-30"></div>
+        </div>
         <div className="container mx-auto px-6 pt-12 pb-16 relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-8">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-700/30 backdrop-blur-sm text-blue-200 text-xs font-medium mb-4">
@@ -228,19 +227,11 @@ export default function HomeLandingEnhanced() {
               Concept2Cures.AI delivers a comprehensive regulatory suite integrating advanced machine learning with industry-compliant frameworks to revolutionize global submissions and regulatory strategy.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <Link 
-                to="/ind/wizard" 
-                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-md shadow shadow-blue-900/30 transition-all duration-200 focus-visible:ring focus-visible:ring-regulatory-400"
-                aria-label="Launch IND Wizard"
-              >
-                IND Wizard
+              <Link to="/signup" className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-md shadow shadow-blue-900/30 transition-all duration-200">
+                Start Free Trial
               </Link>
-              <Link 
-                to="/ind/wizard/pre-planning" 
-                className="px-6 py-2 bg-blue-800/40 hover:bg-blue-700/40 border border-blue-600/30 backdrop-blur-sm text-blue-100 text-sm font-medium rounded-md shadow-sm transition-all duration-200 focus-visible:ring focus-visible:ring-regulatory-400"
-                aria-label="Access Pre-IND Planning"
-              >
-                Pre-IND Planning
+              <Link to="/demo" className="px-6 py-2 bg-blue-800/40 hover:bg-blue-700/40 border border-blue-600/30 backdrop-blur-sm text-blue-100 text-sm font-medium rounded-md shadow-sm transition-all duration-200">
+                Request Demo
               </Link>
             </div>
           </div>
@@ -250,7 +241,7 @@ export default function HomeLandingEnhanced() {
             {METRICS.map((metric, i) => (
               <div key={i} className="bg-gradient-to-br from-blue-800/40 to-indigo-900/40 backdrop-blur-sm border border-blue-700/30 rounded-md p-3 text-center transition-all duration-200 hover:bg-blue-800/50">
                 <div className="flex justify-center mb-2">
-                  {React.cloneElement(metric.icon, { className: 'w-8 h-8', size: 20, "aria-hidden":"true" })}
+                  {React.cloneElement(metric.icon, { className: 'w-8 h-8', size: 20 })}
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-0.5">{metric.value}</h3>
                 <p className="font-medium text-blue-200 text-sm mb-1">{metric.label}</p>
@@ -262,7 +253,7 @@ export default function HomeLandingEnhanced() {
         
         {/* Wave divider */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" className="w-full h-auto -mb-1" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" className="w-full h-auto -mb-1">
             <path fill="#ffffff" fillOpacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
           </svg>
         </div>
@@ -380,9 +371,9 @@ export default function HomeLandingEnhanced() {
             </div>
             
             <div className="text-center mt-8">
-              <Link to="/ind/wizard">
+              <Link to="/impact-analysis">
                 <button className="inline-flex items-center px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-all duration-300 shadow-lg hover:shadow-blue-500/20">
-                  Open IND Wizard
+                  See Detailed ROI Analysis
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </button>
               </Link>
@@ -585,19 +576,19 @@ export default function HomeLandingEnhanced() {
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to accelerate your regulatory process?</h2>
                 <p className="text-lg text-gray-600 mb-6">Schedule a personalized demo to see how TrialSage can transform your clinical and regulatory operations.</p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link to="/ind/wizard" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors">
-                    Start IND Wizard
+                  <Link to="/signup" className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-colors">
+                    Start Free Trial
                   </Link>
-                  <Link to="/ind/wizard/nonclinical" className="px-6 py-3 bg-white border border-blue-600 text-blue-600 font-medium rounded-lg shadow-sm hover:bg-blue-50 transition-colors">
-                    Go to Nonclinical
+                  <Link to="/demo" className="px-6 py-3 bg-white border border-blue-600 text-blue-600 font-medium rounded-lg shadow-sm hover:bg-blue-50 transition-colors">
+                    Request Demo
                   </Link>
                 </div>
               </div>
               <div className="md:w-1/3 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-10 flex flex-col justify-center">
                 <h3 className="text-xl font-bold mb-4">Enterprise Solutions</h3>
                 <p className="mb-6">Custom solutions available for enterprise teams managing multiple programs.</p>
-                <Link to="/ind/wizard/cmc" className="text-white font-medium inline-flex items-center hover:underline">
-                  Go to CMC <ArrowRight size={16} className="ml-2" />
+                <Link to="/enterprise" className="text-white font-medium inline-flex items-center hover:underline">
+                  Learn More <ArrowRight size={16} className="ml-2" />
                 </Link>
               </div>
             </div>
@@ -653,6 +644,5 @@ export default function HomeLandingEnhanced() {
         </div>
       </footer>
     </div>
-    </Layout>
   );
 }

@@ -22,7 +22,7 @@ const LazyCSRPage = React.lazy(() => import('./pages/csr'));
 const LazyMetadataRepositoryPage = React.lazy(() => import('./pages/metadata'));
 const LazyIndSequenceDetail = React.lazy(() => import('./pages/IndSequenceDetail'));
 const LazyIndSequenceManager = React.lazy(() => import('./pages/IndSequenceManager'));
-const LazyHomeLanding = React.lazy(() => import('./pages/HomeLandingProtected'));
+const LazyHomeLanding = React.lazy(() => import('./pages/HomeLanding'));
 const LazyHomeLandingEnhanced = React.lazy(() => import('./pages/HomeLandingEnhanced'));
 const LazyPersonaPages = React.lazy(() => import('./components/PersonaPages'));
 const LazyGatedSalesInvestorAssets = React.lazy(() => import('./components/GatedSalesInvestorAssets'));
@@ -47,6 +47,8 @@ const LazyValidationHubEnhanced = React.lazy(() => import('./pages/ValidationHub
 const LazyAdaptiveLearning = React.lazy(() => import('./pages/AdaptiveLearning'));
 // Add Document Risk Prediction with AI-powered insights
 const LazyDocumentRiskPrediction = React.lazy(() => import('./pages/DocumentRiskPrediction'));
+// Import our premium enterprise landing page that uses NO external dependencies
+import PremiumEnterpriseLanding from './pages/PremiumEnterpriseLanding';
 // Add Document Management with DocuShare integration
 const LazyDocumentManagement = React.lazy(() => import('./pages/DocumentManagement'));
 // Add Clinical Metadata Repository with AI-driven capabilities
@@ -549,7 +551,7 @@ export default function App() {
                     }
                   >
                     <AuthRedirector>
-                      <LazyHomeMarketingPage />
+                      <LazyCSRIntelligence />
                     </AuthRedirector>
                   </React.Suspense>
                 </SimpleErrorBoundary>
