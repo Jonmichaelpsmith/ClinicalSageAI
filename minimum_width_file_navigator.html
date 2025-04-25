@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimum Width File Navigator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --border: #eee;
+            --text-main: #333;
+            --text-light: #777;
+            --bg-light: #f7f7f7;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-size: 6px;
+            overflow-x: hidden;
+            width: 100%;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 5px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .title {
+            color: var(--primary);
+            font-size: 7px;
+            font-weight: 600;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .action-button {
+            width: 8px;
+            height: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: 1px;
+            font-size: 4px;
+            color: #999;
+        }
+        
+        /* Main Layout */
+        .container {
+            display: flex;
+            height: 148px;
+            border: 1px solid var(--border);
+            /* CRITICAL: Maximum width set to prevent overflow */
+            max-width: 240px;
+        }
+        
+        /* Folders Panel */
+        .folders {
+            width: 60px;
+            border-right: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        
+        .section-title {
+            padding: 2px 4px;
+            background: var(--bg-light);
+            font-size: 5px;
+            color: var(--text-light);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .folder-list {
+            overflow-y: auto;
+            height: calc(100% - 19px);
+        }
+        
+        .folder {
+            padding: 2px 4px;
+            border-bottom: 1px solid var(--border);
+            font-size: 5px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .folder.selected {
+            background-color: #e6f3ef;
+            color: var(--primary);
+        }
+        
+        .folder.sub {
+            padding-left: 8px;
+        }
+        
+        .folder i {
+            font-size: 4px;
+            width: 5px;
+        }
+        
+        /* Documents Panel */
+        .documents {
+            width: 75px;
+            border-right: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        
+        .doc-list {
+            overflow-y: auto;
+            height: calc(100% - 19px);
+        }
+        
+        .doc {
+            padding: 3px 4px;
+            border-bottom: 1px solid var(--border);
+            font-size: 5px;
+        }
+        
+        .doc.selected {
+            background-color: #fff0f8;
+            border-left: 2px solid #e6007d;
+        }
+        
+        .doc-name {
+            font-weight: 500;
+            margin-bottom: 1px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .doc-name i {
+            font-size: 4px;
+            width: 5px;
+        }
+        
+        .doc-meta {
+            color: var(--text-light);
+            font-size: 4px;
+        }
+        
+        /* Preview Panel */
+        .preview {
+            flex-grow: 1;
+            /* CRITICAL: Fixed width to prevent overflow */
+            width: 105px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-light);
+        }
+        
+        .tab {
+            padding: 2px 5px;
+            font-size: 5px;
+            border-right: 1px solid var(--border);
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            background: white;
+            font-weight: 500;
+        }
+        
+        .content {
+            padding: 4px;
+            font-size: 5px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        .doc-title {
+            font-size: 7px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .doc-subtitle {
+            font-size: 4px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+        
+        .section {
+            margin-bottom: 4px;
+        }
+        
+        .section-header {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .section-body {
+            font-size: 5px;
+            margin-bottom: 3px;
+            line-height: 1.3;
+        }
+        
+        .insights {
+            background: #e6f3ef;
+            border-left: 2px solid var(--primary);
+            padding: 3px;
+            margin-top: 5px;
+            font-size: 5px;
+        }
+        
+        .insights-title {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .insights-title i {
+            font-size: 4px;
+        }
+        
+        .insights-body {
+            font-size: 4px;
+            line-height: 1.3;
+        }
+        
+        .version-bar {
+            border-top: 1px solid var(--border);
+            padding: 2px 4px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 4px;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="title">TrialSage File Navigator™</div>
+        <div class="actions">
+            <div class="action-button"><i class="fas fa-expand"></i></div>
+            <div class="action-button"><i class="fas fa-cog"></i></div>
+            <div class="action-button"><i class="fas fa-question"></i></div>
+        </div>
+    </div>
+    
+    <!-- Main Container with FIXED WIDTH -->
+    <div class="container">
+        <!-- Folders Panel -->
+        <div class="folders">
+            <div class="section-title">FOLDERS</div>
+            <div class="folder-list">
+                <div class="folder">
+                    <i class="fas fa-folder-open"></i>
+                    <span>CMC Documents</span>
+                </div>
+                <div class="folder sub">
+                    <i class="fas fa-folder"></i>
+                    <span>Drug Substance</span>
+                </div>
+                <div class="folder sub">
+                    <i class="fas fa-folder"></i>
+                    <span>Drug Product</span>
+                </div>
+                <div class="folder sub">
+                    <i class="fas fa-folder"></i>
+                    <span>Specifications</span>
+                </div>
+                <div class="folder sub selected">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Validation</span>
+                </div>
+                <div class="folder">
+                    <i class="fas fa-folder"></i>
+                    <span>Regulatory</span>
+                </div>
+                <div class="folder">
+                    <i class="fas fa-folder"></i>
+                    <span>Quality</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Documents Panel -->
+        <div class="documents">
+            <div class="section-title">VALIDATION DOCUMENTS</div>
+            <div class="doc-list">
+                <div class="doc">
+                    <div class="doc-name">
+                        <i class="fas fa-file-word"></i>
+                        Method Validation Report.docx
+                    </div>
+                    <div class="doc-meta">Updated 2 days ago • John Smith</div>
+                </div>
+                <div class="doc">
+                    <div class="doc-name">
+                        <i class="fas fa-file-word"></i>
+                        Stability Protocol v2.0.docx
+                    </div>
+                    <div class="doc-meta">Updated yesterday • Maria Chen</div>
+                </div>
+                <div class="doc">
+                    <div class="doc-name">
+                        <i class="fas fa-file-pdf"></i>
+                        Equipment Qualification.pdf
+                    </div>
+                    <div class="doc-meta">Updated 5 days ago • Robert Lewis</div>
+                </div>
+                <div class="doc selected">
+                    <div class="doc-name">
+                        <i class="fas fa-file-word"></i>
+                        Process Validation Protocol.docx
+                    </div>
+                    <div class="doc-meta">Updated today • AI Generated</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview Panel - Fixed Width! -->
+        <div class="preview">
+            <div class="tabs">
+                <div class="tab active">Document</div>
+                <div class="tab">Metadata</div>
+                <div class="tab">Versions</div>
+            </div>
+            <div class="content">
+                <h1 class="doc-title">Process Validation Protocol v2.1</h1>
+                <p class="doc-subtitle">Drug Product: TS-273 Tablets</p>
+                
+                <div class="section">
+                    <h2 class="section-header">1. Purpose</h2>
+                    <p class="section-body">This protocol defines the approach and acceptance criteria for validating the manufacturing process for TS-273 Tablets at the designated manufacturing site, meeting predetermined quality attributes.</p>
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-header">2. Scope</h2>
+                    <p class="section-body">This protocol applies to the validation of the manufacturing process for TS-273 Tablets at the designated manufacturing site, covering all process steps from dispensing through packaging.</p>
+                </div>
+                
+                <div class="insights">
+                    <div class="insights-title">
+                        <i class="fas fa-robot"></i>
+                        AI-Generated Insights
+                    </div>
+                    <div class="insights-body">
+                        This protocol aligns with FDA Process Validation guidance. Similar protocols have successfully passed FDA and EMA submissions.
+                    </div>
+                </div>
+            </div>
+            <div class="version-bar">
+                <div>Version: 2.1</div>
+                <div>4 previous versions</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
