@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra Compact File View</title>
+    <style>
+        /* Essential Reset - Absolute basics only */
+        * {margin:0; padding:0; box-sizing:border-box; font-family:sans-serif;}
+        
+        /* Body size constraints */
+        body {
+            max-width: 100vw;
+            width: 100vw;
+            overflow-x: hidden;
+            font-size: 6px;
+            background: #f7f7f7;
+        }
+        
+        /* Main container with fixed width */
+        .app-container {
+            width: 95vw;
+            max-width: 95vw;
+            margin: 2px auto;
+            background: white;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        /* Header */
+        .header {
+            padding: 3px 4px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        /* Documents */
+        .docs {
+            padding: 3px;
+        }
+        
+        .doc {
+            padding: 3px;
+            border: 1px solid #eee;
+            border-radius: 2px;
+            margin-bottom: 3px;
+        }
+        
+        .doc:last-child {
+            margin-bottom: 0;
+        }
+        
+        .doc.selected {
+            border-color: #0B6E4F;
+            background: #f1f9f6;
+        }
+        
+        .doc-title {
+            font-weight: bold;
+            margin-bottom: 1px;
+        }
+        
+        .doc-meta {
+            color: #888;
+            font-size: 5px;
+            margin-bottom: 2px;
+        }
+        
+        .doc-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        
+        .tag {
+            padding: 1px 2px;
+            border-radius: 2px;
+            font-size: 4px;
+        }
+        
+        .tag-blue {
+            background: #e1f5fe;
+            color: #0277bd;
+        }
+        
+        .tag-green {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .tag-orange {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .tag-pink {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">VALIDATION DOCUMENTS</div>
+        <div class="docs">
+            <div class="doc">
+                <div class="doc-title">Method Validation Report.docx</div>
+                <div class="doc-meta">Updated 2 days ago • John Smith</div>
+                <div class="doc-tags">
+                    <span class="tag tag-blue">Module 3.2</span>
+                    <span class="tag tag-green">Final</span>
+                </div>
+            </div>
+            
+            <div class="doc">
+                <div class="doc-title">Stability Protocol v2.docx</div>
+                <div class="doc-meta">Updated yesterday • Maria Chen</div>
+                <div class="doc-tags">
+                    <span class="tag tag-blue">Module 3.2</span>
+                    <span class="tag tag-orange">Draft</span>
+                </div>
+            </div>
+            
+            <div class="doc">
+                <div class="doc-title">Equipment Qualification.pdf</div>
+                <div class="doc-meta">Updated 5 days ago • Robert Lewis</div>
+                <div class="doc-tags">
+                    <span class="tag tag-blue">Module 3.2</span>
+                    <span class="tag tag-green">Final</span>
+                </div>
+            </div>
+            
+            <div class="doc selected">
+                <div class="doc-title">Process Validation Protocol.docx</div>
+                <div class="doc-meta">Updated today • AI Generated</div>
+                <div class="doc-tags">
+                    <span class="tag tag-blue">Module 3.2</span>
+                    <span class="tag tag-pink">AI Generated</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
