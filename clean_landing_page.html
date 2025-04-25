@@ -855,32 +855,38 @@
                     </div>
                 </div>
                 
-                <!-- Feature Card 3 -->
-                <div class="solution-card">
-                    <div class="solution-content">
+                <!-- Regulatory Insights - Full Width Card -->
+                <div class="solution-card" style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 3fr; background-color: white; padding: 0;">
+                    <div style="padding: 25px; background-color: var(--primary-lighter);">
                         <h3 class="solution-title">Regulatory Insights</h3>
                         <p class="solution-description">Transform raw data into actionable regulatory intelligence.</p>
                         <div class="solution-features">
                             <div class="solution-feature">
-                                <i class="fas fa-check-circle"></i>
+                                <i class="fas fa-check-circle" style="color: var(--yprime-pink);"></i>
                                 <span>Compliance gap analysis</span>
                             </div>
                             <div class="solution-feature">
-                                <i class="fas fa-check-circle"></i>
+                                <i class="fas fa-check-circle" style="color: var(--yprime-pink);"></i>
                                 <span>Visualization dashboards</span>
                             </div>
                             <div class="solution-feature">
-                                <i class="fas fa-check-circle"></i>
+                                <i class="fas fa-check-circle" style="color: var(--yprime-pink);"></i>
                                 <span>Automated reporting</span>
                             </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check-circle" style="color: var(--yprime-pink);"></i>
+                                <span>Real-time regulatory updates</span>
+                            </div>
                         </div>
+                    </div>
+                    <div style="background-image: url('https://img.freepik.com/free-vector/graph-chart-with-moving-up-arrow_1017-30858.jpg'); background-size: cover; background-position: center; border-radius: 0 10px 10px 0;">
                     </div>
                 </div>
             </div>
             
             <!-- Compact Feature Highlight -->
-            <div style="margin-top: 60px; text-align: center;">
-                <h2 style="font-size: 28px; margin-bottom: 40px; color: var(--primary);">Why Leading Companies Choose TrialSage™</h2>
+            <div style="margin-top: 30px; text-align: center;">
+                <h2 style="font-size: 28px; margin-bottom: 25px; color: var(--primary);">Why Leading Companies Choose TrialSage™</h2>
                 
                 <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
                     <div style="text-align: center; max-width: 200px;">
@@ -1020,7 +1026,7 @@
             </div>
             
             <!-- TrialSage File Navigator Section -->
-            <div style="margin-top: 80px; border-top: 1px solid #e5e5e5; padding-top: 60px;">
+            <div style="margin-top: 40px; border-top: 1px solid #e5e5e5; padding-top: 30px;">
                 <div style="display: flex; align-items: center; gap: 50px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 300px;">
                         <h3 style="font-size: 24px; color: var(--primary); margin-bottom: 20px;">TrialSage File Navigator™</h3>
@@ -1222,35 +1228,74 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Document Preview Card - Exact Match to Screenshot -->
-                            <div style="position: relative; right: -60px; top: 20px; background-color: white; border-radius: 6px; box-shadow: 0 3px 12px rgba(0,0,0,0.15); width: 600px; z-index: 10; border: 1px solid #e0e0e0; overflow: hidden;">
-                                <!-- Document Header -->
-                                <div style="background-color: #f5f5f5; padding: 10px 15px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <img src="https://img.icons8.com/color/48/000000/google-docs--v1.png" alt="Document Icon" style="height: 20px; width: auto;">
-                                        <span style="font-weight: 600; font-size: 15px; color: #333;">Process Validation Protocol.docx</span>
+                            <!-- Document Preview Card - Enhanced Version -->
+                            <div style="position: relative; right: -60px; top: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,0.18); width: 650px; z-index: 10; border: 1px solid #e0e0e0; overflow: hidden;">
+                                <!-- Document Header with Tabs -->
+                                <div style="background-color: #f5f5f5; padding: 12px 18px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <i class="fas fa-file-pdf" style="font-size: 20px; color: var(--yprime-pink);"></i>
+                                        <span style="font-weight: 600; font-size: 15px; color: #333;">Process Validation Protocol v2.1.pdf</span>
                                     </div>
-                                    <div style="display: flex; gap: 10px;">
-                                        <img src="https://img.icons8.com/material/24/555555/download--v1.png" alt="Download" style="height: 18px; width: auto; opacity: 0.6;">
-                                        <img src="https://img.icons8.com/material/24/555555/share--v1.png" alt="Share" style="height: 18px; width: auto; opacity: 0.6;">
+                                    <div style="display: flex; gap: 15px;">
+                                        <i class="fas fa-download" style="font-size: 16px; color: #666; cursor: pointer;"></i>
+                                        <i class="fas fa-share-alt" style="font-size: 16px; color: #666; cursor: pointer;"></i>
+                                        <i class="fas fa-ellipsis-v" style="font-size: 16px; color: #666; cursor: pointer;"></i>
                                     </div>
                                 </div>
                                 
+                                <!-- Document Tabs -->
+                                <div style="display: flex; background-color: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                                    <div style="padding: 8px 20px; font-size: 13px; color: var(--primary); border-bottom: 2px solid var(--primary); font-weight: 500;">Document</div>
+                                    <div style="padding: 8px 20px; font-size: 13px; color: #777; cursor: pointer;">Metadata</div>
+                                    <div style="padding: 8px 20px; font-size: 13px; color: #777; cursor: pointer;">Versions</div>
+                                    <div style="padding: 8px 20px; font-size: 13px; color: #777; cursor: pointer;">AI Analysis</div>
+                                </div>
+                                
                                 <!-- Document Content -->
-                                <div style="padding: 20px 30px;">
-                                    <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 15px;">This document outlines the validation protocol for the manufacturing process of Drug X, including testing parameters, acceptance criteria, and sampling methods.</p>
+                                <div style="padding: 22px 30px;">
+                                    <!-- Compliance Badge -->
+                                    <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                                        <span style="background-color: #e6f7ff; color: #0078d4; padding: 4px 12px; border-radius: 15px; font-size: 12px; display: flex; align-items: center;">
+                                            <i class="fas fa-check-circle" style="margin-right: 5px;"></i> ICH Q7 Compliant
+                                        </span>
+                                    </div>
                                     
-                                    <p style="color: #555; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">The validation protocol for the manufacturing process of Drug X, including testing parameters, acceptance criteria, and sampling methods...</p>
+                                    <!-- Document Title Section -->
+                                    <div style="text-align: center; margin-bottom: 20px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 6px;">Process Validation Protocol</div>
+                                        <div style="font-size: 14px; color: #666;">Drug Product: TS-273 Tablets</div>
+                                        <div style="font-size: 12px; color: #888; margin-top: 5px;">Document ID: PVP-2025-0042 · Version 2.1</div>
+                                    </div>
+                                    
+                                    <!-- Content Sections -->
+                                    <div style="margin-bottom: 18px;">
+                                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px; color: #444;">1. Purpose</div>
+                                        <p style="color: #555; font-size: 14px; line-height: 1.5; margin-bottom: 0;">This protocol defines the approach and methodology for validating the commercial manufacturing process for TS-273 Tablets to ensure the process consistently produces tablets meeting predetermined quality attributes and specifications.</p>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 18px;">
+                                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px; color: #444;">2. Scope</div>
+                                        <p style="color: #555; font-size: 14px; line-height: 1.5; margin-bottom: 0;">This protocol applies to the validation of the commercial manufacturing process for TS-273 Tablets at the designated manufacturing facility. The protocol encompasses all unit operations from dispensing through packaging.</p>
+                                    </div>
+                                    
+                                    <!-- Smart Document Features -->
+                                    <div style="background-color: #f8fbff; border-radius: 8px; padding: 12px 16px; margin-top: 24px; border-left: 3px solid var(--primary);">
+                                        <div style="font-weight: 600; font-size: 14px; margin-bottom: 10px; color: var(--primary);">
+                                            <i class="fas fa-lightbulb" style="margin-right: 8px;"></i> AI-Generated Insights
+                                        </div>
+                                        <p style="color: #555; font-size: 13px; line-height: 1.5; margin-bottom: 8px;">This protocol aligns with FDA Process Validation Guidelines, particularly with Stage 2 - Process Qualification guidance. Similar protocols have achieved 97% acceptance rates in FDA submissions.</p>
+                                    </div>
                                 
                                     <!-- Document Footer Info -->
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; border-top: 1px solid #eee; padding-top: 15px;">
                                         <div>
-                                            <span style="font-size: 13px; color: #666;">Version: <strong>1.2</strong></span>
+                                            <span style="font-size: 13px; color: #666;">Version: <strong>2.1</strong></span>
                                             <span style="color: #ccc; margin: 0 8px;">|</span>
-                                            <span style="font-size: 13px; color: #666;"><strong>3</strong> previous versions</span>
+                                            <span style="font-size: 13px; color: #666;"><strong>4</strong> previous versions</span>
                                         </div>
-                                        <div>
-                                            <span style="font-size: 12px; padding: 3px 8px; background-color: #e8f5e9; color: #2e7d32; border-radius: 12px;">Updated yesterday</span>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 12px; padding: 3px 10px; background-color: #e8f5e9; color: #2e7d32; border-radius: 12px;">Updated 2 days ago</span>
+                                            <button style="background-color: var(--yprime-pink); color: white; border: none; border-radius: 4px; padding: 5px 10px; font-size: 12px; cursor: pointer;"><i class="fas fa-history" style="margin-right: 4px;"></i> Compare</button>
                                         </div>
                                     </div>
                                 </div>
