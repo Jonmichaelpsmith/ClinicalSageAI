@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ Compact Header</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --concept2cures: #E6007D;
+            --text-dark: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: white;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            height: 50px;
+            border-bottom: 1px solid #f2f2f2;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: baseline;
+            text-decoration: none;
+        }
+        
+        .logo-trialsage {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-right: 4px;
+        }
+        
+        .logo-by {
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--primary);
+            margin-right: 4px;
+        }
+        
+        .logo-concept2cures {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--concept2cures);
+        }
+        
+        .nav {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-item {
+            font-size: 10px;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .nav-subitem {
+            display: block;
+            font-size: 8px;
+            color: #777;
+            margin-top: 1px;
+            text-align: center;
+        }
+        
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 500;
+            padding: 4px 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .button-outline {
+            border: 1px solid #ddd;
+            color: #555;
+            background-color: transparent;
+        }
+        
+        .button-primary {
+            background-color: var(--concept2cures);
+            color: white;
+            border: none;
+        }
+        
+        .border {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary), var(--concept2cures));
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="#" class="logo">
+            <span class="logo-trialsage">TrialSage™</span>
+            <span class="logo-by">by</span>
+            <span class="logo-concept2cures">Concept2Cures</span>
+        </a>
+        
+        <nav class="nav">
+            <a href="#" class="nav-item">
+                Products
+            </a>
+            
+            <a href="#" class="nav-item">
+                AI
+                <span class="nav-subitem">Technology</span>
+            </a>
+            
+            <a href="#" class="nav-item">
+                About
+            </a>
+            
+            <a href="#" class="nav-item">
+                Contact
+            </a>
+        </nav>
+        
+        <div class="actions">
+            <a href="#" class="button button-outline">RFP</a>
+            <a href="#" class="button button-primary">Demo</a>
+        </div>
+    </header>
+    <div class="border"></div>
+</body>
+</html>

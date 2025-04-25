@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Size Components</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --text-dark: #333;
+            --text-medium: #555;
+            --text-light: #777;
+            --border-color: #eee;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-size: 8px;
+            color: var(--text-dark);
+            background-color: black;
+            padding: 5px;
+        }
+        
+        .page-section {
+            margin-bottom: 6px;
+        }
+        
+        .section-title {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 3px;
+        }
+        
+        /* Module Tabs */
+        .module-tabs {
+            display: flex;
+            gap: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .module-tab {
+            background-color: #f5f5f5;
+            padding: 3px 6px;
+            font-size: 7px;
+            font-weight: 500;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        
+        .module-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        /* Competitor Comparison Table */
+        .mini-comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 3px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .mini-comparison-table th {
+            background-color: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 3px 4px;
+            font-weight: 500;
+            font-size: 6px;
+        }
+        
+        .mini-comparison-table td {
+            padding: 2px 4px;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 6px;
+        }
+        
+        .mini-comparison-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        
+        .status-dot {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            margin-right: 2px;
+        }
+        
+        .dot-red {
+            background-color: #F44336;
+        }
+        
+        .dot-yellow {
+            background-color: #FFC107;
+        }
+        
+        .dot-green {
+            background-color: #4CAF50;
+        }
+        
+        /* Value Grid */
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+        }
+        
+        .value-card {
+            background-color: white;
+            padding: 4px;
+            border-radius: 3px;
+            border-top: 2px solid var(--primary);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .value-title {
+            font-size: 7px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+        
+        .value-description {
+            font-size: 6px;
+            color: var(--text-medium);
+            margin-bottom: 3px;
+        }
+        
+        .value-impact {
+            text-align: right;
+            font-size: 6px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        /* Document List Panel */
+        .docs-container {
+            display: flex;
+            gap: 3px;
+            background-color: white;
+            border-radius: 3px;
+            padding: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .folder-nav {
+            width: 60px;
+            flex-shrink: 0;
+            border-right: 1px solid var(--border-color);
+            padding-right: 3px;
+        }
+        
+        .folder-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 3px;
+            font-size: 6px;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        
+        .folder-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .folder-item.active {
+            background-color: #E6F3EF;
+            color: var(--primary);
+        }
+        
+        .folder-item i {
+            font-size: 5px;
+            color: var(--text-light);
+        }
+        
+        .file-list {
+            flex-grow: 1;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 0;
+            font-size: 6px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .file-icon {
+            width: 6px;
+            height: 6px;
+            background-color: #E6F3EF;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 3px;
+            flex-shrink: 0;
+        }
+        
+        .file-icon i {
+            font-size: 4px;
+            color: var(--primary);
+        }
+        
+        .file-name {
+            flex-grow: 1;
+        }
+        
+        .file-meta {
+            color: var(--text-light);
+            font-size: 5px;
+        }
+        
+        /* Button Styles */
+        .mini-button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 2px 4px;
+            font-size: 6px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        
+        /* Life Cycle Graph */
+        .lifecycle-graph {
+            background-color: white;
+            border-radius: 3px;
+            padding: 5px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        .lifecycle-stages {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+        
+        .lifecycle-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 15%;
+        }
+        
+        .stage-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #E6F3EF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2px;
+        }
+        
+        .stage-icon i {
+            font-size: 6px;
+            color: var(--primary);
+        }
+        
+        .stage-name {
+            text-align: center;
+            font-size: 5px;
+            font-weight: 500;
+        }
+        
+        .stage-description {
+            text-align: center;
+            font-size: 4px;
+            color: var(--text-light);
+        }
+        
+        /* Progress Line */
+        .progress-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 8px 7% 6px;
+        }
+        
+        .progress-line-inner {
+            height: 2px;
+            background-color: var(--primary);
+            flex-grow: 1;
+        }
+        
+        .progress-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            flex-shrink: 0;
+        }
+        
+        /* Testimonial */
+        .tiny-testimonial {
+            background-color: #f5f5f5;
+            border-radius: 3px;
+            padding: 4px;
+            font-size: 5px;
+            font-style: italic;
+            color: var(--text-medium);
+            margin-top: 3px;
+        }
+        
+        .testimonial-author {
+            text-align: right;
+            font-size: 5px;
+            font-weight: 500;
+            font-style: normal;
+            color: var(--text-dark);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Module Tabs -->
+    <div class="page-section">
+        <div class="module-tabs">
+            <div class="module-tab active">CSR Intelligence</div>
+            <div class="module-tab">IND Wizard</div>
+            <div class="module-tab">CMC Module</div>
+            <div class="module-tab">Protocol Design</div>
+        </div>
+    </div>
+    
+    <!-- Ultra Compact Competitor Comparison -->
+    <div class="page-section">
+        <div class="section-title">Competitive Advantage</div>
+        <table class="mini-comparison-table">
+            <thead>
+                <tr>
+                    <th width="25%">Feature</th>
+                    <th width="25%">Veeva</th>
+                    <th width="25%">Certara</th>
+                    <th width="25%">TrialSage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>SaaS isolation</td>
+                    <td><span class="status-dot dot-yellow"></span>Complex</td>
+                    <td><span class="status-dot dot-red"></span>No</td>
+                    <td><span class="status-dot dot-green"></span>Yes</td>
+                </tr>
+                <tr>
+                    <td>File explorer</td>
+                    <td><span class="status-dot dot-red"></span>None</td>
+                    <td><span class="status-dot dot-red"></span>None</td>
+                    <td><span class="status-dot dot-green"></span>Smart</td>
+                </tr>
+                <tr>
+                    <td>AI content</td>
+                    <td><span class="status-dot dot-yellow"></span>Basic</td>
+                    <td><span class="status-dot dot-red"></span>None</td>
+                    <td><span class="status-dot dot-green"></span>GPT-4</td>
+                </tr>
+                <tr>
+                    <td>Auto-linking</td>
+                    <td><span class="status-dot dot-red"></span>Manual</td>
+                    <td><span class="status-dot dot-red"></span>Manual</td>
+                    <td><span class="status-dot dot-green"></span>Auto</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Value Grid -->
+    <div class="page-section">
+        <div class="section-title">Game Changing Value</div>
+        <div class="value-grid">
+            <!-- Card 1 -->
+            <div class="value-card">
+                <div class="value-title">AI-CMC Blueprint</div>
+                <div class="value-description">Drafts full Module 3 docs in minutes</div>
+                <div class="value-impact">70% time reduction</div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="value-card">
+                <div class="value-title">Impact Simulator</div>
+                <div class="value-description">Simulates change consequences</div>
+                <div class="value-impact">3-5 month faster</div>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="value-card">
+                <div class="value-title">Mfg Tuner</div>
+                <div class="value-description">Optimizes documentation</div>
+                <div class="value-impact">35% higher pass</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Document List Panel -->
+    <div class="page-section">
+        <div class="section-title">Document Navigator</div>
+        <div class="docs-container">
+            <!-- Folders -->
+            <div class="folder-nav">
+                <div class="folder-item active">
+                    <i class="fas fa-folder"></i>
+                    <span>CSRs</span>
+                </div>
+                <div class="folder-item">
+                    <i class="fas fa-folder"></i>
+                    <span>INDs</span>
+                </div>
+                <div class="folder-item">
+                    <i class="fas fa-folder"></i>
+                    <span>Protocols</span>
+                </div>
+                <div class="folder-item">
+                    <i class="fas fa-folder"></i>
+                    <span>CTD</span>
+                </div>
+            </div>
+            
+            <!-- Files -->
+            <div class="file-list">
+                <div class="file-item">
+                    <div style="display: flex; align-items: center;">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="file-name">CSR-2025-032.pdf</div>
+                    </div>
+                    <div class="file-meta">Apr 24</div>
+                </div>
+                <div class="file-item">
+                    <div style="display: flex; align-items: center;">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="file-name">CSR-2025-028.pdf</div>
+                    </div>
+                    <div class="file-meta">Apr 21</div>
+                </div>
+                <div class="file-item">
+                    <div style="display: flex; align-items: center;">
+                        <div class="file-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="file-name">CSR-2025-025.pdf</div>
+                    </div>
+                    <div class="file-meta">Apr 18</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Life Cycle Graph -->
+    <div class="page-section">
+        <div class="section-title">Drug Development Lifecycle</div>
+        <div class="lifecycle-graph">
+            <!-- Progress Line -->
+            <div class="progress-line">
+                <div class="progress-dot"></div>
+                <div class="progress-line-inner"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-line-inner"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-line-inner"></div>
+                <div class="progress-dot"></div>
+                <div class="progress-line-inner"></div>
+                <div class="progress-dot"></div>
+            </div>
+            
+            <!-- Stages -->
+            <div class="lifecycle-stages">
+                <div class="lifecycle-stage">
+                    <div class="stage-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="stage-name">Discovery</div>
+                    <div class="stage-description">Target ID & validation</div>
+                </div>
+                
+                <div class="lifecycle-stage">
+                    <div class="stage-icon">
+                        <i class="fas fa-vial"></i>
+                    </div>
+                    <div class="stage-name">Preclinical</div>
+                    <div class="stage-description">In vitro & animal studies</div>
+                </div>
+                
+                <div class="lifecycle-stage">
+                    <div class="stage-icon">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div class="stage-name">Clinical</div>
+                    <div class="stage-description">Phase I-III trials</div>
+                </div>
+                
+                <div class="lifecycle-stage">
+                    <div class="stage-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="stage-name">Regulatory</div>
+                    <div class="stage-description">NDA/BLA review</div>
+                </div>
+                
+                <div class="lifecycle-stage">
+                    <div class="stage-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="stage-name">Commercial</div>
+                    <div class="stage-description">Market & monitor</div>
+                </div>
+            </div>
+            
+            <div class="tiny-testimonial">
+                "TrialSage's lifecycle view gave our team unprecedented visibility into the critical path dependencies across our regulatory submissions."
+                <div class="testimonial-author">Dr. Sarah Chen, Regulatory Affairs Director</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
