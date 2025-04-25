@@ -703,6 +703,19 @@
             max-width: 700px;
         }
         
+        .hero-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: white;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
         .hero-title {
             font-size: 3.5rem;
             line-height: 1.1;
@@ -712,14 +725,71 @@
         
         .hero-subtitle {
             font-size: 1.25rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             opacity: 0.9;
+        }
+        
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-stat {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .hero-stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+        }
+        
+        .hero-stat-label {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 0.5rem;
         }
         
         .hero-buttons {
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
+        }
+        
+        .hero-clients {
+            margin-top: 4rem;
+        }
+        
+        .hero-clients-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .hero-clients-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 3rem;
+        }
+        
+        .hero-client-logo {
+            height: 24px;
+            opacity: 0.6;
+            filter: brightness(0) invert(1);
+            transition: all 0.3s ease;
+        }
+        
+        .hero-client-logo:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
         }
         
         .hero-image {
@@ -983,6 +1053,17 @@
             margin: 0 auto;
         }
         
+        .cta-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+        
         .cta-title {
             font-size: 2.5rem;
             color: white;
@@ -991,8 +1072,31 @@
         
         .cta-description {
             font-size: 1.25rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             opacity: 0.9;
+        }
+        
+        .cta-features {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-feature {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .cta-feature i {
+            color: var(--accent);
+            font-size: 1.25rem;
+            flex-shrink: 0;
         }
         
         .cta-buttons {
@@ -1000,6 +1104,99 @@
             justify-content: center;
             gap: 1rem;
             flex-wrap: wrap;
+        }
+        
+        /* ROI Section */
+        .roi {
+            padding: 6rem 0;
+        }
+        
+        .roi-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .roi-card {
+            height: 300px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        
+        .roi-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+        }
+        
+        .roi-card:hover .roi-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .roi-card-front, .roi-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .roi-card-front {
+            background-color: white;
+            text-align: center;
+        }
+        
+        .roi-card-back {
+            background-color: var(--secondary);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+        }
+        
+        .roi-icon {
+            width: 4rem;
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            background-color: rgba(14, 165, 233, 0.1);
+            color: var(--primary);
+            font-size: 2rem;
+            border-radius: 50%;
+        }
+        
+        .roi-title {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .roi-description {
+            color: var(--gray-600);
+        }
+        
+        .roi-card-back h4 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        
+        .roi-customer {
+            margin-top: 1.5rem;
+            font-style: italic;
+            opacity: 0.8;
+            font-size: 0.95rem;
         }
         
         /* Footer */
@@ -1162,6 +1359,17 @@
                 font-size: 1.125rem;
             }
             
+            .hero-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1.5rem;
+            }
+            
+            .hero-stat {
+                text-align: center;
+                min-width: 120px;
+            }
+            
             .hero-buttons {
                 flex-direction: column;
                 width: 100%;
@@ -1169,6 +1377,14 @@
             
             .hero-buttons .btn {
                 width: 100%;
+            }
+            
+            .hero-clients-logos {
+                gap: 1.5rem;
+            }
+            
+            .hero-client-logo {
+                height: 20px;
             }
             
             .hero {
@@ -1497,8 +1713,25 @@
             <div class="row">
                 <div class="col col-md-12 col-lg-6">
                     <div class="hero-content">
-                        <h1 class="hero-title">AI-Powered Regulatory Intelligence Platform</h1>
-                        <p class="hero-subtitle">TrialSage™ revolutionizes pharmaceutical regulatory workflows with AI-driven document generation, automated compliance checking, and intelligent regulatory insights.</p>
+                        <div class="hero-badge">
+                            <span>Trusted by 200+ Pharmaceutical Companies</span>
+                        </div>
+                        <h1 class="hero-title">Cut Regulatory Submission Time by 75%</h1>
+                        <p class="hero-subtitle">TrialSage™ transforms how pharmaceutical companies handle regulatory submissions with AI-powered document generation, automated compliance checks, and real-time regulatory intelligence. Submit faster with fewer errors and higher acceptance rates.</p>
+                        <div class="hero-stats">
+                            <div class="hero-stat">
+                                <span class="hero-stat-value">75%</span>
+                                <span class="hero-stat-label">Faster Submissions</span>
+                            </div>
+                            <div class="hero-stat">
+                                <span class="hero-stat-value">98%</span>
+                                <span class="hero-stat-label">First-time Acceptance</span>
+                            </div>
+                            <div class="hero-stat">
+                                <span class="hero-stat-value">3,217+</span>
+                                <span class="hero-stat-label">CSRs Analyzed</span>
+                            </div>
+                        </div>
                         <div class="hero-buttons">
                             <a href="/demo" class="btn btn-accent btn-lg">Request Demo</a>
                             <a href="/solutions" class="btn btn-white btn-lg">Explore Solutions</a>
@@ -1509,6 +1742,16 @@
                     <div class="hero-image">
                         <img src="https://img.freepik.com/premium-vector/isometric-science-laboratory-experiment-technology-research-flat-design_143055-35.jpg" alt="TrialSage Platform">
                     </div>
+                </div>
+            </div>
+            <div class="hero-clients">
+                <p class="hero-clients-title">TRUSTED BY LEADING PHARMACEUTICAL COMPANIES</p>
+                <div class="hero-clients-logos">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Novartis-Logo.svg" alt="Novartis" class="hero-client-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4d/Pfizer.svg" alt="Pfizer" class="hero-client-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/32/Merck_%26_Co..svg" alt="Merck" class="hero-client-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/f5/Bayer_2013_logo.svg" alt="Bayer" class="hero-client-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Genentech_logo.svg" alt="Genentech" class="hero-client-logo">
                 </div>
             </div>
         </div>
@@ -2006,14 +2249,112 @@
         </div>
     </section>
     
+    <!-- ROI Section -->
+    <section class="roi py-12 bg-white">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-subtitle">
+                    <i class="fas fa-chart-line"></i> ROI & Business Impact
+                </div>
+                <h2 class="section-title">Real Results for Pharmaceutical Companies</h2>
+                <p class="section-description">Our customers experience significant improvement in regulatory submission efficiency, quality, and success rates.</p>
+            </div>
+            
+            <div class="roi-cards">
+                <div class="roi-card" data-aos="fade-up" data-aos-delay="0">
+                    <div class="roi-card-inner">
+                        <div class="roi-card-front">
+                            <div class="roi-icon">
+                                <i class="fas fa-stopwatch"></i>
+                            </div>
+                            <h3 class="roi-title">75% Time Savings</h3>
+                            <p class="roi-description">Reduce document creation and submission preparation time by up to 75% with AI-powered automation.</p>
+                        </div>
+                        <div class="roi-card-back">
+                            <h4>Customer Success</h4>
+                            <p>"TrialSage cut our IND submission time from 8 months to just 10 weeks, allowing us to start our Phase I trial ahead of schedule."</p>
+                            <p class="roi-customer">— Clinical Operations Director, Top 10 Pharma</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roi-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="roi-card-inner">
+                        <div class="roi-card-front">
+                            <div class="roi-icon">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                            <h3 class="roi-title">98% First-Pass Success</h3>
+                            <p class="roi-description">Achieve up to 98% first-time submission acceptance rates with built-in compliance checking.</p>
+                        </div>
+                        <div class="roi-card-back">
+                            <h4>Customer Success</h4>
+                            <p>"Since implementing TrialSage, our first-pass acceptance rate has improved from 67% to 98%, eliminating costly delays."</p>
+                            <p class="roi-customer">— VP Regulatory Affairs, Biotech Company</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roi-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="roi-card-inner">
+                        <div class="roi-card-front">
+                            <div class="roi-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <h3 class="roi-title">$2.4M Annual Savings</h3>
+                            <p class="roi-description">Reduce labor costs and accelerate time-to-market for significant financial impact.</p>
+                        </div>
+                        <div class="roi-card-back">
+                            <h4>Customer Success</h4>
+                            <p>"We've reduced our annual regulatory operations costs by $2.4M while accelerating our submission timeline by 40%."</p>
+                            <p class="roi-customer">— CFO, Mid-size Pharmaceutical</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="roi-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="roi-card-inner">
+                        <div class="roi-card-front">
+                            <div class="roi-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3 class="roi-title">50% Staff Reallocation</h3>
+                            <p class="roi-description">Free up to 50% of regulatory staff time for higher-value strategic activities.</p>
+                        </div>
+                        <div class="roi-card-back">
+                            <h4>Customer Success</h4>
+                            <p>"Our regulatory team now spends 50% more time on strategic work instead of document preparation and validation."</p>
+                            <p class="roi-customer">— Director of Regulatory Operations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Call to Action -->
     <section class="cta">
         <div class="container">
             <div class="cta-content">
-                <h2 class="cta-title">Transform Your Regulatory Process Today</h2>
-                <p class="cta-description">Join hundreds of life science companies using TrialSage™ to accelerate submissions and ensure regulatory compliance.</p>
+                <span class="cta-badge">Limited Time Offer</span>
+                <h2 class="cta-title">Start Your Regulatory Transformation Today</h2>
+                <p class="cta-description">Book a demo now and receive a free regulatory assessment worth $5,000. Our experts will analyze your current process and provide a customized ROI projection.</p>
+                <div class="cta-features">
+                    <div class="cta-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Free regulatory process assessment ($5,000 value)</span>
+                    </div>
+                    <div class="cta-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Custom ROI calculation for your organization</span>
+                    </div>
+                    <div class="cta-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>30-day free trial with full platform access</span>
+                    </div>
+                </div>
                 <div class="cta-buttons">
-                    <a href="/demo" class="btn btn-white btn-lg">Request Demo</a>
+                    <a href="/demo" class="btn btn-white btn-lg">Request Your Demo</a>
                     <a href="/contact" class="btn btn-outline-white btn-lg">Contact Sales</a>
                 </div>
             </div>

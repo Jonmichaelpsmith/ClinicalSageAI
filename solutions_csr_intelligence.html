@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CSR Intelligence™ | TrialSage</title>
+    <meta name="description" content="TrialSage's CSR Intelligence™ module provides unprecedented insights from over 3,217 parsed clinical study reports, powering data-driven protocol design and regulatory submissions.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://img.freepik.com/premium-vector/green-health-logo_7888-106.jpg">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #38bdf8;
+            --secondary: #0f172a;
+            --secondary-light: #1e293b;
+            --accent: #22c55e;
+            --accent-dark: #16a34a;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #eab308;
+            --info: #3b82f6;
+            --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--gray-800);
+            line-height: 1.5;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #fff;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        a:hover {
+            color: var(--primary-dark);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -1rem;
+        }
+        
+        .col {
+            flex: 1 0 0%;
+            padding: 0 1rem;
+        }
+        
+        /* For specific column sizes */
+        .col-12 { flex: 0 0 100%; max-width: 100%; }
+        .col-11 { flex: 0 0 91.6667%; max-width: 91.6667%; }
+        .col-10 { flex: 0 0 83.3333%; max-width: 83.3333%; }
+        .col-9 { flex: 0 0 75%; max-width: 75%; }
+        .col-8 { flex: 0 0 66.6667%; max-width: 66.6667%; }
+        .col-7 { flex: 0 0 58.3333%; max-width: 58.3333%; }
+        .col-6 { flex: 0 0 50%; max-width: 50%; }
+        .col-5 { flex: 0 0 41.6667%; max-width: 41.6667%; }
+        .col-4 { flex: 0 0 33.3333%; max-width: 33.3333%; }
+        .col-3 { flex: 0 0 25%; max-width: 25%; }
+        .col-2 { flex: 0 0 16.6667%; max-width: 16.6667%; }
+        .col-1 { flex: 0 0 8.3333%; max-width: 8.3333%; }
+        
+        header {
+            background-color: white;
+            box-shadow: var(--shadow);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .logo img {
+            height: 2.5rem;
+            margin-right: 0.75rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+            line-height: 1.5;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: white;
+        }
+        
+        .hero {
+            padding: 10rem 0 5rem;
+            background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-description {
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+        
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .section-description {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            text-align: center;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-content {
+            color: var(--gray-600);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .hero-description {
+                font-size: 1.125rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <a href="/" class="logo">
+                    <img src="https://img.freepik.com/premium-vector/green-health-logo_7888-106.jpg" alt="TrialSage Logo">
+                    <span>TrialSage™</span>
+                </a>
+                <a href="/" class="btn">Back to Home</a>
+            </div>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">CSR Intelligence™</h1>
+            <p class="hero-description">Gain unprecedented insights from our database of 3,217+ parsed clinical study reports to inform protocol development and regulatory strategy.</p>
+            <a href="/demo" class="btn btn-primary">Request Demo</a>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Transform Your Regulatory Strategy with Historical Data</h2>
+            <p class="section-description">Our proprietary database of 3,217+ clinical study reports provides valuable insights that can accelerate your protocol development and increase submission success rates.</p>
+            
+            <div class="row">
+                <div class="col col-md-6 col-lg-4">
+                    <div class="card">
+                        <h3 class="card-title">Comprehensive Search</h3>
+                        <p class="card-content">Instantly search across thousands of clinical study reports by indication, phase, endpoints, inclusion/exclusion criteria, and more to find relevant precedents.</p>
+                    </div>
+                </div>
+                
+                <div class="col col-md-6 col-lg-4">
+                    <div class="card">
+                        <h3 class="card-title">AI-Powered Analysis</h3>
+                        <p class="card-content">Our advanced machine learning algorithms detect patterns across studies to identify success factors and potential pitfalls in your protocol design.</p>
+                    </div>
+                </div>
+                
+                <div class="col col-md-6 col-lg-4">
+                    <div class="card">
+                        <h3 class="card-title">Historical Benchmarking</h3>
+                        <p class="card-content">Compare your protocol against historical precedents to optimize sample sizes, endpoints, and eligibility criteria for maximum likelihood of success.</p>
+                    </div>
+                </div>
+                
+                <div class="col col-md-6 col-lg-4">
+                    <div class="card">
+                        <h3 class="card-title">Regulatory Precedent</h3>
+                        <p class="card-content">Access real-world examples of successful submissions to inform your regulatory strategy and avoid common pitfalls.</p>
+                    </div>
+                </div>
+                
+                <div class="col col-md-6 col-lg-4">
+                    <div class="card">
+                        <h3 class="card-title">Statistical Validation</h3>
+                        <p class="card-content">Validate your trial design assumptions with historical data on success rates, dropout rates, and statistical significance across similar trials.</p>
+                    </div>
+                </div>
+                
+                <div class="col col-md-6 col-lg-4">
+                    <div class="card">
+                        <h3 class="card-title">Custom Reports</h3>
+                        <p class="card-content">Generate customized reports and dashboards for stakeholder presentations and internal decision-making.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <script>
+        // Simple navigation functionality
+        document.querySelector('.btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>

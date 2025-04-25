@@ -245,6 +245,22 @@ export function setupStaticRoutes(app) {
     res.send(html);
   });
 
+  // Custom route for CSR Intelligence
+  app.get('/solutions/csr-intelligence', (req, res) => {
+    console.log('[StaticRoutes] Serving custom CSR Intelligence page');
+    // Serve our custom CSR Intelligence page
+    const customHtmlPath = path.join(process.cwd(), 'solutions_csr_intelligence.html');
+    if (fs.existsSync(customHtmlPath)) {
+      res.sendFile(customHtmlPath);
+    } else {
+      // Fallback to generated page if file doesn't exist
+      const route = staticRoutes.find(r => r.path === '/solutions/csr-intelligence');
+      const html = generateStaticPage(route);
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+    }
+  });
+
   console.log('[StaticRoutes] Static routes registered successfully');
 }
 
