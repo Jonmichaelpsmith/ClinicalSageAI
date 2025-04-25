@@ -148,12 +148,12 @@ export default function HomeLandingProtected() {
           
           <nav className="hidden md:flex items-center space-x-8">
             <div className="relative group">
-              <button className="text-gray-700 font-medium cursor-pointer flex items-center bg-transparent border-none p-0 m-0 focus:outline-none">
+              <span className="text-gray-700 font-medium cursor-pointer flex items-center">
                 Solutions
                 <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </button>
+              </span>
               <div className="absolute top-full left-0 mt-2 w-64 rounded-md shadow-lg bg-white py-2 z-50 hidden group-hover:block">
                 <Link to="/ind-architect" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                   Global IND Architect
@@ -163,9 +163,6 @@ export default function HomeLandingProtected() {
                 </Link>
                 <Link to="/document-suite" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                   SmartDoc Suite: CER + Narratives
-                </Link>
-                <Link to="/validation-hub-enhanced" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                  RegIntel Validator
                 </Link>
                 <Link to="/portal" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                   Insight360 Vault & Dashboard
@@ -181,8 +178,8 @@ export default function HomeLandingProtected() {
               Client Portal
             </Link>
             
-            <Link to="/ind/wizard" className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-md font-medium transition-all flex items-center gap-1">
-              IND <ArrowRight size={16} />
+            <Link to="/builder" className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-md font-medium transition-all flex items-center gap-1">
+              Launch eCTD Builder <ArrowRight size={16} />
             </Link>
           </nav>
           
@@ -216,8 +213,8 @@ export default function HomeLandingProtected() {
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/ind/wizard" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
-                IND <ArrowRight size={20}/>
+              <Link to="/builder" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
+                Launch eCTD Builder <ArrowRight size={20}/>
               </Link>
               <Link to="/demo" className="px-6 py-3 rounded-lg bg-white/10 border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg text-white">
                 Request Demo
@@ -674,7 +671,7 @@ export default function HomeLandingProtected() {
               </div>
               
               <div className="flex flex-wrap justify-center md:justify-end gap-4">
-                <Link to="/ind/wizard" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-lg font-medium transition-all flex items-center gap-2">
+                <Link to="/builder" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-lg font-medium transition-all flex items-center gap-2">
                   Launch Platform Now <ArrowRight size={18} />
                 </Link>
                 <Link to="/demo" className="px-6 py-3 rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 flex items-center gap-2 font-medium">
@@ -697,8 +694,8 @@ export default function HomeLandingProtected() {
             this is your moment.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/ind/wizard" className="px-8 py-4 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
-              IND Now
+            <Link to="/builder" className="px-8 py-4 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
+              Launch eCTD Builder Now
             </Link>
             <Link to="/pricing" className="px-8 py-4 rounded-lg bg-white/10 border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg text-white">
               View Pricing
@@ -741,7 +738,7 @@ export default function HomeLandingProtected() {
                 <li><Link to="/ind-architect" className="text-gray-400 hover:text-white">Global IND Architect</Link></li>
                 <li><Link to="/csr-intelligence" className="text-gray-400 hover:text-white">Protocol Designer + CSR Oracle</Link></li>
                 <li><Link to="/document-suite" className="text-gray-400 hover:text-white">SmartDoc Suite</Link></li>
-                <li><Link to="/ind/wizard" className="text-gray-400 hover:text-white">IND</Link></li>
+                <li><Link to="/builder" className="text-gray-400 hover:text-white">eCTD Builder</Link></li>
               </ul>
             </div>
             

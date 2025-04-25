@@ -2,6 +2,16 @@ import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+// Inline MetricCard component to avoid dependency issues
+const MetricCard = ({ title, value }) => (
+  <Card>
+    <CardContent className="pt-6">
+      <div className="text-2xl font-bold">{value}</div>
+      <p className="text-sm text-gray-500 mt-1">{title}</p>
+    </CardContent>
+  </Card>
+);
+
 // Simple component with no external data dependencies
 export default function EnterpriseCSRIntelligence() {
   return (
@@ -98,19 +108,7 @@ export default function EnterpriseCSRIntelligence() {
   );
 }
 
-// Simple metric card component
-function MetricCard({ title, value }) {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-gray-500">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
-    </Card>
-  );
-}
+// MetricCard is already defined above
 
 // Simple insight card component
 function InsightCard({ title, items }) {
