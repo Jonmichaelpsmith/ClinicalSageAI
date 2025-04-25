@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import { useSortable } from "../lightweight-wrappers.js";
 import { CSS } from "../lightweight-wrappers.js";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "../lightweight-wrappers.js";
-import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from "../lightweight-wrappers.jsx";
 import axiosWithToken from '../../utils/axiosWithToken';
 import {
   CheckCircle,

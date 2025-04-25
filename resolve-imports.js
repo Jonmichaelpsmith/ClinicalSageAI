@@ -67,7 +67,7 @@ function processFile(filePath) {
             if (match && match[0]) {
               const newImport = match[0].replace(
                 new RegExp(`["']${pkg}["']`), 
-                '"../lightweight-wrappers.js"'
+                '"../lightweight-wrappers.jsx"'
               );
               content = content.replace(match[0], newImport);
               modified = true;
