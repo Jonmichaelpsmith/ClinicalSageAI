@@ -10,13 +10,14 @@ const standaloneModule = {
     let useStandalone = true;
     
     // Route to serve the standalone landing page at the root URL
-    app.use('/', (req: Request, res: Response, next: NextFunction) => {
-      // If the path is exactly '/' and we're in standalone mode, serve our custom landing page
-      if (req.path === '/' && useStandalone) {
+    app.get('/', (req: Request, res: Response, next: NextFunction) => {
+      // Only serve the standalone landing page at the exact root path
+      if (useStandalone) {
         try {
           const htmlPath = path.join(process.cwd(), 'standalone_landing_page.html');
           
           if (fs.existsSync(htmlPath)) {
+            console.log('[Standalone] Serving landing page from:', htmlPath);
             return res.sendFile(htmlPath);
           } else {
             console.error('[Standalone] Landing page HTML not found at:', htmlPath);
@@ -28,11 +29,26 @@ const standaloneModule = {
         }
       }
       
-      // For all other routes, continue to next middleware
+      // Only called if the landing page couldn't be served
       next();
     });
     
-    console.log('[Standalone] Standalone landing page route registered');
+    // Middleware to serve static assets used by the landing page
+    app.get('/landing-assets/*', (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const assetPath = req.path.replace('/landing-assets/', '');
+        const fullPath = path.join(process.cwd(), 'landing-assets', assetPath);
+        
+        if (fs.existsSync(fullPath)) {
+          return res.sendFile(fullPath);
+        }
+      } catch (error) {
+        console.error('[Standalone] Error serving landing asset:', error);
+      }
+      next();
+    });
+    
+    console.log('[Standalone] Standalone landing page routes registered');
   }
 };
 
@@ -122,12 +138,73 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
 // Import errorHandler for route exception handling
 import { errorHandler, notFoundHandler, asyncHandler } from './middleware/errorHandler';
 
-export function setupRoutes(app: express.Application): http.Server {
-  // Register standalone landing page handler first, before any other middleware
-  standaloneModule.injectStandaloneLandingPage(app);
+// Setup a minimal HTTP server for fallback situations
+function createMinimalServer() {
+  const http = require('http');
+  const fs = require('fs');
+  const path = require('path');
   
-  // Configure core middleware
-  app.use(express.json());
+  const server = http.createServer((req: any, res: any) => {
+    if (req.url === '/' || req.url === '/index.html') {
+      try {
+        const htmlPath = path.join(process.cwd(), 'standalone_landing_page.html');
+        if (fs.existsSync(htmlPath)) {
+          const content = fs.readFileSync(htmlPath);
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          res.end(content);
+          console.log('[MinimalServer] Served landing page successfully');
+          return;
+        }
+      } catch (error) {
+        console.error('[MinimalServer] Error serving landing page:', error);
+      }
+    }
+    
+    if (req.url && req.url.startsWith('/landing-assets/')) {
+      try {
+        const assetPath = req.url.replace('/landing-assets/', '');
+        const fullPath = path.join(process.cwd(), 'landing-assets', assetPath);
+        
+        if (fs.existsSync(fullPath)) {
+          const content = fs.readFileSync(fullPath);
+          // Set appropriate content type based on file extension
+          const ext = path.extname(fullPath).toLowerCase();
+          let contentType = 'text/plain';
+          
+          if (ext === '.html') contentType = 'text/html';
+          else if (ext === '.css') contentType = 'text/css';
+          else if (ext === '.js') contentType = 'application/javascript';
+          else if (ext === '.png') contentType = 'image/png';
+          else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+          else if (ext === '.svg') contentType = 'image/svg+xml';
+          
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(content);
+          console.log(`[MinimalServer] Served asset: ${assetPath}`);
+          return;
+        }
+      } catch (error) {
+        console.error('[MinimalServer] Error serving asset:', error);
+      }
+    }
+    
+    // Default response for unknown routes
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not Found');
+  });
+  
+  return server;
+}
+
+export function setupRoutes(app: express.Application): http.Server {
+  let httpServer: http.Server;
+  
+  try {
+    // Register standalone landing page handler first, before any other middleware
+    standaloneModule.injectStandaloneLandingPage(app);
+    
+    // Configure core middleware
+    app.use(express.json());
   
   // Apply structured request logging
   app.use(requestLogger);
@@ -403,5 +480,14 @@ export function setupRoutes(app: express.Application): http.Server {
   });
   
   // Create and return HTTP server
-  return http.createServer(app);
+  httpServer = http.createServer(app);
+  return httpServer;
+  
+  } catch (error) {
+    console.error('Failed to set up main Express server:', error);
+    console.log('Falling back to minimal HTTP server for landing page only');
+    
+    // Return our minimal landing page server as a fallback
+    return createMinimalServer();
+  }
 }
