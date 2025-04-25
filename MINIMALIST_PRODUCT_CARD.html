@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:sans-serif;}
+
+body {
+  font-size: 5px;
+  background: #f8f8f8;
+  margin: 5px;
+  padding: 0;
+  width: 90vw;
+  max-width: 90vw;
+  overflow-x: hidden;
+}
+
+.product-card {
+  background: white;
+  border-radius: 3px;
+  padding: 5px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 150px;
+}
+
+.card-header {
+  margin-bottom: 3px;
+}
+
+.icon {
+  color: #0B6E4F;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.title {
+  color: #0B6E4F;
+  font-size: 6px;
+  font-weight: bold;
+}
+
+.features {
+  margin-left: 5px;
+  margin-bottom: 5px;
+}
+
+.feature {
+  font-size: 4px;
+  margin-bottom: 1px;
+  color: #555;
+  position: relative;
+  padding-left: 3px;
+}
+
+.feature:before {
+  content: "•";
+  position: absolute;
+  left: -3px;
+  color: #0B6E4F;
+}
+
+.stats {
+  display: flex;
+  gap: 8px;
+  font-size: 4px;
+  color: #666;
+  margin-top: 3px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 7px;
+  font-weight: bold;
+  color: #0B6E4F;
+  margin-bottom: 1px;
+}
+</style>
+</head>
+<body>
+
+<div class="product-card">
+  <div class="card-header">
+    <div class="icon">□</div>
+    <div class="title">Document Management</div>
+  </div>
+  
+  <div class="features">
+    <div class="feature">Clinical Documentation</div>
+    <div class="feature">Regulatory Submissions</div>
+    <div class="feature">FDA Form 1571 tool</div>
+    <div class="feature">Protocol v2.3.docx</div>
+    <div class="feature">Manufacturing Records</div>
+  </div>
+  
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number">3,217+</div>
+      <div>Documents</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">17+</div>
+      <div>Submission Types</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">21</div>
+      <div>CFR Part</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

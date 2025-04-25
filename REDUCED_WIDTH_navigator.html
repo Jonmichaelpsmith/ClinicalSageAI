@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:sans-serif;}
+
+/* Main container with fixed width */
+.container {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Folders section - left column */
+.folders {
+  width: 70px;
+  font-size: 5px;
+  background: #fff;
+  border-right: 1px solid #eee;
+}
+
+.folders-header {
+  padding: 3px;
+  color: #666;
+  font-weight: 500;
+}
+
+.folder-list {
+  padding-left: 3px;
+}
+
+.folder {
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+}
+
+.folder.active {
+  color: #0B6E4F;
+}
+
+.folder-icon {
+  width: 5px;
+  margin-right: 2px;
+}
+
+/* Documents section - middle column */
+.documents {
+  width: 90px;
+  font-size: 5px;
+  background: #fff;
+  border-right: 1px solid #eee;
+}
+
+.docs-header {
+  padding: 3px;
+  color: #666;
+  font-weight: 500;
+  border-bottom: 1px solid #eee;
+}
+
+.doc-list {
+  padding: 3px;
+}
+
+.doc {
+  margin-bottom: 5px;
+  padding: 3px;
+  background: #fff;
+  border-radius: 3px;
+  border: 1px solid #eee;
+}
+
+.doc.selected {
+  border-color: #E52DA0;
+  background-color: #FFF5FA;
+}
+
+.doc-name {
+  font-weight: 500;
+  margin-bottom: 1px;
+}
+
+.doc-meta {
+  color: #888;
+  font-size: 4px;
+  margin-bottom: 2px;
+}
+
+.doc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 1px 2px;
+  border-radius: 2px;
+  font-size: 4px;
+}
+
+.tag-blue {
+  background: #e1f5fe;
+  color: #0277bd;
+}
+
+.tag-green {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* Preview section - right column */
+.preview {
+  width: 100px;
+  font-size: 5px;
+  background: #fff;
+}
+
+.preview-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.tab {
+  padding: 3px 5px;
+  border-right: 1px solid #eee;
+}
+
+.tab.active {
+  background: #f8f8f8;
+}
+
+.preview-content {
+  padding: 5px;
+}
+
+.preview-title {
+  font-size: 7px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.preview-subtitle {
+  font-size: 4px;
+  color: #888;
+  margin-bottom: 5px;
+}
+
+.section-title {
+  font-weight: 600;
+  margin: 5px 0 2px 0;
+}
+
+.section-text {
+  font-size: 4px;
+  margin-bottom: 3px;
+}
+
+.insight-box {
+  margin-top: 5px;
+  padding: 3px;
+  background: #f0f7f4;
+  border-left: 2px solid #0B6E4F;
+  font-size: 4px;
+}
+
+.version-bar {
+  margin-top: 5px;
+  padding: 2px;
+  border-top: 1px solid #eee;
+  font-size: 4px;
+  color: #888;
+  display: flex;
+  justify-content: space-between;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Folders Panel -->
+  <div class="folders">
+    <div class="folders-header">FOLDERS</div>
+    <div class="folder-list">
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>CMC Documents</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Drug Substance</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Drug Product</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Specifications</span>
+      </div>
+      <div class="folder active">
+        <span class="folder-icon">□</span>
+        <span>Validation</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Regulatory</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">□</span>
+        <span>Quality</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Documents Panel -->
+  <div class="documents">
+    <div class="docs-header">VALIDATION DOCUMENTS</div>
+    <div class="doc-list">
+      <div class="doc">
+        <div class="doc-name">
+          Method Validation Report.docx
+        </div>
+        <div class="doc-meta">
+          Updated 2 days ago • John Smith
+        </div>
+        <div class="doc-tags">
+          <span class="tag tag-blue">Module 3.2</span>
+          <span class="tag tag-green">Final</span>
+        </div>
+      </div>
+      
+      <div class="doc">
+        <div class="doc-name">
+          Stability Protocol v2.docx
+        </div>
+        <div class="doc-meta">
+          Updated yesterday • Maria Chen
+        </div>
+        <div class="doc-tags">
+          <span class="tag tag-blue">Module 3.2</span>
+          <span class="tag tag-blue">Draft</span>
+        </div>
+      </div>
+      
+      <div class="doc">
+        <div class="doc-name">
+          Equipment Qualification.pdf
+        </div>
+        <div class="doc-meta">
+          Updated 5 days ago • Robert Lewis
+        </div>
+        <div class="doc-tags">
+          <span class="tag tag-blue">Module 3.2</span>
+          <span class="tag tag-green">Final</span>
+        </div>
+      </div>
+      
+      <div class="doc selected">
+        <div class="doc-name">
+          Process Validation Protocol.docx
+        </div>
+        <div class="doc-meta">
+          Updated today • AI Generated
+        </div>
+        <div class="doc-tags">
+          <span class="tag tag-blue">Module 3.2</span>
+          <span class="tag tag-blue">AI Generated</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Preview Panel -->
+  <div class="preview">
+    <div class="preview-tabs">
+      <div class="tab active">Document</div>
+      <div class="tab">Metadata</div>
+      <div class="tab">Versions</div>
+    </div>
+    
+    <div class="preview-content">
+      <div class="preview-title">Process Validation Protocol v2.1</div>
+      <div class="preview-subtitle">Drug Product: TS-273 Tablets</div>
+      
+      <div class="section">
+        <div class="section-title">1. Purpose</div>
+        <div class="section-text">
+          This protocol defines the approach and acceptance criteria for validating the manufacturing process for TS-273 Tablets at the designated manufacturing site, meeting predetermined quality attributes.
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">2. Scope</div>
+        <div class="section-text">
+          This protocol applies to the validation of the manufacturing process for TS-273 Tablets at the designated manufacturing site, covering all process steps from dispensing through packaging.
+        </div>
+      </div>
+      
+      <div class="insight-box">
+        <b>AI-Generated Insights</b><br>
+        This protocol aligns with FDA Process Validation guidance. Similar protocols have successfully passed FDA and EMA submissions.
+      </div>
+      
+      <div class="version-bar">
+        <div>Version: 2.1</div>
+        <div>4 previous versions</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
