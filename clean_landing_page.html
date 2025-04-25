@@ -449,12 +449,15 @@
                         <a href="#ai-tech" class="nav-link">AI Technology</a>
                     </li>
                     <li class="nav-item">
+                        <a href="#" class="nav-link" id="open-about-modal">About</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="#contact" class="nav-link">Contact</a>
                     </li>
                 </ul>
                 
                 <div class="action-buttons">
-                    <a href="/rfp" class="btn btn-outline">RFP</a>
+                    <a href="#" id="open-rfp-modal" class="btn btn-outline">RFP</a>
                     <a href="/demo" class="btn btn-primary">Demo</a>
                     <a href="/support" class="btn btn-outline">Support</a>
                 </div>
@@ -3038,6 +3041,292 @@
                         });
                     }
                 });
+            });
+        });
+    </script>
+    <!-- About Modal -->
+    <div id="about-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 style="color: var(--primary); margin: 0;">Concept2Cure: Accelerating Life Sciences from Concept to Cure</h2>
+                <span class="close" id="close-about-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h3 style="color: var(--yprime-pink); margin-top: 20px;">Founding Story: From Inspiration to Innovation</h3>
+                <p>Concept2Cure was born from a visionary founder's quest to eliminate the bottlenecks in bringing medical innovations to patients. Our founder's journey began with inspiration from industry trailblazers like Brian Finrow, CEO of Lumen Bioscience – an unconventional leader who proved that fresh perspectives can revolutionize biotech.</p>
+                <p>Motivated by this insight, our founder spent over a year traveling and conducting extensive interviews with scientists, regulatory experts, and biotech executives across North America, Europe, and Asia. These global interviews unearthed a universal pain point in life sciences: the slow, siloed process that stretches from a lab concept to an actual cure.</p>
+
+                <h3 style="color: var(--yprime-pink); margin-top: 20px;">Our Mission: Accelerating Life Sciences from Concept to Cure</h3>
+                <p>Concept2Cure's mission is simple yet bold: to accelerate the development of life-saving therapies from the earliest concept to the final cure. We exist to empower scientists, biotech firms, and pharmaceutical companies to bring innovations to patients faster than ever before.</p>
+                <p>This mission is driven by a core belief that cutting-edge technology can eliminate traditional inefficiencies in R&D and regulatory processes. By leveraging advanced AI and intelligent automation, we strive to transform the pace of therapeutic development worldwide.</p>
+
+                <h3 style="color: var(--yprime-pink); margin-top: 20px;">TrialSage Platform Overview</h3>
+                <p>At the heart of Concept2Cure's solution is TrialSage – a comprehensive, AI-driven SaaS platform that serves as the engine for turning our mission into reality. TrialSage is an end-to-end regulatory intelligence and trial design platform that automates and optimizes critical steps in drug development, including study design, Chemistry Manufacturing & Controls (CMC) automation, clinical study report (CSR) analysis, validation checks, and secure document management.</p>
+                
+                <h3 style="color: var(--yprime-pink); margin-top: 20px;">Key Modules of TrialSage</h3>
+                <p>TrialSage is composed of several specialized modules, each addressing a critical component of the drug development and regulatory process. Together, these modules create a seamless workflow that drives projects forward with intelligence and efficiency:</p>
+                
+                <div style="background-color: #f9f9f9; border-left: 3px solid var(--primary); padding: 15px; margin: 15px 0;">
+                    <h4 style="color: var(--primary); margin-top: 0;">IND Wizard</h4>
+                    <p>A guided, intelligent module for preparing Investigational New Drug applications. IND Wizard simplifies the complex process of drafting an IND by auto-populating required forms, suggesting relevant preclinical and clinical data to include, and cross-referencing the latest FDA/EMA guidelines.</p>
+                </div>
+                
+                <div style="background-color: #f9f9f9; border-left: 3px solid var(--primary); padding: 15px; margin: 15px 0;">
+                    <h4 style="color: var(--primary); margin-top: 0;">Study Architect</h4>
+                    <p>A design studio for clinical trials, this module uses AI to assist in study protocol design and simulation. Study Architect can recommend optimal study endpoints, patient cohort sizes, and adaptive trial designs by analyzing thousands of prior trial outcomes in its database.</p>
+                </div>
+                
+                <div style="background-color: #f9f9f9; border-left: 3px solid var(--primary); padding: 15px; margin: 15px 0;">
+                    <h4 style="color: var(--primary); margin-top: 0;">CMC Blueprint</h4>
+                    <p>Focused on Chemistry, Manufacturing, and Controls, CMC Blueprint automates the planning and documentation of drug manufacturing processes. It provides templates and AI-driven guidance for outlining manufacturing protocols, quality control tests, and stability studies.</p>
+                </div>
+                
+                <div style="background-color: #f9f9f9; border-left: 3px solid var(--primary); padding: 15px; margin: 15px 0;">
+                    <h4 style="color: var(--primary); margin-top: 0;">CSR Intelligence</h4>
+                    <p>After a trial, the Clinical Study Report (CSR) must capture all findings in detail. CSR Intelligence leverages natural language processing to analyze study data and even draft segments of the report, such as efficacy and safety results or statistical analyses.</p>
+                </div>
+                
+                <div style="background-color: #f9f9f9; border-left: 3px solid var(--primary); padding: 15px; margin: 15px 0;">
+                    <h4 style="color: var(--primary); margin-top: 0;">CER Composer</h4>
+                    <p>For medical device trials and combination products, TrialSage offers CER Composer to automate the creation of Clinical Evaluation Reports (CER). This module aggregates clinical evidence, literature, and post-market data to build a comprehensive report demonstrating a product's safety and performance.</p>
+                </div>
+                
+                <div style="background-color: #f9f9f9; border-left: 3px solid var(--primary); padding: 15px; margin: 15px 0;">
+                    <h4 style="color: var(--primary); margin-top: 0;">RegIntel Validator</h4>
+                    <p>A continuous compliance guardian, RegIntel Validator runs in the background to validate documents and data against global regulatory requirements. As team members draft protocols, IND sections, or CSRs within TrialSage, this module checks for alignment with the latest regulations.</p>
+                </div>
+                
+                <div style="background-color: #f9f9f9; border-left: 3px solid var(--primary); padding: 15px; margin: 15px 0;">
+                    <h4 style="color: var(--primary); margin-top: 0;">Vault Workspace</h4>
+                    <p>A secure, cloud-based content management and collaboration environment. Vault Workspace serves as the single source of truth for all project documents, data, and communications. It offers enterprise-grade document management features – version control, access permissions, audit trails – all with end-to-end encryption.</p>
+                </div>
+                
+                <h3 style="color: var(--yprime-pink); margin-top: 20px;">AI-Powered Differentiation and Competitive Edge</h3>
+                <p>TrialSage's foundation in advanced AI technologies is what sets it apart in an industry still dominated by legacy point solutions. By incorporating GPT-4 Turbo as its language intelligence core, augmented with retrieval augmented generation (RAG) and semantic search, TrialSage can do things that older platforms simply cannot.</p>
+                
+                <ul style="margin-top: 15px; padding-left: 20px;">
+                    <li style="margin-bottom: 10px;"><strong>Holistic Integration vs. Siloed Tools:</strong> TrialSage was designed from the ground up as an integrated platform, avoiding the need to juggle multiple systems.</li>
+                    <li style="margin-bottom: 10px;"><strong>Real-Time Intelligence:</strong> TrialSage provides real-time analytics and regulatory intelligence at every step. It continuously scans the evolving global regulatory landscape.</li>
+                    <li style="margin-bottom: 10px;"><strong>Generative Drafting & Automation:</strong> Thanks to GPT-4 Turbo, TrialSage can auto-generate high-quality drafts of complex documents (IND sections, CSRs, CERs) in minutes.</li>
+                    <li style="margin-bottom: 10px;"><strong>Global Compliance, Built-In:</strong> Enterprises operating across multiple regions benefit from TrialSage's global regulatory compliance engine.</li>
+                    <li style="margin-bottom: 10px;"><strong>Enterprise-Grade Security & Reliability:</strong> TrialSage was architected with enterprise security at its core – from SOC2-compliant cloud infrastructure to end-to-end encryption.</li>
+                </ul>
+                
+                <h3 style="color: var(--yprime-pink); margin-top: 20px;">Early User Feedback and Impact</h3>
+                <p>Even in its early deployments and beta trials, TrialSage has been met with enthusiasm and validation from users. Early adopters – ranging from emerging biotech startups to academic clinical research centers – have provided feedback that underscores the platform's transformative potential:</p>
+                
+                <ul style="margin-top: 15px; padding-left: 20px;">
+                    <li style="margin-bottom: 10px;"><strong>Dramatic Efficiency Gains:</strong> Beta users report substantial reductions in time and effort for key tasks. One oncology biotech startup noted that preparing a complete IND package went from "a 3-month ordeal to a 3-week guided sprint" after adopting TrialSage.</li>
+                    <li style="margin-bottom: 10px;"><strong>Improved Compliance Confidence:</strong> Users consistently highlight the peace of mind that the RegIntel Validator brings. A regulatory affairs director in our pilot program shared that "TrialSage is like having an expert co-pilot."</li>
+                    <li style="margin-bottom: 10px;"><strong>Intuitive User Experience:</strong> Despite its advanced AI underpinnings, TrialSage was designed with a user-centric approach. Beta participants have noted the platform's intuitive interface and workflow.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- RFP Upload Modal -->
+    <div id="rfp-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 style="color: var(--primary); margin: 0;">Submit Request for Proposal (RFP)</h2>
+                <span class="close" id="close-rfp-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Upload your RFP document or fill out the form below. Your request will be sent directly to our administrative team for review.</p>
+                
+                <form id="rfp-form" style="margin-top: 20px;">
+                    <div style="margin-bottom: 15px;">
+                        <label for="company-name" style="display: block; margin-bottom: 5px; font-weight: 500;">Company Name</label>
+                        <input type="text" id="company-name" name="company-name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label for="contact-person" style="display: block; margin-bottom: 5px; font-weight: 500;">Contact Person</label>
+                        <input type="text" id="contact-person" name="contact-person" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label for="email" style="display: block; margin-bottom: 5px; font-weight: 500;">Email Address</label>
+                        <input type="email" id="email" name="email" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label for="phone" style="display: block; margin-bottom: 5px; font-weight: 500;">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="rfp-file" style="display: block; margin-bottom: 5px; font-weight: 500;">Upload RFP Document (PDF, DOC, DOCX)</label>
+                        <input type="file" id="rfp-file" name="rfp-file" accept=".pdf,.doc,.docx" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <div style="font-size: 12px; color: #666; margin-top: 5px;">Maximum file size: 10MB</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label for="rfp-description" style="display: block; margin-bottom: 5px; font-weight: 500;">Project Description</label>
+                        <textarea id="rfp-description" name="rfp-description" rows="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Please describe your project requirements and scope..."></textarea>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label for="deadline" style="display: block; margin-bottom: 5px; font-weight: 500;">Response Deadline</label>
+                        <input type="date" id="deadline" name="deadline" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button type="button" id="close-rfp-form" class="btn btn-outline" style="margin-right: 10px;">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit RFP</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Styles -->
+    <style>
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+    </style>
+    
+    <!-- Modal JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // About Modal
+            const aboutModal = document.getElementById('about-modal');
+            const openAboutModal = document.getElementById('open-about-modal');
+            const closeAboutModal = document.getElementById('close-about-modal');
+            
+            openAboutModal.addEventListener('click', function(e) {
+                e.preventDefault();
+                aboutModal.style.display = 'flex';
+                setTimeout(() => aboutModal.classList.add('active'), 10);
+                document.body.style.overflow = 'hidden';
+            });
+            
+            closeAboutModal.addEventListener('click', function() {
+                aboutModal.classList.remove('active');
+                setTimeout(() => aboutModal.style.display = 'none', 300);
+                document.body.style.overflow = '';
+            });
+            
+            // RFP Modal
+            const rfpModal = document.getElementById('rfp-modal');
+            const openRfpModal = document.getElementById('open-rfp-modal');
+            const closeRfpModal = document.getElementById('close-rfp-modal');
+            const closeRfpForm = document.getElementById('close-rfp-form');
+            const rfpForm = document.getElementById('rfp-form');
+            
+            openRfpModal.addEventListener('click', function(e) {
+                e.preventDefault();
+                rfpModal.style.display = 'flex';
+                setTimeout(() => rfpModal.classList.add('active'), 10);
+                document.body.style.overflow = 'hidden';
+            });
+            
+            function closeRfpModalFn() {
+                rfpModal.classList.remove('active');
+                setTimeout(() => rfpModal.style.display = 'none', 300);
+                document.body.style.overflow = '';
+            }
+            
+            closeRfpModal.addEventListener('click', closeRfpModalFn);
+            closeRfpForm.addEventListener('click', closeRfpModalFn);
+            
+            // RFP Form Submission
+            rfpForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Mock AJAX submission (in a real app, this would send data to the server)
+                const formData = new FormData(rfpForm);
+                
+                // Simulate submission (with a mock success response)
+                setTimeout(function() {
+                    alert('Your RFP has been submitted successfully! Our team will review it and get back to you soon.');
+                    rfpForm.reset();
+                    closeRfpModalFn();
+                }, 1000);
+                
+                // In a real application, this would be an actual AJAX call:
+                /*
+                fetch('/api/submit-rfp', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Your RFP has been submitted successfully!');
+                    rfpForm.reset();
+                    closeRfpModalFn();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while submitting your RFP. Please try again.');
+                });
+                */
+            });
+            
+            // Close modals when clicking outside content
+            window.addEventListener('click', function(e) {
+                if (e.target === aboutModal) {
+                    closeAboutModal.click();
+                }
+                if (e.target === rfpModal) {
+                    closeRfpModal.click();
+                }
             });
         });
     </script>
