@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TrialSage™ - Clinical Document Management System</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: #F9FAFB;
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* Feature panels */
+.feature-panel {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 15px;
+  margin: 10px;
+  max-width: 180px;
+  width: 180px;
+}
+
+.panel-icon {
+  color: #0B6E4F;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.panel-list {
+  list-style: none;
+}
+
+.panel-item {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* Document layout */
+.document-layout {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 15px;
+}
+
+.left-sidebar {
+  width: 200px;
+  margin-right: 15px;
+}
+
+.main-content {
+  flex: 1;
+  max-width: calc(100% - 215px);
+}
+
+/* Document viewer */
+.document-viewer {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.doc-header {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+}
+
+.doc-icon {
+  background: #FF3366;
+  color: white;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.doc-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.doc-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.doc-tab {
+  padding: 10px 15px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+}
+
+.doc-tab.active {
+  color: #0B6E4F;
+  border-bottom: 2px solid #0B6E4F;
+  font-weight: 500;
+}
+
+.doc-content {
+  padding: 15px;
+  height: 400px;
+  overflow-y: auto;
+}
+
+.doc-metadata {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.doc-id {
+  font-size: 13px;
+  color: #777;
+}
+
+.doc-section {
+  margin-bottom: 20px;
+}
+
+.section-heading {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.section-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.ai-insights {
+  border-left: 4px solid #0B6E4F;
+  background: #F0F7F4;
+  padding: 12px;
+  margin-top: 15px;
+  position: relative;
+}
+
+.insight-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0B6E4F;
+  margin-bottom: 5px;
+  padding-left: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.insight-title:before {
+  content: "●";
+  position: absolute;
+  left: 10px;
+  color: #0B6E4F;
+}
+
+.insight-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* Small document card */
+.small-doc-card {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 12px;
+  width: 230px;
+  border: 1px solid #F0C7D8;
+}
+
+.small-doc-icon {
+  color: #2563EB;
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+.small-doc-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 3px;
+}
+
+.small-doc-meta {
+  font-size: 12px;
+  color: #777;
+}
+
+.ai-generated {
+  font-size: 12px;
+  color: #0B6E4F;
+  margin-left: 3px;
+}
+
+/* Bottom toolbar */
+.toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1F2937;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.toolbar-item {
+  color: white;
+  font-size: 14px;
+  margin-right: 20px;
+}
+
+/* Document module cards */
+.module-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.module-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 12px;
+  width: calc(50% - 5px);
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0B6E4F;
+  margin-bottom: 8px;
+}
+
+.card-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* AI actions */
+.ai-actions {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 12px;
+}
+
+.actions-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.action-item {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 6px;
+  padding-left: 15px;
+  position: relative;
+}
+
+.action-item:before {
+  content: "○";
+  position: absolute;
+  left: 0;
+  color: #0B6E4F;
+}
+
+.button {
+  display: inline-block;
+  background: #0B6E4F;
+  color: white;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- Small document card (top right) -->
+<div class="small-doc-card">
+  <div style="display: flex; align-items: center;">
+    <span class="small-doc-icon">📄</span>
+    <span class="small-doc-title">Process Validation Protocol.docx</span>
+  </div>
+  <div class="small-doc-meta">Updated today <span class="ai-generated">• AI Generated</span></div>
+</div>
+
+<div class="document-layout">
+  <div class="left-sidebar">
+    <!-- DocuShare Integration Feature -->
+    <div class="feature-panel">
+      <div class="panel-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+          <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+        </svg>
+      </div>
+      <div class="panel-title">DocuShare Integration</div>
+      <ul class="panel-list">
+        <li class="panel-item">Automatic DocuShare syncing</li>
+        <li class="panel-item">PDF ingestion from Xerox</li>
+        <li class="panel-item">DocuShare ID tracking</li>
+        <li class="panel-item">Audit-ready file management</li>
+      </ul>
+    </div>
+    
+    <!-- AI Document Analysis Feature -->
+    <div class="feature-panel">
+      <div class="panel-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+          <path d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+        </svg>
+      </div>
+      <div class="panel-title">AI-powered document analysis</div>
+      <ul class="panel-list">
+        <li class="panel-item">Regulatory compliance check</li>
+        <li class="panel-item">Automated document review</li>
+        <li class="panel-item">Quality metrics tracking</li>
+        <li class="panel-item">Gap analysis with FDA guidance</li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="main-content">
+    <!-- Document viewer -->
+    <div class="document-viewer">
+      <div class="doc-header">
+        <div class="doc-icon">PDF</div>
+        <div class="doc-title">Process Validation Protocol v2.1</div>
+      </div>
+      
+      <div class="doc-tabs">
+        <div class="doc-tab active">Document</div>
+        <div class="doc-tab">Metadata</div>
+        <div class="doc-tab">Versions</div>
+      </div>
+      
+      <div class="doc-content">
+        <div class="doc-metadata">
+          <div>Process Validation Protocol</div>
+          <div class="doc-id">Drug Product • Document ID: TS-VAL-274</div>
+        </div>
+        
+        <div class="doc-section">
+          <div class="section-heading">1. Purpose</div>
+          <div class="section-text">
+            This protocol defines the approach and acceptance criteria for validating the manufacturing process for TS-273 Tablets. This protocol ensures consistent production of tablets meeting predetermined quality attributes.
+          </div>
+        </div>
+        
+        <div class="doc-section">
+          <div class="section-heading">2. Scope</div>
+          <div class="section-text">
+            This protocol applies to the validation of manufacturing process for TS-273 Tablets at the designated manufacturing facility and covers operations from dispensing through packaging.
+          </div>
+        </div>
+        
+        <div class="ai-insights">
+          <div class="insight-title">AI-Generated Insights</div>
+          <div class="insight-text">
+            This protocol aligns with FDA Process Validation guidance. Similar protocols have passed regulatory review with minimal comments when submitted as part of CTD Module 3.2.P.3.
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Module cards -->
+    <div class="module-cards">
+      <div class="module-card">
+        <div class="card-title">Protocol Compliance Engine</div>
+        <div class="card-text">Automatically scans protocols for compliance with ICH, FDA, and EMA guidance documents.</div>
+      </div>
+      <div class="module-card">
+        <div class="card-title">Version Control & History</div>
+        <div class="card-text">Track all changes with full audit trail and version comparison visualization.</div>
+      </div>
+      <div class="module-card">
+        <div class="card-title">Metadata Tagging</div>
+        <div class="card-text">Automatically extracts and indexes key protocol elements for enhanced searchability.</div>
+      </div>
+      <div class="module-card">
+        <div class="card-title">Regulatory Reference Library</div>
+        <div class="card-text">In-context access to relevant regulatory guidance and precedent documents.</div>
+      </div>
+    </div>
+    
+    <!-- AI Actions -->
+    <div class="ai-actions">
+      <div class="actions-title">AI-Powered Document Actions</div>
+      <div class="action-item">"Summarize this document"</div>
+      <div class="action-item">"Compare this to v3"</div>
+      <div class="action-item">"Explain this section"</div>
+      <div class="action-item">"Suggest edit for FDA phrasing"</div>
+      
+      <div class="button">Explore Document Intelligence</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom toolbar -->
+<div class="toolbar">
+  <div class="toolbar-item">Resources</div>
+  <div class="toolbar-item">Settings</div>
+</div>
+
+</body>
+</html>
