@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation Documents Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --border: #eee;
+            --text-main: #333;
+            --text-light: #777;
+            --bg-light: #f5f5f5;
+            --tag-blue: #E0F2FE;
+            --tag-blue-text: #0284C7;
+            --tag-green: #DCFCE7;
+            --tag-green-text: #16A34A;
+            --tag-orange: #FEF3C7;
+            --tag-orange-text: #D97706;
+            --tag-purple: #F3E8FF;
+            --tag-purple-text: #9333EA;
+            --tag-pink: #FCE7F3;
+            --tag-pink-text: #DB2777;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            padding: 8px;
+            font-size: 5px;
+        }
+        
+        .documents-panel {
+            background-color: white;
+            border-radius: 6px;
+            width: 300px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            background-color: #f2f2f2;
+        }
+        
+        .panel-title {
+            color: var(--text-main);
+            font-size: 6px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .panel-actions {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .panel-action {
+            width: 8px;
+            height: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            border-radius: 2px;
+            color: var(--text-light);
+            font-size: 4px;
+        }
+        
+        .document-list {
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .document-item {
+            background-color: white;
+            border-radius: 4px;
+            padding: 6px 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+        
+        .document-item.selected {
+            border-color: #E52DA0;
+            background-color: #FFF5FA;
+            box-shadow: 0 0 0 1px #FFC6E4;
+        }
+        
+        .document-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            margin-bottom: 3px;
+        }
+        
+        .document-checkbox {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .checkbox {
+            width: 7px;
+            height: 7px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+        }
+        
+        .document-info {
+            flex-grow: 1;
+        }
+        
+        .document-name {
+            color: var(--text-main);
+            font-size: 6px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .document-meta {
+            color: var(--text-light);
+            font-size: 5px;
+        }
+        
+        .document-tags {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        
+        .tag {
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 4px;
+            font-weight: 500;
+        }
+        
+        .tag-module {
+            background-color: var(--tag-blue);
+            color: var(--tag-blue-text);
+        }
+        
+        .tag-final {
+            background-color: var(--tag-green);
+            color: var(--tag-green-text);
+        }
+        
+        .tag-draft {
+            background-color: var(--tag-orange);
+            color: var(--tag-orange-text);
+        }
+        
+        .tag-docushare {
+            background-color: var(--tag-purple);
+            color: var(--tag-purple-text);
+        }
+        
+        .tag-ai {
+            background-color: var(--tag-pink);
+            color: var(--tag-pink-text);
+        }
+    </style>
+</head>
+<body>
+    <div class="documents-panel">
+        <div class="panel-header">
+            <div class="panel-title">VALIDATION DOCUMENTS</div>
+            <div class="panel-actions">
+                <div class="panel-action">⇅</div>
+                <div class="panel-action">⋮</div>
+            </div>
+        </div>
+        
+        <div class="document-list">
+            <!-- Document 1 -->
+            <div class="document-item">
+                <div class="document-header">
+                    <div class="document-checkbox">
+                        <div class="checkbox"></div>
+                    </div>
+                    <div class="document-info">
+                        <div class="document-name">Method Validation Report.docx</div>
+                        <div class="document-meta">Updated 2 days ago • John Smith</div>
+                    </div>
+                </div>
+                <div class="document-tags">
+                    <div class="tag tag-module">Module 3.2</div>
+                    <div class="tag tag-final">Final</div>
+                </div>
+            </div>
+            
+            <!-- Document 2 -->
+            <div class="document-item">
+                <div class="document-header">
+                    <div class="document-checkbox">
+                        <div class="checkbox"></div>
+                    </div>
+                    <div class="document-info">
+                        <div class="document-name">Stability Protocol v2.docx</div>
+                        <div class="document-meta">Updated yesterday • Maria Chen</div>
+                    </div>
+                </div>
+                <div class="document-tags">
+                    <div class="tag tag-module">Module 3.2</div>
+                    <div class="tag tag-draft">Draft</div>
+                </div>
+            </div>
+            
+            <!-- Document 3 -->
+            <div class="document-item">
+                <div class="document-header">
+                    <div class="document-checkbox">
+                        <div class="checkbox"></div>
+                    </div>
+                    <div class="document-info">
+                        <div class="document-name">Equipment Qualification.pdf</div>
+                        <div class="document-meta">Updated 5 days ago • Robert Lewis</div>
+                    </div>
+                </div>
+                <div class="document-tags">
+                    <div class="tag tag-module">Module 3.2</div>
+                    <div class="tag tag-final">Final</div>
+                    <div class="tag tag-docushare">DocuShare</div>
+                </div>
+            </div>
+            
+            <!-- Document 4 (Selected) -->
+            <div class="document-item selected">
+                <div class="document-header">
+                    <div class="document-checkbox">
+                        <div class="checkbox"></div>
+                    </div>
+                    <div class="document-info">
+                        <div class="document-name">Process Validation Protocol.docx</div>
+                        <div class="document-meta">Updated today • AI Generated</div>
+                    </div>
+                </div>
+                <div class="document-tags">
+                    <div class="tag tag-module">Module 3.2</div>
+                    <div class="tag tag-ai">AI Generated</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
