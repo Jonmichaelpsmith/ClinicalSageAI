@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>About Our AI | TrialSage</title>
+    <meta name="description" content="Discover how TrialSage's AI-powered features transform regulatory workflows and accelerate your path to submission.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://img.freepik.com/premium-vector/green-health-logo_7888-106.jpg">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #38bdf8;
+            --secondary: #0f172a;
+            --secondary-light: #1e293b;
+            --accent: #22c55e;
+            --accent-dark: #16a34a;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #eab308;
+            --info: #3b82f6;
+            --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--gray-800);
+            line-height: 1.5;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #fff;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        a:hover {
+            color: var(--primary-dark);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -1rem;
+        }
+        
+        .col {
+            flex: 1 0 0%;
+            padding: 0 1rem;
+        }
+        
+        /* For specific column sizes */
+        .col-12 { flex: 0 0 100%; max-width: 100%; }
+        .col-6 { flex: 0 0 50%; max-width: 50%; }
+        
+        @media (max-width: 768px) {
+            .col-6 { flex: 0 0 100%; max-width: 100%; }
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: var(--shadow);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .logo img {
+            height: 2.5rem;
+            margin-right: 0.75rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+            line-height: 1.5;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: white;
+        }
+        
+        .hero {
+            padding: 10rem 0 5rem;
+            background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+        
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            text-align: center;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            height: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 4px solid var(--primary);
+            margin-bottom: 2rem;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-dark);
+        }
+        
+        .feature-description {
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .feature-list i {
+            color: var(--success);
+            margin-right: 0.75rem;
+            margin-top: 0.25rem;
+        }
+        
+        .comparison {
+            display: flex;
+            background-color: var(--gray-100);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .comparison-col {
+            flex: 1;
+            padding: 1.5rem;
+        }
+        
+        .comparison-col:first-child {
+            background-color: var(--gray-200);
+        }
+        
+        .comparison-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .comparison ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .comparison li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray-300);
+        }
+        
+        .comparison li:last-child {
+            border-bottom: none;
+        }
+        
+        .cta-section {
+            background-color: var(--primary);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .cta-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-text {
+            font-size: 1.125rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+        
+        .btn-white {
+            background-color: white;
+            color: var(--primary);
+            border-color: white;
+        }
+        
+        .btn-white:hover {
+            background-color: var(--gray-100);
+            color: var(--primary-dark);
+            border-color: var(--gray-100);
+        }
+        
+        footer {
+            background-color: var(--secondary);
+            color: white;
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-column {
+            flex: 1 0 25%;
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+        
+        .footer-links {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .footer-link {
+            display: block;
+            color: var(--gray-400);
+            margin-bottom: 0.75rem;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-link:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-700);
+        }
+        
+        .copyright {
+            font-size: 0.875rem;
+            color: var(--gray-400);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .footer-column {
+                flex: 1 0 50%;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .footer-bottom > *:not(:last-child) {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <a href="/" class="logo">
+                    <img src="https://img.freepik.com/premium-vector/green-health-logo_7888-106.jpg" alt="TrialSage Logo">
+                    <span>TrialSage™</span>
+                </a>
+                <a href="/" class="btn">Back to Home</a>
+            </div>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">Our AI Technology</h1>
+            <p class="hero-subtitle">Discover how our advanced AI capabilities accelerate and enhance every stage of your regulatory process.</p>
+            <a href="/demo" class="btn btn-primary">Request Demo</a>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">AI-Powered Features</h2>
+            <p class="section-subtitle">We've harnessed the power of artificial intelligence to transform regulatory workflows, creating a seamless experience from protocol design to submission.</p>
+            
+            <div class="row">
+                <div class="col col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <h3 class="feature-title">Protocol Blueprint Generator</h3>
+                        <p class="feature-description">Create comprehensive protocol drafts in minutes instead of weeks. Simply enter your basic study parameters and watch as our AI crafts a detailed protocol outline.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Auto-generates 70% of protocol text, eliminating repetitive work</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Creates complete study framework including rationale, objectives, and assessment schedules</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Reduces protocol development time from weeks to hours</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">Adaptive Design Simulator</h3>
+                        <p class="feature-description">Test and validate your protocol design before implementation with powerful simulation tools that visualize outcomes and optimize your approach.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Visualize power curves and enrollment timelines in real-time</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Predict the impact of dropout rates on your study outcomes</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Test parallel, crossover, and adaptive arm designs without complex programming</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 class="feature-title">Intelligent Endpoint Advisor</h3>
+                        <p class="feature-description">Select the right endpoints for your study based on industry standards and historical success patterns from thousands of previous trials.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Access an AI-curated library of validated endpoints from over 5,000 trials</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Receive customized recommendations for your specific therapeutic area</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Align with CDISC/SDTM standards automatically</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h3 class="feature-title">CRF & SDTM Variable Mapper</h3>
+                        <p class="feature-description">Streamline your data management with automatic mapping between your case report forms and standardized datasets.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Create a complete CDISC-compliant data pipeline with one click</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Automatically suggest appropriate CRF fields based on your protocol</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Validate terminology against industry standards like LOINC and MedDRA</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Risk-Based Monitoring Planner</h3>
+                        <p class="feature-description">Identify and mitigate risks before they impact your study with an AI-powered monitoring approach based on historical patterns.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Auto-detect high-risk data fields and sites based on historical deviation patterns</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Generate comprehensive monitoring plans that meet ICH E6(R3) guidelines</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Create ready-to-use CAPA templates for common issues</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col col-6">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3 class="feature-title">Global Compliance Checker</h3>
+                        <p class="feature-description">Ensure your protocol meets requirements across all target regions with automatic regional compliance checking.</p>
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Instantly identify sections needing regional customization</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Receive suggested language for EU, PMDA, and other regional requirements</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle"></i>
+                                <span>Create submission-ready documents for multiple jurisdictions simultaneously</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" style="background-color: var(--gray-100);">
+        <div class="container">
+            <h2 class="section-title">The TrialSage AI Advantage</h2>
+            <p class="section-subtitle">How our approach fundamentally changes the game for regulatory teams</p>
+            
+            <div class="comparison">
+                <div class="comparison-col">
+                    <h3 class="comparison-title">Traditional Approach</h3>
+                    <ul>
+                        <li>Protocols take weeks or months to draft</li>
+                        <li>Siloed systems require manual data transfer</li>
+                        <li>Statistical analyses require specialized expertise</li>
+                        <li>Regional submissions require separate workstreams</li>
+                        <li>Risk identification relies on manual review</li>
+                        <li>Changes trigger extensive manual updates</li>
+                    </ul>
+                </div>
+                <div class="comparison-col">
+                    <h3 class="comparison-title">With TrialSage AI</h3>
+                    <ul>
+                        <li>Draft complete protocols in under a day</li>
+                        <li>Seamless integration across all modules</li>
+                        <li>Built-in simulation with visual results</li>
+                        <li>One protocol automatically adapted to all regions</li>
+                        <li>Proactive risk detection based on 3,000+ trials</li>
+                        <li>Automatic impact analysis for every change</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="feature-card" style="margin-top: 3rem; text-align: center; border-top-color: var(--accent);">
+                <div class="feature-icon" style="background-color: var(--accent); margin: 0 auto 1.5rem;">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3 class="feature-title" style="color: var(--accent-dark);">AI Co-Pilot Interface</h3>
+                <p class="feature-description" style="max-width: 800px; margin-left: auto; margin-right: auto;">
+                    Our natural language AI assistant helps you at every step of your workflow. Simply ask questions in plain English and get immediate, context-aware answers to accelerate your work.
+                </p>
+                <p style="font-style: italic; color: var(--gray-500); margin-bottom: 1.5rem;">
+                    "What's the dropout risk for our diabetic cohort?" • "Show me the protocol's inclusion criteria" • "Suggest alternative dose escalation schemes"
+                </p>
+                <a href="/demo" class="btn btn-primary">See AI Co-Pilot in Action</a>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Seamless Integration</h2>
+            <p class="section-subtitle">Our AI capabilities don't exist in isolation - they power a connected ecosystem that transforms your entire workflow.</p>
+            
+            <div class="row">
+                <div class="col col-12" style="margin-bottom: 2rem;">
+                    <div class="feature-card" style="padding: 2.5rem;">
+                        <h3 class="feature-title" style="text-align: center; margin-bottom: 2rem;">One Connected System</h3>
+                        <div class="row">
+                            <div class="col col-6">
+                                <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--primary-dark);">
+                                    <i class="fas fa-link" style="margin-right: 0.5rem;"></i> Protocol to IND Pipeline
+                                </h4>
+                                <p style="margin-bottom: 1.5rem;">
+                                    Push your draft protocol directly into the IND Builder, with automatic integration of related CMC methods and data.
+                                </p>
+                            </div>
+                            <div class="col col-6">
+                                <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--primary-dark);">
+                                    <i class="fas fa-database" style="margin-right: 0.5rem;"></i> CRF Data Pipeline
+                                </h4>
+                                <p style="margin-bottom: 1.5rem;">
+                                    Your CRF fields are automatically saved, versioned, and validated to ensure dataset readiness.
+                                </p>
+                            </div>
+                            <div class="col col-6">
+                                <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--primary-dark);">
+                                    <i class="fas fa-tasks" style="margin-right: 0.5rem;"></i> Monitoring & QMS Integration
+                                </h4>
+                                <p style="margin-bottom: 1.5rem;">
+                                    Monitoring plans automatically create tasks and CAPAs in your quality management system, with built-in reminders.
+                                </p>
+                            </div>
+                            <div class="col col-6">
+                                <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--primary-dark);">
+                                    <i class="fas fa-sync-alt" style="margin-right: 0.5rem;"></i> CSR Feedback Loop
+                                </h4>
+                                <p style="margin-bottom: 1.5rem;">
+                                    Completed CSRs automatically highlight protocol deviations, feeding valuable insights into your next protocol design.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Ready to Experience the Power of TrialSage AI?</h2>
+            <p class="cta-text">Schedule a personalized demo today and see how our AI technology can transform your regulatory workflows, reduce submission times, and increase approval rates.</p>
+            <a href="/demo" class="btn btn-white btn-lg">Request Demo</a>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <div style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">TrialSage™</div>
+                    <p style="color: var(--gray-400); margin-bottom: 1.5rem;">Advanced AI-powered regulatory intelligence platform for faster, more accurate regulatory submissions in life sciences.</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <a href="#" style="color: var(--gray-400); font-size: 1.25rem;"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" style="color: var(--gray-400); font-size: 1.25rem;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: var(--gray-400); font-size: 1.25rem;"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h4 class="footer-title">Solutions</h4>
+                    <ul class="footer-links">
+                        <li><a href="/solutions/csr-intelligence" class="footer-link">CSR Intelligence™</a></li>
+                        <li><a href="/solutions/ind-wizard" class="footer-link">IND Wizard™</a></li>
+                        <li><a href="/solutions/vault-workspace" class="footer-link">Vault™ Workspace</a></li>
+                        <li><a href="/solutions/cmdr" class="footer-link">Clinical Metadata Repository</a></li>
+                        <li><a href="/solutions/ich-wiz" class="footer-link">ICH Wiz™</a></li>
+                        <li><a href="/solutions/study-architect" class="footer-link">Study Architect™</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4 class="footer-title">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="/about" class="footer-link">About Us</a></li>
+                        <li><a href="/about-our-ai" class="footer-link">About Our AI</a></li>
+                        <li><a href="/careers" class="footer-link">Careers</a></li>
+                        <li><a href="/contact" class="footer-link">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4 class="footer-title">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="/blog" class="footer-link">Blog</a></li>
+                        <li><a href="/case-studies" class="footer-link">Case Studies</a></li>
+                        <li><a href="/webinars" class="footer-link">Webinars</a></li>
+                        <li><a href="/support" class="footer-link">Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="copyright">&copy; 2025 Concept2Cures. All rights reserved.</p>
+                <div style="display: flex; gap: 1.5rem;">
+                    <a href="/privacy" style="color: var(--gray-400);">Privacy Policy</a>
+                    <a href="/terms" style="color: var(--gray-400);">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Navigation functionality
+        document.querySelector('.btn').addEventListener('click', function(e) {
+            if (this.getAttribute('href') === '/') {
+                e.preventDefault();
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>

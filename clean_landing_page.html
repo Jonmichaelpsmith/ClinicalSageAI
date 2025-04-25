@@ -1333,25 +1333,25 @@
                                 <i class="fas fa-sitemap"></i> Solution
                             </div>
                             <h3 class="module-name">Study Architect™</h3>
-                            <p class="module-description">Design protocols that succeed by learning from both successful and failed trials in your therapeutic area.</p>
+                            <p class="module-description">The world's first AI-driven protocol design studio that helps you create successful clinical trials in hours, not weeks.</p>
                         </div>
                         
                         <div class="module-features">
                             <div class="module-feature">
-                                <i class="fas fa-shield-check"></i>
-                                <span>Identify risk factors before you start your trial</span>
+                                <i class="fas fa-magic"></i>
+                                <span>Auto-generate 70% of protocol text from simple study parameters</span>
                             </div>
                             <div class="module-feature">
-                                <i class="fas fa-route"></i>
-                                <span>Get protocol recommendations based on successful trials</span>
+                                <i class="fas fa-chart-line"></i>
+                                <span>Visually simulate study outcomes before you start</span>
                             </div>
                             <div class="module-feature">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <span>Avoid common pitfalls with protocol fail-mapping</span>
+                                <i class="fas fa-globe"></i>
+                                <span>Create protocols for multiple regions with one design</span>
                             </div>
                             <div class="module-feature">
-                                <i class="fas fa-redo"></i>
-                                <span>Reduce protocol amendments by 40%</span>
+                                <i class="fas fa-robot"></i>
+                                <span>Ask your AI assistant any protocol design question</span>
                             </div>
                         </div>
                         
@@ -1366,9 +1366,28 @@
                     </div>
                     
                     <div class="module-visual">
-                        <div class="module-visual-placeholder">
-                            <i class="fas fa-project-diagram module-visual-icon"></i>
-                            <div>We analyze past trials to show you what works and what fails - so your next protocol succeeds</div>
+                        <div class="module-visual-details" style="background-color: var(--gray-100); border-radius: var(--border-radius); padding: 1.5rem; height: 100%;">
+                            <h4 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--primary-dark);">AI-Powered Features</h4>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <div style="font-weight: 600; margin-bottom: 0.3rem;">Protocol Blueprint Generator</div>
+                                <p style="font-size: 0.9rem; color: var(--gray-600);">Enter basic study parameters and get a complete draft with rationale, endpoints, and assessments.</p>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <div style="font-weight: 600; margin-bottom: 0.3rem;">Adaptive Design Simulator</div>
+                                <p style="font-size: 0.9rem; color: var(--gray-600);">Test different study designs and see enrollment predictions and dropout impact in real-time.</p>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <div style="font-weight: 600; margin-bottom: 0.3rem;">Intelligent Endpoint Advisor</div>
+                                <p style="font-size: 0.9rem; color: var(--gray-600);">Get recommendations for endpoints based on data from 5,000+ previous trials in your area.</p>
+                            </div>
+                            
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 0.3rem;">AI Co-Pilot</div>
+                                <p style="font-size: 0.9rem; color: var(--gray-600);">Ask questions like "What's the expected dropout rate?" or "Suggest dose escalation schemes" in plain English.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1506,6 +1525,37 @@
                         <a href="#" class="social-icon"><i class="fas fa-envelope"></i></a>
                     </div>
                 </div>
+                
+    <script>
+        // Module tabs functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.module-tab');
+            
+            // Show default tab on load (first tab)
+            document.getElementById('module-csr').style.display = 'flex';
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Hide all module content
+                    document.querySelectorAll('.module-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    // Remove active class from all tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding module content
+                    const moduleId = this.getAttribute('data-module');
+                    document.getElementById('module-' + moduleId).style.display = 'flex';
+                });
+            });
+        });
+    </script>
                 
                 <div>
                     <h4 class="footer-title">Solutions</h4>
