@@ -1,0 +1,66 @@
+Core Modules
+1. CSR Intelligence Suite™
+Semantic NLP to mine insights from every Clinical Study Report
+
+Cross-trial endpoint comparisons and safety signal detection
+
+AI-summaries and threat modeling for proactive risk mitigation
+
+2. IND Builder & Submission Wizard™
+Guided questionnaire → auto-populated Module 2 & 5 narratives
+
+One-click eCTD packaging, validation, and health authority delivery
+
+3. CER Generator™
+“Clinical Evaluation Report in 5 minutes” with AI-drafted sections
+
+Integrated safety data validation via MedDRA and SDTM checks
+
+4. CMC Blueprint Generator™
+Generate full Module 3 documentation from process inputs
+
+Change Impact Simulator for global notifications & justifications
+
+5. RegIntel Validator™
+Zero-install, SaaS-native dataset validation for SDTM, ADaM, SEND
+
+Live error explainers & AI “auto-fix” suggestions powered by GPT-4
+
+6. Vault™ Document & Project Hub
+Microsoft-style file explorer, drag-and-drop, folder tree, version history
+
+Intelligent project reminders, audit-ready logs, role-based views
+
+7. Protocol & Study Designer™
+AI-suggested endpoints, power-analysis, predictive feasibility
+
+Real-time compliance scoring and timeline forecasts
+
+Key Benefits
+Speed to IND: Cut authoring time by up to 90% with AI-drafted content
+
+Regulatory Peace of Mind: 24/7 audit monitoring, real-time compliance alerts
+
+One Platform, Total Control: No more point tools—every module shares data, insights, and AI context
+
+Scalable & Secure: Enterprise-grade multitenant SaaS, end-to-end encryption, role-based access
+
+Taglines & Callouts
+“Regulatory Intelligence—Reimagined.”
+“From Protocol to Product Approval—One Platform.”
+“AI-Powered Document Drafting. Global-Ready Compliance.”
+“Your Clinical, CMC, & CER Co-Pilot.”
+
+Call to Action
+Ready to Revolutionize Your Regulatory Workflow?
+[Request a Personalized Demo] [Start Your Free Trial]
+
+Footer Highlights
+
+Trusted by biotech startups to global pharma
+
+Compliant with 21 CFR Part 11, EU Annex 11, ICH guidelines
+
+Integrates with DocuShare, LIMS, ERP, eTMF, and more
+
+TrialSage™ — Empowering smarter, faster, and safer drug development.
