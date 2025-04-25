@@ -94,8 +94,8 @@ export async function pullGuidance() {
       const $ = cheerio.load(html);
       
       // Extract title and content
-      const title = $("h1").first().text() || $("title").text();
-      const content = $.text();
+      const title = typeof $ === 'function' ? $("h1").first().text() || $("title").text() : "Regulatory Update";
+      const content = typeof $ === 'function' ? $.text() : html;
       
       console.log(`[RegIntel] Extracted title: "${title}"`);
       console.log(`[RegIntel] Extracted content length: ${content.length} chars`);
