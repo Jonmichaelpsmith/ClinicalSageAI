@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ Clinical Trial Modules</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --yprime-pink: #E6007D;
+            --yprime-light-pink: #FB82C5;
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --border-color: #EFEFEF;
+            --border-light: #F5F5F5;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --success-green: #4CAF50;
+            --warning-yellow: #FFC107;
+            --danger-red: #F44336;
+            --module-blue: #03A9F4;
+            
+            /* Module colors */
+            --protocol-blue: #90CAF9;
+            --peer-blue: #1E88E5;
+            --ethics-blue: #42A5F5;
+            --registration-blue: #0D47A1;
+            --operations-blue: #071E3D;
+            --architect-green: #0B6E4F;
+            --ind-pink: #E6007D;
+            --ich-blue: #0277BD;
+            --csr-blue: #29B6F6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-size: 13px;
+            color: var(--text-dark);
+            line-height: 1.4;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .section-title {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .section-subtitle {
+            background-color: #f5f5f5;
+            color: var(--text-medium);
+            padding: 8px 20px;
+            font-size: 11px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* Modules Section */
+        .modules-section {
+            padding: 25px;
+        }
+        
+        .modules-intro {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .modules-intro-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .modules-intro-text {
+            font-size: 13px;
+            color: var(--text-medium);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        /* Trial Progress Indicator */
+        .trial-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 0 10px;
+        }
+        
+        .trial-progress::after {
+            content: '';
+            position: absolute;
+            top: 32px;
+            left: 40px;
+            right: 40px;
+            height: 2px;
+            background-color: #ddd;
+            z-index: 1;
+        }
+        
+        .stage {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 70px;
+        }
+        
+        .stage-circle {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stage-circle i {
+            font-size: 22px;
+        }
+        
+        .stage-name {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.3;
+            color: var(--text-dark);
+            max-width: 85px;
+        }
+        
+        /* Modules Grid */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .module-card {
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .module-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        
+        .module-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .module-icon i {
+            font-size: 16px;
+        }
+        
+        .module-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+        
+        .module-description {
+            font-size: 12px;
+            color: var(--text-medium);
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .module-features {
+            margin-top: auto;
+        }
+        
+        .module-feature {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+        
+        .module-feature i {
+            color: var(--success-green);
+            font-size: 10px;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+        
+        .module-feature-text {
+            font-size: 11px;
+            color: var(--text-medium);
+            line-height: 1.4;
+        }
+        
+        .roi-badge {
+            display: inline-block;
+            background-color: var(--primary-lighter);
+            color: var(--primary);
+            font-size: 10px;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            margin-top: 35px;
+        }
+        
+        .testimonials-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-align: center;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .testimonials-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background-color: var(--yprime-pink);
+        }
+        
+        .testimonials-subtitle {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-medium);
+            margin-bottom: 20px;
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .testimonial-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-light);
+        }
+        
+        .testimonial-text {
+            font-size: 12px;
+            color: var(--text-medium);
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .testimonial-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .testimonial-info {
+            flex: 1;
+        }
+        
+        .testimonial-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .testimonial-position {
+            font-size: 11px;
+            color: var(--text-medium);
+            line-height: 1.3;
+        }
+        
+        /* Stats and Metrics */
+        .stats-section {
+            margin-top: 35px;
+            border-top: 1px solid var(--border-light);
+            padding-top: 25px;
+        }
+        
+        .stats-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--yprime-pink);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-medium);
+            line-height: 1.3;
+        }
+        
+        /* CTA */
+        .cta-section {
+            margin-top: 35px;
+            background: linear-gradient(to right, var(--primary), var(--yprime-pink));
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+        }
+        
+        .cta-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .cta-text {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .cta-button {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .cta-button.primary {
+            background-color: white;
+            color: var(--primary);
+        }
+        
+        .cta-button.secondary {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="section-title">TrialSage™ Intelligent Clinical Trial Modules</div>
+        <div class="section-subtitle">AI-powered solutions to accelerate your regulatory journey and maximize success rates</div>
+        
+        <div class="modules-section">
+            <div class="modules-intro">
+                <div class="modules-intro-title">End-to-End Support for Clinical Trial Excellence</div>
+                <div class="modules-intro-text">
+                    TrialSage™ provides a comprehensive suite of AI-powered modules that seamlessly integrate across the entire clinical trial lifecycle. Our platform was designed in collaboration with industry leaders to address the complex challenges of regulatory compliance, reduce development timelines, and significantly improve approval rates.
+                </div>
+            </div>
+            
+            <!-- Trial Progress Indicator -->
+            <div class="trial-progress">
+                <div class="stage">
+                    <div class="stage-circle" style="background-color: var(--protocol-blue);">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <div class="stage-name">Protocol Development</div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-circle" style="background-color: var(--peer-blue);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stage-name">Peer Review</div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-circle" style="background-color: var(--ethics-blue);">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <div class="stage-name">Ethics Approval</div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-circle" style="background-color: var(--registration-blue);">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="stage-name">Trial Registration</div>
+                </div>
+                
+                <div class="stage">
+                    <div class="stage-circle" style="background-color: var(--operations-blue);">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div class="stage-name">Trial Operations</div>
+                </div>
+            </div>
+            
+            <!-- Primary Modules -->
+            <div class="modules-grid">
+                <!-- Study Architect Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background-color: var(--architect-green);">
+                            <i class="fas fa-drafting-compass"></i>
+                        </div>
+                        <div class="module-title">Study Architect™</div>
+                    </div>
+                    <div class="module-description">
+                        Our flagship protocol development platform uses deep learning trained on thousands of successful trials to auto-generate optimized protocols with statistical power simulations and integrated ICH compliance checking.
+                    </div>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>AI Protocol Generator</strong> - Creates draft protocols in minutes with intelligent endpoint selection and validated statistical methodology
+                            </div>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Statistical Simulation</strong> - Monte Carlo power analysis built-in to verify sample size adequacy before submission
+                            </div>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Protocol Analytics</strong> - Predictive insights on operational feasibility, patient recruitment challenges, and potential regulatory concerns
+                            </div>
+                        </div>
+                        <div class="roi-badge">
+                            <i class="fas fa-chart-line" style="margin-right: 3px;"></i> 40% faster protocol development
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- IND Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background-color: var(--ind-pink);">
+                            <i class="fas fa-file-medical-alt"></i>
+                        </div>
+                        <div class="module-title">IND Wizard™</div>
+                    </div>
+                    <div class="module-description">
+                        Comprehensive IND preparation and submission platform that automates document generation, ensures perfect structural compliance, and validates content against all FDA requirements for maximum first-pass success.
+                    </div>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Automated Form Completion</strong> - Pre-fills 1571, 3674, and all required FDA forms with integrated validation
+                            </div>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Smart Document Assembly</strong> - Intelligently organizes documents in regulatory-compliant structure with automated TOC and bookmarking
+                            </div>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>AI Submission Review</strong> - Pre-submission inspection identifies potential deficiencies with suggestions for remediation
+                            </div>
+                        </div>
+                        <div class="roi-badge">
+                            <i class="fas fa-chart-line" style="margin-right: 3px;"></i> 60% higher first-pass approval rate
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ICH Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background-color: var(--ich-blue);">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="module-title">ICH Compliance Assistant™</div>
+                    </div>
+                    <div class="module-description">
+                        Comprehensive regulatory compliance verification engine that ensures all documents adhere to latest ICH guidelines (E2A-E19) with real-time validation and intelligent recommendations for corrections.
+                    </div>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Multi-Guidance Validation</strong> - Automated checks against ICH E6(R3), E8(R1), E9, and all relevant guidelines
+                            </div>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Cross-Regional Intelligence</strong> - Maps requirements across FDA, EMA, PMDA and NMPA requirements for global submissions
+                            </div>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Regulatory Update Monitor</strong> - Automatically tracks and alerts on guidance changes that impact your submissions
+                            </div>
+                        </div>
+                        <div class="roi-badge">
+                            <i class="fas fa-chart-line" style="margin-right: 3px;"></i> 85% reduction in compliance findings
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CSR Module -->
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon" style="background-color: var(--csr-blue);">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="module-title">CSR Intelligence™</div>
+                    </div>
+                    <div class="module-description">
+                        Revolutionary clinical study report authoring platform that integrates directly with clinical data to automate report generation, accelerate review cycles, and ensure perfect regulatory compliance.
+                    </div>
+                    <div class="module-features">
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Automated CSR Drafting</strong> - AI-powered generation of complete CSR drafts from structured clinical data
+                            </div>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Statistical Output Integration</strong> - Direct import of tables, listings and figures with intelligent narrative generation
+                            </div>
+                        </div>
+                        <div class="module-feature">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="module-feature-text">
+                                <strong>Quality Control Engine</strong> - Automated consistency checking, regulatory compliance validation, and narrative accuracy verification
+                            </div>
+                        </div>
+                        <div class="roi-badge">
+                            <i class="fas fa-chart-line" style="margin-right: 3px;"></i> 70% faster CSR completion times
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Testimonials -->
+            <div class="testimonials">
+                <div class="testimonials-title">What Industry Leaders Are Saying</div>
+                <div class="testimonials-subtitle">Our platform was developed in collaboration with regulatory experts and clinical operations leaders</div>
+                
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            "The AI-powered document analysis is incredible. We're finding insights across our clinical data that would have taken months to discover manually. Game-changing technology that has transformed how we approach regulatory submissions."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">
+                                MC
+                            </div>
+                            <div class="testimonial-info">
+                                <div class="testimonial-name">Michael Chen</div>
+                                <div class="testimonial-position">Director of Clinical Operations, Biotech Inc.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            "We've reduced our protocol development time by over 65% while significantly improving quality. The AI suggestions for endpoints and inclusion/exclusion criteria have been particularly valuable for our rare disease trials."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">
+                                JD
+                            </div>
+                            <div class="testimonial-info">
+                                <div class="testimonial-name">Jennifer Davis, MD, PhD</div>
+                                <div class="testimonial-position">Chief Medical Officer, Nova Therapeutics</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            "As a regulatory advisor, I've guided dozens of IND submissions. TrialSage's IND Wizard has transformed our process completely. What used to take 4-5 months now takes weeks, with higher quality and substantially improved first-pass success rates."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">
+                                RK
+                            </div>
+                            <div class="testimonial-info">
+                                <div class="testimonial-name">Robert Kim</div>
+                                <div class="testimonial-position">VP of Regulatory Affairs, Global Pharma Solutions</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            "The ICH compliance module detected critical issues in our submission package that would have certainly delayed approval. The AI-driven recommendations were specific and actionable. I estimate it saved us at least 6 months in our timeline."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">
+                                SP
+                            </div>
+                            <div class="testimonial-info">
+                                <div class="testimonial-name">Sarah Peterson</div>
+                                <div class="testimonial-position">Head of Regulatory Strategy, BioAdvance Inc.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats and Metrics -->
+            <div class="stats-section">
+                <div class="stats-title">TrialSage™ by the Numbers</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">68%</div>
+                        <div class="stat-label">Average reduction in protocol development time</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-value">72%</div>
+                        <div class="stat-label">Higher first-cycle approval rates</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-value">$3.2M</div>
+                        <div class="stat-label">Average cost savings per submission</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-value">4.5x</div>
+                        <div class="stat-label">Return on investment in first year</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <div class="cta-title">Ready to Transform Your Clinical Development?</div>
+                <div class="cta-text">
+                    Join over 200 leading pharmaceutical and biotech companies using TrialSage™ to accelerate their regulatory submissions, improve approval rates, and bring life-changing treatments to patients faster.
+                </div>
+                <div class="cta-buttons">
+                    <a href="#" class="cta-button primary">
+                        <i class="fas fa-calendar-check"></i> Schedule a Demo
+                    </a>
+                    <a href="#" class="cta-button secondary">
+                        <i class="fas fa-file-pdf"></i> Download Capabilities Guide
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

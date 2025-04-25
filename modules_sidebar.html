@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ Modules Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --yprime-pink: #E6007D;
+            --yprime-light-pink: #FB82C5;
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --border-color: #EFEFEF;
+            --border-light: #F5F5F5;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --success-green: #4CAF50;
+            --warning-yellow: #FFC107;
+            --danger-red: #F44336;
+            --module-blue: #03A9F4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-size: 12px;
+            color: var(--text-dark);
+            line-height: 1.4;
+            background-color: black;
+            display: flex;
+            padding: 20px;
+        }
+        
+        /* Modules Panel */
+        .modules-panel {
+            width: 150px;
+            background-color: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .panel-header {
+            padding: 12px 15px;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: #555;
+            font-size: 11px;
+        }
+        
+        .module-list {
+            padding: 8px 0;
+        }
+        
+        .module-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--text-dark);
+        }
+        
+        .module-item:hover {
+            background-color: var(--primary-lighter);
+        }
+        
+        .module-item.active {
+            background-color: var(--primary-lighter);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .module-item input[type="checkbox"] {
+            margin-right: 8px;
+            width: 12px;
+            height: 12px;
+        }
+        
+        /* Documents Panel */
+        .documents-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .documents-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .documents-title {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-tab {
+            background-color: #E0F2F1;
+            color: var(--primary);
+            font-size: 10px;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .filter-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .documents-grid {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        
+        .document-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            width: 180px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border-left: 3px solid var(--yprime-pink);
+        }
+        
+        .document-header {
+            padding: 10px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .document-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .document-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .document-title {
+            font-weight: 600;
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .document-category {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 3px;
+        }
+        
+        .document-tags {
+            padding: 6px 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .document-tag {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .tag-review {
+            background-color: #FFF3E0;
+            color: #FF9800;
+        }
+        
+        .tag-module {
+            background-color: #E8F5E9;
+            color: #4CAF50;
+        }
+        
+        .document-reference {
+            padding: 6px 10px;
+            font-size: 9px;
+            color: #888;
+            background-color: #f9f9f9;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        /* Table Component */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            font-size: 11px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        
+        .comparison-table th {
+            background-color: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 10px;
+            font-weight: 500;
+            font-size: 10px;
+        }
+        
+        .comparison-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+            font-size: 10px;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            font-size: 10px;
+        }
+        
+        .status-icon.yellow {
+            color: var(--warning-yellow);
+        }
+        
+        .status-icon.red {
+            color: var(--danger-red);
+        }
+        
+        .status-icon.green {
+            color: var(--success-green);
+        }
+        
+        /* Features Table */
+        .features-table {
+            width: 100%;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .features-header {
+            background-color: var(--yprime-pink);
+            color: white;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .features-row {
+            display: grid;
+            grid-template-columns: 25% 60% 15%;
+            border-bottom: 1px solid #eee;
+            background-color: white;
+        }
+        
+        .features-row:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .features-cell {
+            padding: 8px 10px;
+            font-size: 10px;
+            color: #555;
+            display: flex;
+            align-items: center;
+        }
+        
+        .features-cell:first-child {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        /* Game Changer Table */
+        .game-changer-section {
+            margin-top: 20px;
+        }
+        
+        .section-header {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .game-changer-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        
+        .game-changer-table th {
+            background-color: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 8px 10px;
+            font-weight: 500;
+        }
+        
+        .game-changer-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+        
+        .game-changer-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* ROI Calculator */
+        .roi-calculator {
+            background-color: #f5f5f5;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+        }
+        
+        .roi-text {
+            color: var(--text-medium);
+            flex: 1;
+        }
+        
+        .roi-button {
+            background-color: var(--yprime-pink);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 9px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        /* AI Assistant */
+        .ai-assistant {
+            background-color: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            border-left: 3px solid var(--yprime-pink);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .assistant-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .assistant-icon {
+            width: 30px;
+            height: 30px;
+            background-color: #9C27B0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .assistant-title {
+            font-weight: 600;
+            font-size: 11px;
+            color: #333;
+            flex: 1;
+        }
+        
+        .assistant-badge {
+            background-color: var(--yprime-pink);
+            color: white;
+            font-size: 8px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .assistant-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .assistant-feature {
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 9px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .assistant-feature i {
+            color: var(--yprime-pink);
+            font-size: 8px;
+        }
+        
+        .assistant-quote {
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 9px;
+            color: #555;
+            margin-top: 8px;
+            border-left: 2px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modules Sidebar -->
+    <div class="modules-panel">
+        <div class="panel-header">MODULES</div>
+        <div class="module-list">
+            <div class="module-item active">
+                <input type="checkbox" checked>
+                <span>CSR Intelligence</span>
+            </div>
+            <div class="module-item">
+                <input type="checkbox">
+                <span>IND Wizard</span>
+            </div>
+            <div class="module-item">
+                <input type="checkbox">
+                <span>CMC Module</span>
+            </div>
+            <div class="module-item">
+                <input type="checkbox">
+                <span>Protocol Design</span>
+            </div>
+            <div class="module-item">
+                <input type="checkbox">
+                <span>QA Validation</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Documents Panel -->
+    <div class="documents-panel">
+        <div class="documents-header">
+            <div class="documents-title">Recent Documents</div>
+            <div class="filter-tabs">
+                <div class="filter-tab active">All Files</div>
+                <div class="filter-tab">Ready for Review</div>
+            </div>
+        </div>
+        
+        <div class="documents-grid">
+            <!-- Document Card 1 -->
+            <div class="document-card">
+                <div class="document-header">
+                    <div class="document-meta">
+                        <div class="document-meta-item">
+                            <span>Module 3.2.S.1.3</span>
+                        </div>
+                        <div class="document-meta-item">
+                            <i class="fas fa-clock" style="font-size: 8px;"></i>
+                            <span>Updated today</span>
+                        </div>
+                    </div>
+                    <div class="document-title">General Properties of API</div>
+                    <div class="document-category"></div>
+                </div>
+                <div class="document-tags">
+                    <span class="document-tag tag-review">Pending Review</span>
+                    <span class="document-tag tag-module">CMC</span>
+                </div>
+                <div class="document-reference">
+                    Linked to IND-2025-001
+                </div>
+            </div>
+            
+            <!-- Document Card 2 (truncated to save space) -->
+        </div>
+        
+        <!-- Comparison Table -->
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Veeva Vault</th>
+                    <th>Certara CoAuthor</th>
+                    <th>TrialSage™</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Multi-tenant SaaS isolation</td>
+                    <td>
+                        <span class="status-icon yellow">● </span>
+                        Complex to scale
+                    </td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        Not native
+                    </td>
+                    <td>
+                        <span class="status-icon green">✓ </span>
+                        Fully integrated
+                    </td>
+                </tr>
+                <tr>
+                    <td>Smart file explorer</td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        None
+                    </td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        None
+                    </td>
+                    <td>
+                        <span class="status-icon green">✓ </span>
+                        Drag/drop UI
+                    </td>
+                </tr>
+                <tr>
+                    <td>AI content enrichment</td>
+                    <td>
+                        <span class="status-icon yellow">● </span>
+                        Basic search
+                    </td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        None
+                    </td>
+                    <td>
+                        <span class="status-icon green">✓ </span>
+                        GPT-4 Turbo
+                    </td>
+                </tr>
+                <tr>
+                    <td>Auto-linked submissions</td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        Manual linking
+                    </td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        Manual
+                    </td>
+                    <td>
+                        <span class="status-icon green">✓ </span>
+                        Linked to IND/NDA
+                    </td>
+                </tr>
+                <tr>
+                    <td>Built-in audit explorer</td>
+                    <td>
+                        <span class="status-icon yellow">● </span>
+                        Post-hoc
+                    </td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        N/A
+                    </td>
+                    <td>
+                        <span class="status-icon green">✓ </span>
+                        Visual audit trail
+                    </td>
+                </tr>
+                <tr>
+                    <td>Predictive file risk flags</td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        None
+                    </td>
+                    <td>
+                        <span class="status-icon red">● </span>
+                        None
+                    </td>
+                    <td>
+                        <span class="status-icon green">✓ </span>
+                        Risk signals
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- Features Table -->
+        <div class="features-table">
+            <div class="features-header">
+                Key Features in Build Plan
+            </div>
+            <div class="features-row">
+                <div class="features-cell">Structured Form Input</div>
+                <div class="features-cell">Users input molecular data, synthesis route, formulation details</div>
+                <div class="features-cell"></div>
+            </div>
+            <div class="features-row">
+                <div class="features-cell">Upload Data Files</div>
+                <div class="features-cell">Upload PDFs, CSVs, batch data, etc.</div>
+                <div class="features-cell"></div>
+            </div>
+            <div class="features-row">
+                <div class="features-cell">AI Draft Generation</div>
+                <div class="features-cell">Full Module 3.2 generated using OpenAI API</div>
+                <div class="features-cell"></div>
+            </div>
+            <div class="features-row">
+                <div class="features-cell">Versioning</div>
+                <div class="features-cell">Save versions, revert, edit, redline</div>
+                <div class="features-cell"></div>
+            </div>
+            <div class="features-row">
+                <div class="features-cell">Download Options</div>
+                <div class="features-cell">Word, PDF, JSON export of documents</div>
+                <div class="features-cell"></div>
+            </div>
+        </div>
+        
+        <!-- Game Changer Table -->
+        <div class="game-changer-section">
+            <div class="section-header">Game Changing Value</div>
+            <table class="game-changer-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Game-Change Capability</th>
+                        <th>Value to Client</th>
+                        <th>Measurable Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>AI-CMC Blueprint</td>
+                        <td>Drafts full Module 3 docs in minutes</td>
+                        <td>Saves months of SME and writer effort</td>
+                        <td>70% time reduction</td>
+                    </tr>
+                    <tr>
+                        <td>Change Impact Simulator</td>
+                        <td>Simulates change consequences</td>
+                        <td>Reduces submission delays</td>
+                        <td>3-5 month faster approvals</td>
+                    </tr>
+                    <tr>
+                        <td>Manufacturing Tuner</td>
+                        <td>Compares against global data</td>
+                        <td>Optimizes yields, justifications</td>
+                        <td>35% higher first-pass rates</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- ROI Calculator -->
+        <div class="roi-calculator">
+            <div class="roi-text">
+                <strong>TrialSage ROI Calculator:</strong> Clients typically see a full return on investment within 4-6 months through reduced labor costs, faster submissions, and higher approval rates.
+            </div>
+            <button class="roi-button">Calculate Your Savings</button>
+        </div>
+        
+        <!-- AI Assistant -->
+        <div class="ai-assistant">
+            <div class="assistant-header">
+                <div class="assistant-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="assistant-title">CMC CoPilot™: Your 24/7 Intelligent Partner</div>
+                <div class="assistant-badge">EXCLUSIVE</div>
+            </div>
+            <div style="font-size: 9px; color: #555;">Available in every screen, CMC CoPilot integrates with your data to provide contextual guidance, automations, and expert-level insights.</div>
+            
+            <div class="assistant-features">
+                <div class="assistant-feature">
+                    <i class="fas fa-search"></i>
+                    <span>Contextual Search</span>
+                </div>
+                <div class="assistant-feature">
+                    <i class="fas fa-edit"></i>
+                    <span>Automated Drafting</span>
+                </div>
+                <div class="assistant-feature">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Regulatory Coach</span>
+                </div>
+                <div class="assistant-feature">
+                    <i class="fas fa-microphone"></i>
+                    <span>Voice Enabled</span>
+                </div>
+            </div>
+            
+            <div class="assistant-quote">
+                "I found 3 critical validation gaps for the PMDA submission: (1) Missing stability data for drug product, (2) Incomplete process validation for Batch #247, (3) Required PMDA-specific container testing not completed."
+            </div>
+        </div>
+    </div>
+</body>
+</html>
