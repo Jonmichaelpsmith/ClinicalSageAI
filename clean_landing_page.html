@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrialSage™ by Concept2Cures - Regulatory Intelligence Platform</title>
-    <style>
-        .concept2cures {
-            color: var(--bitcoin-orange);
-            font-weight: 600;
-        }
-    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -39,11 +33,102 @@
             --hero-gradient-start: #2C8C6C; /* Green */
             --hero-gradient-end: #B8860B; /* Dark goldenrod */
         }
+        
+        .concept2cures {
+            color: var(--bitcoin-orange);
+            font-weight: 600;
+        }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+        
+        /* YPrime-style Navigation */
+        .yprime-nav {
+            display: flex;
+            justify-content: center;
+            background-color: #fff;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .yprime-nav-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+        
+        .yprime-nav-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .yprime-nav-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #333;
+            text-decoration: none;
+            padding: 0.2rem 0.5rem;
+            position: relative;
+        }
+        
+        .yprime-nav-item:after {
+            content: "";
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            margin-left: 0.25rem;
+            border: solid #999;
+            border-width: 0 1px 1px 0;
+            transform: rotate(45deg);
+            transition: transform 0.2s ease;
+        }
+        
+        .yprime-nav-item:hover:after {
+            transform: rotate(-135deg);
+        }
+        
+        .yprime-btn {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            border: 1px solid;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .yprime-btn-primary {
+            background-color: var(--bitcoin-orange);
+            color: white;
+            border-color: var(--bitcoin-orange);
+        }
+        
+        .yprime-btn-primary:hover {
+            background-color: #e07c00;
+            border-color: #e07c00;
+            color: white;
+        }
+        
+        .yprime-btn-outline {
+            background-color: transparent;
+            color: var(--bitcoin-orange);
+            border-color: var(--bitcoin-orange);
+        }
+        
+        .yprime-btn-outline:hover {
+            background-color: rgba(247, 147, 26, 0.1);
+            color: var(--bitcoin-orange);
         }
 
         body {
