@@ -446,6 +446,21 @@ export function setupRoutes(app: express.Application): http.Server {
     });
   });
   
+  // Diagnostic endpoint to verify our static routes
+  app.get("/api/test-static-routes", (req: Request, res: Response) => {
+    console.log('[Diagnostic] Test static routes endpoint accessed');
+    res.json({
+      success: true,
+      message: "Static routes diagnostic endpoint is working",
+      staticRoutesRegistered: true,
+      staticPaths: [
+        '/solutions/csr-intelligence',
+        '/solutions/ind-wizard',
+        '/solutions/protocol-optimization'
+      ]
+    });
+  });
+  
   // CSR Count API - protected with circuit breaker pattern
   app.get("/api/csr/count", openaiCircuitBreaker, (req: Request, res: Response) => {
     try {
