@@ -879,41 +879,186 @@
                             </div>
                         </div>
                     </div>
-                    <div style="background-color: #f0f8ff; border-radius: 0 10px 10px 0; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #e0e0fe;">
-                        <div style="background-image: linear-gradient(135deg, var(--primary), var(--yprime-pink)); color: white; padding: 15px; font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-chart-line"></i>
-                            <span>Regulatory Intelligence Dashboard</span>
+                    <div style="background-color: #f0f8ff; border-radius: 0 10px 10px 0; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #e0e0fe; max-height: 580px;">
+                        <div style="background-image: linear-gradient(135deg, var(--primary), var(--yprime-pink)); color: white; padding: 15px; font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Regulatory Intelligence Dashboard</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 12px; background-color: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 12px;">Last updated: 20 min ago</span>
+                                <i class="fas fa-sync-alt" style="font-size: 14px; cursor: pointer;"></i>
+                            </div>
                         </div>
                         
-                        <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                            <!-- Regulatory Metrics -->
-                            <div>
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                                    <div style="font-size: 14px; color: #555;">FDA Compliance Rating</div>
-                                    <div style="font-size: 14px; font-weight: 600; color: #00a651;">97.8%</div>
+                        <div style="padding: 15px; flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto;">
+                            <!-- Key Performance Indicators -->
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center;">
+                                    <div style="font-size: 13px; color: #555; font-weight: 600;">FDA Compliance Rating</div>
+                                    <div style="font-size: 14px; font-weight: 600; color: #00a651; display: flex; align-items: center; gap: 5px;">
+                                        97.8% <i class="fas fa-arrow-up" style="font-size: 10px;"></i>
+                                    </div>
                                 </div>
-                                <div style="width: 100%; height: 8px; background-color: #e0e0e0; border-radius: 4px; margin-bottom: 15px; overflow: hidden;">
+                                <div style="width: 100%; height: 8px; background-color: #e0e0e0; border-radius: 4px; margin-bottom: 12px; overflow: hidden;">
                                     <div style="width: 97.8%; height: 100%; background-color: #00a651; border-radius: 4px;"></div>
                                 </div>
                                 
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                                    <div style="font-size: 14px; color: #555;">ICH Guideline Updates</div>
-                                    <div style="font-size: 14px; font-weight: 600; color: var(--yprime-pink);">3 New</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                                    <div style="flex: 1; min-width: 120px; background-color: white; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                        <div style="font-size: 11px; color: #666; margin-bottom: 5px;">Protocol Deviations</div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div style="font-size: 16px; font-weight: 600; color: #E94B74;">4</div>
+                                            <div style="font-size: 10px; color: #E94B74; background-color: rgba(233,75,116,0.1); padding: 2px 6px; border-radius: 20px;">Major</div>
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1; min-width: 120px; background-color: white; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                        <div style="font-size: 11px; color: #666; margin-bottom: 5px;">CSR Completion</div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div style="font-size: 16px; font-weight: 600; color: #0066cc;">87%</div>
+                                            <div style="font-size: 10px; color: #0066cc; background-color: rgba(0,102,204,0.1); padding: 2px 6px; border-radius: 20px;">3 Pending</div>
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1; min-width: 120px; background-color: white; border-radius: 6px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                        <div style="font-size: 11px; color: #666; margin-bottom: 5px;">CRC Performance</div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div style="font-size: 16px; font-weight: 600; color: #00a651;">93%</div>
+                                            <div style="font-size: 10px; color: #00a651; background-color: rgba(0,166,81,0.1); padding: 2px 6px; border-radius: 20px;">Above Target</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ICH Guidelines Section -->
+                            <div style="background-color: white; border-radius: 6px; padding: 12px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="font-size: 13px; font-weight: 600; color: #333;">ICH Guideline Updates</div>
+                                    <div style="font-size: 12px; font-weight: 600; color: var(--yprime-pink);">3 New</div>
                                 </div>
                                 
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                    <div style="font-size: 14px; color: #555;">Submission Pipeline</div>
-                                    <div style="font-size: 14px; font-weight: 600; color: #1976d2;">12 Active</div>
+                                <div style="max-height: 120px; overflow-y: auto;">
+                                    <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;">
+                                        <div style="background-color: rgba(233,75,116,0.1); color: var(--yprime-pink); padding: 4px; border-radius: 4px; font-size: 10px; min-width: 40px; text-align: center;">NEW</div>
+                                        <div>
+                                            <div style="font-size: 12px; font-weight: 500; color: #333; margin-bottom: 2px;">ICH Q1E(R1) - Evaluation of Stability Data</div>
+                                            <div style="font-size: 11px; color: #666;">Released: April 11, 2025 • Effective: Oct 2025</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;">
+                                        <div style="background-color: rgba(233,75,116,0.1); color: var(--yprime-pink); padding: 4px; border-radius: 4px; font-size: 10px; min-width: 40px; text-align: center;">NEW</div>
+                                        <div>
+                                            <div style="font-size: 12px; font-weight: 500; color: #333; margin-bottom: 2px;">ICH Q3E - Guideline on Extractables & Leachables</div>
+                                            <div style="font-size: 11px; color: #666;">Released: Feb 14, 2024 • Step 2 Document</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; gap: 8px; align-items: flex-start;">
+                                        <div style="background-color: rgba(233,75,116,0.1); color: var(--yprime-pink); padding: 4px; border-radius: 4px; font-size: 10px; min-width: 40px; text-align: center;">NEW</div>
+                                        <div>
+                                            <div style="font-size: 12px; font-weight: 500; color: #333; margin-bottom: 2px;">ICH M7(R2) - Assessment of Mutagenic Impurities</div>
+                                            <div style="font-size: 11px; color: #666;">Released: March 30, 2025 • Implementation June 2025</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Submission Pipeline -->
+                            <div style="background-color: white; border-radius: 6px; padding: 12px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="font-size: 13px; font-weight: 600; color: #333;">Submission Pipeline</div>
+                                    <div style="font-size: 12px; font-weight: 600; color: #1976d2;">12 Active</div>
+                                </div>
+                                
+                                <div style="display: flex; margin-bottom: 10px;">
+                                    <div style="flex: 1; text-align: center; padding: 5px; position: relative;">
+                                        <div style="font-size: 18px; font-weight: 600; color: #333;">3</div>
+                                        <div style="font-size: 10px; color: #666;">INDs</div>
+                                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: var(--primary);"></div>
+                                    </div>
+                                    <div style="flex: 1; text-align: center; padding: 5px; position: relative;">
+                                        <div style="font-size: 18px; font-weight: 600; color: #333;">2</div>
+                                        <div style="font-size: 10px; color: #666;">NDAs</div>
+                                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: var(--primary);"></div>
+                                    </div>
+                                    <div style="flex: 1; text-align: center; padding: 5px; position: relative;">
+                                        <div style="font-size: 18px; font-weight: 600; color: #333;">4</div>
+                                        <div style="font-size: 10px; color: #666;">CSRs</div>
+                                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: var(--yprime-pink);"></div>
+                                    </div>
+                                    <div style="flex: 1; text-align: center; padding: 5px; position: relative;">
+                                        <div style="font-size: 18px; font-weight: 600; color: #333;">3</div>
+                                        <div style="font-size: 10px; color: #666;">Amendments</div>
+                                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background-color: #1976d2;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div style="background-color: #f5f9ff; border-radius: 4px; padding: 8px 10px; display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 8px; height: 8px; background-color: #ff9800; border-radius: 50%;"></div>
+                                    <div style="font-size: 11px; color: #333; font-weight: 500;">IND-24857 for ENZX-482 due in 7 days</div>
+                                    <div style="margin-left: auto; font-size: 10px; color: #0066cc; cursor: pointer;">View</div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Advisory Section -->
+                            <div style="background-color: #f0f7ff; border-radius: 6px; padding: 12px; margin-bottom: 15px; border-left: 3px solid #0066cc;">
+                                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                    <div style="color: #0066cc; font-size: 16px;">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 12px; font-weight: 600; color: #0066cc; margin-bottom: 5px;">AI ADVISORY</div>
+                                        <p style="font-size: 12px; color: #444; margin: 0; line-height: 1.4; margin-bottom: 8px;">Based on IND-24857 protocol analysis, consider adjusting patient exclusion criteria to improve alignment with ICH E6(R3) Section 4.6.1 recommendations.</p>
+                                        <div style="display: flex; gap: 8px;">
+                                            <div style="font-size: 10px; padding: 3px 10px; background-color: #0066cc; color: white; border-radius: 12px; cursor: pointer;">View Details</div>
+                                            <div style="font-size: 10px; padding: 3px 10px; background-color: rgba(0,102,204,0.1); color: #0066cc; border-radius: 12px; cursor: pointer;">Dismiss</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Workflow Notices -->
+                            <div style="background-color: white; border-radius: 6px; padding: 12px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="font-size: 13px; font-weight: 600; color: #333;">Workflow Tasks</div>
+                                    <div style="font-size: 12px; font-weight: 600; color: #ff6b6b;">6 Pending</div>
+                                </div>
+                                
+                                <div style="max-height: 100px; overflow-y: auto;">
+                                    <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                                        <div style="width: 16px; height: 16px; border: 1px solid #ff6b6b; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="fas fa-exclamation" style="font-size: 8px; color: #ff6b6b;"></i>
+                                        </div>
+                                        <div style="flex-grow: 1; font-size: 12px; color: #333;">CSR review for Study XR-24992 due tomorrow</div>
+                                        <div style="font-size: 11px; padding: 2px 6px; background-color: #ffe0e0; color: #ff6b6b; border-radius: 10px;">High</div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                                        <div style="width: 16px; height: 16px; border: 1px solid #ff9800; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="fas fa-clock" style="font-size: 8px; color: #ff9800;"></i>
+                                        </div>
+                                        <div style="flex-grow: 1; font-size: 12px; color: #333;">Protocol Amendment #3 for EZ-573 needs approval</div>
+                                        <div style="font-size: 11px; padding: 2px 6px; background-color: #fff4e0; color: #ff9800; border-radius: 10px;">Medium</div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0;">
+                                        <div style="width: 16px; height: 16px; border: 1px solid #00a651; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="fas fa-check" style="font-size: 8px; color: #00a651;"></i>
+                                        </div>
+                                        <div style="flex-grow: 1; font-size: 12px; color: #333;">CER for Device TR-82 is ready for review</div>
+                                        <div style="font-size: 11px; padding: 2px 6px; background-color: #e0ffe0; color: #00a651; border-radius: 10px;">Review</div>
+                                    </div>
                                 </div>
                             </div>
                             
                             <!-- Notification Section -->
-                            <div style="margin-top: 20px; background-color: rgba(0,166,81,0.1); border-left: 3px solid #00a651; padding: 10px 15px; border-radius: 4px;">
+                            <div style="margin-top: auto; background-color: rgba(0,166,81,0.1); border-left: 3px solid #00a651; padding: 10px 15px; border-radius: 4px;">
                                 <div style="font-size: 13px; font-weight: 600; color: #00a651; margin-bottom: 5px; display: flex; align-items: center; gap: 5px;">
                                     <i class="fas fa-bell"></i>
                                     <span>ALERT: New EMA guidance published</span>
                                 </div>
-                                <p style="font-size: 12px; color: #555; margin: 0; line-height: 1.4;">Updated requirements for clinical trial protocols effective June 2025. TrialSage protocols automatically comply.</p>
+                                <p style="font-size: 12px; color: #555; margin: 0; line-height: 1.4; margin-bottom: 8px;">Updated requirements for clinical trial protocols effective June 2025. TrialSage protocols automatically comply with the new validation requirements for patient-reported outcomes.</p>
+                                <div style="font-size: 10px; padding: 3px 10px; background-color: #00a651; color: white; border-radius: 12px; display: inline-block; cursor: pointer;">View Guidance</div>
                             </div>
                         </div>
                     </div>
@@ -1522,262 +1667,241 @@
             </div>
             
             <!-- Clinical Trial Roadmap Section -->
-            <div style="margin-top: 40px; border-top: 1px solid #e5e5e5; padding-top: 25px;">
-                <h3 style="text-align: center; color: var(--primary); margin-bottom: 25px; font-size: 20px;">Investigator-Initiated Clinical Trial Road Map</h3>
-                <p style="text-align: center; color: #555; margin-bottom: 25px; max-width: 800px; margin-left: auto; margin-right: auto;">TrialSage™ provides comprehensive support across all stages of the clinical trial process</p>
+            <div style="margin-top: 30px; border-top: 1px solid #e5e5e5; padding-top: 20px;">
+                <h3 style="text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 20px;">Investigator-Initiated Clinical Trial Road Map</h3>
+                <p style="text-align: center; color: #555; margin-bottom: 20px; max-width: 700px; margin-left: auto; margin-right: auto;">TrialSage™ streamlines the complex clinical trial process with intelligent automation at each critical stage.</p>
                 
-                <!-- Clinical Trial Road Map Visualization -->
-                <div style="display: flex; justify-content: center; margin-bottom: 40px; flex-wrap: wrap;">
-                    <div style="min-width: 800px; max-width: 1000px;">
-                        <!-- Top Row with Headers -->
-                        <div style="display: flex; justify-content: space-between; text-align: center; margin-bottom: 15px;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 15px; color: #333; margin-bottom: 10px;">Planning &<br>Budget</div>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 15px; color: #333; margin-bottom: 10px;">Finances &<br>Contract</div>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 15px; color: #333; margin-bottom: 10px;">Funding<br>Application</div>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 15px; color: #333; margin-bottom: 10px;">Document<br>Management</div>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 15px; color: #333; margin-bottom: 10px;">Approvals</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Top Circles with Icons -->
-                        <div style="display: flex; justify-content: space-between; position: relative; margin-bottom: 30px;">
-                            <!-- Connecting Lines -->
-                            <div style="position: absolute; top: 30px; left: 10%; width: 80%; height: 2px; background-color: #ADD8FF;"></div>
+                <!-- Two-column layout with explanation and visualization -->
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-bottom: 30px;">
+                    <!-- Left column: Explanation -->
+                    <div style="flex: 1; min-width: 300px; max-width: 400px;">
+                        <div style="background-color: #f0f9f4; border-radius: 10px; padding: 20px;">
+                            <h4 style="color: var(--primary); font-size: 18px; margin-bottom: 15px;">How TrialSage Accelerates Clinical Development</h4>
+                            <p style="font-size: 14px; color: #444; margin-bottom: 15px;">The road from protocol development to trial operations typically takes 12-18 months. TrialSage™ reduces this timeline by:</p>
                             
-                            <!-- Planning Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #ADD8FF; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-calendar" style="font-size: 28px; color: #003366;"></i>
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <div style="color: var(--yprime-pink); font-size: 16px; margin-top: 2px;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <p style="margin: 0; font-weight: 500; font-size: 14px;">Automating Protocol Development</p>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">Our Study Architect™ tool generates protocols with pre-validated elements that ensure regulatory compliance.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <!-- Finances Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #0066CC; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-tags" style="font-size: 28px; color: white;"></i>
+                                
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <div style="color: var(--yprime-pink); font-size: 16px; margin-top: 2px;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <p style="margin: 0; font-weight: 500; font-size: 14px;">Streamlining Ethics Applications</p>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">IND Wizard™ pre-validates documents to ensure compliance with ethical review requirements.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <!-- Funding Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #42A5F5; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-dollar-sign" style="font-size: 28px; color: white;"></i>
-                                </div>
-                            </div>
-                            
-                            <!-- Document Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #003366; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-file-alt" style="font-size: 28px; color: white;"></i>
-                                </div>
-                            </div>
-                            
-                            <!-- Approvals Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #002B4D; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-thumbs-up" style="font-size: 28px; color: white;"></i>
+                                
+                                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                    <div style="color: var(--yprime-pink); font-size: 16px; margin-top: 2px;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <p style="margin: 0; font-weight: 500; font-size: 14px;">Expediting Registration</p>
+                                        <p style="margin: 0; font-size: 13px; color: #666;">Automated registration document generation with ICH compliance verification saves weeks of preparation time.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Vertical Connection Lines -->
-                        <div style="display: flex; justify-content: space-between; position: relative; margin-bottom: 30px;">
-                            <div style="flex: 1; display: flex; justify-content: center;">
-                                <div style="width: 2px; height: 100px; background-color: #ADD8FF;"></div>
-                            </div>
-                            <div style="flex: 1; display: flex; justify-content: center;">
-                                <div style="width: 2px; height: 100px; background-color: #0066CC;"></div>
-                            </div>
-                            <div style="flex: 1; display: flex; justify-content: center;">
-                                <div style="width: 2px; height: 100px; background-color: #42A5F5;"></div>
-                            </div>
-                            <div style="flex: 1; display: flex; justify-content: center;">
-                                <div style="width: 2px; height: 100px; background-color: #003366;"></div>
-                            </div>
-                            <div style="flex: 1; display: flex; justify-content: center;">
-                                <div style="width: 2px; height: 100px; background-color: #002B4D;"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Bottom Circles with Icons -->
-                        <div style="display: flex; justify-content: space-between; position: relative; margin-bottom: 20px;">
-                            <!-- Protocol Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #ADD8FF; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-file-medical" style="font-size: 28px; color: #003366;"></i>
+                    </div>
+                    
+                    <!-- Right column: Compact Visualization -->
+                    <div style="flex: 1; min-width: 300px; max-width: 500px;">
+                        <div style="background-color: white; border-radius: 10px; box-shadow: var(--box-shadow); overflow: hidden; padding: 15px;">
+                            <!-- Compact Roadmap -->
+                            <div style="display: flex; align-items: center; position: relative; margin-bottom: 15px;">
+                                <!-- Connecting Line -->
+                                <div style="position: absolute; top: 25px; left: 0; width: 100%; height: 2px; background-color: #e0e0e0; z-index: 0;"></div>
+                                
+                                <!-- Stages -->
+                                <div style="display: flex; justify-content: space-between; width: 100%; position: relative; z-index: 1;">
+                                    <!-- Planning Stage -->
+                                    <div style="display: flex; flex-direction: column; align-items: center; width: 20%;">
+                                        <div style="width: 50px; height: 50px; background-color: #ADD8FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                                            <i class="fas fa-file-medical" style="font-size: 20px; color: #003366;"></i>
+                                        </div>
+                                        <div style="text-align: center; font-size: 11px; font-weight: 600; color: #444;">Protocol Development</div>
+                                    </div>
+                                    
+                                    <!-- Peer Review -->
+                                    <div style="display: flex; flex-direction: column; align-items: center; width: 20%;">
+                                        <div style="width: 50px; height: 50px; background-color: #0066CC; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                                            <i class="fas fa-user-check" style="font-size: 20px; color: white;"></i>
+                                        </div>
+                                        <div style="text-align: center; font-size: 11px; font-weight: 600; color: #444;">Peer Review</div>
+                                    </div>
+                                    
+                                    <!-- Ethics Application -->
+                                    <div style="display: flex; flex-direction: column; align-items: center; width: 20%;">
+                                        <div style="width: 50px; height: 50px; background-color: #42A5F5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                                            <i class="fas fa-check-circle" style="font-size: 20px; color: white;"></i>
+                                        </div>
+                                        <div style="text-align: center; font-size: 11px; font-weight: 600; color: #444;">Ethics Approval</div>
+                                    </div>
+                                    
+                                    <!-- Registration -->
+                                    <div style="display: flex; flex-direction: column; align-items: center; width: 20%;">
+                                        <div style="width: 50px; height: 50px; background-color: #003366; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                                            <i class="fas fa-clipboard-check" style="font-size: 20px; color: white;"></i>
+                                        </div>
+                                        <div style="text-align: center; font-size: 11px; font-weight: 600; color: #444;">Trial Registration</div>
+                                    </div>
+                                    
+                                    <!-- Operations -->
+                                    <div style="display: flex; flex-direction: column; align-items: center; width: 20%;">
+                                        <div style="width: 50px; height: 50px; background-color: #002B4D; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                                            <i class="fas fa-cogs" style="font-size: 20px; color: white;"></i>
+                                        </div>
+                                        <div style="text-align: center; font-size: 11px; font-weight: 600; color: #444;">Trial Operations</div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <!-- Peer Review Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #0066CC; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-user-check" style="font-size: 28px; color: white;"></i>
+                            <!-- TrialSage module tags -->
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px;">
+                                <div style="background-color: var(--primary); color: white; font-size: 11px; padding: 5px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-magic"></i>
+                                    <span>Study Architect™</span>
                                 </div>
-                            </div>
-                            
-                            <!-- Ethics Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #42A5F5; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-check-circle" style="font-size: 28px; color: white;"></i>
+                                <div style="background-color: var(--yprime-pink); color: white; font-size: 11px; padding: 5px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-wand-magic-sparkles"></i>
+                                    <span>IND Wizard™</span>
                                 </div>
-                            </div>
-                            
-                            <!-- Registration Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #003366; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-clipboard-check" style="font-size: 28px; color: white;"></i>
+                                <div style="background-color: #0066CC; color: white; font-size: 11px; padding: 5px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-brain"></i>
+                                    <span>ICH Wiz™</span>
                                 </div>
-                            </div>
-                            
-                            <!-- Operations Circle -->
-                            <div style="flex: 1; display: flex; justify-content: center; position: relative; z-index: 1;">
-                                <div style="width: 70px; height: 70px; background-color: #002B4D; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-cogs" style="font-size: 28px; color: white;"></i>
+                                <div style="background-color: #42A5F5; color: white; font-size: 11px; padding: 5px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>CSR Intelligence™</span>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Bottom Row with Labels -->
-                        <div style="display: flex; justify-content: space-between; text-align: center;">
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 5px;">Develop<br>Protocol</div>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 5px;">Peer<br>Review</div>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 5px;">Ethics Application,<br>Site Impact & Health<br>Canada Approval</div>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 5px;">Clinical Trial<br>Registration</div>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 5px;">Clinical Trial<br>Operations</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Development Phases Visualization -->
-                <div style="margin-top: 60px; border-top: 1px solid #e5e5e5; padding-top: 25px;">
-                    <h3 style="text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 20px;">Clinical Development Phases</h3>
-                    <p style="text-align: center; color: #555; margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto;">TrialSage™ addresses the challenges of the traditional development approach that has only a 10% success rate</p>
+                <!-- Development Phases Compact Visualization -->
+                <div style="margin-top: 40px; border-top: 1px solid #e5e5e5; padding-top: 20px;">
+                    <h3 style="text-align: center; color: var(--primary); margin-bottom: 15px; font-size: 20px;">Breaking the 10% Success Barrier</h3>
+                    <p style="text-align: center; color: #555; margin-bottom: 20px; max-width: 700px; margin-left: auto; margin-right: auto;">Traditional clinical development has a 90% failure rate due to poor study design and execution. TrialSage™ tools are designed to elevate success rates at each critical phase.</p>
                     
-                    <!-- Circles Row -->
-                    <div style="display: flex; justify-content: center; margin-bottom: 30px;">
-                        <div style="display: flex; max-width: 900px; width: 100%;">
-                            <!-- Circle 1 -->
-                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
-                                <div style="width: 110px; height: 110px; border: 2px solid #0066cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: white;">
-                                    <div style="text-align: center; padding: 10px;">
-                                        <div style="font-weight: 600; font-size: 14px; color: #444;">Research &<br>discovery</div>
+                    <!-- Two-column layout with explanation and visualization -->
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-bottom: 30px;">
+                        <!-- Left column: Compact Visualization -->
+                        <div style="flex: 1; min-width: 300px; max-width: 500px;">
+                            <div style="background-color: white; border-radius: 10px; box-shadow: var(--box-shadow); overflow: hidden; padding: 20px;">
+                                <!-- Phase progression with success rates -->
+                                <div style="margin-bottom: 20px;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                        <div style="width: 60px; min-width: 60px; height: 52px; background-color: #e6f7ff; position: relative; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                            <div style="font-weight: 600; color: #0066cc; font-size: 12px;">Phase I</div>
+                                        </div>
+                                        <div style="flex-grow: 1;">
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                                <div style="font-size: 13px; color: #444; font-weight: 500;">First-in-human (20-80 subjects)</div>
+                                                <div style="font-size: 13px; color: #0066cc; font-weight: 600;">70% Success</div>
+                                            </div>
+                                            <div style="width: 100%; height: 6px; background-color: #e0e0e0; border-radius: 3px; overflow: hidden;">
+                                                <div style="width: 70%; height: 100%; background-color: #0066cc; border-radius: 3px;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                        <div style="width: 60px; min-width: 60px; height: 52px; background-color: #e6f7ff; position: relative; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                            <div style="font-weight: 600; color: #0066cc; font-size: 12px;">Phase II</div>
+                                        </div>
+                                        <div style="flex-grow: 1;">
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                                <div style="font-size: 13px; color: #444; font-weight: 500;">Efficacy testing (100-300 subjects)</div>
+                                                <div style="font-size: 13px; color: #0066cc; font-weight: 600;">33% Success</div>
+                                            </div>
+                                            <div style="width: 100%; height: 6px; background-color: #e0e0e0; border-radius: 3px; overflow: hidden;">
+                                                <div style="width: 33%; height: 100%; background-color: #0066cc; border-radius: 3px;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: center;">
+                                        <div style="width: 60px; min-width: 60px; height: 52px; background-color: #e6f7ff; position: relative; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                            <div style="font-weight: 600; color: #0066cc; font-size: 12px;">Phase III</div>
+                                        </div>
+                                        <div style="flex-grow: 1;">
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                                <div style="font-size: 13px; color: #444; font-weight: 500;">Confirmatory (1,000-3,000 subjects)</div>
+                                                <div style="font-size: 13px; color: #0066cc; font-weight: 600;">25-30% Success</div>
+                                            </div>
+                                            <div style="width: 100%; height: 6px; background-color: #e0e0e0; border-radius: 3px; overflow: hidden;">
+                                                <div style="width: 28%; height: 100%; background-color: #0066cc; border-radius: 3px;"></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div style="position: absolute; top: 0; left: 0; width: 10px; height: 10px; background-color: #0066cc; border-radius: 50%;"></div>
-                            </div>
-                            
-                            <!-- Circle 2 -->
-                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
-                                <div style="width: 110px; height: 110px; border: 2px solid #40a9ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: white;">
-                                    <div style="text-align: center; padding: 10px;">
-                                        <div style="font-weight: 600; font-size: 14px; color: #444;">Clinical<br>development</div>
+                                
+                                <!-- Bottom Stat -->
+                                <div style="background-color: #f0f5ff; border-left: 4px solid var(--primary); padding: 10px 15px; border-radius: 4px; display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 24px; color: var(--primary);">
+                                        <i class="fas fa-exclamation-circle"></i>
                                     </div>
-                                </div>
-                                <div style="position: absolute; top: 0; left: 0; width: 10px; height: 10px; background-color: #40a9ff; border-radius: 50%;"></div>
-                            </div>
-                            
-                            <!-- Circle 3 -->
-                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
-                                <div style="width: 110px; height: 110px; border: 2px solid #00c4a4; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: white;">
-                                    <div style="text-align: center; padding: 10px;">
-                                        <div style="font-weight: 600; font-size: 14px; color: #444;">Manufacturing<br>& supply chain</div>
+                                    <div>
+                                        <div style="font-size: 13px; font-weight: 600; color: var(--primary);">90% FAILURE RATE</div>
+                                        <div style="font-size: 12px; color: #555;">Only 10% of drug candidates ultimately receive regulatory approval</div>
                                     </div>
-                                </div>
-                                <div style="position: absolute; top: 0; left: 0; width: 10px; height: 10px; background-color: #00c4a4; border-radius: 50%;"></div>
-                            </div>
-                            
-                            <!-- Circle 4 -->
-                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
-                                <div style="width: 110px; height: 110px; border: 2px solid #73d13d; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: white;">
-                                    <div style="text-align: center; padding: 10px;">
-                                        <div style="font-weight: 600; font-size: 14px; color: #444;">Launch &<br>commercial</div>
-                                    </div>
-                                </div>
-                                <div style="position: absolute; top: 0; left: 0; width: 10px; height: 10px; background-color: #73d13d; border-radius: 50%;"></div>
-                            </div>
-                            
-                            <!-- Circle 5 -->
-                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; position: relative;">
-                                <div style="width: 110px; height: 110px; border: 2px solid #bae637; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: white;">
-                                    <div style="text-align: center; padding: 10px;">
-                                        <div style="font-weight: 600; font-size: 14px; color: #444;">Post-market<br>surveillance &<br>patient support</div>
-                                    </div>
-                                </div>
-                                <div style="position: absolute; top: 0; left: 0; width: 10px; height: 10px; background-color: #bae637; border-radius: 50%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Phase Details with Hexagons -->
-                    <div style="background-color: #f0f8ff; padding: 25px; border-radius: 15px; margin: 0 auto; max-width: 900px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 25px;">
-                            <!-- Phase I -->
-                            <div style="flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                                <div style="width: 120px; height: 104px; background-color: #e6f7ff; position: relative; margin-bottom: 15px; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display: flex; align-items: center; justify-content: center;">
-                                    <div style="font-weight: 600; color: #0066cc; font-size: 15px;">PHASE I</div>
-                                </div>
-                                <div style="font-size: 13px; color: #555; max-width: 150px; line-height: 1.4;">
-                                    First-in-person trials.<br>20-80 subjects.<br>
-                                    <span style="font-weight: 500;">Takes 3-6 months.<br>70% move to next phase.</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Phase II -->
-                            <div style="flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                                <div style="width: 120px; height: 104px; background-color: #e6f7ff; position: relative; margin-bottom: 15px; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display: flex; align-items: center; justify-content: center;">
-                                    <div style="font-weight: 600; color: #0066cc; font-size: 15px;">PHASE II</div>
-                                </div>
-                                <div style="font-size: 13px; color: #555; max-width: 150px; line-height: 1.4;">
-                                    Testing with 100-300 subjects.<br>
-                                    <span style="font-weight: 500;">Takes 1-2 years.<br>33% move to next phase.</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Phase III -->
-                            <div style="flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                                <div style="width: 120px; height: 104px; background-color: #e6f7ff; position: relative; margin-bottom: 15px; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display: flex; align-items: center; justify-content: center;">
-                                    <div style="font-weight: 600; color: #0066cc; font-size: 15px;">PHASE III</div>
-                                </div>
-                                <div style="font-size: 13px; color: #555; max-width: 150px; line-height: 1.4;">
-                                    Testing with 1,000-3,000 subjects.<br>
-                                    <span style="font-weight: 500;">Takes 1-4 years.<br>25-30% move to next phase.</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Phase IV -->
-                            <div style="flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                                <div style="width: 120px; height: 104px; background-color: #e6f7ff; position: relative; margin-bottom: 15px; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display: flex; align-items: center; justify-content: center;">
-                                    <div style="font-weight: 600; color: #0066cc; font-size: 15px;">PHASE IV</div>
-                                </div>
-                                <div style="font-size: 13px; color: #555; max-width: 150px; line-height: 1.4;">
-                                    Post-marketing studies with thousands of patients.<br>
-                                    <span style="font-weight: 500;">Takes 1+ years.<br>70-90% success rate.</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Bottom Stat Bar -->
-                        <div style="background-color: #0066cc; color: white; text-align: center; padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: 600; font-size: 16px;">
-                            ONLY 10% OF DRUG CANDIDATES ENTERING CLINICAL TRIALS END UP BECOMING REGULATORY APPROVED DRUGS
+                        <!-- Right column: Explanation -->
+                        <div style="flex: 1; min-width: 300px; max-width: 400px;">
+                            <div style="background-color: #f0f9f4; border-radius: 10px; padding: 20px;">
+                                <h4 style="color: var(--primary); font-size: 18px; margin-bottom: 15px;">How TrialSage™ Improves Success Rates</h4>
+                                <p style="font-size: 14px; color: #444; margin-bottom: 15px;">TrialSage™ addresses the core reasons for clinical trial failures through:</p>
+                                
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                        <div style="color: var(--yprime-pink); font-size: 16px; margin-top: 2px;">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div>
+                                            <p style="margin: 0; font-weight: 500; font-size: 14px;">Optimized Protocol Design</p>
+                                            <p style="margin: 0; font-size: 13px; color: #666;">Our AI analyzes thousands of successful studies to design protocols with higher probability of success.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                        <div style="color: var(--yprime-pink); font-size: 16px; margin-top: 2px;">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div>
+                                            <p style="margin: 0; font-weight: 500; font-size: 14px;">Precise Patient Selection</p>
+                                            <p style="margin: 0; font-size: 13px; color: #666;">Machine learning algorithms identify optimal inclusion/exclusion criteria that correlate with successful outcomes.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                        <div style="color: var(--yprime-pink); font-size: 16px; margin-top: 2px;">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div>
+                                            <p style="margin: 0; font-weight: 500; font-size: 14px;">Early Risk Detection</p>
+                                            <p style="margin: 0; font-size: 13px; color: #666;">Predictive analytics flag potential safety and efficacy issues before they become critical failures.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="background-color: white; border-radius: 8px; padding: 12px; border-left: 3px solid var(--yprime-pink);">
+                                    <div style="font-size: 13px; font-weight: 600; color: var(--yprime-pink); margin-bottom: 5px;">Success Story:</div>
+                                    <p style="font-size: 12px; margin: 0; color: #555;">A mid-sized biopharma client achieved 42% higher Phase II success rates using TrialSage™ optimized protocols.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
