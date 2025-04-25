@@ -95,65 +95,8 @@
             font-weight: 500;
         }
         
-        .nav-link::after {
-            content: "";
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-right: 2px solid #999;
-            border-bottom: 2px solid #999;
-            transform: rotate(45deg);
-            margin-left: 8px;
-            position: relative;
-            top: -2px;
-            transition: transform 0.2s;
-        }
-        
-        .nav-link:hover::after {
-            transform: rotate(225deg);
-            top: 0;
-        }
-        
-        /* Dropdown menu */
-        .nav-item {
-            position: relative;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: white;
-            border-radius: 6px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            min-width: 200px;
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.2s;
-            margin-top: 8px;
-            padding: 10px 0;
-        }
-        
-        .nav-item:hover .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .dropdown-item {
-            display: block;
-            padding: 8px 20px;
-            font-size: 14px;
-            color: var(--text-medium);
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        
-        .dropdown-item:hover {
-            background-color: #f5f5f5;
-            color: var(--primary);
+        .nav-link:hover {
+            color: var(--yprime-pink);
         }
         
         .action-buttons {
@@ -482,19 +425,13 @@
             <div class="main-nav">
                 <ul class="nav-items">
                     <li class="nav-item">
-                        <a href="#solutions" class="nav-link">Solutions</a>
+                        <a href="#solutions" class="nav-link">Products</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#expertise" class="nav-link">Expertise</a>
+                        <a href="#ai-tech" class="nav-link">AI Technology</a>
                     </li>
                     <li class="nav-item">
-                        <a href="#resources" class="nav-link">Resources</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#company" class="nav-link">Company</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#contact" class="nav-link">Contact Us</a>
+                        <a href="#contact" class="nav-link">Contact</a>
                     </li>
                 </ul>
                 
