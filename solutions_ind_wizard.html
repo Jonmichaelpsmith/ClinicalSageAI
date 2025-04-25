@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>IND Wizard™ | TrialSage</title>
+    <meta name="description" content="TrialSage's IND Wizard™ module streamlines IND applications with guided questionnaires, AI-driven document generation, and automated submission packages to accelerate approvals.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://img.freepik.com/premium-vector/green-health-logo_7888-106.jpg">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/landing-assets/premium-styles.css">
+    
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #38bdf8;
+            --secondary: #0f172a;
+            --secondary-light: #1e293b;
+            --accent: #22c55e;
+            --accent-dark: #16a34a;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --warning: #eab308;
+            --info: #3b82f6;
+            --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--gray-800);
+            line-height: 1.5;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #fff;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        a:hover {
+            color: var(--primary-dark);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -1rem;
+        }
+        
+        .col {
+            flex: 1 0 0%;
+            padding: 0 1rem;
+        }
+        
+        /* For specific column sizes */
+        .col-12 { flex: 0 0 100%; max-width: 100%; }
+        .col-11 { flex: 0 0 91.6667%; max-width: 91.6667%; }
+        .col-10 { flex: 0 0 83.3333%; max-width: 83.3333%; }
+        .col-9 { flex: 0 0 75%; max-width: 75%; }
+        .col-8 { flex: 0 0 66.6667%; max-width: 66.6667%; }
+        .col-7 { flex: 0 0 58.3333%; max-width: 58.3333%; }
+        .col-6 { flex: 0 0 50%; max-width: 50%; }
+        .col-5 { flex: 0 0 41.6667%; max-width: 41.6667%; }
+        .col-4 { flex: 0 0 33.3333%; max-width: 33.3333%; }
+        .col-3 { flex: 0 0 25%; max-width: 25%; }
+        .col-2 { flex: 0 0 16.6667%; max-width: 16.6667%; }
+        .col-1 { flex: 0 0 8.3333%; max-width: 8.3333%; }
+        
+        header {
+            background-color: white;
+            box-shadow: var(--shadow);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .logo img {
+            height: 2.5rem;
+            margin-right: 0.75rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+            line-height: 1.5;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            color: white;
+        }
+        
+        .hero {
+            padding: 10rem 0 5rem;
+            background: linear-gradient(45deg, var(--primary-dark), var(--primary));
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-description {
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+        
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .section-description {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            text-align: center;
+        }
+        
+        .steps-section {
+            background-color: var(--gray-50);
+            padding: 6rem 0;
+        }
+        
+        .steps-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+        
+        .step-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 700;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            margin-right: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+        
+        .step-description {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+        }
+        
+        .step-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .step-feature {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .step-feature-icon {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step-feature-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+        
+        .step-feature-description {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+        
+        .step-connector {
+            position: absolute;
+            left: 1.5rem;
+            top: 3rem;
+            bottom: -4rem;
+            width: 2px;
+            background-color: var(--primary-light);
+            z-index: 1;
+        }
+        
+        .step-item:last-child .step-connector {
+            display: none;
+        }
+        
+        .faq-section {
+            padding: 6rem 0;
+            background-color: white;
+        }
+        
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .faq-item {
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.5rem 0;
+        }
+        
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--secondary);
+            cursor: pointer;
+        }
+        
+        .faq-question i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            padding-top: 1rem;
+            display: none;
+            color: var(--gray-600);
+            font-size: 1.125rem;
+        }
+        
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+        
+        .cta-section {
+            padding: 5rem 0;
+            background: linear-gradient(to right, var(--primary-dark), var(--primary));
+            color: white;
+            text-align: center;
+        }
+        
+        .cta-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .cta-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-description {
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .btn-white {
+            background-color: white;
+            color: var(--primary-dark);
+            border-color: white;
+        }
+        
+        .btn-white:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .btn-outline-white {
+            background-color: transparent;
+            color: white;
+            border-color: white;
+        }
+        
+        .btn-outline-white:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .step-item {
+                flex-direction: column;
+            }
+            
+            .step-number {
+                margin-right: 0;
+                margin-bottom: 1.5rem;
+            }
+            
+            .step-connector {
+                display: none;
+            }
+            
+            .step-features {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .cta-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <a href="/" class="logo">
+                    <img src="https://img.freepik.com/premium-vector/green-health-logo_7888-106.jpg" alt="TrialSage Logo">
+                    <span>TrialSage™</span>
+                </a>
+                <a href="/" class="btn btn-primary">Back to Home</a>
+            </div>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="container">
+            <span class="sales-badge">75% Faster IND Submissions</span>
+            <h1 class="hero-title">IND Wizard™</h1>
+            <p class="hero-description">Transform your Investigational New Drug (IND) application process with our intelligent, guided workflow that helps pharmaceutical teams create compliant, high-quality submissions in a fraction of the time.</p>
+            <div class="hero-buttons">
+                <a href="/demo" class="btn btn-white">Request Demo</a>
+                <a href="#how-it-works" class="btn btn-outline-white">How It Works</a>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" id="benefits">
+        <div class="container">
+            <h2 class="section-title">Why Choose IND Wizard™?</h2>
+            <p class="section-description">Our intelligent IND application solution dramatically reduces preparation time while ensuring regulatory compliance and increasing first-time acceptance rates.</p>
+            
+            <div class="row">
+                <div class="col col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="feature-title">75% Time Savings</h3>
+                        <p class="feature-content">Reduce IND preparation time from months to weeks with AI-powered document generation and guided workflows.</p>
+                    </div>
+                </div>
+                
+                <div class="col col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 class="feature-title">98% First-Time Approval</h3>
+                        <p class="feature-content">Achieve industry-leading acceptance rates with built-in compliance validation and real-time FDA requirements checking.</p>
+                    </div>
+                </div>
+                
+                <div class="col col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="feature-title">Cross-Functional Collaboration</h3>
+                        <p class="feature-content">Enable seamless collaboration between regulatory, clinical, CMC, and nonclinical teams with role-based workflows.</p>
+                    </div>
+                </div>
+                
+                <div class="col col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h3 class="feature-title">Intelligent Automation</h3>
+                        <p class="feature-content">Automate content generation, cross-references, and document formatting to eliminate manual errors and inconsistencies.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="steps-section" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How IND Wizard™ Works</h2>
+            <p class="section-description">Our intelligent platform guides you through every step of the IND preparation process with AI-assisted tools and regulatory expertise.</p>
+            
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-connector"></div>
+                    <div class="step-content">
+                        <h3 class="step-title">Guided Questionnaire</h3>
+                        <p class="step-description">Begin with our intelligent questionnaire that collects all essential information about your product, indication, and development program, dynamically adapting based on your responses.</p>
+                        <div class="step-features">
+                            <div class="step-feature">
+                                <div class="step-feature-icon">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                <h4 class="step-feature-title">Smart Branching Logic</h4>
+                                <p class="step-feature-description">Questions adapt based on previous answers to ensure relevance to your specific product type.</p>
+                            </div>
+                            <div class="step-feature">
+                                <div class="step-feature-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <h4 class="step-feature-title">Save & Resume</h4>
+                                <p class="step-feature-description">Preserve progress at any point and return later, with automated notifications for outstanding sections.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-connector"></div>
+                    <div class="step-content">
+                        <h3 class="step-title">AI-Powered Document Generation</h3>
+                        <p class="step-description">Based on your inputs, our advanced AI technology automatically generates compliant, high-quality IND documents following FDA guidelines and best practices.</p>
+                        <div class="step-features">
+                            <div class="step-feature">
+                                <div class="step-feature-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <h4 class="step-feature-title">Content Intelligence</h4>
+                                <p class="step-feature-description">AI suggests appropriate content based on your product's mechanism of action, indication, and development stage.</p>
+                            </div>
+                            <div class="step-feature">
+                                <div class="step-feature-icon">
+                                    <i class="fas fa-sync"></i>
+                                </div>
+                                <h4 class="step-feature-title">Dynamic Updates</h4>
+                                <p class="step-feature-description">Changes automatically propagate throughout the entire submission to maintain consistency.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-connector"></div>
+                    <div class="step-content">
+                        <h3 class="step-title">Regulatory Validation</h3>
+                        <p class="step-description">Our comprehensive validation engine checks your submission for regulatory compliance, completeness, and consistency before finalization.</p>
+                        <div class="step-features">
+                            <div class="step-feature">
+                                <div class="step-feature-icon">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                <h4 class="step-feature-title">Compliance Checking</h4>
+                                <p class="step-feature-description">Automatically validates against the latest FDA guidance and requirements.</p>
+                            </div>
+                            <div class="step-feature">
+                                <div class="step-feature-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h4 class="step-feature-title">Gap Analysis</h4>
+                                <p class="step-feature-description">Identifies missing elements and provides recommendations for strengthening your submission.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Submission Ready Package</h3>
+                        <p class="step-description">Receive a complete, organized, and submission-ready IND package that meets all FDA requirements and formatting standards.</p>
+                        <div class="step-features">
+                            <div class="step-feature">
+                                <div class="step-feature-icon">
+                                    <i class="fas fa-file-export"></i>
+                                </div>
+                                <h4 class="step-feature-title">eCTD Formatting</h4>
+                                <p class="step-feature-description">Automatically organizes documents in the required eCTD structure with proper bookmarking and hyperlinks.</p>
+                            </div>
+                            <div class="step-feature">
+                                <div class="step-feature-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h4 class="step-feature-title">Secure Submission</h4>
+                                <p class="step-feature-description">Optional direct submission to FDA gateway with tracking and confirmation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="faq-section" id="faq">
+        <div class="container">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <p class="section-description">Common questions about our IND Wizard™ solution</p>
+            
+            <div class="faq-container">
+                <div class="faq-item active">
+                    <div class="faq-question">
+                        <span>How much time can IND Wizard™ save my team?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our customers typically report a 65-75% reduction in IND preparation time. What traditionally takes 6-8 months can often be completed in 8-10 weeks with IND Wizard™, allowing you to start clinical trials much sooner and accelerate your drug development timeline.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Do I need regulatory expertise to use IND Wizard™?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>While regulatory expertise is always valuable, IND Wizard™ is designed to guide teams with various levels of regulatory experience. The platform provides context-sensitive help, regulatory guidance, and best practices throughout the process. For organizations with limited regulatory resources, IND Wizard™ can significantly reduce the learning curve and need for extensive regulatory affairs staffing.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What types of INDs does the platform support?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>IND Wizard™ supports all IND types, including commercial INDs, research INDs, emergency use INDs, and expanded access INDs. The platform supports small molecules, biologics, cell therapies, gene therapies, and combination products. The questionnaire and document generation features adapt based on your specific product type and development stage.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>How is the platform kept up-to-date with FDA requirements?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our regulatory intelligence team continuously monitors FDA guidances, regulations, and feedback. Updates are implemented into the platform within 72 hours of publication. Additionally, our AI system analyzes patterns in FDA responses to recent submissions, allowing us to incorporate emerging expectations even before they become formal guidance.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Can IND Wizard™ integrate with our existing systems?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes. IND Wizard™ offers robust API capabilities and pre-built integrations with common document management systems (Veeva, Documentum), CTMS platforms, and data repositories. Our implementation team can customize integrations to fit your specific tech stack, ensuring seamless data flow and eliminating duplicate data entry.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <span class="cta-badge">14-Day Free Trial</span>
+                <h2 class="cta-title">Ready to Transform Your IND Process?</h2>
+                <p class="cta-description">Schedule a demo today and see how IND Wizard™ can help your team submit faster with higher quality. Includes a free regulatory assessment worth $5,000.</p>
+                <div class="cta-buttons">
+                    <a href="/demo" class="btn btn-white">Request Demo</a>
+                    <a href="/contact" class="btn btn-outline-white">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <script>
+        // FAQ accordions
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const faqItem = question.parentNode;
+                const wasActive = faqItem.classList.contains('active');
+                
+                // Close all items
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // If it wasn't active, open it
+                if (!wasActive) {
+                    faqItem.classList.add('active');
+                }
+            });
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Simple navigation functionality
+        document.querySelector('.btn-primary').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>
