@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ AI CMC Features</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --yprime-pink: #E6007D;
+            --yprime-light-pink: #FB82C5;
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --border-color: #EFEFEF;
+            --border-light: #F5F5F5;
+            --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-size: 11px;
+            color: var(--text-dark);
+            line-height: 1.4;
+            background-color: #000;
+            padding: 15px;
+        }
+        
+        .page-title {
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 11px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: var(--box-shadow);
+            border-top: 3px solid var(--primary);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .feature-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .feature-title i {
+            color: var(--yprime-pink);
+            font-size: 10px;
+        }
+        
+        .feature-description {
+            font-size: 10px;
+            color: #555;
+            margin-bottom: 10px;
+            flex-grow: 1;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+            margin-bottom: 6px;
+            font-size: 9px;
+            color: #666;
+        }
+        
+        .feature-item i {
+            color: var(--yprime-pink);
+            font-size: 8px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        
+        /* Features Table */
+        .features-table {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .table-header {
+            background-color: var(--yprime-pink);
+            color: white;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .table-row {
+            display: grid;
+            grid-template-columns: 25% 75%;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .table-cell {
+            padding: 6px 10px;
+            font-size: 10px;
+            color: #555;
+        }
+        
+        .table-cell:first-child {
+            font-weight: 500;
+            background-color: #f9f9f9;
+            border-right: 1px solid #eee;
+        }
+        
+        /* Game Changer Table */
+        .game-changer-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .game-changer-table th {
+            background-color: var(--primary);
+            color: white;
+            text-align: left;
+            padding: 7px 10px;
+            font-weight: 500;
+            font-size: 10px;
+        }
+        
+        .game-changer-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 9px;
+            color: #555;
+        }
+        
+        .game-changer-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .impact-value {
+            color: var(--yprime-pink);
+            font-weight: 500;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        /* ROI Calculator */
+        .roi-calculator {
+            background-color: #f5f5f5;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .roi-text {
+            color: var(--text-medium);
+            font-size: 10px;
+            flex: 1;
+        }
+        
+        .roi-button {
+            background-color: var(--yprime-pink);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 9px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        /* Copilot Section */
+        .copilot-section {
+            background-color: var(--yprime-pink);
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .copilot-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .copilot-icon {
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .copilot-title {
+            font-weight: 600;
+            font-size: 12px;
+            flex: 1;
+        }
+        
+        .copilot-badge {
+            background-color: white;
+            color: var(--yprime-pink);
+            font-size: 8px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .copilot-description {
+            font-size: 10px;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+        
+        .copilot-features {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .copilot-feature {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 8px;
+            flex: 1;
+        }
+        
+        .copilot-feature-title {
+            font-size: 9px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .copilot-feature-title i {
+            font-size: 8px;
+        }
+        
+        .copilot-feature-text {
+            font-size: 8px;
+            opacity: 0.8;
+        }
+        
+        .conversation-sample {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .message-avatar {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            flex-shrink: 0;
+        }
+        
+        .message-avatar.ai {
+            background-color: white;
+            color: var(--yprime-pink);
+        }
+        
+        .message-content {
+            font-size: 9px;
+            opacity: 0.9;
+            flex: 1;
+        }
+        
+        .learn-more-button {
+            background-color: white;
+            color: var(--yprime-pink);
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            width: fit-content;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 25px;
+            border-radius: 8px;
+        }
+        
+        .cta-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .cta-text {
+            font-size: 14px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .cta-button {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button.primary {
+            background-color: white;
+            color: var(--primary);
+        }
+        
+        .cta-button.secondary {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-title">AI-CMC Blueprint Generator™</div>
+    <div class="subtitle">Transforming regulatory document creation with AI-powered automation</div>
+    
+    <!-- Featured AI CMC Capabilities -->
+    <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+            <div class="feature-title">
+                <i class="fas fa-magic"></i>
+                Automated CMC Drafting
+            </div>
+            <div class="feature-description">
+                Instantly generates full Module 3.2 documents from your raw data, including synthesis protocols, specifications, and justifications.
+            </div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Drug substance and product sections
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Manufacturing process workflows
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Analytical method validation
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Feature 2 -->
+        <div class="feature-card">
+            <div class="feature-title">
+                <i class="fas fa-chart-network"></i>
+                AI Change Impact Simulator™
+            </div>
+            <div class="feature-description">
+                Detects how change implications will propagate across formulations and manufacturing processes with real-time risk analysis.
+            </div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Cross-referenced dependency maps
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Automated impact assessments
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Regulatory action recommendations
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Proactive risk mitigation
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Feature 3 -->
+        <div class="feature-card">
+            <div class="feature-title">
+                <i class="fas fa-microscope"></i>
+                Manufacturing Tuner™
+            </div>
+            <div class="feature-description">
+                Analyzes documents via the Precedent-Match™ engine to optimize manufacturing processes and documentation.
+            </div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Industry standard benchmarking
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Historic approval insights
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Increases control strategy optimization
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Feature 4 -->
+        <div class="feature-card">
+            <div class="feature-title">
+                <i class="fas fa-vial"></i>
+                Preclinical-to-Process Translator™
+            </div>
+            <div class="feature-description">
+                Bridges early formulation research to scale-up manufacturing with predictive analytics.
+            </div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Identifies CMC risk factors
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Scale-up projections
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Gaps-analysis with remediation plans
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Feature 5 -->
+        <div class="feature-card">
+            <div class="feature-title">
+                <i class="fas fa-globe"></i>
+                Global Compliance Auto-Match™
+            </div>
+            <div class="feature-description">
+                Auto-localizes content for multiple Health Authorities with region-specific terminology adaptation.
+            </div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Adaptive terminology for FDA, EMA, PMDA, NMPA
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Provides information already mapped
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Scales globally with no added effort
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Feature 6 -->
+        <div class="feature-card">
+            <div class="feature-title">
+                <i class="fas fa-shield-alt"></i>
+                Real-Time Audit Risk Monitor™
+            </div>
+            <div class="feature-description">
+                Scans your document in real-time to identify potential compliance gaps continuously across all regions.
+            </div>
+            <ul class="feature-list">
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Flags non-compliance risk
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Continuous validation with new guidance
+                </li>
+                <li class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    Help against known FDA 483 findings
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Key Features Table -->
+    <div class="features-table">
+        <div class="table-header">Key Features in Build Plan</div>
+        <div class="table-row">
+            <div class="table-cell">Structured Form Input</div>
+            <div class="table-cell">Users input molecular data, synthesis route, formulation details</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell">Upload Data Files</div>
+            <div class="table-cell">Upload PDFs, CSVs, batch data, etc.</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell">AI Draft Generation</div>
+            <div class="table-cell">Full Module 3.2 generated using OpenAI API</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell">Versioning</div>
+            <div class="table-cell">Save versions, revert, edit, redline</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell">Download Options</div>
+            <div class="table-cell">Word, PDF, JSON export of documents</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell">Audit Trail</div>
+            <div class="table-cell">Capture changes for compliance</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell">Knowledge RAG</div>
+            <div class="table-cell">Context-aware generation using internal precedent</div>
+        </div>
+        <div class="table-row">
+            <div class="table-cell">Regulatory Templates</div>
+            <div class="table-cell">Prebuilt CTD format with editable logic blocks</div>
+        </div>
+    </div>
+    
+    <!-- Game Changer Table -->
+    <div class="table-header" style="background-color: var(--primary);">Game Changing Value</div>
+    <table class="game-changer-table">
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Game-Change Capability</th>
+                <th>Value to Client</th>
+                <th>Measurable Impact</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>AI-CMC Blueprint</td>
+                <td>Drafts full Module 3 docs in minutes with built-in compliance checks</td>
+                <td>Saves months of SME and writer effort</td>
+                <td class="impact-value">70% time reduction</td>
+            </tr>
+            <tr>
+                <td>Change Impact Simulator</td>
+                <td>Simulates change consequences across global filings</td>
+                <td>Reduces submission delays and regulatory pushback</td>
+                <td class="impact-value">3-5 month faster</td>
+            </tr>
+            <tr>
+                <td>Manufacturing Tuner</td>
+                <td>Compares against global data to improve process documentation</td>
+                <td>Optimizes yields, justifications, and compliance readiness</td>
+                <td class="impact-value">35% higher first-pass</td>
+            </tr>
+            <tr>
+                <td>Preclinical Translator</td>
+                <td>Bridges early formulation to scale-up and analytics</td>
+                <td>Prevents scale-up failures and speeds IND/CTA submissions</td>
+                <td class="impact-value">40% faster to clinic</td>
+            </tr>
+            <tr>
+                <td>Global Compliance Auto-Match</td>
+                <td>Auto-localizes content for multiple Health Authorities</td>
+                <td>1-click global readiness across FDA, EMA, PMDA, NMPA</td>
+                <td class="impact-value">80% less rework</td>
+            </tr>
+            <tr>
+                <td>Audit Risk Monitor</td>
+                <td>Real-time AI surveillance of compliance gaps</td>
+                <td>Prevents inspection findings, boosts QA confidence</td>
+                <td class="impact-value">65% fewer 483 observations</td>
+            </tr>
+            <tr>
+                <td>CMC CoPilot™ Assistant</td>
+                <td>AI assistant inside every screen with regulatory guidance</td>
+                <td>Increases team efficiency, reduces need for specialized knowledge</td>
+                <td class="impact-value">50% faster onboarding</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- ROI Calculator -->
+    <div class="roi-calculator">
+        <div class="roi-text">
+            <strong>TrialSage ROI Calculator:</strong> Clients typically see a full return on investment within 4-6 months through reduced labor costs, faster submissions, and higher approval rates.
+        </div>
+        <button class="roi-button">Calculate Your Savings →</button>
+    </div>
+    
+    <!-- CMC CoPilot Section -->
+    <div class="copilot-section">
+        <div class="copilot-header">
+            <div class="copilot-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="copilot-title">CMC CoPilot™: Your 24/7 Intelligent Partner</div>
+            <div class="copilot-badge">EXCLUSIVE</div>
+        </div>
+        
+        <div class="copilot-description">
+            Available in every screen, CMC CoPilot integrates with your data to provide contextual guidance, automations, and expert-level insights—making your team instantly more productive.
+        </div>
+        
+        <div class="copilot-features">
+            <div class="copilot-feature">
+                <div class="copilot-feature-title">
+                    <i class="fas fa-search"></i> Contextual Search
+                </div>
+                <div class="copilot-feature-text">
+                    Instantly finds documents, queries data, and synthesizes answers
+                </div>
+            </div>
+            
+            <div class="copilot-feature">
+                <div class="copilot-feature-title">
+                    <i class="fas fa-magic"></i> Automated Drafting
+                </div>
+                <div class="copilot-feature-text">
+                    Generates compliant sections, SOPs, and protocols
+                </div>
+            </div>
+            
+            <div class="copilot-feature">
+                <div class="copilot-feature-title">
+                    <i class="fas fa-shield-alt"></i> Regulatory Coach
+                </div>
+                <div class="copilot-feature-text">
+                    Identifies gaps and suggests remediation based on agency precedent
+                </div>
+            </div>
+        </div>
+        
+        <div class="conversation-sample">
+            <div class="message">
+                <div class="message-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="message-content">
+                    "Summarize all validation gaps before our PMDA submission."
+                </div>
+            </div>
+            
+            <div class="message">
+                <div class="message-avatar ai">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    "I found 3 critical validation gaps for the PMDA submission: (1) Missing stability data for drug product, (2) Incomplete process validation for Batch #247, (3) Required PMDA-specific container testing not completed."
+                </div>
+            </div>
+        </div>
+        
+        <button class="learn-more-button">Learn More About TrialSage AI-CMC Module™</button>
+    </div>
+</body>
+</html>

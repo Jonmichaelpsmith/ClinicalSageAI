@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage File Navigator™</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --yprime-pink: #E6007D;
+            --yprime-light-pink: #FB82C5;
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --border-color: #EFEFEF;
+            --border-light: #F5F5F5;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --success-green: #4CAF50;
+            --warning-yellow: #FFC107;
+            --danger-red: #F44336;
+            --module-blue: #03A9F4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-size: 13px;
+            color: var(--text-dark);
+            line-height: 1.4;
+            background-color: #f5f5f5;
+        }
+        
+        .file-navigator {
+            display: flex;
+            height: 600px;
+            max-width: 1000px;
+            margin: 20px auto;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background-color: #ffffff;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        
+        .navigator-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #fff;
+        }
+        
+        .navigator-title {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .navigator-subtitle {
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 11px;
+            margin-top: -2px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-button {
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .folder-label {
+            padding: 10px 15px;
+            font-weight: 500;
+            color: #888;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            background-color: #f9f9f9;
+        }
+        
+        .folders-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .folder-item {
+            padding: 8px 15px 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: var(--text-medium);
+            font-size: 12px;
+            border-bottom: 1px solid #f9f9f9;
+        }
+        
+        .folder-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .folder-item.active {
+            background-color: var(--primary-lighter);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .folder-item i {
+            margin-right: 8px;
+            font-size: 12px;
+            color: #999;
+            width: 14px;
+        }
+        
+        .folder-item.active i {
+            color: var(--primary);
+        }
+        
+        .subfolder {
+            padding-left: 25px;
+            font-size: 11px;
+        }
+        
+        /* Main content */
+        .main-content {
+            flex: 1;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .documents-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-medium);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .documents-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        
+        .document-item {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            background-color: #fff;
+            border: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .document-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .document-item.selected {
+            border: 1px solid #E6007D;
+            background-color: #FFF5FB;
+        }
+        
+        .document-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+        
+        .checkbox {
+            margin-right: 8px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        
+        .document-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+            color: var(--text-dark);
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+        
+        .document-meta {
+            color: #888;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-left: 20px;
+            margin-top: 2px;
+        }
+        
+        .document-tags {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            margin-left: 20px;
+        }
+        
+        .tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .tag-module {
+            background-color: #E3F2FD;
+            color: var(--module-blue);
+        }
+        
+        .tag-status-final {
+            background-color: #E8F5E9;
+            color: var(--success-green);
+        }
+        
+        .tag-status-draft {
+            background-color: #FFF8E1;
+            color: var(--warning-yellow);
+        }
+        
+        .tag-ai {
+            background-color: #F3E5F5;
+            color: #9C27B0;
+        }
+        
+        .tag-docushare {
+            background-color: #E8EAF6;
+            color: #3F51B5;
+        }
+        
+        /* Document viewer */
+        .document-viewer {
+            border-top: 1px solid var(--border-color);
+            margin-top: 10px;
+            padding: 15px;
+            flex: 1;
+        }
+        
+        .document-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            color: var(--text-medium);
+            font-size: 12px;
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            font-weight: 500;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .document-content-header {
+            margin-bottom: 10px;
+        }
+        
+        .document-content-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .document-content-subtitle {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+            text-align: right;
+        }
+        
+        .document-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-heading {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .section-content {
+            font-size: 12px;
+            color: var(--text-medium);
+            line-height: 1.5;
+        }
+        
+        .ai-insight {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #F1F8E9;
+            border-left: 3px solid var(--success-green);
+            border-radius: 4px;
+        }
+        
+        .ai-insight-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--success-green);
+            font-weight: 500;
+            font-size: 12px;
+        }
+        
+        .ai-insight-content {
+            font-size: 11px;
+            color: var(--text-medium);
+        }
+        
+        .document-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="file-navigator">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="navigator-header">
+                <div>
+                    <div class="navigator-title">TrialSage File</div>
+                    <div class="navigator-subtitle">Navigator™</div>
+                </div>
+                <div class="action-buttons">
+                    <span class="action-button"><i class="fas fa-expand"></i></span>
+                    <span class="action-button"><i class="fas fa-cog"></i></span>
+                </div>
+            </div>
+            
+            <div class="folder-label">FOLDERS</div>
+            
+            <div class="folders-list">
+                <div class="folder-item">
+                    <i class="fas fa-folder"></i>
+                    CMC Documents
+                </div>
+                
+                <div class="folder-item">
+                    <i class="fas fa-folder"></i>
+                    Drug Substance
+                </div>
+                
+                <div class="folder-item subfolder">
+                    <i class="fas fa-folder"></i>
+                    Drug Product
+                </div>
+                
+                <div class="folder-item subfolder">
+                    <i class="fas fa-folder"></i>
+                    Specifications
+                </div>
+                
+                <div class="folder-item subfolder active">
+                    <i class="fas fa-folder-open"></i>
+                    Validation
+                </div>
+                
+                <div class="folder-item">
+                    <i class="fas fa-folder"></i>
+                    Regulatory
+                </div>
+                
+                <div class="folder-item">
+                    <i class="fas fa-folder"></i>
+                    Quality
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="documents-header">
+                VALIDATION DOCUMENTS
+            </div>
+            
+            <div class="documents-list">
+                <!-- Document Item 1 -->
+                <div class="document-item">
+                    <div class="document-header">
+                        <input type="checkbox" class="checkbox">
+                        <div>
+                            <div class="document-title">Method Validation Report.docx</div>
+                        </div>
+                    </div>
+                    <div class="document-meta">
+                        Updated 2 days ago • John Smith
+                    </div>
+                    <div class="document-tags">
+                        <span class="tag tag-module">Module 3.2</span>
+                        <span class="tag tag-status-final">Final</span>
+                    </div>
+                </div>
+                
+                <!-- Document Item 2 -->
+                <div class="document-item">
+                    <div class="document-header">
+                        <input type="checkbox" class="checkbox">
+                        <div>
+                            <div class="document-title">Stability Protocol v2.docx</div>
+                        </div>
+                    </div>
+                    <div class="document-meta">
+                        Updated yesterday • Maria Chen
+                    </div>
+                    <div class="document-tags">
+                        <span class="tag tag-module">Module 3.2</span>
+                        <span class="tag tag-status-draft">Draft</span>
+                    </div>
+                </div>
+                
+                <!-- Document Item 3 -->
+                <div class="document-item">
+                    <div class="document-header">
+                        <input type="checkbox" class="checkbox">
+                        <div>
+                            <div class="document-title">Equipment Qualification.pdf</div>
+                        </div>
+                    </div>
+                    <div class="document-meta">
+                        Updated 5 days ago • Robert Lewis
+                    </div>
+                    <div class="document-tags">
+                        <span class="tag tag-module">Module 3.2</span>
+                        <span class="tag tag-status-final">Final</span>
+                        <span class="tag tag-docushare">DocuShare</span>
+                    </div>
+                </div>
+                
+                <!-- Document Item 4 (Selected) -->
+                <div class="document-item selected">
+                    <div class="document-header">
+                        <input type="checkbox" class="checkbox" checked>
+                        <div>
+                            <div class="document-title">Process Validation Protocol.docx</div>
+                        </div>
+                    </div>
+                    <div class="document-meta">
+                        Updated today • AI Generated
+                    </div>
+                    <div class="document-tags">
+                        <span class="tag tag-module">Module 3.2</span>
+                        <span class="tag tag-ai">AI Generated</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Document Viewer -->
+            <div class="document-viewer">
+                <div class="document-tabs">
+                    <div class="tab">Document</div>
+                    <div class="tab active">Metadata</div>
+                    <div class="tab">Versions</div>
+                </div>
+                
+                <div class="document-content-header">
+                    <div class="document-content-title">Process Validation Protocol v2.1</div>
+                    <div class="document-content-subtitle">Drug Product • TS-273 Tablets</div>
+                </div>
+                
+                <div class="document-section">
+                    <div class="section-heading">1. Purpose</div>
+                    <div class="section-content">
+                        This protocol defines the approach and methods for validating the manufacturing process for TS-273 Tablets, ensuring that the process is capable of meeting predetermined quality attributes and specifications.
+                    </div>
+                </div>
+                
+                <div class="document-section">
+                    <div class="section-heading">2. Scope</div>
+                    <div class="section-content">
+                        This protocol applies to the validation of the complete manufacturing process for TS-273 Tablets at the designated manufacturing site, covering all operations from dispensing through packaging.
+                    </div>
+                </div>
+                
+                <div class="ai-insight">
+                    <div class="ai-insight-header">
+                        <i class="fas fa-robot"></i>
+                        AI-Generated Insights
+                    </div>
+                    <div class="ai-insight-content">
+                        This protocol aligns with FDA Process Validation Guidelines and ICH Q7/Q8/Q9/Q10 Quality-by-Design guidance. Similar protocols have been approved in recent FDA submissions.
+                    </div>
+                </div>
+                
+                <div class="document-footer">
+                    <div>Version: 2.1</div>
+                    <div>4 previous versions</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

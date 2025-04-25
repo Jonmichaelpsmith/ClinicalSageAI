@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Development Lifecycle - TrialSage™</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-lighter: #E6F3EF;
+            --yprime-pink: #E6007D;
+            --yprime-light-pink: #FB82C5;
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --border-color: #EFEFEF;
+            --border-light: #F5F5F5;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --success-green: #4CAF50;
+            --warning-yellow: #FFC107;
+            --danger-red: #F44336;
+            --module-blue: #03A9F4;
+            --discovery: #4285F4;
+            --preclinical: #1A73E8;
+            --phase1: #34A853;
+            --phase2: #FBBC05;
+            --phase3: #EA4335;
+            --nda: #9C27B0;
+            --approval: #3F51B5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-size: 13px;
+            color: var(--text-dark);
+            line-height: 1.4;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .section-title {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .section-subtitle {
+            background-color: #f5f5f5;
+            color: var(--text-medium);
+            padding: 8px 20px;
+            font-size: 11px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* Drug Development Lifecycle */
+        .drug-development-lifecycle {
+            padding: 20px;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #ddd;
+            z-index: 1;
+        }
+        
+        .phase {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+        
+        .phase-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .phase-name {
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            color: var(--text-dark);
+        }
+        
+        .phase-duration {
+            font-size: 9px;
+            color: var(--text-medium);
+        }
+        
+        .phase-details {
+            display: flex;
+            margin-top: 15px;
+        }
+        
+        .phase-column {
+            flex: 1;
+            padding: 5px 10px;
+        }
+        
+        .phase-header {
+            background-color: var(--discovery);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .phase-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            font-size: 9px;
+        }
+        
+        .phase-item i {
+            color: var(--discovery);
+            margin-right: 5px;
+            font-size: 8px;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        
+        .phase-item-text {
+            color: var(--text-medium);
+        }
+        
+        /* Success Rates */
+        .success-section {
+            padding: 20px;
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .cards-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .card {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+        
+        .card-header {
+            padding: 15px;
+        }
+        
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        
+        .card-description {
+            font-size: 11px;
+            color: var(--text-medium);
+            line-height: 1.5;
+        }
+        
+        .success-rates {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 15px;
+        }
+        
+        .rate-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .rate-label {
+            flex: 1;
+            font-size: 11px;
+            color: var(--text-medium);
+        }
+        
+        .rate-value {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--yprime-pink);
+            margin-left: 10px;
+            width: 45px;
+            text-align: right;
+        }
+        
+        .progress-container {
+            height: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            width: 80px;
+            margin-left: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--discovery);
+            border-radius: 4px;
+        }
+        
+        /* Success Features */
+        .features-list {
+            padding: 0 15px 15px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .feature-item i {
+            color: var(--success-green);
+            margin-right: 8px;
+            font-size: 10px;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        
+        .feature-text {
+            font-size: 11px;
+            color: var(--text-medium);
+            line-height: 1.5;
+        }
+        
+        .success-story {
+            background-color: var(--primary-lighter);
+            padding: 10px 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+        
+        .success-story-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .success-story-text {
+            font-size: 10px;
+            color: var(--text-medium);
+            line-height: 1.4;
+        }
+        
+        /* TrialSage Support Section */
+        .support-section {
+            padding: 20px;
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .support-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            padding: 15px;
+        }
+        
+        .support-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .support-text {
+            font-size: 11px;
+            color: var(--text-medium);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .support-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .support-feature {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .support-feature i {
+            color: var(--yprime-pink);
+            margin-right: 8px;
+            font-size: 10px;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        
+        .support-feature-text {
+            font-size: 11px;
+            color: var(--text-medium);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Drug Development Lifecycle Section -->
+        <div class="section-title">Comprehensive Support Across the Drug Development Lifecycle</div>
+        <div class="section-subtitle">TrialSage™ provides AI-powered guidance at every stage of regulatory development</div>
+        
+        <div class="drug-development-lifecycle">
+            <!-- Timeline -->
+            <div class="timeline">
+                <div class="phase">
+                    <div class="phase-circle" style="background-color: var(--discovery);">
+                        Target Discovery
+                    </div>
+                    <div class="phase-name">Target Discovery</div>
+                    <div class="phase-duration">2-4 Years</div>
+                </div>
+                
+                <div class="phase">
+                    <div class="phase-circle" style="background-color: var(--preclinical);">
+                        Pre-Clinical
+                    </div>
+                    <div class="phase-name">Pre-Clinical</div>
+                    <div class="phase-duration">1-2 Years</div>
+                </div>
+                
+                <div class="phase">
+                    <div class="phase-circle" style="background-color: var(--phase1);">
+                        Phase I
+                    </div>
+                    <div class="phase-name">Phase I</div>
+                    <div class="phase-duration">1-2 Years</div>
+                </div>
+                
+                <div class="phase">
+                    <div class="phase-circle" style="background-color: var(--phase2);">
+                        Phase II
+                    </div>
+                    <div class="phase-name">Phase II</div>
+                    <div class="phase-duration">2-3 Years</div>
+                </div>
+                
+                <div class="phase">
+                    <div class="phase-circle" style="background-color: var(--phase3);">
+                        Phase III
+                    </div>
+                    <div class="phase-name">Phase III</div>
+                    <div class="phase-duration">3-5 Years</div>
+                </div>
+                
+                <div class="phase">
+                    <div class="phase-circle" style="background-color: var(--nda);">
+                        NDA
+                    </div>
+                    <div class="phase-name">NDA</div>
+                    <div class="phase-duration">6-10 Months</div>
+                </div>
+                
+                <div class="phase">
+                    <div class="phase-circle" style="background-color: var(--approval);">
+                        Approval
+                    </div>
+                    <div class="phase-name">Approval</div>
+                    <div class="phase-duration">~2 Months</div>
+                </div>
+            </div>
+            
+            <!-- Phase Details -->
+            <div class="phase-details">
+                <div class="phase-column">
+                    <div class="phase-header" style="background-color: var(--discovery);">
+                        Discovery/Research
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Target identification & validation</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Lead compound discovery</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Assay development</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Structure optimizations</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">In vitro screening</div>
+                    </div>
+                </div>
+                
+                <div class="phase-column">
+                    <div class="phase-header" style="background-color: var(--preclinical);">
+                        Pre-Clinical
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">ADME/Tox studies</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Formulation development</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">In vivo efficacy</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">GLP toxicology</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">IND preparation</div>
+                    </div>
+                </div>
+                
+                <div class="phase-column">
+                    <div class="phase-header" style="background-color: var(--phase1);">
+                        Clinical Development
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Phase I first-in-human trials</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Phase II proof-of-concept</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Phase III pivotal studies</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Clinical study reports</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">PK/PD analysis</div>
+                    </div>
+                </div>
+                
+                <div class="phase-column">
+                    <div class="phase-header" style="background-color: var(--nda);">
+                        Registration/Approval
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">NDA/BLA preparation</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">CMC documentation</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Label negotiation</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">FDA advisory committee</div>
+                    </div>
+                    <div class="phase-item">
+                        <i class="fas fa-square"></i>
+                        <div class="phase-item-text">Global submissions</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Success Rates Section -->
+        <div class="section-title" style="background-color: var(--primary);">TrialSage™ Accelerates Clinical Development</div>
+        <div class="section-subtitle">Shortening timelines while increasing success rates and regulatory compliance</div>
+        
+        <div class="success-section">
+            <div class="cards-container">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">How TrialSage Accelerates Clinical Development</div>
+                        <div class="card-description">
+                            The road from protocol development to trial completion can take 3-7 years. TrialSage™ shrinks this timeline by:
+                        </div>
+                    </div>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="feature-text">
+                                <strong>Intelligent Protocol Development</strong><br>
+                                AI auto-drafts optimized study protocols with pre-validated elements that shorten review cycles.
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="feature-text">
+                                <strong>Streamlining Ethics Applications</strong><br>
+                                Automated preparation of IRB applications to accelerate approval with ethical review compliance.
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="feature-text">
+                                <strong>Expediting Registration</strong><br>
+                                Automated regulatory document generation with ICH compliance verification saves weeks of preparation time.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">How TrialSage™ Improves Success Rates</div>
+                    </div>
+                    <div class="success-rates">
+                        <div class="rate-item">
+                            <div class="rate-label">First-in-human (20-25 subjects)</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" style="width: 79%;"></div>
+                            </div>
+                            <div class="rate-value">79%</div>
+                        </div>
+                        <div class="rate-item">
+                            <div class="rate-label">Efficacy testing (100-300 subjects)</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" style="width: 51%;"></div>
+                            </div>
+                            <div class="rate-value">51%</div>
+                        </div>
+                        <div class="rate-item">
+                            <div class="rate-label">Confirmatory (1,000-3,000 25-30% subjects)</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" style="width: 56%;"></div>
+                            </div>
+                            <div class="rate-value">56%</div>
+                        </div>
+                        <div class="rate-item">
+                            <div class="rate-label">NDA FDA CDER RATE</div>
+                            <div class="progress-container">
+                                <div class="progress-bar" style="width: 85%;"></div>
+                            </div>
+                            <div class="rate-value">85%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="feature-text">
+                                <strong>Optimized Protocol Design</strong><br>
+                                AI analyzes successful protocols to increase probability of success.
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="feature-text">
+                                <strong>Precise Patient Selection</strong><br>
+                                Advanced analytics identify optimal inclusion/exclusion criteria for successful outcomes.
+                            </div>
+                        </div>
+                        
+                        <div class="success-story">
+                            <div class="success-story-title">Success Story</div>
+                            <div class="success-story-text">
+                                A mid-sized biopharma client achieved 42% higher first-pass success rates after adopting TrialSage™ technology for protocol development.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TrialSage Support Section -->
+        <div class="section-title" style="background-color: var(--primary);">TrialSage™ End-to-End Support</div>
+        <div class="section-subtitle">Comprehensive assistance throughout the regulatory journey</div>
+        
+        <div class="support-section">
+            <div class="support-card">
+                <div class="support-title">How TrialSage™ Supports Your Regulatory Journey</div>
+                <div class="support-text">
+                    TrialSage™ modules map directly to these regulatory activities, providing intelligent assistance at every step.
+                </div>
+                
+                <div class="support-features">
+                    <div class="support-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="support-feature-text">
+                            <strong>IND Wizard™</strong><br>
+                            Accelerates IND through NDA submission
+                        </div>
+                    </div>
+                    
+                    <div class="support-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="support-feature-text">
+                            <strong>CSR Intelligence™</strong><br>
+                            Optimizes clinical reporting
+                        </div>
+                    </div>
+                    
+                    <div class="support-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="support-feature-text">
+                            <strong>ICH Wiz™</strong><br>
+                            Ensures compliance with global regulatory standards
+                        </div>
+                    </div>
+                    
+                    <div class="support-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="support-feature-text">
+                            <strong>AI-CMC Blueprint Generator</strong><br>
+                            Streamlines CMC documentation preparation
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
