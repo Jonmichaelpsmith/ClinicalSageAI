@@ -1,5 +1,29 @@
 /* Mobile-first responsive styles */
 
+/* Fix for iPhone content 100% width issues */
+body {
+  width: 100% !important;
+  -webkit-text-size-adjust: 100%;
+}
+
+html, body {
+  /* Prevent scroll bounce on iOS devices */
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Fix for blurry text during animations on iOS */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix iOS auto-zooming on inputs */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
 /* Body state when mobile navigation is active */
 body.mobile-nav-active {
   overflow: hidden;
@@ -403,6 +427,28 @@ html {
   
   body {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* iPhone X and newer with notch and home indicator */
+  header {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  footer {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .nav-menu {
+    height: calc(100vh - 70px - env(safe-area-inset-top));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Fix iOS 100vh issue */
+  @supports (-webkit-touch-callout: none) {
+    .nav-menu {
+      height: -webkit-fill-available;
+      max-height: calc(100vh - 70px - env(safe-area-inset-top));
+    }
   }
 }
 
