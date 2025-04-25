@@ -355,7 +355,7 @@
 
         .hero-content {
             position: relative;
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto;
             text-align: center;
             padding: 0 2rem;
@@ -363,29 +363,30 @@
         }
 
         .hero-eyebrow {
-            font-size: 1.125rem;
+            font-size: 0.95rem;
             font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             color: rgba(255, 255, 255, 0.9);
             letter-spacing: 0.03em;
+            text-transform: uppercase;
         }
 
         .hero-title {
-            font-size: 3.75rem;
+            font-size: 2.75rem;
             font-weight: 800;
             line-height: 1.1;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             color: #fff;
             letter-spacing: -0.02em;
         }
 
         .hero-subtitle {
-            font-size: 1.5rem;
+            font-size: 1.125rem;
             font-weight: 400;
             line-height: 1.4;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 3rem;
-            max-width: 700px;
+            margin-bottom: 2rem;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -393,19 +394,19 @@
         .hero-buttons {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 4rem;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
         }
 
         .hero-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 160px;
-            padding: 0.875rem 1.75rem;
-            font-size: 1.125rem;
+            min-width: 140px;
+            padding: 0.675rem 1.25rem;
+            font-size: 0.95rem;
             font-weight: 500;
-            border-radius: 2rem;
+            border-radius: 1.5rem;
             transition: all 0.3s ease;
         }
 
@@ -435,8 +436,8 @@
         .hero-stats {
             display: flex;
             justify-content: center;
-            gap: 4rem;
-            margin-top: 1rem;
+            gap: 2.5rem;
+            margin-top: 0.5rem;
         }
 
         .hero-stat {
@@ -446,15 +447,15 @@
         }
 
         .hero-stat-value {
-            font-size: 2.5rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: #fff;
             line-height: 1;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.375rem;
         }
 
         .hero-stat-label {
-            font-size: 1rem;
+            font-size: 0.875rem;
             color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
         }
@@ -470,108 +471,206 @@
 
         .section-header {
             text-align: center;
-            max-width: 800px;
-            margin: 0 auto 4rem;
+            max-width: 700px;
+            margin: 0 auto 3rem;
         }
 
         .section-title {
-            font-size: 2.25rem;
+            font-size: 1.875rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
             color: var(--text);
         }
 
         .section-subtitle {
-            font-size: 1.125rem;
-            color: var(--text-light);
-        }
-
-        /* Module Cards */
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .module-card {
-            background-color: var(--surface);
-            border-radius: 0.5rem;
-            box-shadow: var(--shadow);
-            padding: 2rem;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .module-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .module-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.5rem;
-            background-color: var(--primary-lighter);
-            color: var(--primary);
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .module-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text);
-        }
-
-        .module-description {
             font-size: 1rem;
             color: var(--text-light);
-            margin-bottom: 1.5rem;
         }
 
+        /* High-Tech Module Interface */
+        .modules-interface {
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+            max-width: 1000px;
+        }
+        
+        .module-tabs {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .module-tab {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text);
+            background-color: var(--surface);
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .module-tab.active {
+            background-color: var(--primary-lighter);
+            color: var(--primary-dark);
+            border-color: var(--primary);
+        }
+        
+        .module-tab:hover:not(.active) {
+            background-color: var(--background-alt);
+        }
+        
+        .module-tab-icon {
+            font-size: 1rem;
+        }
+        
+        .module-content {
+            background: linear-gradient(to right bottom, var(--surface), var(--background-alt));
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 300px;
+            border: 1px solid var(--border);
+        }
+        
+        .module-info {
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .module-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .module-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .module-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .module-description {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+        }
+        
         .module-features {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-            flex-grow: 1;
+            gap: 0.625rem;
         }
-
+        
         .module-feature {
             display: flex;
             align-items: flex-start;
             gap: 0.5rem;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             color: var(--text);
         }
-
+        
         .module-feature i {
             color: var(--primary);
-            font-size: 1rem;
+            font-size: 0.875rem;
             margin-top: 0.125rem;
         }
-
-        .module-link {
+        
+        .module-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .module-btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            color: var(--primary);
+            gap: 0.375rem;
+            font-size: 0.75rem;
             font-weight: 500;
-            margin-top: auto;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
         }
-
-        .module-link i {
-            transition: transform 0.2s ease;
+        
+        .module-btn-primary {
+            background-color: var(--primary);
+            color: white;
         }
-
-        .module-link:hover i {
-            transform: translateX(3px);
+        
+        .module-btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .module-btn-secondary {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .module-btn-secondary:hover {
+            background-color: var(--primary-lighter);
+            transform: translateY(-1px);
+        }
+        
+        .module-visual {
+            background-color: var(--primary-lighter);
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .module-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(44, 140, 108, 0.1) 0%, rgba(44, 140, 108, 0.05) 100%);
+            z-index: 1;
+        }
+        
+        .module-visual-placeholder {
+            position: relative;
+            z-index: 2;
+            font-weight: 500;
+            color: var(--primary-dark);
+            text-align: center;
+            font-size: 0.875rem;
+        }
+        
+        .module-visual-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            opacity: 0.7;
         }
 
         /* Features Section */
@@ -960,36 +1059,83 @@
     <section class="section" id="modules">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Comprehensive Regulatory Platform</h2>
-                <p class="section-subtitle">Our integrated suite of AI-powered modules empowers your regulatory teams to achieve higher quality submissions in less time.</p>
+                <h2 class="section-title">Integrated Solutions</h2>
+                <p class="section-subtitle">Explore our suite of AI-powered regulatory tools designed to revolutionize your workflow.</p>
             </div>
             
-            <div class="modules-grid">
-                <div class="module-card">
-                    <div class="module-icon">
-                        <i class="fas fa-chart-bar"></i>
+            <div class="modules-interface">
+                <div class="module-tabs">
+                    <div class="module-tab active" data-module="csr">
+                        <i class="fas fa-chart-bar module-tab-icon"></i>
+                        <span>CSR Intelligence™</span>
                     </div>
-                    <h3 class="module-title">CSR Intelligence™</h3>
-                    <p class="module-description">Leverage our database of 3,217+ parsed clinical study reports to gain unprecedented insights from historical data.</p>
-                    <div class="module-features">
-                        <div class="module-feature">
-                            <i class="fas fa-check"></i>
-                            <span>Searchable by indication, phase, and endpoints</span>
+                    <div class="module-tab" data-module="ind">
+                        <i class="fas fa-flask module-tab-icon"></i>
+                        <span>IND Wizard™</span>
+                    </div>
+                    <div class="module-tab" data-module="vault">
+                        <i class="fas fa-database module-tab-icon"></i>
+                        <span>Vault™ Workspace</span>
+                    </div>
+                    <div class="module-tab" data-module="ich">
+                        <i class="fas fa-check-circle module-tab-icon"></i>
+                        <span>ICH Wiz™</span>
+                    </div>
+                    <div class="module-tab" data-module="cmdr">
+                        <i class="fas fa-cubes module-tab-icon"></i>
+                        <span>Clinical MDR</span>
+                    </div>
+                    <div class="module-tab" data-module="architect">
+                        <i class="fas fa-sitemap module-tab-icon"></i>
+                        <span>Study Architect™</span>
+                    </div>
+                </div>
+                
+                <div class="module-content" id="module-csr">
+                    <div class="module-info">
+                        <div class="module-header">
+                            <div class="module-label">
+                                <i class="fas fa-chart-bar"></i> Solution
+                            </div>
+                            <h3 class="module-name">CSR Intelligence™</h3>
+                            <p class="module-description">Access and analyze 3,217+ parsed clinical study reports with our powerful search and AI assistant to get answers in seconds, not days.</p>
                         </div>
-                        <div class="module-feature">
-                            <i class="fas fa-check"></i>
-                            <span>AI-powered pattern detection across studies</span>
+                        
+                        <div class="module-features">
+                            <div class="module-feature">
+                                <i class="fas fa-search"></i>
+                                <span>Intelligent search across all your CSR data</span>
+                            </div>
+                            <div class="module-feature">
+                                <i class="fas fa-robot"></i>
+                                <span>Ask questions in plain English and get immediate answers</span>
+                            </div>
+                            <div class="module-feature">
+                                <i class="fas fa-link"></i>
+                                <span>Jump directly to source documents with precise citations</span>
+                            </div>
+                            <div class="module-feature">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Reduce hours of review work to mere seconds</span>
+                            </div>
                         </div>
-                        <div class="module-feature">
-                            <i class="fas fa-check"></i>
-                            <span>Historical protocol benchmarking</span>
-                        </div>
-                        <div class="module-feature">
-                            <i class="fas fa-check"></i>
-                            <span>Statistical significance analyzer</span>
+                        
+                        <div class="module-actions">
+                            <a href="/solutions/csr-intelligence" class="module-btn module-btn-primary">
+                                <i class="fas fa-external-link-alt"></i> Explore
+                            </a>
+                            <a href="#contact" class="module-btn module-btn-secondary">
+                                <i class="fas fa-calendar"></i> Request Demo
+                            </a>
                         </div>
                     </div>
-                    <a href="/solutions/csr-intelligence" class="module-link">Learn more <i class="fas fa-arrow-right"></i></a>
+                    
+                    <div class="module-visual">
+                        <div class="module-visual-placeholder">
+                            <i class="fas fa-comments-alt module-visual-icon"></i>
+                            <div>Ask questions like "Show me safety results for Drug X in the 300mg cohort" and get instant, accurate answers</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="module-card">
