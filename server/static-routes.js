@@ -288,6 +288,32 @@ export function setupStaticRoutes(app) {
     }
   });
 
+  // Custom route for About Us page
+  app.get('/about-us', (req, res) => {
+    console.log('[StaticRoutes] Serving About Us page');
+    // Serve our custom About Us page
+    const aboutUsPath = path.join(process.cwd(), 'about-us.html');
+    if (fs.existsSync(aboutUsPath)) {
+      res.sendFile(aboutUsPath);
+    } else {
+      // Fallback to generated page if file doesn't exist
+      const route = {
+        path: '/about-us',
+        title: 'About Concept2Cure',
+        description: 'Accelerating Life Sciences from Concept to Cure',
+        features: [
+          'Our Mission - To accelerate the development of life-saving therapies from concept to cure',
+          'Our Platform - Comprehensive AI-driven SaaS platform for regulatory intelligence and trial design',
+          'Our Difference - End-to-end integration, real-time intelligence, and AI-powered automation',
+          'Our Impact - Dramatic efficiency gains with improved compliance confidence'
+        ]
+      };
+      const html = generateStaticPage(route);
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+    }
+  });
+
   console.log('[StaticRoutes] Static routes registered successfully');
 }
 
