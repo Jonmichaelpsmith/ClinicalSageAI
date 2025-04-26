@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage Vault™ - The Future of Clinical Document Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-light: #D0E3D4;
+            --primary: #8BB18E;
+            --primary-dark: #5A7D5C;
+            --primary-darker: #3B5E3E;
+            --accent: #537A55;
+            --text-dark: #2D3A2E;
+            --text-medium: #4A634C;
+            --text-light: #768C78;
+            --background-light: #F7FAF7;
+            --background: #EFF6F0;
+            --white: #FFFFFF;
+            --gray-100: #F8F9FA;
+            --gray-200: #E9ECEF;
+            --gray-300: #DEE2E6;
+            --gray-400: #CED4DA;
+            --gray-500: #ADB5BD;
+            --gray-600: #6C757D;
+            --gray-700: #495057;
+            --gray-800: #343A40;
+            --gray-900: #212529;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--background-light);
+        }
+
+        a {
+            color: var(--primary-dark);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        a:hover {
+            color: var(--primary-darker);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        header {
+            background: linear-gradient(to right, var(--white), var(--primary-light));
+            border-bottom: 1px solid var(--gray-200);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+            margin-right: 0.5rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--primary-darker) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-dark);
+            color: white;
+            border: 1px solid var(--primary-dark);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-darker);
+            border-color: var(--primary-darker);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--primary-dark);
+            color: var(--primary-dark);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: rgba(90, 125, 92, 0.1);
+        }
+
+        .btn-large {
+            padding: 0.9rem 1.8rem;
+            font-size: 1.1rem;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 10rem 0 5rem;
+            text-align: center;
+            background: linear-gradient(120deg, var(--background-light) 0%, var(--primary-light) 60%, var(--white) 100%);
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--primary-darker);
+        }
+
+        .hero-subtitle {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 3rem;
+            color: var(--text-medium);
+        }
+
+        .hero-btns {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        /* Section styles */
+        section {
+            padding: 5rem 0;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: var(--primary-darker);
+        }
+
+        .section-intro {
+            font-size: 1.2rem;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 3rem;
+            color: var(--text-medium);
+        }
+
+        /* Feature blocks */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: var(--white);
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--primary-light);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-0.5rem);
+            box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary-darker);
+        }
+
+        .feature-list {
+            margin-top: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+
+        .feature-item i {
+            color: var(--primary-dark);
+            margin-right: 0.8rem;
+            font-size: 1.1rem;
+            margin-top: 0.2rem;
+        }
+
+        /* Comparison table */
+        .comparison {
+            background: var(--white);
+            padding: 5rem 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .comparison-table th, .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .comparison-table th {
+            background: var(--primary-light);
+            color: var(--primary-darker);
+            font-weight: 600;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: var(--background-light);
+        }
+
+        .comparison-table td:first-child {
+            font-weight: 600;
+            color: var(--text-medium);
+        }
+
+        .check-icon {
+            color: var(--primary-dark);
+            font-size: 1.2rem;
+        }
+
+        .x-icon {
+            color: #e74c3c;
+            font-size: 1.2rem;
+        }
+
+        .partial-icon {
+            color: #f39c12;
+            font-size: 1.2rem;
+        }
+
+        /* Use cases */
+        .usecases {
+            background: var(--background-light);
+        }
+
+        .usecase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .usecase-card {
+            background: var(--white);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--primary-light);
+        }
+
+        .usecase-dept {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary-darker);
+        }
+
+        .usecase-value {
+            color: var(--text-medium);
+        }
+
+        /* Testimonials */
+        .testimonials {
+            background: var(--white);
+        }
+
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .testimonial-card {
+            background: var(--background-light);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            position: relative;
+            border: 1px solid var(--primary-light);
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            color: var(--text-medium);
+            position: relative;
+            padding-top: 2rem;
+        }
+
+        .testimonial-text::before {
+            content: '"';
+            position: absolute;
+            top: -1rem;
+            left: -0.5rem;
+            font-size: 4rem;
+            color: var(--primary-light);
+            font-family: serif;
+            line-height: 1;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--primary-darker);
+        }
+
+        .testimonial-title {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Summary section */
+        .summary {
+            background: linear-gradient(120deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: var(--white);
+            text-align: center;
+            padding: 5rem 0;
+        }
+
+        .summary-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--white);
+        }
+
+        .summary-list {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .summary-item i {
+            color: var(--white);
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            margin-top: 0.2rem;
+        }
+
+        .summary-item span {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* CTA section */
+        .cta {
+            background: var(--primary-darker);
+            color: var(--white);
+            text-align: center;
+            padding: 5rem 0;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--primary-darker);
+            border: 1px solid white;
+        }
+
+        .btn-white:hover {
+            background: var(--gray-100);
+        }
+
+        .btn-outline-white {
+            border: 1px solid white;
+            color: white;
+            background: transparent;
+        }
+
+        .btn-outline-white:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tagline {
+            margin-top: 3rem;
+            font-size: 1.3rem;
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--gray-300);
+        }
+
+        .footer-links a:hover {
+            color: var(--white);
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            color: var(--gray-500);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.3rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .hero-btns {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .comparison-table {
+                font-size: 0.9rem;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo">
+                    <img src="/logo-trialsage.svg" alt="TrialSage Logo" onerror="this.src='https://placehold.co/40x40/8BB18E/FFFFFF?text=TS';this.onerror='';">
+                    <span class="logo-text">TrialSage™</span>
+                </a>
+                <div>
+                    <a href="#demo" class="btn btn-primary">Request Demo</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">🏛️ TrialSage Vault™</h1>
+            <h2 class="hero-subtitle">The Future of Clinical Document Intelligence</h2>
+            
+            <p>Clinical trials are growing more complex. Regulatory demands are tightening.<br>
+            Static file storage simply cannot keep up.</p>
+            
+            <p><strong>TrialSage Vault™</strong> is the world's first fully AI-driven, regulatory-grade Clinical Document Management Platform (<strong>cDMS</strong>) — designed to <strong>not just store files</strong>, but to <strong>understand them</strong>, <strong>organize them</strong>, and <strong>prepare them for submission</strong> automatically.</p>
+            
+            <p>Vault™ turns passive documents into living clinical intelligence.</p>
+            
+            <div class="hero-btns">
+                <a href="#demo" class="btn btn-primary btn-large">Request a Demo</a>
+                <a href="#features" class="btn btn-outline btn-large">Explore Features</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">✨ Full Feature Suite</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3 class="feature-title">📁 Unified Clinical Document Center</h3>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Upload any document instantly (Protocol, SAP, CSR, CER, IND Modules, etc.)</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Drag-and-drop interface mapped to <strong>real regulatory workflows</strong> (e.g., IND/NDA/CTA structure)</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>Inline preview</strong> of PDFs, DOCX, XLSX — no download necessary</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>Bulk upload</strong> and <strong>bulk smart tagging</strong> built in</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">🧠 Smart AI Engine (DocuAI™)</h3>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>AI Executive Summaries</strong> generated instantly (via GPT-4 Turbo)</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>Smart Auto-Tagging</strong> for Trial Phase, Molecule ID, Indication, Endpoints</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>AI Topic Extraction</strong> for improved search and dynamic folder organization</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>AI Compliance Checks</strong>: Detects missing appendices, inconsistencies</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>Real-time Smart Folder Mapping</strong> (auto-filed into appropriate phase/molecule)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-folder-tree"></i>
+                    </div>
+                    <h3 class="feature-title">🗂️ Enterprise-Grade Foldering</h3>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Create, rename, move, delete folders dynamically</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>View dynamic Smart Folders by Trial, Phase, Molecule</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Drag-and-drop documents between folders</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="feature-title">🔍 Smart Search Across All Content</h3>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Search by title, AI-generated tags, summary contents, endpoints</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Filter by Molecule, Trial Phase, Study Indication, Clinical Outcome Type</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Intelligent semantic search understanding document contexts</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3 class="feature-title">🔐 Advanced Document Versioning</h3>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Full version history tracking</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Upload ➔ Compare ➔ Revert to any previous version</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Document Lock/Checkout system (GxP audit trail)</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Protects against overwrites and enables simultaneous collaboration</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">🛡️ Bulletproof Compliance Architecture</h3>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Full <strong>tenant isolation</strong> (database + storage + audit logs)</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>AES-256 encryption</strong> at rest</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>TLS 1.3</strong> encrypted in transit</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>21 CFR Part 11</strong>, <strong>GDPR</strong>, and <strong>HIPAA</strong> aligned</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Smart Retention Policies (automatic archival/deletion)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h3 class="feature-title">📜 Full Enterprise Audit Trail</h3>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Full action tracking: Uploads, Downloads, Locks, Unlocks, Deletes, Version Changes</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><strong>Real-time anomaly detection</strong> (flagging unusual activity)</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Bulk export audit logs for regulatory inspection or compliance reviews</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="comparison">
+        <div class="container">
+            <h2 class="section-title">🎯 Why TrialSage Vault™ Crushes Traditional DMS</h2>
+            
+            <div style="overflow-x: auto;">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>TrialSage Vault™</th>
+                            <th>Veeva Vault</th>
+                            <th>Box.com/Sharepoint</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Smart AI Summarization</td>
+                            <td><i class="fas fa-check-circle check-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Auto-Tagging Molecule/Phase</td>
+                            <td><i class="fas fa-check-circle check-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Intelligent Smart Foldering</td>
+                            <td><i class="fas fa-check-circle check-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Dynamic Clinical Filters</td>
+                            <td><i class="fas fa-check-circle check-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Tenant Isolation + Secure Collaboration</td>
+                            <td><i class="fas fa-check-circle check-icon"></i></td>
+                            <td><i class="fas fa-adjust partial-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Affordable Pricing for Biotechs</td>
+                            <td><i class="fas fa-check-circle check-icon"></i></td>
+                            <td><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> High</td>
+                            <td><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Risky for compliance</td>
+                        </tr>
+                        <tr>
+                            <td>Purpose-built for IND/NDA workflows</td>
+                            <td><i class="fas fa-check-circle check-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                            <td><i class="fas fa-times x-icon"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="usecases">
+        <div class="container">
+            <h2 class="section-title">📈 Clinical Use Cases</h2>
+            
+            <div class="usecase-grid">
+                <div class="usecase-card">
+                    <h3 class="usecase-dept">Regulatory Affairs</h3>
+                    <p class="usecase-value">Auto-organize Module 1, 2, 3 documents instantly. Slash submission prep time by 50%.</p>
+                </div>
+                
+                <div class="usecase-card">
+                    <h3 class="usecase-dept">Clinical Operations</h3>
+                    <p class="usecase-value">Centralize protocols, SAPs, CRFs, and monitoring reports in smart dynamic folders.</p>
+                </div>
+                
+                <div class="usecase-card">
+                    <h3 class="usecase-dept">CMC (Chemistry, Manufacturing, Controls)</h3>
+                    <p class="usecase-value">Manage specifications, batch records, validation reports aligned automatically with Module 3.</p>
+                </div>
+                
+                <div class="usecase-card">
+                    <h3 class="usecase-dept">Quality & Compliance</h3>
+                    <p class="usecase-value">Maintain full 21 CFR Part 11-ready audit trails, instantly exportable.</p>
+                </div>
+                
+                <div class="usecase-card">
+                    <h3 class="usecase-dept">Executive & Strategy</h3>
+                    <p class="usecase-value">Real-time dashboards showing document completion rates per IND/NDA program.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials">
+        <div class="container">
+            <h2 class="section-title">💬 What Leading Biotechs Are Saying</h2>
+            
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"TrialSage Vault™ didn't just improve document management — it <em>changed our regulatory submission timelines</em>. We saved months across CMC and Clinical."</p>
+                    <p class="testimonial-author">Head of Regulatory Strategy</p>
+                    <p class="testimonial-title">Oncology Startup</p>
+                </div>
+                
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"The AI summaries and auto-tagging features alone paid for themselves in the first IND."</p>
+                    <p class="testimonial-author">VP of Clinical Development</p>
+                    <p class="testimonial-title">Rare Disease Biotech</p>
+                </div>
+                
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"We finally have an intelligent document system designed for biotech speed, not big pharma bureaucracy."</p>
+                    <p class="testimonial-author">Chief Operating Officer</p>
+                    <p class="testimonial-title">Emerging Biotech</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="summary">
+        <div class="container">
+            <h2 class="summary-title">📜 Summary of Why You Must Choose TrialSage Vault™</h2>
+            
+            <div class="summary-list">
+                <div class="summary-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Upload ➔ AI-Summarize ➔ Auto-Tag ➔ Smart File ➔ Audit-Ready — <strong>within seconds</strong></span>
+                </div>
+                <div class="summary-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Built <strong>for biotech teams</strong>, not generalized for corporate IT departments</span>
+                </div>
+                <div class="summary-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Intelligent, affordable, future-proof for modern regulatory science</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="cta">
+        <div class="container">
+            <h2 class="cta-title">🚀 Ready to Transform How You Manage Your Clinical and Regulatory Files?</h2>
+            
+            <div class="cta-buttons">
+                <a href="/request-demo" class="btn btn-white btn-large">Request a TrialSage Vault™ Demo</a>
+                <a href="/consultation" class="btn btn-outline-white btn-large">Schedule a Free Consultation</a>
+                <a href="/download-brochure" class="btn btn-outline-white btn-large">Download Vault™ Overview Brochure</a>
+            </div>
+            
+            <p class="tagline">"TrialSage Vault™ — Where Clinical Documents Become Clinical Intelligence."</p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/about">About</a>
+                <a href="/solutions">Solutions</a>
+                <a href="/contact">Contact</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/terms">Terms of Service</a>
+            </div>
+            
+            <p class="copyright">© 2025 TrialSage. All rights reserved. TrialSage™ and Vault™ are trademarks of TrialSage Inc.</p>
+        </div>
+    </footer>
+
+    <!-- Vault AI Assistant -->
+    <div id="vault-assistant" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <!-- Assistant will be dynamically inserted here -->
+        <div class="bg-green-600 text-white rounded-full p-4 shadow-lg hover:bg-green-700 transition flex items-center justify-center cursor-pointer" id="assistant-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        // Simple scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Simplified Vault Assistant for HTML page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial state
+            let isOpen = false;
+            let messages = [{
+                role: 'assistant',
+                content: "👋 Welcome to TrialSage Vault™ — your intelligent Clinical Document System. How can I help you today?"
+            }];
+            let suggestions = [
+                "Tell me about TrialSage Vault™",
+                "How does AI tagging work?",
+                "What makes Vault better than Veeva?",
+                "Tell me about compliance features"
+            ];
+            
+            // Knowledge base
+            const vaultKnowledge = {
+                overview: "TrialSage Vault™ is the world's first fully AI-driven, regulatory-grade Clinical Document Management Platform (cDMS) — designed to not just store files, but to understand them, organize them, and prepare them for submission automatically.",
+                
+                aiTagging: "Vault™ uses GPT-4 Turbo to automatically analyze every uploaded document. It extracts key metadata including trial phase, molecule ID, indication, endpoints, and even maps documents to the appropriate regulatory submission structure. This eliminates manual tagging and significantly reduces document processing time.",
+                
+                compliance: "Vault™ is built from the ground up for regulatory compliance, with full tenant isolation, AES-256 encryption, 21 CFR Part 11 compliant audit trails, and HIPAA alignment. Every document action is timestamped, user-attributed, and cryptographically secured.",
+                
+                security: "Vault™ provides true multi-tenant architecture with complete database and storage isolation between clients. Documents are encrypted at rest (AES-256) and in transit (TLS 1.3), with granular role-based access controls and real-time anomaly detection to flag unusual activity patterns.",
+                
+                veevaComparison: "Unlike Veeva Vault, TrialSage Vault™ was built specifically for modern biotech workflows with AI at its core. We offer automatic AI tagging and summarization (which Veeva lacks), intelligent document routing, and significantly more affordable pricing for emerging biotechs."
+            };
+            
+            // Create assistant container
+            function createAssistant() {
+                const assistantButton = document.getElementById('assistant-button');
+                assistantButton.addEventListener('click', toggleAssistant);
+                
+                // Auto open assistant after 3 seconds
+                setTimeout(() => {
+                    if (!isOpen) toggleAssistant();
+                }, 3000);
+            }
+            
+            // Toggle assistant open/closed
+            function toggleAssistant() {
+                isOpen = !isOpen;
+                
+                const assistantContainer = document.getElementById('vault-assistant');
+                
+                if (isOpen) {
+                    // Create chat interface
+                    const chatInterface = document.createElement('div');
+                    chatInterface.id = 'assistant-interface';
+                    chatInterface.className = 'bg-white rounded-lg shadow-xl overflow-hidden flex flex-col border border-gray-200 max-h-[80vh] mb-4';
+                    chatInterface.style.width = '380px';
+                    
+                    // Build UI
+                    chatInterface.innerHTML = `
+                        <div class="bg-gradient-to-r from-green-700 to-green-600 px-4 py-3 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <div class="bg-white rounded-full p-1 mr-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-white font-medium text-sm">Vault™ Assistant</h3>
+                                    <p class="text-green-100 text-xs">Clinical Document AI</p>
+                                </div>
+                            </div>
+                            <button id="close-assistant" class="text-white hover:text-green-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50" style="height: 300px;">
+                            <!-- Messages will be inserted here -->
+                        </div>
+                        
+                        <div id="suggestions-container" class="border-t border-gray-200 px-4 py-2 bg-white flex flex-wrap gap-2">
+                            <!-- Suggestions will be inserted here -->
+                        </div>
+                        
+                        <div class="border-t border-gray-200 p-3 bg-white flex items-center gap-2">
+                            <input
+                                id="assistant-input"
+                                type="text"
+                                class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+                                placeholder="Ask me about Vault™..."
+                            />
+                            <button
+                                id="send-button"
+                                class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition"
+                                aria-label="Send message"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Insert before the button
+                    assistantContainer.prepend(chatInterface);
+                    
+                    // Hide the button
+                    document.getElementById('assistant-button').style.display = 'none';
+                    
+                    // Add event listeners
+                    document.getElementById('close-assistant').addEventListener('click', toggleAssistant);
+                    document.getElementById('send-button').addEventListener('click', sendMessage);
+                    document.getElementById('assistant-input').addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            sendMessage();
+                        }
+                    });
+                    
+                    // Render messages and suggestions
+                    renderMessages();
+                    renderSuggestions();
+                    
+                } else {
+                    // Remove chat interface
+                    const chatInterface = document.getElementById('assistant-interface');
+                    if (chatInterface) {
+                        chatInterface.remove();
+                    }
+                    
+                    // Show the button
+                    document.getElementById('assistant-button').style.display = 'flex';
+                }
+            }
+            
+            // Render messages
+            function renderMessages() {
+                const messagesContainer = document.getElementById('messages-container');
+                messagesContainer.innerHTML = '';
+                
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `mb-4 flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`;
+                    
+                    messageDiv.innerHTML = `
+                        <div class="${
+                            message.role === 'user' 
+                                ? 'bg-green-600 text-white'
+                                : 'bg-white shadow-sm border border-gray-200'
+                        } max-w-[80%] rounded-lg p-3">
+                            <p class="text-sm whitespace-pre-wrap">${message.content}</p>
+                        </div>
+                    `;
+                    
+                    messagesContainer.appendChild(messageDiv);
+                });
+                
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Render suggestions
+            function renderSuggestions() {
+                const suggestionsContainer = document.getElementById('suggestions-container');
+                suggestionsContainer.innerHTML = '';
+                
+                suggestions.forEach(suggestion => {
+                    const button = document.createElement('button');
+                    button.className = 'text-xs bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 text-gray-700 whitespace-nowrap transition';
+                    button.textContent = suggestion;
+                    button.addEventListener('click', () => {
+                        // Add user message
+                        messages.push({
+                            role: 'user',
+                            content: suggestion
+                        });
+                        
+                        // Get AI response
+                        respondToMessage(suggestion);
+                        
+                        // Update UI
+                        renderMessages();
+                    });
+                    
+                    suggestionsContainer.appendChild(button);
+                });
+            }
+            
+            // Send message
+            function sendMessage() {
+                const input = document.getElementById('assistant-input');
+                const message = input.value.trim();
+                
+                if (!message) return;
+                
+                // Add user message
+                messages.push({
+                    role: 'user',
+                    content: message
+                });
+                
+                // Clear input
+                input.value = '';
+                
+                // Update UI
+                renderMessages();
+                
+                // Get AI response
+                respondToMessage(message);
+            }
+            
+            // Simple AI response
+            function respondToMessage(message) {
+                // Show typing indicator
+                const messagesContainer = document.getElementById('messages-container');
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'flex justify-start mb-4';
+                typingIndicator.id = 'typing-indicator';
+                
+                typingIndicator.innerHTML = `
+                    <div class="bg-white shadow-sm border border-gray-200 rounded-lg p-4 max-w-[80%]">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style="animation-delay: 0ms;"></div>
+                            <div class="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style="animation-delay: 150ms;"></div>
+                            <div class="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style="animation-delay: 300ms;"></div>
+                        </div>
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(typingIndicator);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Generate response based on message content
+                setTimeout(() => {
+                    // Remove typing indicator
+                    document.getElementById('typing-indicator').remove();
+                    
+                    // Generate response
+                    let response = '';
+                    const lowerMessage = message.toLowerCase();
+                    
+                    if (lowerMessage.includes('hello') || lowerMessage.includes('hi ')) {
+                        response = "Hello there! I'm Vault™ Assistant. How can I help you learn about our intelligent document management platform?";
+                    } else if (lowerMessage.includes('about') || lowerMessage.includes('what is') || lowerMessage.includes('trialsage')) {
+                        response = vaultKnowledge.overview;
+                        suggestions = [
+                            "How does AI tagging work?",
+                            "Tell me about security features",
+                            "What makes Vault better than Veeva?"
+                        ];
+                    } else if (lowerMessage.includes('tagging') || lowerMessage.includes('ai ') || lowerMessage.includes('smart')) {
+                        response = vaultKnowledge.aiTagging;
+                        suggestions = [
+                            "How accurate is the AI tagging?",
+                            "Tell me about document summarization",
+                            "Can we customize the tagging rules?"
+                        ];
+                    } else if (lowerMessage.includes('compliance') || lowerMessage.includes('secure') || lowerMessage.includes('audit')) {
+                        response = vaultKnowledge.compliance;
+                        suggestions = [
+                            "Tell me about audit trails",
+                            "Is Vault HIPAA compliant?",
+                            "How does Vault handle document locking?"
+                        ];
+                    } else if (lowerMessage.includes('veeva') || lowerMessage.includes('better') || lowerMessage.includes('compare')) {
+                        response = vaultKnowledge.veevaComparison;
+                        suggestions = [
+                            "What about compared to SharePoint?",
+                            "Tell me about pricing vs. Veeva",
+                            "How quickly can we implement Vault?"
+                        ];
+                    } else if (lowerMessage.includes('demo') || lowerMessage.includes('try') || lowerMessage.includes('pricing')) {
+                        response = "I'd be happy to arrange a personalized demo of TrialSage Vault™ for your team. Our clinical document experts can show you specific use cases relevant to your organization. Please contact us at sales@trialsage.com or click the 'Request a Demo' button at the bottom of the page.";
+                        suggestions = [
+                            "Tell me more about Vault features",
+                            "What's included in the Professional plan?",
+                            "How long does implementation take?"
+                        ];
+                    } else {
+                        response = "Thank you for your question. Vault™ is designed to transform how biotech and pharma companies manage their clinical and regulatory documents with AI-powered intelligence. Would you like to learn about a specific aspect of our platform?";
+                        suggestions = [
+                            "Tell me about AI tagging",
+                            "Explain document versioning",
+                            "How is Vault different from competitors?"
+                        ];
+                    }
+                    
+                    // Add assistant message
+                    messages.push({
+                        role: 'assistant',
+                        content: response
+                    });
+                    
+                    // Update UI
+                    renderMessages();
+                    renderSuggestions();
+                    
+                }, 1500); // Simulate typing delay
+            }
+            
+            // Initialize assistant
+            createAssistant();
+        });
+    </script>
+</body>
+</html>
