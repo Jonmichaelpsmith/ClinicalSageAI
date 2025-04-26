@@ -3,29 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrialSage™ by Concept2Cures</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>TrialSage™ by Concept2Cures - Regulatory Intelligence Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #0B6E4F;
+            --primary-dark: #08563D;
+            --primary-light: #0E8761;
+            --primary-gradient: linear-gradient(90deg, #0B6E4F, #0B6E4F);
+            --accent: #E6007D;
+            --accent-light: #FF3399;
+            --accent-gradient: linear-gradient(90deg, #E6007D, #D6008D);
+            --hero-gradient: linear-gradient(90deg, #0B6E4F, #E6007D);
+            --text-dark: #333333;
+            --text-medium: #555555;
+            --text-light: #777777;
+            --text-white: #FFFFFF;
+            --border-color: #EFEFEF;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
         }
         
         body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            line-height: 1.5;
+            font-size: 16px;
             width: 100%;
             overflow-x: hidden;
         }
-        
-        /* Header styles */
+
+        /* Header */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 30px;
+            padding: 15px 40px;
             background-color: white;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .logo {
@@ -34,15 +54,15 @@
         }
         
         .logo-text {
-            color: #0B6E4F;
+            font-size: 18px;
             font-weight: 600;
-            font-size: 16px;
+            color: var(--primary);
         }
         
         .logo-by {
-            color: #E6007D;
-            margin-left: 5px;
             font-size: 14px;
+            margin-left: 5px;
+            color: var(--accent);
         }
         
         .nav {
@@ -50,44 +70,49 @@
             gap: 25px;
         }
         
-        .nav a {
+        .nav-link {
             text-decoration: none;
-            color: #333;
+            color: var(--text-dark);
             font-size: 14px;
             font-weight: 500;
         }
         
         .cta-buttons {
             display: flex;
-            gap: 15px;
+            gap: 10px;
         }
         
         .btn {
-            padding: 8px 16px;
-            border-radius: 25px;
-            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
         
-        .btn-rfp {
-            border: none;
-            color: #333;
-        }
-        
-        .btn-demo {
-            background-color: #E6007D;
+        .btn-primary {
+            background-color: var(--accent);
             color: white;
-        }
-        
-        .btn-support {
             border: none;
-            color: #333;
         }
         
-        /* Hero section */
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-dark);
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, #0B6E4F 0%, #E6007D 100%);
+            background: var(--hero-gradient);
             color: white;
             text-align: center;
             padding: 80px 20px;
@@ -99,17 +124,16 @@
         }
         
         .hero-title {
-            font-size: 36px;
+            font-size: 40px;
             font-weight: 700;
             margin-bottom: 20px;
-            line-height: 1.2;
         }
         
         .hero-description {
-            font-size: 16px;
+            font-size: 18px;
             margin-bottom: 30px;
-            line-height: 1.6;
-            max-width: 700px;
+            opacity: 0.9;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -122,37 +146,22 @@
         }
         
         .hero-btn {
-            padding: 12px 25px;
-            border-radius: 25px;
-            text-decoration: none;
+            padding: 12px 28px;
             font-size: 16px;
-            font-weight: 500;
         }
         
-        .btn-request-demo {
-            background-color: #E6007D;
-            color: white;
-        }
-        
-        .btn-explore {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        /* Stats section */
+        /* Stats Bar */
         .stats {
             display: flex;
             justify-content: center;
             gap: 80px;
-            margin-top: 20px;
         }
         
         .stat {
             text-align: center;
         }
         
-        .stat-number {
+        .stat-value {
             font-size: 36px;
             font-weight: 700;
             margin-bottom: 5px;
@@ -160,23 +169,118 @@
         
         .stat-label {
             font-size: 14px;
-            opacity: 0.9;
+            opacity: 0.8;
+        }
+
+        /* Solutions Section */
+        .solutions {
+            padding: 80px 20px;
+            text-align: center;
         }
         
-        /* Responsive adjustments */
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .section-description {
+            font-size: 18px;
+            color: var(--text-medium);
+            max-width: 800px;
+            margin: 0 auto 50px;
+        }
+        
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .solution-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            text-align: left;
+        }
+        
+        .solution-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background-color: var(--primary-lighter);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .solution-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .solution-description {
+            font-size: 16px;
+            color: var(--text-medium);
+            margin-bottom: 20px;
+        }
+        
+        .solution-features {
+            list-style: none;
+        }
+        
+        .solution-feature {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--text-medium);
+        }
+        
+        .solution-feature:before {
+            content: "✓";
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .solutions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
         @media (max-width: 768px) {
-            .stats {
+            .header {
                 flex-direction: column;
-                gap: 30px;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .nav {
+                flex-wrap: wrap;
+                justify-content: center;
             }
             
             .hero-title {
-                font-size: 28px;
+                font-size: 32px;
             }
             
-            .hero-buttons {
+            .stats {
                 flex-direction: column;
-                align-items: center;
+                gap: 20px;
+            }
+            
+            .solutions-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -190,16 +294,16 @@
         </div>
         
         <nav class="nav">
-            <a href="#">Products</a>
-            <a href="#">AI Technology</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
+            <a href="#" class="nav-link">Products</a>
+            <a href="#" class="nav-link">AI Technology</a>
+            <a href="#" class="nav-link">About</a>
+            <a href="#" class="nav-link">Contact</a>
         </nav>
         
         <div class="cta-buttons">
-            <a href="#" class="btn btn-rfp">RFP</a>
-            <a href="#" class="btn btn-demo">Demo</a>
-            <a href="#" class="btn btn-support">Support</a>
+            <a href="#" class="btn btn-outline">RFP</a>
+            <a href="#" class="btn btn-primary">Demo</a>
+            <a href="#" class="btn btn-outline">Support</a>
         </div>
     </header>
 
@@ -210,25 +314,70 @@
             <p class="hero-description">The life sciences industry often relies on slow, manual processes for regulatory compliance. TrialSage™ revolutionizes regulatory document creation and validation with advanced AI, accelerating submissions by up to 75% while ensuring compliance.</p>
             
             <div class="hero-buttons">
-                <a href="#" class="hero-btn btn-request-demo">Request Demo</a>
-                <a href="#" class="hero-btn btn-explore">Explore Solutions</a>
+                <a href="#" class="btn btn-primary hero-btn">Request Demo</a>
+                <a href="#" class="btn btn-outline hero-btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4);">Explore Solutions</a>
             </div>
             
             <div class="stats">
                 <div class="stat">
-                    <div class="stat-number">3,217+</div>
+                    <div class="stat-value">3,217+</div>
                     <div class="stat-label">CSRs Analyzed</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-number">75%</div>
+                    <div class="stat-value">75%</div>
                     <div class="stat-label">Faster Submissions</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-number">98%</div>
+                    <div class="stat-value">98%</div>
                     <div class="stat-label">First-time Acceptance</div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Solutions Section -->
+    <section class="solutions">
+        <h2 class="section-title">Our Solutions</h2>
+        <p class="section-description">Explore our suite of AI-powered regulatory tools designed to revolutionize your workflow and accelerate time to market.</p>
+        
+        <div class="solutions-grid">
+            <div class="solution-card">
+                <div class="solution-title">CSR Intelligence™</div>
+                <p class="solution-description">Advanced clinical study report analysis and generation with AI-powered insights for regulatory submissions.</p>
+                <ul class="solution-features">
+                    <li class="solution-feature">Automated document generation</li>
+                    <li class="solution-feature">Intelligent data extraction</li>
+                    <li class="solution-feature">Regulatory compliance validation</li>
+                    <li class="solution-feature">Cross-reference management</li>
+                </ul>
+            </div>
+            
+            <div class="solution-card">
+                <div class="solution-title">IND Building & Submission Wizard™</div>
+                <p class="solution-description">Streamlined IND preparation and submission tool with intelligent document management and assembly.</p>
+                <ul class="solution-features">
+                    <li class="solution-feature">Guided submission process</li>
+                    <li class="solution-feature">FDA-compliant templates</li>
+                    <li class="solution-feature">Automatic cross-validation</li>
+                    <li class="solution-feature">Submission tracking</li>
+                </ul>
+            </div>
+            
+            <div class="solution-card">
+                <div class="solution-title">CMC Automation Module™</div>
+                <p class="solution-description">Comprehensive chemistry, manufacturing, and controls documentation with integrated quality control.</p>
+                <ul class="solution-features">
+                    <li class="solution-feature">Automated specifications generation</li>
+                    <li class="solution-feature">Method validation support</li>
+                    <li class="solution-feature">Stability data integration</li>
+                    <li class="solution-feature">Batch record management</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        console.log("TrialSage landing page enhancements loaded successfully");
+    </script>
 </body>
 </html>
