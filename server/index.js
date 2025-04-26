@@ -1,54 +1,23 @@
-/**
- * TrialSage Server
- * 
- * This is the main entry point for the TrialSage server,
- * which provides comprehensive FDA 21 CFR Part 11 compliance
- * for regulatory submissions.
- */
+import express from 'express';
+import cors from 'cors';
+import authRoutes from './routes/auth.js';
+import documentRoutes from './routes/documents.js';
+import auditRoutes from './routes/audit.js';
+import { verifyJwt } from './middleware/auth.js';
 
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const { registerRoutes } = require('./routes');
-const path = require('path');
-
-// Create Express app
 const app = express();
-
-// Add middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json({ limit: '50mb' }));
 
-// Register routes
-const httpServer = registerRoutes(app);
+// Public routes
+app.use('/api/auth', authRoutes);
 
-// Serve static files from the client build directory in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-  
-  // Handle client-side routing
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-  });
-}
+// Protected routes
+app.use('/api/documents', verifyJwt, documentRoutes);
+app.use('/api/audit', verifyJwt, auditRoutes);
 
-// Set up port
-const PORT = process.env.PORT || 5000;
+// Health check
+app.get('/health', (_, res) => res.json({ status: 'ok' }));
 
-// Start server
-httpServer.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-  console.log(`FDA 21 CFR Part 11 compliance services initialized`);
-});
-
-// Handle unhandled exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught exception:', error);
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled promise rejection:', reason);
-});
-
-module.exports = app;
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`TrialSage Vault API running on ${PORT}`));
