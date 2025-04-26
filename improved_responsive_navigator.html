@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:sans-serif;}
+
+/* Main container with responsive width */
+.container {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Folders section - left column */
+.folders {
+  width: 15%;
+  min-width: 120px;
+  max-width: 200px;
+  font-size: 12px;
+  background: #fff;
+  border-right: 1px solid #eee;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.folders-header {
+  padding: 10px;
+  color: #666;
+  font-weight: 500;
+  border-bottom: 1px solid #eee;
+}
+
+.folder-list {
+  padding: 5px;
+}
+
+.folder {
+  padding: 8px 5px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.folder:hover {
+  background-color: #f8f8f8;
+}
+
+.folder.active {
+  color: #E52DA0; /* Hot pink to match the new color scheme */
+  background-color: #FFF5FA;
+}
+
+.folder-icon {
+  width: 16px;
+  margin-right: 8px;
+}
+
+/* Documents section - middle column */
+.documents {
+  width: 25%;
+  min-width: 200px;
+  max-width: 320px;
+  font-size: 12px;
+  background: #fff;
+  border-right: 1px solid #eee;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.docs-header {
+  padding: 10px;
+  color: #666;
+  font-weight: 500;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.doc-list {
+  padding: 10px;
+}
+
+.doc {
+  margin-bottom: 10px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #eee;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.doc:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.doc.selected {
+  border-color: #E52DA0; /* Hot pink to match the new color scheme */
+  background-color: #FFF5FA;
+}
+
+.doc-name {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.doc-meta {
+  color: #888;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+.doc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.tag-blue {
+  background: #e1f5fe;
+  color: #0277bd;
+}
+
+.tag-green {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.tag-pink {
+  background: #FFF5FA;
+  color: #E52DA0;
+  border: 1px solid rgba(229, 45, 160, 0.3);
+}
+
+/* Preview section - right column with flexible width */
+.preview {
+  flex: 1; /* Take remaining space */
+  min-width: 300px;
+  font-size: 13px;
+  background: #fff;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.preview-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.tab {
+  padding: 10px 15px;
+  border-right: 1px solid #eee;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: #E52DA0; /* Hot pink to match the new color scheme */
+  border-bottom: 2px solid #E52DA0;
+  background: #FFF5FA;
+}
+
+.preview-content {
+  padding: 15px;
+}
+
+.preview-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.preview-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.section-title {
+  font-weight: 600;
+  margin: 15px 0 8px 0;
+  color: #444;
+}
+
+.section-text {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.insight-box {
+  margin-top: 15px;
+  padding: 12px;
+  background: #FFF5FA; /* Light pink background for AI insights */
+  border-left: 3px solid #E52DA0; /* Hot pink border */
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.ai-generated-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  background-color: #FFF5FA;
+  color: #E52DA0;
+}
+
+.ai-generated-badge::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #E52DA0;
+  margin-right: 6px;
+}
+
+.version-bar {
+  margin-top: 20px;
+  padding: 10px;
+  border-top: 1px solid #eee;
+  font-size: 12px;
+  color: #888;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .folders {
+    width: 100px;
+    min-width: 100px;
+    font-size: 11px;
+  }
+  
+  .documents {
+    width: 220px;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-wrap: wrap;
+  }
+  
+  .folders, .documents, .preview {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 40vh;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Folders Panel -->
+  <div class="folders">
+    <div class="folders-header">FOLDERS</div>
+    <div class="folder-list">
+      <div class="folder">
+        <span class="folder-icon">📁</span>
+        <span>CMC Documents</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">📁</span>
+        <span>Drug Substance</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">📁</span>
+        <span>Drug Product</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">📁</span>
+        <span>Specifications</span>
+      </div>
+      <div class="folder active">
+        <span class="folder-icon">📁</span>
+        <span>Validation</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">📁</span>
+        <span>Regulatory</span>
+      </div>
+      <div class="folder">
+        <span class="folder-icon">📁</span>
+        <span>Quality</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Documents Panel -->
+  <div class="documents">
+    <div class="docs-header">VALIDATION DOCUMENTS</div>
+    <div class="doc-list">
+      <div class="doc">
+        <div class="doc-name">
+          Method Validation Report.docx
+        </div>
+        <div class="doc-meta">
+          Updated 2 days ago • John Smith
+        </div>
+        <div class="doc-tags">
+          <span class="tag tag-blue">Module 3.2</span>
+          <span class="tag tag-green">Final</span>
+        </div>
+      </div>
+      
+      <div class="doc">
+        <div class="doc-name">
+          Stability Protocol v2.docx
+        </div>
+        <div class="doc-meta">
+          Updated yesterday • Maria Chen
+        </div>
+        <div class="doc-tags">
+          <span class="tag tag-blue">Module 3.2</span>
+          <span class="tag tag-blue">Draft</span>
+        </div>
+      </div>
+      
+      <div class="doc">
+        <div class="doc-name">
+          Equipment Qualification.pdf
+        </div>
+        <div class="doc-meta">
+          Updated 5 days ago • Robert Lewis
+        </div>
+        <div class="doc-tags">
+          <span class="tag tag-blue">Module 3.2</span>
+          <span class="tag tag-green">Final</span>
+        </div>
+      </div>
+      
+      <div class="doc selected">
+        <div class="doc-name">
+          Process Validation Protocol.docx
+        </div>
+        <div class="doc-meta">
+          Updated today • AI Generated
+        </div>
+        <div class="doc-tags">
+          <span class="tag tag-blue">Module 3.2</span>
+          <span class="tag tag-pink">AI Generated</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Preview Panel - Using flex:1 to take remaining space -->
+  <div class="preview">
+    <div class="preview-tabs">
+      <div class="tab active">Document</div>
+      <div class="tab">Metadata</div>
+      <div class="tab">Versions</div>
+    </div>
+    
+    <div class="preview-content">
+      <div class="ai-generated-badge">AI Generated</div>
+      <div class="preview-title">Process Validation Protocol v2.1</div>
+      <div class="preview-subtitle">Drug Product: TS-273 Tablets</div>
+      
+      <div class="section">
+        <div class="section-title">1. Purpose</div>
+        <div class="section-text">
+          This protocol defines the approach and acceptance criteria for validating the manufacturing process for TS-273 Tablets at the designated manufacturing site, meeting predetermined quality attributes.
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">2. Scope</div>
+        <div class="section-text">
+          This protocol applies to the validation of the manufacturing process for TS-273 Tablets at the designated manufacturing site, covering all process steps from dispensing through packaging.
+        </div>
+      </div>
+      
+      <div class="insight-box">
+        <b>AI-Generated Insights</b><br>
+        This protocol aligns with FDA Process Validation guidance. Similar protocols have successfully passed FDA and EMA submissions. Recommended improvements based on recent regulatory feedback include adding more details on statistical methods for sampling.
+      </div>
+      
+      <div class="version-bar">
+        <div>Version: 2.1</div>
+        <div>4 previous versions</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
