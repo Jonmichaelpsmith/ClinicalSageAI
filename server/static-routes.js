@@ -290,10 +290,8 @@ export function setupStaticRoutes(app) {
   
   // Custom route for Vault Workspace
   app.get('/solutions/vault-workspace', (req, res) => {
-    console.log('[StaticRoutes] Serving custom Vault Workspace page');
-    // Serve our custom Vault Workspace page
-    const customHtmlPath = path.join(process.cwd(), 'public/solutions/vault-workspace.html');
-    res.sendFile(customHtmlPath);
+    console.log('[StaticRoutes] Serving Vault workspace directly');
+    res.sendFile(path.join(process.cwd(), 'vault-workspace.html'));
   });
 
   // Custom route for About Us page
