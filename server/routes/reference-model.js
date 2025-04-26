@@ -326,4 +326,124 @@ router.get('/document-training/:id', async (req, res) => {
   }
 });
 
+/**
+ * Get periodic review tasks
+ */
+router.get('/review-tasks', async (req, res) => {
+  try {
+    const tenantId = req.user?.tenant_id;
+    
+    // Get review tasks for this tenant
+    const { data: tasks, error } = await supabase
+      .from('periodic_review_tasks')
+      .select(`
+        id,
+        document_id,
+        due_date,
+        status,
+        comments,
+        created_at,
+        updated_at,
+        documents:document_id (
+          id,
+          title,
+          document_subtype_id,
+          document_subtypes:document_subtype_id (
+            id,
+            name,
+            document_types:type_id (
+              id,
+              name
+            )
+          )
+        )
+      `)
+      .eq('tenant_id', tenantId)
+      .order('due_date', { ascending: true });
+    
+    if (error) throw error;
+    
+    return res.json(tasks || []);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching periodic review tasks');
+    return res.status(500).json({ 
+      error: 'Failed to fetch periodic review tasks', 
+      details: error.message 
+    });
+  }
+});
+
+/**
+ * Complete a periodic review task
+ */
+router.post('/complete-review/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { comments } = req.body;
+    const userId = req.user?.id;
+    
+    // Get the task
+    const { data: task, error: taskError } = await supabase
+      .from('periodic_review_tasks')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (taskError) throw taskError;
+    
+    if (!task) {
+      return res.status(404).json({ error: 'Review task not found' });
+    }
+    
+    // Update task to completed
+    const { error: updateError } = await supabase
+      .from('periodic_review_tasks')
+      .update({
+        status: 'Completed',
+        comments: comments || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id);
+    
+    if (updateError) throw updateError;
+    
+    // Schedule next review if applicable
+    try {
+      // Get the document information
+      const { data: document, error: documentError } = await supabase
+        .from('documents')
+        .select('id, document_subtype_id, created_by, tenant_id')
+        .eq('id', task.document_id)
+        .single();
+      
+      if (!documentError && document) {
+        // Import the scheduler function
+        const { scheduleNextReview } = await import('../jobs/periodicReview.js');
+        
+        // Schedule the next review
+        await scheduleNextReview(
+          document.id,
+          document.document_subtype_id,
+          document.created_by || userId,
+          document.tenant_id
+        );
+      }
+    } catch (scheduleError) {
+      // Log but don't fail the request
+      logger.error({ err: scheduleError }, 'Error scheduling next review');
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Review completed successfully' 
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error completing periodic review');
+    return res.status(500).json({ 
+      error: 'Failed to complete review', 
+      details: error.message 
+    });
+  }
+});
+
 export default router;
