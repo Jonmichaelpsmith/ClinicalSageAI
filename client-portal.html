@@ -17,6 +17,32 @@
       if (!isAuthenticated) {
         window.location.href = '/login.html';
       }
+      
+      // Update user information from localStorage
+      window.addEventListener('DOMContentLoaded', () => {
+        const userEmail = localStorage.getItem('userEmail');
+        const userName = localStorage.getItem('userName');
+        
+        // Get user's first name for welcome message
+        let firstName = "User";
+        if (userName) {
+          firstName = userName.split(' ')[0];
+          document.getElementById('userName').textContent = userName;
+          
+          // Set initials
+          const initials = userName.split(' ')
+            .map(name => name.charAt(0))
+            .join('')
+            .toUpperCase();
+          document.getElementById('userInitials').textContent = initials;
+        } else if (userEmail) {
+          document.getElementById('userName').textContent = userEmail;
+          document.getElementById('userInitials').textContent = userEmail.charAt(0).toUpperCase();
+        }
+        
+        // Set welcome message
+        document.getElementById('welcomeName').textContent = firstName;
+      });
     })();
     
     // Logout function - clears authentication and redirects to login
