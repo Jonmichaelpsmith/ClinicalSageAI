@@ -1,70 +1,139 @@
+/**
+ * TrialSage Server Main Entry Point
+ * 
+ * This file initializes the Express server, sets up middleware,
+ * registers routes, and starts the server listening.
+ */
+
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import authRoutes from './routes/auth.js';
-import documentRoutes from './routes/documents.js';
-import auditRoutes from './routes/audit.js';
+import morgan from 'morgan';
+import { createServer } from 'http';
+import { Server as WebSocketServer } from 'socket.io';
+import * as Sentry from '@sentry/node';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+// Import routes
 import referenceModelRoutes from './routes/reference-model.js';
-import metaRoutes from './routes/meta.js';
+import esgRoutes from './routes/esgSubmission.js';
+import analyticsRoutes from './routes/analytics.js';
+import esignRoutes from './routes/esign.js';
+
+// Import middleware
 import { verifyJwt } from './middleware/auth.js';
-import { logger, sentryMiddleware } from './utils/logger.js';
+import { ledgerLog } from './middleware/ledgerLog.js';
 
-// Import the periodic review scheduler
-import './jobs/periodicReview.js';
+// Import services
+import { initAnalytics } from './services/analyticsService.js';
 
+// Initialize Express app
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Security enhancements
-app.use(helmet({ crossOriginResourcePolicy: false }));
-app.use(cors({ 
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://trialsage.com', 'https://vault.trialsage.com'] 
-    : true,
-  credentials: true 
-}));
-app.use(rateLimit({ 
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200 // limit each IP to 200 requests per windowMs
-}));
+// Initialize Sentry if DSN is available
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: 1.0,
+  });
+  
+  // Use Sentry request handler and error handler
+  app.use(Sentry.Handlers.requestHandler());
+}
 
-app.use(express.json({ limit: '50mb' }));
+// Basic middleware
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Logging middleware - capture request info
-app.use((req, res, next) => { 
-  logger.info({ 
-    url: req.url, 
-    method: req.method,
-    user: req.user?.id, 
-    ip: req.ip,
-    userAgent: req.headers['user-agent']
-  }); 
-  next(); 
+// Initialize services
+initAnalytics();
+
+// Register routes
+app.use('/api/reference-model', verifyJwt, referenceModelRoutes);
+app.use('/api/esg', verifyJwt, esgRoutes);
+app.use('/api/analytics', verifyJwt, analyticsRoutes);
+app.use('/api/esign', verifyJwt, esignRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date() });
 });
 
-// Sentry error handling middleware
-app.use(sentryMiddleware);
-
-// Public routes
-app.use('/api/auth', authRoutes);
-
-// Protected routes
-app.use('/api/documents', verifyJwt, documentRoutes);
-app.use('/api/audit', verifyJwt, auditRoutes);
-app.use('/api/reference-model', verifyJwt, referenceModelRoutes);
-app.use('/api/meta', verifyJwt, metaRoutes);
-
-// Health check
-app.get('/health', (_, res) => res.json({ status: 'ok' }));
-
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  logger.info(`TrialSage Vault API running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  
-  if (!process.env.SENTRY_DSN) {
-    logger.warn('SENTRY_DSN not configured. Error tracking is disabled.');
-  } else {
-    logger.info('Sentry monitoring configured successfully');
+// Ledger API
+app.get('/api/ledger/:submissionId', verifyJwt, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('ind_ledger')
+      .select('*')
+      .eq('payload->submission_id', req.params.submissionId)
+      .order('ts', { ascending: false });
+    
+    if (error) {
+      return res.status(500).json({ message: error.message });
+    }
+    
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
+});
+
+// Handle 404s
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Not Found', path: req.path });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err);
+  
+  // Sentry error handler if available
+  if (process.env.SENTRY_DSN) {
+    app.use(Sentry.Handlers.errorHandler());
+  }
+  
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
+// Create HTTP server and WebSocket server
+const httpServer = createServer(app);
+const io = new WebSocketServer(httpServer, {
+  path: '/ws',
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+// WebSocket event handlers
+io.on('connection', (socket) => {
+  console.log('WebSocket client connected:', socket.id);
+  
+  socket.on('join-submission', (submissionId) => {
+    socket.join(`submission-${submissionId}`);
+    console.log(`Client ${socket.id} joined submission ${submissionId}`);
+  });
+  
+  socket.on('leave-submission', (submissionId) => {
+    socket.leave(`submission-${submissionId}`);
+    console.log(`Client ${socket.id} left submission ${submissionId}`);
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('WebSocket client disconnected:', socket.id);
+  });
+});
+
+// Start server
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

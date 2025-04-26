@@ -1,0 +1,145 @@
+// ───────────────────────────────────────────────────────────────
+// TrialSage Vault – Inspection‑Mode Portal (Auditor Read‑Only) v1.0
+// ---------------------------------------------------------------------
+//  Goals
+//  • Provide FDA / EMA inspectors a locked‑down read‑only view of a single submission
+//  • Time‑boxed token access (e.g., 7‑day window) with watermark overlay
+//  • Only Effective documents; redacts PHI automatically
+//  • Full audit of inspector activities (viewed docs, downloads)
+// ---------------------------------------------------------------------
+//  Components Delivered
+//  • sql/inspection.sql            – tables: audit, tokens
+//  • server/routes/inspection.js   – create invite, verify token, activity log
+//  • server/middleware/inspectorAuth.js – token check, expiry enforcement
+//  • client/pages/InspectorLogin.jsx  – token entry / login
+//  • client/pages/InspectorPortal.jsx – read‑only UI with watermark & doc viewer
+//  • client/components/Watermark.jsx  – diagonal overlay displaying inspector id & timestamp
+//  • cron job (cleanup expired tokens)
+// ---------------------------------------------------------------------
+
+// ---------------- sql/inspection.sql ----------------
+create table if not exists inspector_tokens (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid references ind_wizards(id),
+  inspector_email text,
+  expires_at timestamp,
+  created_by uuid,
+  created_at timestamp default now()
+);
+create table if not exists inspector_audit (
+  id bigserial primary key,
+  token_id uuid references inspector_tokens(id),
+  action text,
+  metadata jsonb,
+  ts timestamp default now()
+);
+
+// ---------------- server/middleware/inspectorAuth.js ----------------
+import { supabase } from '../lib/supabaseClient.js';
+export async function inspectorAuth(req,res,next){
+  const token=req.headers['x-inspect-token']||req.query.token;
+  if(!token) return res.status(401).json({ message:'Token required' });
+  const { data:t }=await supabase.from('inspector_tokens').select('*').eq('id',token).single();
+  if(!t||new Date(t.expires_at)<new Date()) return res.status(401).json({ message:'Token expired' });
+  req.inspector=t; next();
+}
+
+// ---------------- server/routes/inspection.js ----------------
+import { Router } from 'express';
+import { verifyJwt } from '../middleware/auth.js';
+import { inspectorAuth } from '../middleware/inspectorAuth.js';
+import { supabase } from '../lib/supabaseClient.js';
+import { logEvent } from '../middleware/ledgerLog.js';
+const r=Router();
+
+// Admin creates invite link
+r.post('/invite', verifyJwt, async (req,res)=>{
+  const { submissionId, email, days } = req.body;
+  const expires = new Date(Date.now()+ (days||7)*86400000);
+  const { data, error } = await supabase.from('inspector_tokens').insert({ submission_id:submissionId, inspector_email:email, expires_at:expires, created_by:req.user.id }).select('*').single();
+  if(error) return res.status(400).json({ message:error.message });
+  // TODO send email invite with link
+  res.json({ link:`${process.env.FRONTEND_URL}/inspect?token=${data.id}`, expires });
+});
+
+// Inspector fetch submission meta
+r.get('/meta/:token', inspectorAuth, async (req,res)=>{
+  const { submission_id } = req.inspector;
+  const { data } = await supabase.from('ind_wizards').select('id,product_name,region').eq('id',submission_id).single();
+  res.json(data);
+});
+// Inspector list documents
+r.get('/docs/:token', inspectorAuth, async (req,res)=>{
+  const { submission_id } = req.inspector;
+  const { data } = await supabase.from('ind_blocks').select('id,section_code,block_type,content').eq('submission_id',submission_id);
+  res.json(data);
+});
+// Log view action
+r.post('/audit/:token', inspectorAuth, async (req,res)=>{
+  await supabase.from('inspector_audit').insert({ token_id:req.inspector.id, action:req.body.action, metadata:req.body.meta });
+  res.json({ ok:true });
+});
+export default r;
+
+// ---------------- client/components/Watermark.jsx ----------------
+import React from 'react';
+export default function Watermark({ text }){
+  return <div className="pointer-events-none fixed inset-0 flex items-center justify-center opacity-10 select-none" style={{ zIndex:9999 }}>
+    <div className="text-6xl font-bold rotate-45 whitespace-nowrap text-gray-900/20 dark:text-gray-100/10">{text}</div>
+  </div>;
+}
+
+// ---------------- client/pages/InspectorLogin.jsx ----------------
+import React, { useState } from 'react';
+import { useLocation } from 'wouter';
+export default function InspectorLogin(){
+  const [,setLoc]=useLocation();
+  const [token,setToken]=useState('');
+  const submit=e=>{ e.preventDefault(); setLoc(`/inspect?token=${token}`); };
+  return (<div className="h-screen flex flex-col items-center justify-center bg-gray-50">
+    <h1 className="text-2xl font-bold mb-4">Inspector Access</h1>
+    <form onSubmit={submit} className="space-y-2 w-72"><input value={token} onChange={e=>setToken(e.target.value)} placeholder="Access Token" className="border p-2 w-full" /><button className="w-full bg-blue-600 text-white py-2 rounded">Enter</button></form>
+  </div>);
+}
+
+// ---------------- client/pages/InspectorPortal.jsx ----------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import Watermark from '../components/Watermark.jsx';
+import { useLocation } from 'wouter';
+export default function InspectorPortal(){
+  const [loc]=useLocation(); const token=new URLSearchParams(loc.split('?')[1]).get('token');
+  const [meta,setMeta]=useState(null); const [docs,setDocs]=useState([]);
+  useEffect(()=>{ if(token){ load(); } },[token]);
+  const load=async()=>{
+    const h={ headers:{ 'x-inspect-token':token } };
+    setMeta((await axios.get(`/api/inspection/meta/${token}`,h)).data);
+    setDocs((await axios.get(`/api/inspection/docs/${token}`,h)).data);
+  };
+  if(!meta) return null;
+  return (<div className="p-6 relative">
+    <Watermark text={`${meta.product_name} – Inspector`}/>
+    <h1 className="text-2xl font-bold mb-4">{meta.product_name} ({meta.region})</h1>
+    <p className="text-sm mb-6">Read‑only inspection copy. All activity is logged.</p>
+    <div className="space-y-4">
+      {docs.map(b=>(<div key={b.id} className="border rounded p-3 bg-white">
+        <p className="font-semibold mb-1">Section {b.section_code}</p>
+        {b.block_type==='markdown' && <div dangerouslySetInnerHTML={{__html:b.content.markdown}} className="prose"/>}
+        {b.block_type==='table' && <table className="text-xs">{b.content.rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j} className="border px-2 py-1">{c}</td>)}</tr>)}</table>}
+      </div>))}
+    </div>
+  </div>);
+}
+
+// ---------------- Integration Checklist ----------------
+1. `supabase db query < sql/inspection.sql`.
+2. Backend: `app.use('/api/inspection', inspectionRoutes);`.
+3. Front-end routes:
+   ```jsx
+   <Route path="/inspect" component={InspectorLogin}/>
+   <Route path="/inspect/portal" component={InspectorPortal}/> // auto redirect after login
+   ```
+4. When a document is viewed, POST `/api/inspection/audit` with action `view-block`.
+5. Token expiry cron: delete tokens > expires_at.
+6. PHI redaction: ensure blocks API already strips PHI before sending to inspector (placeholder to integrate de‑identifier).
+// ───────────────────────────────────────────────────────────────
