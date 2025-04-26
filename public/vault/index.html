@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage Vault™ | Intelligent Document Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(to bottom, #f0f9ff, #ffffff);
+            min-height: 100vh;
+        }
+
+        .vault-container {
+            position: relative;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .vault-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #1e40af;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        .chat-button {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background-color: #2563eb;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+
+        .chat-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+            width: 20rem;
+            padding: 1rem;
+        }
+
+        .chat-messages {
+            height: 16rem;
+            overflow-y: auto;
+            margin-bottom: 0.5rem;
+        }
+
+        .message {
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+        }
+
+        .message.assistant {
+            color: #1e40af;
+        }
+
+        .message.user {
+            color: #111827;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+        }
+
+        .send-button {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="vault-app"></div>
+
+    <script type="text/babel">
+        // --- TrialSage Vault™ Interactive Landing Page with AI Assistant (Replit Ready) ---
+
+        function VaultLandingPageWithAI() {
+          const [showAssistant, setShowAssistant] = React.useState(false);
+          const [messages, setMessages] = React.useState([{ role: 'assistant', content: '👋 Hello! Welcome to TrialSage Vault™ — your intelligent clinical document solution. How can I help you today?' }]);
+          const [input, setInput] = React.useState('');
+
+          const sendMessage = async () => {
+            if (!input.trim()) return;
+            const userMessage = { role: 'user', content: input };
+            setMessages(prev => [...prev, userMessage]);
+            setInput('');
+            
+            // Mock AI response (replace with actual backend call)
+            setTimeout(() => {
+              setMessages(prev => [
+                ...prev, 
+                { 
+                  role: 'assistant', 
+                  content: "I'd be happy to help with your regulatory document needs. Vault™ offers enterprise-grade security, AI document tagging, and version history tracking. Would you like a demo of these features?" 
+                }
+              ]);
+            }, 1000);
+          };
+
+          return (
+            <div className="vault-container">
+              <h1 className="vault-title">Welcome to TrialSage Vault™</h1>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div className="feature-card">
+                  <h2 className="feature-title">AI Auto-Tagging</h2>
+                  <p className="feature-description">Every document uploaded is instantly tagged by trial, molecule, and endpoint classification using GPT-4 Turbo.</p>
+                </div>
+                <div className="feature-card">
+                  <h2 className="feature-title">Executive Summaries</h2>
+                  <p className="feature-description">Smart summaries created instantly for all uploaded CSRs, CERs, protocols and more.</p>
+                </div>
+                <div className="feature-card">
+                  <h2 className="feature-title">Full Audit-Readiness</h2>
+                  <p className="feature-description">21 CFR Part 11, GDPR, and HIPAA compliance with built-in tenant isolation and audit trails.</p>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button 
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium"
+                  onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                >
+                  Learn More
+                </button>
+              </div>
+
+              <div>
+                {!showAssistant ? (
+                  <button className="chat-button" onClick={() => setShowAssistant(true)}>💬 Chat with Vault AI</button>
+                ) : (
+                  <div className="chat-container">
+                    <div className="chat-messages">
+                      {messages.map((msg, idx) => (
+                        <div key={idx} className={`message ${msg.role}`}>{msg.content}</div>
+                      ))}
+                    </div>
+                    <div className="input-container">
+                      <input 
+                        className="chat-input" 
+                        value={input} 
+                        onChange={(e) => setInput(e.target.value)} 
+                        placeholder="Ask a question..." 
+                        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                      />
+                      <button className="send-button" onClick={sendMessage}>Send</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // Render the app
+        const rootElement = document.getElementById('vault-app');
+        ReactDOM.render(<VaultLandingPageWithAI />, rootElement);
+    </script>
+
+    <!-- Load Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
+</html>
