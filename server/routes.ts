@@ -207,7 +207,20 @@ export function setupRoutes(app: express.Application): http.Server {
     // Register standalone landing page handler first, before any other middleware
     standaloneModule.injectStandaloneLandingPage(app);
     
-    // Register static routes for key solution pages
+    // HIGHEST PRIORITY ROUTE: Direct Vault Workspace React UI
+    app.get('/solutions/vault-workspace', (req, res) => {
+      console.log('[DIRECT OVERRIDE] Serving Vault Workspace React UI with highest priority');
+      const reactUIPath = path.join(process.cwd(), 'vault-workspace.html');
+      
+      if (fs.existsSync(reactUIPath)) {
+        return res.sendFile(reactUIPath);
+      } else {
+        console.error('[DIRECT OVERRIDE] ERROR: Vault Workspace React UI not found at', reactUIPath);
+        return res.status(404).send('Vault Workspace React UI not found');
+      }
+    });
+    
+    // Register static routes for key solution pages (lower priority than direct routes)
     setupStaticRoutes(app);
     
     // Configure core middleware
