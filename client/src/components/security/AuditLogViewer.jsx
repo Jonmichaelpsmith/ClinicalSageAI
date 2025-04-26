@@ -60,20 +60,72 @@ const AuditLogViewer = () => {
     dateRange: 'all'
   });
   
-  // Simulate loading audit log data
+  // Fetch audit logs from API
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const auditLogs = generateSampleAuditLogs();
-      setLogs(auditLogs);
-      setFilteredLogs(auditLogs);
-      setIsLoading(false);
-    }, 1000);
+    const fetchAuditLogs = async () => {
+      try {
+        const queryParams = new URLSearchParams();
+        queryParams.append('page', 1);
+        queryParams.append('limit', 50);
+        
+        if (filters.eventType.length > 0) {
+          queryParams.append('eventType', filters.eventType.join(','));
+        }
+        
+        if (filters.user.length > 0) {
+          queryParams.append('user', filters.user.join(','));
+        }
+        
+        if (filters.dateRange !== 'all') {
+          let fromDate;
+          const now = new Date();
+          
+          switch (filters.dateRange) {
+            case 'today':
+              fromDate = new Date(now.setHours(0, 0, 0, 0));
+              break;
+            case 'week':
+              fromDate = new Date(now.setDate(now.getDate() - 7));
+              break;
+            case 'month':
+              fromDate = new Date(now.setMonth(now.getMonth() - 1));
+              break;
+            default:
+              fromDate = null;
+          }
+          
+          if (fromDate) {
+            queryParams.append('fromDate', fromDate.toISOString());
+          }
+        }
+        
+        if (searchQuery.trim() !== '') {
+          queryParams.append('search', searchQuery);
+        }
+        
+        const response = await fetch(`/api/fda-compliance/audit-logs?${queryParams.toString()}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          setLogs(data.logs);
+          setFilteredLogs(data.logs);
+        } else {
+          console.error('Failed to fetch audit logs');
+        }
+      } catch (error) {
+        console.error('Error fetching audit logs:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    return () => clearTimeout(timer);
-  }, []);
+    fetchAuditLogs();
+  }, [filters, searchQuery]);
   
-  // Apply filters and search query to logs
+  // Apply client-side filtering if needed (for quick filtering without API calls)
   useEffect(() => {
+    // If we're using client-side filtering, uncomment this code
+    /*
     let results = [...logs];
     
     // Filter by event type
@@ -123,72 +175,8 @@ const AuditLogViewer = () => {
     }
     
     setFilteredLogs(results);
-  }, [logs, filters, searchQuery]);
-
-  // Generate sample audit log data
-  const generateSampleAuditLogs = () => {
-    const eventTypes = ['Document Access', 'Electronic Signature', 'System Login', 'Record Creation', 'Record Update', 'Record Deletion', 'System Validation', 'Security Event'];
-    const users = ['john.smith', 'jane.doe', 'robert.johnson', 'sarah.williams', 'david.miller', 'system'];
-    const resourcePrefixes = ['doc-', 'form-', 'sig-', 'user-', 'sys-', 'rec-'];
-    
-    const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
-    
-    // Generate random timestamp within the past 30 days
-    const getRandomTimestamp = () => {
-      const now = new Date();
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      return new Date(thirtyDaysAgo.getTime() + Math.random() * (now.getTime() - thirtyDaysAgo.getTime())).toISOString();
-    };
-    
-    const getDescription = (eventType, resourceId, user) => {
-      switch (eventType) {
-        case 'Document Access':
-          return `User ${user} accessed document ${resourceId}`;
-        case 'Electronic Signature':
-          return `User ${user} applied electronic signature to ${resourceId}`;
-        case 'System Login':
-          return `User ${user} logged in to the system`;
-        case 'Record Creation':
-          return `User ${user} created record ${resourceId}`;
-        case 'Record Update':
-          return `User ${user} updated record ${resourceId}`;
-        case 'Record Deletion':
-          return `User ${user} deleted record ${resourceId}`;
-        case 'System Validation':
-          return `System validation executed for ${resourceId}`;
-        case 'Security Event':
-          return `Security event detected: ${resourceId}`;
-        default:
-          return `Event occurred involving ${resourceId}`;
-      }
-    };
-    
-    // Generate 50 sample logs
-    return Array.from({ length: 50 }, (_, i) => {
-      const eventType = getRandomElement(eventTypes);
-      const user = eventType === 'System Validation' ? 'system' : getRandomElement(users);
-      const resourcePrefix = getRandomElement(resourcePrefixes);
-      const resourceId = `${resourcePrefix}${100000 + i}`;
-      
-      return {
-        id: `log-${i + 1}`,
-        timestamp: getRandomTimestamp(),
-        eventType,
-        user,
-        resourceId,
-        description: getDescription(eventType, resourceId, user),
-        blockchainVerified: Math.random() > 0.1, // 90% of logs are blockchain verified
-        details: {
-          ipAddress: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-          actionResult: Math.random() > 0.05 ? 'Success' : 'Failure',
-          accessRights: 'Read/Write',
-          sessionId: `sess-${Math.floor(Math.random() * 1000000)}`,
-          hashValue: Math.random() > 0.1 ? `0x${Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('')}` : null
-        }
-      };
-    }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort by timestamp, newest first
-  };
+    */
+  }, [logs]);
   
   // Get unique event types and users for filter options
   const getEventTypes = () => [...new Set(logs.map(log => log.eventType))];
