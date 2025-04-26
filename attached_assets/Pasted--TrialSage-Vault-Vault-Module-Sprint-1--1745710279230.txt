@@ -1,0 +1,128 @@
+// ===============================================
+// TrialSage Vault™ – Vault Module (Sprint‑1)
+//  • Secure document upload & listing per Study
+//  • Supabase Storage for binary files, Postgres for metadata
+// ===============================================
+
+/* ---------- SQL migration: migrations/002_documents.sql ---------- */
+CREATE TABLE documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  study_id UUID REFERENCES studies(id) ON DELETE CASCADE,
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+  filename TEXT NOT NULL,
+  mime_type TEXT NOT NULL,
+  file_size BIGINT,
+  storage_path TEXT NOT NULL,   -- path/key in Supabase Storage
+  uploaded_by UUID REFERENCES users(id),
+  uploaded_at TIMESTAMPTZ DEFAULT now()
+);
+
+/* ---------- src/routes/documents.js ---------- */
+import { Router } from 'express';
+import multer from 'multer';
+import { supabaseSrv } from '../utils/supabaseSrv.js';  // service‑role client
+import db from '../db.js';
+import { requireAuth } from '../middleware/auth.js';
+
+const r = Router();
+const upload = multer({ storage: multer.memoryStorage() });
+
+// GET /api/studies/:studyId/documents
+r.get('/studies/:studyId/documents', requireAuth, async (req, res) => {
+  const { studyId } = req.params;
+  // ensure tenant scope
+  const docs = await db('documents')
+    .where({ study_id: studyId, organization_id: req.user.orgId })
+    .select('*');
+  res.json(docs);
+});
+
+// POST /api/studies/:studyId/documents  (multipart/form‑data file)
+r.post('/studies/:studyId/documents', requireAuth, upload.single('file'), async (req, res) => {
+  const { studyId } = req.params;
+  const file = req.file;
+  if (!file) return res.status(400).json({ message: 'No file' });
+  const key = `${studyId}/${Date.now()}_${file.originalname}`;
+  // upload to Supabase Storage bucket "vault-files"
+  const { error: upErr } = await supabaseSrv.storage.from('vault-files').upload(key, file.buffer, {
+    contentType: file.mimetype,
+    upsert: false
+  });
+  if (upErr) return res.status(500).json({ message: 'Upload failed', error: upErr.message });
+  const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/vault-files/${key}`;
+  const [doc] = await db('documents').insert({
+    study_id: studyId,
+    organization_id: req.user.orgId,
+    filename: file.originalname,
+    mime_type: file.mimetype,
+    file_size: file.size,
+    storage_path: key,
+    uploaded_by: req.user.id
+  }).returning('*');
+  res.status(201).json(doc);
+});
+
+export default r;
+
+/* ---------- src/utils/supabaseSrv.js ---------- */
+import { createClient } from '@supabase/supabase-js';
+export const supabaseSrv = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+/* ---------- Mount route in src/app.js ---------- */
+import docsRouter from './routes/documents.js';
+app.use('/api', docsRouter);
+
+/* ---------- FRONTEND – update VaultView.tsx ---------- */
+import { useContext, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { DetailsList, IColumn } from '@fluentui/react';
+import { Button } from '@fluentui/react-components';
+
+export default function VaultView() {
+  const { studyId } = useParams();
+  const { token } = useContext(AuthContext)!;
+  const [docs, setDocs] = useState<any[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+
+  const loadDocs = async () => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/studies/${studyId}/documents`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setDocs(await res.json());
+  };
+  useEffect(() => { loadDocs(); }, []);
+
+  const handleUpload = async () => {
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/studies/${studyId}/documents`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd
+    });
+    if (res.ok) { setFile(null); loadDocs(); }
+  };
+
+  const cols: IColumn[] = [
+    { key: 'name', name: 'Name', fieldName: 'filename', minWidth: 200 },
+    { key: 'type', name: 'Type', fieldName: 'mime_type', minWidth: 100 },
+    { key: 'size', name: 'Size (KB)', onRender: (i) => (i.file_size/1024).toFixed(1) }
+  ];
+
+  return (
+    <div style={{ padding: 24 }}>
+      <h2>Vault – Study {studyId}</h2>
+      <input type="file" onChange={e => setFile(e.target.files?.[0] ?? null)} />
+      <Button appearance="primary" onClick={handleUpload} disabled={!file} style={{ marginLeft: 8 }}>Upload</Button>
+      <DetailsList items={docs} columns={cols} style={{ marginTop: 24 }} />
+    </div>
+  );
+}
+
+// ===============================================
+// END Vault Module Sprint‑1
