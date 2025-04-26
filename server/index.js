@@ -21,6 +21,9 @@ import referenceModelRoutes from './routes/reference-model.js';
 import esgRoutes from './routes/esgSubmission.js';
 import analyticsRoutes from './routes/analytics.js';
 import esignRoutes from './routes/esign.js';
+import cmcBlueprintRoutes from './routes/cmc-blueprint.js';
+import enhancedInspectionRoutes from './routes/enhanced-inspection.js';
+import documentVersionRoutes from './routes/document-versions.js';
 
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
@@ -59,6 +62,9 @@ app.use('/api/reference-model', verifyJwt, referenceModelRoutes);
 app.use('/api/esg', verifyJwt, esgRoutes);
 app.use('/api/analytics', verifyJwt, analyticsRoutes);
 app.use('/api/esign', verifyJwt, esignRoutes);
+app.use('/api/cmc', verifyJwt, cmcBlueprintRoutes);
+app.use('/api/inspection/v2', enhancedInspectionRoutes);
+app.use('/api/versions', verifyJwt, documentVersionRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -126,6 +132,16 @@ io.on('connection', (socket) => {
   socket.on('leave-submission', (submissionId) => {
     socket.leave(`submission-${submissionId}`);
     console.log(`Client ${socket.id} left submission ${submissionId}`);
+  });
+  
+  socket.on('join-blueprint', (blueprintId) => {
+    socket.join(`blueprint-${blueprintId}`);
+    console.log(`Client ${socket.id} joined blueprint ${blueprintId}`);
+  });
+  
+  socket.on('leave-blueprint', (blueprintId) => {
+    socket.leave(`blueprint-${blueprintId}`);
+    console.log(`Client ${socket.id} left blueprint ${blueprintId}`);
   });
   
   socket.on('disconnect', () => {

@@ -3,6 +3,7 @@ import { Route, Switch, Link, useLocation } from 'wouter';
 import VaultMarketingPage from './pages/VaultMarketingPage.jsx';
 import VaultUploadTest from './pages/VaultUploadTest.jsx';
 import ClientPortalDashboard from './pages/ClientPortalDashboard.jsx';
+import CMCRoutes from './pages/CMCBlueprintPage.jsx';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("authenticated") === "true");
@@ -28,6 +29,7 @@ export default function App() {
               {isLoggedIn ? (
                 <>
                   <Link href="/client-portal" className="hover:text-gray-300">Client Portal</Link>
+                  <Link href="/cmc" className="hover:text-gray-300">CMC Blueprint</Link>
                   <button 
                     className="hover:text-gray-300"
                     onClick={() => {
@@ -51,6 +53,12 @@ export default function App() {
         <Route path="/" component={VaultMarketingPage} />
         <Route path="/vault-test" component={VaultUploadTest} />
         <Route path="/client-portal" component={ClientPortalDashboard} />
+        <Route path="/cmc">
+          <CMCRoutes />
+        </Route>
+        <Route path="/cmc/blueprints/:id">
+          <CMCRoutes />
+        </Route>
       </Switch>
     </>
   );
