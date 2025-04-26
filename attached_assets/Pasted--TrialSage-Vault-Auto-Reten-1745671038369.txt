@@ -1,0 +1,130 @@
+// ───────────────────────────────────────────────────────────────
+// TrialSage Vault™ – Auto‑Retention Scheduler
+// Purpose: enforce retention policies (e.g., Archive after X years, Delete after Y).
+// Implementation: per‑tenant retention rules + daily cron in Node.
+// ───────────────────────────────────────────────────────────────
+// 📂 server/routes/retention.js – CRUD for retention policies
+//----------------------------------------------------------------
+import { Router } from 'express';
+import { supabase } from '../lib/supabaseClient.js';
+import { verifyJwt } from '../middleware/auth.js';
+
+const router = Router();
+
+// GET /api/retention – list rules for tenant
+router.get('/', verifyJwt, async (req, res) => {
+  const { tenantId } = req.user;
+  const { data, error } = await supabase.from('retention_rules').select('*').eq('tenant_id', tenantId);
+  if (error) return res.status(500).json({ message: error.message });
+  res.json(data);
+});
+
+// POST /api/retention – create/update rule {docType, archiveAfterMonths, deleteAfterMonths}
+router.post('/', verifyJwt, async (req, res) => {
+  const { tenantId } = req.user;
+  const { docType, archiveAfterMonths, deleteAfterMonths } = req.body;
+  // upsert
+  const { error } = await supabase.from('retention_rules').upsert({ tenant_id: tenantId, doc_type: docType, archive_after: archiveAfterMonths, delete_after: deleteAfterMonths }, { onConflict: 'tenant_id,doc_type' });
+  if (error) return res.status(400).json({ message: error.message });
+  res.json({ ok: true });
+});
+
+export default router;
+
+//----------------------------------------------------------------
+// 📂 server/jobs/retentionCron.js – daily job (uses node‑cron)
+//----------------------------------------------------------------
+import cron from 'node-cron';
+import { supabase } from '../lib/supabaseClient.js';
+
+cron.schedule('0 3 * * *', async () => { // run daily at 03:00 UTC
+  console.log('[Retention] nightly job');
+  // 1️⃣ fetch all rules
+  const { data: rules } = await supabase.from('retention_rules').select('*');
+  const now = new Date();
+  for (const rule of rules) {
+    const { tenant_id, doc_type, archive_after, delete_after } = rule;
+    // build time thresholds
+    const archiveBefore = new Date(now); archiveBefore.setMonth(archiveBefore.getMonth() - archive_after);
+    const deleteBefore = new Date(now); deleteBefore.setMonth(deleteBefore.getMonth() - delete_after);
+
+    // 2️⃣ archive eligible
+    if (archive_after) {
+      await supabase.from('documents').update({ status: 'Archived' })
+        .eq('tenant_id', tenant_id)
+        .eq('doc_type', doc_type)
+        .eq('status', 'Effective')
+        .lte('inserted_at', archiveBefore.toISOString());
+    }
+    // 3️⃣ delete eligible
+    if (delete_after) {
+      // fetch ids to delete storage too
+      const { data: delDocs } = await supabase.from('documents')
+        .select('id, path')
+        .eq('tenant_id', tenant_id)
+        .eq('doc_type', doc_type)
+        .eq('status', 'Archived')
+        .lte('inserted_at', deleteBefore.toISOString());
+      for (const d of delDocs) {
+        await supabase.storage.from('vault-files').remove([d.path]);
+      }
+      await supabase.from('documents').delete().in('id', delDocs.map(d=>d.id));
+    }
+  }
+  console.log('[Retention] job completed');
+});
+
+//----------------------------------------------------------------
+// 📂 client/pages/RetentionSettings.jsx – admin UI
+//----------------------------------------------------------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+export default function RetentionSettings() {
+  const [rules, setRules] = useState([]);
+  const [form, setForm] = useState({ docType:'CSR', archiveAfterMonths:36, deleteAfterMonths:120 });
+  useEffect(()=>{ load(); },[]);
+  const load = async()=>{ const { data } = await axios.get('/api/retention'); setRules(data); };
+  const save = async()=>{ await axios.post('/api/retention', form); load(); };
+  return (
+    <div className="p-8 space-y-6">
+      <h1 className="text-2xl font-bold">Retention Policies</h1>
+      <div className="grid grid-cols-3 gap-2 max-w-xl items-center">
+        <Input placeholder="Document Type" value={form.docType} onChange={e=>setForm({...form,docType:e.target.value})} />
+        <Input placeholder="Archive after (months)" type="number" value={form.archiveAfterMonths} onChange={e=>setForm({...form,archiveAfterMonths:+e.target.value})} />
+        <Input placeholder="Delete after (months)" type="number" value={form.deleteAfterMonths} onChange={e=>setForm({...form,deleteAfterMonths:+e.target.value})} />
+      </div>
+      <Button onClick={save}>Save / Update Rule</Button>
+      <h2 className="text-xl font-semibold mt-6">Current Rules</h2>
+      <ul className="list-disc ml-5 text-sm">
+        {rules.map(r=> (
+          <li key={r.doc_type}>{r.doc_type}: archive {r.archive_after} mo, delete {r.delete_after} mo</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+//----------------------------------------------------------------
+// 📂 Supabase table
+//----------------------------------------------------------------
+-- retention_rules
+create table retention_rules (
+  tenant_id uuid not null,
+  doc_type text not null,
+  archive_after integer, -- months
+  delete_after integer, -- months
+  primary key (tenant_id, doc_type)
+);
+
+//----------------------------------------------------------------
+// 🔗 Integration steps
+//----------------------------------------------------------------
+// 1. Add to server/index.js:
+//     import retentionRoutes from './routes/retention.js';
+//     import './jobs/retentionCron.js'; // starts cron
+//     app.use('/api/retention', verifyJwt, retentionRoutes);
+// 2. Add <RetentionSettings/> page to Admin/QA user menu.
+// ───────────────────────────────────────────────────────────────
