@@ -1,0 +1,85 @@
+// --- TrialSage DocuShare Auto-Tagging + AI Summarization on Upload ---
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { useDropzone } from 'react-dropzone';
+import { uploadDocumentWithAI, listDocuments, downloadDocument, lockDocument, unlockDocument, deleteDocument, createFolder, moveDocument } from '@/services/DocuShareService';
+import InlineViewer from '@/components/InlineViewer';
+import { useUserSession } from '@/hooks/useUserSession';
+
+export default function AITaggingDocuShare() {
+  const { user } = useUserSession();
+  const [documents, setDocuments] = useState([]);
+  const [filterName, setFilterName] = useState('');
+  const [selectedDoc, setSelectedDoc] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchDocuments();
+    }
+  }, [user]);
+
+  const fetchDocuments = async () => {
+    const res = await listDocuments(user.tenantId);
+    setDocuments(res);
+  };
+
+  const onDrop = async (acceptedFiles) => {
+    const file = acceptedFiles[0];
+    await uploadDocumentWithAI(file, user.tenantId);
+    fetchDocuments();
+  };
+
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
+  const filteredDocs = documents.filter((doc) =>
+    filterName ? doc.name.toLowerCase().includes(filterName.toLowerCase()) : true
+  );
+
+  const handleDownload = async (id) => await downloadDocument(id, user.tenantId);
+  const handleLock = async (id) => { await lockDocument(id, user.tenantId); fetchDocuments(); };
+  const handleUnlock = async (id) => { await unlockDocument(id, user.tenantId); fetchDocuments(); };
+  const handleDelete = async (id) => { if (confirm('Delete?')) { await deleteDocument(id, user.tenantId); fetchDocuments(); }};
+
+  return (
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <h1 className="text-4xl font-bold mb-8">DocuShare - AI Auto-Tagging & Summarization</h1>
+
+      <div className="flex flex-wrap gap-4 mb-6">
+        <Input placeholder="Search documents..." value={filterName} onChange={(e) => setFilterName(e.target.value)} />
+        <Button onClick={fetchDocuments}>Refresh</Button>
+      </div>
+
+      <div {...getRootProps()} className="border-2 border-dashed p-6 bg-white rounded-xl hover:bg-blue-50 cursor-pointer mb-8">
+        <input {...getInputProps()} />
+        <p className="text-blue-700">Drop a file here or click to upload with AI tagging</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredDocs.map((doc) => (
+          <Card key={doc._id} className="shadow-md p-4">
+            <CardContent>
+              <div className="flex flex-col gap-2">
+                <p className="font-bold truncate">{doc.name}</p>
+                <p className="text-xs">Summary: {doc.aiSummary || 'No summary yet'}</p>
+                <p className="text-xs">Auto-Tags: {doc.aiTags?.join(', ') || 'No tags'}</p>
+                <Button size="sm" onClick={() => setSelectedDoc(doc)}>Preview</Button>
+                <Button size="sm" onClick={() => handleDownload(doc._id)}>Download</Button>
+                <Button size="sm" variant="destructive" onClick={() => handleDelete(doc._id)}>Delete</Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Dialog open={!!selectedDoc} onOpenChange={() => setSelectedDoc(null)}>
+        <DialogContent>
+          {selectedDoc && <InlineViewer fileUrl={selectedDoc.fileUrl} />}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

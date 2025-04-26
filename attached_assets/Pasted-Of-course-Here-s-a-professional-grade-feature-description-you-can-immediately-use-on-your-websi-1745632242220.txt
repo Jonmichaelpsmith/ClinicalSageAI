@@ -1,0 +1,69 @@
+Of course. Here’s a professional-grade **feature description** you can immediately use on your website or client communications — summarizing **everything we just added in the last hour**:
+
+---
+
+# 🌟 **New TrialSage Platform Enhancements (Enterprise DocuShare Expansion)**
+
+## 📁 Unified DocuShare Document Management Center
+TrialSage now includes a fully integrated **DocuShare Client Portal**, empowering users to:
+- **Upload, organize, and manage** critical regulatory documents securely
+- **Drag-and-drop uploads** into any folder or trial-specific workspace
+- **Inline preview** of uploaded PDF and Word documents without downloads
+- **Lock and unlock documents** to maintain GxP compliance and edit control
+- **Version control** with history viewing and ability to **revert to any prior version**
+
+---
+
+## 🗂️ Full Folder System Management
+Users can now:
+- **Create, rename, and delete folders**
+- **Move documents** between folders seamlessly
+- **Navigate smart folder hierarchies** mapped to trials, phases, and regulatory modules
+- **Filter documents and folders** quickly with live search
+
+---
+
+## 🧠 AI-Enhanced Upload Intelligence
+Upon upload, TrialSage now automatically:
+- **Generates a clinical-grade summary** of the document using GPT-4 Turbo
+- **Extracts and applies smart tags** (e.g., Trial ID, Molecule Name, Study Phase)
+- **Organizes documents** into smart folders based on trial metadata and AI tags
+
+---
+
+## 🔍 Smart Folder and Document Search
+New capabilities allow users to:
+- **Search by document name, AI-generated tags, molecule, phase, or trial ID**
+- **Instantly locate regulatory documents** across hundreds of submissions
+- **Filter dynamically** across folders or smart collections
+
+---
+
+## 🛡️ Enterprise-Grade Security and Compliance
+Every DocuShare action now benefits from:
+- **Full multi-tenant data isolation**
+- **Audit logging** (upload, edit, delete, lock/unlock, version restore)
+- **Permissioned document control** (future-ready for role-based access)
+- **AES-256 encryption at rest and TLS 1.3 encryption in transit**
+
+---
+
+## 📜 Advanced Audit Trail + Admin Control
+- **Full audit trail dashboard** tracking all document activities
+- **Bulk log export** and smart filtering (by tenant, user, action type)
+- **Real-time anomaly detection** highlighting suspicious document behavior
+
+---
+
+# 🎯 **Summary Value Proposition**
+TrialSage now provides **the most powerful, intelligent, and compliant Clinical Document Management System (cDMS)** specifically designed for emerging biotechs and clinical innovators — integrating AI, regulatory precision, and intuitive user experience.
+
+---
+
+# 📣 Suggested Website Headline:
+> "**Introducing TrialSage DocuShare™ — Intelligent Clinical Document Management, Now Powered by AI and Enterprise Compliance.**"
+
+---
+
+Would you also like a second, shorter **marketing version** (one for a homepage card / teaser)?  
+I can deliver that in 30 seconds if you want! 🚀
