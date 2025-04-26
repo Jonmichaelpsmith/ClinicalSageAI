@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IND Wizard™ by TrialSage | Enterprise Regulatory Automation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <style>
+        :root {
+            --primary: #FF1493; /* Hot Pink */
+            --primary-light: #FFB6C1;
+            --primary-dark: #C71585;
+            --text-dark: #1A202C;
+            --text-light: #FFFFFF;
+            --bg-light: #FFFFFF;
+            --bg-gradient: linear-gradient(to bottom, #FFFFFF 80%, #FFE6F2 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+        }
+
+        .primary-btn {
+            background-color: var(--primary);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .secondary-btn {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .secondary-btn:hover {
+            background-color: var(--primary-light);
+            color: var(--text-dark);
+        }
+
+        .feature-card {
+            border-top: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .testimonial-card {
+            border-left: 4px solid var(--primary);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 20, 147, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 20, 147, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 20, 147, 0);
+            }
+        }
+
+        /* Custom timeline styling */
+        .timeline-container {
+            position: relative;
+        }
+
+        .timeline-container::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--primary-light);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            width: 50%;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: var(--primary);
+            border: 4px solid var(--primary);
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .timeline-item-left {
+            left: 0;
+            padding-right: 40px;
+        }
+
+        .timeline-item-right {
+            left: 50%;
+            padding-left: 40px;
+        }
+
+        .timeline-item-right::after {
+            left: -10px;
+        }
+
+        /* Matrix display */
+        .matrix-cell {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .matrix-cell:hover {
+            background-color: rgba(255, 20, 147, 0.1);
+        }
+
+        /* Stats counter */
+        .stat-counter {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 sticky top-0 z-50">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="landing-assets/logo.png" alt="TrialSage Logo" class="h-10 mr-3">
+                <h1 class="text-2xl font-bold text-gray-900">TrialSage<span class="text-pink-600">™</span></h1>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#features" class="text-gray-700 hover:text-pink-600 transition">Features</a>
+                <a href="#benefits" class="text-gray-700 hover:text-pink-600 transition">Benefits</a>
+                <a href="#case-studies" class="text-gray-700 hover:text-pink-600 transition">Case Studies</a>
+                <a href="#pricing" class="text-gray-700 hover:text-pink-600 transition">Pricing</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <a href="/auth" class="text-gray-700 hover:text-pink-600 transition">Login</a>
+                <a href="#request-demo" class="primary-btn px-4 py-2 rounded-md font-medium">Request Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient py-20">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">Revolutionize Your IND Submissions with <span class="text-pink-600">IND Wizard™</span></h1>
+                    <p class="text-xl mb-8">The enterprise-grade platform that transforms regulatory submissions from months to weeks with AI-powered intelligence, CFR Part 11 compliance, and direct FDA ESG Gateway integration.</p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="#request-demo" class="primary-btn px-6 py-3 rounded-lg text-center font-semibold">Schedule Demo</a>
+                        <a href="#how-it-works" class="secondary-btn px-6 py-3 rounded-lg text-center font-semibold">How It Works</a>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <div class="relative">
+                        <img src="landing-assets/hero-dashboard.png" alt="IND Wizard Dashboard" class="rounded-lg shadow-2xl">
+                        <div class="absolute -top-4 -right-4 bg-pink-600 text-white py-2 px-4 rounded-full animate-pulse">
+                            NEW: Analytics Dashboard
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Counters -->
+    <section class="bg-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                <div>
+                    <div class="stat-counter">75%</div>
+                    <p class="text-gray-600">Reduction in Submission Time</p>
+                </div>
+                <div>
+                    <div class="stat-counter">99.8%</div>
+                    <p class="text-gray-600">FDA Acceptance Rate</p>
+                </div>
+                <div>
+                    <div class="stat-counter">85%</div>
+                    <p class="text-gray-600">Content Auto-Population</p>
+                </div>
+                <div>
+                    <div class="stat-counter">100%</div>
+                    <p class="text-gray-600">CFR Part 11 Compliance</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-16">Enterprise-Grade Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-pink-600 text-4xl mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Data-First Architecture</h3>
+                    <p class="text-gray-600 mb-4">Block-based content storage with event-driven architecture ensures data integrity and enables real-time collaboration.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            TipTap Markdown for rich content
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Granular section tracking
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Auto-save and version history
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-pink-600 text-4xl mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">CFR Part 11 e-Signature</h3>
+                    <p class="text-gray-600 mb-4">Comprehensive electronic signature system with dual-authentication, SHA-256 hashing, and immutable ledger for audit trails.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Dual-auth workflow
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Tamper-evident hash chain
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Complete audit history
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-pink-600 text-4xl mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Advanced Analytics</h3>
+                    <p class="text-gray-600 mb-4">Comprehensive analytics dashboard with KPIs, metrics, and visualizations for submissions, users, regulatory performance and more.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Real-time submission metrics
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            User productivity tracking
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            FDA submission performance
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-pink-600 text-4xl mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">FDA ESG Gateway</h3>
+                    <p class="text-gray-600 mb-4">Direct submission to FDA Electronic Submissions Gateway with automated package generation and acknowledgment tracking.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            SFTP/AS2 protocol support
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            ACK1/ACK2/ACK3 polling
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Real-time status tracking
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-pink-600 text-4xl mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">AI Data Harvester</h3>
+                    <p class="text-gray-600 mb-4">Rules-based automation engine that extracts and populates IND sections from protocols, CSRs, and source documents.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Intelligent document parsing
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Customizable extraction rules
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Auto-formatting to ICH standards
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-pink-600 text-4xl mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Enterprise Collaboration</h3>
+                    <p class="text-gray-600 mb-4">Multi-author workflows with inline comments, branch-merge capabilities, and diff engine for tracking changes.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Real-time co-authoring
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Role-based permissions
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Change tracking & approvals
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works with Timeline -->
+    <section id="how-it-works" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-4">How IND Wizard™ Works</h2>
+            <p class="text-center text-gray-600 mb-16 max-w-3xl mx-auto">Our revolutionary platform streamlines the entire IND submission process from initial data collection to final FDA submission with unprecedented efficiency.</p>
+            
+            <div class="timeline-container py-10">
+                <!-- Timeline Items -->
+                <div class="timeline-item timeline-item-left mb-20">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-pink-600 mb-2">1. Data Ingestion</h3>
+                        <p class="mb-4">Import source documents such as protocols, CSRs, and CMC data. The AI Harvester automatically extracts relevant information to pre-populate your IND sections.</p>
+                        <div class="bg-gray-100 p-4 rounded-lg text-sm">
+                            <strong>Example:</strong> When uploading a clinical protocol PDF, the system automatically extracts study design, endpoints, inclusion/exclusion criteria, and dosing regimens, mapping them to the appropriate IND sections.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item timeline-item-right mb-20">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-pink-600 mb-2">2. Collaborative Authoring</h3>
+                        <p class="mb-4">Multiple regulatory writers can work simultaneously on different sections. The system tracks changes, allows for inline comments, and manages version control automatically.</p>
+                        <div class="bg-gray-100 p-4 rounded-lg text-sm">
+                            <strong>Example:</strong> Your CMC team works on Module 3 while your clinical team completes Module 2, with medical, regulatory, and QA reviewers providing real-time feedback using in-line comments.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item timeline-item-left mb-20">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-pink-600 mb-2">3. Review & e-Signatures</h3>
+                        <p class="mb-4">Our CFR Part 11 compliant e-signature system enables reviewers and signers to review, approve, and sign submission sections with dual-authentication and a complete audit trail.</p>
+                        <div class="bg-gray-100 p-4 rounded-lg text-sm">
+                            <strong>Example:</strong> Medical Director receives notification of sections ready for review, reviews content in the system, and applies their electronic signature, which is captured with a SHA-256 hash and stored in the immutable ledger.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item timeline-item-right mb-20">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-pink-600 mb-2">4. PDF Generation & Validation</h3>
+                        <p class="mb-4">High-fidelity PDF generation with automatic pagination, table of contents, cross-references, and bookmarks. Built-in validators ensure compliance with FDA requirements.</p>
+                        <div class="bg-gray-100 p-4 rounded-lg text-sm">
+                            <strong>Example:</strong> With one click, the system compiles the entire IND into a fully formatted PDF with proper pagination, headers/footers, and hyperlinked cross-references, then runs compliance checks before submission.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item timeline-item-left">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-pink-600 mb-2">5. FDA Submission & Tracking</h3>
+                        <p class="mb-4">Direct submission to FDA ESG with package creation, automated acknowledgment tracking, and real-time status updates for all team members.</p>
+                        <div class="bg-gray-100 p-4 rounded-lg text-sm">
+                            <strong>Example:</strong> Regulatory Ops uploads the final package directly to FDA ESG from within IND Wizard. The system then monitors for ACK1/2/3 acknowledgments and sends notifications as they are received.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- UI Features Showcase -->
+    <section class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-4">Microsoft-Grade User Experience</h2>
+            <p class="text-center text-gray-600 mb-16 max-w-3xl mx-auto">Our enterprise UI delivers a familiar, intuitive experience that reduces training time and increases productivity.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 mb-16">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-pink-600">Section Matrix</h3>
+                    <p class="mb-6 text-gray-600">Get a bird's-eye view of your entire submission with our interactive section matrix. Track status, authors, signers, and completion rates for every section.</p>
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="p-4 bg-gray-100 border-b font-medium">Section Status Matrix</div>
+                        <div class="p-4">
+                            <table class="w-full">
+                                <thead class="text-left text-sm">
+                                    <tr>
+                                        <th class="matrix-cell">Section</th>
+                                        <th class="matrix-cell">Author</th>
+                                        <th class="matrix-cell">Reviewer</th>
+                                        <th class="matrix-cell">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm">
+                                    <tr>
+                                        <td class="matrix-cell">2.1 TOC</td>
+                                        <td class="matrix-cell">J. Smith</td>
+                                        <td class="matrix-cell">M. Johnson</td>
+                                        <td class="matrix-cell"><span class="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs">Completed</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="matrix-cell">2.2 Introduction</td>
+                                        <td class="matrix-cell">A. Lee</td>
+                                        <td class="matrix-cell">M. Johnson</td>
+                                        <td class="matrix-cell"><span class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">In Review</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="matrix-cell">2.3 Background</td>
+                                        <td class="matrix-cell">J. Smith</td>
+                                        <td class="matrix-cell">K. Williams</td>
+                                        <td class="matrix-cell"><span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs">In Progress</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="matrix-cell">2.4 Protocol</td>
+                                        <td class="matrix-cell">S. Garcia</td>
+                                        <td class="matrix-cell">—</td>
+                                        <td class="matrix-cell"><span class="px-2 py-1 rounded-full bg-gray-100 text-gray-800 text-xs">Not Started</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-pink-600">Analytics Dashboard</h3>
+                    <p class="mb-6 text-gray-600">Our comprehensive analytics dashboard provides real-time insights into submission progress, user productivity, and regulatory performance.</p>
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="p-4 bg-gray-100 border-b font-medium">Submission Analytics</div>
+                        <div class="p-4 grid grid-cols-2 gap-4">
+                            <!-- KPI Cards -->
+                            <div class="bg-gray-50 p-4 rounded">
+                                <div class="text-sm text-gray-500">Completion</div>
+                                <div class="text-2xl font-bold text-pink-600">68%</div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                    <div class="bg-pink-600 h-2 rounded-full" style="width: 68%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded">
+                                <div class="text-sm text-gray-500">Sections Complete</div>
+                                <div class="text-2xl font-bold text-pink-600">17/25</div>
+                                <div class="text-xs text-gray-500 mt-1">+3 in last week</div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded">
+                                <div class="text-sm text-gray-500">Active Contributors</div>
+                                <div class="text-2xl font-bold text-pink-600">8</div>
+                                <div class="text-xs text-gray-500 mt-1">3 authors, 5 reviewers</div>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded">
+                                <div class="text-sm text-gray-500">Time to Submission</div>
+                                <div class="text-2xl font-bold text-pink-600">12 days</div>
+                                <div class="text-xs text-gray-500 mt-1">Ahead of schedule</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-pink-600">Event Timeline</h3>
+                    <p class="mb-6 text-gray-600">The immutable ledger provides a complete audit history of all actions taken on your submission, ensuring full traceability and compliance.</p>
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="p-4 bg-gray-100 border-b font-medium">Submission Timeline</div>
+                        <div class="p-4">
+                            <ul class="space-y-4">
+                                <li class="border-l-2 border-pink-600 pl-4 pb-4">
+                                    <div class="text-xs text-gray-500">April 26, 2025 - 10:23 AM</div>
+                                    <div class="font-medium">Section 2.5 Signed</div>
+                                    <div class="text-sm text-gray-600">Dr. K. Williams applied e-signature</div>
+                                </li>
+                                <li class="border-l-2 border-pink-600 pl-4 pb-4">
+                                    <div class="text-xs text-gray-500">April 25, 2025 - 3:42 PM</div>
+                                    <div class="font-medium">Protocol Harvested</div>
+                                    <div class="text-sm text-gray-600">15 sections auto-populated from Protocol XYZ-123</div>
+                                </li>
+                                <li class="border-l-2 border-pink-600 pl-4 pb-4">
+                                    <div class="text-xs text-gray-500">April 24, 2025 - 9:15 AM</div>
+                                    <div class="font-medium">Section 3.2 Updated</div>
+                                    <div class="text-sm text-gray-600">S. Garcia modified formulation details</div>
+                                </li>
+                                <li class="border-l-2 border-pink-600 pl-4">
+                                    <div class="text-xs text-gray-500">April 23, 2025 - 2:30 PM</div>
+                                    <div class="font-medium">Project Created</div>
+                                    <div class="text-sm text-gray-600">IND-12345 initiated by J. Smith</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-pink-600">FDA ESG Gateway</h3>
+                    <p class="mb-6 text-gray-600">Monitor submission status and acknowledgments in real-time with our integrated FDA ESG Gateway module.</p>
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="p-4 bg-gray-100 border-b font-medium">ESG Submission Status</div>
+                        <div class="p-4">
+                            <div class="mb-6 flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-pink-600 flex items-center justify-center text-white mr-4 pulse-animation">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="font-medium">ACK3 Received</div>
+                                    <div class="text-sm text-gray-500">April 26, 2025 - 8:15 AM</div>
+                                </div>
+                            </div>
+                            
+                            <table class="w-full text-sm">
+                                <thead class="text-left">
+                                    <tr>
+                                        <th class="pb-2">Acknowledgment</th>
+                                        <th class="pb-2">Status</th>
+                                        <th class="pb-2">Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="py-2">ACK1</td>
+                                        <td class="py-2"><span class="text-green-600">✓ Received</span></td>
+                                        <td class="py-2">Apr 24, 10:32 AM</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2">ACK2</td>
+                                        <td class="py-2"><span class="text-green-600">✓ Received</span></td>
+                                        <td class="py-2">Apr 25, 2:18 PM</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2">ACK3</td>
+                                        <td class="py-2"><span class="text-green-600">✓ Received</span></td>
+                                        <td class="py-2">Apr 26, 8:15 AM</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Case Studies -->
+    <section id="case-studies" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-16">Success Stories</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="bg-white p-8 rounded-lg shadow-lg testimonial-card">
+                    <div class="flex items-start mb-6">
+                        <img src="landing-assets/logo-biopharma.png" alt="BioPharma Inc Logo" class="h-12 mr-4">
+                        <div>
+                            <h3 class="text-xl font-bold">BioPharma Inc.</h3>
+                            <p class="text-gray-600">Oncology IND Submission</p>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <p class="text-gray-700 italic mb-4">"IND Wizard transformed our regulatory submissions process. We reduced our IND preparation time from 6 months to just 7 weeks, with far fewer errors and a streamlined review process."</p>
+                        <p class="text-gray-700">— Dr. Sarah Johnson, Head of Regulatory Affairs</p>
+                    </div>
+                    <div class="border-t pt-4">
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <div class="font-bold text-pink-600">75%</div>
+                                <div class="text-gray-600">Time Reduction</div>
+                            </div>
+                            <div>
+                                <div class="font-bold text-pink-600">90%</div>
+                                <div class="text-gray-600">Fewer QC Findings</div>
+                            </div>
+                            <div>
+                                <div class="font-bold text-pink-600">100%</div>
+                                <div class="text-gray-600">FDA Acceptance</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-8 rounded-lg shadow-lg testimonial-card">
+                    <div class="flex items-start mb-6">
+                        <img src="landing-assets/logo-novathera.png" alt="NovaThera Logo" class="h-12 mr-4">
+                        <div>
+                            <h3 class="text-xl font-bold">NovaThera Therapeutics</h3>
+                            <p class="text-gray-600">Multiple IND Amendments</p>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <p class="text-gray-700 italic mb-4">"The analytics dashboard revolutionized how we track our regulatory submissions. We now have real-time visibility into all pending submissions, can identify bottlenecks immediately, and have improved our regulatory intelligence."</p>
+                        <p class="text-gray-700">— Mark Rodriguez, VP Regulatory Operations</p>
+                    </div>
+                    <div class="border-t pt-4">
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <div class="font-bold text-pink-600">12</div>
+                                <div class="text-gray-600">INDs Managed</div>
+                            </div>
+                            <div>
+                                <div class="font-bold text-pink-600">40%</div>
+                                <div class="text-gray-600">Cost Reduction</div>
+                            </div>
+                            <div>
+                                <div class="font-bold text-pink-600">3x</div>
+                                <div class="text-gray-600">Faster Amendments</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits -->
+    <section id="benefits" class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-16">Why Choose IND Wizard™</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Accelerate Submissions</h3>
+                    <p class="text-gray-600">Reduce submission preparation time by up to 75% with intelligent templates, AI-powered content generation, and streamlined workflows.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Ensure Compliance</h3>
+                    <p class="text-gray-600">Maintain 100% regulatory compliance with built-in 21 CFR Part 11 e-signatures, complete audit trails, and validation checks.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Gain Insights</h3>
+                    <p class="text-gray-600">Drive data-based decisions with comprehensive analytics dashboards that provide real-time visibility into submission progress and regulatory performance.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Enhance Collaboration</h3>
+                    <p class="text-gray-600">Enable seamless teamwork with multi-author workflows, real-time commenting, and role-based permissions for global regulatory teams.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Reduce Costs</h3>
+                    <p class="text-gray-600">Lower regulatory submission costs by up to 60% by minimizing manual work, reducing review cycles, and eliminating outsourcing needs.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Improve Quality</h3>
+                    <p class="text-gray-600">Deliver consistently high-quality submissions with standardized templates, automated validation, and built-in regulatory intelligence.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-4">Flexible Enterprise Pricing</h2>
+            <p class="text-center text-gray-600 mb-16 max-w-3xl mx-auto">Choose the plan that fits your organizational needs with transparent pricing and no hidden fees.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="p-8 bg-gradient-to-r from-pink-500 to-pink-600 text-white">
+                        <h3 class="text-xl font-bold mb-2">Essential</h3>
+                        <div class="text-4xl font-bold">$24,000</div>
+                        <div class="text-sm opacity-80 mb-4">per year</div>
+                        <p class="text-sm opacity-90">Perfect for emerging biotechs with 1-2 INDs per year</p>
+                    </div>
+                    <div class="p-8">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Up to 3 active submissions
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                10 user licenses
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Basic analytics dashboard
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                CFR Part 11 e-signatures
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Standard support (business hours)
+                            </li>
+                        </ul>
+                        <a href="#request-demo" class="mt-8 block text-center primary-btn px-6 py-2 rounded-lg font-semibold">Get Started</a>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden transform scale-105 z-10">
+                    <div class="absolute top-0 right-0 bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">MOST POPULAR</div>
+                    <div class="p-8 bg-gradient-to-r from-pink-600 to-pink-700 text-white">
+                        <h3 class="text-xl font-bold mb-2">Professional</h3>
+                        <div class="text-4xl font-bold">$48,000</div>
+                        <div class="text-sm opacity-80 mb-4">per year</div>
+                        <p class="text-sm opacity-90">Ideal for mid-sized pharma with multiple programs</p>
+                    </div>
+                    <div class="p-8">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Up to 10 active submissions
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                25 user licenses
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Advanced analytics + dashboards
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                FDA ESG Gateway integration
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Premium support (24/5)
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                AI Data Harvester
+                            </li>
+                        </ul>
+                        <a href="#request-demo" class="mt-8 block text-center primary-btn px-6 py-2 rounded-lg font-semibold">Get Started</a>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="p-8 bg-gradient-to-r from-pink-800 to-pink-900 text-white">
+                        <h3 class="text-xl font-bold mb-2">Enterprise</h3>
+                        <div class="text-4xl font-bold">Custom</div>
+                        <div class="text-sm opacity-80 mb-4">contact sales</div>
+                        <p class="text-sm opacity-90">For large organizations with complex needs</p>
+                    </div>
+                    <div class="p-8">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Unlimited submissions
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Unlimited users
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Custom analytics & reporting
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Dedicated account management
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                24/7 premium support
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="h-5 w-5 text-pink-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Custom integrations
+                            </li>
+                        </ul>
+                        <a href="#request-demo" class="mt-8 block text-center secondary-btn px-6 py-2 rounded-lg font-semibold">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Request Demo -->
+    <section id="request-demo" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
+                <div class="flex flex-col md:flex-row">
+                    <div class="md:w-1/2 bg-gradient-to-br from-pink-500 to-pink-700 p-12 text-white">
+                        <h2 class="text-3xl font-bold mb-6">Ready to Transform Your Regulatory Submissions?</h2>
+                        <p class="mb-8">Schedule a personalized demo to see how IND Wizard™ can accelerate your regulatory submissions and ensure compliance.</p>
+                        <div class="space-y-4">
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>Custom demo of your specific use case</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>ROI analysis for your organization</span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>Free implementation consultation</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 p-12">
+                        <h3 class="text-xl font-bold mb-6">Schedule Your Demo</h3>
+                        <form class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Email</label>
+                                <input type="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                                <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input type="tel" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">How many INDs do you submit annually?</label>
+                                <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500">
+                                    <option>1-2 INDs</option>
+                                    <option>3-5 INDs</option>
+                                    <option>6-10 INDs</option>
+                                    <option>More than 10 INDs</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full primary-btn py-3 rounded-lg font-semibold mt-6">Request Demo</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <img src="landing-assets/logo-white.png" alt="TrialSage Logo" class="h-8 mr-3">
+                        <h2 class="text-xl font-bold">TrialSage<span class="text-pink-400">™</span></h2>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-4">Transforming regulatory submissions with AI-powered intelligence and CFR 11 compliance.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.954 4.569c-.885.389-1.83.654-2.825.775 1.014-.611 1.794-1.574 2.163-2.723-.951.555-2.005.959-3.127 1.184-.896-.959-2.173-1.559-3.591-1.559-2.717 0-4.92 2.203-4.92 4.917 0 .39.045.765.127 1.124-4.09-.193-7.715-2.157-10.141-5.126-.427.722-.666 1.561-.666 2.475 0 1.71.87 3.213 2.188 4.096-.807-.026-1.566-.248-2.228-.616v.061c0 2.385 1.693 4.374 3.946 4.827-.413.111-.849.171-1.296.171-.314 0-.615-.03-.916-.086.631 1.953 2.445 3.377 4.604 3.417-1.68 1.319-3.809 2.105-6.102 2.105-.39 0-.779-.023-1.17-.067 2.189 1.394 4.768 2.209 7.557 2.209 9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63.961-.689 1.8-1.56 2.46-2.548l-.047-.02z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667h-3.554v-11.452h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zm-15.11-13.019c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019h-3.564v-11.452h3.564v11.452zm15.106-20.452h-20.45c-.979 0-1.775.806-1.775 1.775v20.45c0 .979.796 1.775 1.775 1.775h20.45c.979 0 1.775-.796 1.775-1.775v-20.45c0-.969-.796-1.775-1.775-1.775z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Products</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-pink-400">IND Wizard™</a></li>
+                        <li><a href="#" class="hover:text-pink-400">CSR Intelligence™</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Vault™ Workspace</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Study Architect™</a></li>
+                        <li><a href="#" class="hover:text-pink-400">AI-CMC Blueprint</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Resources</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-pink-400">Documentation</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Knowledge Base</a></li>
+                        <li><a href="#" class="hover:text-pink-400">API Reference</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Webinars</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Customer Stories</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><a href="#" class="hover:text-pink-400">About Us</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Careers</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Contact</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-pink-400">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2025 TrialSage, Inc. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple scroll animation for demo requests
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
