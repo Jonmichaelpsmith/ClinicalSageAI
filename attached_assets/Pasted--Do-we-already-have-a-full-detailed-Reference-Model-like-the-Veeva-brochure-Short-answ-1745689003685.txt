@@ -1,0 +1,109 @@
+### Do we already have a **full, detailed Reference Model** like the Veeva brochure?  
+**Short answer:** **Not yet.**  
+So far we created basic vault structures (folder system, metadata tags, document lifecycles), but they are **generic**. The Veeva Quality Content Reference Model goes much deeper:
+
+| Veeva model element (white-paper) | Current TrialSage Vault status |
+|----------------------------------|--------------------------------|
+| 4 master **Document Types** – *Governance & Procedures, Operations, Forms, Executed Records* (p. 5)  | We only use a simple `doc_type` free-text tag |
+| 20+ **sub-types** (e.g. SOP, Protocol, Certificate, Master Batch Record) with pick-lists (pp. 6-7)  | Not yet modelled; users type their own labels |
+| **Document hierarchy pyramid** (Governance → Operations → Forms → Records) (p. 4)  | We have folders, but no enforced hierarchy |
+| Three standard **lifecycles** (Draft→Effective, Draft→Approved, Initial→Final) (p. 9)  | We implemented Draft→Review→Approved→Effective for SOPs only |
+| Pre-seeded **metadata & pick-lists** (GxP domain, Business Unit, Periodic review frequency, Training required, etc.) (pp. 2-3)  | Not yet; we store only tags & status |
+| Reference **retention rules** and **training triggers** | We added a retention scheduler and SOP training, but rules aren’t tied to an exhaustive Doc-Type library |
+
+---
+
+## How to implement a **full Reference Model** in TrialSage Vault
+
+Below is a concrete plan that slots straight into the Supabase schema & React UI you already have.
+
+| Step | What to add | Implementation details |
+|------|-------------|------------------------|
+| **1. Master tables** | `document_types`, `document_subtypes`, `lifecycles` | Seed with the exact taxonomy from the white-paper. Each record carries default lifecycle, training flag, periodic review months, retention defaults. |
+| **2. Enforced hierarchy** | `folder_templates` table holding the pyramid structure | On project creation, generate folders “Governance”, “Operations”, “Forms”, “Executed Records” automatically. UI limits moving a Protocol into “Executed Records”. |
+| **3. Controlled pick-lists** | Replace free-text `doc_type` with FK to `document_subtypes.id` | In upload dialog the user chooses from a drop-down; sub-list auto-filters by Business Unit (Clinical, QA, CMC, etc.). |
+| **4. Lifecycle auto-assign** | On upload: look up subtype → assign default lifecycle (`Draft-Effective`, etc.). | Re-use existing lifecycle engine; just map subtype → workflow. |
+| **5. Training & periodic review** | When document reaches Effective, if subtype.requires_training = true ➜ generate SOP training tasks (already built). | Use the months in subtype.review_interval to auto-schedule “Periodic review due” tasks. |
+| **6. Retention presets** | When a subtype has `archive_after`/`delete_after`, insert a rule into `retention_rules` automatically. | Leverages the auto-retention cron we just added. |
+| **7. Migration utility** | Script that scans existing docs, asks admin to map legacy `doc_type` strings → new subtype IDs, and re-files them into the correct top-level folder. | One-off Node script, writes an audit log. |
+| **8. Admin UI** | `ReferenceModelManager.jsx` page: add/edit sub-types, attach icons, set defaults. | Only visible to Vault Admins. |
+
+### Example seed SQL (excerpt)
+
+```sql
+insert into lifecycles(id,name,start_state,steady_state) values
+('draft_eff','Draft→Effective','Draft','Effective'),
+('draft_appr','Draft→Approved','Draft','Approved'),
+('init_final','Initial→Final','Initial','Final');
+
+insert into document_types(id,name,description) values
+('gov','Governance & Procedures','Policies, SOPs, WI'),
+('ops','Operations','Protocols, Specs, MBR'),
+('forms','Forms','Master/Fillable/Executed'),
+('records','Executed Records','Completed evidence');
+
+insert into document_subtypes(id,type_id,name,lifecycle_id,requires_training,review_interval,archive_after,delete_after)
+values
+('sop','gov','Standard Operating Procedure','draft_eff',true,24,60,120),
+('protocol','ops','Certificate Method Protocol','draft_appr',false,null,36,120),
+('mbr','ops','Master Batch Record','draft_appr',false,12,36,120),
+('executed_mbr','records','Executed Batch Record','init_final',false,null,120,180);
+```
+
+*(expand to full list from pp. 6-8) *
+
+---
+
+## Replit instructions
+
+1. **Create tables**
+
+```bash
+supabase db query < sql/reference_model.sql      # or paste in SQL editor
+```
+
+2. **Backend wiring**
+
+```js
+// server/routes/documents.js
+const subtype = await supabase.from('document_subtypes').select('*').eq('id', body.subtypeId).single();
+// use subtype.lifecycle_id to pick workflow
+// use subtype.requires_training to trigger tasks
+```
+
+3. **Upload UI**
+
+```jsx
+<Select value={subtypeId} onValueChange={setSubtypeId}>
+  {subtypes.filter(s=>s.type_id===chosenTopFolder).map(s=><SelectItem key={s.id} .../>)}
+</Select>
+```
+
+4. **Folder auto-generator**
+
+Call once when a new tenant is provisioned:
+
+```js
+['Governance & Procedures','Operations','Forms','Executed Records']
+  .forEach(name => createFolder(tenantId, name));
+```
+
+5. **Migration**
+
+```bash
+node scripts/migrate_legacy_types.js   # prompts to map old -> new
+```
+
+6. **QA checklist**
+
+* Verify each subtype uploads into correct parent folder.  
+* Confirm lifecycle buttons match subtype lifecycle.  
+* Ensure training & retention rules fire.
+
+---
+
+### Outcome
+
+Implementing the above gives TrialSage Vault the **exact three pillars** Veeva advertises—**document hierarchy, standardized types, and lifecycle states**—with automation hooks that **reduce admin effort** and **improve compliance**.
+
+Let me know if you want the **full seed SQL + React drop-downs code** added to Canvas; I can generate it in the next turn.
