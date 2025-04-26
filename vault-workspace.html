@@ -28,6 +28,17 @@
                             700: '#3e593e',
                             800: '#344834',
                             900: '#2c3c2c',
+                        },
+                        hotpink: {
+                            100: '#ffebf4',
+                            200: '#ffd6e9',
+                            300: '#ffb6d9',
+                            400: '#ff8cc5',
+                            500: '#FF69B4', /* HOT PINK */
+                            600: '#ff40a0',
+                            700: '#FF1493', /* DEEPER PINK */
+                            800: '#e50a81',
+                            900: '#c7006e',
                         }
                     },
                     fontFamily: {
@@ -54,11 +65,11 @@
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #5d865d;
+            background: #FF69B4;
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #4a6c4a;
+            background: #FF1493;
         }
 
         /* Smooth scrolling */
@@ -89,25 +100,99 @@
             box-shadow: 0 0 15px rgba(93, 134, 93, 0.5);
         }
         
-        /* Color overrides for matching landing page */
-        [class*="bg-blue-"] {
-            background-color: var(--matching-sage);
+        /* HOT PINK, WHITE, Light sage green, Dark Black color scheme */
+        /* Text colors */
+        body, p, h1, h2, h3, h4, h5, h6, span, div, a {
+            color: #000000 !important; /* Dark Black lettering */
         }
-        [class*="text-blue-"] {
-            color: var(--matching-sage-text);
+        
+        /* Background colors */
+        .bg-blue-100, .bg-gray-100 { background-color: #ffffff !important; } /* White backgrounds */
+        .bg-blue-600, .bg-blue-700, .bg-blue-800 { background-color: #FF69B4 !important; } /* HOT PINK buttons/accents */
+        
+        /* Border colors */
+        .border-blue-400, .border-gray-300 { border-color: #FF69B4 !important; } /* HOT PINK borders */
+        
+        /* Hover states */
+        .hover\:bg-blue-800:hover { background-color: #FF1493 !important; } /* Darker HOT PINK on hover */
+        .hover\:border-blue-400:hover { border-color: #FF69B4 !important; }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(90deg, #FF69B4 0%, #FF1493 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            text-fill-color: transparent !important;
         }
-        [class*="border-blue-"] {
-            border-color: var(--matching-sage-border);
+        
+        /* Background gradient */
+        .hero-pattern, .bg-gradient-to-br {
+            background: linear-gradient(to bottom right, #ffffff, #e6ede6) !important; /* White to light sage green */
         }
-        [class*="hover:bg-blue-"] {
-            --tw-hover-bg-opacity: 1;
-            background-color: rgba(74, 108, 74, var(--tw-hover-bg-opacity)) !important;
+        
+        /* Icons and UI elements */
+        .text-blue-700, .text-blue-600 { color: #FF69B4 !important; } /* HOT PINK icons */
+        
+        /* Progress bar */
+        .progress-indicator {
+            background-color: #FF69B4 !important;
+        }
+        
+        /* Step lines */
+        .step-line {
+            background-color: #FF69B4 !important;
+        }
+        
+        /* Step circles */
+        .step-circle {
+            border: 2px solid #FF69B4 !important;
+        }
+        
+        .step-circle.active {
+            background-color: #FF69B4 !important;
+            color: white !important;
+        }
+        
+        /* Card hover effects */
+        .feature-card:hover {
+            border-color: #FF69B4 !important;
+        }
+        
+        /* Button glow effect */
+        .btn-glow:hover {
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.5) !important;
+        }
+        
+        /* Buttons size reduction */
+        button {
+            transform: scale(0.75);
+            transform-origin: center;
+        }
+        
+        /* More specific button sizing */
+        .px-8 {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
+        
+        .py-3 {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.5rem !important;
+        }
+        
+        /* Override for larger screens */
+        @media (min-width: 768px) {
+            button.text-lg {
+                font-size: 1rem !important;
+            }
         }
         
         :root {
-            --matching-sage: #5d865d; /* sage-500 */
-            --matching-sage-text: #344834; /* sage-800 */
-            --matching-sage-border: #7ea17e; /* sage-400 */
+            --hot-pink: #FF69B4;
+            --deeper-pink: #FF1493;
+            --light-sage: #e6ede6;
+            --dark-black: #000000;
         }
 
         /* Glass effect */
