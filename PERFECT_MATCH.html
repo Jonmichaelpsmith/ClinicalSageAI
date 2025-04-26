@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Document Viewer</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+  background-color: #F9FAFB;
+}
+
+.main-layout {
+  display: flex;
+  padding: 20px;
+  gap: 20px;
+}
+
+/* Feature card */
+.feature-card {
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.card-icon {
+  color: #F06;
+  margin-bottom: 8px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.card-list {
+  list-style: none;
+}
+
+.card-item {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* Doc viewer */
+.document-viewer {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  overflow: hidden;
+  width: 100%;
+}
+
+.doc-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.doc-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #FF3366;
+  border-radius: 4px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+  margin-right: 12px;
+}
+
+.doc-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.doc-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.doc-tab {
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+}
+
+.doc-tab.active {
+  color: #0B6E4F;
+  border-bottom: 2px solid #0B6E4F;
+  font-weight: 500;
+}
+
+.doc-content {
+  padding: 20px;
+}
+
+.doc-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.doc-id {
+  font-size: 13px;
+  color: #777;
+}
+
+.doc-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.section-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.insight-box {
+  border-left: 4px solid #0B6E4F;
+  background-color: #F0F7F4;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.insight-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0B6E4F;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.insight-title:before {
+  content: "●";
+  margin-right: 8px;
+}
+
+.insight-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Notification card */
+.notification-card {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  width: 240px;
+  border: 1px solid #F0C7D8;
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.notification-icon {
+  color: #2563EB;
+  margin-right: 8px;
+}
+
+.notification-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.notification-meta {
+  font-size: 12px;
+  color: #777;
+}
+
+.ai-badge {
+  color: #0B6E4F;
+  margin-left: 4px;
+}
+
+/* Toolbar */
+.toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #1F2937;
+  padding: 0 20px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-item {
+  color: white;
+  font-size: 14px;
+  margin-right: 24px;
+}
+</style>
+</head>
+<body>
+
+<!-- Notification card -->
+<div class="notification-card">
+  <div class="notification-header">
+    <span class="notification-icon">📄</span>
+    <span class="notification-title">Process Validation Protocol.docx</span>
+  </div>
+  <div class="notification-meta">
+    Updated today <span class="ai-badge">• AI Generated</span>
+  </div>
+</div>
+
+<div class="main-layout">
+  <!-- Feature card -->
+  <div class="feature-card">
+    <div class="card-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+        <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+      </svg>
+    </div>
+    <h3 class="card-title">DocuShare Integration</h3>
+    <ul class="card-list">
+      <li class="card-item">Automatic DocuShare syncing</li>
+      <li class="card-item">PDF ingestion from Xerox</li>
+      <li class="card-item">DocuShare ID tracking</li>
+      <li class="card-item">Audit-ready file management</li>
+    </ul>
+  </div>
+  
+  <!-- Document viewer -->
+  <div class="document-viewer">
+    <div class="doc-header">
+      <div class="doc-icon">PDF</div>
+      <div class="doc-title">Process Validation Protocol v2.1</div>
+    </div>
+    
+    <div class="doc-tabs">
+      <div class="doc-tab active">Document</div>
+      <div class="doc-tab">Metadata</div>
+      <div class="doc-tab">Versions</div>
+    </div>
+    
+    <div class="doc-content">
+      <div class="doc-meta">
+        <div>Process Validation Protocol</div>
+        <div class="doc-id">Drug Product • Document ID: TS-VAL-274</div>
+      </div>
+      
+      <div class="doc-section">
+        <h2 class="section-title">1. Purpose</h2>
+        <p class="section-text">
+          This protocol defines the approach and acceptance criteria for validating the manufacturing process for TS-273 Tablets. This protocol ensures consistent production of tablets meeting predetermined quality attributes.
+        </p>
+      </div>
+      
+      <div class="doc-section">
+        <h2 class="section-title">2. Scope</h2>
+        <p class="section-text">
+          This protocol applies to the validation of manufacturing process for TS-273 Tablets at the designated manufacturing facility and covers operations from dispensing through packaging.
+        </p>
+      </div>
+      
+      <div class="insight-box">
+        <div class="insight-title">AI-Generated Insights</div>
+        <div class="insight-text">
+          This protocol aligns with FDA Process Validation guidance. Similar protocols have passed regulatory review with minimal comments when submitted as part of CTD Module 3.2.P.3.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="toolbar-item">Resources</div>
+  <div class="toolbar-item">Settings</div>
+</div>
+
+</body>
+</html>
