@@ -10,12 +10,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { registerRoutes } = require('./routes');
-const securityMiddleware = require('./middleware/security');
-const blockchainService = require('./services/blockchain-service');
-const fdaComplianceService = require('./services/fda-compliance-service');
-const dataIntegrityService = require('./services/data-integrity-service');
-const electronicSignatureService = require('./services/electronic-signature-service');
-const validationService = require('./services/validation-service');
+const path = require('path');
 
 // Create Express app
 const app = express();
@@ -24,21 +19,21 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize security middleware
-securityMiddleware.initializeSecurityMiddleware(app);
-
 // Register routes
 const httpServer = registerRoutes(app);
 
-// Register API routes for services
-blockchainService.registerBlockchainRoutes(app);
-fdaComplianceService.registerComplianceRoutes(app);
-dataIntegrityService.registerDataIntegrityRoutes(app);
-electronicSignatureService.registerSignatureRoutes(app);
-validationService.registerValidationRoutes(app);
+// Serve static files from the client build directory in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // Handle client-side routing
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
 
 // Set up port
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // Start server
 httpServer.listen(PORT, () => {
@@ -49,19 +44,11 @@ httpServer.listen(PORT, () => {
 // Handle unhandled exceptions
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
-  securityMiddleware.auditLog('SYSTEM_ERROR', {
-    error: error.message,
-    stack: error.stack
-  });
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled promise rejection:', reason);
-  securityMiddleware.auditLog('SYSTEM_ERROR', {
-    error: reason.message,
-    stack: reason.stack
-  });
 });
 
 module.exports = app;
