@@ -209,11 +209,13 @@
         
         /* Content Sections */
         .section {
-            padding: 40px 0;
+            padding: 60px 0;
         }
         
         .section-alt {
             background-color: #f8f8f8;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
         }
         
         .section-container {
@@ -229,15 +231,29 @@
         }
         
         .section-title {
-            font-size: 36px;
-            font-weight: 700;
+            font-size: 40px;
+            font-weight: 800;
             margin-bottom: 20px;
             color: var(--primary);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 70px;
+            height: 4px;
+            background-color: var(--yprime-pink);
+            margin: 10px auto 0;
         }
         
         .section-subtitle {
-            font-size: 18px;
+            font-size: 20px;
             color: var(--text-medium);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
         
         /* Solutions Grid */
@@ -583,6 +599,25 @@
             width: 100% !important;
             box-sizing: border-box !important;
             overflow-x: hidden !important;
+        }
+        
+        /* Footer background gradient for better design closure */
+        .footer-section {
+            position: relative;
+            background: linear-gradient(to bottom, #fff 0%, rgba(255, 240, 250, 0.4) 100%);
+            padding-top: 80px;
+            padding-bottom: 40px;
+            margin-top: 30px;
+        }
+        
+        .footer-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(to right, rgba(230, 0, 125, 0), rgba(230, 0, 125, 0.3) 50%, rgba(230, 0, 125, 0) 100%);
         }
     </style>
 </head>
@@ -3225,6 +3260,19 @@
     </section>
 
     <!-- Footer - YPrime Style -->
+    <section class="footer-section">
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Ready to Transform Your Regulatory Process?</h2>
+                <p class="section-subtitle">Vault™ is the intelligent document management platform that helps life sciences companies accelerate submissions while maintaining regulatory compliance. Join the leading companies already revolutionizing their approach.</p>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="/demo" class="btn btn-primary" style="font-size: 18px; padding: 12px 25px;">Request a Demo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
     <footer style="background-color: #333; color: white; padding: 60px 0;">
         <div class="section-container">
             <div style="display: flex; flex-wrap: wrap; gap: 40px; justify-content: space-between; margin-bottom: 40px;">
