@@ -1,296 +1,303 @@
 /**
- * TrialSage Client Security Module
+ * TrialSage Client-Side Security Module
  * 
- * Provides client-side security features:
- * - Document integrity verification
- * - CSRF token management
- * - Secure storage handling
- * - Client-side encryption for sensitive data
- * - Tenant validation
+ * This module provides client-side security features including:
+ * - Encrypted storage for sensitive data
+ * - Security token management
+ * - Content hash verification
+ * - Session integrity monitoring
+ * - User activity logging for audit trails
  */
 
-import { Buffer } from 'buffer';
-import { getCookie, setCookie } from './cookies';
+import { getCookie, setCookie, removeCookie } from './cookies';
+import CryptoJS from 'crypto-js';
 
-// Generate SHA-256 hash for document integrity
-export const generateDocumentHash = async (document) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(typeof document === 'string' ? document : JSON.stringify(document));
-  
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+// Configuration
+const SECURITY_VERSION = '1.0.0';
+const INTEGRITY_CHECK_INTERVAL = 60000; // 1 minute
+const TOKEN_REFRESH_THRESHOLD = 300000; // 5 minutes
+const MAX_FAILED_ATTEMPTS = 5;
+
+// Security state
+let securityState = {
+  initialized: false,
+  integrityCheckTimer: null,
+  lastActivity: Date.now(),
+  userSessionIntegrity: true,
+  failedAttempts: 0,
+  lastVerifiedDocumentHashes: {},
 };
 
-// Encrypt sensitive data using AES-256-GCM
-export const encryptData = async (data, key) => {
+/**
+ * Initialize security features
+ */
+export function initializeSecurity() {
+  if (securityState.initialized) return;
+  
+  // Set up activity monitoring
+  document.addEventListener('click', recordUserActivity);
+  document.addEventListener('keypress', recordUserActivity);
+  
+  // Set up session integrity checking
+  securityState.integrityCheckTimer = setInterval(checkSessionIntegrity, INTEGRITY_CHECK_INTERVAL);
+  
+  // Set initial security state
+  securityState.initialized = true;
+  securityState.lastActivity = Date.now();
+  
+  // Log security initialization
+  logSecurityEvent('SECURITY_INITIALIZED', {
+    version: SECURITY_VERSION,
+    timestamp: new Date().toISOString()
+  });
+  
+  return true;
+}
+
+/**
+ * Record user activity for session maintenance
+ */
+function recordUserActivity() {
+  securityState.lastActivity = Date.now();
+}
+
+/**
+ * Check session integrity periodically
+ */
+function checkSessionIntegrity() {
+  const currentTime = Date.now();
+  const sessionTimeout = parseInt(getCookie('session_timeout') || '3600000'); // Default 1 hour
+  const timeElapsed = currentTime - securityState.lastActivity;
+  
+  // Check for session timeout
+  if (timeElapsed > sessionTimeout) {
+    logSecurityEvent('SESSION_TIMEOUT', {
+      lastActivity: new Date(securityState.lastActivity).toISOString(),
+      currentTime: new Date(currentTime).toISOString(),
+      timeElapsed
+    });
+    terminateSession('Session timed out due to inactivity');
+    return;
+  }
+  
+  // Check if token needs refresh
+  const tokenExpiry = parseInt(getCookie('token_expiry') || '0');
+  if (tokenExpiry && (tokenExpiry - currentTime < TOKEN_REFRESH_THRESHOLD)) {
+    refreshSecurityToken();
+  }
+}
+
+/**
+ * Refresh security token
+ */
+export async function refreshSecurityToken() {
   try {
-    // Convert key to format usable by WebCrypto API
-    const encoder = new TextEncoder();
-    const keyData = encoder.encode(key);
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'AES-GCM' },
-      false,
-      ['encrypt']
-    );
-    
-    // Generate IV (initialization vector)
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    
-    // Encrypt the data
-    const dataToEncrypt = encoder.encode(typeof data === 'string' ? data : JSON.stringify(data));
-    const encryptedData = await crypto.subtle.encrypt(
-      {
-        name: 'AES-GCM',
-        iv
+    const response = await fetch('/api/security/refresh-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      cryptoKey,
-      dataToEncrypt
-    );
+      credentials: 'include'
+    });
     
-    // Convert to Base64 for transmission
-    const encryptedArray = new Uint8Array(encryptedData);
-    const ivString = Buffer.from(iv).toString('base64');
-    const encryptedString = Buffer.from(encryptedArray).toString('base64');
+    if (!response.ok) {
+      throw new Error('Failed to refresh token');
+    }
     
-    return {
-      encryptedData: encryptedString,
-      iv: ivString,
-      method: 'AES-256-GCM'
-    };
+    const data = await response.json();
+    
+    if (data.token_expiry) {
+      setCookie('token_expiry', data.token_expiry.toString(), { secure: true, sameSite: 'strict' });
+    }
+    
+    logSecurityEvent('TOKEN_REFRESHED', {
+      newExpiry: new Date(parseInt(data.token_expiry)).toISOString()
+    });
+    
+    return true;
   } catch (error) {
-    console.error('Encryption error:', error);
-    throw new Error('Failed to encrypt data: ' + error.message);
+    logSecurityEvent('TOKEN_REFRESH_FAILED', {
+      error: error.message
+    });
+    handleSecurityFailure('token_refresh_failed');
+    return false;
   }
-};
+}
 
-// Decrypt data that was encrypted with AES-256-GCM
-export const decryptData = async (encryptedObj, key) => {
+/**
+ * Terminate the current user session
+ */
+export function terminateSession(reason) {
+  // Log the session termination
+  logSecurityEvent('SESSION_TERMINATED', { reason });
+  
+  // Clear security timers
+  if (securityState.integrityCheckTimer) {
+    clearInterval(securityState.integrityCheckTimer);
+  }
+  
+  // Clear security cookies
+  removeCookie('token_expiry');
+  
+  // Reset security state
+  securityState = {
+    initialized: false,
+    integrityCheckTimer: null,
+    lastActivity: 0,
+    userSessionIntegrity: false,
+    failedAttempts: 0,
+    lastVerifiedDocumentHashes: {},
+  };
+  
+  // Redirect to login page
+  window.location.href = '/auth?reason=session_terminated';
+}
+
+/**
+ * Verify document integrity using SHA-256 hash
+ */
+export function verifyDocumentIntegrity(documentId, contentHash) {
+  // Get the stored hash for comparison
+  const storedHash = securityState.lastVerifiedDocumentHashes[documentId];
+  
+  // If we don't have a stored hash, store this one and return true
+  if (!storedHash) {
+    securityState.lastVerifiedDocumentHashes[documentId] = contentHash;
+    return true;
+  }
+  
+  // Compare the hashes
+  const integrityVerified = (storedHash === contentHash);
+  
+  // Log the verification result
+  logSecurityEvent('DOCUMENT_INTEGRITY_CHECK', {
+    documentId,
+    verified: integrityVerified,
+    storedHash: storedHash.substring(0, 10) + '...',
+    providedHash: contentHash.substring(0, 10) + '...',
+  });
+  
+  // If integrity verification fails, handle it
+  if (!integrityVerified) {
+    handleSecurityFailure('document_integrity_failed');
+  }
+  
+  return integrityVerified;
+}
+
+/**
+ * Generate SHA-256 hash for document content
+ */
+export function generateContentHash(content) {
+  return CryptoJS.SHA256(content).toString();
+}
+
+/**
+ * Encrypt sensitive data
+ */
+export function encryptData(data, key = getCookie('encryption_key')) {
+  if (!key) {
+    // Use a default key if none is provided (not recommended for production)
+    key = 'TrialSage_Secure_Default_Key';
+  }
+  
+  return CryptoJS.AES.encrypt(JSON.stringify(data), key).toString();
+}
+
+/**
+ * Decrypt sensitive data
+ */
+export function decryptData(encryptedData, key = getCookie('encryption_key')) {
+  if (!key) {
+    // Use a default key if none is provided (not recommended for production)
+    key = 'TrialSage_Secure_Default_Key';
+  }
+  
   try {
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-    
-    // Import the encryption key
-    const keyData = encoder.encode(key);
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyData,
-      { name: 'AES-GCM' },
-      false,
-      ['decrypt']
-    );
-    
-    // Convert from Base64
-    const iv = Buffer.from(encryptedObj.iv, 'base64');
-    const encryptedData = Buffer.from(encryptedObj.encryptedData, 'base64');
-    
-    // Decrypt the data
-    const decryptedBuffer = await crypto.subtle.decrypt(
-      {
-        name: 'AES-GCM',
-        iv: new Uint8Array(iv)
-      },
-      cryptoKey,
-      new Uint8Array(encryptedData)
-    );
-    
-    // Convert back to string
-    const decryptedString = decoder.decode(decryptedBuffer);
-    
-    try {
-      // Try to parse as JSON if possible
-      return JSON.parse(decryptedString);
-    } catch {
-      // Return as string if not valid JSON
-      return decryptedString;
-    }
+    const bytes = CryptoJS.AES.decrypt(encryptedData, key);
+    const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
+    return JSON.parse(decryptedText);
   } catch (error) {
-    console.error('Decryption error:', error);
-    throw new Error('Failed to decrypt data: ' + error.message);
+    logSecurityEvent('DECRYPTION_FAILED', { error: error.message });
+    return null;
   }
-};
+}
 
-// Get CSRF token from cookie
-export const getCsrfToken = () => {
-  return getCookie('csrfToken');
-};
-
-// Add CSRF token to all API requests
-export const addCsrfToken = (config) => {
-  const token = getCsrfToken();
+/**
+ * Handle security failures
+ */
+function handleSecurityFailure(type) {
+  securityState.failedAttempts++;
+  securityState.userSessionIntegrity = false;
   
-  if (token) {
-    if (!config.headers) {
-      config.headers = {};
-    }
-    
-    config.headers['X-CSRF-Token'] = token;
+  logSecurityEvent('SECURITY_FAILURE', {
+    type,
+    failedAttempts: securityState.failedAttempts,
+    threshold: MAX_FAILED_ATTEMPTS
+  });
+  
+  // If too many failures, terminate the session
+  if (securityState.failedAttempts >= MAX_FAILED_ATTEMPTS) {
+    terminateSession('Too many security failures');
+  }
+}
+
+/**
+ * Log security events for audit
+ */
+export async function logSecurityEvent(eventType, eventData) {
+  const logEntry = {
+    eventType,
+    timestamp: new Date().toISOString(),
+    userId: getCookie('user_id') || 'anonymous',
+    sessionId: getCookie('session_id') || 'unknown',
+    userAgent: navigator.userAgent,
+    data: eventData
+  };
+  
+  // Log to console in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[SECURITY]', logEntry);
   }
   
-  return config;
-};
-
-// Add tenant identifier to all API requests
-export const addTenantId = (config, tenantId) => {
-  if (!config.headers) {
-    config.headers = {};
+  // Send to server for permanent audit logging
+  try {
+    await fetch('/api/security/audit-log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(logEntry),
+      credentials: 'include'
+    });
+  } catch (error) {
+    console.error('Failed to send security log to server:', error);
   }
   
-  config.headers['X-Tenant-ID'] = tenantId;
-  
-  return config;
-};
+  return logEntry;
+}
 
-// Store an item securely in localStorage with encryption
-export const secureLocalStorage = {
-  getItem: async (key, encryptionKey) => {
-    try {
-      const item = localStorage.getItem(key);
-      
-      if (!item) {
-        return null;
-      }
-      
-      const parsed = JSON.parse(item);
-      
-      // If data is encrypted, decrypt it
-      if (parsed.encrypted && encryptionKey) {
-        return await decryptData(parsed.data, encryptionKey);
-      }
-      
-      // Otherwise return the plain data
-      return parsed.data;
-    } catch (error) {
-      console.error('Error getting item from secure storage:', error);
-      return null;
-    }
-  },
-  
-  setItem: async (key, value, options = {}) => {
-    try {
-      const { encrypt = false, encryptionKey = null, ttl = null } = options;
-      
-      let dataToStore = {
-        data: value,
-        encrypted: false,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Set expiration timestamp if TTL is provided
-      if (ttl) {
-        dataToStore.expiresAt = new Date(Date.now() + ttl).toISOString();
-      }
-      
-      // Encrypt the data if requested
-      if (encrypt && encryptionKey) {
-        dataToStore = {
-          data: await encryptData(value, encryptionKey),
-          encrypted: true,
-          createdAt: new Date().toISOString()
-        };
-        
-        if (ttl) {
-          dataToStore.expiresAt = new Date(Date.now() + ttl).toISOString();
-        }
-      }
-      
-      localStorage.setItem(key, JSON.stringify(dataToStore));
-      return true;
-    } catch (error) {
-      console.error('Error setting item in secure storage:', error);
-      return false;
-    }
-  },
-  
-  removeItem: (key) => {
-    try {
-      localStorage.removeItem(key);
-      return true;
-    } catch (error) {
-      console.error('Error removing item from secure storage:', error);
-      return false;
-    }
-  },
-  
-  clear: () => {
-    try {
-      localStorage.clear();
-      return true;
-    } catch (error) {
-      console.error('Error clearing secure storage:', error);
-      return false;
-    }
-  }
-};
-
-// Secure document upload with integrity verification
-export const prepareSecureDocumentUpload = async (document, metadata = {}) => {
-  // Generate hash for integrity verification
-  const hash = await generateDocumentHash(document);
-  
+/**
+ * Get the current security state (for debugging/monitoring)
+ */
+export function getSecurityState() {
   return {
-    document,
-    hash,
-    metadata: {
-      ...metadata,
-      clientTimestamp: new Date().toISOString(),
-      integrityVersion: '1.0'
-    }
+    initialized: securityState.initialized,
+    lastActivity: new Date(securityState.lastActivity).toISOString(),
+    userSessionIntegrity: securityState.userSessionIntegrity,
+    failedAttempts: securityState.failedAttempts
   };
-};
+}
 
-// Security audit logger for client-side events
-export const auditLog = (action, details = {}) => {
-  // Only log in development or when explicitly enabled
-  if (process.env.NODE_ENV !== 'production' || localStorage.getItem('enableAuditLogging') === 'true') {
-    console.log(`[SECURITY AUDIT] ${action}`, {
-      timestamp: new Date().toISOString(),
-      ...details
-    });
-  }
-  
-  // If configured, send audit events to server
-  if (typeof window !== 'undefined' && window.sendAuditEvent) {
-    window.sendAuditEvent(action, details);
-  }
-};
-
-// Auto-logout timer for security compliance
-let inactivityTimer;
-export const setupSecurityInactivityMonitor = (logoutCallback, timeoutMs = 30 * 60 * 1000) => {
-  const resetTimer = () => {
-    if (inactivityTimer) {
-      clearTimeout(inactivityTimer);
-    }
-    
-    inactivityTimer = setTimeout(() => {
-      auditLog('AUTO_LOGOUT', { reason: 'inactivity', timeoutMs });
-      logoutCallback();
-    }, timeoutMs);
-  };
-  
-  // Reset timer on user activity
-  if (typeof window !== 'undefined') {
-    ['mousedown', 'keypress', 'scroll', 'touchstart'].forEach(event => {
-      window.addEventListener(event, resetTimer, { passive: true });
-    });
-    
-    // Initial timer start
-    resetTimer();
-  }
-  
-  // Return function to clear listeners when component unmounts
-  return () => {
-    if (typeof window !== 'undefined') {
-      ['mousedown', 'keypress', 'scroll', 'touchstart'].forEach(event => {
-        window.removeEventListener(event, resetTimer);
-      });
-    }
-    
-    if (inactivityTimer) {
-      clearTimeout(inactivityTimer);
-    }
-  };
+// Export security module
+export default {
+  initializeSecurity,
+  refreshSecurityToken,
+  terminateSession,
+  verifyDocumentIntegrity,
+  generateContentHash,
+  encryptData,
+  decryptData,
+  logSecurityEvent,
+  getSecurityState
 };
