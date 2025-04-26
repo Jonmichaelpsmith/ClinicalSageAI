@@ -1,0 +1,115 @@
+// ───────────────────────────────────────────────────────────────
+// IND Wizard – Sprint‑6 ✦ CFR‑11 e‑Signature + Immutable Audit Ledger
+// ---------------------------------------------------------------------
+//  • sql/esign_ledger.sql            – e‑signature & hash‑chain ledger tables
+//  • server/services/signer.js       – dual‑auth challenge + signature hash
+//  • server/routes/esign.js          – initiate / sign / verify APIs
+//  • server/middleware/ledgerLog.js  – append hash‑chain on every critical event
+//  • client/components/EsignModal.jsx – UI for signature (re‑enter pwd + reason)
+//  • Integration checklist           – wiring & security notes
+// ───────────────────────────────────────────────────────────────
+
+// ---------------- sql/esign_ledger.sql ----------------
+create table if not exists ind_signatures (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid,
+  section_code text,
+  signed_by uuid,
+  reason text,
+  sig_hash text,
+  created_at timestamp default now()
+);
+
+-- Immutable ledger (hash‑chain)
+create table if not exists ind_ledger (
+  id bigserial primary key,
+  prev_hash text,
+  event_type text,
+  payload jsonb,
+  ts timestamp default now(),
+  hash text
+);
+
+-- Hash trigger
+create or replace function ledger_hash()
+returns trigger as $$
+begin
+  new.hash := encode(sha256(new.prev_hash||new.event_type||new.payload::text||new.ts::text),'hex');
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_hash on ind_ledger;
+create trigger trg_hash before insert on ind_ledger
+for each row execute procedure ledger_hash();
+
+// ---------------- server/services/signer.js ----------------
+import crypto from 'crypto';
+import { supabase } from '../lib/supabaseClient.js';
+export async function signSection({ submissionId, section, userId, password, reason }){
+  // 1️⃣ verify password (pseudo – compare to users table pwd_hash)
+  const { data:user } = await supabase.from('users').select('pwd_hash').eq('id',userId).single();
+  const valid = crypto.timingSafeEqual(Buffer.from(user.pwd_hash,'hex'), crypto.pbkdf2Sync(password,'salt',1000,32,'sha512'));
+  if(!valid) throw new Error('Auth failed');
+
+  // 2️⃣ create signature hash of section content
+  const { data: blocks } = await supabase.from('ind_blocks').select('content').eq('submission_id',submissionId).eq('section_code',section);
+  const sectionHash = crypto.createHash('sha256').update(JSON.stringify(blocks)).digest('hex');
+  const sigHash     = crypto.createHash('sha256').update(sectionHash+userId+reason).digest('hex');
+
+  // 3️⃣ store signature
+  await supabase.from('ind_signatures').insert({ submission_id:submissionId, section_code:section, signed_by:userId, reason, sig_hash:sigHash });
+  await supabase.from('ind_ledger').insert({ prev_hash:getLastLedgerHash(), event_type:'eSign', payload:{ submissionId, section, signed_by:userId }});
+}
+function getLastLedgerHash(){ /* query last ledger row */ return ''; }
+
+// ---------------- server/routes/esign.js ----------------
+import { Router } from 'express';
+import { verifyJwt } from '../middleware/auth.js';
+import { signSection } from '../services/signer.js';
+const r = Router();
+
+r.post('/sign', verifyJwt, async (req,res)=>{
+  const { submissionId, section, password, reason } = req.body;
+  try{ await signSection({ submissionId, section, userId:req.user.id, password, reason });
+    res.json({ ok:true });
+  }catch(err){ res.status(401).json({ message:err.message }); }
+});
+export default r;
+
+// ---------------- server/middleware/ledgerLog.js ----------------
+import { supabase } from '../lib/supabaseClient.js';
+export async function logEvent(type,payload){
+  const { data: last } = await supabase.from('ind_ledger').select('hash').order('id',{ascending:false}).limit(1);
+  await supabase.from('ind_ledger').insert({ prev_hash:last?.[0]?.hash||'', event_type:type, payload });
+}
+
+// ---------------- client/components/EsignModal.jsx ----------------
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+export default function EsignModal({ submissionId, section, open, onClose }){
+  const [pwd,setPwd]=useState(''); const [reason,setReason]=useState(''); const [err,setErr]=useState('');
+  const sign=async()=>{
+    try{ await axios.post('/api/esign/sign',{ submissionId, section, password:pwd, reason }); onClose(true);}catch(e){ setErr(e.response.data.message); }
+  };
+  if(!open) return null;
+  return (<div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+    <div className="bg-white p-6 rounded space-y-3 w-96">
+      <h2 className="font-bold text-lg">e‑Sign Section {section}</h2>
+      <input type="password" placeholder="Re‑enter password" className="border p-2 w-full" value={pwd} onChange={e=>setPwd(e.target.value)} />
+      <input placeholder="Reason" className="border p-2 w-full" value={reason} onChange={e=>setReason(e.target.value)} />
+      {err && <p className="text-red-600 text-sm">{err}</p>}
+      <div className="flex gap-2 justify-end"><Button variant="secondary" size="sm" onClick={()=>onClose(false)}>Cancel</Button><Button size="sm" onClick={sign}>Sign</Button></div>
+    </div>
+  </div>);
+}
+
+// ---------------- Integration Checklist ----------------
+1. `supabase db query < sql/esign_ledger.sql` to add tables & triggers.
+2. Backend: `app.use('/api/esign', verifyJwt, esignRoutes);` + import `ledgerLog` where needed.
+3. Update PDF footer template: if submission status == Final, watermark removed.
+4. In Section UI, render **Sign** button → opens `<EsignModal>`.
+5. Ledger RLS: `USING (true)` read‑only; only service role inserts.
+6. For production, store password hashes with argon2id; add TOTP 2FA before signing.
+// ───────────────────────────────────────────────────────────────
