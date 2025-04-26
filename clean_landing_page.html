@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TrialSage™ by Concept2Cures</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -19,12 +19,13 @@
         }
         
         /* Header styles */
-        header {
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            padding: 15px 30px;
             background-color: white;
+            border-bottom: 1px solid #f0f0f0;
         }
         
         .logo {
@@ -35,44 +36,53 @@
         .logo-text {
             color: #0B6E4F;
             font-weight: 600;
+            font-size: 16px;
         }
         
         .logo-by {
             color: #E6007D;
             margin-left: 5px;
-        }
-        
-        nav {
-            display: flex;
-            gap: 20px;
-        }
-        
-        nav a {
-            text-decoration: none;
-            color: #333;
             font-size: 14px;
         }
         
-        .header-buttons {
+        .nav {
             display: flex;
-            gap: 10px;
+            gap: 25px;
         }
         
-        .header-buttons a {
+        .nav a {
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
             padding: 8px 16px;
-            border-radius: 20px;
+            border-radius: 25px;
             text-decoration: none;
             font-size: 14px;
+            font-weight: 500;
         }
         
-        .btn-outline {
-            border: 1px solid #eee;
+        .btn-rfp {
+            border: none;
             color: #333;
         }
         
-        .btn-primary {
+        .btn-demo {
             background-color: #E6007D;
             color: white;
+        }
+        
+        .btn-support {
+            border: none;
+            color: #333;
         }
         
         /* Hero section */
@@ -80,7 +90,7 @@
             background: linear-gradient(135deg, #0B6E4F 0%, #E6007D 100%);
             color: white;
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
         }
         
         .hero-content {
@@ -88,16 +98,20 @@
             margin: 0 auto;
         }
         
-        .hero h1 {
+        .hero-title {
             font-size: 36px;
             font-weight: 700;
             margin-bottom: 20px;
+            line-height: 1.2;
         }
         
-        .hero p {
+        .hero-description {
             font-size: 16px;
             margin-bottom: 30px;
             line-height: 1.6;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .hero-buttons {
@@ -107,14 +121,15 @@
             margin-bottom: 40px;
         }
         
-        .hero-buttons a {
-            padding: 10px 24px;
+        .hero-btn {
+            padding: 12px 25px;
             border-radius: 25px;
             text-decoration: none;
             font-size: 16px;
+            font-weight: 500;
         }
         
-        .btn-demo {
+        .btn-request-demo {
             background-color: #E6007D;
             color: white;
         }
@@ -130,6 +145,7 @@
             display: flex;
             justify-content: center;
             gap: 80px;
+            margin-top: 20px;
         }
         
         .stat {
@@ -147,28 +163,6 @@
             opacity: 0.9;
         }
         
-        /* Solutions section */
-        .solutions {
-            padding: 60px 20px;
-            text-align: center;
-            background-color: white;
-        }
-        
-        .solutions h2 {
-            color: #0B6E4F;
-            font-size: 30px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        
-        .solutions p {
-            font-size: 16px;
-            color: #555;
-            max-width: 700px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .stats {
@@ -176,7 +170,7 @@
                 gap: 30px;
             }
             
-            .hero h1 {
+            .hero-title {
                 font-size: 28px;
             }
             
@@ -189,35 +183,35 @@
 </head>
 <body>
     <!-- Header -->
-    <header>
+    <header class="header">
         <div class="logo">
             <div class="logo-text">TrialSage™</div>
             <div class="logo-by">by Concept2Cures</div>
         </div>
         
-        <nav>
+        <nav class="nav">
             <a href="#">Products</a>
             <a href="#">AI Technology</a>
             <a href="#">About</a>
             <a href="#">Contact</a>
         </nav>
         
-        <div class="header-buttons">
-            <a href="#" class="btn-outline">RFP</a>
-            <a href="#" class="btn-primary">Demo</a>
-            <a href="#" class="btn-outline">Support</a>
+        <div class="cta-buttons">
+            <a href="#" class="btn btn-rfp">RFP</a>
+            <a href="#" class="btn btn-demo">Demo</a>
+            <a href="#" class="btn btn-support">Support</a>
         </div>
     </header>
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Transform Regulatory Submissions with AI-Powered Intelligence</h1>
-            <p>The life sciences industry often relies on slow, manual processes for regulatory compliance. TrialSage™ revolutionizes regulatory document creation and validation with advanced AI, accelerating submissions by up to 75% while ensuring compliance.</p>
+            <h1 class="hero-title">Transform Regulatory Submissions with AI-Powered Intelligence</h1>
+            <p class="hero-description">The life sciences industry often relies on slow, manual processes for regulatory compliance. TrialSage™ revolutionizes regulatory document creation and validation with advanced AI, accelerating submissions by up to 75% while ensuring compliance.</p>
             
             <div class="hero-buttons">
-                <a href="#" class="btn-demo">Request Demo</a>
-                <a href="#" class="btn-explore">Explore Solutions</a>
+                <a href="#" class="hero-btn btn-request-demo">Request Demo</a>
+                <a href="#" class="hero-btn btn-explore">Explore Solutions</a>
             </div>
             
             <div class="stats">
@@ -235,12 +229,6 @@
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Solutions Section -->
-    <section class="solutions">
-        <h2>Our Solutions</h2>
-        <p>Explore our suite of AI-powered regulatory tools designed to revolutionize your workflow and accelerate time to market.</p>
     </section>
 </body>
 </html>
