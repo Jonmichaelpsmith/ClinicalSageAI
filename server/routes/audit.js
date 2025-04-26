@@ -1,8 +1,14 @@
 // server/routes/audit.js
 import express from 'express';
-import { listAuditLogs, exportAuditLogsToCSV } from '../services/auditService.js';
+import { listAuditLogs, exportAuditLogsToCSV, bulkDeleteAuditLogs, ensureAuditLogTable } from '../services/auditService.js';
+import { auditAction } from '../middleware/auditLogger.js';
 
 const router = express.Router();
+
+// Ensure the audit log table exists
+ensureAuditLogTable().catch(err => {
+  console.error('Failed to create audit log table:', err);
+});
 
 /**
  * List audit logs with optional filtering and pagination
@@ -29,7 +35,9 @@ router.get('/', async (req, res) => {
       resourceType: req.query.resourceType || undefined,
       resourceId: req.query.resourceId || undefined,
       startDate: req.query.startDate ? new Date(req.query.startDate) : undefined,
-      endDate: req.query.endDate ? new Date(req.query.endDate) : undefined
+      endDate: req.query.endDate ? new Date(req.query.endDate) : undefined,
+      // Special filter for anomalies
+      anomaliesOnly: req.query.anomaliesOnly === 'true'
     };
     
     // Parse pagination parameters
@@ -74,7 +82,8 @@ router.get('/export', async (req, res) => {
       resourceType: req.query.resourceType || undefined,
       resourceId: req.query.resourceId || undefined,
       startDate: req.query.startDate ? new Date(req.query.startDate) : undefined,
-      endDate: req.query.endDate ? new Date(req.query.endDate) : undefined
+      endDate: req.query.endDate ? new Date(req.query.endDate) : undefined,
+      anomaliesOnly: req.query.anomaliesOnly === 'true'
     };
     
     // Generate CSV content with tenant-scoped security
@@ -94,5 +103,80 @@ router.get('/export', async (req, res) => {
     });
   }
 });
+
+/**
+ * Bulk delete audit logs based on filters
+ * 
+ * This endpoint is tenant-scoped for security and requires admin privileges.
+ */
+router.post('/bulk-delete',
+  auditAction('BulkDeleteLogs', 'Admin bulk deleted audit logs'),
+  async (req, res) => {
+    try {
+      // Get tenant ID from authenticated user (multi-tenant security)
+      const tenantId = req.user?.tenantId;
+      
+      // For admin-only routes, require authentication, tenant ID, and admin role
+      if (!tenantId) {
+        return res.status(401).json({ 
+          message: 'Unauthorized. Authentication required.'
+        });
+      }
+      
+      // Check for admin role (optional - depends on your user schema)
+      if (req.user?.role !== 'admin' && !req.user?.isAdmin) {
+        return res.status(403).json({
+          message: 'Forbidden. Admin privileges required for bulk delete operations.'
+        });
+      }
+      
+      // Parse filters from request body
+      const { 
+        userId, 
+        actionType, 
+        startDate, 
+        endDate, 
+        reason
+      } = req.body;
+      
+      // Require a reason for the bulk delete (for audit trail)
+      if (!reason) {
+        return res.status(400).json({
+          message: 'Reason for bulk delete is required for audit purposes.'
+        });
+      }
+      
+      // Perform bulk delete with tenant-scoped security
+      const result = await bulkDeleteAuditLogs(tenantId, {
+        userId,
+        actionType,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined
+      });
+      
+      // Add the bulk delete operation to the audit log metadata
+      if (req.auditEntry) {
+        req.auditEntry.metadata = {
+          ...req.auditEntry.metadata,
+          reason,
+          deletedCount: result.deletedCount,
+          filters: { userId, actionType, startDate, endDate }
+        };
+      }
+      
+      // Return success response
+      res.json({
+        message: 'Audit logs deleted successfully',
+        deletedCount: result.deletedCount
+      });
+    } catch (error) {
+      console.error('Bulk delete error:', error);
+      res.status(500).json({ 
+        message: 'Failed to delete audit logs',
+        error: error.message
+      });
+    }
+  }
+);
 
 export default router;
