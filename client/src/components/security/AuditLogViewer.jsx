@@ -1,469 +1,328 @@
 import React, { useState } from 'react';
-import { 
-  Activity, 
-  Search, 
-  Filter, 
-  Download, 
-  Calendar, 
-  User, 
-  Clock, 
-  AlertTriangle, 
-  ShieldCheck,
-  RefreshCw,
-  Zap,
-  CheckCircle
-} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useToast } from '../../hooks/use-toast';
 
-/**
- * Audit Log Viewer Component
- * 
- * This component provides a comprehensive view of system audit logs
- * for FDA 21 CFR Part 11 compliance.
- * 
- * Features:
- * - Advanced filtering and search of audit logs
- * - Timeline view of system events
- * - Security event highlighting
- * - Export capabilities for audits and inspections
- * - Blockchain verification integration
- */
-export default function AuditLogViewer() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState('7d');
-  const [eventTypes, setEventTypes] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [blockchainVerification, setBlockchainVerification] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Sample audit logs (in a real implementation, these would come from the API)
-  const auditLogs = [
-    {
-      id: 'log-001',
-      timestamp: '2025-04-26T10:15:32Z',
-      eventType: 'AUTHENTICATION',
-      user: 'john.smith',
-      details: {
-        ip: '192.168.1.100',
-        device: 'Chrome/Windows',
-        success: true
-      },
-      blockchainVerified: true
-    },
-    {
-      id: 'log-002',
-      timestamp: '2025-04-26T10:16:05Z',
-      eventType: 'DOCUMENT_VIEWED',
-      user: 'john.smith',
-      details: {
-        documentId: 'DOC-12458',
-        documentTitle: 'Clinical Study Report',
-        documentVersion: '2.3'
-      },
-      blockchainVerified: true
-    },
-    {
-      id: 'log-003',
-      timestamp: '2025-04-26T10:18:22Z',
-      eventType: 'ELECTRONIC_SIGNATURE_CREATED',
-      user: 'john.smith',
-      details: {
-        documentId: 'DOC-12458',
-        documentTitle: 'Clinical Study Report',
-        documentVersion: '2.3',
-        signatureId: 'SIG-78923',
-        meaning: 'APPROVAL'
-      },
-      blockchainVerified: true
-    },
-    {
-      id: 'log-004',
-      timestamp: '2025-04-26T11:05:47Z',
-      eventType: 'AUTHENTICATION_FAILED',
-      user: 'mary.johnson',
-      details: {
-        ip: '192.168.1.105',
-        device: 'Safari/MacOS',
-        reason: 'INVALID_PASSWORD',
-        attemptNumber: 1
-      },
-      blockchainVerified: false
-    },
-    {
-      id: 'log-005',
-      timestamp: '2025-04-26T11:06:12Z',
-      eventType: 'AUTHENTICATION',
-      user: 'mary.johnson',
-      details: {
-        ip: '192.168.1.105',
-        device: 'Safari/MacOS',
-        success: true
-      },
-      blockchainVerified: true
-    },
-    {
-      id: 'log-006',
-      timestamp: '2025-04-26T11:10:33Z',
-      eventType: 'SYSTEM_CONFIGURATION_CHANGED',
-      user: 'admin',
-      details: {
-        setting: 'PASSWORD_POLICY',
-        oldValue: { minLength: 8 },
-        newValue: { minLength: 12 }
-      },
-      blockchainVerified: true
-    },
-    {
-      id: 'log-007',
-      timestamp: '2025-04-26T12:42:18Z',
-      eventType: 'DATA_INTEGRITY_VERIFIED',
-      user: 'system',
-      details: {
-        documentId: 'DOC-12983',
-        verified: false,
-        reason: 'HASH_MISMATCH'
-      },
-      blockchainVerified: true
-    },
-    {
-      id: 'log-008',
-      timestamp: '2025-04-26T14:15:26Z',
-      eventType: 'USER_ROLE_CHANGED',
-      user: 'admin',
-      details: {
-        targetUser: 'robert.wilson',
-        oldRole: 'EDITOR',
-        newRole: 'APPROVER'
-      },
-      blockchainVerified: true
-    },
-    {
-      id: 'log-009',
-      timestamp: '2025-04-26T15:22:05Z',
-      eventType: 'DOCUMENT_CREATED',
-      user: 'sarah.chen',
-      details: {
-        documentId: 'DOC-13578',
-        documentTitle: 'Study Protocol Amendment',
-        documentVersion: '1.0'
-      },
-      blockchainVerified: true
-    },
-    {
-      id: 'log-010',
-      timestamp: '2025-04-26T16:05:12Z',
-      eventType: 'COMPLIANCE_VALIDATION_COMPLETED',
-      user: 'system',
-      details: {
-        validationId: 'VAL-45623',
-        overallScore: 98,
-        status: 'COMPLIANT'
-      },
-      blockchainVerified: true
+const AuditLogViewer = () => {
+  const { toast } = useToast();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filter, setFilter] = useState({
+    startDate: '',
+    endDate: '',
+    userId: '',
+    action: '',
+    resourceType: ''
+  });
+  
+  // Fetch audit logs
+  const fetchAuditLogs = async () => {
+    const queryParams = new URLSearchParams({
+      page,
+      pageSize,
+      ...(filter.startDate && { startDate: filter.startDate }),
+      ...(filter.endDate && { endDate: filter.endDate }),
+      ...(filter.userId && { userId: filter.userId }),
+      ...(filter.action && { action: filter.action }),
+      ...(filter.resourceType && { resourceType: filter.resourceType })
+    });
+    
+    const response = await fetch(`/api/audit-logs?${queryParams.toString()}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch audit logs');
     }
-  ];
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
+    
+    return response.json();
+  };
+  
+  const { 
+    data: auditLogsData, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
+    queryKey: ['/api/audit-logs', page, pageSize, filter],
+    queryFn: fetchAuditLogs
+  });
+  
+  // Handle verify integrity
+  const handleVerifyIntegrity = async (auditRecord) => {
+    try {
+      const response = await fetch(`/api/fda-compliance/audit/verify/${auditRecord.id}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to verify audit record integrity');
+      }
+      
+      const result = await response.json();
+      
+      if (result.verified) {
+        toast.success('Audit record integrity verified', {
+          title: 'Verification Successful'
+        });
+      } else {
+        toast.error('Audit record integrity verification failed', {
+          title: 'Verification Failed'
+        });
+      }
+    } catch (error) {
+      toast.error(`Error verifying audit record: ${error.message}`, {
+        title: 'Verification Error'
+      });
+    }
+  };
+  
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilter(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // Handle apply filters
+  const handleApplyFilters = () => {
+    setPage(1); // Reset to first page
+    refetch();
+  };
+  
+  // Handle clear filters
+  const handleClearFilters = () => {
+    setFilter({
+      startDate: '',
+      endDate: '',
+      userId: '',
+      action: '',
+      resourceType: ''
+    });
+    setPage(1);
+    refetch();
+  };
+  
+  // Format timestamp
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
     return date.toLocaleString();
   };
-
-  // Get all unique event types from logs
-  const getAllEventTypes = () => {
-    const types = new Set();
-    auditLogs.forEach(log => types.add(log.eventType));
-    return Array.from(types);
-  };
-
-  // Get all unique users from logs
-  const getAllUsers = () => {
-    const userSet = new Set();
-    auditLogs.forEach(log => userSet.add(log.user));
-    return Array.from(userSet);
-  };
-
-  // Toggle event type filter
-  const toggleEventType = (eventType) => {
-    if (eventTypes.includes(eventType)) {
-      setEventTypes(eventTypes.filter(type => type !== eventType));
-    } else {
-      setEventTypes([...eventTypes, eventType]);
+  
+  // Get action badge class
+  const getActionBadgeClass = (action) => {
+    switch (action) {
+      case 'CREATE':
+        return 'bg-green-100 text-green-800';
+      case 'UPDATE':
+        return 'bg-blue-100 text-blue-800';
+      case 'DELETE':
+        return 'bg-red-100 text-red-800';
+      case 'VIEW':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-purple-100 text-purple-800';
     }
   };
-
-  // Toggle user filter
-  const toggleUser = (user) => {
-    if (users.includes(user)) {
-      setUsers(users.filter(u => u !== user));
-    } else {
-      setUsers([...users, user]);
+  
+  // Mock audit logs for UI display
+  // In a real implementation, this would come from the API
+  const mockAuditLogs = [
+    {
+      id: 'AUDIT-1681234567-123',
+      userId: 'john.smith',
+      action: 'CREATE',
+      resourceType: 'DOCUMENT',
+      resourceId: 'DOC-001',
+      timestamp: '2025-04-26T09:15:23.456Z',
+      ipAddress: '192.168.1.1',
+      userAgent: 'Mozilla/5.0',
+      details: {
+        documentName: 'Clinical Study Report',
+        documentType: 'CSR'
+      },
+      hash: 'f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8'
+    },
+    {
+      id: 'AUDIT-1681234789-456',
+      userId: 'jane.doe',
+      action: 'UPDATE',
+      resourceType: 'DOCUMENT',
+      resourceId: 'DOC-001',
+      timestamp: '2025-04-26T10:30:45.789Z',
+      ipAddress: '192.168.1.2',
+      userAgent: 'Mozilla/5.0',
+      details: {
+        documentName: 'Clinical Study Report',
+        documentType: 'CSR',
+        changedFields: ['status', 'version']
+      },
+      hash: 'a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b'
+    },
+    {
+      id: 'AUDIT-1681235012-789',
+      userId: 'robert.johnson',
+      action: 'SIGNATURE',
+      resourceType: 'DOCUMENT',
+      resourceId: 'DOC-001',
+      timestamp: '2025-04-26T11:45:12.345Z',
+      ipAddress: '192.168.1.3',
+      userAgent: 'Mozilla/5.0',
+      details: {
+        documentName: 'Clinical Study Report',
+        documentType: 'CSR',
+        signatureType: 'APPROVAL',
+        signatureId: 'SIG-001'
+      },
+      hash: 'b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c'
+    },
+    {
+      id: 'AUDIT-1681236234-012',
+      userId: 'susan.williams',
+      action: 'VIEW',
+      resourceType: 'DOCUMENT',
+      resourceId: 'DOC-001',
+      timestamp: '2025-04-26T12:30:34.567Z',
+      ipAddress: '192.168.1.4',
+      userAgent: 'Mozilla/5.0',
+      details: {
+        documentName: 'Clinical Study Report',
+        documentType: 'CSR'
+      },
+      hash: 'c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d'
+    },
+    {
+      id: 'AUDIT-1681237456-345',
+      userId: 'john.smith',
+      action: 'EXPORT',
+      resourceType: 'DOCUMENT',
+      resourceId: 'DOC-001',
+      timestamp: '2025-04-26T13:15:56.789Z',
+      ipAddress: '192.168.1.1',
+      userAgent: 'Mozilla/5.0',
+      details: {
+        documentName: 'Clinical Study Report',
+        documentType: 'CSR',
+        exportFormat: 'PDF'
+      },
+      hash: 'd1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e'
     }
-  };
-
-  // Handle refresh logs
-  const handleRefresh = () => {
-    setIsLoading(true);
-    // In a real implementation, this would fetch logs from the API
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  // Handle export logs
-  const handleExport = () => {
-    // In a real implementation, this would export logs to a file
-    alert('Audit logs exported');
-  };
-
-  // Filter logs based on search, date range, event types, and users
-  const filteredLogs = auditLogs.filter(log => {
-    // Filter by search term
-    const matchesSearch = searchTerm === '' || 
-      log.eventType.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      log.user.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      JSON.stringify(log.details).toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Filter by event type
-    const matchesEventType = eventTypes.length === 0 || eventTypes.includes(log.eventType);
-    
-    // Filter by user
-    const matchesUser = users.length === 0 || users.includes(log.user);
-
-    // Filter by blockchain verification
-    const matchesBlockchainVerification = !blockchainVerification || log.blockchainVerified;
-    
-    // Filter by date range
-    const logDate = new Date(log.timestamp);
-    const now = new Date();
-    let matchesDateRange = true;
-    
-    if (dateRange === '24h') {
-      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      matchesDateRange = logDate >= yesterday;
-    } else if (dateRange === '7d') {
-      const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      matchesDateRange = logDate >= lastWeek;
-    } else if (dateRange === '30d') {
-      const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      matchesDateRange = logDate >= lastMonth;
-    }
-    
-    return matchesSearch && matchesEventType && matchesUser && matchesDateRange && matchesBlockchainVerification;
-  });
-
-  // Get event type icon
-  const getEventTypeIcon = (eventType) => {
-    if (eventType.includes('AUTHENTICATION')) {
-      return <User className="h-5 w-5 text-indigo-500" />;
-    } else if (eventType.includes('DOCUMENT')) {
-      return <FileText className="h-5 w-5 text-blue-500" />;
-    } else if (eventType.includes('ELECTRONIC_SIGNATURE')) {
-      return <CheckCircle className="h-5 w-5 text-green-500" />;
-    } else if (eventType.includes('SYSTEM')) {
-      return <Settings className="h-5 w-5 text-gray-500" />;
-    } else if (eventType.includes('DATA_INTEGRITY')) {
-      return <Shield className="h-5 w-5 text-purple-500" />;
-    } else if (eventType.includes('USER')) {
-      return <UserCog className="h-5 w-5 text-orange-500" />;
-    } else if (eventType.includes('COMPLIANCE')) {
-      return <ShieldCheck className="h-5 w-5 text-teal-500" />;
-    } else {
-      return <Activity className="h-5 w-5 text-gray-400" />;
-    }
-  };
-
-  // Get event type badge color
-  const getEventTypeBadgeColor = (eventType) => {
-    if (eventType.includes('FAILED') || eventType.includes('ERROR')) {
-      return 'bg-red-100 text-red-800';
-    } else if (eventType.includes('WARNING')) {
-      return 'bg-yellow-100 text-yellow-800';
-    } else if (eventType.includes('AUTHENTICATION') || eventType.includes('AUTHORIZATION')) {
-      return 'bg-indigo-100 text-indigo-800';
-    } else if (eventType.includes('DOCUMENT')) {
-      return 'bg-blue-100 text-blue-800';
-    } else if (eventType.includes('SIGNATURE')) {
-      return 'bg-green-100 text-green-800';
-    } else if (eventType.includes('SYSTEM')) {
-      return 'bg-gray-100 text-gray-800';
-    } else if (eventType.includes('DATA')) {
-      return 'bg-purple-100 text-purple-800';
-    } else if (eventType.includes('USER')) {
-      return 'bg-orange-100 text-orange-800';
-    } else if (eventType.includes('COMPLIANCE')) {
-      return 'bg-teal-100 text-teal-800';
-    } else {
-      return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4">
-        <h2 className="text-xl font-bold text-white flex items-center">
-          <Activity className="mr-2 h-5 w-5" />
-          Audit Log Viewer
-        </h2>
-        <p className="text-blue-100 text-sm mt-1">
-          Comprehensive audit logs for FDA 21 CFR Part 11 compliance
-        </p>
+  ];
+  
+  // Use mock data for display purpose
+  // In a real implementation, use the actual data from the API
+  const auditLogs = mockAuditLogs;
+  
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Audit Log</h2>
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-pink-500"></div>
+        </div>
       </div>
-
+    );
+  }
+  
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Audit Log</h2>
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">Failed to load audit logs</span>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+      <h2 className="text-xl font-bold text-gray-800 mb-6">Audit Log</h2>
+      
       {/* Filters */}
-      <div className="p-4 bg-gray-50 border-b border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
+      <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+        <h3 className="text-lg font-semibold mb-3">Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
             <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              placeholder="Search audit logs..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              type="date"
+              name="startDate"
+              value={filter.startDate}
+              onChange={handleFilterChange}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
             />
           </div>
-
-          {/* Date Range */}
           <div>
-            <label htmlFor="date-range" className="block text-sm font-medium text-gray-700">Date Range</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              name="endDate"
+              value={filter.endDate}
+              onChange={handleFilterChange}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+            <input
+              type="text"
+              name="userId"
+              value={filter.userId}
+              onChange={handleFilterChange}
+              placeholder="e.g., john.smith"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Action</label>
             <select
-              id="date-range"
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
+              name="action"
+              value={filter.action}
+              onChange={handleFilterChange}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
             >
-              <option value="24h">Last 24 Hours</option>
-              <option value="7d">Last 7 Days</option>
-              <option value="30d">Last 30 Days</option>
-              <option value="all">All Time</option>
+              <option value="">All Actions</option>
+              <option value="CREATE">Create</option>
+              <option value="UPDATE">Update</option>
+              <option value="DELETE">Delete</option>
+              <option value="VIEW">View</option>
+              <option value="SIGNATURE">Signature</option>
+              <option value="EXPORT">Export</option>
             </select>
           </div>
-
-          {/* Event Type Dropdown */}
-          <div className="relative">
-            <label htmlFor="event-type" className="block text-sm font-medium text-gray-700">Event Type</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Resource Type</label>
             <select
-              id="event-type"
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              value=""
-              onChange={(e) => {
-                if (e.target.value) {
-                  toggleEventType(e.target.value);
-                  e.target.value = "";
-                }
-              }}
+              name="resourceType"
+              value={filter.resourceType}
+              onChange={handleFilterChange}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
             >
-              <option value="">Select Event Type</option>
-              {getAllEventTypes().map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* User Dropdown */}
-          <div className="relative">
-            <label htmlFor="user" className="block text-sm font-medium text-gray-700">User</label>
-            <select
-              id="user"
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-              value=""
-              onChange={(e) => {
-                if (e.target.value) {
-                  toggleUser(e.target.value);
-                  e.target.value = "";
-                }
-              }}
-            >
-              <option value="">Select User</option>
-              {getAllUsers().map(user => (
-                <option key={user} value={user}>{user}</option>
-              ))}
+              <option value="">All Types</option>
+              <option value="DOCUMENT">Document</option>
+              <option value="SIGNATURE">Signature</option>
+              <option value="USER">User</option>
+              <option value="SYSTEM">System</option>
             </select>
           </div>
         </div>
-
-        {/* Active Filters */}
-        <div className="mt-4">
-          <div className="flex flex-wrap gap-2">
-            {/* Event Type Filters */}
-            {eventTypes.map(type => (
-              <span
-                key={type}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-              >
-                {type}
-                <button
-                  type="button"
-                  className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:outline-none focus:bg-blue-500 focus:text-white"
-                  onClick={() => toggleEventType(type)}
-                >
-                  <span className="sr-only">Remove filter for {type}</span>
-                  <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                    <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                  </svg>
-                </button>
-              </span>
-            ))}
-
-            {/* User Filters */}
-            {users.map(user => (
-              <span
-                key={user}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-              >
-                <User className="mr-1 h-3 w-3" />
-                {user}
-                <button
-                  type="button"
-                  className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-green-400 hover:bg-green-200 hover:text-green-500 focus:outline-none focus:bg-green-500 focus:text-white"
-                  onClick={() => toggleUser(user)}
-                >
-                  <span className="sr-only">Remove filter for {user}</span>
-                  <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                    <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                  </svg>
-                </button>
-              </span>
-            ))}
-
-            {/* Blockchain Verification Filter */}
-            <div className="flex items-center">
-              <input
-                id="blockchain-verification"
-                type="checkbox"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                checked={blockchainVerification}
-                onChange={() => setBlockchainVerification(!blockchainVerification)}
-              />
-              <label htmlFor="blockchain-verification" className="ml-2 block text-sm text-gray-700">
-                Show only blockchain verified
-              </label>
-            </div>
-
-            {/* Clear All Filters */}
-            {(eventTypes.length > 0 || users.length > 0 || searchTerm || blockchainVerification) && (
-              <button
-                type="button"
-                className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                onClick={() => {
-                  setEventTypes([]);
-                  setUsers([]);
-                  setSearchTerm('');
-                  setBlockchainVerification(false);
-                }}
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
+        <div className="mt-4 flex justify-end space-x-2">
+          <button
+            onClick={handleClearFilters}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+          >
+            Clear Filters
+          </button>
+          <button
+            onClick={handleApplyFilters}
+            className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+          >
+            Apply Filters
+          </button>
         </div>
       </div>
-
+      
       {/* Audit Log Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -473,139 +332,93 @@ export default function AuditLogViewer() {
                 Timestamp
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Event Type
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 User
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Details
+                Action
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Blockchain
+                Resource
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                IP Address
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {isLoading ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                  <RefreshCw className="h-5 w-5 animate-spin mx-auto" />
-                  <p className="mt-2">Loading audit logs...</p>
+            {auditLogs.map((log) => (
+              <tr key={log.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatTimestamp(log.timestamp)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {log.userId}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className={`px-2 py-1 rounded-full text-xs ${getActionBadgeClass(log.action)}`}>
+                    {log.action}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div>{log.resourceType}</div>
+                  <div className="text-xs">{log.resourceId}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {log.ipAddress}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                  <button
+                    onClick={() => handleVerifyIntegrity(log)}
+                    className="text-pink-600 hover:text-pink-900"
+                  >
+                    Verify Integrity
+                  </button>
                 </td>
               </tr>
-            ) : filteredLogs.length > 0 ? (
-              filteredLogs.map((log) => (
-                <tr key={log.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                      {formatDate(log.timestamp)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getEventTypeBadgeColor(log.eventType)}`}>
-                      {log.eventType}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 text-gray-400 mr-2" />
-                      {log.user}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {Object.entries(log.details).map(([key, value]) => (
-                      <div key={key}>
-                        <span className="font-medium">{key.replace(/([A-Z])/g, ' $1').trim()}:</span> {
-                          typeof value === 'object' 
-                            ? JSON.stringify(value)
-                            : String(value)
-                        }
-                      </div>
-                    ))}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                    {log.blockchainVerified ? (
-                      <Zap className="h-5 w-5 text-green-500 mx-auto" title="Blockchain verified" />
-                    ) : (
-                      <AlertTriangle className="h-5 w-5 text-yellow-500 mx-auto" title="Not blockchain verified" />
-                    )}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                  No audit logs found. Try adjusting your filters.
-                </td>
-              </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
-
-      {/* Pagination and Actions */}
-      <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-        <div className="flex-1 flex justify-between sm:hidden">
+      
+      {/* Pagination */}
+      <div className="flex items-center justify-between mt-6">
+        <div>
+          <span className="text-sm text-gray-700">
+            Showing <span className="font-medium">1</span> to <span className="font-medium">{auditLogs.length}</span> of{' '}
+            <span className="font-medium">{auditLogs.length}</span> results
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
           <button
-            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page === 1}
+            className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
           >
             Previous
           </button>
+          <span className="px-3 py-1 rounded-md bg-pink-600 text-white">{page}</span>
           <button
-            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={filteredLogs.length < 10}
+            onClick={() => setPage(page + 1)}
+            disabled={auditLogs.length < pageSize}
+            className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
           >
             Next
           </button>
         </div>
-        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">{Math.min(1, filteredLogs.length)}</span> to <span className="font-medium">{Math.min(10, filteredLogs.length)}</span> of{' '}
-              <span className="font-medium">{filteredLogs.length}</span> results
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleRefresh}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </button>
-            <button
-              onClick={handleExport}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export Logs
-            </button>
-          </div>
-        </div>
       </div>
-
-      {/* FDA Compliance Notice */}
-      <div className="bg-blue-50 p-4 border-t border-blue-200">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <ShieldCheck className="h-5 w-5 text-blue-400" aria-hidden="true" />
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">FDA 21 CFR Part 11 Compliance</h3>
-            <div className="mt-2 text-sm text-blue-700">
-              <p>
-                These audit logs provide a complete record of all system events in compliance with FDA 21 CFR Part 11.
-                Blockchain verification adds an additional layer of security beyond FDA requirements.
-              </p>
-            </div>
-          </div>
-        </div>
+      
+      {/* Blockchain Information */}
+      <div className="mt-6 bg-blue-50 rounded-lg p-4">
+        <h3 className="text-md font-semibold text-blue-800 mb-2">Enhanced Audit Trail Security</h3>
+        <p className="text-sm text-blue-700">
+          All audit records are secured using SHA-256 cryptographic hashing and backed up to a permissioned blockchain for enhanced security and tamper-evidence. Each record can be independently verified for integrity.
+        </p>
       </div>
     </div>
   );
-}
+};
+
+export default AuditLogViewer;

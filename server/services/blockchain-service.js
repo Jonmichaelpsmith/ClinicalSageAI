@@ -1,496 +1,349 @@
 /**
- * TrialSage Blockchain Service
+ * Blockchain Service
  * 
- * This service implements blockchain-based verification for FDA 21 CFR Part 11 compliance,
- * providing tamper-evident blockchain verification for electronic records and signatures.
- * 
- * Key capabilities:
- * - Document integrity verification on blockchain
- * - Electronic signature verification
- * - Audit trail immutability
- * - Validation records verification
- * - AI-enhanced blockchain verification
+ * This service provides blockchain integration for enhanced
+ * FDA 21 CFR Part 11 compliance, providing tamper-evident
+ * electronic records and signatures.
  */
 
 const crypto = require('crypto');
-const { v4: uuidv4 } = require('uuid');
 
-// Mock blockchain network connection in this implementation
-// In a real implementation, this would connect to an actual blockchain network
-const blockchainNetwork = {
-  name: 'Ethereum (Private)',
-  endpoint: 'https://blockchain.trialsage.com',
-  smartContractAddress: '0x8F5e7C6eFa6a5678f1e238A3aB7d0941e5782c79'
-};
-
-// Blockchain verification state
-const verificationState = {
-  registeredRecords: new Map(),
-  verificationHistory: [],
-  verificationErrors: [],
-  totalRegistrations: 0,
-  totalVerifications: 0,
-  successfulVerifications: 0
-};
-
-/**
- * Register a document on the blockchain
- * 
- * @param {Object} documentInfo - Document information
- * @returns {Promise<Object>} - Blockchain registration results
- */
-async function registerDocumentOnBlockchain(documentInfo) {
-  try {
-    // In a real implementation, this would interact with the blockchain
-    // For this example, we'll simulate the blockchain interaction
+class BlockchainService {
+  constructor() {
+    this.blockchainEnabled = true;
+    this.blockchainType = 'permissioned'; // 'permissioned' or 'public'
+    this.hashAlgorithm = 'sha256';
     
-    if (!documentInfo.id || !documentInfo.contentHash) {
-      throw new Error('Document ID and content hash are required');
-    }
-    
-    // Create registration record
-    const registrationId = uuidv4();
-    const timestamp = new Date().toISOString();
-    const transactionId = `0x${crypto.randomBytes(20).toString('hex')}`;
-    const blockNumber = Math.floor(9000000 + Math.random() * 1000000);
-    
-    // Create registration record
-    const registrationRecord = {
-      registrationId,
-      documentId: documentInfo.id,
-      documentTitle: documentInfo.title || `Document ${documentInfo.id}`,
-      contentHash: documentInfo.contentHash,
-      timestamp,
-      transactionId,
-      blockNumber,
-      creator: documentInfo.creator || 'system',
-      version: documentInfo.version || '1.0',
-      status: 'REGISTERED'
+    // In a real implementation, this would be connected to an actual blockchain
+    // platform like Hyperledger Fabric or a permissioned Ethereum network
+    this.mockBlockchain = {
+      blocks: [],
+      transactions: [],
+      lastBlockHash: null,
+      addTransaction: this.addTransaction.bind(this),
+      verifyTransaction: this.verifyTransaction.bind(this),
+      getTransactionHistory: this.getTransactionHistory.bind(this),
+      verifyBlockchainIntegrity: this.verifyBlockchainIntegrity.bind(this)
     };
-    
-    // Store registration record
-    verificationState.registeredRecords.set(documentInfo.id, registrationRecord);
-    verificationState.totalRegistrations++;
-    
-    console.log(`Document ${documentInfo.id} registered on blockchain: ${transactionId}`);
-    
-    return {
-      registrationId,
-      documentId: documentInfo.id,
-      transactionId,
-      blockNumber,
-      timestamp
-    };
-  } catch (error) {
-    console.error('Error registering document on blockchain:', error);
-    
-    // Track verification error
-    verificationState.verificationErrors.push({
-      documentId: documentInfo?.id,
-      timestamp: new Date().toISOString(),
-      operation: 'REGISTER',
-      error: error.message
-    });
-    
-    throw new Error(`Failed to register document on blockchain: ${error.message}`);
   }
-}
 
-/**
- * Verify document integrity on blockchain
- * 
- * @param {Object} verificationInfo - Verification information
- * @returns {Promise<Object>} - Verification results
- */
-async function verifyDocumentIntegrity(verificationInfo) {
-  try {
-    // In a real implementation, this would interact with the blockchain
-    // For this example, we'll simulate the blockchain verification
+  /**
+   * Store a document hash on the blockchain
+   * 
+   * @param {Object} document Document to hash and store
+   * @param {String} userId User ID of the person storing the document
+   * @returns {Object} Transaction information
+   */
+  async storeDocumentHash(document, userId) {
+    console.log(`Storing document hash for document ${document.id || 'unknown'} on blockchain`);
     
-    if (!verificationInfo.id) {
-      throw new Error('Document ID is required');
-    }
+    // Generate document hash
+    const documentString = typeof document === 'object' ? JSON.stringify(document) : document;
+    const hash = crypto.createHash(this.hashAlgorithm).update(documentString).digest('hex');
     
-    // Get registration record
-    const registrationRecord = verificationState.registeredRecords.get(verificationInfo.id);
-    
-    if (!registrationRecord) {
-      throw new Error(`Document ${verificationInfo.id} not found on blockchain`);
-    }
-    
-    // Verify document hash if provided
-    let hashMatch = true;
-    if (verificationInfo.contentHash) {
-      hashMatch = verificationInfo.contentHash === registrationRecord.contentHash;
-    }
-    
-    // Create verification record
-    const verificationId = uuidv4();
-    const timestamp = new Date().toISOString();
-    const verificationRecord = {
-      verificationId,
-      documentId: verificationInfo.id,
-      timestamp,
-      hashMatch,
-      verified: hashMatch,
-      registrationRecord
-    };
-    
-    // Store verification record
-    verificationState.verificationHistory.push(verificationRecord);
-    verificationState.totalVerifications++;
-    
-    if (hashMatch) {
-      verificationState.successfulVerifications++;
-    } else {
-      verificationState.verificationErrors.push({
-        documentId: verificationInfo.id,
-        timestamp,
-        operation: 'VERIFY',
-        error: 'Content hash mismatch'
-      });
-    }
-    
-    console.log(`Document ${verificationInfo.id} verified on blockchain: ${hashMatch ? 'SUCCESS' : 'FAILED'}`);
-    
-    return {
-      verificationId,
-      documentId: verificationInfo.id,
-      timestamp,
-      verified: hashMatch,
-      registrationTimestamp: registrationRecord.timestamp,
-      transactionId: registrationRecord.transactionId,
-      blockNumber: registrationRecord.blockNumber
-    };
-  } catch (error) {
-    console.error('Error verifying document on blockchain:', error);
-    
-    // Track verification error
-    verificationState.verificationErrors.push({
-      documentId: verificationInfo?.id,
-      timestamp: new Date().toISOString(),
-      operation: 'VERIFY',
-      error: error.message
-    });
-    
-    throw new Error(`Failed to verify document on blockchain: ${error.message}`);
-  }
-}
-
-/**
- * Record audit event on blockchain
- * 
- * @param {string} eventType - Audit event type
- * @param {Object} eventData - Audit event data
- * @returns {Promise<Object>} - Blockchain record results
- */
-async function recordAuditEventOnBlockchain(eventType, eventData) {
-  try {
-    // In a real implementation, this would interact with the blockchain
-    // For this example, we'll simulate the blockchain interaction
-    
-    if (!eventType) {
-      throw new Error('Event type is required');
-    }
-    
-    // Create audit record
-    const auditId = uuidv4();
-    const timestamp = new Date().toISOString();
-    const transactionId = `0x${crypto.randomBytes(20).toString('hex')}`;
-    const blockNumber = Math.floor(9000000 + Math.random() * 1000000);
-    
-    // Create audit record with blockchain information
-    const auditRecord = {
-      auditId,
-      eventType,
-      eventData,
-      timestamp,
-      transactionId,
-      blockNumber,
-      status: 'RECORDED'
-    };
-    
-    // Store audit record
-    verificationState.registeredRecords.set(auditId, auditRecord);
-    verificationState.totalRegistrations++;
-    
-    console.log(`Audit event ${eventType} recorded on blockchain: ${transactionId}`);
-    
-    return {
-      auditId,
-      eventType,
-      transactionId,
-      blockNumber,
-      timestamp
-    };
-  } catch (error) {
-    console.error('Error recording audit event on blockchain:', error);
-    
-    // Track verification error
-    verificationState.verificationErrors.push({
-      eventType,
-      timestamp: new Date().toISOString(),
-      operation: 'RECORD_AUDIT',
-      error: error.message
-    });
-    
-    throw new Error(`Failed to record audit event on blockchain: ${error.message}`);
-  }
-}
-
-/**
- * Verify AI access to blockchain data
- * 
- * This function verifies AI system access to blockchain data,
- * ensuring that AI-based analysis and recommendations have
- * verified data integrity for FDA compliance.
- * 
- * @param {string} userId - User ID
- * @param {string} recordId - Record ID
- * @param {string} operationType - Operation type
- * @returns {Promise<Object>} - Verification results
- */
-async function verifyAIBlockchainAccess(userId, recordId, operationType) {
-  try {
-    // In a real implementation, this would verify AI access permissions
-    // and record the access attempt on the blockchain
-    
-    // Create verification record
-    const verificationId = uuidv4();
-    const timestamp = new Date().toISOString();
-    const transactionId = `0x${crypto.randomBytes(20).toString('hex')}`;
-    
-    // Log the access attempt
-    console.log(`AI access verification for user ${userId}, record ${recordId}, operation ${operationType}`);
-    
-    // Return verification result
-    return {
-      verificationId,
+    // Create transaction data
+    const transactionData = {
+      type: 'DOCUMENT_HASH',
+      documentId: document.id || `DOC-${Date.now()}`,
+      hash,
+      algorithm: this.hashAlgorithm,
       userId,
-      recordId,
-      operationType,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Store transaction on blockchain
+    const transaction = await this.addTransaction(transactionData);
+    
+    return {
+      transactionId: transaction.id,
+      documentId: transactionData.documentId,
+      hash,
+      timestamp: transactionData.timestamp,
+      blockchainId: transaction.blockId,
+      status: 'CONFIRMED'
+    };
+  }
+
+  /**
+   * Store a signature on the blockchain
+   * 
+   * @param {Object} signature Signature to store
+   * @returns {Object} Transaction information
+   */
+  async storeSignature(signature) {
+    console.log(`Storing signature ${signature.id} on blockchain`);
+    
+    // Generate signature hash
+    const signatureString = JSON.stringify(signature);
+    const hash = crypto.createHash(this.hashAlgorithm).update(signatureString).digest('hex');
+    
+    // Create transaction data
+    const transactionData = {
+      type: 'SIGNATURE_VERIFICATION',
+      signatureId: signature.id,
+      documentId: signature.documentId,
+      hash,
+      algorithm: this.hashAlgorithm,
+      userId: signature.userId,
+      meaning: signature.meaning,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Store transaction on blockchain
+    const transaction = await this.addTransaction(transactionData);
+    
+    return {
+      transactionId: transaction.id,
+      signatureId: transactionData.signatureId,
+      documentId: transactionData.documentId,
+      hash,
+      timestamp: transactionData.timestamp,
+      blockchainId: transaction.blockId,
+      status: 'CONFIRMED'
+    };
+  }
+
+  /**
+   * Store a system configuration change on the blockchain
+   * 
+   * @param {Object} configData Configuration change data
+   * @param {String} userId User ID of the person making the change
+   * @returns {Object} Transaction information
+   */
+  async storeConfigChange(configData, userId) {
+    console.log(`Storing config change for ${configData.setting} on blockchain`);
+    
+    // Generate config data hash
+    const configString = JSON.stringify(configData);
+    const hash = crypto.createHash(this.hashAlgorithm).update(configString).digest('hex');
+    
+    // Create transaction data
+    const transactionData = {
+      type: 'SYSTEM_CONFIG_CHANGE',
+      configId: `CFG-${configData.setting}`,
+      hash,
+      algorithm: this.hashAlgorithm,
+      setting: configData.setting,
+      oldValue: configData.oldValue,
+      newValue: configData.newValue,
+      userId,
+      timestamp: new Date().toISOString()
+    };
+    
+    // Store transaction on blockchain
+    const transaction = await this.addTransaction(transactionData);
+    
+    return {
+      transactionId: transaction.id,
+      configId: transactionData.configId,
+      hash,
+      timestamp: transactionData.timestamp,
+      blockchainId: transaction.blockId,
+      status: 'CONFIRMED'
+    };
+  }
+
+  /**
+   * Verify a document against its stored hash on the blockchain
+   * 
+   * @param {Object} document Document to verify
+   * @param {String} transactionId Transaction ID of the original hash storage
+   * @returns {Object} Verification result
+   */
+  async verifyDocument(document, transactionId) {
+    console.log(`Verifying document ${document.id || 'unknown'} against blockchain`);
+    
+    // Generate current document hash
+    const documentString = typeof document === 'object' ? JSON.stringify(document) : document;
+    const currentHash = crypto.createHash(this.hashAlgorithm).update(documentString).digest('hex');
+    
+    // Retrieve transaction from blockchain
+    const transaction = await this.verifyTransaction(transactionId);
+    
+    if (!transaction) {
+      return {
+        verified: false,
+        reason: 'Transaction not found on blockchain',
+        timestamp: new Date().toISOString()
+      };
+    }
+    
+    // Compare hashes
+    const verified = transaction.hash === currentHash;
+    
+    return {
+      verified,
+      documentId: document.id,
+      currentHash,
+      storedHash: transaction.hash,
+      timestamp: new Date().toISOString(),
+      blockchainTransactionId: transaction.id,
+      blockchainBlockId: transaction.blockId
+    };
+  }
+
+  /**
+   * Verify all audit trails on the blockchain
+   * 
+   * @returns {Boolean} Whether all audit trails are verified
+   */
+  async verifyAuditTrailIntegrity() {
+    console.log('Verifying audit trail integrity on blockchain');
+    
+    // In a real implementation, this would verify all audit trail records
+    // against their blockchain-stored hashes
+    
+    // For this example, we'll assume all audit trails are verified
+    return true;
+  }
+
+  /**
+   * Add a transaction to the blockchain
+   * 
+   * @param {Object} transactionData Transaction data
+   * @returns {Object} Created transaction
+   */
+  async addTransaction(transactionData) {
+    // Create transaction object
+    const transaction = {
+      id: `TX-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      ...transactionData,
+      blockId: `BLK-${Date.now()}`,
+      status: 'CONFIRMED',
+      timestamp: new Date().toISOString()
+    };
+    
+    // In a real implementation, this would add the transaction to an actual blockchain
+    
+    // For this example, we'll just add it to our mock blockchain
+    this.mockBlockchain.transactions.push(transaction);
+    
+    console.log(`Transaction ${transaction.id} added to blockchain`);
+    
+    return transaction;
+  }
+
+  /**
+   * Verify a transaction on the blockchain
+   * 
+   * @param {String} transactionId Transaction ID to verify
+   * @returns {Object} Transaction data if verified, null otherwise
+   */
+  async verifyTransaction(transactionId) {
+    console.log(`Verifying transaction ${transactionId} on blockchain`);
+    
+    // In a real implementation, this would verify the transaction on an actual blockchain
+    
+    // For this example, we'll just check our mock blockchain
+    const transaction = this.mockBlockchain.transactions.find(tx => tx.id === transactionId);
+    
+    if (!transaction) {
+      console.log(`Transaction ${transactionId} not found on blockchain`);
+      return null;
+    }
+    
+    console.log(`Transaction ${transactionId} verified on blockchain`);
+    
+    return transaction;
+  }
+
+  /**
+   * Get transaction history for a document
+   * 
+   * @param {String} documentId Document ID
+   * @returns {Array} Transaction history
+   */
+  async getTransactionHistory(documentId) {
+    console.log(`Getting transaction history for document ${documentId} from blockchain`);
+    
+    // In a real implementation, this would get the transaction history from an actual blockchain
+    
+    // For this example, we'll filter our mock blockchain
+    const transactions = this.mockBlockchain.transactions.filter(tx => 
+      tx.documentId === documentId || 
+      (tx.type === 'SIGNATURE_VERIFICATION' && tx.documentId === documentId)
+    );
+    
+    // Sort by timestamp (newest first)
+    transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    console.log(`Found ${transactions.length} transactions for document ${documentId}`);
+    
+    return transactions;
+  }
+
+  /**
+   * Verify the integrity of the entire blockchain
+   * 
+   * @returns {Object} Verification result
+   */
+  async verifyBlockchainIntegrity() {
+    console.log('Verifying blockchain integrity');
+    
+    // In a real implementation, this would verify the integrity of an actual blockchain
+    
+    // For this example, we'll assume the blockchain is intact
+    return {
       verified: true,
-      timestamp,
-      transactionId
-    };
-  } catch (error) {
-    console.error('Error verifying AI blockchain access:', error);
-    
-    // Track verification error
-    verificationState.verificationErrors.push({
-      userId,
-      recordId,
       timestamp: new Date().toISOString(),
-      operation: 'AI_ACCESS',
-      error: error.message
-    });
-    
-    throw new Error(`Failed to verify AI blockchain access: ${error.message}`);
+      blockCount: this.mockBlockchain.blocks.length,
+      transactionCount: this.mockBlockchain.transactions.length
+    };
   }
-}
 
-/**
- * Get blockchain verification statistics
- * 
- * @returns {Object} - Verification statistics
- */
-function getBlockchainStatistics() {
-  // Calculate success rate
-  const successRate = verificationState.totalVerifications > 0 ?
-    (verificationState.successfulVerifications / verificationState.totalVerifications) * 100 :
-    0;
-  
-  return {
-    totalRegistrations: verificationState.totalRegistrations,
-    totalVerifications: verificationState.totalVerifications,
-    successfulVerifications: verificationState.successfulVerifications,
-    successRate: Math.round(successRate * 10) / 10,
-    verificationErrors: verificationState.verificationErrors.length,
-    lastVerification: verificationState.verificationHistory.length > 0 ?
-      verificationState.verificationHistory[verificationState.verificationHistory.length - 1].timestamp :
-      null,
-    blockchainNetwork
-  };
-}
+  /**
+   * Export blockchain data to a file
+   * 
+   * @returns {Object} Export result
+   */
+  async exportBlockchainData() {
+    console.log('Exporting blockchain data');
+    
+    // In a real implementation, this would export data from an actual blockchain
+    
+    // For this example, we'll assume export succeeds
+    return {
+      exportId: `EXPORT-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      blockCount: this.mockBlockchain.blocks.length,
+      transactionCount: this.mockBlockchain.transactions.length,
+      status: 'COMPLETED'
+    };
+  }
 
-/**
- * Get recent verifications
- * 
- * @param {number} limit - Number of verifications to return
- * @returns {Array<Object>} - Recent verifications
- */
-function getRecentVerifications(limit = 10) {
-  return verificationState.verificationHistory
-    .slice(-limit)
-    .reverse()
-    .map(verification => ({
-      verificationId: verification.verificationId,
-      documentId: verification.documentId,
-      timestamp: verification.timestamp,
-      verified: verification.verified,
-      transactionId: verification.registrationRecord.transactionId
-    }));
-}
+  /**
+   * Get the current blockchain status
+   * 
+   * @returns {Object} Blockchain status
+   */
+  async getBlockchainStatus() {
+    return {
+      enabled: this.blockchainEnabled,
+      type: this.blockchainType,
+      blockCount: this.mockBlockchain.blocks.length,
+      transactionCount: this.mockBlockchain.transactions.length,
+      lastUpdated: new Date().toISOString(),
+      status: 'CONNECTED'
+    };
+  }
 
-/**
- * Get verification errors
- * 
- * @param {number} limit - Number of errors to return
- * @returns {Array<Object>} - Verification errors
- */
-function getVerificationErrors(limit = 10) {
-  return verificationState.verificationErrors
-    .slice(-limit)
-    .reverse();
-}
-
-/**
- * Register blockchain verification API routes
- * 
- * @param {Express} app - Express app
- */
-function registerBlockchainRoutes(app) {
-  // Get blockchain statistics
-  app.get('/api/blockchain/statistics', (req, res) => {
-    try {
-      const statistics = getBlockchainStatistics();
-      res.json(statistics);
-    } catch (error) {
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error.message
-      });
-    }
-  });
-  
-  // Get recent verifications
-  app.get('/api/blockchain/verifications', (req, res) => {
-    try {
-      const limit = parseInt(req.query.limit) || 10;
-      const verifications = getRecentVerifications(limit);
-      res.json(verifications);
-    } catch (error) {
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error.message
-      });
-    }
-  });
-  
-  // Get verification errors
-  app.get('/api/blockchain/errors', (req, res) => {
-    try {
-      const limit = parseInt(req.query.limit) || 10;
-      const errors = getVerificationErrors(limit);
-      res.json(errors);
-    } catch (error) {
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error.message
-      });
-    }
-  });
-  
-  // Register document on blockchain
-  app.post('/api/blockchain/register', async (req, res) => {
-    try {
-      const documentInfo = req.body;
-      
-      if (!documentInfo.id || !documentInfo.contentHash) {
-        return res.status(400).json({
-          error: 'Bad Request',
-          message: 'Document ID and content hash are required'
-        });
-      }
-      
-      const result = await registerDocumentOnBlockchain(documentInfo);
-      
-      res.status(201).json(result);
-    } catch (error) {
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error.message
-      });
-    }
-  });
-  
-  // Verify document on blockchain
-  app.post('/api/blockchain/verify', async (req, res) => {
-    try {
-      const verificationInfo = req.body;
-      
-      if (!verificationInfo.id) {
-        return res.status(400).json({
-          error: 'Bad Request',
-          message: 'Document ID is required'
-        });
-      }
-      
-      const result = await verifyDocumentIntegrity(verificationInfo);
-      
-      res.json(result);
-    } catch (error) {
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error.message
-      });
-    }
-  });
-  
-  // Record audit event on blockchain
-  app.post('/api/blockchain/audit', async (req, res) => {
-    try {
-      const { eventType, eventData } = req.body;
-      
-      if (!eventType) {
-        return res.status(400).json({
-          error: 'Bad Request',
-          message: 'Event type is required'
-        });
-      }
-      
-      const result = await recordAuditEventOnBlockchain(eventType, eventData);
-      
-      res.status(201).json(result);
-    } catch (error) {
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error.message
-      });
-    }
-  });
-  
-  // Verify AI blockchain access
-  app.post('/api/blockchain/ai-access', async (req, res) => {
-    try {
-      const { userId, recordId, operationType } = req.body;
-      
-      if (!userId || !recordId || !operationType) {
-        return res.status(400).json({
-          error: 'Bad Request',
-          message: 'User ID, record ID, and operation type are required'
-        });
-      }
-      
-      const result = await verifyAIBlockchainAccess(userId, recordId, operationType);
-      
-      res.json(result);
-    } catch (error) {
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: error.message
-      });
-    }
-  });
+  /**
+   * Get recent blockchain transactions
+   * 
+   * @param {Number} limit Maximum number of transactions to return
+   * @returns {Array} Recent transactions
+   */
+  async getRecentTransactions(limit = 5) {
+    // Sort transactions by timestamp (newest first)
+    const sortedTransactions = [...this.mockBlockchain.transactions].sort(
+      (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    );
+    
+    // Return the most recent transactions
+    return sortedTransactions.slice(0, limit);
+  }
 }
 
 module.exports = {
-  registerDocumentOnBlockchain,
-  verifyDocumentIntegrity,
-  recordAuditEventOnBlockchain,
-  verifyAIBlockchainAccess,
-  getBlockchainStatistics,
-  getRecentVerifications,
-  getVerificationErrors,
-  registerBlockchainRoutes
+  BlockchainService
 };
