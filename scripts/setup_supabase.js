@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import pg from 'pg';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -6,8 +6,7 @@ dotenv.config();
 
 // Check for required environment variables
 const requiredEnvVars = [
-  'SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY'
+  'DATABASE_URL'
 ];
 
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -16,34 +15,30 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Initialize PostgreSQL client
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL
+});
 
 async function setupDatabase() {
-  console.log('Setting up TrialSage Vault database in Supabase...');
+  console.log('Setting up TrialSage Vault database...');
+  const client = await pool.connect();
 
   try {
-    // Create the uuid extension if it doesn't exist
+    // Enable the uuid-ossp extension if it doesn't exist
     console.log('Ensuring uuid-ossp extension is enabled...');
-    const { error: extensionError } = await supabase.from('_postgrest_rpc').select(`
-      CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-    `).execute().catch((e) => {
-      // Suppressing extension error - might not have permission to create extensions
-      console.log('Note: UUID extension might already be enabled in Supabase by default');
-      return { error: null };
-    });
-
-    if (extensionError) {
-      console.warn(`Warning: Could not create UUID extension, but continuing: ${extensionError.message}`);
+    try {
+      await client.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+      console.log('UUID extension enabled successfully');
+    } catch (extensionError) {
+      // Might not have permissions to create extensions in managed databases
+      console.warn(`Note: Could not create UUID extension, but continuing: ${extensionError.message}`);
     }
 
     // Create documents table using SQL
     console.log('Creating documents table...');
-    const { error: documentsError } = await supabase.from('_postgrest_rpc').select(`
-      CREATE TABLE IF NOT EXISTS documents (
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS vault_documents (
         id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         title text NOT NULL,
         description text,
@@ -62,16 +57,13 @@ async function setupDatabase() {
         created_at timestamp with time zone DEFAULT now(),
         updated_at timestamp with time zone DEFAULT now()
       );
-    `).execute();
-
-    if (documentsError) {
-      throw new Error(`Failed to create documents table: ${documentsError.message}`);
-    }
+    `);
+    console.log('Documents table created successfully');
 
     // Create audit_trail table using SQL
     console.log('Creating audit_trail table...');
-    const { error: auditError } = await supabase.from('_postgrest_rpc').select(`
-      CREATE TABLE IF NOT EXISTS audit_trail (
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS vault_audit_trail (
         id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id text NOT NULL,
         event_type text NOT NULL,
@@ -79,16 +71,13 @@ async function setupDatabase() {
         ip_address text,
         timestamp timestamp with time zone DEFAULT now()
       );
-    `).execute();
-
-    if (auditError) {
-      throw new Error(`Failed to create audit_trail table: ${auditError.message}`);
-    }
+    `);
+    console.log('Audit trail table created successfully');
 
     // Create users table using SQL
     console.log('Creating users table...');
-    const { error: usersError } = await supabase.from('_postgrest_rpc').select(`
-      CREATE TABLE IF NOT EXISTS users (
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS vault_users (
         id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         username text UNIQUE NOT NULL,
         password text NOT NULL,
@@ -99,39 +88,36 @@ async function setupDatabase() {
         created_at timestamp with time zone DEFAULT now(),
         updated_at timestamp with time zone DEFAULT now()
       );
-    `).execute();
-
-    if (usersError) {
-      throw new Error(`Failed to create users table: ${usersError.message}`);
-    }
+    `);
+    console.log('Users table created successfully');
 
     // Create admin user if it doesn't exist
     console.log('Creating admin user...');
-    const { data: existingAdmin, error: checkAdminError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('username', 'admin')
-      .single();
-
-    if (checkAdminError && checkAdminError.code !== 'PGRST116') {
-      throw new Error(`Failed to check for admin user: ${checkAdminError.message}`);
-    }
+    const checkAdminQuery = await client.query(
+      'SELECT id FROM vault_users WHERE username = $1',
+      ['admin']
+    );
+    
+    const existingAdmin = checkAdminQuery.rows.length > 0 ? checkAdminQuery.rows[0] : null;
 
     if (!existingAdmin) {
-      const { error: insertAdminError } = await supabase
-        .from('users')
-        .insert({
-          username: 'admin',
-          password: 'admin123', // This would be properly hashed in production
-          email: 'admin@trialsage.com',
-          name: 'TrialSage Administrator',
-          role: 'admin',
-          tenant_id: 'default'
-        });
-
-      if (insertAdminError) {
-        throw new Error(`Failed to create admin user: ${insertAdminError.message}`);
-      }
+      await client.query(`
+        INSERT INTO vault_users (
+          username, 
+          password, 
+          email, 
+          name, 
+          role, 
+          tenant_id
+        ) VALUES (
+          'admin',
+          'admin123', -- This would be properly hashed in production
+          'admin@trialsage.com',
+          'TrialSage Administrator',
+          'admin',
+          'default'
+        )
+      `);
       console.log('Admin user created successfully');
     } else {
       console.log('Admin user already exists');
@@ -141,6 +127,13 @@ async function setupDatabase() {
   } catch (error) {
     console.error('Database setup failed:', error);
     process.exit(1);
+  } finally {
+    // Release the client back to the pool
+    client.release();
+    
+    // Close the pool
+    await pool.end();
+    console.log('Database connection closed');
   }
 }
 
