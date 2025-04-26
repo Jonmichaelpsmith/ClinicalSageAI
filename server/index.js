@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import documentRoutes from './routes/documents.js';
 import auditRoutes from './routes/audit.js';
 import { verifyJwt } from './middleware/auth.js';
+import { logger, sentryMiddleware } from './utils/logger.js';
 
 const app = express();
 
@@ -24,6 +25,21 @@ app.use(rateLimit({
 
 app.use(express.json({ limit: '50mb' }));
 
+// Logging middleware - capture request info
+app.use((req, res, next) => { 
+  logger.info({ 
+    url: req.url, 
+    method: req.method,
+    user: req.user?.id, 
+    ip: req.ip,
+    userAgent: req.headers['user-agent']
+  }); 
+  next(); 
+});
+
+// Sentry error handling middleware
+app.use(sentryMiddleware);
+
 // Public routes
 app.use('/api/auth', authRoutes);
 
@@ -35,4 +51,13 @@ app.use('/api/audit', verifyJwt, auditRoutes);
 app.get('/health', (_, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`TrialSage Vault API running on ${PORT}`));
+app.listen(PORT, () => {
+  logger.info(`TrialSage Vault API running on port ${PORT}`);
+  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  if (!process.env.SENTRY_DSN) {
+    logger.warn('SENTRY_DSN not configured. Error tracking is disabled.');
+  } else {
+    logger.info('Sentry monitoring configured successfully');
+  }
+});
