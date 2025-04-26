@@ -22,114 +22,30 @@ const DownloadIcon = () => (
 
 const FDAComplianceDocumentation = () => {
   const [activeCategory, setActiveCategory] = useState('guidance');
-
-  // Sample FDA compliance documentation data
-  const documentData = {
-    guidance: [
-      {
-        id: 'fda-guidance-1',
-        title: 'FDA 21 CFR Part 11 Guidance for Industry',
-        description: 'Official FDA guidance for implementing 21 CFR Part 11 compliance for electronic records and signatures.',
-        date: '2023-11-15',
-        type: 'pdf',
-        size: '2.4 MB'
-      },
-      {
-        id: 'fda-guidance-2',
-        title: 'Electronic Signatures in Global and National Commerce',
-        description: 'Regulatory guidance on electronic signature requirements for pharma and medical device industries.',
-        date: '2024-01-22',
-        type: 'pdf',
-        size: '1.8 MB'
-      },
-      {
-        id: 'fda-guidance-3',
-        title: 'Data Integrity and Compliance With Drug CGMP',
-        description: 'Questions and answers guidance for industry on data integrity compliance.',
-        date: '2024-02-05',
-        type: 'pdf',
-        size: '1.2 MB'
+  const [documents, setDocuments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Fetch documents from API based on active category
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/fda-compliance/documents?category=${activeCategory}`);
+        if (response.ok) {
+          const data = await response.json();
+          setDocuments(data);
+        } else {
+          console.error('Failed to fetch documents');
+        }
+      } catch (error) {
+        console.error('Error fetching documents:', error);
+      } finally {
+        setIsLoading(false);
       }
-    ],
-    templates: [
-      {
-        id: 'template-1',
-        title: 'Validation Master Plan Template',
-        description: 'Standard template for creating a comprehensive system validation master plan.',
-        date: '2024-03-10',
-        type: 'docx',
-        size: '780 KB'
-      },
-      {
-        id: 'template-2',
-        title: 'Computer System Validation Protocol',
-        description: 'Template for validation protocols for computerized systems under 21 CFR Part 11.',
-        date: '2024-03-15',
-        type: 'docx',
-        size: '950 KB'
-      },
-      {
-        id: 'template-3',
-        title: 'Electronic Signature Compliance Checklist',
-        description: 'Comprehensive checklist for verifying electronic signature compliance.',
-        date: '2024-02-28',
-        type: 'xlsx',
-        size: '620 KB'
-      }
-    ],
-    validation: [
-      {
-        id: 'validation-1',
-        title: 'TrialSage Validation Summary Report',
-        description: 'Summary of validation testing performed on the TrialSage platform for 21 CFR Part 11 compliance.',
-        date: '2025-04-15',
-        type: 'pdf',
-        size: '4.2 MB'
-      },
-      {
-        id: 'validation-2',
-        title: 'Blockchain Security Validation Report',
-        description: 'Technical validation of the blockchain security implementation for tamper-evident records.',
-        date: '2025-04-10',
-        type: 'pdf',
-        size: '3.7 MB'
-      },
-      {
-        id: 'validation-3',
-        title: 'Electronic Signature Validation Evidence',
-        description: 'Validation evidence for electronic signature implementation compliance.',
-        date: '2025-04-05',
-        type: 'pdf',
-        size: '2.9 MB'
-      }
-    ],
-    procedures: [
-      {
-        id: 'procedure-1',
-        title: 'Electronic Record Management SOP',
-        description: 'Standard Operating Procedure for managing electronic records in compliance with 21 CFR Part 11.',
-        date: '2024-03-22',
-        type: 'pdf',
-        size: '1.5 MB'
-      },
-      {
-        id: 'procedure-2',
-        title: 'System Access Control Procedure',
-        description: 'Procedures for implementing and maintaining system access controls for compliance.',
-        date: '2024-03-24',
-        type: 'pdf',
-        size: '1.2 MB'
-      },
-      {
-        id: 'procedure-3',
-        title: 'Audit Trail Review SOP',
-        description: 'Standard procedures for reviewing and maintaining electronic audit trails.',
-        date: '2024-03-18',
-        type: 'pdf',
-        size: '980 KB'
-      }
-    ]
-  };
+    };
+    
+    fetchDocuments();
+  }, [activeCategory]);
 
   const categories = [
     { id: 'guidance', label: 'FDA Guidance' },
@@ -175,46 +91,57 @@ const FDAComplianceDocumentation = () => {
         </div>
         
         <div className="divide-y divide-gray-200">
-          {documentData[activeCategory].map((doc) => (
-            <div key={doc.id} className="px-4 py-4 grid grid-cols-12 text-sm">
-              <div className="col-span-6">
-                <div className="flex items-start">
-                  <span className="flex-shrink-0 text-gray-400 mr-3">
-                    <DocumentIcon />
-                  </span>
-                  <div>
-                    <div className="font-medium text-gray-900">{doc.title}</div>
-                    <div className="text-gray-500 mt-1">{doc.description}</div>
+          {isLoading ? (
+            <div className="px-4 py-8 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500 mb-4"></div>
+              <p className="text-gray-600">Loading documents...</p>
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-gray-600">No documents found in this category.</p>
+            </div>
+          ) : (
+            documents.map((doc) => (
+              <div key={doc.id} className="px-4 py-4 grid grid-cols-12 text-sm">
+                <div className="col-span-6">
+                  <div className="flex items-start">
+                    <span className="flex-shrink-0 text-gray-400 mr-3">
+                      <DocumentIcon />
+                    </span>
+                    <div>
+                      <div className="font-medium text-gray-900">{doc.title}</div>
+                      <div className="text-gray-500 mt-1">{doc.description}</div>
+                    </div>
                   </div>
                 </div>
+                <div className="col-span-2 flex items-center text-gray-500">
+                  {doc.date}
+                </div>
+                <div className="col-span-2 flex items-center">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    doc.type === 'pdf' 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : doc.type === 'docx' 
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {doc.type.toUpperCase()}
+                  </span>
+                </div>
+                <div className="col-span-1 flex items-center text-gray-500">
+                  {doc.size}
+                </div>
+                <div className="col-span-1 flex items-center">
+                  <button 
+                    className="text-pink-600 hover:text-pink-900"
+                    title="Download document"
+                  >
+                    <DownloadIcon />
+                  </button>
+                </div>
               </div>
-              <div className="col-span-2 flex items-center text-gray-500">
-                {doc.date}
-              </div>
-              <div className="col-span-2 flex items-center">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                  doc.type === 'pdf' 
-                    ? 'bg-blue-100 text-blue-800' 
-                    : doc.type === 'docx' 
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {doc.type.toUpperCase()}
-                </span>
-              </div>
-              <div className="col-span-1 flex items-center text-gray-500">
-                {doc.size}
-              </div>
-              <div className="col-span-1 flex items-center">
-                <button 
-                  className="text-pink-600 hover:text-pink-900"
-                  title="Download document"
-                >
-                  <DownloadIcon />
-                </button>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
