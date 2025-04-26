@@ -1,0 +1,128 @@
+// ───────────────────────────────────────────────────────────────
+// TrialSage Vault™ – Role‑Based Dashboards (Backend + Front‑end)
+// 📂 server/routes/dashboard.js – aggregates per‑role KPI widgets
+//----------------------------------------------------------------
+import { Router } from 'express';
+import { supabase } from '../lib/supabaseClient.js';
+import { verifyJwt } from '../middleware/auth.js';
+
+const router = Router();
+
+router.get('/', verifyJwt, async (req, res) => {
+  const { role, tenantId } = req.user; // role: Regulatory | ClinicalOps | CMC | QA | Executive
+  try {
+    switch (role) {
+      case 'Regulatory':
+        const [subs, pending] = await Promise.all([
+          supabase.from('submissions').select('id').eq('tenant_id', tenantId),
+          supabase.from('documents').select('id').eq('tenant_id', tenantId).eq('status', 'Draft')
+        ]);
+        return res.json({
+          kpis: {
+            totalSubmissions: subs.data?.length || 0,
+            docsInDraft: pending.data?.length || 0
+          }
+        });
+      case 'ClinicalOps':
+        const [sites, docs] = await Promise.all([
+          supabase.from('sites').select('id').eq('tenant_id', tenantId),
+          supabase.from('documents').select('id').eq('tenant_id', tenantId).eq('status', 'Review')
+        ]);
+        return res.json({ kpis: { totalSites: sites.data?.length || 0, docsAwaitingReview: docs.data?.length || 0 } });
+      case 'CMC':
+        const batches = await supabase.from('batch_records').select('id').eq('tenant_id', tenantId);
+        return res.json({ kpis: { batchRecords: batches.data?.length || 0 } });
+      case 'QA':
+        const [caps, deviations] = await Promise.all([
+          supabase.from('capas').select('id').eq('tenant_id', tenantId).eq('status', 'Open'),
+          supabase.from('deviations').select('id').eq('tenant_id', tenantId).eq('status', 'Open')
+        ]);
+        return res.json({ kpis: { openCAPAs: caps.data?.length || 0, openDeviations: deviations.data?.length || 0 } });
+      case 'Executive':
+      default:
+        const [{ data: docsCount }, { data: subsCount }] = await Promise.all([
+          supabase.from('documents').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+          supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId)
+        ]);
+        return res.json({ kpis: { allDocs: docsCount?.length || 0, allSubs: subsCount?.length || 0 } });
+    }
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
+});
+
+export default router;
+
+//----------------------------------------------------------------
+// 📂 client/context/UserContext.js – expose user + role from JWT
+//----------------------------------------------------------------
+import React, { createContext, useContext } from 'react';
+import jwtDecode from 'jwt-decode';
+
+export const UserContext = createContext(null);
+export function UserProvider({ children }) {
+  const token = localStorage.getItem('token');
+  const user = token ? jwtDecode(token) : null; // { id, role, tenantId }
+  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
+}
+export const useUser = () => useContext(UserContext);
+
+//----------------------------------------------------------------
+// 📂 client/pages/RoleDashboard.jsx – UI per‑role widgets
+//----------------------------------------------------------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useUser } from '../context/UserContext.js';
+import { Card, CardContent } from '@/components/ui/card';
+
+function KpiCard({ label, value }) {
+  return (
+    <Card className="shadow-md">
+      <CardContent className="p-4 text-center">
+        <p className="text-2xl font-bold text-blue-700">{value}</p>
+        <p className="text-gray-600 text-sm mt-1">{label}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function RoleDashboard() {
+  const [kpis, setKpis] = useState(null);
+  const user = useUser();
+  useEffect(() => {
+    (async () => {
+      const { data } = await axios.get('/api/dashboard');
+      setKpis(data.kpis);
+    })();
+  }, []);
+
+  if (!kpis) return <div className="p-8">Loading dashboard…</div>;
+  return (
+    <div className="p-8 space-y-6">
+      <h1 className="text-2xl font-bold">Welcome, {user?.role}</h1>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {Object.entries(kpis).map(([label, val]) => (
+          <KpiCard key={label} label={label} value={val} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+//----------------------------------------------------------------
+// 🔗 Integration steps
+//----------------------------------------------------------------
+// server/index.js – add:
+//     import dashboardRoutes from './routes/dashboard.js';
+//     app.use('/api/dashboard', dashboardRoutes);
+
+// client/src/App.jsx – wrap <RolesDashboard/> in <UserProvider>
+//     import RoleDashboard from './pages/RoleDashboard.jsx';
+//     import { UserProvider } from './context/UserContext.js';
+//
+//     export default function App() { return (
+//         <UserProvider>
+//            <RoleDashboard />
+//         </UserProvider>
+//     ); }
+// ───────────────────────────────────────────────────────────────
