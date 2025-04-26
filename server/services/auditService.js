@@ -109,6 +109,18 @@ export async function listAuditLogs(tenantId, filters = {}, page = 1, limit = 10
       queryParams.push(filters.endDate);
     }
     
+    // Special filter for anomalies
+    if (filters.anomaliesOnly) {
+      whereClause += ` AND (
+        action_type = 'Delete' OR 
+        action_type = 'BulkDelete' OR 
+        success = false OR 
+        description ILIKE '%error%' OR 
+        description ILIKE '%fail%' OR 
+        description ILIKE '%denied%'
+      )`;
+    }
+    
     // Calculate pagination
     const offset = (page - 1) * limit;
     
@@ -144,7 +156,7 @@ export async function listAuditLogs(tenantId, filters = {}, page = 1, limit = 10
       resourceId: row.resource_id,
       resourceType: row.resource_type,
       success: row.success,
-      metadata: row.metadata,
+      metadata: row.metadata || {},
       timestamp: row.timestamp
     }));
     
@@ -163,6 +175,63 @@ export async function listAuditLogs(tenantId, filters = {}, page = 1, limit = 10
       logs: [],
       pagination: { total: 0, page, limit, pages: 0 }
     };
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Bulk delete audit logs based on filters
+ * 
+ * @param {string} tenantId - Tenant ID to filter by (for multi-tenant security)
+ * @param {Object} filters - Optional filters
+ * @returns {Promise<Object>} - Result with count of deleted logs
+ */
+export async function bulkDeleteAuditLogs(tenantId, filters = {}) {
+  const client = await pool.connect();
+  
+  try {
+    // Build the WHERE clause based on filters (similar to listAuditLogs)
+    let whereClause = 'tenant_id = $1';
+    const queryParams = [tenantId];
+    let paramCount = 1;
+    
+    // Add filters if provided
+    if (filters.userId) {
+      paramCount++;
+      whereClause += ` AND user_id = $${paramCount}`;
+      queryParams.push(filters.userId);
+    }
+    
+    if (filters.actionType) {
+      paramCount++;
+      whereClause += ` AND action_type = $${paramCount}`;
+      queryParams.push(filters.actionType);
+    }
+    
+    if (filters.startDate) {
+      paramCount++;
+      whereClause += ` AND timestamp >= $${paramCount}`;
+      queryParams.push(filters.startDate);
+    }
+    
+    if (filters.endDate) {
+      paramCount++;
+      whereClause += ` AND timestamp <= $${paramCount}`;
+      queryParams.push(filters.endDate);
+    }
+    
+    // Execute the DELETE query
+    const query = `DELETE FROM audit_logs WHERE ${whereClause} RETURNING id`;
+    const result = await client.query(query, queryParams);
+    
+    // Return the count of deleted rows
+    return {
+      deletedCount: result.rowCount
+    };
+  } catch (error) {
+    console.error('Error bulk deleting audit logs:', error);
+    throw error;
   } finally {
     client.release();
   }
@@ -252,6 +321,18 @@ export async function exportAuditLogsToCSV(tenantId, filters = {}) {
       paramCount++;
       whereClause += ` AND timestamp <= $${paramCount}`;
       queryParams.push(filters.endDate);
+    }
+    
+    // Special filter for anomalies (same as in listAuditLogs)
+    if (filters.anomaliesOnly) {
+      whereClause += ` AND (
+        action_type = 'Delete' OR 
+        action_type = 'BulkDelete' OR 
+        success = false OR 
+        description ILIKE '%error%' OR 
+        description ILIKE '%fail%' OR 
+        description ILIKE '%denied%'
+      )`;
     }
     
     // Query to get all matching audit logs
