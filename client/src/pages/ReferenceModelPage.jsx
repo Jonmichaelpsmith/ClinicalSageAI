@@ -8,10 +8,12 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+} from '@/components/ui';
+import { 
   Alert,
   AlertTitle,
   AlertDescription,
-} from '@/components/ui';
+} from '@/components/ui/alert';
 
 // Use simple icons component instead of lucide-react to avoid import issues
 const iconStyles = {
@@ -43,8 +45,8 @@ function ReferenceModelPage() {
           <h1 className="text-2xl font-bold">Document Reference Model</h1>
         </div>
         
-        <Alert variant="warning" className="mb-4">
-          <Icon.AlertTriangle className="h-4 w-4" />
+        <Alert className="mb-4 border-yellow-200 bg-yellow-50 text-yellow-800 pl-9 relative">
+          <Icon.AlertTriangle className="h-4 w-4 absolute left-3 top-4" />
           <AlertTitle>Database Connection Warning</AlertTitle>
           <AlertDescription>
             This is a demonstration of the reference model interface. The database connection may 
@@ -53,16 +55,14 @@ function ReferenceModelPage() {
           </AlertDescription>
         </Alert>
         
-        <div className="p-2 mb-6 border border-hotpink-200 bg-hotpink-50 rounded-md">
-          <div className="flex items-start gap-3">
-            <Icon.BookOpen />
-            <div>
-              <h3 className="font-medium text-hotpink-900">Veeva Quality Content Reference Model</h3>
-              <p className="text-sm text-hotpink-700">
-                This document management system follows the Veeva Quality Content Reference Model, 
-                providing a standardized structure for organizing regulatory and quality documents.
-              </p>
-            </div>
+        <div className="p-4 mb-6 border border-hotpink-200 bg-hotpink-50 rounded-md pl-9 relative">
+          <Icon.BookOpen className="absolute left-3 top-4" />
+          <div>
+            <h3 className="font-medium text-hotpink-900">Veeva Quality Content Reference Model</h3>
+            <p className="text-sm text-hotpink-700">
+              This document management system follows the Veeva Quality Content Reference Model, 
+              providing a standardized structure for organizing regulatory and quality documents.
+            </p>
           </div>
         </div>
         
