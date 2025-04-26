@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:sans-serif;}
+
+body {
+  font-size: 5px;
+  color: #333;
+  width: 100px;
+  max-width: 100px;
+  overflow-x: hidden;
+}
+
+/* Document list */
+.docs-container {
+  width: 100px;
+  border: 1px solid #eee;
+  background: white;
+}
+
+.docs-header {
+  padding: 3px;
+  color: #666;
+  font-weight: 500;
+  background: #f5f5f5;
+  border-bottom: 1px solid #eee;
+}
+
+.docs-list {
+  padding: 3px;
+}
+
+.doc {
+  margin-bottom: 3px;
+  padding: 3px;
+  background: white;
+  border-radius: 2px;
+  border: 1px solid #eee;
+}
+
+.doc.selected {
+  border-color: #E52DA0;
+  background-color: #FFF5FA;
+}
+
+.doc-name {
+  font-weight: 500;
+  margin-bottom: 1px;
+}
+
+.doc-meta {
+  color: #888;
+  font-size: 3px;
+  margin-bottom: 2px;
+}
+
+.doc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.tag {
+  padding: 0 1px;
+  border-radius: 1px;
+  font-size: 3px;
+}
+
+.tag-blue {
+  background: #e1f5fe;
+  color: #0277bd;
+}
+
+.tag-green {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.tag-orange {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.tag-pink {
+  background: #fce4ec;
+  color: #c2185b;
+}
+</style>
+</head>
+<body>
+
+<div class="docs-container">
+  <div class="docs-header">VALIDATION DOCUMENTS</div>
+  
+  <div class="docs-list">
+    <div class="doc">
+      <div class="doc-name">Method Validation Report.docx</div>
+      <div class="doc-meta">Updated 2 days ago • John Smith</div>
+      <div class="doc-tags">
+        <span class="tag tag-blue">Module 3.2</span>
+        <span class="tag tag-green">Final</span>
+      </div>
+    </div>
+    
+    <div class="doc">
+      <div class="doc-name">Stability Protocol v2.docx</div>
+      <div class="doc-meta">Updated yesterday • Maria Chen</div>
+      <div class="doc-tags">
+        <span class="tag tag-blue">Module 3.2</span>
+        <span class="tag tag-orange">Draft</span>
+      </div>
+    </div>
+    
+    <div class="doc">
+      <div class="doc-name">Equipment Qualification.pdf</div>
+      <div class="doc-meta">Updated 5 days ago • Robert Lewis</div>
+      <div class="doc-tags">
+        <span class="tag tag-blue">Module 3.2</span>
+        <span class="tag tag-green">Final</span>
+      </div>
+    </div>
+    
+    <div class="doc selected">
+      <div class="doc-name">Process Validation Protocol.docx</div>
+      <div class="doc-meta">Updated today • AI Generated</div>
+      <div class="doc-tags">
+        <span class="tag tag-blue">Module 3.2</span>
+        <span class="tag tag-pink">AI Generated</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
