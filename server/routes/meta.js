@@ -227,6 +227,33 @@ router.post('/initialize-folders', async (req, res) => {
 });
 
 /**
+ * Get reference model version info
+ * @route GET /api/meta/version
+ */
+router.get('/version', (req, res) => {
+  try {
+    return res.json({
+      name: 'TrialSage Vault Enhanced Reference Model',
+      version: '1.0.0',
+      features: [
+        'Document types hierarchy',
+        'Lifecycle management',
+        'Periodic reviews',
+        'Folder enforcement',
+        'Retention policies'
+      ],
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching version info');
+    return res.status(500).json({ 
+      error: 'Failed to fetch version info', 
+      details: error.message 
+    });
+  }
+});
+
+/**
  * Get all reference model data in a single call for client caching
  * @route GET /api/meta/reference-model-data
  */
