@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrialSage™ - Admin Login</title>
+  <meta name="description" content="Secure login portal for TrialSage platform administrators and enterprise clients.">
+  <link rel="stylesheet" href="/css/vault-ai-assistant.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#FF1493',
+              light: '#FFB6C1',
+              dark: '#C71585',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    .bg-gradient-hot-pink {
+      background: linear-gradient(135deg, #FFFFFF 0%, #FFF0F6 100%);
+    }
+    
+    .login-card {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .form-input:focus {
+      border-color: #FF1493;
+      box-shadow: 0 0 0 2px rgba(255, 20, 147, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-gradient-hot-pink min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white shadow-sm">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="/" class="text-xl font-bold text-gray-900 flex items-center">
+        <span class="text-[#FF1493]">TrialSage™</span>
+        <span class="px-2 text-gray-400">|</span>
+        <span class="text-gray-700 text-lg">by Concept2Cures</span>
+      </a>
+      <nav>
+        <ul class="flex space-x-8">
+          <li><a href="/solutions" class="text-gray-600 hover:text-[#FF1493]">Solutions</a></li>
+          <li><a href="/use-cases" class="text-gray-600 hover:text-[#FF1493]">Use Cases</a></li>
+          <li><a href="/pricing" class="text-gray-600 hover:text-[#FF1493]">Pricing</a></li>
+          <li><a href="/about-us" class="text-gray-600 hover:text-[#FF1493]">About</a></li>
+          <li><a href="/contact" class="text-gray-600 hover:text-[#FF1493]">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="flex items-center space-x-4">
+        <a href="/request-demo" class="px-4 py-2 rounded-lg hover:bg-gray-50 transition">Request Demo</a>
+        <a href="/login" class="px-4 py-2 bg-[#FF1493] text-white rounded-lg hover:bg-[#C71585] transition">Login</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-900">Administrator Login</h2>
+        <p class="mt-2 text-gray-600">Access the TrialSage enterprise portal</p>
+      </div>
+      
+      <div class="login-card bg-white p-8 rounded-lg border border-gray-200">
+        <form class="space-y-6" action="/admin-dashboard" method="POST" id="login-form">
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <div class="mt-1">
+              <input id="email" name="email" type="email" autocomplete="email" required class="form-input appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="admin@example.com">
+            </div>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <div class="mt-1">
+              <input id="password" name="password" type="password" autocomplete="current-password" required class="form-input appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" placeholder="••••••••">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-[#FF1493] focus:ring-[#FF1493] border-gray-300 rounded">
+              <label for="remember-me" class="ml-2 block text-sm text-gray-700">Remember me</label>
+            </div>
+
+            <div class="text-sm">
+              <a href="#" class="font-medium text-[#FF1493] hover:text-[#C71585]">Forgot password?</a>
+            </div>
+          </div>
+
+          <div>
+            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FF1493] hover:bg-[#C71585] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF1493]">
+              Sign in
+            </button>
+          </div>
+        </form>
+        
+        <div class="mt-6">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-white text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          <div class="mt-6 grid grid-cols-2 gap-3">
+            <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <span>SSO Login</span>
+            </a>
+            <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <span>FDA ESG Login</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600">
+          Need an account? <a href="/contact-sales" class="font-medium text-[#FF1493] hover:text-[#C71585]">Contact sales</a>
+        </p>
+      </div>
+      
+      <div class="mt-8 text-center">
+        <p class="text-xs text-gray-500">
+          TrialSage™ is 21 CFR Part 11 compliant and HIPAA compliant. All login attempts are logged.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white">
+    <div class="max-w-7xl mx-auto py-6 px-4 overflow-hidden sm:px-6 lg:px-8">
+      <p class="mt-2 text-center text-xs text-gray-500">
+        &copy; 2025 Concept2Cures Inc. All rights reserved. TrialSage™ is a trademark of Concept2Cures Inc.
+      </p>
+      <p class="mt-2 text-center text-xs text-gray-500">
+        <a href="/privacy-policy" class="text-gray-500 hover:text-gray-600">Privacy Policy</a> • 
+        <a href="/terms-of-service" class="text-gray-500 hover:text-gray-600">Terms of Service</a> • 
+        <a href="/contact-support" class="text-gray-500 hover:text-gray-600">Support</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('login-form');
+      
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // In a real implementation, this would validate and send credentials to backend
+        // For demo purposes, just redirect to dashboard
+        window.location.href = '/admin-dashboard';
+      });
+    });
+  </script>
+</body>
+</html>
