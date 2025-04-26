@@ -401,12 +401,12 @@ export default function INDDocuShareIntegration() {
                             <h3 className="font-medium mb-2">Required Documents</h3>
                             <div className="space-y-2">
                               {[
-                                { name: 'FDA Form 1571', status: 'complete' },
-                                { name: 'FDA Form 1572', status: 'complete' },
-                                { name: 'Investigator's Brochure', status: 'complete' },
-                                { name: 'Clinical Protocol', status: 'complete' },
-                                { name: 'Chemistry, Manufacturing and Controls', status: 'warning' },
-                                { name: 'Pharmacology/Toxicology', status: 'error' }
+                                { name: "FDA Form 1571", status: "complete" },
+                                { name: "FDA Form 1572", status: "complete" },
+                                { name: "Investigator Brochure", status: "complete" },
+                                { name: "Clinical Protocol", status: "complete" },
+                                { name: "Chemistry, Manufacturing and Controls", status: "warning" },
+                                { name: "Pharmacology/Toxicology", status: "error" }
                               ].map((doc, i) => (
                                 <div key={i} className="flex items-center justify-between border-b pb-1">
                                   <div className="flex items-center">
