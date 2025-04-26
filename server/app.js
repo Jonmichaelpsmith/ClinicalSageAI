@@ -1,66 +1,64 @@
 /**
- * TrialSage Server Application
+ * TrialSage Express Server
  * 
- * Main server setup with all required routes and middleware
+ * This is the main entry point for the TrialSage server application.
+ * It sets up Express with middleware and registers all API routes.
  */
 
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const dotenv = require('dotenv');
-const vaultAssistantRoutes = require('./routes/vault-assistant');
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const helmet = require('helmet');
+const compression = require('compression');
+const registerRoutes = require('./routes');
+const securityMiddleware = require('./middleware/security');
 
-// Load environment variables
-dotenv.config();
-
-// Create Express app
-const app = express();
-
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-
-// Set up routes for API endpoints
-app.use('/api/vault-assistant', vaultAssistantRoutes);
-
-// Serve static files
-app.use(express.static(path.join(__dirname, '../public')));
-
-// Route for solution pages has been moved to static-routes.js for consistency
-
-// Redirect any docushare-sync requests to vault-workspace
-app.get('/solutions/docushare-sync', (req, res) => {
-  res.redirect('/solutions/vault-workspace');
-});
-
-// Route for our new compact regulatory diagram
-app.get('/compact-regulatory-diagram', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'compact_regulatory_diagram.html'));
-});
-
-// Fallback route for SPA or static files
-app.get('*', (req, res) => {
-  // Try to serve static files for paths that may exist
-  const filePath = path.join(__dirname, '../public', req.path);
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      // If the file doesn't exist, send the index.html file
-      res.sendFile(path.join(__dirname, '../public/index.html'));
-    }
+/**
+ * Create and configure the Express application
+ * 
+ * @returns {Express} - Configured Express application
+ */
+function createApp() {
+  const app = express();
+  
+  // Apply middleware
+  app.use(helmet()); // Security headers
+  app.use(cors()); // Cross-origin resource sharing
+  app.use(bodyParser.json()); // Parse JSON request body
+  app.use(bodyParser.urlencoded({ extended: true })); // Parse URL-encoded request body
+  app.use(compression()); // Compress responses
+  app.use(morgan('combined')); // Request logging
+  
+  // Apply security middleware
+  app.use(securityMiddleware.authenticateRequest);
+  app.use(securityMiddleware.authorizeRequest);
+  app.use(securityMiddleware.validateContentIntegrity);
+  
+  // Register all routes
+  registerRoutes(app);
+  
+  // Error handling middleware
+  app.use((err, req, res, next) => {
+    console.error(err.stack);
+    
+    // Log security error
+    securityMiddleware.auditLog('SERVER_ERROR', {
+      path: req.path,
+      method: req.method,
+      error: err.message,
+      status: err.status || 500,
+    });
+    
+    res.status(err.status || 500).json({
+      error: err.name || 'InternalServerError',
+      message: err.message || 'An unexpected error occurred',
+      path: req.path,
+      timestamp: new Date().toISOString(),
+    });
   });
-});
+  
+  return app;
+}
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'production' 
-      ? 'An unexpected error occurred' 
-      : err.message
-  });
-});
-
-// Export app for server.js to use
-module.exports = app;
+module.exports = createApp;
