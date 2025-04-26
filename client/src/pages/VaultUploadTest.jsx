@@ -1,266 +1,407 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 
-const VaultUploadTest = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
+function VaultUploadTest() {
+  const [file, setFile] = useState(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [documentType, setDocumentType] = useState('regulatory');
+  const [category, setCategory] = useState('IND');
+  const [documents, setDocuments] = useState([]);
   const [token, setToken] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
-
-  useEffect(() => {
-    // Fetch a mock token for testing
-    const fetchMockToken = async () => {
-      try {
-        // First try connecting directly to the separate vault server
-        try {
-          const res = await axios.get('http://localhost:4000/api/vault/mock-token');
-          setToken(res.data.token);
-          return;
-        } catch (e) {
-          console.log('Could not connect to separate vault server, trying fallback...');
-        }
-        
-        // Fallback to main server for demo purposes
-        const fallbackRes = await axios.get('/api/vault/mock-token');
-        setToken(fallbackRes.data.token);
-      } catch (err) {
-        setError('Error fetching mock token. Make sure either the Vault server is running or a mock endpoint is available.');
-        console.error('Token error:', err);
-      }
-    };
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  
+  // Handle file selection
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+  
+  // Handle login
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     
-    fetchMockToken();
-  }, []);
-
-  const handleFileSelect = (e) => {
-    setSelectedFile(e.target.files[0]);
-    setError(null);
-    setUploadResult(null);
+    try {
+      const response = await fetch('/api/vault/auth/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Login failed. Please check your credentials.');
+      }
+      
+      const data = await response.json();
+      setToken(data.token);
+      setAuthenticated(true);
+      
+      toast({
+        title: 'Login Successful',
+        description: `Welcome, ${data.user.name || data.user.username}!`,
+      });
+      
+      // Get documents after login
+      fetchDocuments(data.token);
+    } catch (error) {
+      toast({
+        title: 'Login Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      setError('Please select a file first');
+  
+  // Handle file upload
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    
+    if (!file) {
+      toast({
+        title: 'Upload Failed',
+        description: 'Please select a file to upload.',
+        variant: 'destructive',
+      });
       return;
     }
-
-    if (!token) {
-      setError('No authentication token available');
-      return;
-    }
-
-    setUploading(true);
-    setError(null);
-
+    
+    setLoading(true);
     const formData = new FormData();
-    formData.append('file', selectedFile);
-
+    formData.append('file', file);
+    formData.append('title', title || file.name);
+    formData.append('description', description);
+    formData.append('documentType', documentType);
+    formData.append('category', category);
+    
     try {
-      // Try direct connection to vault server first
-      try {
-        const response = await axios.post('http://localhost:4000/api/vault/documents', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        setUploadResult(response.data);
-        // Fetch updated audit logs after successful upload
-        fetchAuditLogs();
-        return;
-      } catch (directError) {
-        console.log('Could not connect directly to vault server, trying fallback...');
-      }
-      
-      // Fallback to main server
-      const fallbackResponse = await axios.post('/api/vault/documents', formData, {
+      const response = await fetch('/api/vault/documents/upload', {
+        method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
       });
       
-      setUploadResult(fallbackResponse.data);
-      // Fetch updated audit logs after successful upload
-      fetchAuditLogs();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error uploading file');
-      console.error('Upload error:', err);
+      if (!response.ok) {
+        throw new Error('File upload failed');
+      }
+      
+      const data = await response.json();
+      toast({
+        title: 'Upload Successful',
+        description: `Document "${data.title}" uploaded successfully.`,
+      });
+      
+      // Refresh document list
+      fetchDocuments(token);
+      
+      // Reset form
+      setFile(null);
+      setTitle('');
+      setDescription('');
+      document.getElementById('file-input').value = '';
+    } catch (error) {
+      toast({
+        title: 'Upload Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
     } finally {
-      setUploading(false);
+      setLoading(false);
     }
   };
-
-  const fetchAuditLogs = async () => {
-    if (!token) {
-      setError('No authentication token available');
+  
+  // Fetch documents
+  const fetchDocuments = async (authToken) => {
+    try {
+      const response = await fetch('/api/vault/documents', {
+        headers: {
+          'Authorization': `Bearer ${authToken || token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch documents');
+      }
+      
+      const data = await response.json();
+      setDocuments(data.documents || []);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch documents. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  // Download document
+  const handleDownload = async (id, fileName) => {
+    try {
+      window.open(`/api/vault/documents/${id}/download?token=${encodeURIComponent(token)}`, '_blank');
+    } catch (error) {
+      toast({
+        title: 'Download Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  // Delete document
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this document?')) {
       return;
     }
-
-    setLoadingLogs(true);
+    
     try {
-      // Try direct connection to vault server first
-      try {
-        const response = await axios.get('http://localhost:4000/api/vault/audit', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        setAuditLogs(response.data);
-        return;
-      } catch (directError) {
-        console.log('Could not fetch audit logs directly, trying fallback...');
+      const response = await fetch(`/api/vault/documents/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete document');
       }
       
-      // Fallback to main server
-      const fallbackResponse = await axios.get('/api/vault/audit', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      toast({
+        title: 'Document Deleted',
+        description: 'Document has been deleted successfully.',
       });
-      setAuditLogs(fallbackResponse.data);
-    } catch (err) {
-      console.error('Error fetching audit logs:', err);
-    } finally {
-      setLoadingLogs(false);
+      
+      // Refresh document list
+      fetchDocuments(token);
+    } catch (error) {
+      toast({
+        title: 'Deletion Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
-
+  
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">TrialSage Vault™ - Upload Test</h1>
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-8 text-center">TrialSage Vault™ Test Interface</h1>
       
-      {!token && (
-        <div className="bg-yellow-100 p-4 rounded-md mb-6">
-          <p className="text-yellow-700">
-            Waiting for authentication token... Make sure the Vault server is running on port 4000.
-          </p>
-        </div>
-      )}
-      
-      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">Upload Document for AI Analysis</h2>
-        
-        <div className="space-y-4">
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <input 
-              type="file" 
-              onChange={handleFileSelect} 
-              className="hidden" 
-              id="file-upload" 
-            />
-            <label 
-              htmlFor="file-upload" 
-              className="cursor-pointer text-blue-600 hover:text-blue-800"
-            >
-              {selectedFile ? selectedFile.name : 'Click to select file'}
-            </label>
-          </div>
-          
-          <button
-            onClick={handleUpload}
-            disabled={uploading || !selectedFile || !token}
-            className={`w-full py-3 rounded-md text-white font-medium ${
-              uploading || !selectedFile || !token 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            {uploading ? 'Uploading...' : 'Upload Document'}
-          </button>
-          
-          {error && (
-            <div className="p-4 bg-red-50 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
-          
-          {uploadResult && (
-            <div className="p-4 bg-green-50 text-green-800 rounded-md">
-              <h3 className="font-semibold mb-2">Upload Successful!</h3>
-              <p className="text-sm mb-2">
-                <span className="font-medium">Filename:</span> {uploadResult.filename}
-              </p>
-              <p className="text-sm mb-2">
-                <span className="font-medium">Path:</span> {uploadResult.path}
-              </p>
-              <p className="text-sm mb-2">
-                <span className="font-medium">Summary:</span> {uploadResult.summary}
-              </p>
-              <div className="text-sm">
-                <span className="font-medium">Tags:</span>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {uploadResult.tags && Array.isArray(uploadResult.tags) && uploadResult.tags.map((tag, i) => (
-                    <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+      {!authenticated ? (
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Login to Vault</CardTitle>
+            <CardDescription>Enter your credentials to access the vault</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  placeholder="Enter your username"
+                />
               </div>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Audit Logs</h2>
-          <button 
-            onClick={fetchAuditLogs} 
-            disabled={loadingLogs || !token}
-            className={`px-4 py-2 rounded-md text-white text-sm ${
-              loadingLogs || !token ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            {loadingLogs ? 'Loading...' : 'Refresh Logs'}
-          </button>
-        </div>
-        
-        {auditLogs.length === 0 ? (
-          <p className="text-gray-500 italic">No audit logs found. Upload a document to create logs.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {auditLogs.map((log) => (
-                  <tr key={log.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {log.action}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {log.details && (
-                        <pre className="text-xs overflow-x-auto">
-                          {JSON.stringify(log.details, null, 2)}
-                        </pre>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-      
-      <div className="mt-8 text-center text-gray-500 text-sm">
-        <p>TrialSage Vault™ - Enterprise Document Management for Regulatory Teams</p>
-      </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Enter your password"
+                />
+              </div>
+              <div className="pt-2">
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Logging in...' : 'Login'}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-center text-sm text-muted-foreground">
+            Default credentials: admin / admin123
+          </CardFooter>
+        </Card>
+      ) : (
+        <Tabs defaultValue="upload" className="max-w-4xl mx-auto">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upload">Upload Document</TabsTrigger>
+            <TabsTrigger value="list">Document List</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="upload">
+            <Card>
+              <CardHeader>
+                <CardTitle>Upload Document</CardTitle>
+                <CardDescription>Upload a new document to the vault</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleUpload} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="file-input">Document File</Label>
+                    <Input 
+                      id="file-input" 
+                      type="file" 
+                      onChange={handleFileChange} 
+                      required 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter document title"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Enter document description"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="documentType">Document Type</Label>
+                      <select
+                        id="documentType"
+                        value={documentType}
+                        onChange={(e) => setDocumentType(e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="regulatory">Regulatory</option>
+                        <option value="clinical">Clinical</option>
+                        <option value="safety">Safety</option>
+                        <option value="quality">Quality</option>
+                        <option value="general">General</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category</Label>
+                      <select
+                        id="category"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="IND">IND</option>
+                        <option value="NDA">NDA</option>
+                        <option value="BLA">BLA</option>
+                        <option value="ANDA">ANDA</option>
+                        <option value="CTD">CTD</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? 'Uploading...' : 'Upload Document'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="list">
+            <Card>
+              <CardHeader>
+                <CardTitle>Document List</CardTitle>
+                <CardDescription>View and manage your documents</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <Button onClick={() => fetchDocuments()} size="sm" variant="outline">
+                    Refresh List
+                  </Button>
+                </div>
+                
+                {documents.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground">
+                    No documents found. Upload some documents to get started.
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {documents.map((doc) => (
+                      <Card key={doc.id} className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-lg">{doc.title}</h3>
+                            <p className="text-sm text-muted-foreground mb-2">{doc.description}</p>
+                            <div className="flex flex-wrap gap-2 my-2">
+                              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                {doc.document_type}
+                              </span>
+                              <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">
+                                {doc.category}
+                              </span>
+                              {doc.tags && doc.tags.map((tag, i) => (
+                                <span key={i} className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                  {tag}
+                                </span>
+                              ))}
+                              {doc.ai_tags && doc.ai_tags.map((tag, i) => (
+                                <span key={i} className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
+                                  AI: {tag}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Uploaded on {new Date(doc.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDownload(doc.id, doc.file_name)}
+                            >
+                              Download
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDelete(doc.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
-};
+}
 
 export default VaultUploadTest;

@@ -126,6 +126,8 @@ const LazyVersions = React.lazy(() => import('./pages/versions'));
 const LazySubscribedSolutions = React.lazy(() => import('./pages/SubscribedSolutions'));
 // Import Client Portal Dashboard
 const LazyClientPortal = React.lazy(() => import('./pages/ClientPortal'));
+// Import Vault Upload Test page
+const LazyVaultUploadTest = React.lazy(() => import('./pages/VaultUploadTest'));
 // Team signup page with detailed profile and license management
 const LazyTeamSignup = React.lazy(() => import('./pages/TeamSignup'));
 // Case Studies page with authentic customer success stories
@@ -387,6 +389,11 @@ export default function App() {
               <Route path="/enterprise-vault">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Enterprise Document Vault" />}>
                   <LazyEnterpriseDocumentVault />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/vault-test">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Vault Test Interface" />}>
+                  <LazyVaultUploadTest />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/protocol-review">

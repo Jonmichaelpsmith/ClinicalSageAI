@@ -1,119 +1,94 @@
-# TrialSage Vault™ Setup
+# TrialSage Vault™ 
 
-## Overview
+The TrialSage Vault™ module provides enterprise-grade document management for regulatory, clinical, and safety documentation with AI-powered features.
 
-TrialSage Vault™ is an enterprise-grade document management system designed specifically for regulatory and clinical teams. It features:
+## Features
 
-- AI-powered document intelligence
-- Secure storage with Supabase
-- Automatic document summarization and tagging
-- FDA 21 CFR Part 11 compliance
-- Comprehensive audit logging
+- **Secure Document Storage**: Store and manage clinical and regulatory documents securely
+- **Powerful Document Search**: Find documents quickly using metadata or content search
+- **Version Control**: Track document versions and changes over time
+- **AI-Powered Insights**: Automatic document summarization and tagging
+- **Audit Trails**: Comprehensive logging of all document operations
+- **Role-Based Access Control**: Fine-grained permissions for document access
+- **Multi-Tenant Architecture**: Support for multiple organizations
+- **Blockchain Verification**: Optional integrity verification using blockchain
+- **FDA 21 CFR Part 11 Compliance**: Electronic signatures and audit trails
 
-## Prerequisites
+## Architecture
 
-- Node.js 16+
-- Supabase account (https://supabase.com)
-- OpenAI API key (https://platform.openai.com)
+The Vault system is built with a modern, scalable architecture:
 
-## Setup Instructions
-
-### 1. Environment Setup
-
-Copy the `.env.template` file to `.env` and fill in your credentials:
-
-```bash
-cp .env.template .env
-```
-
-Edit the `.env` file with your credentials:
-
-```
-# Supabase
-SUPABASE_URL=https://yourproject.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# Auth
-JWT_SECRET=your-secure-random-string
-
-# OpenAI
-OPENAI_API_KEY=sk-your-openai-api-key
-
-# Express
-PORT=4000
-```
-
-### 2. Supabase Setup
-
-Create a new Supabase project and run the setup script:
-
-```bash
-node scripts/setup_supabase.js
-```
-
-This will:
-- Create a `vault-files` storage bucket
-- Create `documents` and `audit_logs` tables
-- Set up Row Level Security (RLS) policies
-
-### 3. Install Dependencies
-
-```bash
-npm install
-```
-
-### 4. Start the Server
-
-```bash
-node server/index.js
-```
-
-### 5. In a separate terminal, start the frontend (if using a separate front-end):
-
-```bash
-npm run dev
-```
+- **Backend**: Node.js with Express.js for the API server
+- **Database**: Supabase (PostgreSQL) for document metadata and audit logs
+- **Storage**: Local file system for document storage (can be configured for S3 or other storage)
+- **Authentication**: JWT-based authentication and authorization
+- **AI Services**: OpenAI GPT-4o for document analysis and insights
+- **Frontend**: React.js with Shadcn UI components
 
 ## API Endpoints
 
 ### Authentication
-
-- `POST /api/auth/login` - Login with email/password
+- `POST /api/vault/auth/token`: Generate a JWT token for API access
 
 ### Documents
+- `POST /api/vault/documents/upload`: Upload a new document
+- `GET /api/vault/documents`: List documents with filtering and pagination
+- `GET /api/vault/documents/:id`: Get document details
+- `GET /api/vault/documents/:id/download`: Download document file
+- `DELETE /api/vault/documents/:id`: Delete a document
 
-- `POST /api/documents` - Upload a document with AI analysis
-- `GET /api/documents` - List documents (with tenant filtering)
-- `GET /api/documents/:id` - Get a specific document
+### Health and Diagnostics
+- `GET /api/vault/health`: Check the health of the Vault service
 
-### Audit Logs
+## Vault Setup
 
-- `GET /api/audit` - Get audit logs for the current tenant
+### Prerequisites
+- Node.js 16+ 
+- PostgreSQL database (provided by Supabase)
+- Environment variables:
+  - `JWT_SECRET`: Secret for JWT token generation and validation
+  - `SUPABASE_URL`: URL of the Supabase project
+  - `SUPABASE_SERVICE_ROLE_KEY`: Service role key for Supabase
+  - `OPENAI_API_KEY`: OpenAI API key for document analysis (optional)
 
-## Project Structure
+### Database Setup
+1. Run the setup script to create the required tables in Supabase:
+   ```
+   node scripts/setup_supabase.js
+   ```
 
-```
-├── server/
-│   ├── index.js                # Express server entry point
-│   ├── lib/
-│   │   └── supabaseClient.js   # Supabase client configuration
-│   ├── middleware/
-│   │   └── auth.js             # JWT authentication middleware
-│   ├── routes/
-│   │   ├── auth.js             # Authentication routes
-│   │   ├── documents.js        # Document management routes
-│   │   └── audit.js            # Audit logging routes
-│   └── services/
-│       └── ai.js               # OpenAI services for document analysis
-├── client/                     # React front-end (if applicable)
-├── scripts/
-│   └── setup_supabase.js       # Database and storage setup script
-└── .env                        # Environment variables
-```
+### Starting the Vault Server
+The Vault server runs as a child process of the main TrialSage application:
 
-## Security Notes
+1. The main application server automatically starts the Vault server on startup
+2. All Vault API requests are proxied through the main server at `/api/vault/*`
+3. Health checks and diagnostics are available at `/api/vault/health`
 
-- Make sure to keep your API keys and JWT secrets secure
-- Use Supabase Row Level Security for data isolation between tenants
-- Rotate your JWT secret periodically for enhanced security
-- Always serve the application over HTTPS in production
+## Testing the Vault
+
+1. Navigate to `/vault-test` in the TrialSage application
+2. Log in with the default credentials:
+   - Username: `admin`
+   - Password: `admin123`
+3. Upload documents and test the features
+
+## Security Considerations
+
+- JWT tokens are used for authentication and include user roles and tenant information
+- All document operations are logged in the audit trail
+- Document content integrity is verified using SHA-256 hashing
+- Documents can only be accessed by users with the correct permissions
+- Environment variables are used to store sensitive credentials
+
+## Future Enhancements
+
+- Advanced search capabilities with full-text search
+- Document workflows with approval processes
+- Integration with electronic signature providers
+- Enhanced AI document analysis with custom models
+- Cloud storage integration (AWS S3, Google Cloud Storage, etc.)
+- Direct integration with regulatory submission systems
+
+## Support
+
+For questions or issues with the Vault system, please contact support@concept2cures.com.
