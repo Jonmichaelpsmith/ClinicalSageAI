@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:sans-serif;}
+
+body {
+  font-size: 5px;
+  background: #f8f8f8;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  max-width: 100vw; 
+  overflow-x: hidden;
+}
+
+h1, h2, h3 {
+  color: #0B6E4F;
+  margin-bottom: 3px;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  padding: 5px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.header h1 {
+  font-size: 7px;
+  font-weight: bold;
+}
+
+.header p {
+  font-size: 4px;
+  color: #555;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.page-section {
+  margin-bottom: 8px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.section-title {
+  font-size: 6px;
+  font-weight: bold;
+}
+
+.section-subtitle {
+  font-size: 4px;
+  color: #555;
+}
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 3px;
+  padding: 5px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  margin-bottom: 5px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.card-title {
+  font-size: 5px;
+  font-weight: bold;
+  color: #0B6E4F;
+  margin-bottom: 2px;
+}
+
+.stat-box {
+  display: flex;
+  gap: 5px;
+  font-size: 4px;
+}
+
+.stat-number {
+  font-weight: bold;
+  font-size: 5px;
+}
+
+.feature-list {
+  margin-top: 2px;
+  padding-left: 5px;
+}
+
+.feature-item {
+  font-size: 4px;
+  margin-bottom: 1px;
+  position: relative;
+  padding-left: 5px;
+}
+
+.feature-item:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #0B6E4F;
+}
+
+/* Feature blocks */
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.feature-box {
+  background: white;
+  border-radius: 3px;
+  padding: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.feature-box-title {
+  font-size: 5px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.file-navigator {
+  border: 1px solid #eee;
+  border-radius: 3px;
+  overflow: hidden;
+  font-size: 4px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.navigator-header {
+  background: #f5f5f5;
+  padding: 2px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.nav-body {
+  display: flex;
+}
+
+.nav-sidebar {
+  width: 20%;
+  border-right: 1px solid #eee;
+  padding: 2px;
+}
+
+.nav-content {
+  width: 25%;
+  border-right: 1px solid #eee;
+  padding: 2px;
+}
+
+.nav-preview {
+  width: 55%;
+  padding: 2px;
+}
+
+.folder-item, .file-item {
+  padding: 1px;
+  margin-bottom: 1px;
+}
+
+.nav-section-header {
+  color: #666;
+  font-weight: bold;
+  margin-bottom: 1px;
+}
+
+.preview-title {
+  font-weight: bold;
+  margin-bottom: 1px;
+}
+
+.preview-section {
+  margin-bottom: 1px;
+}
+
+.btn {
+  background: #E52DA0;
+  color: white;
+  border-radius: 3px;
+  padding: 1px 3px;
+  display: inline-block;
+  font-size: 4px;
+  font-weight: bold;
+  margin-top: 3px;
+}
+
+.ai-action {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px;
+  border-radius: 2px;
+  font-size: 4px;
+  margin-bottom: 1px;
+}
+
+.ai-action:before {
+  content: "○";
+  color: #E52DA0;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Unified Content Management & Intelligent Search</h1>
+    <p>Streamlined document organization, storage and intelligent retrieval with AI</p>
+  </div>
+  
+  <!-- Document Management -->
+  <div class="page-section">
+    <div class="section-header">
+      <div class="section-title">Content Management Platform</div>
+      <div class="section-subtitle">Everything in one place</div>
+    </div>
+    
+    <div class="card">
+      <h3 class="card-title">Document Management</h3>
+      
+      <ul class="feature-list">
+        <li class="feature-item">Clinical Documentation</li>
+        <li class="feature-item">Regulatory Submissions</li>
+        <li class="feature-item">FDA Form 1571 tool</li>
+        <li class="feature-item">Protocol v2.3.docx</li>
+        <li class="feature-item">Manufacturing Records</li>
+      </ul>
+      
+      <div class="stat-box">
+        <div>
+          <div class="stat-number">3,217+</div>
+          <div>Documents</div>
+        </div>
+        <div>
+          <div class="stat-number">17+</div>
+          <div>Submission Types</div>
+        </div>
+        <div>
+          <div class="stat-number">21</div>
+          <div>CFR Part</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AI Features -->
+    <div class="features-grid">
+      <div class="feature-box">
+        <div class="feature-box-title">Real-time Regulatory Analysis</div>
+        <p>Automatically checks document against FDA, EMA guidelines in real-time</p>
+      </div>
+      <div class="feature-box">
+        <div class="feature-box-title">Intelligent Search</div>
+        <p>AI-powered semantic search across all documents with contextual understanding</p>
+      </div>
+      <div class="feature-box">
+        <div class="feature-box-title">Compliance Verification</div>
+        <p>Automated verification against regulatory requirements</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- File Navigator Section -->
+  <div class="page-section">
+    <div class="section-title">TrialSage File Navigator™</div>
+    <p class="section-subtitle">Advanced document management with intelligent filing, retrieval and analysis</p>
+    
+    <div class="features-grid">
+      <div class="feature-box">
+        <div class="feature-box-title">Hierarchical Tree Explorer</div>
+        <ul class="feature-list">
+          <li class="feature-item">Collapsible folder tree</li>
+          <li class="feature-item">Tagged documents</li>
+          <li class="feature-item">Drag-and-drop functionality</li>
+          <li class="feature-item">Right-click contextual actions</li>
+        </ul>
+      </div>
+      <div class="feature-box">
+        <div class="feature-box-title">Document Intelligence</div>
+        <ul class="feature-list">
+          <li class="feature-item">Hover preview with annotations</li>
+          <li class="feature-item">Version timeline visualization</li>
+          <li class="feature-item">Previous draft access</li>
+          <li class="feature-item">AI-powered document analysis</li>
+        </ul>
+      </div>
+      <div class="feature-box">
+        <div class="feature-box-title">Module Linking & Filtering</div>
+        <ul class="feature-list">
+          <li class="feature-item">Filter by module, author, tag, date</li>
+          <li class="feature-item">Smart document tagging</li>
+          <li class="feature-item">Module-specific file scoping</li>
+          <li class="feature-item">Cross-module file linking</li>
+        </ul>
+      </div>
+      <div class="feature-box">
+        <div class="feature-box-title">DocuShare Integration</div>
+        <ul class="feature-list">
+          <li class="feature-item">Automatic DocuShare syncing</li>
+          <li class="feature-item">PDF ingestion from Xerox</li>
+          <li class="feature-item">DocuShare ID tracking</li>
+          <li class="feature-item">Audit-ready file management</li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Mini File Navigator UI -->
+    <div class="file-navigator">
+      <div class="navigator-header">
+        <div>TrialSage File Navigator™</div>
+        <div>□ □ □</div>
+      </div>
+      
+      <div class="nav-body">
+        <div class="nav-sidebar">
+          <div class="nav-section-header">FOLDERS</div>
+          <div class="folder-item">CMC Documents</div>
+          <div class="folder-item">Drug Substance</div>
+          <div class="folder-item">Drug Product</div>
+          <div class="folder-item">Specifications</div>
+          <div class="folder-item">Validation</div>
+          <div class="folder-item">Regulatory</div>
+          <div class="folder-item">Quality</div>
+        </div>
+        
+        <div class="nav-content">
+          <div class="nav-section-header">VALIDATION DOCUMENTS</div>
+          <div class="file-item">Method Validation Report.docx</div>
+          <div class="file-item">Stability Protocol v2.docx</div>
+          <div class="file-item">Equipment Qualification.pdf</div>
+          <div class="file-item">Process Validation Protocol.docx</div>
+        </div>
+        
+        <div class="nav-preview">
+          <div class="preview-title">Process Validation Protocol v2.1</div>
+          
+          <div class="preview-section">
+            <div>1. Purpose</div>
+            <p>This protocol defines the approach and acceptance criteria for validating the manufacturing process...</p>
+          </div>
+          
+          <div class="preview-section">
+            <div>2. Scope</div>
+            <p>This protocol applies to the validation of the manufacturing process for TS-273 Tablets...</p>
+          </div>
+          
+          <div class="preview-section">
+            <div>AI-Generated Insights</div>
+            <p>This protocol aligns with FDA Process Validation guidance...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- AI Actions -->
+    <div class="card">
+      <div class="card-title">AI-Powered Document Actions</div>
+      
+      <div class="ai-action">"Summarize this document"</div>
+      <div class="ai-action">"Compare this to v3"</div>
+      <div class="ai-action">"Explain this section"</div>
+      <div class="ai-action">"Suggest edit for FDA phrasing"</div>
+      
+      <div class="btn">Explore File Navigator</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
