@@ -6,8 +6,12 @@ import authRoutes from './routes/auth.js';
 import documentRoutes from './routes/documents.js';
 import auditRoutes from './routes/audit.js';
 import referenceModelRoutes from './routes/reference-model.js';
+import metaRoutes from './routes/meta.js';
 import { verifyJwt } from './middleware/auth.js';
 import { logger, sentryMiddleware } from './utils/logger.js';
+
+// Import the periodic review scheduler
+import './jobs/periodicReview.js';
 
 const app = express();
 
@@ -48,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/documents', verifyJwt, documentRoutes);
 app.use('/api/audit', verifyJwt, auditRoutes);
 app.use('/api/reference-model', verifyJwt, referenceModelRoutes);
+app.use('/api/meta', verifyJwt, metaRoutes);
 
 // Health check
 app.get('/health', (_, res) => res.json({ status: 'ok' }));

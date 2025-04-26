@@ -226,4 +226,46 @@ router.post('/initialize-folders', async (req, res) => {
   }
 });
 
+/**
+ * Get all reference model data in a single call for client caching
+ * @route GET /api/meta/reference-model-data
+ */
+router.get('/reference-model-data', async (req, res) => {
+  try {
+    // Fetch all reference model data in parallel
+    const [
+      typesResponse,
+      subtypesResponse,
+      lifecyclesResponse,
+      folderTemplatesResponse
+    ] = await Promise.all([
+      supabase.from('document_types').select('*').order('display_order'),
+      supabase.from('document_subtypes').select('*').order('display_order'),
+      supabase.from('lifecycles').select('*'),
+      supabase.from('folder_templates').select('*').order('sort_order')
+    ]);
+    
+    // Check for errors
+    if (typesResponse.error) throw typesResponse.error;
+    if (subtypesResponse.error) throw subtypesResponse.error;
+    if (lifecyclesResponse.error) throw lifecyclesResponse.error;
+    if (folderTemplatesResponse.error) throw folderTemplatesResponse.error;
+    
+    // Combine all data into a single response
+    return res.json({
+      types: typesResponse.data,
+      subtypes: subtypesResponse.data,
+      lifecycles: lifecyclesResponse.data,
+      folderTemplates: folderTemplatesResponse.data,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching reference model data');
+    return res.status(500).json({ 
+      error: 'Failed to fetch reference model data', 
+      details: error.message 
+    });
+  }
+});
+
 export default router;
