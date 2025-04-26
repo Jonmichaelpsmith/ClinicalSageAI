@@ -1,0 +1,152 @@
+// --- TrialSage Admin Audit Trail Dashboard (Enterprise Level: Drill Down, Anomaly Detection, Admin Actions) ---
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectItem } from '@/components/ui/select';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+
+export default function AuditTrailDashboard() {
+  const [logs, setLogs] = useState([]);
+  const [filterTenant, setFilterTenant] = useState('');
+  const [filterUser, setFilterUser] = useState('');
+  const [filterAction, setFilterAction] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
+  const [selectedLog, setSelectedLog] = useState(null);
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, []);
+
+  const fetchAuditLogs = async () => {
+    const res = await fetch('/api/audit');
+    const data = await res.json();
+    setLogs(data);
+  };
+
+  const filteredLogs = logs.filter((log) => {
+    return (
+      (filterTenant ? log.tenantId.includes(filterTenant) : true) &&
+      (filterUser ? log.user.includes(filterUser) : true) &&
+      (filterAction ? log.actionType === filterAction : true)
+    );
+  });
+
+  const paginatedLogs = filteredLogs.slice((page - 1) * pageSize, page * pageSize);
+
+  const exportCSV = () => {
+    const headers = ['Tenant ID', 'User', 'Action Type', 'Description', 'IP Address', 'Timestamp'];
+    const rows = filteredLogs.map(log => [
+      log.tenantId,
+      log.user,
+      log.actionType,
+      log.description,
+      log.ipAddress,
+      new Date(log.timestamp).toLocaleString()
+    ]);
+
+    let csvContent = 'data:text/csv;charset=utf-8,' + 
+      [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'audit_logs.csv');
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  const detectAnomaly = (log) => {
+    return log.actionType === 'Delete' || (log.description && log.description.toLowerCase().includes('error'));
+  };
+
+  const handleDeleteLogs = async () => {
+    if (confirm('Are you sure you want to delete all filtered logs?')) {
+      await fetch('/api/audit/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId: filterTenant })
+      });
+      fetchAuditLogs();
+    }
+  };
+
+  return (
+    <div className="p-8 bg-gray-100 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6">Audit Trail Admin Dashboard</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+        <Input
+          placeholder="Filter by Tenant ID"
+          value={filterTenant}
+          onChange={(e) => setFilterTenant(e.target.value)}
+        />
+        <Input
+          placeholder="Filter by User ID"
+          value={filterUser}
+          onChange={(e) => setFilterUser(e.target.value)}
+        />
+        <Select value={filterAction} onValueChange={setFilterAction}>
+          <SelectItem value="">All Actions</SelectItem>
+          <SelectItem value="Upload">Upload</SelectItem>
+          <SelectItem value="Download">Download</SelectItem>
+          <SelectItem value="Summarize">Summarize</SelectItem>
+          <SelectItem value="Delete">Delete</SelectItem>
+        </Select>
+        <Button variant="outline" onClick={fetchAuditLogs}>Refresh</Button>
+        <Button variant="default" onClick={exportCSV}>Export CSV</Button>
+        <Button variant="destructive" onClick={handleDeleteLogs}>Bulk Delete Logs</Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {paginatedLogs.map((log, index) => (
+          <Card
+            key={index}
+            className={`shadow-md rounded-xl p-4 ${detectAnomaly(log) ? 'border-red-500 border-2' : ''}`}
+          >
+            <CardContent>
+              <div onClick={() => setSelectedLog(log)} className="cursor-pointer">
+                <p className="font-semibold text-gray-800">{log.actionType}</p>
+                <p className="text-gray-600 text-sm mt-1">{log.description}</p>
+                <div className="text-xs text-gray-500 mt-4 space-y-1">
+                  <p><strong>Tenant:</strong> {log.tenantId}</p>
+                  <p><strong>User:</strong> {log.user}</p>
+                  <p><strong>IP:</strong> {log.ipAddress}</p>
+                  <p><strong>Time:</strong> {new Date(log.timestamp).toLocaleString()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="flex justify-center items-center mt-10 space-x-4">
+        <Button variant="secondary" onClick={() => setPage(Math.max(page - 1, 1))} disabled={page === 1}>
+          Previous
+        </Button>
+        <span>Page {page}</span>
+        <Button variant="secondary" onClick={() => setPage(page + 1)} disabled={page * pageSize >= filteredLogs.length}>
+          Next
+        </Button>
+      </div>
+
+      <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
+        <DialogContent className="p-6">
+          {selectedLog && (
+            <div className="text-gray-700 space-y-3">
+              <h2 className="text-xl font-bold">Audit Log Details</h2>
+              <p><strong>Tenant ID:</strong> {selectedLog.tenantId}</p>
+              <p><strong>User:</strong> {selectedLog.user}</p>
+              <p><strong>Action:</strong> {selectedLog.actionType}</p>
+              <p><strong>Description:</strong> {selectedLog.description}</p>
+              <p><strong>IP Address:</strong> {selectedLog.ipAddress}</p>
+              <p><strong>Timestamp:</strong> {new Date(selectedLog.timestamp).toLocaleString()}</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

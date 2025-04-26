@@ -1,0 +1,76 @@
+// --- TrialSage Admin Audit Trail Dashboard (Microsoft 365 Style, React + Tailwind) ---
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectItem } from '@/components/ui/select';
+
+export default function AuditTrailDashboard() {
+  const [logs, setLogs] = useState([]);
+  const [filterTenant, setFilterTenant] = useState('');
+  const [filterUser, setFilterUser] = useState('');
+  const [filterAction, setFilterAction] = useState('');
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, []);
+
+  const fetchAuditLogs = async () => {
+    const res = await fetch('/api/audit');
+    const data = await res.json();
+    setLogs(data);
+  };
+
+  const filteredLogs = logs.filter((log) => {
+    return (
+      (filterTenant ? log.tenantId.includes(filterTenant) : true) &&
+      (filterUser ? log.user.includes(filterUser) : true) &&
+      (filterAction ? log.actionType === filterAction : true)
+    );
+  });
+
+  return (
+    <div className="p-8 bg-gray-100 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6">Audit Trail Admin Dashboard</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <Input
+          placeholder="Filter by Tenant ID"
+          value={filterTenant}
+          onChange={(e) => setFilterTenant(e.target.value)}
+        />
+        <Input
+          placeholder="Filter by User ID"
+          value={filterUser}
+          onChange={(e) => setFilterUser(e.target.value)}
+        />
+        <Select value={filterAction} onValueChange={setFilterAction}>
+          <SelectItem value="">All Actions</SelectItem>
+          <SelectItem value="Upload">Upload</SelectItem>
+          <SelectItem value="Download">Download</SelectItem>
+          <SelectItem value="Summarize">Summarize</SelectItem>
+          <SelectItem value="Delete">Delete</SelectItem>
+        </Select>
+        <Button variant="outline" onClick={fetchAuditLogs}>Refresh Logs</Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredLogs.map((log, index) => (
+          <Card key={index} className="shadow-md rounded-xl p-4">
+            <CardContent>
+              <p className="font-semibold text-gray-800">{log.actionType}</p>
+              <p className="text-gray-600 text-sm mt-1">{log.description}</p>
+              <div className="text-xs text-gray-500 mt-4 space-y-1">
+                <p><strong>Tenant:</strong> {log.tenantId}</p>
+                <p><strong>User:</strong> {log.user}</p>
+                <p><strong>IP:</strong> {log.ipAddress}</p>
+                <p><strong>Time:</strong> {new Date(log.timestamp).toLocaleString()}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
