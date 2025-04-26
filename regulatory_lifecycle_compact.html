@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regulatory Lifecycle - TrialSage™</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-blue: #2760C1;
+            --blue: #2C8AE0;
+            --teal: #32C4C7;
+            --green: #36D18C;
+            --pink: #FF1694;
+            --hotpink: #FF1694;
+            --text-dark: #111111;
+            --text-medium: #555555;
+            --text-light: #777777;
+            --bg-light: #FFFFFF;
+            --border-color: #EFEFEF;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-light);
+            font-size: 14px;
+            line-height: 1.4;
+            color: var(--text-dark);
+            padding: 15px;
+        }
+        
+        /* Regulatory Lifecycle */
+        .lifecycle-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Timeline */
+        .timeline {
+            display: flex;
+            width: 100%;
+            height: 50px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .stage {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 0 5px;
+            clip-path: polygon(0% 0%, 90% 0%, 100% 50%, 90% 100%, 0% 100%, 10% 50%);
+        }
+        
+        .stage:first-child {
+            clip-path: polygon(0% 0%, 90% 0%, 100% 50%, 90% 100%, 0% 100%);
+        }
+        
+        .stage:last-child {
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 10% 50%);
+        }
+        
+        .stage:nth-child(1) {
+            background-color: var(--dark-blue);
+            z-index: 7;
+        }
+        
+        .stage:nth-child(2) {
+            background-color: var(--blue);
+            z-index: 6;
+            margin-left: -10px;
+        }
+        
+        .stage:nth-child(3) {
+            background-color: var(--teal);
+            z-index: 5;
+            margin-left: -10px;
+        }
+        
+        .stage:nth-child(4) {
+            background-color: var(--green);
+            z-index: 4;
+            margin-left: -10px;
+        }
+        
+        .stage:nth-child(5) {
+            background-color: var(--hotpink);
+            z-index: 3;
+            margin-left: -10px;
+        }
+        
+        /* Categories Section */
+        .categories {
+            display: flex;
+            width: 100%;
+        }
+        
+        .category {
+            flex: 1;
+            padding: 0 10px;
+        }
+        
+        .category-header {
+            border-left: 3px solid;
+            padding: 5px 0 5px 10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .preclinical .category-header {
+            border-color: var(--dark-blue);
+            color: var(--dark-blue);
+        }
+        
+        .early-phase .category-header {
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+        
+        .late-phase .category-header {
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+        
+        .post-approval .category-header {
+            border-color: var(--hotpink);
+            color: var(--hotpink);
+        }
+        
+        /* Items */
+        .items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .item {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-medium);
+        }
+        
+        .item::before {
+            content: "•";
+            color: var(--text-light);
+        }
+        
+        /* Compact Design - This is key for reducing height */
+        .compact-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .compact-grid .items {
+            gap: 4px;
+        }
+        
+        .compact-grid .item {
+            font-size: 11px;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+    <div class="lifecycle-container">
+        <!-- Timeline -->
+        <div class="timeline">
+            <div class="stage">Basic Research</div>
+            <div class="stage">Drug Discovery</div>
+            <div class="stage">Preclinical</div>
+            <div class="stage">Early Phase Clinical</div>
+            <div class="stage">Late Phase Clinical</div>
+        </div>
+        
+        <!-- Categories - Compact Grid Layout -->
+        <div class="compact-grid">
+            <!-- Preclinical -->
+            <div class="category preclinical">
+                <div class="category-header">Preclinical</div>
+                <div class="items">
+                    <div class="item">Strategic Regulatory Planning</div>
+                    <div class="item">INTERACT Meeting</div>
+                    <div class="item">Pre-INDIIA Meeting</div>
+                    <div class="item">Accelerated Programs</div>
+                    <div class="item">Regulatory Briefing Documents</div>
+                    <div class="item">Regulatory Communications</div>
+                </div>
+            </div>
+            
+            <!-- Early Phase Clinical -->
+            <div class="category early-phase">
+                <div class="category-header">Early Phase Clinical</div>
+                <div class="items">
+                    <div class="item">Protocol Development</div>
+                    <div class="item">Accelerated Programs</div>
+                    <div class="item">Annual Reports</div>
+                    <div class="item">Supplements</div>
+                    <div class="item">Safety Reporting</div>
+                    <div class="item">Regulatory Briefing Documents</div>
+                </div>
+            </div>
+            
+            <!-- Late Phase Clinical -->
+            <div class="category late-phase">
+                <div class="category-header">Late Phase Clinical</div>
+                <div class="items">
+                    <div class="item">Supplements</div>
+                    <div class="item">Safety Reporting</div>
+                    <div class="item">Regulatory Briefing Documents</div>
+                    <div class="item">Regulatory Communications</div>
+                    <div class="item">Commercial Regulatory Filing</div>
+                    <div class="item">Inspection Readiness</div>
+                </div>
+            </div>
+            
+            <!-- Post Approval -->
+            <div class="category post-approval">
+                <div class="category-header">Post Approval Activities</div>
+                <div class="items">
+                    <div class="item">Post Approval Commitments</div>
+                    <div class="item">Annual Reports</div>
+                    <div class="item">Safety Reporting</div>
+                    <div class="item">Pharmacovigilance</div>
+                    <div class="item">Inspection Findings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
