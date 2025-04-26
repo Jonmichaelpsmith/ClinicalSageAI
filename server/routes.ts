@@ -642,6 +642,17 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
     // Import dynamically to keep the module loading encapsulated
     const vaultProxyModule = await import('./routes/vault-proxy.js');
     app.use('/api/vault', vaultProxyModule.default);
+    
+    // Load dashboard routes for role-based dashboard
+    try {
+      const dashboardModule = await import('./routes/dashboard.js');
+      app.use('/api/dashboard', authenticate, dashboardModule.default);
+      const logger = createContextLogger({ module: 'routes' });
+      logger.info('Role-based dashboard routes loaded successfully');
+    } catch (err) {
+      const logger = createContextLogger({ module: 'routes' });
+      logger.warn('Role-based dashboard routes could not be loaded', { error: err });
+    }
     console.log('TrialSage Vault API routes registered successfully');
   } catch (error) {
     const logger = createContextLogger({ module: 'routes' });
