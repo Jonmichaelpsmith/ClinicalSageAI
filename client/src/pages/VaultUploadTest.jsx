@@ -14,10 +14,20 @@ const VaultUploadTest = () => {
     // Fetch a mock token for testing
     const fetchMockToken = async () => {
       try {
-        const res = await axios.get('http://localhost:4000/api/vault/mock-token');
-        setToken(res.data.token);
+        // First try connecting directly to the separate vault server
+        try {
+          const res = await axios.get('http://localhost:4000/api/vault/mock-token');
+          setToken(res.data.token);
+          return;
+        } catch (e) {
+          console.log('Could not connect to separate vault server, trying fallback...');
+        }
+        
+        // Fallback to main server for demo purposes
+        const fallbackRes = await axios.get('/api/vault/mock-token');
+        setToken(fallbackRes.data.token);
       } catch (err) {
-        setError('Error fetching mock token. Make sure the Vault server is running.');
+        setError('Error fetching mock token. Make sure either the Vault server is running or a mock endpoint is available.');
         console.error('Token error:', err);
       }
     };
@@ -49,14 +59,32 @@ const VaultUploadTest = () => {
     formData.append('file', selectedFile);
 
     try {
-      const response = await axios.post('http://localhost:4000/api/vault/documents', formData, {
+      // Try direct connection to vault server first
+      try {
+        const response = await axios.post('http://localhost:4000/api/vault/documents', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        setUploadResult(response.data);
+        // Fetch updated audit logs after successful upload
+        fetchAuditLogs();
+        return;
+      } catch (directError) {
+        console.log('Could not connect directly to vault server, trying fallback...');
+      }
+      
+      // Fallback to main server
+      const fallbackResponse = await axios.post('/api/vault/documents', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
         }
       });
       
-      setUploadResult(response.data);
+      setUploadResult(fallbackResponse.data);
       // Fetch updated audit logs after successful upload
       fetchAuditLogs();
     } catch (err) {
@@ -75,12 +103,26 @@ const VaultUploadTest = () => {
 
     setLoadingLogs(true);
     try {
-      const response = await axios.get('http://localhost:4000/api/vault/audit', {
+      // Try direct connection to vault server first
+      try {
+        const response = await axios.get('http://localhost:4000/api/vault/audit', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setAuditLogs(response.data);
+        return;
+      } catch (directError) {
+        console.log('Could not fetch audit logs directly, trying fallback...');
+      }
+      
+      // Fallback to main server
+      const fallbackResponse = await axios.get('/api/vault/audit', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      setAuditLogs(response.data);
+      setAuditLogs(fallbackResponse.data);
     } catch (err) {
       console.error('Error fetching audit logs:', err);
     } finally {
