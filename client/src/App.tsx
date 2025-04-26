@@ -87,6 +87,10 @@ const LazyEctdPlanner = React.lazy(() => import('./pages/EctdPlanner'));
 const LazyTrainingTasks = React.lazy(() => import('./pages/TrainingTasks'));
 // Site Startup Checklist Builder for tracking site setup requirements
 const LazySiteStartup = React.lazy(() => import('./pages/SiteStartup'));
+// Promotional Materials Review with AI claim checker
+const LazyPromoReview = React.lazy(() => import('./pages/PromoReview'));
+// Quality Events dashboard (Deviation & CAPA tracking)
+const LazyQualityDashboard = React.lazy(() => import('./pages/QualityDashboard'));
 
 // Simple error boundary component
 class SimpleErrorBoundary extends React.Component<
