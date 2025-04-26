@@ -38,67 +38,41 @@ const BlockchainSecurityPanel = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   
-  // Simulate loading blockchain data
+  // Fetch blockchain data and verification events from API
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setBlockchainStatus({
-        status: 'active',
-        securityLevel: 'Enhanced',
-        lastVerification: new Date().toISOString(),
-        totalRecords: 15782,
-        verifiedRecords: 15782,
-        networkType: 'Hyperledger Fabric',
-        networkNodes: 5,
-        consensusAlgorithm: 'Practical Byzantine Fault Tolerance',
-        lastBlockHash: '0x7f2c8d3b5a6e9c1f4d2e0b8a7c6f5e4d3c2b1a0',
-        blockchainHeight: 14235,
-        verificationEvents: [
-          {
-            id: 'verify-1',
-            timestamp: '2025-04-26T08:45:12Z',
-            recordType: 'Electronic Signature',
-            recordId: 'esig-45621',
-            status: 'verified',
-            hashValue: '0x3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b'
-          },
-          {
-            id: 'verify-2',
-            timestamp: '2025-04-26T09:12:34Z',
-            recordType: 'Audit Log',
-            recordId: 'alog-78965',
-            status: 'verified',
-            hashValue: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b'
-          },
-          {
-            id: 'verify-3',
-            timestamp: '2025-04-26T09:37:45Z',
-            recordType: 'Document Submission',
-            recordId: 'doc-34572',
-            status: 'verified',
-            hashValue: '0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b'
-          },
-          {
-            id: 'verify-4',
-            timestamp: '2025-04-26T10:05:22Z',
-            recordType: 'User Authentication',
-            recordId: 'auth-12453',
-            status: 'verified',
-            hashValue: '0x5e4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d'
-          },
-          {
-            id: 'verify-5',
-            timestamp: '2025-04-26T10:28:17Z',
-            recordType: 'System Validation',
-            recordId: 'val-90876',
-            status: 'verified',
-            hashValue: '0x2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e'
+    const fetchBlockchainData = async () => {
+      try {
+        // Fetch blockchain status
+        const statusResponse = await fetch('/api/fda-compliance/blockchain-status');
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          
+          // Fetch verification events
+          const eventsResponse = await fetch('/api/fda-compliance/verification-events');
+          if (eventsResponse.ok) {
+            const eventsData = await eventsResponse.json();
+            
+            // Combine data
+            setBlockchainStatus({
+              ...statusData,
+              verificationEvents: eventsData,
+              // Add additional fields that might not be in the API response
+              securityLevel: 'Enhanced',
+              blockchainHeight: statusData.totalRecords || 14235,
+              lastBlockHash: statusData.lastHash || '0x7f2c8d3b5a6e9c1f4d2e0b8a7c6f5e4d3c2b1a0',
+              networkType: statusData.blockchainType || 'Hyperledger Fabric',
+              consensusAlgorithm: statusData.consensus || 'Practical Byzantine Fault Tolerance'
+            });
           }
-        ]
-      });
-      setIsLoading(false);
-    }, 1000);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching blockchain data:', error);
+        setIsLoading(false);
+      }
+    };
     
-    return () => clearTimeout(timer);
+    fetchBlockchainData();
   }, []);
 
   if (isLoading) {
