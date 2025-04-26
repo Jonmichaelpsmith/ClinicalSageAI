@@ -4,40 +4,23 @@ export default {
     "./index.html",
     "./client/src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'media',
   theme: {
     extend: {
       colors: {
-        glass: {
-          light: 'rgba(255, 255, 255, 0.7)',
-          dark: 'rgba(15, 23, 42, 0.7)'
+        hotpink: {
+          50: 'var(--color-hotpink-50)',
+          100: 'var(--color-hotpink-100)',
+          200: 'var(--color-hotpink-200)',
+          300: 'var(--color-hotpink-300)',
+          400: 'var(--color-hotpink-400)',
+          500: 'var(--color-hotpink-500)',
+          600: 'var(--color-hotpink-600)',
+          700: 'var(--color-hotpink-700)',
+          800: 'var(--color-hotpink-800)',
+          900: 'var(--color-hotpink-900)',
+          950: 'var(--color-hotpink-950)',
         },
-        regulatory: {
-          50:  "#f5f0ff",
-          100: "#ede4ff",
-          200: "#d9c8ff",
-          300: "#c5abff",
-          400: "#9d72ff",
-          500: "#7549ff",
-          600: "#5b30e6",
-          700: "#4524b3",
-          800: "#2e1780",
-          900: "#190b4d",
-        }
       },
-      backdropBlur: {
-        xs: '2px',
-      },
-      fontFamily: {
-        sans: ['Inter var', 'Inter', 'sans-serif'],
-      },
-      boxShadow: {
-        'glass': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-        'glass-dark': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-      },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      }
     },
   },
   plugins: [],

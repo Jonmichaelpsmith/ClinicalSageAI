@@ -2,161 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  /* Custom animation for fade in effect */
-  .animate-fadeIn {
-    animation: fadeIn 0.8s ease-out forwards;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* CTA pulse animation */
-  .cta-pulse {
-    position: relative;
-    animation: ctaPulse 2s infinite;
-  }
-  
-  @keyframes ctaPulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-    }
-  }
-
-  /* Custom animation for slow spinning gradient blobs */
-  .animate-slow-spin {
-    animation: slow-spin 20s linear infinite;
-  }
-  
-  .animate-slow-spin-reverse {
-    animation: slow-spin 25s linear infinite reverse;
-  }
-  
-  @keyframes slow-spin {
-    from {
-      transform: translate(-50%, -50%) rotate(0deg);
-    }
-    to {
-      transform: translate(-50%, -50%) rotate(360deg);
-    }
-  }
-  
-  /* Custom styles for the chat message formatting */
-  .chat-message p {
-    margin-bottom: 0.75rem;
-  }
-  
-  .chat-message p:last-child {
-    margin-bottom: 0;
-  }
-  
-  .chat-message ul, .chat-message ol {
-    margin-left: 1.5rem;
-    margin-bottom: 0.75rem;
-  }
-  
-  .chat-message ul {
-    list-style-type: disc;
-  }
-  
-  .chat-message ol {
-    list-style-type: decimal;
-  }
-}
-
-/* Ultra minimal styling */
-html, body {
-  margin: 0;
-  padding: 0;
-  background-color: white;
-}
-
-#root {
-  min-height: 100vh;
-}
-
-/* GLOBAL TEXT COLOR SETTINGS */
 :root {
-  --text-color: #000000;
-  --bg-color: #FFFFFF;
-  --border-color: #000000;
+  --color-hotpink-50: #fdf2f8;
+  --color-hotpink-100: #fce7f3;
+  --color-hotpink-200: #fbcfe8;
+  --color-hotpink-300: #f9a8d4;
+  --color-hotpink-400: #f472b6;
+  --color-hotpink-500: #ec4899;
+  --color-hotpink-600: #db2777;
+  --color-hotpink-700: #be185d;
+  --color-hotpink-800: #9d174d;
+  --color-hotpink-900: #831843;
+  --color-hotpink-950: #500724;
 }
 
-/* Fix for light purple text - Make all text dark black by default */
-p, span, h1, h2, h3, h4, h5, h6, td, th, li, label, a {
-  color: #000000 !important;
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
 }
 
-.dark p, .dark span, .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6, 
-.dark td, .dark th, .dark li, .dark label, .dark a {
-  color: #FFFFFF !important;
-}
-
-/* Force all text to be black on white with strong borders */
-.high-contrast-mode * {
-  color: var(--text-color) !important;
-  background-color: var(--bg-color) !important;
-  border-color: var(--border-color) !important;
-  text-shadow: none !important;
-  box-shadow: none !important;
-}
-
-.high-contrast-mode button, 
-.high-contrast-mode .button,
-.high-contrast-mode .badge,
-.high-contrast-mode .card,
-.high-contrast-mode .dialog,
-.high-contrast-mode .input {
-  border: 1px solid var(--border-color) !important;
-  background-color: var(--bg-color) !important;
-  color: var(--text-color) !important;
-}
-
-/* Ensure contrast for all text elements */
-.high-contrast-mode h1, 
-.high-contrast-mode h2, 
-.high-contrast-mode h3, 
-.high-contrast-mode h4, 
-.high-contrast-mode h5, 
-.high-contrast-mode h6,
-.high-contrast-mode p,
-.high-contrast-mode span,
-.high-contrast-mode a,
-.high-contrast-mode div,
-.high-contrast-mode label,
-.high-contrast-mode li {
-  color: var(--text-color) !important;
-  opacity: 1 !important;
-}
-
-/* Override badge and status colors to ensure visibility */
-.high-contrast-mode .badge,
-.high-contrast-mode [class*="text-"],
-.high-contrast-mode [class*="bg-"] {
-  color: var(--text-color) !important;
-  background-color: var(--bg-color) !important;
-  border: 1px solid var(--border-color) !important;
-}
-
-/* Remove gradients and opacity effects */
-.high-contrast-mode [class*="opacity-"],
-.high-contrast-mode [class*="from-"],
-.high-contrast-mode [class*="to-"],
-.high-contrast-mode [class*="via-"] {
-  opacity: 1 !important;
-  background: var(--bg-color) !important;
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-hotpink-600 hover:bg-hotpink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hotpink-500;
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hotpink-500;
+  }
+  
+  .card {
+    @apply bg-white overflow-hidden shadow rounded-lg border border-gray-200;
+  }
+  
+  .card-header {
+    @apply px-4 py-5 sm:px-6 border-b border-gray-200;
+  }
+  
+  .card-body {
+    @apply px-4 py-5 sm:p-6;
+  }
+  
+  .card-footer {
+    @apply px-4 py-4 sm:px-6 bg-gray-50 border-t border-gray-200;
+  }
 }
