@@ -1,48 +1,121 @@
-// server/middleware/auditLogger.js
-import { saveAuditLog } from '../services/auditService.js';
+/**
+ * Audit Logger Middleware
+ * 
+ * This middleware automatically logs all API requests for compliance
+ * and security monitoring.
+ * 
+ * Enterprise security features:
+ * - Detailed request logging
+ * - User and tenant tracking
+ * - IP address capture
+ * - Request body sanitization
+ * - Response status tracking
+ */
+
+const { auditLog } = require('../services/auditService');
 
 /**
- * Audit action middleware for TrialSage
+ * Creates middleware for automatic API request logging
  * 
- * Logs user actions throughout the application for security,
- * compliance, and traceability, recording IP, user, and tenant information.
- * 
- * @param {string} actionType - Type of action being audited (Upload, Download, etc)
- * @param {string} description - Description of the action
+ * @param {Object} options - Configuration options
+ * @param {Array<string>} options.excludePaths - Paths to exclude from logging
+ * @param {boolean} options.logRequestBody - Whether to log request bodies
+ * @param {boolean} options.logResponseData - Whether to log response data
  * @returns {Function} Express middleware function
  */
-export function auditAction(actionType, description) {
-  return async (req, res, next) => {
-    try {
-      // Create audit log entry with all relevant information
-      const entry = {
-        user: req.user?.id || 'anonymous',
-        username: req.user?.username || 'Anonymous User',
-        email: req.user?.email || '',
-        tenantId: req.user?.tenantId || 'public',
-        actionType: actionType,
-        description: description,
-        ipAddress: req.ip || req.headers['x-forwarded-for'] || 'unknown',
-        userAgent: req.headers['user-agent'] || 'unknown',
-        timestamp: new Date(),
-        resourceId: req.params.id || req.query.objectId || req.body.documentId || null,
-        resourceType: actionType.includes('Document') ? 'document' : 
-                      actionType.includes('AI') ? 'ai' : 
-                      actionType.includes('Template') ? 'template' : 'system',
-        success: true,  // Default to true, can be updated later in the response
-        metadata: {}    // Can be populated with additional details
-      };
-
-      // Save audit log to database
-      await saveAuditLog(entry);
-      
-      // Attach audit entry to the request so it can be updated in route handlers
-      req.auditEntry = entry;
-    } catch (err) {
-      // Log error but don't block request processing
-      console.error('Audit logging failed:', err);
+function createAuditLogger(options = {}) {
+  const {
+    excludePaths = ['/api/status', '/api/health'],
+    logRequestBody = false,
+    logResponseData = false
+  } = options;
+  
+  return function auditLogger(req, res, next) {
+    // Skip logging for excluded paths
+    if (excludePaths.some(path => req.path.startsWith(path))) {
+      return next();
     }
+    
+    // Capture original timestamp
+    const startTime = Date.now();
+    
+    // Store original end method to wrap it
+    const originalEnd = res.end;
+    
+    // Override response end method to capture status code
+    res.end = function(chunk, encoding) {
+      // Restore original end method
+      res.end = originalEnd;
+      
+      // Call original end method
+      res.end(chunk, encoding);
+      
+      // Calculate request duration
+      const duration = Date.now() - startTime;
+      
+      // Extract user and tenant info from authenticated request
+      const userId = req.user?.id || 'anonymous';
+      const tenantId = req.user?.tenantId || 'unknown';
+      
+      // Prepare audit log entry
+      const logEntry = {
+        action: 'API_REQUEST',
+        resource: req.path,
+        method: req.method,
+        userId,
+        tenantId,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        statusCode: res.statusCode,
+        duration,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Optionally include request body (with sensitive data removed)
+      if (logRequestBody && req.body) {
+        // Create a sanitized copy of the request body
+        const sanitizedBody = { ...req.body };
+        
+        // Remove sensitive fields
+        delete sanitizedBody.password;
+        delete sanitizedBody.token;
+        delete sanitizedBody.apiKey;
+        delete sanitizedBody.secret;
+        
+        logEntry.requestBody = sanitizedBody;
+      }
+      
+      // Add response data if enabled and available
+      if (logResponseData && chunk) {
+        try {
+          // Attempt to parse response as JSON
+          const responseData = JSON.parse(chunk.toString());
+          
+          // Limit response data size
+          logEntry.responseData = JSON.stringify(responseData).substring(0, 1000);
+          if (logEntry.responseData.length === 1000) {
+            logEntry.responseData += '...';
+          }
+        } catch (e) {
+          // Not JSON or other error, skip response data
+        }
+      }
+      
+      // Set severity based on status code
+      if (res.statusCode >= 500) {
+        logEntry.severity = 'high';
+      } else if (res.statusCode >= 400) {
+        logEntry.severity = 'medium';
+      } else {
+        logEntry.severity = 'low';
+      }
+      
+      // Log the API request
+      auditLog(logEntry);
+    };
     
     next();
   };
 }
+
+module.exports = createAuditLogger;

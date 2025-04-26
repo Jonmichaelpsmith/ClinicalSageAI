@@ -1,0 +1,162 @@
+// --- TrialSage Full Portal: Unified DocuShare App (Optimized for Client Profile Integration) ---
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { useDropzone } from 'react-dropzone';
+import { uploadDocument, listDocuments, downloadDocument, lockDocument, unlockDocument, deleteDocument, createFolder, moveDocument } from '@/services/DocuShareService';
+import InlineViewer from '@/components/InlineViewer';
+import { useUserSession } from '@/hooks/useUserSession';
+
+export default function ClientPortalDocuShare() {
+  const { user } = useUserSession();
+  const [documents, setDocuments] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [currentFolderId, setCurrentFolderId] = useState('root');
+  const [newFolderName, setNewFolderName] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
+
+  useEffect(() => {
+    if (user) {
+      fetchDocuments();
+      fetchFolders();
+    }
+  }, [user, currentFolderId]);
+
+  const fetchDocuments = async () => {
+    const res = await listDocuments(user.tenantId, currentFolderId);
+    setDocuments(res);
+  };
+
+  const fetchFolders = async () => {
+    const res = await listDocuments(user.tenantId, 'root', true);
+    setFolders(res);
+  };
+
+  const onDrop = async (acceptedFiles) => {
+    const file = acceptedFiles[0];
+    await uploadDocument(file, user.tenantId, currentFolderId);
+    fetchDocuments();
+  };
+
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
+  const handleCreateFolder = async () => {
+    if (newFolderName.trim() !== '') {
+      await createFolder(newFolderName, user.tenantId, currentFolderId);
+      setNewFolderName('');
+      fetchFolders();
+    }
+  };
+
+  const filteredDocs = documents.filter((doc) =>
+    filterName ? doc.name.toLowerCase().includes(filterName.toLowerCase()) : true
+  );
+
+  const paginatedDocs = filteredDocs.slice((page - 1) * pageSize, page * pageSize);
+
+  const handleDownload = async (id) => {
+    await downloadDocument(id, user.tenantId);
+  };
+
+  const handleLock = async (id) => {
+    await lockDocument(id, user.tenantId);
+    fetchDocuments();
+  };
+
+  const handleUnlock = async (id) => {
+    await unlockDocument(id, user.tenantId);
+    fetchDocuments();
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm('Are you sure you want to permanently delete this document?')) {
+      await deleteDocument(id, user.tenantId);
+      fetchDocuments();
+    }
+  };
+
+  return (
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <h1 className="text-4xl font-bold text-gray-800 mb-8">Client Portal - Document Center</h1>
+
+      <div className="flex flex-wrap gap-4 mb-6">
+        <Input
+          placeholder="Create new folder..."
+          value={newFolderName}
+          onChange={(e) => setNewFolderName(e.target.value)}
+        />
+        <Button variant="default" onClick={handleCreateFolder}>Create Folder</Button>
+        <Input
+          placeholder="Search documents..."
+          value={filterName}
+          onChange={(e) => setFilterName(e.target.value)}
+        />
+        <Button variant="outline" onClick={fetchDocuments}>Refresh</Button>
+      </div>
+
+      <div className="flex gap-4 flex-wrap mb-8">
+        <Button variant={currentFolderId === 'root' ? 'default' : 'outline'} onClick={() => setCurrentFolderId('root')}>Root Folder</Button>
+        {folders.map((folder) => (
+          <Button
+            key={folder._id}
+            variant={currentFolderId === folder._id ? 'default' : 'outline'}
+            onClick={() => setCurrentFolderId(folder._id)}
+          >
+            {folder.name}
+          </Button>
+        ))}
+      </div>
+
+      <div {...getRootProps()} className="border-2 border-dashed border-blue-400 bg-white p-8 rounded-xl mb-8 text-center hover:bg-blue-50 cursor-pointer transition">
+        <input {...getInputProps()} />
+        <p className="text-blue-700 font-medium">Drag and drop files here, or click to upload</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {paginatedDocs.map((doc) => (
+          <Card key={doc._id} className="shadow-md hover:shadow-lg rounded-xl p-4">
+            <CardContent>
+              <div className="flex flex-col gap-2">
+                <p className="font-semibold text-gray-800 truncate">{doc.name}</p>
+                <div className="text-xs text-gray-500">
+                  <p><strong>Version:</strong> {doc.latestVersion}</p>
+                  <p><strong>Uploaded:</strong> {new Date(doc.createdAt).toLocaleDateString()}</p>
+                  <p><strong>Trial ID:</strong> {doc.metadata?.trialId || 'N/A'}</p>
+                  <p><strong>Molecule:</strong> {doc.metadata?.molecule || 'N/A'}</p>
+                </div>
+                <div className="flex gap-2 mt-4 flex-wrap">
+                  <Button size="sm" variant="secondary" onClick={() => setSelectedDoc(doc)}>Preview</Button>
+                  <Button size="sm" variant="outline" onClick={() => handleDownload(doc._id)}>Download</Button>
+                  {!doc.lockedBy ? (
+                    <Button size="sm" variant="default" onClick={() => handleLock(doc._id)}>Lock</Button>
+                  ) : (
+                    <Button size="sm" variant="destructive" onClick={() => handleUnlock(doc._id)}>Unlock</Button>
+                  )}
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(doc._id)}>Delete</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="flex justify-center items-center mt-10 space-x-4">
+        <Button variant="secondary" onClick={() => setPage(Math.max(page - 1, 1))} disabled={page === 1}>Previous</Button>
+        <span className="font-medium">Page {page}</span>
+        <Button variant="secondary" onClick={() => setPage(page + 1)} disabled={page * pageSize >= filteredDocs.length}>Next</Button>
+      </div>
+
+      <Dialog open={!!selectedDoc} onOpenChange={() => setSelectedDoc(null)}>
+        <DialogContent className="p-6">
+          {selectedDoc && <InlineViewer fileUrl={selectedDoc.fileUrl} />}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
