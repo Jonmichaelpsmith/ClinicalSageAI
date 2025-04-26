@@ -4,6 +4,7 @@ import VaultMarketingPage from './pages/VaultMarketingPage.jsx';
 import VaultUploadTest from './pages/VaultUploadTest.jsx';
 import ClientPortalDashboard from './pages/ClientPortalDashboard.jsx';
 import CMCRoutes from './pages/CMCBlueprintPage.jsx';
+import ReferenceModelPage from './pages/ReferenceModelPage.jsx';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("authenticated") === "true");
@@ -30,6 +31,7 @@ export default function App() {
                 <>
                   <Link href="/client-portal" className="hover:text-gray-300">Client Portal</Link>
                   <Link href="/cmc" className="hover:text-gray-300">CMC Blueprint</Link>
+                  <Link href="/reference-model" className="hover:text-gray-300">Reference Model</Link>
                   <button 
                     className="hover:text-gray-300"
                     onClick={() => {
@@ -53,6 +55,7 @@ export default function App() {
         <Route path="/" component={VaultMarketingPage} />
         <Route path="/vault-test" component={VaultUploadTest} />
         <Route path="/client-portal" component={ClientPortalDashboard} />
+        <Route path="/reference-model" component={ReferenceModelPage} />
         <Route path="/cmc">
           <CMCRoutes />
         </Route>
