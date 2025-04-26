@@ -34,8 +34,25 @@ function registerRoutes(app) {
     });
   });
   
-  // Register FDA compliance routes
+  // Register FDA compliance routes - make sure the path is correct
+  console.log('Registering FDA compliance routes');
   app.use('/api/fda-compliance', fdaComplianceRoutes);
+  
+  // Log all routes for debugging
+  app._router.stack.forEach(function(r){
+    if (r.route && r.route.path){
+      console.log(`Route registered: ${Object.keys(r.route.methods)} ${r.route.path}`);
+    } else if (r.name === 'router' && r.handle.stack) {
+      // This is a router middleware
+      console.log(`Router middleware: ${r.regexp}`);
+      r.handle.stack.forEach(function(r) {
+        if (r.route) {
+          const methods = Object.keys(r.route.methods).join(',');
+          console.log(`  - ${methods} ${r.route.path}`);
+        }
+      });
+    }
+  });
   
   // Mock audit logs route for development
   app.get('/api/audit-logs', (req, res) => {
