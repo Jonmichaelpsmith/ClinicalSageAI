@@ -93,6 +93,11 @@
         
         // Simulate API delay
         setTimeout(() => {
+          // Store authentication data
+          localStorage.setItem('authenticated', 'true');
+          localStorage.setItem('userEmail', email);
+          localStorage.setItem('userName', name);
+          
           // Once account is created, redirect to client portal
           window.location.href = 'client-portal.html';
         }, 1500);
@@ -100,6 +105,10 @@
         // Login logic
         // Simple check that something was entered
         if (email && password) {
+          // Store authentication data
+          localStorage.setItem('authenticated', 'true');
+          localStorage.setItem('userEmail', email);
+          
           // Successful login - redirect to client portal
           window.location.href = 'client-portal.html';
         } else {
@@ -148,6 +157,11 @@
       
       // Simulate API delay
       setTimeout(() => {
+        // Store authentication data for Google login
+        localStorage.setItem('authenticated', 'true');
+        localStorage.setItem('userEmail', 'googleuser@gmail.com');
+        localStorage.setItem('userName', 'Google User');
+        
         // Redirect to client portal
         window.location.href = 'client-portal.html';
       }, 1500);
