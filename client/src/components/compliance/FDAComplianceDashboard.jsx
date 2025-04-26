@@ -179,7 +179,7 @@ const FDAComplianceDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="flex items-center p-3 bg-gray-50 rounded-md">
             <div className="mr-3 bg-green-100 p-2 rounded-full">
-              <Check className="h-5 w-5 text-green-600" />
+              <span className="h-5 w-5 text-green-600"><CheckIcon /></span>
             </div>
             <div>
               <p className="font-medium">Electronic Signatures</p>
