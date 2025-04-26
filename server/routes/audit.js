@@ -1,182 +1,405 @@
-// server/routes/audit.js
-import express from 'express';
-import { listAuditLogs, exportAuditLogsToCSV, bulkDeleteAuditLogs, ensureAuditLogTable } from '../services/auditService.js';
-import { auditAction } from '../middleware/auditLogger.js';
+/**
+ * Audit Trail API Routes
+ * 
+ * Enterprise-grade audit trail management API with compliance features.
+ * 
+ * Features include:
+ * - Multi-tenant audit trail isolation
+ * - Comprehensive filtering options
+ * - CSV export for compliance reporting
+ * - Retention policy management
+ * - Anomaly detection for security events
+ */
 
+const express = require('express');
 const router = express.Router();
+const validateTenantAccess = require('../middleware/validateTenantAccess');
+const { 
+  getAuditLogs, 
+  getAuditLogById, 
+  deleteAuditLogs, 
+  exportLogsToCSV,
+  auditLog
+} = require('../services/auditService');
 
-// Ensure the audit log table exists
-ensureAuditLogTable().catch(err => {
-  console.error('Failed to create audit log table:', err);
-});
+// Apply tenant validation to all audit routes
+router.use(validateTenantAccess);
 
-/**
- * List audit logs with optional filtering and pagination
- * 
- * This endpoint is tenant-scoped for security, ensuring each
- * tenant can only access their own audit data.
- */
-router.get('/', async (req, res) => {
-  try {
-    // Get tenant ID from authenticated user (multi-tenant security)
-    const tenantId = req.user?.tenantId;
-    
-    // For admin-only routes, require authentication and tenant ID
-    if (!tenantId) {
-      return res.status(401).json({ 
-        message: 'Unauthorized. Authentication required.'
-      });
-    }
-    
-    // Parse query parameters for filtering and pagination
-    const filters = {
-      userId: req.query.userId || undefined,
-      actionType: req.query.actionType || undefined,
-      resourceType: req.query.resourceType || undefined,
-      resourceId: req.query.resourceId || undefined,
-      startDate: req.query.startDate ? new Date(req.query.startDate) : undefined,
-      endDate: req.query.endDate ? new Date(req.query.endDate) : undefined,
-      // Special filter for anomalies
-      anomaliesOnly: req.query.anomaliesOnly === 'true'
-    };
-    
-    // Parse pagination parameters
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 100;
-    
-    // Fetch logs with tenant-scoped security
-    const result = await listAuditLogs(tenantId, filters, page, limit);
-    
-    res.json(result);
-  } catch (error) {
-    console.error('Audit log fetch error:', error);
-    res.status(500).json({ 
-      message: 'Failed to fetch audit logs',
-      error: error.message
+// Additional admin check middleware
+function requireAdmin(req, res, next) {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'Admin access required for this operation'
     });
   }
+  
+  next();
+}
+
+/**
+ * Get audit logs with filtering and pagination
+ * GET /api/audit/logs
+ */
+router.get('/logs', requireAdmin, (req, res) => {
+  // Extract query parameters
+  const {
+    tenantId,
+    userId,
+    action,
+    resource,
+    severity,
+    category,
+    startDate,
+    endDate,
+    page = '1',
+    pageSize = '20'
+  } = req.query;
+  
+  // Create filters object
+  const filters = {};
+  if (tenantId) filters.tenantId = tenantId;
+  if (userId) filters.userId = userId;
+  if (action) filters.action = action;
+  if (resource) filters.resource = resource;
+  if (severity) filters.severity = severity;
+  if (category) filters.category = category;
+  if (startDate) filters.startDate = startDate;
+  if (endDate) filters.endDate = endDate;
+  
+  // Non-admin users can only see logs for their own tenant
+  if (!req.user.isAdmin || !req.user.hasMultiTenantAccess) {
+    filters.tenantId = req.user.tenantId;
+  }
+  
+  // Convert page and pageSize to numbers
+  const pageNum = parseInt(page, 10);
+  const pageSizeNum = parseInt(pageSize, 10);
+  
+  // Get logs with pagination
+  const result = getAuditLogs(filters, pageNum, pageSizeNum);
+  
+  // Record this audit search for audit trail
+  auditLog({
+    action: 'AUDIT_SEARCH',
+    resource: '/api/audit/logs',
+    userId: req.user.id,
+    tenantId: req.user.tenantId,
+    ipAddress: req.ip,
+    details: `Searched audit logs with filters: ${JSON.stringify(filters)}`,
+    severity: 'low',
+    category: 'audit'
+  });
+  
+  res.json(result);
 });
 
 /**
- * Export audit logs to CSV with optional filtering
- * 
- * This endpoint is tenant-scoped for security, ensuring each
- * tenant can only export their own audit data.
+ * Get audit log by ID
+ * GET /api/audit/logs/:id
  */
-router.get('/export', async (req, res) => {
-  try {
-    // Get tenant ID from authenticated user (multi-tenant security)
-    const tenantId = req.user?.tenantId;
-    
-    // For admin-only routes, require authentication and tenant ID
-    if (!tenantId) {
-      return res.status(401).json({ 
-        message: 'Unauthorized. Authentication required.'
-      });
-    }
-    
-    // Parse query parameters for filtering
-    const filters = {
-      userId: req.query.userId || undefined,
-      actionType: req.query.actionType || undefined,
-      resourceType: req.query.resourceType || undefined,
-      resourceId: req.query.resourceId || undefined,
-      startDate: req.query.startDate ? new Date(req.query.startDate) : undefined,
-      endDate: req.query.endDate ? new Date(req.query.endDate) : undefined,
-      anomaliesOnly: req.query.anomaliesOnly === 'true'
-    };
-    
-    // Generate CSV content with tenant-scoped security
-    const csvContent = await exportAuditLogsToCSV(tenantId, filters);
-    
-    // Set headers for CSV download
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=audit_logs.csv');
-    
-    // Send the CSV content
-    res.send(csvContent);
-  } catch (error) {
-    console.error('Audit log export error:', error);
-    res.status(500).json({ 
-      message: 'Failed to export audit logs',
-      error: error.message
+router.get('/logs/:id', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  
+  // Get the log entry
+  const logEntry = getAuditLogById(id);
+  
+  if (!logEntry) {
+    return res.status(404).json({
+      error: 'Not Found',
+      message: 'Audit log entry not found'
     });
   }
+  
+  // Non-admin users can only see logs for their own tenant
+  if (!req.user.isAdmin && logEntry.tenantId !== req.user.tenantId) {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'You do not have permission to view this audit log entry'
+    });
+  }
+  
+  // Record this audit lookup
+  auditLog({
+    action: 'AUDIT_DETAIL_VIEW',
+    resource: `/api/audit/logs/${id}`,
+    userId: req.user.id,
+    tenantId: req.user.tenantId,
+    ipAddress: req.ip,
+    details: `Viewed detailed audit log entry with ID: ${id}`,
+    severity: 'low',
+    category: 'audit'
+  });
+  
+  res.json(logEntry);
 });
 
 /**
- * Bulk delete audit logs based on filters
- * 
- * This endpoint is tenant-scoped for security and requires admin privileges.
+ * Export audit logs to CSV
+ * GET /api/audit/export
  */
-router.post('/bulk-delete',
-  auditAction('BulkDeleteLogs', 'Admin bulk deleted audit logs'),
-  async (req, res) => {
-    try {
-      // Get tenant ID from authenticated user (multi-tenant security)
-      const tenantId = req.user?.tenantId;
-      
-      // For admin-only routes, require authentication, tenant ID, and admin role
-      if (!tenantId) {
-        return res.status(401).json({ 
-          message: 'Unauthorized. Authentication required.'
-        });
+router.get('/export', requireAdmin, (req, res) => {
+  // Extract query parameters (same as /logs endpoint)
+  const {
+    tenantId,
+    userId,
+    action,
+    resource,
+    severity,
+    category,
+    startDate,
+    endDate
+  } = req.query;
+  
+  // Create filters object
+  const filters = {};
+  if (tenantId) filters.tenantId = tenantId;
+  if (userId) filters.userId = userId;
+  if (action) filters.action = action;
+  if (resource) filters.resource = resource;
+  if (severity) filters.severity = severity;
+  if (category) filters.category = category;
+  if (startDate) filters.startDate = startDate;
+  if (endDate) filters.endDate = endDate;
+  
+  // Non-admin users can only export logs for their own tenant
+  if (!req.user.isAdmin || !req.user.hasMultiTenantAccess) {
+    filters.tenantId = req.user.tenantId;
+  }
+  
+  // Get all logs matching the filters (no pagination for export)
+  const result = getAuditLogs(filters, 1, Number.MAX_SAFE_INTEGER);
+  
+  // Generate CSV content
+  const csvContent = exportLogsToCSV(result.results);
+  
+  // Record this audit export
+  auditLog({
+    action: 'AUDIT_EXPORT',
+    resource: '/api/audit/export',
+    userId: req.user.id,
+    tenantId: req.user.tenantId,
+    ipAddress: req.ip,
+    details: `Exported audit logs to CSV with filters: ${JSON.stringify(filters)}`,
+    severity: 'medium',
+    category: 'audit'
+  });
+  
+  // Set response headers
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="audit_logs_${new Date().toISOString().split('T')[0]}.csv"`);
+  
+  // Send CSV content
+  res.send(csvContent);
+});
+
+/**
+ * Delete audit logs by filter criteria
+ * DELETE /api/audit/logs
+ */
+router.delete('/logs', requireAdmin, (req, res) => {
+  // Ensure this is only available to administrators
+  if (!req.user.isAdmin) {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'Only administrators can delete audit logs'
+    });
+  }
+  
+  // Extract filter criteria from request body
+  const { tenantId, olderThan, category, severity } = req.body;
+  
+  // Create deletion filters
+  const filters = {};
+  if (tenantId) filters.tenantId = tenantId;
+  if (olderThan) filters.olderThan = olderThan;
+  if (category) filters.category = category;
+  if (severity) filters.severity = severity;
+  
+  // Prevent accidental deletion of all logs
+  if (Object.keys(filters).length === 0) {
+    return res.status(400).json({
+      error: 'Bad Request',
+      message: 'At least one deletion filter is required to prevent accidental deletion of all logs'
+    });
+  }
+  
+  // Record this deletion action before performing it
+  auditLog({
+    action: 'AUDIT_LOG_DELETE',
+    resource: '/api/audit/logs',
+    userId: req.user.id,
+    tenantId: req.user.tenantId,
+    ipAddress: req.ip,
+    details: `Deleted audit logs with filters: ${JSON.stringify(filters)}`,
+    severity: 'high',
+    category: 'audit'
+  });
+  
+  // Perform the deletion
+  const deletedCount = deleteAuditLogs(filters);
+  
+  res.json({
+    success: true,
+    deletedCount,
+    filters
+  });
+});
+
+/**
+ * Get audit log statistics
+ * GET /api/audit/stats
+ */
+router.get('/stats', requireAdmin, (req, res) => {
+  // Extract tenant filter
+  const { tenantId } = req.query;
+  
+  // Create filters for statistics
+  const filters = {};
+  if (tenantId) filters.tenantId = tenantId;
+  
+  // Non-admin users can only see stats for their own tenant
+  if (!req.user.isAdmin || !req.user.hasMultiTenantAccess) {
+    filters.tenantId = req.user.tenantId;
+  }
+  
+  // Get all logs matching the filters
+  const result = getAuditLogs(filters, 1, Number.MAX_SAFE_INTEGER);
+  const logs = result.results;
+  
+  // Calculate statistics
+  const stats = {
+    totalCount: logs.length,
+    bySeverity: {
+      low: logs.filter(log => log.severity === 'low').length,
+      medium: logs.filter(log => log.severity === 'medium').length,
+      high: logs.filter(log => log.severity === 'high').length
+    },
+    byCategory: {},
+    byAction: {},
+    byDay: {},
+    anomalies: detectAnomalies(logs)
+  };
+  
+  // Calculate category statistics
+  logs.forEach(log => {
+    // Categories
+    const category = log.category || 'uncategorized';
+    if (!stats.byCategory[category]) {
+      stats.byCategory[category] = 0;
+    }
+    stats.byCategory[category]++;
+    
+    // Actions
+    const action = log.action || 'unknown';
+    if (!stats.byAction[action]) {
+      stats.byAction[action] = 0;
+    }
+    stats.byAction[action]++;
+    
+    // Days
+    const day = log.timestamp.split('T')[0];
+    if (!stats.byDay[day]) {
+      stats.byDay[day] = 0;
+    }
+    stats.byDay[day]++;
+  });
+  
+  // Record this stats view
+  auditLog({
+    action: 'AUDIT_STATS_VIEW',
+    resource: '/api/audit/stats',
+    userId: req.user.id,
+    tenantId: req.user.tenantId,
+    ipAddress: req.ip,
+    details: `Viewed audit log statistics with filters: ${JSON.stringify(filters)}`,
+    severity: 'low',
+    category: 'audit'
+  });
+  
+  res.json(stats);
+});
+
+/**
+ * Simple anomaly detection for demonstration purposes
+ * In a real system, this would use more sophisticated algorithms
+ */
+function detectAnomalies(logs) {
+  const anomalies = [];
+  const highSeverityThreshold = 5; // Threshold for high severity events
+  const userActionMap = new Map(); // Map of user IDs to action counts
+  const ipActionMap = new Map(); // Map of IP addresses to action counts
+  
+  // Count high severity events by user
+  const highSeverityByUser = new Map();
+  
+  // Count actions by user
+  logs.forEach(log => {
+    // Track high severity events
+    if (log.severity === 'high') {
+      const count = highSeverityByUser.get(log.userId) || 0;
+      highSeverityByUser.set(log.userId, count + 1);
+    }
+    
+    // Track actions by user
+    if (!userActionMap.has(log.userId)) {
+      userActionMap.set(log.userId, new Map());
+    }
+    const userActions = userActionMap.get(log.userId);
+    const actionCount = userActions.get(log.action) || 0;
+    userActions.set(log.action, actionCount + 1);
+    
+    // Track actions by IP
+    if (log.ipAddress) {
+      if (!ipActionMap.has(log.ipAddress)) {
+        ipActionMap.set(log.ipAddress, new Map());
       }
-      
-      // Check for admin role (optional - depends on your user schema)
-      if (req.user?.role !== 'admin' && !req.user?.isAdmin) {
-        return res.status(403).json({
-          message: 'Forbidden. Admin privileges required for bulk delete operations.'
-        });
-      }
-      
-      // Parse filters from request body
-      const { 
-        userId, 
-        actionType, 
-        startDate, 
-        endDate, 
-        reason
-      } = req.body;
-      
-      // Require a reason for the bulk delete (for audit trail)
-      if (!reason) {
-        return res.status(400).json({
-          message: 'Reason for bulk delete is required for audit purposes.'
-        });
-      }
-      
-      // Perform bulk delete with tenant-scoped security
-      const result = await bulkDeleteAuditLogs(tenantId, {
+      const ipActions = ipActionMap.get(log.ipAddress);
+      const ipActionCount = ipActions.get(log.action) || 0;
+      ipActions.set(log.action, ipActionCount + 1);
+    }
+  });
+  
+  // Check for users with many high severity events
+  highSeverityByUser.forEach((count, userId) => {
+    if (count >= highSeverityThreshold) {
+      anomalies.push({
+        type: 'high_severity_activity',
         userId,
-        actionType,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined
-      });
-      
-      // Add the bulk delete operation to the audit log metadata
-      if (req.auditEntry) {
-        req.auditEntry.metadata = {
-          ...req.auditEntry.metadata,
-          reason,
-          deletedCount: result.deletedCount,
-          filters: { userId, actionType, startDate, endDate }
-        };
-      }
-      
-      // Return success response
-      res.json({
-        message: 'Audit logs deleted successfully',
-        deletedCount: result.deletedCount
-      });
-    } catch (error) {
-      console.error('Bulk delete error:', error);
-      res.status(500).json({ 
-        message: 'Failed to delete audit logs',
-        error: error.message
+        count,
+        description: `User ${userId} has ${count} high severity events`
       });
     }
-  }
-);
+  });
+  
+  // Detect unusual access patterns
+  ipActionMap.forEach((actionMap, ipAddress) => {
+    let totalActions = 0;
+    actionMap.forEach(count => totalActions += count);
+    
+    // Check for high volumes of access from a single IP
+    if (totalActions > 50) {
+      anomalies.push({
+        type: 'high_volume_ip',
+        ipAddress,
+        count: totalActions,
+        description: `IP address ${ipAddress} has unusually high activity (${totalActions} actions)`
+      });
+    }
+    
+    // Check for high volumes of login attempts
+    const loginAttempts = actionMap.get('AUTH_LOGIN') || 0;
+    if (loginAttempts > 10) {
+      anomalies.push({
+        type: 'multiple_login_attempts',
+        ipAddress,
+        count: loginAttempts,
+        description: `IP address ${ipAddress} has multiple login attempts (${loginAttempts})`
+      });
+    }
+  });
+  
+  return anomalies;
+}
 
-export default router;
+module.exports = router;
