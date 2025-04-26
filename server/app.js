@@ -11,7 +11,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const compression = require('compression');
-const registerRoutes = require('./routes');
+const { registerRoutes } = require('./routes');
 const securityMiddleware = require('./middleware/security');
 
 /**
