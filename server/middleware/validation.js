@@ -15,24 +15,22 @@ import { z } from 'zod';
  */
 export const validateBody = (schema) => (req, res, next) => {
   try {
-    // Parse and validate the request body
-    const validated = schema.parse(req.body);
-    // Replace req.body with validated data to ensure type safety
-    req.body = validated;
+    const validatedData = schema.parse(req.body);
+    req.validatedBody = validatedData;
     next();
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      // Send formatted validation errors
-      return res.status(400).json({
-        error: 'Validation error',
-        details: error.errors.map(err => ({
-          path: err.path.join('.'),
-          message: err.message
-        }))
-      });
-    }
-    // Handle unexpected errors
-    return res.status(500).json({ error: 'Internal server error during validation' });
+    const formattedError = error.format ? error.format() : error.errors || error.message;
+    
+    // Log validation errors
+    console.error(`[Validation Error] ${req.method} ${req.originalUrl}:`, formattedError);
+    
+    // Return standardized error response
+    return res.status(400).json({
+      status: 'error',
+      message: 'Validation failed',
+      errors: formattedError,
+      timestamp: new Date().toISOString(),
+    });
   }
 };
 
@@ -40,46 +38,80 @@ export const validateBody = (schema) => (req, res, next) => {
  * Common schemas for reuse across routes
  */
 export const schemas = {
-  // Document upload schema
-  documentUpload: z.object({
-    title: z.string().min(1, "Title is required").max(200, "Title cannot exceed 200 characters"),
-    content: z.string().min(1, "Content is required"),
-    docType: z.string().min(1, "Document type is required"),
-    status: z.enum(["Draft", "Review", "Approved", "Effective", "Archived"], {
-      errorMap: () => ({ message: "Invalid document status" })
-    }).optional().default("Draft"),
-    tags: z.array(z.string()).optional().default([])
+  // Retention Policy Schema
+  retentionPolicy: z.object({
+    id: z.string().uuid().optional(), // Optional for creation
+    policyName: z.string().min(3).max(100),
+    documentType: z.string().min(1),
+    retentionPeriod: z.number().int().positive(),
+    periodUnit: z.enum(['days', 'months', 'years']),
+    archiveBeforeDelete: z.boolean().default(true),
+    notifyBeforeDeletion: z.boolean().default(true),
+    notificationPeriod: z.number().int().nonnegative(),
+    notificationUnit: z.enum(['days', 'months', 'years']),
+    active: z.boolean().default(true),
   }),
-  
-  // Retention rule schema
-  retentionRule: z.object({
-    docType: z.string().min(1, "Document type is required"),
-    archiveAfterMonths: z.number().int().min(1, "Archive period must be at least 1 month"),
-    deleteAfterMonths: z.number().int().min(1, "Delete period must be at least 1 month")
+
+  // Document Schema
+  document: z.object({
+    id: z.string().uuid().optional(),
+    name: z.string().min(1).max(255),
+    type: z.string().min(1),
+    path: z.string().min(1),
+    size: z.number().nonnegative(),
+    mimeType: z.string(),
+    createdBy: z.string(),
+    metadata: z.record(z.string(), z.any()).optional(),
   }),
-  
-  // Promotional material review schema
-  promoReview: z.object({
-    title: z.string().min(1, "Title is required"),
-    content: z.string().min(1, "Content is required"),
-    type: z.enum(["Print", "Digital", "Video", "Social"], {
-      errorMap: () => ({ message: "Invalid promotion type" })
-    }),
-    claims: z.array(z.string()).optional().default([])
+
+  // User Schema
+  user: z.object({
+    id: z.string().uuid().optional(),
+    username: z.string().min(3).max(50),
+    email: z.string().email(),
+    role: z.enum(['admin', 'manager', 'user', 'auditor']),
+    active: z.boolean().default(true),
   }),
-  
-  // Quality event schema
+
+  // Audit Log Schema
+  auditLog: z.object({
+    action: z.string().min(1),
+    entityType: z.string().min(1),
+    entityId: z.string().optional(),
+    userId: z.string(),
+    details: z.string().optional(),
+    ipAddress: z.string().optional(),
+    timestamp: z.string().datetime().optional(),
+  }),
+
+  // Quality Event Schema
   qualityEvent: z.object({
-    title: z.string().min(1, "Title is required"),
-    description: z.string().min(1, "Description is required"),
-    category: z.enum(["Deviation", "CAPA", "Complaint", "Adverse Event"], {
-      errorMap: () => ({ message: "Invalid event category" })
-    }),
-    severity: z.enum(["Low", "Medium", "High", "Critical"], {
-      errorMap: () => ({ message: "Invalid severity level" })
-    }),
-    status: z.enum(["Open", "In Progress", "Closed"], {
-      errorMap: () => ({ message: "Invalid status" })
-    }).optional().default("Open")
-  })
+    id: z.string().uuid().optional(),
+    title: z.string().min(3).max(255),
+    description: z.string().min(1),
+    eventType: z.enum(['deviation', 'capa', 'complaint', 'audit_finding']),
+    severity: z.enum(['critical', 'major', 'minor', 'observation']),
+    status: z.enum(['open', 'in_progress', 'pending_review', 'closed']),
+    assignedTo: z.string().optional(),
+    dueDate: z.string().datetime().optional(),
+    createdBy: z.string(),
+  }),
+
+  // Promotional Review Schema
+  promoReview: z.object({
+    id: z.string().uuid().optional(),
+    materialName: z.string().min(3).max(255),
+    materialType: z.enum(['brochure', 'website', 'email', 'advertisement', 'social_media', 'other']),
+    content: z.string().min(1),
+    status: z.enum(['draft', 'submitted', 'in_review', 'approved', 'rejected']),
+    submittedBy: z.string(),
+    reviewers: z.array(z.string()).optional(),
+    comments: z.array(
+      z.object({
+        user: z.string(),
+        comment: z.string().min(1),
+        timestamp: z.string().datetime().optional(),
+      })
+    ).optional(),
+  }),
 };
