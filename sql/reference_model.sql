@@ -1,5 +1,6 @@
 -- TrialSage Vault Reference Model
 -- Based on Veeva Quality Content Reference Model structure
+-- ENHANCED implementation with triggers for periodic reviews
 
 -- 1. Create tables for document hierarchies and lifecycles
 
@@ -52,6 +53,7 @@ CREATE TABLE IF NOT EXISTS folder_templates (
   document_type_id VARCHAR(50) REFERENCES document_types(id),
   description TEXT,
   default_for_tenants BOOLEAN DEFAULT false,
+  sort_order INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -63,7 +65,62 @@ ALTER TABLE documents
   ADD COLUMN IF NOT EXISTS business_unit VARCHAR(100),
   ADD COLUMN IF NOT EXISTS periodic_review_date TIMESTAMP WITH TIME ZONE,
   ADD COLUMN IF NOT EXISTS archive_date TIMESTAMP WITH TIME ZONE,
-  ADD COLUMN IF NOT EXISTS delete_date TIMESTAMP WITH TIME ZONE;
+  ADD COLUMN IF NOT EXISTS delete_date TIMESTAMP WITH TIME ZONE,
+  ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Draft';
+
+-- Create periodic review tasks table
+CREATE TABLE IF NOT EXISTS periodic_review_tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  document_id INTEGER REFERENCES documents(id),
+  tenant_id UUID,
+  owner_id INTEGER,
+  due_date DATE,
+  status VARCHAR(50) DEFAULT 'Open',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Retention rules table
+CREATE TABLE IF NOT EXISTS retention_rules (
+  tenant_id UUID,
+  document_subtype_id VARCHAR(50) REFERENCES document_subtypes(id),
+  archive_after INTEGER,
+  delete_after INTEGER,
+  PRIMARY KEY (tenant_id, document_subtype_id)
+);
+
+-- Trigger to schedule periodic review on document status change to Effective
+CREATE OR REPLACE FUNCTION schedule_periodic_review()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.status = 'Effective' AND (OLD.status IS NULL OR OLD.status != 'Effective') THEN
+    -- Find review interval for the document's subtype
+    INSERT INTO periodic_review_tasks (document_id, tenant_id, owner_id, due_date, status)
+    SELECT 
+      NEW.id, 
+      NEW.tenant_id, 
+      NEW.created_by, 
+      (CURRENT_DATE + (ds.review_interval || ' months')::INTERVAL)::DATE,
+      'Open'
+    FROM document_subtypes ds 
+    WHERE ds.id = NEW.document_subtype_id 
+    AND ds.review_interval IS NOT NULL;
+    
+    -- Update the document's periodic review date
+    UPDATE documents 
+    SET periodic_review_date = (CURRENT_DATE + ((SELECT review_interval FROM document_subtypes WHERE id = NEW.document_subtype_id) || ' months')::INTERVAL)
+    WHERE id = NEW.id;
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_schedule_periodic_review
+AFTER UPDATE ON documents
+FOR EACH ROW
+WHEN (OLD.status IS DISTINCT FROM NEW.status)
+EXECUTE PROCEDURE schedule_periodic_review();
 
 -- 2. Seed with standard Veeva-like model data
 
