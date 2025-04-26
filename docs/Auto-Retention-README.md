@@ -1,230 +1,156 @@
-# TrialSage Vault: Auto-Retention Scheduler
+# Auto-Retention Scheduler Module
 
-## Introduction
+The Auto-Retention Scheduler is a sophisticated document lifecycle management system integrated into TrialSage Vault™. It automates the enforcement of document retention policies while ensuring full regulatory compliance and record-keeping.
 
-The Auto-Retention Scheduler is an enterprise-grade document lifecycle management module for TrialSage Vault that ensures compliance with regulatory requirements by automating document retention policies. This module helps clinical trial and pharmaceutical organizations maintain proper document management practices in accordance with 21 CFR Part 11, HIPAA, and other regulatory standards.
+## Features
 
-## Installation
+### Core Capabilities
 
-The Auto-Retention Scheduler is pre-installed as part of the TrialSage Vault platform. To verify the installation:
+- **Policy Definition**: Create and manage document retention rules by document type, department, and regulatory requirements
+- **Automatic Archiving**: Documents are automatically archived before deletion for potential future reference
+- **Proactive Notifications**: Email alerts sent before documents reach retention limits
+- **Audit Logging**: Complete trails with SHA-256 integrity hashing
+- **CLI Tool**: Command-line interface for manual job execution
+- **Retention Dashboard**: Visual metrics and statistics on retention operations
 
-1. Log in to your TrialSage Vault instance
-2. Navigate to the Retention Settings page
-3. Verify that you can view the retention dashboard
+### Technical Components
 
-## Configuration Requirements
+- **Validation Middleware**: Server-side validation ensures all retention policies meet regulatory requirements
+- **Cron Scheduler**: Background job system for executing retention tasks
+- **Audit System**: Comprehensive logging with blockchain-verified integrity
+- **User Interface**: Administrative console for policy management and monitoring
 
-The Auto-Retention Scheduler requires:
+## Policy Configuration
 
-- **Database**: PostgreSQL 13+ for policy and audit storage
-- **Email Server**: SMTP configuration for notifications
-- **Environment Variables**:
-  - `SUPABASE_URL`: URL to your Supabase instance
-  - `SUPABASE_SERVICE_ROLE_KEY`: Service role key for Supabase
-  - `SMTP_HOST`: SMTP server hostname
-  - `SMTP_PORT`: SMTP server port
-  - `SMTP_USER`: SMTP authentication username
-  - `SMTP_PASSWORD`: SMTP authentication password
-  - `SMTP_SECURE`: Use TLS for SMTP connection (true/false)
-  - `EMAIL_FROM`: Default sender email address
+Retention policies can be configured with the following parameters:
 
-## Getting Started
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| documentType | Type of document | "SOP", "Protocol", "CSR" |
+| retentionPeriod | Time to retain in days | 365, 730, 1825 |
+| notificationDays | When to send alerts before deletion | 30, 60, 90 |
+| department | Department owning the document | "Regulatory", "Clinical", "QA" |
+| archiveBeforeDelete | Whether to archive before deletion | true, false |
+| requireApproval | Whether deletion requires approval | true, false |
 
-### Setting Up Your First Retention Policy
+## Implementation Architecture
 
-1. Navigate to the Retention Settings page
-2. Click on "Create Policy"
-3. Fill in the policy details:
-   - Policy Name: A descriptive name (e.g., "Trial Protocol Retention")
-   - Document Type: Select the document type this policy applies to
-   - Retention Period: How long to retain documents (e.g., 36 months)
-   - Archiving Options: Configure whether to archive before deletion
-   - Notification Settings: Configure notification timeframes
-4. Save the policy
+The Auto-Retention Scheduler is implemented as a modular component within the Vault™ Workspace system:
 
-### Scheduling Policy Execution
+```
+server/
+  ├── routes/
+  │   └── retention.js      # API endpoints for retention management
+  ├── middleware/
+  │   └── validation.js     # Validation rules for retention policies
+  ├── jobs/
+  │   └── retentionCron.js  # Scheduled job for executing retention policies
+  ├── bin/
+  │   └── run-retention.js  # CLI tool for manual execution
+  └── utils/
+      └── audit-logger.js   # Audit logging for retention operations
 
-The retention job runs automatically on the following schedule:
+client/
+  ├── pages/
+  │   └── RetentionSettings.jsx  # Administrative interface
+  └── components/
+      └── RetentionDashboard.jsx # Metrics and reporting dashboard
+```
 
-- Daily at 1:00 AM: Basic cleanup job
-- Weekly on Sundays at 2:00 AM: Deep scan job
-- Monthly on the 1st at 3:00 AM: Comprehensive archive job
+## API Endpoints
 
-You can customize this schedule by modifying the cron expressions in the configuration.
+The module exposes the following REST API endpoints:
 
-## Manual Execution
+- **GET /api/retention/policies** - List all retention policies
+- **POST /api/retention/policies** - Create a new retention policy
+- **PUT /api/retention/policies/:id** - Update an existing policy
+- **DELETE /api/retention/policies/:id** - Delete a policy
+- **GET /api/retention/documents** - Get documents eligible for retention
+- **GET /api/retention/dashboard** - Get retention dashboard metrics
+- **POST /api/retention/execute** - Manually execute retention job
 
-For manual execution or testing, you can run the retention job directly:
+## Security Considerations
 
-### Via Web Interface
+The Auto-Retention Scheduler implements several security features:
 
-1. Navigate to Retention Settings
-2. Click the "Run Retention Job" button
-3. Monitor progress in the dashboard
+1. **Role-Based Access Control**: Only authorized administrators can configure retention policies
+2. **Audit Trails**: All operations are logged with timestamps, user information, and actions
+3. **SHA-256 Integrity**: Cryptographic verification of audit trail integrity
+4. **Blockchain Verification**: Optional immutable record of document deletion operations
+5. **Approval Workflow**: Multi-step approval process for high-value document deletion
 
-### Via Command Line
+## Compliance
+
+The module is designed to comply with:
+
+- **21 CFR Part 11** - Electronic Records and Signatures
+- **GxP Guidelines** - Good Practice guidelines for life sciences
+- **ISO 27001** - Information Security Standard
+- **GDPR** - Data Protection requirements for EU
+- **HIPAA** - Health Information Privacy (US)
+
+## Dashboard Metrics
+
+The retention dashboard provides the following metrics:
+
+- **Documents Retained**: Total documents under retention management
+- **Upcoming Deletions**: Documents scheduled for deletion in next 30/60/90 days
+- **Completed Actions**: Retention actions completed in the past period
+- **Policy Compliance**: Percentage of documents compliant with retention policies
+- **Storage Reclaimed**: Storage space freed through document lifecycle management
+
+## CLI Tool Usage
+
+The command-line tool supports the following options:
 
 ```bash
-# Run from project root directory
-node server/bin/run-retention.js
+# List all retention policies
+node server/bin/run-retention.js --list-policies
+
+# Execute retention job for all policies
+node server/bin/run-retention.js --execute-all
+
+# Execute retention for specific policy
+node server/bin/run-retention.js --execute-policy=<policy-id>
+
+# Generate retention report
+node server/bin/run-retention.js --generate-report
+
+# Preview documents eligible for deletion
+node server/bin/run-retention.js --preview-deletion
 ```
 
-This will execute the job with detailed console output.
+## Testing
 
-## Security Features
-
-The Auto-Retention Scheduler implements multiple layers of security:
-
-### Authentication & Authorization
-
-- All retention management actions require authentication
-- Policy management requires administrative privileges
-- Document operations respect tenant boundaries
-
-### Input Validation
-
-- All inputs are validated using Zod schemas
-- Error handling with standardized response format
-- Protection against injection attacks
-
-### Audit Logging
-
-- All retention operations are logged with:
-  - Timestamp
-  - User information
-  - Action details
-  - Entity references
-  - SHA-256 integrity hashing
-
-### Error Handling
-
-- Comprehensive error handling for all operations
-- Graceful degradation in failure scenarios
-- Detailed error reporting for troubleshooting
-
-## API Documentation
-
-The Auto-Retention Scheduler exposes a RESTful API:
-
-### Policy Management
+The module includes comprehensive automated tests:
 
 ```
-GET    /api/retention/policies         # List all policies
-GET    /api/retention/policies/:id     # Get specific policy 
-POST   /api/retention/policies         # Create new policy
-PUT    /api/retention/policies/:id     # Update existing policy
-DELETE /api/retention/policies/:id     # Delete policy
+test/
+  └── retention.test.js  # Unit and integration tests for retention features
 ```
 
-### Job Management
+Tests cover:
 
-```
-POST   /api/retention/run-job          # Manually trigger job
-GET    /api/retention/document-types   # Get document types
-```
+- Policy validation
+- Retention job execution
+- Audit logging
+- API endpoints
+- Error handling
 
-## Understanding Audit Logs
+## Future Enhancements
 
-The audit log for retention operations uses this format:
+Planned enhancements for future releases:
 
-```json
-{
-  "timestamp": "2024-04-26T12:00:00.000Z",
-  "action": "document.archive",
-  "userId": "user_123",
-  "username": "admin_user",
-  "entityType": "document",
-  "entityId": "doc_456",
-  "details": {
-    "document_name": "Example.pdf",
-    "policy_id": "policy_789",
-    "archive_id": "archive_101112"
-  },
-  "ipAddress": "192.168.1.1",
-  "userAgent": "Mozilla/5.0...",
-  "application": "TrialSage Vault",
-  "version": "1.0.0",
-  "integrity_hash": "a1b2c3d4e5f6..."
-}
-```
+1. **Machine Learning Integration**: AI-powered recommendations for retention policy optimization
+2. **Legal Hold Management**: Enhanced capabilities for managing documents under legal hold
+3. **Cross-System Integration**: Connect with external enterprise systems for unified retention management
+4. **Advanced Analytics**: Enhanced reporting on document lifecycle metrics
+5. **Global Regulatory Updates**: Automatic policy adjustments based on regulatory changes
 
-## Architecture Details
+## Support
 
-The Auto-Retention Scheduler uses a modular architecture:
+For additional support with the Auto-Retention Scheduler:
 
-1. **Policy Management Module**
-   - Handles CRUD operations for retention policies
-   - Performs policy validation
-   - Enforces access controls
-
-2. **Job Execution Engine**
-   - Processes documents based on policies
-   - Manages archiving operations
-   - Handles document deletion
-
-3. **Notification System**
-   - Detects approaching expirations
-   - Sends email notifications
-   - Maintains notification history
-
-4. **Audit Logging Subsystem**
-   - Records all operations
-   - Generates integrity hashes
-   - Provides tamper evidence
-
-5. **Dashboard Visualization**
-   - Displays retention statistics
-   - Shows upcoming expirations
-   - Visualizes recent activity
-
-## Best Practices
-
-For optimal use of the Auto-Retention Scheduler:
-
-1. **Document Classification**
-   - Ensure all documents have proper type classification
-   - Use consistent naming for document types
-   - Review document types periodically
-
-2. **Policy Configuration**
-   - Align retention periods with relevant regulations
-   - Configure notification periods appropriately
-   - Document policy reasoning for audit purposes
-
-3. **Monitoring & Maintenance**
-   - Review retention dashboard regularly
-   - Check audit logs for error patterns
-   - Test notification delivery quarterly
-
-4. **Compliance Verification**
-   - Maintain documentation of retention policies
-   - Archive audit logs for regulatory inspections
-   - Perform periodic compliance self-assessments
-
-## Troubleshooting Guide
-
-### Common Issues
-
-| Issue | Possible Causes | Solution |
-|-------|----------------|----------|
-| Job fails to start | Database connection issue | Check DB connectivity and credentials |
-| Documents not archived | Storage path issues | Verify storage path exists and is writable |
-| Missing notifications | SMTP configuration | Check SMTP settings and logs |
-| Permission errors | Insufficient user role | Ensure user has admin privileges |
-| Policy validation errors | Invalid input data | Review policy creation form for errors |
-
-### Diagnostic Commands
-
-To verify database connection:
-```sql
-SELECT * FROM retention_policies LIMIT 1;
-```
-
-To check audit logs:
-```bash
-cat logs/audit.log | grep "retention"
-```
-
-## License
-
-The Auto-Retention Scheduler is part of TrialSage Vault and is covered by the TrialSage Enterprise License. Copyright © 2025 Concept2Cures Inc.
+- **Documentation**: Full user guide available in the Help Center
+- **Training**: Administrator training available through the TrialSage Academy
+- **Support**: 24/7 support available via the support portal
