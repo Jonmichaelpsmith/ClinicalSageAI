@@ -34,6 +34,11 @@ app.get('/solutions/docushare-sync', (req, res) => {
   res.redirect('/solutions/vault-workspace');
 });
 
+// Route for our new compact regulatory diagram
+app.get('/compact-regulatory-diagram', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'compact_regulatory_diagram.html'));
+});
+
 // Fallback route for SPA or static files
 app.get('*', (req, res) => {
   // Try to serve static files for paths that may exist
