@@ -1,0 +1,160 @@
+// ───────────────────────────────────────────────────────────────
+// IND Wizard – Sprint‑5 ✦  Comment Threads • Branch & Merge Snapshots
+// ---------------------------------------------------------------------
+//  • sql/comments_branches.sql       – comments + snapshot tables
+//  • server/routes/comments.js       – CRUD + resolve
+//  • server/routes/branches.js       – create branch, merge, diff
+//  • server/services/diffEngine.js   – block diff util
+//  • client/components/CommentBubble.jsx – inline annotation UI
+//  • client/pages/BranchManager.jsx  – create / merge PR UI
+//  • hooks/useComments.js            – subscribe comments realtime
+//  • Integration checklist           – wiring
+// ───────────────────────────────────────────────────────────────
+
+// ---------------- sql/comments_branches.sql ----------------
+-- Comments
+create table if not exists ind_comments (
+  id uuid primary key default gen_random_uuid(),
+  block_id uuid references ind_blocks(id),
+  author_id uuid,
+  text text,
+  resolved boolean default false,
+  created_at timestamp default now()
+);
+-- Branch snapshots
+create table if not exists ind_branches (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid references ind_wizards(id),
+  name text,
+  created_by uuid,
+  status text default 'Open', -- Open, Merged, Closed
+  base_snapshot jsonb,
+  created_at timestamp default now()
+);
+create table if not exists ind_branch_blocks (
+  branch_id uuid references ind_branches(id),
+  block jsonb
+);
+
+// ---------------- server/routes/comments.js ----------------
+import { Router } from 'express';
+import { supabase } from '../lib/supabaseClient.js';
+import { verifyJwt } from '../middleware/auth.js';
+const c = Router();
+
+c.post('/', verifyJwt, async (req,res)=>{
+  const { blockId, text } = req.body;
+  const { data, error } = await supabase.from('ind_comments').insert({ block_id:blockId, author_id:req.user.id, text }).select('*').single();
+  if(error) return res.status(400).json({ message:error.message });
+  res.json(data);
+});
+
+c.patch('/:id/resolve', verifyJwt, async (req,res)=>{
+  await supabase.from('ind_comments').update({ resolved:true }).eq('id',req.params.id);
+  res.json({ ok:true });
+});
+
+c.get('/:blockId', verifyJwt, async (req,res)=>{
+  const { data } = await supabase.from('ind_comments').select('*').eq('block_id',req.params.blockId);
+  res.json(data);
+});
+export default c;
+
+// ---------------- server/routes/branches.js ----------------
+import { Router } from 'express';
+import { supabase } from '../lib/supabaseClient.js';
+import { diffBlocks, applyDiff } from '../services/diffEngine.js';
+import { verifyJwt } from '../middleware/auth.js';
+const b = Router();
+
+b.post('/', verifyJwt, async (req,res)=>{
+  const { submissionId, name } = req.body;
+  const { data: blocks } = await supabase.from('ind_blocks').select('*').eq('submission_id',submissionId);
+  const { data, error } = await supabase.from('ind_branches')
+    .insert({ submission_id:submissionId, name, created_by:req.user.id, base_snapshot:blocks })
+    .select('*').single();
+  if(error) return res.status(400).json({ message:error.message });
+  // store branch copy
+  for(const bl of blocks){ await supabase.from('ind_branch_blocks').insert({ branch_id:data.id, block:bl }); }
+  res.json(data);
+});
+
+b.post('/:id/merge', verifyJwt, async (req,res)=>{
+  const { data: br } = await supabase.from('ind_branches').select('*').eq('id',req.params.id).single();
+  const { data: current } = await supabase.from('ind_blocks').select('*').eq('submission_id',br.submission_id);
+  const diff = diffBlocks(current, br.base_snapshot);
+  await applyDiff(br.submission_id, diff);
+  await supabase.from('ind_branches').update({ status:'Merged' }).eq('id',br.id);
+  res.json({ merged:true, diff });
+});
+export default b;
+
+// ---------------- server/services/diffEngine.js ----------------
+import { supabase } from '../lib/supabaseClient.js';
+export function diffBlocks(current, base){
+  // simplistic diff: detect new or changed blocks by id & updated_at
+  const updates = [];
+  base.forEach(b=>{
+    const cur = current.find(c=>c.id===b.id);
+    if(!cur || cur.updated_at>b.updated_at) updates.push(cur||b);
+  });
+  return updates;
+}
+export async function applyDiff(submissionId, diff){
+  for(const bl of diff){
+    await supabase.from('ind_blocks').upsert(bl);
+  }
+}
+
+// ---------------- client/components/CommentBubble.jsx ----------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+export default function CommentBubble({ blockId }){
+  const [comments,setComments]=useState([]);
+  useEffect(()=>{ load(); },[blockId]);
+  const load=async()=>{ const { data }=await axios.get(`/api/comments/${blockId}`); setComments(data); };
+  const add=async(text)=>{ await axios.post('/api/comments',{ blockId, text }); load(); };
+  return (
+    <div className="comment-bubble">
+      {comments.map(c=> <p key={c.id} className={c.resolved?'line-through text-gray-400':''}>{c.text}</p> )}
+      <textarea className="border w-full text-xs" onBlur={e=>{ if(e.target.value) add(e.target.value); e.target.value=''; }} />
+    </div>
+  );
+}
+
+// ---------------- hooks/useComments.js ----------------
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+const supa = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+export function useComments(blockId){
+  const [comments,set]=useState([]);
+  useEffect(()=>{
+    supa.from(`ind_comments:block_id=eq.${blockId}`).on('INSERT',payload=>set(c=>[...c,payload.new])).subscribe();
+    return ()=> supa.removeAllChannels();
+  },[blockId]);
+  return comments;
+}
+
+// ---------------- client/pages/BranchManager.jsx ----------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+export default function BranchManager({ submissionId }){
+  const [branches,set]=useState([]); const [name,setName]=useState('My-Branch');
+  useEffect(()=>{ load(); },[]);
+  const load=async()=>{ const { data } = await axios.get(`/api/branches?sub=${submissionId}`); setBranches(data); };
+  const create=async()=>{ await axios.post('/api/branches',{ submissionId, name }); load(); };
+  const merge=async(id)=>{ await axios.post(`/api/branches/${id}/merge`); load(); };
+  return (<div className="p-4 space-y-2">
+    <h3 className="font-semibold">Branches</h3>
+    <div className="flex gap-2"><input value={name} onChange={e=>setName(e.target.value)} className="border p-1 text-sm"/><Button size="sm" onClick={create}>Create</Button></div>
+    <ul className="text-sm list-disc ml-5">
+      {branches.map(b=> <li key={b.id}>{b.name} – {b.status} {b.status==='Open'&& <Button size="xs" onClick={()=>merge(b.id)}>Merge</Button>}</li> )}
+    </ul>
+  </div>);
+}
+
+// ---------------- Integration Checklist ----------------
+1. `supabase db query < sql/comments_branches.sql`.
+2. Backend routes: `app.use('/api/comments', verifyJwt, commentsRoutes);` and `app.use('/api/branches', verifyJwt, branchRoutes );`
+3. Use `<CommentBubble blockId={block.id}/>...
