@@ -1,0 +1,148 @@
+// ───────────────────────────────────────────────────────────────
+// IND Wizard – Data‑First Core (Sprint‑0)
+// Purpose: shift from PDF‑centric to structured content, add event bus foundation, seed knowledge graph.
+//  • sql/ind_data.sql                – block‑level schema + triggers
+//  • server/routes/blocks.js         – CRUD API for blocks
+//  • server/events/eventBus.js       – publish/subscribe over Supabase realtime
+//  • server/services/graphSync.js    – writes entities & relations to Neo4j Aura (or JSONB fallback)
+//  • client/components/BlockEditor.jsx – TipTap rich block editor
+//  • Integration checklist           – wiring + migration plan
+// ───────────────────────────────────────────────────────────────
+
+// ---------------- sql/ind_data.sql ----------------
+/*
+Run with:  supabase db query < sql/ind_data.sql
+*/
+-- 1. Block table (markdown, table, fig)
+create table if not exists ind_blocks (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid references ind_wizards(id),
+  section_code text, -- e.g. "2.7.1"
+  block_type text check (block_type in ('markdown','table','figure')),
+  content jsonb,      -- {markdown:"..."} or {rows:[[]]} or {url:"..."}
+  created_by uuid,
+  updated_at timestamp default now()
+);
+create index if not exists idx_blocks_section on ind_blocks(submission_id,section_code);
+
+-- 2. Event journal
+create table if not exists ind_events (
+  id bigint generated always as identity primary key,
+  submission_id uuid,
+  event_type text,
+  payload jsonb,
+  ts timestamp default now()
+);
+
+-- 3. Trigger: on block insert/update -> emit event row
+create or replace function log_block_evt()
+returns trigger as $$
+begin
+  insert into ind_events(submission_id,event_type,payload)
+  values(new.submission_id,'block_'+tg_op, jsonb_build_object('block_id',new.id,'section',new.section_code));
+  return new;
+end; $$ language plpgsql;
+
+drop trigger if exists trg_block_evt on ind_blocks;
+create trigger trg_block_evt after insert or update on ind_blocks
+for each row execute procedure log_block_evt();
+
+-- 4. Knowledge graph staging table
+create table if not exists kg_entities (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid,
+  label text,
+  type text,
+  meta jsonb
+);
+
+// ---------------- server/events/eventBus.js ----------------
+import { createClient } from '@supabase/supabase-js';
+const supa = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+export function listenEvents(cb){
+  supa.channel('ind_events')
+    .on('postgres_changes',{ event:'INSERT', table:'ind_events', filter:'event_type=eq.block_insert' },payload=>cb(payload.new))
+    .subscribe();
+}
+export async function publish(evt){
+  await supa.from('ind_events').insert(evt);
+}
+
+// ---------------- server/services/graphSync.js ----------------
+import neo4j from 'neo4j-driver';
+const driver = neo4j.driver(process.env.NEO4J_URI, neo4j.auth.basic(process.env.NEO4J_USER,process.env.NEO4J_PW));
+export async function syncEntities(block){
+  // naive example: extract drug names pattern [[DRUG:Ibuprofen]] in markdown
+  const matches = (block.content?.markdown||'').match(/\[DRUG:([^\]]+)\]/g)||[];
+  if(matches.length===0) return;
+  const session = driver.session();
+  try{
+    for(const m of matches){
+      const name = m.slice(6,-1);
+      await session.run('MERGE (d:Drug {name:$name}) RETURN d',{name});
+    }
+  }finally{ await session.close(); }
+}
+
+// auto-subscribe
+import { listenEvents } from '../events/eventBus.js';
+listenEvents(async evt=>{
+  if(evt.event_type==='block_insert') await syncEntities(evt.payload);
+});
+
+// ---------------- server/routes/blocks.js ----------------
+import { Router } from 'express';
+import { supabase } from '../lib/supabaseClient.js';
+import { verifyJwt } from '../middleware/auth.js';
+const blk = Router();
+
+blk.post('/', verifyJwt, async (req,res)=>{
+  const { submissionId, section, type, content } = req.body;
+  const { data, error } = await supabase.from('ind_blocks')
+    .insert({ submission_id:submissionId, section_code:section, block_type:type, content, created_by:req.user.id })
+    .select('*').single();
+  if(error) return res.status(400).json({ message:error.message });
+  res.json(data);
+});
+blk.get('/:submissionId/:section', verifyJwt, async (req,res)=>{
+  const { data } = await supabase.from('ind_blocks')
+    .select('*').eq('submission_id',req.params.submissionId).eq('section_code',req.params.section).order('updated_at');
+  res.json(data);
+});
+export default blk;
+
+// ---------------- client/components/BlockEditor.jsx ----------------
+import React, { useState } from 'react';
+import TipTap from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+
+export default function BlockEditor({ submissionId, section }){
+  const [editor] = useState(()=> new TipTap.Editor({ extensions:[StarterKit], content:'', editable:true }));
+  const save=async()=>{
+    await axios.post('/api/blocks',{ submissionId, section, type:'markdown', content:{markdown:editor.getHTML()} });
+  };
+  return (
+    <div className="space-y-2">
+      <div className="border p-2 rounded">
+        <TipTap.EditorContent editor={editor} />
+      </div>
+      <Button size="sm" onClick={save}>Save Block</Button>
+    </div>
+  );
+}
+
+// ---------------- Integration Checklist ----------------
+1. `supabase db query < sql/ind_data.sql` – adds block & event schema
+2. Backend:
+```js
+import blockRoutes from './routes/blocks.js';
+app.use('/api/blocks', verifyJwt, blockRoutes);
+import './events/eventBus.js'; // ensures listener starts
+```
+3. ENV: set `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PW` or comment out graphSync if not ready.
+4. Front‑end: in SectionEditor replace `<textarea>` with `<BlockEditor>`; allow multiple blocks per section.
+5. Event‑driven plumbing ready: other services can subscribe to `ind_events` (AI validation, notification, dashboard).
+6. **Migration**: convert existing `step_X` markdown → blocks table (script).
+// ───────────────────────────────────────────────────────────────

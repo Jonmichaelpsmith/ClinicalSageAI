@@ -1,0 +1,120 @@
+// ───────────────────────────────────────────────────────────────
+// IND Wizard – Sprint‑3 ✦  Hi‑Fi PDF Engine (HTML → Chrome → PDF) + Validation Appendix + Header Vars
+// ---------------------------------------------------------------------
+//  • server/services/pdfBuilder.js   – generate full HTML, render via Puppeteer
+//  • templates/header.html           – dynamic header (logo, product name, page #)
+//  • templates/footer.html           – footer with timestamp & draft/final stamp
+//  • templates/ind.css               – upgraded CSS for print & screen media
+//  • server/routes/indValidation.js  – compile validation JSON & append as appendix
+//  • Integration notes               – deps & env flags
+// ───────────────────────────────────────────────────────────────
+
+// ---------------- server/services/pdfBuilder.js ----------------
+import { supabase } from '../lib/supabaseClient.js';
+import markdownIt from 'markdown-it';
+import { readFile } from 'fs/promises';
+import puppeteer from 'puppeteer';
+import { runFullValidation } from '../routes/indValidation.js';
+
+export async function buildPdf(submissionId, opts={ draft:true }){
+  const { data: blocks } = await supabase.from('ind_blocks')
+    .select('*').eq('submission_id',submissionId).order('section_code, updated_at');
+  const { data: sub } = await supabase.from('ind_wizards')
+    .select('product_name, region').eq('id',submissionId).single();
+
+  const md = markdownIt({ html:true, breaks:true });
+  let bodyHtml = '';
+  let current = '';
+  blocks.forEach(b => {
+    if (b.section_code !== current) {
+      current = b.section_code;
+      bodyHtml += `<h2 class="sec" id="sec-${current.replace(/\./g,'-')}">${current}</h2>`;
+    }
+    if (b.block_type === 'markdown') bodyHtml += md.render(b.content.markdown);
+    if (b.block_type === 'table') {
+      bodyHtml += '<table>' + b.content.rows.map(r => '<tr>' + r.map(c => `<td>${c}</td>`).join('') + '</tr>').join('') + '</table>';
+    }
+    if (b.block_type === 'figure') bodyHtml += `<img src="${b.content.url}" class="fig"/>`;
+  });
+
+  // Validation appendix
+  const issues = await runFullValidation(submissionId);
+  let appendixHtml = '<h2 class="sec">Validation Report</h2>';
+  if (issues.length === 0) appendixHtml += '<p class="good">No critical issues detected.</p>'; else {
+    appendixHtml += '<ul class="issues">' + issues.map(i => `<li>${i}</li>`).join('') + '</ul>';
+  }
+
+  // Build TOC
+  const tocLinks = blocks.map(b => b.section_code)
+    .filter((v,i,a) => a.indexOf(v) === i)
+    .map(sec => `<li><a href="#sec-${sec.replace(/\./g,'-')}">${sec}</a></li>`).join('');
+  const tocHtml = `<nav class="toc"><h1>Table of Contents</h1><ol>${tocLinks}</ol></nav>`;
+
+  const css       = await readFile('templates/ind.css','utf8');
+  const headerTpl = (await readFile('templates/header.html','utf8'))
+                     .replace(/{{PRODUCT}}/g, sub.product_name)
+                     .replace(/{{REGION}}/g, sub.region);
+  const footerTpl = await readFile('templates/footer.html','utf8');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${tocHtml}${bodyHtml}${appendixHtml}</body></html>`;
+
+  const browser = await puppeteer.launch({ args:['--no-sandbox'] });
+  const page    = await browser.newPage();
+  await page.setContent(html, { waitUntil:'networkidle0' });
+  const pdf = await page.pdf({
+    format:'A4', margin:{ top:'90px', bottom:'70px', left:'40px', right:'40px' },
+    displayHeaderFooter:true,
+    headerTemplate: headerTpl,
+    footerTemplate: footerTpl,
+    printBackground:true,
+    preferCSSPageSize:true,
+    scale:0.9
+  });
+  await browser.close();
+  return pdf;
+}
+
+// ---------------- server/routes/indValidation.js ----------------
+import { supabase } from '../lib/supabaseClient.js';
+export async function runFullValidation(submissionId) {
+  const { data: blocks } = await supabase.from('ind_blocks')
+    .select('section_code, content').eq('submission_id', submissionId);
+  const { data: rules }  = await supabase.from('fda_rules').select('*');
+  const issue = [];
+  rules.forEach(r => {
+    const b = blocks.filter(b => b.section_code === r.section);
+    if (b.every(bl => !new RegExp(r.pattern,'i').test(JSON.stringify(bl.content))))
+      issue.push(`[${r.section}] ${r.message}`);
+  });
+  return issue;
+}
+
+// ---------------- templates/header.html ----------------
+<div style="font-size:9px;width:100%;padding:0 40px;">
+  <span style="float:left;">TrialSage Vault – {{PRODUCT}} ({{REGION}})</span>
+  <span style="float:right;">Page <span class="pageNumber"></span></span>
+</div>
+
+// ---------------- templates/footer.html ----------------
+<div style="font-size:9px;width:100%;padding:0 40px;">
+  <span style="float:left;">Generated {{date}}</span>
+  <span style="float:right;">{{#if isDraft}}DRAFT{{/if}}</span>
+</div>
+
+// ---------------- templates/ind.css ----------------
+@media print {
+  body { font-family:"Helvetica", sans-serif; font-size:11pt; }
+  .sec { page-break-before:always; font-weight:bold; font-size:16pt; margin-top:0; }
+  .toc { page-break-after:always; }
+  table { width:100%; border-collapse:collapse; font-size:9pt; }
+  td { border:1px solid #666; padding:3px; }
+  .fig { page-break-inside:avoid; max-width:100%; }
+  .issues li { color:#c00; }
+  .good { color:#080; }
+}
+
+// ---------------- Integration Notes ----------------
+1. `npm i puppeteer markdown-it` (backend deps) – ensure container memory ≥1 GB for Chrome.
+2. Route `/api/ind/:id/pdf` unchanged; serves this hi‑fi PDF.
+3. Header & footer leverage Chrome tokens `.pageNumber`, `date`.
+4. Validation appendix uses `fda_rules` table – extend as needed.
