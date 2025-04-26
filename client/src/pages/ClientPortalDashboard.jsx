@@ -42,6 +42,8 @@ const ClientPortalDashboard = () => {
           title: "Login Successful",
           description: "Welcome to the TrialSage Client Portal",
         });
+        // Redirect to the client portal HTML page
+        window.location.href = "/client-portal.html";
       }, 1000);
     } else {
       setTimeout(() => {
@@ -201,10 +203,9 @@ const ClientPortalDashboard = () => {
     if (module === "ind") {
       window.location.href = "/ind-wizard.html";
     } else if (module === "vault") {
-      setLocation("/vault-test");
+      window.location.href = "/client-portal.html";
     } else if (module === "csr") {
-      // When CSR module is ready, we'll update this
-      window.location.href = "/client-portal";
+      window.location.href = "/client-portal.html";
     }
   };
 
