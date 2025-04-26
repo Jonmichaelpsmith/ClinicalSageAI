@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Make sure .env is loaded
-export $(grep -v '^#' .env | xargs)
-
-# Run the Vault server
+# Start the TrialSage Vault server
 echo "Starting TrialSage Vault server..."
-node server/vault-server.js
+node start-vault-server.js
