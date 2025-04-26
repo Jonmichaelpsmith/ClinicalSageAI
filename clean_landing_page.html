@@ -144,8 +144,11 @@
         .hero {
             background: linear-gradient(90deg, #2C8C6C, var(--yprime-pink));
             color: white;
-            padding: 40px 0;
+            padding: 60px 0;
             text-align: center;
+            margin-bottom: 0;
+            position: relative;
+            overflow: hidden;
         }
         
         .hero-container {
@@ -807,10 +810,142 @@
                         </a>
                     </div>
                 </div>
-                
-                <!-- Version-Aware Documentation has been integrated into Vault Workspace -->
-                
-                <!-- This section removed as requested -->
+
+                <!-- Vault Workspace - Full-width Solution (fills empty space) -->
+                <div class="full-width-solution" style="margin-top: 25px; margin-bottom: 25px;">
+                    <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <h3 class="solution-title" style="color: var(--yprime-pink); font-size: 24px;">Vault™ Workspace</h3>
+                        <p class="solution-description" style="margin-bottom: 15px;">Enterprise document management with Microsoft 365-style user interface, advanced retention policies, and regulatory-grade security.</p>
+                        <div class="solution-features">
+                            <div class="solution-feature">
+                                <i class="fas fa-check-circle" style="color: var(--yprime-pink);"></i>
+                                <span>Intuitive MS 365-style UI for document management</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check-circle" style="color: var(--yprime-pink);"></i>
+                                <span>Advanced document retention with automated policies</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check-circle" style="color: var(--yprime-pink);"></i>
+                                <span>21 CFR Part 11 compliant version control</span>
+                            </div>
+                            <div class="solution-feature">
+                                <i class="fas fa-check-circle" style="color: var(--yprime-pink);"></i>
+                                <span>Blockchain-secured audit trail for regulatory compliance</span>
+                            </div>
+                        </div>
+                        <a href="/solutions/vault-workspace" class="solution-link" style="margin-top: 10px;">
+                            Learn more about Vault™ Workspace <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div style="display: flex; background-color: #f8f8f8; border-radius: 10px; overflow: hidden; padding: 15px; border: 1px solid #eaeaea;">
+                        <div style="width: 100%; background-color: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden;">
+                            <!-- Vault UI Mockup -->
+                            <div style="background-image: linear-gradient(135deg, var(--primary), var(--yprime-pink)); color: white; padding: 12px 20px; font-weight: 600; font-size: 16px; display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <i class="fas fa-vault" style="font-size: 18px;"></i>
+                                    <span>Vault™ Workspace</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-search" style="font-size: 14px;"></i>
+                                    <i class="fas fa-bell" style="font-size: 14px;"></i>
+                                    <i class="fas fa-user-circle" style="font-size: 18px;"></i>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; height: 300px;">
+                                <!-- Left Sidebar -->
+                                <div style="width: 220px; background-color: #f5f5f5; padding: 15px; border-right: 1px solid #eee;">
+                                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 15px; color: #444;">Document Navigator</div>
+                                    
+                                    <div style="margin-bottom: 5px; cursor: pointer; display: flex; align-items: center; padding: 8px; background-color: var(--yprime-pink); color: white; border-radius: 4px;">
+                                        <i class="fas fa-folder-open" style="margin-right: 10px; font-size: 14px;"></i>
+                                        <span style="font-size: 13px;">Regulatory Submissions</span>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 5px; cursor: pointer; display: flex; align-items: center; padding: 8px;">
+                                        <i class="fas fa-folder" style="margin-right: 10px; font-size: 14px; color: #888;"></i>
+                                        <span style="font-size: 13px;">Clinical Study Reports</span>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 5px; cursor: pointer; display: flex; align-items: center; padding: 8px;">
+                                        <i class="fas fa-folder" style="margin-right: 10px; font-size: 14px; color: #888;"></i>
+                                        <span style="font-size: 13px;">Protocols</span>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 5px; cursor: pointer; display: flex; align-items: center; padding: 8px;">
+                                        <i class="fas fa-folder" style="margin-right: 10px; font-size: 14px; color: #888;"></i>
+                                        <span style="font-size: 13px;">Quality Documentation</span>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 5px; cursor: pointer; display: flex; align-items: center; padding: 8px;">
+                                        <i class="fas fa-folder" style="margin-right: 10px; font-size: 14px; color: #888;"></i>
+                                        <span style="font-size: 13px;">CMC Documentation</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Main Content Area -->
+                                <div style="flex: 1; padding: 15px; overflow-y: auto;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;">
+                                        <h3 style="font-size: 16px; margin: 0;">Regulatory Submissions</h3>
+                                        <div style="display: flex; gap: 10px;">
+                                            <button style="background-color: var(--yprime-pink); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">
+                                                <i class="fas fa-plus" style="margin-right: 5px;"></i> New Document
+                                            </button>
+                                            <button style="background-color: transparent; border: 1px solid #ddd; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer;">
+                                                <i class="fas fa-filter" style="margin-right: 5px;"></i> Filter
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Document Table -->
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                        <thead>
+                                            <tr style="background-color: #f5f5f5; text-align: left;">
+                                                <th style="padding: 10px; border-bottom: 1px solid #eee;">Document Name</th>
+                                                <th style="padding: 10px; border-bottom: 1px solid #eee;">Status</th>
+                                                <th style="padding: 10px; border-bottom: 1px solid #eee;">Modified</th>
+                                                <th style="padding: 10px; border-bottom: 1px solid #eee;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr style="border-bottom: 1px solid #eee;">
+                                                <td style="padding: 10px;"><i class="fas fa-file-pdf" style="color: #cc0000; margin-right: 8px;"></i> IND Application - Drug X</td>
+                                                <td style="padding: 10px;"><span style="background-color: #21A67A; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">Completed</span></td>
+                                                <td style="padding: 10px;">Today, 9:45 AM</td>
+                                                <td style="padding: 10px;">
+                                                    <i class="fas fa-edit" style="margin-right: 8px; cursor: pointer; color: #555;"></i>
+                                                    <i class="fas fa-download" style="margin-right: 8px; cursor: pointer; color: #555;"></i>
+                                                    <i class="fas fa-share-alt" style="cursor: pointer; color: #555;"></i>
+                                                </td>
+                                            </tr>
+                                            <tr style="border-bottom: 1px solid #eee;">
+                                                <td style="padding: 10px;"><i class="fas fa-file-word" style="color: #285396; margin-right: 8px;"></i> Protocol Amendment - Study 101</td>
+                                                <td style="padding: 10px;"><span style="background-color: #DCB800; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">In Review</span></td>
+                                                <td style="padding: 10px;">Yesterday, 2:30 PM</td>
+                                                <td style="padding: 10px;">
+                                                    <i class="fas fa-edit" style="margin-right: 8px; cursor: pointer; color: #555;"></i>
+                                                    <i class="fas fa-download" style="margin-right: 8px; cursor: pointer; color: #555;"></i>
+                                                    <i class="fas fa-share-alt" style="cursor: pointer; color: #555;"></i>
+                                                </td>
+                                            </tr>
+                                            <tr style="border-bottom: 1px solid #eee;">
+                                                <td style="padding: 10px;"><i class="fas fa-file-excel" style="color: #217346; margin-right: 8px;"></i> Regulatory Timeline - Q2 2025</td>
+                                                <td style="padding: 10px;"><span style="background-color: var(--yprime-pink); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">Draft</span></td>
+                                                <td style="padding: 10px;">Apr 24, 2025</td>
+                                                <td style="padding: 10px;">
+                                                    <i class="fas fa-edit" style="margin-right: 8px; cursor: pointer; color: #555;"></i>
+                                                    <i class="fas fa-download" style="margin-right: 8px; cursor: pointer; color: #555;"></i>
+                                                    <i class="fas fa-share-alt" style="cursor: pointer; color: #555;"></i>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Solution 9: ICH Wiz -->
                 <div class="solution-card">
