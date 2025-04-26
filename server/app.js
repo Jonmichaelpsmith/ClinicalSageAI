@@ -29,7 +29,8 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Route for solution pages
 app.get('/solutions/vault-workspace', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/solutions/vault-workspace.html'));
+  console.log("[App] Serving React vault-workspace.html");
+  res.sendFile(path.join(process.cwd(), 'vault-workspace.html'));
 });
 
 // Redirect any docushare-sync requests to vault-workspace
