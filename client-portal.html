@@ -11,6 +11,22 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
+    // Authentication check - redirect to login if not authenticated
+    (function() {
+      const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+      if (!isAuthenticated) {
+        window.location.href = '/login.html';
+      }
+    })();
+    
+    // Logout function - clears authentication and redirects to login
+    function logout() {
+      localStorage.removeItem('authenticated');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName');
+      window.location.href = '/login.html';
+    }
+    
     tailwind.config = {
       theme: {
         extend: {
@@ -96,15 +112,15 @@
           </nav>
           <div class="flex items-center space-x-3">
             <div class="relative">
-              <button type="button" class="flex items-center text-sm text-gray-700 hover:text-trialsage-pink">
-                <span class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-2">
+              <div class="flex items-center">
+                <span class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-2" id="userInitials">
                   JS
                 </span>
-                <span>John Smith</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+                <span id="userName">John Smith</span>
+                <button type="button" onClick="logout()" class="ml-3 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700">
+                  Logout
+                </button>
+              </div>
             </div>
             
             <div class="h-6 w-px bg-gray-300"></div>
@@ -141,7 +157,7 @@
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         <div class="flex items-center justify-between mb-4">
-          <h1 class="text-2xl font-bold text-gray-900">Welcome back, John</h1>
+          <h1 class="text-2xl font-bold text-gray-900">Welcome back, <span id="welcomeName">John</span></h1>
           <div class="text-sm text-gray-500">
             Last login: April 26, 2025, 8:12 AM EDT
           </div>
