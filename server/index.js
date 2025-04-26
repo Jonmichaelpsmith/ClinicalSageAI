@@ -1,12 +1,27 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.js';
 import documentRoutes from './routes/documents.js';
 import auditRoutes from './routes/audit.js';
 import { verifyJwt } from './middleware/auth.js';
 
 const app = express();
-app.use(cors());
+
+// Security enhancements
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(cors({ 
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://trialsage.com', 'https://vault.trialsage.com'] 
+    : true,
+  credentials: true 
+}));
+app.use(rateLimit({ 
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200 // limit each IP to 200 requests per windowMs
+}));
+
 app.use(express.json({ limit: '50mb' }));
 
 // Public routes
