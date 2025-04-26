@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 
 const ClientPortalDashboard = () => {
   const { toast } = useToast();
@@ -18,7 +18,7 @@ const ClientPortalDashboard = () => {
   const [documents, setDocuments] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [activeProjects, setActiveProjects] = useState([]);
-  const navigate = useNavigate();
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     if (authenticated) {
@@ -197,9 +197,14 @@ const ClientPortalDashboard = () => {
   const navigateToModule = (module) => {
     setActiveModule(module);
     
-    // For demonstration purposes, navigate to the IND Wizard HTML page
+    // For demonstration purposes, navigate to the specific module
     if (module === "ind") {
       window.location.href = "/ind-wizard.html";
+    } else if (module === "vault") {
+      setLocation("/vault-test");
+    } else if (module === "csr") {
+      // When CSR module is ready, we'll update this
+      window.location.href = "/client-portal";
     }
   };
 
