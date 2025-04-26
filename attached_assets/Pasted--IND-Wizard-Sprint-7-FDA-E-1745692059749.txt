@@ -1,0 +1,109 @@
+// ───────────────────────────────────────────────────────────────
+// IND Wizard – Sprint‑7 ✦ FDA ESG Push & ACK Ingestion
+// ---------------------------------------------------------------------
+//  • env vars                         – ESG_HOST, ESG_USER, ESG_PW, ESG_PRIVATE_KEY
+//  • server/services/esgClient.js     – SFTP upload & polling via ssh2‑sftp
+//  • server/routes/esg.js             – /api/esg/submit   /status
+//  • server/jobs/esgPoller.js         – cron to pull ACK1/ACK2/ACK3
+//  • sql/esg_tables.sql               – submission queue + ack logs
+//  • client/pages/EsgDashboard.jsx    – UI: queue, progress, ACK files download
+//  • Integration checklist            – wiring & security notes
+// ───────────────────────────────────────────────────────────────
+
+// ---------------- sql/esg_tables.sql ----------------
+create table if not exists esg_queue (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid references ind_wizards(id),
+  zip_path text,          -- storage ref to ZIP
+  status text default 'Queued', -- Queued, Sent, Ack1, Ack2, Ack3, Error
+  esg_txn_id text,
+  created_at timestamp default now(),
+  updated_at timestamp
+);
+create table if not exists esg_acks (
+  id bigserial primary key,
+  queue_id uuid references esg_queue(id),
+  ack_type text,  -- ACK1/ACK2/ACK3
+  ack_file text,  -- storage path
+  ts timestamp default now()
+);
+
+// ---------------- server/services/esgClient.js ----------------
+import { Client } from 'ssh2-sftp-client';
+import { supabase } from '../lib/supabaseClient.js';
+export async function sendToEsg(queueId){
+  const { data: q } = await supabase.from('esg_queue').select('*').eq('id',queueId).single();
+  const sftp = new Client();
+  await sftp.connect({ host:process.env.ESG_HOST, username:process.env.ESG_USER, password:process.env.ESG_PW, privateKey:process.env.ESG_PRIVATE_KEY });
+  const { data:file } = await supabase.storage.from('vault-files').download(q.zip_path);
+  const remotePath = `/upload/${q.id}.zip`;
+  await sftp.put(Buffer.from(await file.arrayBuffer()), remotePath);
+  await sftp.end();
+  await supabase.from('esg_queue').update({ status:'Sent' }).eq('id',queueId);
+}
+
+export async function checkAcks(){
+  const sftp = new Client();
+  await sftp.connect({ host:process.env.ESG_HOST, username:process.env.ESG_USER, password:process.env.ESG_PW, privateKey:process.env.ESG_PRIVATE_KEY });
+  const files = await sftp.list('/download');
+  for(const f of files){
+    if(f.name.endsWith('.ack')){
+      const content = await sftp.get(`/download/${f.name}`);
+      const queueId = f.name.split('_')[0];
+      const ackType = f.name.includes('ACK2')?'Ack2':f.name.includes('ACK3')?'Ack3':'Ack1';
+      const path = `acks/${queueId}/${f.name}`;
+      await supabase.storage.from('vault-files').upload(path, content, { upsert:true });
+      await supabase.from('esg_acks').insert({ queue_id:queueId, ack_type:ackType, ack_file:path });
+      await supabase.from('esg_queue').update({ status:ackType }).eq('id',queueId);
+      await sftp.delete(`/download/${f.name}`);
+    }
+  }
+  await sftp.end();
+}
+
+// ---------------- server/routes/esg.js ----------------
+import { Router } from 'express';
+import { verifyJwt } from '../middleware/auth.js';
+import { supabase } from '../lib/supabaseClient.js';
+import { sendToEsg } from '../services/esgClient.js';
+const r = Router();
+r.post('/submit', verifyJwt, async (req,res)=>{
+  const { submissionId, zipPath } = req.body; // zip already compiled via PDF builder+xml
+  const { data, error } = await supabase.from('esg_queue').insert({ submission_id:submissionId, zip_path:zipPath }).select('*').single();
+  if(error) return res.status(400).json({ message:error.message });
+  sendToEsg(data.id).catch(console.error);
+  res.json({ queued:true, id:data.id });
+});
+r.get('/status/:id', verifyJwt, async (req,res)=>{
+  const { data } = await supabase.from('esg_queue').select('*').eq('id',req.params.id).single();
+  res.json(data);
+});
+export default r;
+
+// ---------------- server/jobs/esgPoller.js ----------------
+import cron from 'node-cron';
+import { checkAcks } from '../services/esgClient.js';
+cron.schedule('*/10 * * * *', async()=>{ // every 10 min
+  try{ await checkAcks(); }catch(e){ console.error('ESG Poll error',e);} });
+
+// ---------------- client/pages/EsgDashboard.jsx ----------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+export default function EsgDashboard(){
+  const [queue,set]=useState([]);
+  useEffect(()=>{ load(); const i=setInterval(load,10000); return ()=>clearInterval(i); },[]);
+  const load=async()=>{ const { data } = await axios.get('/api/esg/list'); setQueue(data); };
+  return(<div className="p-8"><h1 className="text-2xl font-bold mb-4">FDA ESG Submissions</h1>
+    <table className="table-auto text-sm"><thead><tr><th>ID</th><th>Status</th><th>Updated</th></tr></thead><tbody>
+      {queue.map(q=><tr key={q.id}><td>{q.id}</td><td>{q.status}</td><td>{q.updated_at?.slice(0,19)}</td></tr>)}
+    </tbody></table></div>);
+}
+
+// ---------------- Integration Checklist ----------------
+1. `supabase db query < sql/esg_tables.sql`.
+2. Secrets: add ESG_HOST, ESG_USER, ESG_PW (or SSH key vars) in Replit.
+3. Backend: `app.use('/api/esg', verifyJwt, esgRoutes);` + `import './jobs/esgPoller.js';`
+4. Compile ZIP (existing export route) → pass its storage path to `/api/esg/submit`.
+5. UI: add EsgDashboard link for Regulatory role.
+6. Security: restrict ESG creds to backend only; use separate service-role key for polling job.
+// ───────────────────────────────────────────────────────────────
