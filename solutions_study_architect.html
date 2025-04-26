@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Architect™ - AI-Powered Protocol Design | TrialSage</title>
+  <meta name="description" content="Study Architect™ - Advanced protocol design with drag-and-drop section management, smart folders, and AI-powered insights for optimized clinical trials.">
+  <link rel="stylesheet" href="/css/vault-ai-assistant.css">
+  <style>
+    :root {
+      --primary: #FF1493;
+      --primary-light: #FFB6C1;
+      --primary-dark: #C71585;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --info: #3B82F6;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      line-height: 1.5;
+      color: #1F2937;
+      margin: 0;
+      padding: 0;
+      background-color: #FFFFFF;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    .header {
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    
+    .logo a {
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+    
+    .nav-links a {
+      text-decoration: none;
+      color: #4B5563;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+    
+    .hero {
+      padding: 4rem 0;
+      background-color: #F9FAFB;
+      background-image: linear-gradient(to bottom, #FFFFFF, #FFE6F3);
+      text-align: center;
+    }
+    
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 1rem;
+    }
+    
+    .hero p {
+      font-size: 1.25rem;
+      color: #4B5563;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 0.375rem;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .btn-outline {
+      border: 1px solid #D1D5DB;
+      color: #4B5563;
+    }
+    
+    .btn-outline:hover {
+      background-color: #F3F4F6;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+    
+    .features {
+      padding: 4rem 0;
+      background-color: white;
+    }
+    
+    .section-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 3rem;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    
+    .feature-card {
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      background-color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #E5E7EB;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .feature-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.375rem;
+      background-color: #F3F4F6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    
+    .feature-icon.green {
+      background-color: #ECFDF5;
+      color: var(--success);
+    }
+    
+    .feature-icon.pink {
+      background-color: #FDF2F8;
+      color: var(--primary);
+    }
+    
+    .feature-icon.blue {
+      background-color: #EFF6FF;
+      color: var(--info);
+    }
+    
+    .feature-icon.amber {
+      background-color: #FFFBEB;
+      color: var(--warning);
+    }
+    
+    .feature-card h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-card p {
+      color: #6B7280;
+      font-size: 0.875rem;
+    }
+    
+    .modules {
+      padding: 4rem 0;
+      background-color: #F9FAFB;
+    }
+    
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .module-card {
+      padding: 1.5rem;
+      background-color: white;
+      border-radius: 0.5rem;
+      border: 1px solid #E5E7EB;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .module-card h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 1rem 0 0.5rem;
+    }
+    
+    .module-card p {
+      color: #6B7280;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+    
+    .cta {
+      padding: 4rem 0;
+      background-color: var(--primary);
+      color: white;
+      text-align: center;
+    }
+    
+    .cta h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    
+    .cta p {
+      font-size: 1.125rem;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      opacity: 0.9;
+    }
+    
+    .cta .btn {
+      background-color: white;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    .cta .btn:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .footer {
+      background-color: #1F2937;
+      color: white;
+      padding: 3rem 0;
+    }
+    
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    
+    .footer-col h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .footer-links li {
+      margin-bottom: 0.75rem;
+    }
+    
+    .footer-links a {
+      color: #D1D5DB;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: white;
+    }
+    
+    .copyright {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid #374151;
+      text-align: center;
+      color: #9CA3AF;
+      font-size: 0.875rem;
+    }
+    
+    /* New UI components for Section Reorder */
+    .ui-preview {
+      margin-top: 2rem;
+      border: 1px solid #E5E7EB;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .ui-preview-header {
+      background-color: #F9FAFB;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+    }
+    
+    .ui-preview-tab {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #6B7280;
+      border-radius: 0.25rem;
+      margin-right: 0.5rem;
+    }
+    
+    .ui-preview-tab.active {
+      background-color: white;
+      color: var(--primary);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .ui-preview-content {
+      display: flex;
+      height: 400px;
+      background-color: white;
+    }
+    
+    .ui-preview-sidebar {
+      width: 240px;
+      border-right: 1px solid #E5E7EB;
+      background-color: #F9FAFB;
+      font-size: 0.875rem;
+      overflow-y: auto;
+    }
+    
+    .ui-preview-tree {
+      padding: 0.75rem;
+    }
+    
+    .ui-preview-tree-item {
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+      cursor: grab;
+    }
+    
+    .ui-preview-tree-item:hover {
+      background-color: #EFF6FF;
+    }
+    
+    .ui-preview-tree-item.active {
+      background-color: #DBEAFE;
+      color: var(--info);
+    }
+    
+    .ui-preview-smart-folder {
+      width: 200px;
+      border-right: 1px solid #E5E7EB;
+      font-size: 0.875rem;
+      overflow-y: auto;
+    }
+    
+    .ui-preview-smart-folder-tabs {
+      display: flex;
+      padding: 0.5rem;
+      gap: 0.25rem;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .ui-preview-smart-folder-tab {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      background-color: #F3F4F6;
+    }
+    
+    .ui-preview-smart-folder-tab.active {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .ui-preview-smart-folder-items {
+      padding: 0.5rem;
+    }
+    
+    .ui-preview-smart-folder-item {
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      margin-bottom: 0.25rem;
+      cursor: pointer;
+    }
+    
+    .ui-preview-smart-folder-item:hover {
+      background-color: #F3F4F6;
+    }
+    
+    .ui-preview-editor {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    
+    .ui-preview-editor-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .ui-preview-editor-content {
+      color: #4B5563;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+      
+      .hero p {
+        font-size: 1rem;
+      }
+      
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .ui-preview-content {
+        flex-direction: column;
+        height: auto;
+      }
+      
+      .ui-preview-sidebar,
+      .ui-preview-smart-folder {
+        width: 100%;
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <a href="/">TrialSage™</a>
+        </div>
+        <nav class="nav-links">
+          <a href="/solutions">Solutions</a>
+          <a href="/persona">For Teams</a>
+          <a href="/use-case">Use Cases</a>
+          <a href="/about-us">About Us</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Study Architect™</h1>
+      <p>AI-driven protocol design with drag-and-drop section management, smart folders, and optimized trial parameters</p>
+      <div class="hero-buttons">
+        <a href="/request-demo" class="btn btn-primary">Request Demo</a>
+        <a href="/contact-sales" class="btn btn-outline">Contact Sales</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2 class="section-title">Key Features</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon pink">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <h3>Drag-and-Drop Section Reordering</h3>
+          <p>Easily rearrange CTD sections within the same level using intuitive drag-and-drop interface, with changes immediately saved to the database.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon blue">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <h3>Smart Folder Pane</h3>
+          <p>Quickly filter content by category with smart folder tabs for Tables, Figures, and References, enabling efficient navigation through large documents.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon green">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+          </div>
+          <h3>Advanced Statistical Power Analysis</h3>
+          <p>Leverage cutting-edge statistical methods to optimize sample size calculations, ensuring studies are adequately powered while minimizing participant exposure.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon amber">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="10 8 16 12 10 16 10 8"></polygon>
+            </svg>
+          </div>
+          <h3>Monte Carlo Simulations</h3>
+          <p>Run sophisticated Monte Carlo simulations to model potential outcomes and optimize endpoint selection, improving study design before implementation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ui-preview-section">
+    <div class="container">
+      <h2 class="section-title">Intuitive Section Editor</h2>
+      <p style="text-align: center; max-width: 600px; margin: 0 auto 2rem;">The new three-pane authoring workspace combines a section tree, smart folders, and a block editor for streamlined document creation.</p>
+      
+      <div class="ui-preview">
+        <div class="ui-preview-header">
+          <div class="ui-preview-tab active">Editor</div>
+          <div class="ui-preview-tab">Preview</div>
+          <div class="ui-preview-tab">Settings</div>
+        </div>
+        <div class="ui-preview-content">
+          <div class="ui-preview-sidebar">
+            <div class="ui-preview-tree">
+              <div class="ui-preview-tree-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span>2.5 Clinical Overview</span>
+              </div>
+              <div class="ui-preview-tree-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span>2.6 Nonclinical Summary</span>
+              </div>
+              <div class="ui-preview-tree-item active">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span>2.7.1 Summary of Biopharm.</span>
+              </div>
+              <div class="ui-preview-tree-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span>2.7.2 Summary of Clin Pharm.</span>
+              </div>
+              <div class="ui-preview-tree-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span>2.7.3 Summary of Efficacy</span>
+              </div>
+              <div class="ui-preview-tree-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span>2.7.4 Summary of Safety</span>
+              </div>
+            </div>
+          </div>
+          <div class="ui-preview-smart-folder">
+            <div class="ui-preview-smart-folder-tabs">
+              <div class="ui-preview-smart-folder-tab">All</div>
+              <div class="ui-preview-smart-folder-tab active">Tables</div>
+              <div class="ui-preview-smart-folder-tab">Figures</div>
+              <div class="ui-preview-smart-folder-tab">References</div>
+            </div>
+            <div class="ui-preview-smart-folder-items">
+              <div class="ui-preview-smart-folder-item">Table 2.7.1-1: PK Parameters</div>
+              <div class="ui-preview-smart-folder-item">Table 2.7.1-2: Bioavailability</div>
+              <div class="ui-preview-smart-folder-item">Table 2.7.1-3: Drug Interactions</div>
+              <div class="ui-preview-smart-folder-item">Table 2.7.1-4: Population PK</div>
+              <div class="ui-preview-smart-folder-item">Table 2.7.1-5: Exposure-Response</div>
+            </div>
+          </div>
+          <div class="ui-preview-editor">
+            <div class="ui-preview-editor-title">Section 2.7.1 - Summary of Biopharmaceutic Studies and Analytical Methods</div>
+            <div class="ui-preview-editor-content">
+              <p>This section should provide a comprehensive summary of all biopharmaceutic studies conducted with the drug substance and drug product. The focus should be on critical studies that provide an understanding of how the drug substance and drug product are absorbed, distributed, metabolized, and excreted.</p>
+              <p>Key areas to address include:</p>
+              <ul>
+                <li>Bioavailability (BA) studies evaluating the rate and extent of absorption</li>
+                <li>Comparative BA and bioequivalence (BE) studies</li>
+                <li>In vitro-in vivo correlation studies</li>
+                <li>Bioanalytical methods and validation</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="modules">
+    <div class="container">
+      <h2 class="section-title">Integrated Platform Modules</h2>
+      <div class="module-grid">
+        <a href="/solutions/csr-intelligence" class="module-card">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <h3>CSR Intelligence™</h3>
+          <p>Advanced clinical study report analytics</p>
+        </a>
+        <a href="/solutions/ind-wizard" class="module-card">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+          <h3>IND Wizard™</h3>
+          <p>Automated IND preparation and submission</p>
+        </a>
+        <a href="/solutions/vault-workspace" class="module-card">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          <h3>Vault™ Workspace</h3>
+          <p>Secure, collaborative document management</p>
+        </a>
+        <a href="/solutions/ich-wiz" class="module-card">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <h3>ICH Wiz™</h3>
+          <p>Digital compliance coach for regulatory guidelines</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <h2>Ready to Transform Your Regulatory Process?</h2>
+      <p>Join leading pharmaceutical companies who have accelerated their submissions and improved approval rates with TrialSage™</p>
+      <a href="/request-demo" class="btn">Request Demo</a>
+    </div>
+  </section>
+
+  <script src="/js/vault-ai-assistant.js"></script>
+</body>
+</html>
