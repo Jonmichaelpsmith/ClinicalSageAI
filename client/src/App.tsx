@@ -83,6 +83,8 @@ const LazyAdminProfile = React.lazy(() => import('./pages/AdminProfile'));
 const LazyRoleDashboard = React.lazy(() => import('./pages/RoleDashboard'));
 // eCTD Planner module for submission management
 const LazyEctdPlanner = React.lazy(() => import('./pages/EctdPlanner'));
+// SOP Training Workflow for tracking training tasks
+const LazyTrainingTasks = React.lazy(() => import('./pages/TrainingTasks'));
 
 // Simple error boundary component
 class SimpleErrorBoundary extends React.Component<
@@ -570,6 +572,41 @@ export default function App() {
                       <MinimalEntryPage />
                     </AuthRedirector>
                   </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ectd/:submissionId">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="eCTD Planner" />}>
+                  <ProtectedRoute>
+                    <LazyEctdPlanner />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ectd">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="eCTD Planner" />}>
+                  <ProtectedRoute>
+                    <LazyEctdPlanner submissionId="demo-1" />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/vault/submission-planner">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Vault Submission Planner" />}>
+                  <ProtectedRoute>
+                    <LazyEctdPlanner submissionId="vault-demo" />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/vault/training">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="SOP Training" />}>
+                  <ProtectedRoute>
+                    <LazyTrainingTasks />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/training">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="SOP Training" />}>
+                  <ProtectedRoute>
+                    <LazyTrainingTasks />
+                  </ProtectedRoute>
                 </SimpleErrorBoundary>
               </Route>
               <Route>
