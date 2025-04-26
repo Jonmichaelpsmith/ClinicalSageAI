@@ -509,6 +509,22 @@ export function setupRoutes(app: express.Application): http.Server {
     }
   });
   
+  // FDA Compliance Routes
+  console.log('Registering FDA Compliance API routes');
+  try {
+    // Import the FDA compliance routes JavaScript module
+    const fdaComplianceRoutes = require('./routes/fda-compliance-routes');
+    // Register the routes
+    app.use('/api/fda-compliance', fdaComplianceRoutes);
+    console.log('FDA Compliance API routes registered successfully');
+  } catch (error) {
+    const logger = createContextLogger({ module: 'routes' });
+    logger.error('Failed to register FDA Compliance API routes:', { 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }
+  
   // Return 404 for undefined API routes - simpler version for now
   app.use("/api/*", (req: Request, res: Response) => {
     res.status(404).json({ error: "API endpoint not found" });
