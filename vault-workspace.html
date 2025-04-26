@@ -88,6 +88,27 @@
         .btn-glow:hover {
             box-shadow: 0 0 15px rgba(93, 134, 93, 0.5);
         }
+        
+        /* Color overrides for matching landing page */
+        [class*="bg-blue-"] {
+            background-color: var(--matching-sage);
+        }
+        [class*="text-blue-"] {
+            color: var(--matching-sage-text);
+        }
+        [class*="border-blue-"] {
+            border-color: var(--matching-sage-border);
+        }
+        [class*="hover:bg-blue-"] {
+            --tw-hover-bg-opacity: 1;
+            background-color: rgba(74, 108, 74, var(--tw-hover-bg-opacity)) !important;
+        }
+        
+        :root {
+            --matching-sage: #5d865d; /* sage-500 */
+            --matching-sage-text: #344834; /* sage-800 */
+            --matching-sage-border: #7ea17e; /* sage-400 */
+        }
 
         /* Glass effect */
         .glass-card {
