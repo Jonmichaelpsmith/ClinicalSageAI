@@ -263,11 +263,16 @@
 }
 
 @media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+  
   .container {
-    flex-wrap: wrap;
+    display: block;
     height: auto;
     overflow-x: hidden;
     width: 100vw;
+    max-width: 100vw;
   }
   
   .folders, .documents, .preview {
@@ -275,8 +280,24 @@
     max-width: 100%;
     min-width: 100%;
     height: auto;
-    max-height: 40vh;
+    max-height: none;
     overflow-x: hidden;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .folders {
+    min-height: auto;
+    height: auto;
+    max-height: none;
+    padding-bottom: 10px;
+  }
+  
+  .documents {
+    min-height: auto;
+    height: auto;
+    max-height: none;
+    padding-bottom: 10px;
   }
   
   .preview {
@@ -301,6 +322,14 @@
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;
+  }
+  
+  .folder, .doc {
+    padding: 8px;
+  }
+  
+  .doc-name {
+    font-size: 12px;
   }
 }
 
