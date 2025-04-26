@@ -1,0 +1,234 @@
+// ==============================
+// TrialSage Vault™ – Frontend Scaffold (React + TS + Fluent UI) – Sprint‑0
+// ==============================
+
+/* ---------- package.json ---------- */
+{
+  "name": "trialsage-frontend",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fluentui/react": "^8.117.3",
+    "@supabase/supabase-js": "^2.39.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.7",
+    "@types/react-router-dom": "^5.3.3",
+    "typescript": "^5.4.1",
+    "vite": "^5.2.0"
+  }
+}
+
+/* ---------- vite.config.ts ---------- */
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+export default defineConfig({
+  plugins: [react()],
+  server: { port: 5173 }
+});
+
+/* ---------- src/main.tsx ---------- */
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { FluentProvider, teamsLightTheme } from '@fluentui/react-components';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import { AuthProvider } from './context/AuthContext';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <FluentProvider theme={teamsLightTheme} style={{ height: '100vh' }}>
+      <AuthProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AuthProvider>
+    </FluentProvider>
+  </React.StrictMode>
+);
+
+/* ---------- src/context/AuthContext.tsx ---------- */
+import React, { createContext, useState, useEffect } from 'react';
+import { supabase } from '../utils/supabaseClient';
+export interface AuthCtx { user: any; token: string | null; }
+export const AuthContext = createContext<AuthCtx | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<any>(null);
+  const [token, setToken] = useState<string | null>(null);
+  useEffect(() => {
+    const session = supabase.auth.getSession();
+    if ('data' in session && session.data?.session) {
+      setUser(session.data.session.user);
+      setToken(session.data.session.access_token);
+    }
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+      setToken(session?.access_token ?? null);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+  return (
+    <AuthContext.Provider value={{ user, token }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+/* ---------- src/utils/supabaseClient.ts ---------- */
+import { createClient } from '@supabase/supabase-js';
+export const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL as string,
+  import.meta.env.VITE_SUPABASE_ANON_KEY as string
+);
+
+/* ---------- src/App.tsx ---------- */
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ClientDashboard from './pages/ClientDashboard';
+import ProgramDashboard from './pages/ProgramDashboard';
+import StudyWorkspace from './pages/StudyWorkspace';
+import VaultView from './pages/VaultView';
+import IndWizard from './pages/IndWizard';
+import Login from './pages/Login';
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<ClientDashboard />} />
+      <Route path="/programs/:programId" element={<ProgramDashboard />} />
+      <Route path="/studies/:studyId" element={<StudyWorkspace />} />
+      <Route path="/studies/:studyId/vault" element={<VaultView />} />
+      <Route path="/studies/:studyId/ind" element={<IndWizard />} />
+      <Route path="*" element={<Navigate to="/dashboard" />} />
+    </Routes>
+  );
+}
+
+/* ---------- src/pages/Login.tsx ---------- */
+import { useState } from 'react';
+import { supabase } from '../utils/supabaseClient';
+import { useNavigate } from 'react-router-dom';
+import { Input, Button } from '@fluentui/react-components';
+export default function Login() {
+  const nav = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const handleLogin = async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data) nav('/dashboard');
+    // TODO: handle error UI
+  };
+  return (
+    <div style={{ maxWidth: 320, margin: '10% auto' }}>
+      <h2>TrialSage Login</h2>
+      <Input placeholder="Email" value={email} onChange={(_, v) => setEmail(v.value)} />
+      <Input type="password" placeholder="Password" value={password} onChange={(_, v) => setPassword(v.value)} />
+      <Button appearance="primary" onClick={handleLogin} style={{ marginTop: 16 }}>Login</Button>
+    </div>
+  );
+}
+
+/* ---------- src/pages/ClientDashboard.tsx ---------- */
+import { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { DetailsList, IColumn, Stack } from '@fluentui/react';
+import { useNavigate } from 'react-router-dom';
+export default function ClientDashboard() {
+  const { token } = useContext(AuthContext)!;
+  const [programs, setPrograms] = useState<any[]>([]);
+  const nav = useNavigate();
+  useEffect(() => {
+    (async () => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/programs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPrograms(data);
+    })();
+  }, []);
+  const cols: IColumn[] = [
+    { key: 'name', name: 'Program', fieldName: 'name', minWidth: 200 } ];
+  return (
+    <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 24 } }}>
+      <h2>Programs</h2>
+      <DetailsList
+        items={programs}
+        columns={cols}
+        onItemInvoked={(item: any) => nav(`/programs/${item.id}`)}
+      />
+    </Stack>
+  );
+}
+
+/* ---------- src/pages/ProgramDashboard.tsx ---------- */
+import { useParams, useNavigate } from 'react-router-dom';
+export default function ProgramDashboard() {
+  const { programId } = useParams();
+  // TODO: fetch program + studies
+  const nav = useNavigate();
+  return (
+    <div style={{ padding: 24 }}>
+      <h2>Program {programId}</h2>
+      {/* TODO: list studies with DetailsList, nav(`/studies/${id}`) */}
+      <button onClick={() => nav(-1)}>Back</button>
+    </div>
+  );
+}
+
+/* ---------- src/pages/StudyWorkspace.tsx ---------- */
+import { useParams, useNavigate } from 'react-router-dom';
+export default function StudyWorkspace() {
+  const { studyId } = useParams();
+  const nav = useNavigate();
+  return (
+    <div style={{ padding: 24 }}>
+      <h2>Study {studyId}</h2>
+      <button onClick={() => nav(`/studies/${studyId}/vault`)}>Open Vault</button>
+      <button onClick={() => nav(`/studies/${studyId}/ind`)}>IND Wizard</button>
+    </div>
+  );
+}
+
+/* ---------- src/pages/VaultView.tsx ---------- */
+import { useParams } from 'react-router-dom';
+export default function VaultView() {
+  const { studyId } = useParams();
+  return <div style={{ padding: 24 }}>Vault placeholder for Study {studyId}</div>;
+}
+
+/* ---------- src/pages/IndWizard.tsx ---------- */
+import { useParams } from 'react-router-dom';
+export default function IndWizard() {
+  const { studyId } = useParams();
+  return <div style={{ padding: 24 }}>IND Wizard placeholder (Study {studyId})</div>;
+}
+
+/* ---------- tsconfig.json (minimal) ---------- */
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "strict": true,
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}
+
+// ==============================
+// END FRONTEND SCAFFOLD

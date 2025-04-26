@@ -1,92 +1,117 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+const { createClient } = require('@supabase/supabase-js');
+const db = require('../db');
 
-// Load environment variables
-dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-development';
+// Initialize Supabase client with service role key for user verification
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 /**
- * JWT Authentication Middleware
- * Verifies JWT tokens from the Authorization header
- * Adds decoded user info to req.user
+ * Middleware to verify authentication and set tenant context
  */
-export const verifyJwt = (req, res, next) => {
-  // Get token from header
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  // Check if token exists
-  if (!token) {
-    return res.status(401).json({ 
-      message: 'Access denied. No token provided.' 
-    });
-  }
-  
+async function requireAuth(req, res, next) {
   try {
-    // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // { id, role, tenantId }
+    // Extract the token from the Authorization header
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+    
+    if (!token) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    // Verify the token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      return res.status(401).json({ message: 'Invalid or expired token' });
+    }
+    
+    // Get user's organization info from our database
+    const userOrgResult = await db.query(
+      `SELECT uo.org_id, uo.role, o.org_type, o.parent_org_id 
+       FROM user_organizations uo 
+       JOIN organizations o ON uo.org_id = o.org_id 
+       WHERE uo.user_id = $1 AND uo.is_primary = TRUE`, 
+      [user.id]
+    );
+    
+    if (userOrgResult.rows.length === 0) {
+      return res.status(403).json({ message: 'User not associated with any organization' });
+    }
+    
+    const userOrg = userOrgResult.rows[0];
+    
+    // Set user and tenant context on the request
+    req.user = {
+      id: user.id,
+      email: user.email,
+      orgId: userOrg.org_id,
+      role: userOrg.role,
+      orgType: userOrg.org_type
+    };
+    
+    // Set tenant context based on organization type
+    req.tenantContext = {
+      userId: user.id
+    };
+    
+    if (userOrg.org_type === 'CRO') {
+      req.tenantContext.croId = userOrg.org_id;
+    } else if (userOrg.org_type === 'CLIENT') {
+      req.tenantContext.clientId = userOrg.org_id;
+      req.tenantContext.croId = userOrg.parent_org_id;
+    }
+    
     next();
   } catch (error) {
-    console.error('JWT verification error:', error.message);
-    return res.status(401).json({ 
-      message: 'Invalid or expired token'
-    });
+    console.error('Auth middleware error:', error);
+    res.status(500).json({ message: 'Authentication error' });
   }
-};
+}
 
 /**
- * Role-based Authorization Middleware
- * Verifies the user has required role(s)
- * @param {string[]} roles - Array of allowed roles
+ * Middleware to check if user has the required role
  */
-export const requireRoles = (roles) => {
+function authorizeRole(requiredRoles) {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        message: 'Authentication required'
-      });
-    }
+    // requiredRoles can be a single role or an array of roles
+    const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
     
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        message: 'Access denied. Insufficient permissions.'
-      });
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Insufficient permissions' });
     }
     
     next();
   };
-};
+}
 
 /**
- * Generate JWT token for user
- * @param {Object} user - User object with id, role, tenantId
- * @param {string} expiresIn - Token expiration time (default: 24h)
- * @returns {string} JWT token
+ * Middleware to switch tenant context when a CRO user is accessing client data
  */
-export const generateToken = (user, expiresIn = '24h') => {
-  return jwt.sign(
-    {
-      id: user.id,
-      role: user.role || 'user',
-      tenantId: user.tenantId || user.tenant_id || user.id
-    },
-    JWT_SECRET,
-    { expiresIn }
-  );
-};
-
-/**
- * For demo purposes, generate a mock token
- * @returns {string} Mock JWT token
- */
-export const generateMockToken = () => {
-  const mockUser = {
-    id: '123456',
-    role: 'user',
-    tenantId: '123456'
+function switchTenantContext(req, res, next) {
+  // Only CRO users can switch context
+  if (req.user.orgType !== 'CRO') {
+    return res.status(403).json({ message: 'Only CRO users can switch tenant context' });
+  }
+  
+  const clientId = req.params.clientId || req.query.clientId || req.body.clientId;
+  
+  if (!clientId) {
+    return res.status(400).json({ message: 'Client ID is required for context switching' });
+  }
+  
+  // Update tenant context with the specified client
+  req.tenantContext = {
+    ...req.tenantContext,
+    clientId
   };
   
-  return generateToken(mockUser, '1h');
+  next();
+}
+
+module.exports = {
+  requireAuth,
+  authorizeRole,
+  switchTenantContext
 };

@@ -1,0 +1,364 @@
+Perfect. We'll start now with setting up the backend first in Replit: PostgreSQL schema, Express server structure, and APIs scaffolded for TrialSage Vault Client Portal 2.0.
+
+I'll drop all backend code cleanly into Canvas in the next step.
+
+Right after that, we'll set up the React + TypeScript frontend foundation with Fluent UI.
+
+Let’s kick this off! 🚀
+
+# TrialSage Vault 2.0 – Backend and Frontend Foundation
+
+## Backend Foundation (Node.js, Express & PostgreSQL)
+
+**Tech Stack & Overview:** The backend will use **Node.js** with **Express** for a robust REST API, and **PostgreSQL** as the relational database. We will structure the code in a clean, modular way with separate folders for routes, controllers, and data models ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=%E2%94%9C%E2%94%80%E2%94%80%20src%20%E2%94%82%20%20,ts)). This ensures the project is easy to maintain and extend as it grows. Key backend services include **Authentication**, **Organizations**, **Programs**, **Studies**, a **Document Vault**, **Regulatory Submissions**, and a placeholder for **AI services** – each handled by dedicated modules and RESTful API endpoints.
+
+### Backend Implementation Steps:
+
+1. **Project Initialization & Structure:** Begin by creating a new Node.js project and initializing it: e.g., `npm init -y`. Install core dependencies: `npm install express pg cors dotenv jsonwebtoken @supabase/supabase-js`. Organize the project into an intuitive folder structure (e.g. a `src/` folder with subfolders for **models**, **controllers**, and **routes**) ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=%E2%94%9C%E2%94%80%E2%94%80%20src%20%E2%94%82%20%20,ts)). For example: 
+
+   ```plaintext
+   backend/
+   ├── src/
+   │   ├── controllers/
+   │   ├── routes/
+   │   ├── models/
+   │   └── app.js (or app.ts)
+   └── package.json
+   ``` 
+
+   In **app.js**, initialize the Express application and configure global middleware. Enable JSON body parsing and CORS so that the frontend (likely on a different origin in development) can call the APIs ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=import%20)). For example: 
+
+   ```js
+   // src/app.js
+   import express from 'express';
+   import cors from 'cors';
+   import 'dotenv/config';  // loads environment variables
+   const app = express();
+   app.use(express.json());
+   app.use(cors());  // allow cross-origin for dev
+   const PORT = process.env.PORT || 5000;
+   // ... (we will add routes and error handling below)
+   app.listen(PORT, () => console.log(`API running on port ${PORT}`));
+   ```
+   *Configuring environment variables:* In Replit, use the **Secrets** panel (or a `.env` file) to store sensitive config like database URLs, API keys, and JWT secrets. These values will be accessible via `process.env` in the code ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=import%20)). For instance, define `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `JWT_SECRET`, etc., in the Replit environment. *Never hardcode credentials* – this keeps the code secure and portable.
+
+2. **Database Setup (PostgreSQL):** Set up a PostgreSQL database (you can use a hosted service like Supabase or Heroku Postgres, or a local instance). In Replit, you'll likely connect to an external Postgres; use the `DATABASE_URL` env variable for the connection string. Include a database client or ORM – for simplicity, we can use **Knex.js** or the native `pg` module. For example, using Knex as a query builder:
+
+   ```js
+   // src/db.js (database connection setup with Knex)
+   import knex from 'knex';
+   import 'dotenv/config';
+   const db = knex({
+     client: 'pg',
+     connection: process.env.DATABASE_URL
+   });
+   export default db;
+   ```
+   
+   If not using an ORM, you can use `pg.Pool` to create a connection pool. This file is imported wherever database queries are needed.
+
+   **Database Schema:** Design tables to support multi-tenancy and the required entities:
+   - **Organization** – holds tenant info (e.g. `id`, `name`, `type` (CRO or Client), etc.).
+   - **User** – (if managing user profiles in our DB) with fields `id` (UUID from Supabase or internal), `email`, etc.
+   - **UserOrganization** – mapping table to assign users to organizations with specific roles (e.g. `user_id`, `org_id`, `role`), enabling role-based access per tenant.
+   - **Program** – projects under a client org (`id`, `name`, `organization_id`, etc.).
+   - **Study** – specific studies under a program (`id`, `name`, `program_id`, etc.).
+   - **Document** – for the Vault, representing an uploaded file or record (`id`, `study_id` (or program_id), metadata like filename, path or URL, etc.).
+   - **Submission** – for regulatory submissions (e.g., `id`, `study_id` or `program_id`, `type` (IND or NDA), status, etc.).
+   
+   All key tables should include a foreign key to the **Organization** (directly or indirectly) to enforce tenant isolation. This means every query can be scoped by an `organization_id` to ensure one tenant (CRO/Client) cannot access another tenant’s data.
+
+3. **Multi-Tenancy & Tenant Isolation:** TrialSage Vault is a **multi-tenant** SaaS, meaning a single server/database serves multiple client organizations (tenants) ([How I Built a Multi-tenant SaaS Product in Node.js - DEV Community](https://dev.to/cod3kid/how-i-built-a-multi-tenant-saas-product-in-nodejs-3m0b#:~:text=Multitenant%20Architecture%20is%20a%20type,user%20groups%20are%20called%20tenants)). To achieve this, use a **tenant-aware design**: each record in Programs, Studies, Documents, etc., is associated with an Organization. We will **include the organization’s ID in each query** (based on the logged-in user’s org) to filter data. There are different models for multi-tenancy (e.g. separate DB per tenant vs. shared DB with tenant-specific tables) ([How I Built a Multi-tenant SaaS Product in Node.js - DEV Community](https://dev.to/cod3kid/how-i-built-a-multi-tenant-saas-product-in-nodejs-3m0b#:~:text=Types%20of%20Multitenancy)), but we’ll use a single shared database with shared tables tagged by `organization_id` for simplicity. This requires careful handling in code: for every CRUD operation, the backend must check the user’s tenant context and apply a WHERE filter on `organization_id` to prevent cross-tenant data leakage.
+
+4. **Authentication with Supabase (JWT):** We’ll integrate **Supabase Auth** for user sign-up and login, and use **JWTs** for session management. Supabase provides an out-of-the-box auth system (email/password, OAuth providers, etc.) and issues a JSON Web Token for authenticated users. The plan:
+   - On the **frontend**, users will authenticate via Supabase (using the Supabase JS SDK or Supabase UI). Supabase will return a JWT access token on successful login.
+   - That JWT is then included in API requests (typically in the `Authorization: Bearer <token>` header).
+   - On the **backend**, we verify the JWT on each request. We can do this by using the Supabase Admin SDK or the JWT library:
+     - **Option A:** Use Supabase’s server SDK to validate the token. For example, initialize a Supabase client with the service role key (which has permission to get user info) and call `supabase.auth.getUser(token)` to retrieve the user ([Verify access token on node.js · Issue #491 · supabase/supabase · GitHub](https://github.com/supabase/supabase/issues/491#:~:text=2,a%20check%20against%20that%20user)). If the token is invalid or expired, this will return an error and we reject the request. If valid, we get the user’s UUID and details.
+     - **Option B:** Directly verify the JWT using the known signing secret (available in Supabase settings) and a library like `jsonwebtoken`. This avoids an external call. For example:
+       ```js
+       import jwt from 'jsonwebtoken';
+       const payload = jwt.verify(token, process.env.SUPABASE_JWT_SECRET);
+       // payload now contains user info (e.g. sub (user id), email, etc.)
+       ```
+     In either case, once verified, attach the user identity (and tenant org) to the `req` object for downstream handlers. For instance, you might have `req.user = { id: userId, email: ..., orgId: ... }`. The `orgId` can be determined by looking up which organization the user belongs to (e.g. query our UserOrganization table). If using Supabase for initial auth only, you’ll likely maintain an internal mapping of users to organizations.
+   - **JWT Middleware:** Implement an Express middleware to do the above steps for protected routes. Any request hitting a protected endpoint must pass through this middleware:
+     ```js
+     // src/middleware/auth.js
+     import { createClient } from '@supabase/supabase-js';
+     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+     export async function requireAuth(req, res, next) {
+       const authHeader = req.headers['authorization'];
+       const token = authHeader && authHeader.split(' ')[1];
+       if (!token) return res.sendStatus(401); // no token
+       try {
+         const { data: user, error } = await supabase.auth.getUser(token);
+         if (error || !user) throw error;
+         req.user = user;  // attach user (contains user.id and other info)
+         next();
+       } catch (err) {
+         return res.status(401).json({ message: 'Invalid or expired token' });
+       }
+     }
+     ```
+     This uses Supabase’s helper to get the user from the token ([Verify access token on node.js · Issue #491 · supabase/supabase · GitHub](https://github.com/supabase/supabase/issues/491#:~:text=2,a%20check%20against%20that%20user)). Alternatively, use `jwt.verify` with the secret as mentioned. All protected routes (almost everything except the login route, if any) will use this `requireAuth` middleware.
+
+5. **Role-Based Access Control (RBAC):** In a multi-tenant system, **role-based access** is crucial so that users have appropriate permissions within their tenant (and possibly across tenants for CROs). We will implement RBAC by assigning roles to each user per organization (for example, roles like **“Admin”**, **“Project Manager”**, **“Scientist”**, etc., or simply **“CRO”** vs **“Client User”** roles). The `UserOrganization` join table can store the role for that user in that org. After authentication, an authorization middleware can check `req.user`’s role before allowing certain actions. For instance, only an **Admin** might create new Programs or invite users, while a read-only role could only view data. We can define required permissions for each route and compare against the user’s role permissions ([How to Implement Role-Based Access Control (RBAC) in Node.js Applications - DEV Community](https://dev.to/rabindratamang/how-to-implement-role-based-access-control-rbac-in-nodejs-applications-1ed2#:~:text=const%20authorize%20%3D%20%28requiredPermissions%29%20%3D,next%28%29%3B)):
+   ```js
+   // src/middleware/rbac.js
+   export function authorizeRole(requiredRole) {
+     return (req, res, next) => {
+       const userRole = req.user.role;  // assume we've set this after auth
+       if (!userRole || userRole !== requiredRole) {
+         return res.status(403).json({ message: 'Forbidden' });  // insufficient role
+       }
+       next();
+     };
+   }
+   ```
+   We can make this more fine-grained (e.g., a role-to-permissions map), but initially a simple check suffices ([How to Implement Role-Based Access Control (RBAC) in Node.js Applications - DEV Community](https://dev.to/rabindratamang/how-to-implement-role-based-access-control-rbac-in-nodejs-applications-1ed2#:~:text=const%20authorize%20%3D%20%28requiredPermissions%29%20%3D,next%28%29%3B)). For example, use `authorizeRole('Admin')` on routes that only admins should access. The middleware will respond with HTTP 403 Forbidden if the user’s role doesn’t match the requirement.
+
+6. **Defining API Routes (Modules):** Next, create Express route handlers for each service/module. We will keep these in separate files under the `routes/` folder (and corresponding controller logic under `controllers/`). Each module’s routes will be prefixed and mounted in the main app. For example:
+   - **Auth Routes:** (if needed) e.g. `POST /auth/register` and `POST /auth/login` if we want to allow creating new users or if not fully relying on Supabase’s forms. However, since Supabase handles authentication, we might not need explicit register/login endpoints on our backend – the frontend can talk to Supabase directly. We *will* need an endpoint to fetch or update the current user’s profile/roles if required.
+   - **Organization Routes:** e.g. `GET /api/organizations` (list organizations accessible to the current user – for a CRO it might list client orgs, for a client user probably just their org), `POST /api/organizations` (create a new organization, likely restricted to CRO admins who can onboard a client). Possibly `PUT /api/organizations/:id` to update, etc. Protect these with `authorizeRole('CRO_Admin')` or similar if only CRO users can create orgs.
+   - **Program Routes:** e.g. `GET /api/programs?orgId=<id>` (list programs under an organization – or this could infer org from the user context), `POST /api/programs` (create a new program under an org), `GET /api/programs/:programId` (get details, including associated studies). Ensure that the user has access to the organization that the program belongs to (check via a join on programs.organization_id = user.organization_id).
+   - **Study Routes:** e.g. `GET /api/programs/:programId/studies` (list studies under a program), `POST /api/programs/:programId/studies` (create a new study in that program), `GET /api/studies/:studyId` (get study details). Always validate that the study’s program’s org matches the user’s org.
+   - **Vault (Document) Routes:** e.g. `GET /api/studies/:studyId/documents` (list documents in a study’s vault), `POST /api/studies/:studyId/documents` (upload a new document). For file uploads, you might integrate a storage service (like AWS S3 or Supabase Storage) – but as a scaffold, you can accept a file (using something like `multer` middleware in Express) and just record metadata. Ensure the file metadata includes `studyId` and therefore an implicit org context. Also consider versioning in the future (for now, simple upload/download).
+   - **Regulatory Submission Routes:** e.g. `GET /api/studies/:studyId/submissions` (list regulatory submissions like IND/NDA for that study), `POST /api/studies/:studyId/submissions` (create a new submission record). An IND “Wizard” might eventually break into multiple steps on frontend, but on backend it could be a single endpoint that creates an IND record and perhaps initiates some process. For now, this can be a placeholder that just stores a record with type="IND" and status="Draft".
+   - **AI Services Routes:** For now, just a placeholder endpoint such as `POST /api/ai/query` that the AI Assistant will call. It might accept a question and return a dummy response (since actual AI integration is future work). Ensure this route is protected by auth as well, although its functionality is minimal for now.
+
+   Each route file will import any necessary controller or service functions from the corresponding module in `controllers/`. For example, a simplified **Programs route** (with dummy controllers for illustration) could look like this in `src/routes/programs.js`:
+
+   ```js
+   import { Router } from 'express';
+   import { requireAuth } from '../middleware/auth.js';
+   import { listPrograms, createProgram } from '../controllers/programController.js';
+   const router = Router();
+   router.use(requireAuth);  // all routes require authentication
+   router.get('/', listPrograms);        // GET /api/programs
+   router.post('/', requireAuth, createProgram);   // POST /api/programs
+   export default router;
+   ```
+   
+   And in the main app (app.js), mount this router:  
+   ```js
+   import programsRouter from './routes/programs.js';
+   app.use('/api/programs', programsRouter);
+   ``` 
+
+   This modular approach keeps each component isolated and the main app file clean ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=%2F%2F%20src%2Froutes%2Fusers)). Each controller function (e.g., `listPrograms`) will interact with the database via the models. For instance, `listPrograms` might run a SQL query like: *SELECT \* FROM programs WHERE organization_id = $1* (with the current user’s org id) and return the results as JSON.
+
+7. **Controller Logic & Data Layer:** Implement the controller functions for each route. These will:
+   - Extract needed info from the request (parameters, body, and `req.user` for context).
+   - Perform database operations (e.g., using Knex or pg to query the Postgres DB).
+   - Handle any business logic or validations (for example, ensuring a Program name isn’t duplicate within the same org).
+   - Return a JSON response. Use appropriate HTTP status codes (`200 OK`, `201 Created`, `400 Bad Request`, `403 Forbidden`, etc.). 
+
+   For example, a simple **create Program** controller:
+   ```js
+   // src/controllers/programController.js
+   import db from '../db.js';
+   export async function createProgram(req, res) {
+     const { name } = req.body;
+     const orgId = req.user.orgId;  // we set this in auth middleware based on user's org
+     if (!name) {
+       return res.status(400).json({ error: 'Program name is required' });
+     }
+     try {
+       const [program] = await db('programs')
+         .insert({ name, organization_id: orgId })
+         .returning(['id', 'name', 'organization_id']);
+       return res.status(201).json(program);
+     } catch (err) {
+       console.error(err);
+       res.status(500).json({ error: 'Failed to create program' });
+     }
+   }
+   ```
+   Similar controllers would be made for listing programs (filtering by `organization_id = req.user.orgId`), creating studies (checking the program belongs to the same org), uploading documents (perhaps writing a record to a `documents` table and optionally storing a file), etc. Since this is a **foundation scaffold**, each of these controllers can be fairly basic (not full feature-complete) but should include **comments** explaining what they would do (for clarity and future development).
+
+8. **Security & Error Handling:** Make sure to include error handling and security best practices:
+   - Use Express error-handling middleware to catch exceptions and send a clean response.
+   - Validate inputs on every endpoint (you can use a library like `express-validator` or manual checks) to prevent bad data or security issues (e.g., check that IDs in the URL truly belong to the user's org).
+   - Sanitize any data used in SQL queries (Knex parameter binding or `pg` parameterized queries to avoid SQL injection).
+   - Implement logging for important events (user login, creation of a new org/program, etc.). At least use `console.log` for now, but plan to integrate a proper logger in production.
+   - Ensure the JWT secret (or Supabase service key) is kept secret – in Replit, again, use the Secrets env feature. **Never expose the service role key to the frontend**, it should only be used on the server.
+
+9. **Replit Deployment (Backend):** To run the backend on Replit, confirm that:
+   - The `package.json` has a start script, e.g. `"start": "node src/app.js"`. Replit will detect and run this by default. It will use `process.env.PORT` (which Replit sets automatically) or a fallback port ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=const%20app%20%3D%20express,%27mongodb%3A%2F%2Flocalhost%3A27017%2Fmydatabase)) – as in our app, we used `PORT = process.env.PORT || 5000`. This is important so that Replit can map the server to the web view.
+   - In the Replit console, the output should show “API running on port ...”. You can click the “Open in browser” to hit the base URL. We haven’t defined a root route, so consider adding a simple `app.get("/")` that returns a welcome message (or a 404 handler) so you can see a result.
+   - All needed environment variables (DATABASE_URL, etc.) are added in Replit’s Secrets. For example, for a Supabase project, add `SUPABASE_URL` (your Supabase instance URL) and `SUPABASE_SERVICE_KEY` (service role key for verifying JWT). For the database, if using Supabase’s Postgres, the `DATABASE_URL` might be the connection string to that same database. If using a different Postgres, supply its connection string.
+   - **Package installation:** Replit will auto-install packages listed in package.json. If you need to add a package, you can add it via the Replit package manager UI or by `npm install package-name` in the Replit shell – just ensure it updates package.json so that Replit tracks it. All code should be saved and **version tracked (Replit can connect to Git or use Replit’s versioning)** – this ensures the code is backed up (e.g., in “Canvas” or repository).
+
+With the backend scaffold in place, you have a running Express API connected to PostgreSQL, with structured routes and placeholder logic for each major domain area. Next, we’ll set up the frontend to interact with these endpoints.
+
+## Frontend Foundation (React, TypeScript & Fluent UI)
+
+**Tech Stack & Overview:** The frontend will be built with **React** (using **TypeScript** for type safety) and will utilize Microsoft’s **Fluent UI** component library for a clean, professional UI. We will organize the frontend by feature, reflecting the core pages: a **Client Dashboard**, **Program Dashboard**, **Study Workspace**, **Document Vault** view, an **IND submission wizard**, and an **AI Assistant** chat component. State management will be handled with React’s Context API for user/auth state and selected entities, with the option to incorporate Redux Toolkit later if the state logic becomes complex. The application should be responsive and easily extensible.
+
+### Frontend Implementation Steps:
+
+1. **Project Setup:** Initialize a new React project with TypeScript. You can use Create React App or Vite:
+   - **Create React App:** In the Replit console, run: `npx create-react-app frontend --template typescript`. This generates a `frontend` directory with a React+TS template.
+   - **Vite:** Alternatively, `npm create vite@latest frontend -- --template react-ts` (Vite is faster and leaner for modern builds). 
+   
+   If using Replit’s GUI, you might also directly create a React (TypeScript) Repl or add a React template. Once set up, ensure the React app runs (e.g., `npm run dev` for Vite or `npm start` for CRA). You should see the default React welcome page.
+
+   Structure the project directories for clarity. Inside `frontend/src`, create subfolders for **components**, **pages**, and **context** (for context providers). For example:
+   ```plaintext
+   frontend/
+   ├── src/
+   │   ├── components/    (reusable UI components like navigation, tables, etc.)
+   │   ├── pages/         (each core page as a component)
+   │   ├── context/       (React context providers for auth, etc.)
+   │   ├── App.tsx
+   │   └── index.tsx
+   ├── package.json
+   ```
+   This organization makes it clear where to find page-specific code vs. generic components. Keep the file naming consistent (e.g., `ClientDashboard.tsx`, `ProgramDashboard.tsx`, etc., inside `pages/`).
+
+2. **Install Fluent UI:** Add Microsoft’s Fluent UI library for React: in the `frontend` directory, run `npm install @fluentui/react`. This gives access to Fluent UI components (like **Panels, CommandBar, Buttons, Tables (DetailsList)**, etc.) which have a familiar Office 365 look and feel. Using Fluent UI will help achieve an "enterprise-grade" look out of the box (aligned with Microsoft 365 style interfaces). You can also install Fluent UI icons if needed via `@fluentui/react-icons`. 
+
+   After installing, you can import components into your React pages. For example:
+   ```tsx
+   import { DefaultButton, TextField, DetailsList, IColumn } from '@fluentui/react';
+   ```
+   We will use these components to build our UI controls (buttons, forms, lists, etc.) instead of raw HTML, for consistency and productivity.
+
+3. **Routing and Navigation:** Install React Router for single-page app navigation (if not already): `npm install react-router-dom`. In your `src/App.tsx`, set up a router that defines routes for each main page:
+   ```tsx
+   import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+   import ClientDashboard from './pages/ClientDashboard';
+   import ProgramDashboard from './pages/ProgramDashboard';
+   // ... other imports
+   
+   function App() {
+     return (
+       <BrowserRouter>
+         <Routes>
+           <Route path="/" element={<Navigate to="/dashboard" />} />
+           <Route path="/dashboard" element={<ClientDashboard />} />
+           <Route path="/programs/:programId" element={<ProgramDashboard />} />
+           <Route path="/studies/:studyId" element={<StudyWorkspace />} />
+           <Route path="/studies/:studyId/vault" element={<VaultView />} />
+           <Route path="/studies/:studyId/ind" element={<IndWizard />} />
+         </Routes>
+       </BrowserRouter>
+     );
+   }
+   export default App;
+   ```
+   This sets up the basic navigation structure. We use a redirect from `/` to `/dashboard` (the client dashboard). The Program and Study routes use URL parameters for IDs. The Study workspace could have sub-routes or simply include components for vault, IND, etc., but for clarity we set separate paths for Vault and IND pages. You might also include a route for an "AI Assistant" page or integrate the chat in a global component.
+
+4. **Authentication UI Integration:** We need a way for users to log in. Since we are using Supabase for auth, one approach is to use Supabase’s provided UI components or just a simple login form and call Supabase from the frontend. For simplicity, create a **Login page** (`pages/Login.tsx`) with a form (email & password fields) and a button. When submitted, use the Supabase JS client to authenticate:
+   - Install Supabase client library in the frontend: `npm install @supabase/supabase-js`.
+   - Initialize it with your Supabase project URL and public **anon key** (not the service key) – these are safe to use on frontend. For example:
+     ```tsx
+     // src/utils/supabaseClient.ts
+     import { createClient } from '@supabase/supabase-js';
+     const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+     const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+     export const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
+     ```
+     (Note: In a React app, environment vars starting with `REACT_APP_` will be available in `process.env` – set these in a `.env` file and ensure Replit Secrets for the front-end include them.)
+   - In the Login component, on form submit, call `supabase.auth.signInWithPassword({ email, password })`. On success, Supabase will return a `session` object containing the JWT `access_token`.
+   - Store this token (and possibly user info) in a React Context state (e.g., an AuthContext). For now, you can simply keep it in a parent component or Context and pass it to child components that need it. **Do not store the token in localStorage in plain text** for security; if needed, use httpOnly cookies or keep it in memory via Context.
+   - Once logged in, redirect the user to the `/dashboard`. The context/provider will mark the user as authenticated and provide the token for API calls.
+
+   If you prefer, you could skip building a custom login UI and use Supabase’s pre-built auth widget or magic link – but building it gives more control. The key is that after login, we have a JWT for authenticated API requests.
+
+5. **Global State Management (Context vs Redux):** Implement a **React Context** for authentication and possibly for the selected organization/program. Create a file `src/context/AuthContext.tsx` that uses `React.createContext`. The AuthContext provider will hold state like `currentUser` (Supabase user info), `authToken` (the JWT), and maybe a list of organizations the user has access to. Wrap the `<BrowserRouter>` in this AuthProvider so all components can access it. For example:
+   ```tsx
+   // src/context/AuthContext.tsx
+   import React, { useState, useEffect } from 'react';
+   import { supabase } from '../utils/supabaseClient';
+   type AuthContextType = { user: any, token: string | null };
+   export const AuthContext = React.createContext<AuthContextType|null>(null);
+   export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+     const [user, setUser] = useState(null);
+     const [token, setToken] = useState<string|null>(null);
+     useEffect(() => {
+       // Check for existing session on load (e.g., if user already logged in)
+       const session = supabase.auth.getSession();
+       if(session) {
+         setUser(session.user);
+         setToken(session.access_token);
+       }
+       // optional: listen to auth changes
+       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+         setUser(session?.user || null);
+         setToken(session?.access_token || null);
+       });
+       return () => { listener.subscription.unsubscribe(); }
+     }, []);
+     return <AuthContext.Provider value={{ user, token }}>{children}</AuthContext.Provider>;
+   };
+   ```
+   This context provides `user` and `token` to the app. In components, use `useContext(AuthContext)` to get the current user or token. For now, this is sufficient. If state management becomes complex (say tracking a lot of UI state or complex cached data), we can integrate **Redux Toolkit** later. Redux is powerful for large apps but adds complexity; since our initial scope is manageable, context is a simpler solution.
+
+6. **Core Pages UI Layout:**
+   - **Client Dashboard:** This is the landing page after login (route `/dashboard`). It should list all **Programs** for the current client organization. If the user is a CRO user, this might list multiple client organizations or a way to select an organization first – but to simplify, assume the user is operating in one org context at a time. Use a Fluent UI **DetailsList** or **List** component to display program entries (columns: Program Name, maybe Description, etc.). On mount, this component will call `GET /api/programs` to fetch programs. Use the auth token from context to include in the request header. For example, using the Fetch API:
+     ```tsx
+     useEffect(() => {
+       async function loadPrograms() {
+         const res = await fetch(`${process.env.REACT_APP_API_URL}/api/programs`, {
+           headers: { Authorization: `Bearer ${authToken}` }
+         });
+         const data = await res.json();
+         setPrograms(data);
+       }
+       loadPrograms();
+     }, []);
+     ```
+     (In development, if the React app runs on a different origin, ensure the backend has CORS enabled ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=app)), which we did. For convenience, you can also set `"proxy": "http://localhost:5000"` in package.json for CRA, so API calls to unknown paths are proxied to backend in development.) The programs are then stored in local state and rendered in a list. Each program item can have a "View" button or clickable row that navigates to `/programs/<id>`.
+
+   - **Program Dashboard:** This page (`/programs/:programId`) shows details of a selected Program and lists all **Studies** under that program. When the component loads, fetch program info (`GET /api/programs/:id`) and studies list (`GET /api/programs/:id/studies`). Use Fluent UI components to display the studies, perhaps as cards or a table with columns for Study Name, Phase, etc. Provide an action (button) to create a new Study (which would navigate to a form or open a panel). For now, this could just be a button that opens a form in the UI to input a study name and on submit calls `POST /api/programs/:id/studies` (with Authorization header). Ensure to update the list on success.
+
+   - **Study Workspace:** This is an umbrella page (`/studies/:studyId`) that could show an overview of the study (title, status, key info) and provide navigation to the sub-modules: *Vault*, *IND/NDA*, and *AI Assistant*. You could implement this as tabs or a secondary menu. For instance, use Fluent UI’s **Pivot** (tab) component to switch between "Documents", "Regulatory", etc., or simply provide buttons that navigate to the dedicated routes (`/studies/:id/vault` and `/studies/:id/ind`). Initially, you can display a simple welcome or summary on the main study page.
+
+   - **Document Vault View:** This page (`/studies/:studyId/vault`) will interface with the **Vault** module. Display a list of documents for the study by calling `GET /api/studies/:id/documents`. Use a Fluent UI DetailsList with columns like Document Name, Type, Date, etc. Also include an **Upload** button. For uploading, integrate a file input: you can use an HTML `<input type="file">` and on change, store the file in state. When the user clicks "Upload", send a `POST /api/studies/:id/documents` request. Since this involves sending file data, use `FormData` and fetch/Axios to post (set `Content-Type: multipart/form-data`). The backend (Vault service) isn’t fully implemented yet, but you can simulate success (e.g., return a 201 with the document metadata). Make sure to handle the response and update the document list. (In Replit or local dev, file uploads should be okay for small files; in production, you’d likely integrate cloud storage and just send metadata to backend.)
+
+   - **IND Wizard Starter:** This page (`/studies/:studyId/ind`) will start the process of creating a regulatory submission (IND or NDA). The UI can be a multi-step form wizard to gather information required for an IND application. For the foundation, create a simple form or a placeholder page. For example, a form asking for "Application Title" and "Description", and a **Submit** button that calls `POST /api/studies/:id/submissions` with a JSON body. You might incorporate Fluent UI’s **Wizard/Stepper** pattern or simply use conditional rendering to simulate steps. At this stage, it can be just a single-step form. Once submitted, perhaps show a success message like "IND submission draft created." The actual complexities of assembling FDA submission content can be handled later – for now, ensure the frontend has a component ready to be expanded.
+
+   - **AI Assistant Chat Component:** The AI assistant could be accessible globally (like a chat icon on all pages) or within the study workspace. For the scaffold, implement it as a component (say `components/AIChat.tsx`) that can be toggled on the UI (for example, a floating chat button that opens a chat window). The chat UI consists of:
+     - A display area for conversation (a list of user questions and AI answers).
+     - An input box where the user types a question, and a send button.
+     For now, when the user sends a question, make a call to a placeholder endpoint, e.g., `POST /api/ai/query` with the question. The backend can just echo a fixed response (like “AI module coming soon.”). Display this response in the chat window. This sets up the plumbing so that later an actual AI service (perhaps an OpenAI API or a custom model) can be integrated. Use Fluent UI’s **Chat style** components or simply a Stack/StackItem to layout the messages. Ensure this component is always on top (you can use CSS for a fixed position or render it inside a Portal).
+
+7. **Styling and UX:** Use Fluent UI styles to maintain consistency. You can customize the Fluent UI theme if needed (for example, to match a specific branding for TrialSage). Fluent UI uses a design system that should cover typography, spacing, etc., so leveraging its components means minimal custom CSS. However, do add a main navigation bar or header (maybe a top nav with the product name, and a logout button). A sidebar listing modules could also be useful in the Study Workspace. Keep the UX simple and intuitive: users (CROs or biotech clients) should see their programs, drill down to studies, manage documents, and initiate submissions easily. Use icons (Fluent UI Icons) to enhance clarity (e.g., a folder icon for Vault, a paper/rocket icon for Submissions, a chat icon for AI Assistant).
+
+8. **Connecting Frontend to Backend:** Now that the UI and API endpoints are aligned, ensure that all frontend data fetches point to the correct backend routes:
+   - Set a base URL for the API. In development, this might be something like `http://localhost:5000` (if running backend locally). In Replit, the backend might be accessible via a URL provided by Replit (e.g., `https://<repl-name>.<user>.repl.co`). You can set an env variable like `REACT_APP_API_URL` to this base URL and use it in fetch calls. **Tip:** For simplicity during development on Replit, you could run the React app and Express API in the *same Repl*. After building the React app for production (see next step), Express can serve the static files, so you have a single URL for both API and UI.
+   - Wherever we perform `fetch`/axios calls in React, include the `Authorization: Bearer <token>` header using the token from context. This ensures the Express backend will recognize the user (via our JWT middleware). If a token is missing or expired, handle 401 responses by redirecting to the login page.
+   - Test each interaction: e.g., login and then confirm that the dashboard loads programs, navigate into a program, see studies, etc. Without real data, you can mock some via direct DB insertion or extend the backend to allow creating new entries (like the forms in UI calling POST routes).
+
+9. **Replit Deployment (Frontend):** To deploy the React app on Replit along with the backend, you have a couple of options:
+   - **Option 1: Single Repl (Serve React via Express):** This is a convenient approach for deployment. After your frontend is developed, run `npm run build` (for CRA or Vite) to produce a static build of the React app (this will create a `build/` folder with HTML, JS, and CSS). Then, in the Express backend, add static file serving:
+     ```js
+     import path from 'path';
+     // ... after setting up API routes in app.js:
+     app.use(express.static(path.join(__dirname, '../frontend/build')));
+     app.get('*', (req, res) => {
+       res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+     });
+     ```
+     This tells Express to serve the frontend’s build files. The wildcard route will catch all requests that aren’t to the API (i.e., frontend routes) and serve `index.html`, allowing React Router to handle it. **Note:** Adjust the path as needed depending on your project structure. In Replit, ensure that the build is up-to-date whenever you make frontend changes (you might automate this with a Replit Nix setup or run it manually).
+   - **Option 2: Separate Repls:** Run the backend in one Repl and the frontend (dev server or static) in another. This is more for development convenience. If you do this, you must handle CORS (which we did) and update API URLs accordingly. You’d open two URLs (one for API, one for UI). This is less ideal for final deployment but can be used while actively coding.
+
+   Given Replit’s constraints (usually one process for web per Repl), the **single Repl approach** is recommended for the deployed version: your Express server listens on one port and serves both API and static frontend. Ensure all environment variables needed by the frontend (Supabase URL, etc.) are either baked in at build time or accessible. For Supabase, we used `REACT_APP_` env vars which should be set in Replit Secrets before building.
+
+   Finally, document any Replit-specific setup in a README or Canvas: for example, “Set the `DATABASE_URL` in Replit Secrets to your Postgres connection string, and `SUPABASE_URL`/`SUPABASE_ANON_KEY` for auth. After that, click Run to start the Express server. The React app will be available at the same URL.” Include any needed package installation notes (Replit auto-install should handle our dependencies as long as they’re in package.json). 
+
+### Conclusion and Next Steps:
+
+By following the above steps, we establish a solid foundation for **TrialSage Vault 2.0**. The backend scaffold provides a secure, multi-tenant API with modular services for organizations, projects, and clinical study management. The frontend scaffold delivers a structured React app with a modern UI library, ready to display and manage trial data. All secrets and config are externalized via environment variables (as per best practices) and the code is organized for clarity and scalability. Each section of functionality is in place (albeit minimally) so that future development can build on this (for example, fleshing out the IND submission workflow, integrating a real AI backend for the assistant, adding file storage for the Vault, etc.). Both the backend and frontend should be **well-commented** and version-controlled (ensuring all code is tracked in your repository or Canvas system) for maintainability.
+
+With this base in place on Replit, you can now iterate on the platform: add detailed features, improve error handling, write tests, and ultimately have a production-ready multi-tenant SaaS that meets the needs of CROs and biotech clients for clinical trial operations.  ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=%E2%94%9C%E2%94%80%E2%94%80%20src%20%E2%94%82%20%20,ts)) ([How I Built a Multi-tenant SaaS Product in Node.js - DEV Community](https://dev.to/cod3kid/how-i-built-a-multi-tenant-saas-product-in-nodejs-3m0b#:~:text=Multitenant%20Architecture%20is%20a%20type,user%20groups%20are%20called%20tenants)) ([Verify access token on node.js · Issue #491 · supabase/supabase · GitHub](https://github.com/supabase/supabase/issues/491#:~:text=2,a%20check%20against%20that%20user)) ([How to Implement Role-Based Access Control (RBAC) in Node.js Applications - DEV Community](https://dev.to/rabindratamang/how-to-implement-role-based-access-control-rbac-in-nodejs-applications-1ed2#:~:text=const%20authorize%20%3D%20%28requiredPermissions%29%20%3D,next%28%29%3B)) ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=import%20))
+
+**Sources:**
+
+- Express project structure best practices ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=%E2%94%9C%E2%94%80%E2%94%80%20src%20%E2%94%82%20%20,ts)) ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=%2F%2F%20src%2Froutes%2Fusers))  
+- Definition of multi-tenant architecture ([How I Built a Multi-tenant SaaS Product in Node.js - DEV Community](https://dev.to/cod3kid/how-i-built-a-multi-tenant-saas-product-in-nodejs-3m0b#:~:text=Multitenant%20Architecture%20is%20a%20type,user%20groups%20are%20called%20tenants)) ([How I Built a Multi-tenant SaaS Product in Node.js - DEV Community](https://dev.to/cod3kid/how-i-built-a-multi-tenant-saas-product-in-nodejs-3m0b#:~:text=Types%20of%20Multitenancy))  
+- Verifying Supabase JWT on backend ([Verify access token on node.js · Issue #491 · supabase/supabase · GitHub](https://github.com/supabase/supabase/issues/491#:~:text=2,a%20check%20against%20that%20user))  
+- RBAC implementation in Node.js (role check middleware) ([How to Implement Role-Based Access Control (RBAC) in Node.js Applications - DEV Community](https://dev.to/rabindratamang/how-to-implement-role-based-access-control-rbac-in-nodejs-applications-1ed2#:~:text=const%20authorize%20%3D%20%28requiredPermissions%29%20%3D,next%28%29%3B))  
+- Environment variable configuration (using dotenv and process.env) ([How to Create a Scalable Folder/File Structure for Your Express Application - DEV Community](https://dev.to/geraldhamiltonwicks/how-to-create-a-scalable-folderfile-structure-for-your-express-application-2l87#:~:text=import%20))
