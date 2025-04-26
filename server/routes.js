@@ -1,32 +1,44 @@
 /**
- * Main API Routes Configuration
+ * TrialSage API Routes
  * 
- * This file registers all the API routes for the TrialSage application.
+ * This module defines the core API routes for the TrialSage platform
  */
 
-const express = require('express');
-const router = express.Router();
+const { createServer } = require('http');
 
-// Import route modules
-const authRoutes = require('./routes/auth');
-const documentRoutes = require('./routes/documents');
-const searchRoutes = require('./routes/search');
-const aiDocumentRoutes = require('./routes/ai-document');
-const recommendationRoutes = require('./routes/recommendations');
-const autoLinkRoutes = require('./routes/autolink');
-const userRoutes = require('./routes/users');
-const adminRoutes = require('./routes/admin');
-const auditRoutes = require('./routes/audit');
+/**
+ * Register routes on the Express app
+ * 
+ * @param {Express} app - The Express app instance
+ * @returns {http.Server} - The HTTP server instance
+ */
+function registerRoutes(app) {
+  // Health check route
+  app.get('/api/health', (req, res) => {
+    res.json({
+      status: 'healthy',
+      version: '1.0.0',
+      timestamp: new Date().toISOString()
+    });
+  });
 
-// Register routes
-router.use('/auth', authRoutes);
-router.use('/documents', documentRoutes);
-router.use('/search', searchRoutes);
-router.use('/ai', aiDocumentRoutes);
-router.use('/recommendations', recommendationRoutes);
-router.use('/autolink', autoLinkRoutes);
-router.use('/users', userRoutes);
-router.use('/admin', adminRoutes);
-router.use('/audit', auditRoutes);
+  // Version information route
+  app.get('/api/version', (req, res) => {
+    res.json({
+      version: '1.0.0',
+      build: 'BL-20250426-FDA',
+      compliance: '21 CFR Part 11',
+      fdaStatusVersion: '1.2.0',
+      engineVersion: '3.1.4'
+    });
+  });
+  
+  // Create HTTP server
+  const httpServer = createServer(app);
+  
+  return httpServer;
+}
 
-module.exports = router;
+module.exports = {
+  registerRoutes
+};
