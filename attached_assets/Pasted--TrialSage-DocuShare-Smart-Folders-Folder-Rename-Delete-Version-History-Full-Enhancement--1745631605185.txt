@@ -1,0 +1,135 @@
+// --- TrialSage DocuShare Smart Folders + Folder Rename/Delete + Version History (Full Enhancement) ---
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { useDropzone } from 'react-dropzone';
+import { uploadDocument, listDocuments, downloadDocument, lockDocument, unlockDocument, deleteDocument, createFolder, moveDocument, renameFolder, deleteFolder, listDocumentVersions, revertToVersion } from '@/services/DocuShareService';
+import InlineViewer from '@/components/InlineViewer';
+import { useUserSession } from '@/hooks/useUserSession';
+
+export default function SmartDocuShare() {
+  const { user } = useUserSession();
+  const [documents, setDocuments] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [currentFolderId, setCurrentFolderId] = useState('root');
+  const [newFolderName, setNewFolderName] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [page, setPage] = useState(1);
+  const [versions, setVersions] = useState([]);
+  const pageSize = 9;
+
+  useEffect(() => {
+    if (user) {
+      fetchDocuments();
+      fetchFolders();
+    }
+  }, [user, currentFolderId]);
+
+  const fetchDocuments = async () => {
+    const res = await listDocuments(user.tenantId, currentFolderId);
+    setDocuments(res);
+  };
+
+  const fetchFolders = async () => {
+    const res = await listDocuments(user.tenantId, 'root', true);
+    setFolders(res);
+  };
+
+  const { getRootProps, getInputProps } = useDropzone({ onDrop: async (acceptedFiles) => {
+    const file = acceptedFiles[0];
+    await uploadDocument(file, user.tenantId, currentFolderId);
+    fetchDocuments();
+  }});
+
+  const filteredDocs = documents.filter((doc) =>
+    filterName ? doc.name.toLowerCase().includes(filterName.toLowerCase()) : true
+  );
+
+  const paginatedDocs = filteredDocs.slice((page - 1) * pageSize, page * pageSize);
+
+  const handleDownload = async (id) => await downloadDocument(id, user.tenantId);
+  const handleLock = async (id) => { await lockDocument(id, user.tenantId); fetchDocuments(); };
+  const handleUnlock = async (id) => { await unlockDocument(id, user.tenantId); fetchDocuments(); };
+  const handleDelete = async (id) => { if (confirm('Delete?')) { await deleteDocument(id, user.tenantId); fetchDocuments(); }};
+  const handleCreateFolder = async () => { if (newFolderName.trim()) { await createFolder(newFolderName, user.tenantId, currentFolderId); setNewFolderName(''); fetchFolders(); }};
+  const handleRenameFolder = async (folderId, newName) => { await renameFolder(folderId, newName); fetchFolders(); };
+  const handleDeleteFolder = async (folderId) => { if (confirm('Delete folder?')) { await deleteFolder(folderId); fetchFolders(); }};
+
+  const handleVersionView = async (docId) => {
+    const res = await listDocumentVersions(docId);
+    setVersions(res);
+  };
+
+  const handleVersionRevert = async (docId, versionNumber) => {
+    await revertToVersion(docId, versionNumber);
+    fetchDocuments();
+    setVersions([]);
+  };
+
+  return (
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <h1 className="text-4xl font-bold mb-8">DocuShare - Smart Folders + Versions</h1>
+
+      <div className="flex flex-wrap gap-4 mb-6">
+        <Input placeholder="New folder name..." value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} />
+        <Button onClick={handleCreateFolder}>Create Folder</Button>
+        <Input placeholder="Search documents..." value={filterName} onChange={(e) => setFilterName(e.target.value)} />
+        <Button onClick={fetchDocuments}>Refresh</Button>
+      </div>
+
+      <div className="flex gap-2 flex-wrap mb-8">
+        <Button variant={currentFolderId === 'root' ? 'default' : 'outline'} onClick={() => setCurrentFolderId('root')}>Root</Button>
+        {folders.map(folder => (
+          <div key={folder._id} className="flex items-center gap-1">
+            <Button variant={currentFolderId === folder._id ? 'default' : 'outline'} onClick={() => setCurrentFolderId(folder._id)}>{folder.name}</Button>
+            <Button size="xs" onClick={() => handleRenameFolder(folder._id, prompt('New name'))}>Rename</Button>
+            <Button size="xs" variant="destructive" onClick={() => handleDeleteFolder(folder._id)}>Delete</Button>
+          </div>
+        ))}
+      </div>
+
+      <div {...getRootProps()} className="border-2 border-dashed p-6 bg-white rounded-xl hover:bg-blue-50 cursor-pointer mb-8">
+        <input {...getInputProps()} />
+        <p className="text-blue-700">Drop files here or click to upload</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {paginatedDocs.map((doc) => (
+          <Card key={doc._id} className="shadow-md p-4">
+            <CardContent>
+              <div className="flex flex-col gap-2">
+                <p className="font-bold truncate">{doc.name}</p>
+                <Button size="sm" onClick={() => setSelectedDoc(doc)}>Preview</Button>
+                <Button size="sm" onClick={() => handleVersionView(doc._id)}>Versions</Button>
+                <Button size="sm" onClick={() => handleDownload(doc._id)}>Download</Button>
+                <Button size="sm" variant="destructive" onClick={() => handleDelete(doc._id)}>Delete</Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {versions.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4">Version History</h2>
+          {versions.map((v) => (
+            <div key={v.versionNumber} className="flex items-center justify-between p-2 border-b">
+              <span>Version {v.versionNumber} - {new Date(v.uploadedAt).toLocaleString()}</span>
+              <Button onClick={() => handleVersionRevert(v.documentId, v.versionNumber)}>Revert to this</Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Dialog open={!!selectedDoc} onOpenChange={() => setSelectedDoc(null)}>
+        <DialogContent>
+          {selectedDoc && <InlineViewer fileUrl={selectedDoc.fileUrl} />}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
