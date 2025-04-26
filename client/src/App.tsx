@@ -79,6 +79,8 @@ const LazyStudyPlanner = React.lazy(() => import('./pages/StudyPlanner'));
 const LazyICHWizPage = React.lazy(() => import('./pages/ICHWizPage'));
 // Admin Profile with role-switching capabilities
 const LazyAdminProfile = React.lazy(() => import('./pages/AdminProfile'));
+// Role-based dashboard with dynamically rendered KPIs
+const LazyRoleDashboard = React.lazy(() => import('./pages/RoleDashboard'));
 
 // Simple error boundary component
 class SimpleErrorBoundary extends React.Component<
@@ -114,6 +116,8 @@ import { AuthProvider, useAuth } from './hooks/use-auth';
 import { useLocation } from 'wouter';
 import AuthPage from './pages/auth-page';
 import { ProtectedRoute } from './components/ProtectedRoute';
+// Import UserContext for role-based dashboards
+import { UserProvider } from './contexts/UserContext';
 // Import onboarding context provider
 import { OnboardingProvider } from './contexts/OnboardingContext';
 // Import AuthRedirector component for authenticated user routing
@@ -162,11 +166,12 @@ export default function App() {
     <SimpleErrorBoundary>
       <ToastProvider>
         <AuthProvider>
-          <OnboardingProvider>
-            <LumenAssistantProvider>
-          <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading application...</div>}>
-            <div className=""> {/* No additional padding needed */}
-            <Switch>
+          <UserProvider>
+            <OnboardingProvider>
+              <LumenAssistantProvider>
+                <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading application...</div>}>
+                  <div className=""> {/* No additional padding needed */}
+                  <Switch>
               <Route path="/builder">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Builder" />}>
                   <LazyINDWizard />
