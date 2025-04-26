@@ -1,691 +1,586 @@
 import React, { useState } from 'react';
-import { 
-  FileText, 
-  Download, 
-  Search, 
-  Calendar, 
-  Filter,
-  Tag,
-  User,
+import {
+  FileText,
+  Download,
+  BookOpen,
   ChevronRight,
   ChevronDown,
-  Info,
-  Check
+  ExternalLink,
+  Search,
+  Filter,
+  Folder,
+  FolderOpen,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  UserCheck
 } from 'lucide-react';
 
 /**
  * FDA Compliance Documentation Component
  * 
- * Provides access to critical compliance documentation required for FDA audits:
- * - Validation documentation
- * - Standard Operating Procedures (SOPs)
- * - Training records
- * - System specifications
- * - Risk assessments
- * - Compliance certificates
+ * This component provides access to FDA 21 CFR Part 11 compliance documentation,
+ * including policies, SOPs, validation documents, and training records.
+ * 
+ * Features:
+ * - Structured documentation library
+ * - Document search and filtering
+ * - Document preview and download
+ * - Status tracking for reviews and approvals
  */
 export default function FDAComplianceDocumentation() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentCategory, setCurrentCategory] = useState('all');
-  const [expandedDocument, setExpandedDocument] = useState(null);
-  const [selectedFilters, setSelectedFilters] = useState({
-    status: [],
-    type: [],
-    date: 'all'
-  });
-
-  // Document categories
-  const categories = [
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [expandedItem, setExpandedItem] = useState(null);
+  const [expandedFolder, setExpandedFolder] = useState('policies');
+  
+  // Sample document categories
+  const documentCategories = [
     { id: 'all', name: 'All Documents' },
-    { id: 'validation', name: 'Validation Documents' },
-    { id: 'sop', name: 'Standard Operating Procedures' },
-    { id: 'training', name: 'Training Records' },
-    { id: 'specification', name: 'System Specifications' },
-    { id: 'risk', name: 'Risk Assessments' },
-    { id: 'certificate', name: 'Compliance Certificates' }
+    { id: 'policies', name: 'Policies' },
+    { id: 'sops', name: 'SOPs' },
+    { id: 'validation', name: 'Validation' },
+    { id: 'training', name: 'Training' },
+    { id: 'audits', name: 'Audits' }
   ];
-
-  // Filter options
-  const filterOptions = {
-    status: [
-      { id: 'current', name: 'Current' },
-      { id: 'archived', name: 'Archived' },
-      { id: 'draft', name: 'Draft' }
+  
+  // Sample document structure
+  const documentStructure = {
+    policies: [
+      {
+        id: 'POL-001',
+        name: 'Electronic Records and Signatures Policy',
+        version: '2.1',
+        date: '2025-03-15',
+        status: 'APPROVED',
+        owner: 'Jane Smith',
+        description: 'Master policy for electronic records and electronic signatures compliance with 21 CFR Part 11',
+        reviewDue: '2026-03-15'
+      },
+      {
+        id: 'POL-002',
+        name: 'System Security Policy',
+        version: '1.8',
+        date: '2025-02-10',
+        status: 'APPROVED',
+        owner: 'Michael Chen',
+        description: 'Policy for system security controls and access management',
+        reviewDue: '2026-02-10'
+      },
+      {
+        id: 'POL-003',
+        name: 'Audit Trail Policy',
+        version: '2.0',
+        date: '2025-01-20',
+        status: 'APPROVED',
+        owner: 'Jane Smith',
+        description: 'Policy for audit trail management and review procedures',
+        reviewDue: '2026-01-20'
+      }
     ],
-    type: [
-      { id: 'pdf', name: 'PDF' },
-      { id: 'docx', name: 'Word' },
-      { id: 'xlsx', name: 'Excel' }
+    sops: [
+      {
+        id: 'SOP-001',
+        name: 'Electronic Signature Procedure',
+        version: '3.2',
+        date: '2025-04-02',
+        status: 'APPROVED',
+        owner: 'Robert Johnson',
+        description: 'Standard operating procedure for creating and managing electronic signatures',
+        reviewDue: '2025-10-02'
+      },
+      {
+        id: 'SOP-002',
+        name: 'System Access Control Procedure',
+        version: '2.4',
+        date: '2025-03-18',
+        status: 'APPROVED',
+        owner: 'Sarah Williams',
+        description: 'Procedure for managing user access and privileges',
+        reviewDue: '2025-09-18'
+      },
+      {
+        id: 'SOP-003',
+        name: 'Audit Trail Review Procedure',
+        version: '2.1',
+        date: '2025-03-05',
+        status: 'APPROVED',
+        owner: 'Michael Chen',
+        description: 'Procedure for regular review of system audit trails',
+        reviewDue: '2025-09-05'
+      },
+      {
+        id: 'SOP-004',
+        name: 'System Backup Procedure',
+        version: '1.9',
+        date: '2025-02-12',
+        status: 'REVIEW_NEEDED',
+        owner: 'David Wilson',
+        description: 'Procedure for system backup and recovery',
+        reviewDue: '2025-08-12'
+      }
     ],
-    date: [
-      { id: 'all', name: 'All Time' },
-      { id: 'month', name: 'Past Month' },
-      { id: 'quarter', name: 'Past Quarter' },
-      { id: 'year', name: 'Past Year' }
+    validation: [
+      {
+        id: 'VAL-001',
+        name: 'System Validation Master Plan',
+        version: '2.0',
+        date: '2025-03-20',
+        status: 'APPROVED',
+        owner: 'Lisa Thompson',
+        description: 'Master validation plan for the TrialSage system',
+        reviewDue: '2026-03-20'
+      },
+      {
+        id: 'VAL-002',
+        name: 'User Requirements Specification',
+        version: '2.3',
+        date: '2025-02-15',
+        status: 'APPROVED',
+        owner: 'Lisa Thompson',
+        description: 'User requirements for the TrialSage system',
+        reviewDue: '2026-02-15'
+      },
+      {
+        id: 'VAL-003',
+        name: 'Functional Specification',
+        version: '2.2',
+        date: '2025-02-10',
+        status: 'APPROVED',
+        owner: 'John Davis',
+        description: 'Functional specification for the TrialSage system',
+        reviewDue: '2026-02-10'
+      },
+      {
+        id: 'VAL-004',
+        name: 'Test Scripts - Electronic Signatures',
+        version: '3.1',
+        date: '2025-01-25',
+        status: 'APPROVED',
+        owner: 'Sarah Williams',
+        description: 'Test scripts for electronic signature functionality',
+        reviewDue: '2026-01-25'
+      },
+      {
+        id: 'VAL-005',
+        name: 'Test Scripts - Audit Trails',
+        version: '3.0',
+        date: '2025-01-20',
+        status: 'APPROVED',
+        owner: 'Michael Chen',
+        description: 'Test scripts for audit trail functionality',
+        reviewDue: '2026-01-20'
+      },
+      {
+        id: 'VAL-006',
+        name: 'System Validation Report',
+        version: '1.0',
+        date: '2025-04-25',
+        status: 'APPROVED',
+        owner: 'Lisa Thompson',
+        description: 'Validation summary report for the TrialSage system',
+        reviewDue: '2026-04-25'
+      }
+    ],
+    training: [
+      {
+        id: 'TRN-001',
+        name: '21 CFR Part 11 Training',
+        version: '2.5',
+        date: '2025-03-15',
+        status: 'APPROVED',
+        owner: 'Sarah Williams',
+        description: 'Training materials for 21 CFR Part 11 requirements',
+        reviewDue: '2026-03-15'
+      },
+      {
+        id: 'TRN-002',
+        name: 'Electronic Signature Training',
+        version: '2.2',
+        date: '2025-02-28',
+        status: 'APPROVED',
+        owner: 'Robert Johnson',
+        description: 'Training materials for electronic signature procedures',
+        reviewDue: '2026-02-28'
+      },
+      {
+        id: 'TRN-003',
+        name: 'System Administration Training',
+        version: '1.8',
+        date: '2025-02-10',
+        status: 'APPROVED',
+        owner: 'David Wilson',
+        description: 'Training materials for system administrators',
+        reviewDue: '2026-02-10'
+      }
+    ],
+    audits: [
+      {
+        id: 'AUD-001',
+        name: 'Internal Audit Report - Q1 2025',
+        version: '1.0',
+        date: '2025-04-15',
+        status: 'APPROVED',
+        owner: 'Jane Smith',
+        description: 'Internal audit of 21 CFR Part 11 compliance',
+        reviewDue: 'N/A'
+      },
+      {
+        id: 'AUD-002',
+        name: 'Security Assessment Report',
+        version: '1.0',
+        date: '2025-04-10',
+        status: 'APPROVED',
+        owner: 'Michael Chen',
+        description: 'Assessment of system security controls',
+        reviewDue: 'N/A'
+      },
+      {
+        id: 'AUD-003',
+        name: 'Penetration Test Report',
+        version: '1.0',
+        date: '2025-03-22',
+        status: 'APPROVED',
+        owner: 'External Vendor',
+        description: 'External penetration testing of system security',
+        reviewDue: 'N/A'
+      }
     ]
   };
 
-  // Sample documents
-  const documents = [
-    {
-      id: 'vmp-v2.3',
-      title: 'Validation Master Plan',
-      category: 'validation',
-      version: '2.3',
-      status: 'current',
-      type: 'pdf',
-      author: 'John Smith',
-      updatedAt: '2025-04-15T10:30:00Z',
-      description: 'Overall validation approach and methodology for TrialSage system validation.',
-      tags: ['FDA', '21 CFR Part 11', 'Validation'],
-      requiredByRegulation: '21 CFR Part 11.10(a)',
-      regulatoryReference: 'Computer systems that create, modify, maintain, or transmit electronic records shall be validated to ensure accuracy, reliability, and consistent intended performance.',
-      sections: [
-        'Validation Policy',
-        'Roles and Responsibilities',
-        'Validation Approach',
-        'Validation Lifecycle',
-        'Risk Management',
-        'Change Control',
-        'Validation Maintenance',
-        'Appendices'
-      ]
-    },
-    {
-      id: 'srs-v3.1',
-      title: 'System Requirements Specification',
-      category: 'specification',
-      version: '3.1',
-      status: 'current',
-      type: 'docx',
-      author: 'Mary Johnson',
-      updatedAt: '2025-03-28T14:25:00Z',
-      description: 'Detailed functional and non-functional requirements for the TrialSage system.',
-      tags: ['Requirements', '21 CFR Part 11', 'System Design'],
-      requiredByRegulation: '21 CFR Part 11.10(a)',
-      regulatoryReference: 'Computer systems that create, modify, maintain, or transmit electronic records shall be validated to ensure accuracy, reliability, and consistent intended performance.',
-      sections: [
-        'Introduction',
-        'System Overview',
-        'Functional Requirements',
-        'Data Requirements',
-        'Security Requirements',
-        'Performance Requirements',
-        'Compliance Requirements',
-        'Traceability Matrix'
-      ]
-    },
-    {
-      id: 'tm-v2.4',
-      title: 'Traceability Matrix',
-      category: 'validation',
-      version: '2.4',
-      status: 'current',
-      type: 'xlsx',
-      author: 'Robert Wilson',
-      updatedAt: '2025-04-20T09:15:00Z',
-      description: 'Mapping of system requirements to test cases and validation evidence.',
-      tags: ['Validation', '21 CFR Part 11', 'Documentation'],
-      requiredByRegulation: '21 CFR Part 11.10(a)',
-      regulatoryReference: 'Computer systems that create, modify, maintain, or transmit electronic records shall be validated to ensure accuracy, reliability, and consistent intended performance.',
-      sections: [
-        'Requirement Traceability',
-        'Test Case Mapping',
-        'Validation Evidence',
-        'Coverage Analysis',
-        'Gap Analysis'
-      ]
-    },
-    {
-      id: 'vsr-v1.2',
-      title: 'Validation Summary Report',
-      category: 'validation',
-      version: '1.2',
-      status: 'current',
-      type: 'pdf',
-      author: 'Sarah Chen',
-      updatedAt: '2025-04-22T16:40:00Z',
-      description: 'Summary of validation activities and results for the TrialSage system.',
-      tags: ['Validation', '21 CFR Part 11', 'Report'],
-      requiredByRegulation: '21 CFR Part 11.10(a)',
-      regulatoryReference: 'Computer systems that create, modify, maintain, or transmit electronic records shall be validated to ensure accuracy, reliability, and consistent intended performance.',
-      sections: [
-        'Executive Summary',
-        'Validation Scope',
-        'Validation Activities',
-        'Test Summary',
-        'Discrepancies and Resolutions',
-        'Conclusion',
-        'Approval'
-      ]
-    },
-    {
-      id: 'sop-001',
-      title: 'Electronic Signature Use',
-      category: 'sop',
-      version: '1.5',
-      status: 'current',
-      type: 'pdf',
-      author: 'Michael Davis',
-      updatedAt: '2025-03-12T11:20:00Z',
-      description: 'Standard operating procedure for the use of electronic signatures in the TrialSage system.',
-      tags: ['SOP', '21 CFR Part 11', 'Electronic Signatures'],
-      requiredByRegulation: '21 CFR Part 11.100',
-      regulatoryReference: 'Electronic signatures shall employ at least two distinct identification components.',
-      sections: [
-        'Purpose',
-        'Scope',
-        'Responsibilities',
-        'Procedure',
-        'Signature Components',
-        'Signature Meaning',
-        'Verification Process',
-        'References'
-      ]
-    },
-    {
-      id: 'sop-002',
-      title: 'System Access Control',
-      category: 'sop',
-      version: '2.1',
-      status: 'current',
-      type: 'pdf',
-      author: 'Jennifer Lee',
-      updatedAt: '2025-04-05T13:45:00Z',
-      description: 'Standard operating procedure for controlling access to the TrialSage system.',
-      tags: ['SOP', '21 CFR Part 11', 'Security'],
-      requiredByRegulation: '21 CFR Part 11.10(d)',
-      regulatoryReference: 'Limiting system access to authorized individuals.',
-      sections: [
-        'Purpose',
-        'Scope',
-        'Responsibilities',
-        'User Management',
-        'Role-Based Access',
-        'Password Management',
-        'Access Review',
-        'References'
-      ]
-    },
-    {
-      id: 'sop-003',
-      title: 'Audit Trail Review',
-      category: 'sop',
-      version: '1.3',
-      status: 'current',
-      type: 'pdf',
-      author: 'David Smith',
-      updatedAt: '2025-03-28T09:30:00Z',
-      description: 'Standard operating procedure for reviewing audit trails in the TrialSage system.',
-      tags: ['SOP', '21 CFR Part 11', 'Audit Trails'],
-      requiredByRegulation: '21 CFR Part 11.10(e)',
-      regulatoryReference: 'Use of secure, computer-generated, time-stamped audit trails to independently record the date and time of operator entries and actions that create, modify, or delete electronic records.',
-      sections: [
-        'Purpose',
-        'Scope',
-        'Responsibilities',
-        'Review Frequency',
-        'Review Process',
-        'Issue Management',
-        'Documentation',
-        'References'
-      ]
-    },
-    {
-      id: 'tr-001',
-      title: '21 CFR Part 11 Training',
-      category: 'training',
-      version: '3.0',
-      status: 'current',
-      type: 'pdf',
-      author: 'Emily Rodriguez',
-      updatedAt: '2025-02-18T14:15:00Z',
-      description: 'Training materials and records for 21 CFR Part 11 compliance.',
-      tags: ['Training', '21 CFR Part 11', 'Compliance'],
-      requiredByRegulation: '21 CFR Part 11.10(i)',
-      regulatoryReference: 'Determination that persons who develop, maintain, or use electronic record/electronic signature systems have the education, training, and experience to perform their assigned tasks.',
-      sections: [
-        'Training Objectives',
-        'Regulatory Overview',
-        'System Controls',
-        'Electronic Signatures',
-        'Documentation',
-        'Responsibilities',
-        'Assessment',
-        'Certification'
-      ]
-    },
-    {
-      id: 'ra-001',
-      title: 'System Risk Assessment',
-      category: 'risk',
-      version: '2.2',
-      status: 'current',
-      type: 'pdf',
-      author: 'Thomas Wilson',
-      updatedAt: '2025-04-10T11:20:00Z',
-      description: 'Risk assessment for the TrialSage system identifying and evaluating potential risks.',
-      tags: ['Risk', 'Assessment', 'Security'],
-      requiredByRegulation: '21 CFR Part 11.10(a)',
-      regulatoryReference: 'Computer systems that create, modify, maintain, or transmit electronic records shall be validated to ensure accuracy, reliability, and consistent intended performance.',
-      sections: [
-        'Risk Assessment Methodology',
-        'System Overview',
-        'Identified Risks',
-        'Risk Analysis',
-        'Risk Mitigation',
-        'Residual Risk',
-        'Conclusions',
-        'Approval'
-      ]
-    },
-    {
-      id: 'cert-001',
-      title: 'SOC 2 Type II Compliance Certificate',
-      category: 'certificate',
-      version: '1.0',
-      status: 'current',
-      type: 'pdf',
-      author: 'External Auditor',
-      updatedAt: '2025-01-15T10:00:00Z',
-      description: 'SOC 2 Type II compliance certificate for the TrialSage system.',
-      tags: ['Compliance', 'Certificate', 'Security'],
-      requiredByRegulation: 'Not directly required by 21 CFR Part 11, but supports compliance',
-      regulatoryReference: 'Supports overall system security and reliability requirements.',
-      sections: [
-        'Certification Scope',
-        'Assessment Criteria',
-        'Assessment Results',
-        'Compliance Statement',
-        'Validity Period',
-        'Auditor Information'
-      ]
-    }
-  ];
-
-  // Filter documents based on search term, category, and filters
-  const filteredDocuments = documents.filter(doc => {
-    // Filter by search term
-    const matchesSearch = searchTerm === '' || 
-      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-    // Filter by category
-    const matchesCategory = currentCategory === 'all' || doc.category === currentCategory;
-    
-    // Filter by status
-    const matchesStatus = selectedFilters.status.length === 0 || 
-      selectedFilters.status.includes(doc.status);
-    
-    // Filter by type
-    const matchesType = selectedFilters.type.length === 0 || 
-      selectedFilters.type.includes(doc.type);
-    
-    // Filter by date
-    let matchesDate = true;
-    const docDate = new Date(doc.updatedAt);
-    const now = new Date();
-    
-    if (selectedFilters.date === 'month') {
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-      matchesDate = docDate >= oneMonthAgo;
-    } else if (selectedFilters.date === 'quarter') {
-      const threeMonthsAgo = new Date();
-      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-      matchesDate = docDate >= threeMonthsAgo;
-    } else if (selectedFilters.date === 'year') {
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-      matchesDate = docDate >= oneYearAgo;
-    }
-    
-    return matchesSearch && matchesCategory && matchesStatus && matchesType && matchesDate;
-  });
-
-  // Toggle filter selection
-  const toggleFilter = (type, value) => {
-    setSelectedFilters(prev => {
-      if (type === 'date') {
-        return { ...prev, date: value };
-      }
-      
-      const newFilters = [...prev[type]];
-      const index = newFilters.indexOf(value);
-      
-      if (index === -1) {
-        newFilters.push(value);
-      } else {
-        newFilters.splice(index, 1);
-      }
-      
-      return { ...prev, [type]: newFilters };
-    });
-  };
-
-  // Toggle document expansion
-  const toggleDocumentExpansion = (docId) => {
-    setExpandedDocument(expandedDocument === docId ? null : docId);
-  };
-
-  // Format date for display
+  // Format date
   const formatDate = (dateString) => {
+    if (dateString === 'N/A') return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  // Toggle expanded item
+  const toggleExpandItem = (itemId) => {
+    if (expandedItem === itemId) {
+      setExpandedItem(null);
+    } else {
+      setExpandedItem(itemId);
+    }
+  };
+
+  // Toggle expanded folder
+  const toggleExpandFolder = (folderId) => {
+    if (expandedFolder === folderId) {
+      setExpandedFolder(null);
+    } else {
+      setExpandedFolder(folderId);
+    }
+  };
+
+  // Get all documents or filtered by category
+  const getFilteredDocuments = () => {
+    if (activeCategory === 'all') {
+      // Flatten all document categories into a single array
+      return Object.values(documentStructure).flat();
+    } else {
+      return documentStructure[activeCategory] || [];
+    }
+  };
+
+  // Filter documents by search term
+  const getSearchFilteredDocuments = () => {
+    const documents = getFilteredDocuments();
+    
+    if (!searchTerm) {
+      return documents;
+    }
+    
+    const searchLower = searchTerm.toLowerCase();
+    return documents.filter(doc => 
+      doc.id.toLowerCase().includes(searchLower) ||
+      doc.name.toLowerCase().includes(searchLower) ||
+      doc.description.toLowerCase().includes(searchLower) ||
+      doc.owner.toLowerCase().includes(searchLower)
+    );
+  };
+
+  // Get status badge styling
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'APPROVED':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Approved
+          </span>
+        );
+      case 'REVIEW_NEEDED':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Review Needed
+          </span>
+        );
+      case 'DRAFT':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            <FileText className="h-3 w-3 mr-1" />
+            Draft
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            {status}
+          </span>
+        );
+    }
   };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-hotpink-600 to-hotpink-800 px-6 py-4">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
         <h2 className="text-xl font-bold text-white flex items-center">
           <FileText className="mr-2 h-5 w-5" />
           FDA Compliance Documentation
         </h2>
-        <p className="text-hotpink-100 text-sm mt-1">
-          Complete documentation required for FDA 21 CFR Part 11 compliance
+        <p className="text-blue-100 text-sm mt-1">
+          21 CFR Part 11 Compliance Documentation Library
         </p>
       </div>
-      
-      {/* Search and filters */}
-      <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+
+      <div className="flex flex-col md:flex-row">
+        {/* Sidebar */}
+        <div className="w-full md:w-64 bg-gray-50 border-r border-gray-200">
+          <div className="p-4 border-b border-gray-200">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Search documents..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-hotpink-500 focus:border-hotpink-500 sm:text-sm"
-              placeholder="Search documents..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
           </div>
           
-          <div className="flex space-x-2">
-            <div className="relative inline-block text-left">
-              <div>
+          <div className="p-4">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Document Categories
+            </h3>
+            <div className="mt-2 space-y-1">
+              {documentCategories.map(category => (
                 <button
-                  type="button"
-                  className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hotpink-500"
-                  id="filter-menu"
-                  aria-expanded="true"
-                  aria-haspopup="true"
+                  key={category.id}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md w-full ${
+                    activeCategory === category.id
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setActiveCategory(category.id)}
                 >
-                  <Filter className="mr-2 h-5 w-5 text-gray-400" />
-                  Filters
+                  {category.id === 'all' ? (
+                    <BookOpen className="mr-2 h-4 w-4" />
+                  ) : category.id === 'policies' ? (
+                    <FileText className="mr-2 h-4 w-4" />
+                  ) : category.id === 'sops' ? (
+                    <FileText className="mr-2 h-4 w-4" />
+                  ) : category.id === 'validation' ? (
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                  ) : category.id === 'training' ? (
+                    <UserCheck className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Folder className="mr-2 h-4 w-4" />
+                  )}
+                  {category.name}
                 </button>
-              </div>
+              ))}
             </div>
-            
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-hotpink-600 hover:bg-hotpink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hotpink-500"
-            >
-              <Download className="mr-2 -ml-1 h-5 w-5" />
-              Export
-            </button>
-          </div>
-        </div>
-        
-        {/* Filter selections */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <div className="bg-gray-100 rounded-md px-3 py-1 text-sm font-medium text-gray-800 flex items-center">
-            Status:
-            {selectedFilters.status.length === 0 ? (
-              <span className="ml-2 text-gray-500">Any</span>
-            ) : (
-              <div className="flex gap-1 ml-2">
-                {selectedFilters.status.map(status => (
-                  <span key={status} className="bg-white rounded-full px-2 py-0.5 text-xs flex items-center">
-                    {status}
-                    <button
-                      className="ml-1 text-gray-400 hover:text-gray-600"
-                      onClick={() => toggleFilter('status', status)}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
           
-          <div className="bg-gray-100 rounded-md px-3 py-1 text-sm font-medium text-gray-800 flex items-center">
-            Type:
-            {selectedFilters.type.length === 0 ? (
-              <span className="ml-2 text-gray-500">Any</span>
-            ) : (
-              <div className="flex gap-1 ml-2">
-                {selectedFilters.type.map(type => (
-                  <span key={type} className="bg-white rounded-full px-2 py-0.5 text-xs flex items-center">
-                    {type}
-                    <button
-                      className="ml-1 text-gray-400 hover:text-gray-600"
-                      onClick={() => toggleFilter('type', type)}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-          
-          <div className="bg-gray-100 rounded-md px-3 py-1 text-sm font-medium text-gray-800 flex items-center">
-            Date:
-            <span className="ml-2 text-gray-500">
-              {filterOptions.date.find(d => d.id === selectedFilters.date)?.name}
-            </span>
-          </div>
-          
-          {(selectedFilters.status.length > 0 || selectedFilters.type.length > 0 || selectedFilters.date !== 'all') && (
-            <button
-              className="text-hotpink-600 hover:text-hotpink-800 text-sm font-medium"
-              onClick={() => setSelectedFilters({ status: [], type: [], date: 'all' })}
-            >
-              Clear filters
-            </button>
-          )}
-        </div>
-      </div>
-      
-      {/* Categories */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-6 py-3 overflow-x-auto">
-          <nav className="-mb-px flex space-x-8">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setCurrentCategory(category.id)}
-                className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
-                  currentCategory === category.id
-                    ? 'border-hotpink-500 text-hotpink-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </div>
-      
-      {/* Document list */}
-      <div className="overflow-hidden">
-        {filteredDocuments.length > 0 ? (
-          <ul className="divide-y divide-gray-200">
-            {filteredDocuments.map((document) => (
-              <li key={document.id}>
-                <div 
-                  className={`px-6 py-4 ${expandedDocument === document.id ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
-                >
-                  <div 
-                    className="flex items-center justify-between cursor-pointer"
-                    onClick={() => toggleDocumentExpansion(document.id)}
+          <div className="p-4 border-t border-gray-200">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Document Structure
+            </h3>
+            <div className="mt-2 space-y-1">
+              {Object.entries(documentStructure).map(([key, documents]) => (
+                <div key={key}>
+                  <button
+                    className="flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md w-full"
+                    onClick={() => toggleExpandFolder(key)}
                   >
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                        <FileText className={`h-5 w-5 ${
-                          document.type === 'pdf' ? 'text-red-600' :
-                          document.type === 'docx' ? 'text-blue-600' :
-                          document.type === 'xlsx' ? 'text-green-600' : 'text-gray-600'
-                        }`} />
-                      </div>
-                      <div className="ml-4 flex-1">
-                        <div className="flex items-center">
-                          <h3 className="text-sm font-medium text-gray-900">{document.title}</h3>
-                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            v{document.version}
-                          </span>
-                          {document.status === 'current' && (
-                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Current
-                            </span>
-                          )}
-                          {document.status === 'draft' && (
-                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                              Draft
-                            </span>
-                          )}
-                          {document.status === 'archived' && (
-                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                              Archived
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-1 flex text-xs text-gray-500">
-                          <div className="flex items-center">
-                            <User className="h-3 w-3 mr-1" />
-                            {document.author}
-                          </div>
-                          <span className="mx-2">•</span>
-                          <div className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {formatDate(document.updatedAt)}
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex items-center">
+                      {expandedFolder === key ? (
+                        <FolderOpen className="mr-2 h-4 w-4 text-blue-500" />
+                      ) : (
+                        <Folder className="mr-2 h-4 w-4 text-gray-500" />
+                      )}
+                      <span className="capitalize">{key}</span>
                     </div>
-                    <div className="ml-4 flex-shrink-0 flex items-center">
-                      <span className="text-gray-500">
-                        {expandedDocument === document.id ? (
-                          <ChevronDown className="h-5 w-5" />
-                        ) : (
-                          <ChevronRight className="h-5 w-5" />
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {expandedDocument === document.id && (
-                    <div className="mt-4 pl-14">
-                      <div className="text-sm text-gray-500 mb-4">
-                        <p>{document.description}</p>
-                      </div>
-                      
-                      <div className="mb-4">
-                        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                          Tags
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {document.tags.map((tag) => (
-                            <span 
-                              key={tag} 
-                              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-hotpink-100 text-hotpink-800"
-                            >
-                              <Tag className="h-3 w-3 mr-1" />
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="mb-4">
-                        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                          Regulatory Reference
-                        </h4>
-                        <div className="bg-blue-50 rounded-md p-3 flex">
-                          <Info className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                          <div className="ml-3">
-                            <p className="text-xs font-medium text-blue-800 mb-1">
-                              {document.requiredByRegulation}
-                            </p>
-                            <p className="text-xs text-blue-700">
-                              {document.regulatoryReference}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mb-4">
-                        <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                          Document Sections
-                        </h4>
-                        <ul className="space-y-2">
-                          {document.sections.map((section) => (
-                            <li key={section} className="flex items-center text-sm text-gray-700">
-                              <Check className="h-4 w-4 text-green-500 mr-2" />
-                              {section}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      <div className="mt-4 flex justify-end">
+                    <span>
+                      {expandedFolder === key ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </span>
+                  </button>
+                  {expandedFolder === key && (
+                    <div className="pl-10 space-y-1 mt-1">
+                      {documents.map(doc => (
                         <button
-                          type="button"
-                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-hotpink-600 hover:bg-hotpink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hotpink-500"
+                          key={doc.id}
+                          className="flex items-center px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md w-full"
+                          onClick={() => toggleExpandItem(doc.id)}
                         >
-                          <Download className="mr-2 h-4 w-4" />
-                          Download Document
+                          <FileText className="mr-2 h-4 w-4 text-gray-400" />
+                          {doc.id}
                         </button>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="text-center py-12">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No documents found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Try adjusting your search or filter criteria to find what you're looking for.
-            </p>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
-      
-      {/* Footer */}
-      <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
-        <div className="text-sm text-gray-500">
-          Showing {filteredDocuments.length} of {documents.length} documents
         </div>
-        <div className="flex items-center text-sm text-gray-700">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            <Check className="mr-1 h-3 w-3" />
-            FDA 21 CFR Part 11 Compliant
-          </span>
+
+        {/* Main Content */}
+        <div className="flex-1 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">
+                {activeCategory === 'all' ? 'All Documents' : 
+                  documentCategories.find(c => c.id === activeCategory)?.name || 'Documents'}
+              </h3>
+              <p className="text-sm text-gray-500">
+                {getSearchFilteredDocuments().length} documents available
+              </p>
+            </div>
+            <div className="flex space-x-3">
+              <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
+              </button>
+              <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <Download className="mr-2 h-4 w-4" />
+                Export List
+              </button>
+            </div>
+          </div>
+
+          {/* Document List */}
+          <div className="bg-white shadow overflow-hidden sm:rounded-md">
+            <ul className="divide-y divide-gray-200">
+              {getSearchFilteredDocuments().map(document => (
+                <li key={document.id}>
+                  <div
+                    className={`px-4 py-4 sm:px-6 hover:bg-gray-50 cursor-pointer ${
+                      expandedItem === document.id ? 'bg-blue-50' : ''
+                    }`}
+                    onClick={() => toggleExpandItem(document.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <FileText className={`h-5 w-5 ${
+                          document.id.startsWith('POL') ? 'text-blue-500' :
+                          document.id.startsWith('SOP') ? 'text-green-500' :
+                          document.id.startsWith('VAL') ? 'text-purple-500' :
+                          document.id.startsWith('TRN') ? 'text-orange-500' :
+                          document.id.startsWith('AUD') ? 'text-red-500' :
+                          'text-gray-500'
+                        }`} />
+                        <p className="ml-3 text-sm font-medium text-gray-900">{document.name}</p>
+                      </div>
+                      <div className="ml-2 flex-shrink-0 flex">
+                        {getStatusBadge(document.status)}
+                      </div>
+                    </div>
+                    <div className="mt-2 sm:flex sm:justify-between">
+                      <div className="sm:flex">
+                        <p className="flex items-center text-sm text-gray-500">
+                          <span className="font-medium text-gray-700 mr-1">ID:</span> {document.id}
+                        </p>
+                        <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                          <span className="font-medium text-gray-700 mr-1">Version:</span> {document.version}
+                        </p>
+                      </div>
+                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                        <Clock className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                        <p>
+                          Last updated on <time dateTime={document.date}>{formatDate(document.date)}</time>
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {expandedItem === document.id && (
+                      <div className="mt-4 border-t border-gray-200 pt-4">
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-900">Document Details</h4>
+                          <p className="mt-1 text-sm text-gray-600">{document.description}</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                          <div>
+                            <div className="text-sm font-medium text-gray-500">Document Owner</div>
+                            <div className="mt-1 text-sm text-gray-900">{document.owner}</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-500">Review Due</div>
+                            <div className="mt-1 text-sm text-gray-900">{formatDate(document.reviewDue)}</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-500">Category</div>
+                            <div className="mt-1 text-sm text-gray-900 capitalize">
+                              {Object.entries(documentStructure).find(([_, docs]) => 
+                                docs.some(d => d.id === document.id)
+                              )?.[0] || 'Unknown'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-4 flex space-x-3">
+                          <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            View Document
+                          </button>
+                          <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* FDA Compliance Note */}
+          <div className="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-5 w-5 text-blue-400" aria-hidden="true" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">FDA 21 CFR Part 11 Compliance</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p>
+                    All documentation in this library is maintained in compliance with FDA 21 CFR Part 11 requirements.
+                    This includes controlled document management, electronic signatures for approvals, version control,
+                    and complete audit trails of all document activities.
+                  </p>
+                  <p className="mt-2">
+                    <a href="#" className="font-medium text-blue-600 hover:text-blue-500 flex items-center">
+                      <span>Learn more about our documentation controls</span>
+                      <ExternalLink className="ml-1 h-4 w-4" />
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
