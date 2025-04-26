@@ -1,10 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 import 'dotenv/config';
 
+// Check environment variables
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
+console.log('SUPABASE_SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+
 // Initialize Supabase client
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
 
 async function setupSupabase() {
@@ -15,15 +25,15 @@ async function setupSupabase() {
     console.log('Setting up storage bucket...');
     const { data: bucketData, error: bucketError } = await supabase.storage.createBucket('vault-files', {
       public: false,
-      allowedMimeTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
       fileSizeLimit: 50000000 // 50MB
     });
 
     if (bucketError) {
-      if (bucketError.message.includes('already exists')) {
+      if (bucketError.message && bucketError.message.includes('already exists')) {
         console.log('Storage bucket "vault-files" already exists, skipping creation');
       } else {
-        throw bucketError;
+        console.error('Bucket creation error:', bucketError);
+        // Continue with the rest of the setup despite bucket error
       }
     } else {
       console.log('Storage bucket "vault-files" created successfully');
