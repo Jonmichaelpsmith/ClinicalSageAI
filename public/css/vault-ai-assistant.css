@@ -1,0 +1,283 @@
+/**
+ * Vault™ AI Assistant Styles
+ */
+
+/* Container for the assistant */
+#ai-assistant-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    width: 350px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    transition: all 0.3s ease;
+}
+
+/* Main assistant component */
+.vault-assistant {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    height: 500px;
+    transition: height 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Minimized state */
+.vault-assistant.minimized {
+    height: 60px;
+}
+
+.vault-assistant.minimized .vault-assistant-chat,
+.vault-assistant.minimized .vault-assistant-input {
+    display: none;
+}
+
+/* Assistant header */
+.vault-assistant-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #ff1493; /* Hot pink */
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.assistant-avatar {
+    margin-right: 10px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+}
+
+.assistant-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.assistant-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.assistant-minimize,
+.assistant-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.assistant-minimize:hover,
+.assistant-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Chat area */
+.vault-assistant-chat {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Assistant and user messages */
+.assistant-message,
+.user-message {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.assistant-message {
+    align-self: flex-start;
+    background-color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    border-bottom-left-radius: 4px;
+    color: #333;
+}
+
+.user-message {
+    align-self: flex-end;
+    background-color: #ff1493; /* Hot pink */
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+/* Options and module selections */
+.assistant-options,
+.assistant-modules {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+    align-self: flex-start;
+}
+
+.assistant-option,
+.assistant-module-option {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 18px;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #333;
+    font-weight: 500;
+}
+
+.assistant-option:hover,
+.assistant-module-option:hover {
+    background-color: #f0f0f0;
+    border-color: #d0d0d0;
+}
+
+.assistant-module-option {
+    background-color: #fff0f8; /* Very light pink */
+    border-color: #ffcce6; /* Light pink */
+    color: #ff1493; /* Hot pink */
+}
+
+.assistant-module-option:hover {
+    background-color: #ffe0f0; /* Light pink */
+}
+
+/* Input area */
+.vault-assistant-input {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #eaeaea;
+    background-color: white;
+}
+
+.vault-assistant-input input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 18px;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.vault-assistant-input input:focus {
+    border-color: #ff1493; /* Hot pink */
+}
+
+.assistant-send {
+    background: none;
+    border: none;
+    margin-left: 8px;
+    color: #ff1493; /* Hot pink */
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.assistant-send:hover {
+    background-color: #fff0f8; /* Very light pink */
+}
+
+/* For animation of minimized to expanded */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); }
+    to { transform: translateY(0); }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+    #ai-assistant-container {
+        width: calc(100% - 40px);
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .vault-assistant {
+        background-color: #222;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .vault-assistant-chat {
+        background-color: #2a2a2a;
+    }
+    
+    .assistant-message {
+        background-color: #333;
+        color: #f0f0f0;
+    }
+    
+    .assistant-option,
+    .assistant-module-option {
+        background-color: #333;
+        border-color: #444;
+        color: #f0f0f0;
+    }
+    
+    .assistant-option:hover,
+    .assistant-module-option:hover {
+        background-color: #444;
+        border-color: #555;
+    }
+    
+    .assistant-module-option {
+        background-color: rgba(255, 20, 147, 0.2);
+        border-color: rgba(255, 20, 147, 0.3);
+        color: #ff4da6;
+    }
+    
+    .assistant-module-option:hover {
+        background-color: rgba(255, 20, 147, 0.3);
+    }
+    
+    .vault-assistant-input {
+        border-top-color: #444;
+        background-color: #222;
+    }
+    
+    .vault-assistant-input input {
+        background-color: #333;
+        border-color: #444;
+        color: #f0f0f0;
+    }
+    
+    .vault-assistant-input input:focus {
+        border-color: #ff4da6;
+    }
+}
