@@ -1,0 +1,56 @@
+// ===============================================
+// TrialSage Vault™ – Sprint‑2  ✦  Preview + Secure Download
+//  • Signed‑URL download endpoint
+//  • Inline PDF/DOCX viewer in frontend
+// ===============================================
+
+/* ---------- src/routes/documents.js  (append) ---------- */
+// GET /api/documents/:docId/url  → return signed URL (5‑min expiry)
+r.get('/documents/:docId/url', requireAuth, async (req,res)=>{
+  const { docId } = req.params;
+  const doc = await db('documents').where({ id: docId, organization_id: req.user.orgId }).first();
+  if(!doc) return res.sendStatus(404);
+  // create signed URL from Supabase Storage (expires in 300s)
+  const { data, error } = await supabaseSrv.storage.from('vault-files').createSignedUrl(doc.storage_path, 300);
+  if(error) return res.status(500).json({ message: 'Failed to sign URL', error: error.message });
+  res.json({ url: data.signedUrl, mime: doc.mime_type, filename: doc.filename });
+});
+
+/* ---------- FRONTEND – extend VaultView.tsx ---------- */
+import { Dialog, DialogTitle, DialogBody } from '@fluentui/react-components';
+import { Link } from '@fluentui/react';
+...
+const [previewUrl,setPreviewUrl] = useState<string|null>(null);
+const [previewMime,setPreviewMime]= useState<string>('');
+...
+const getSigned = async (id:string)=>{
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/documents/${id}/url`,{
+    headers:{ Authorization:`Bearer ${token}` }
+  });
+  if(res.ok){ const d=await res.json(); setPreviewUrl(d.url); setPreviewMime(d.mime); }
+};
+...
+const cols: IColumn[] = [
+  { key:'name', name:'Name', fieldName:'filename', minWidth:200, onRender:(i)=> <Link onClick={()=>getSigned(i.id)}>{i.filename}</Link> },
+  { key:'type', name:'Type', fieldName:'mime_type', minWidth:100 },
+  { key:'size', name:'Size (KB)', onRender:(i)=>(i.file_size/1024).toFixed(1) },
+  { key:'dl', name:'Download', onRender:(i)=><Button size="small" onClick={async()=>{
+        const r=await fetch(`${import.meta.env.VITE_API_URL}/api/documents/${i.id}/url`,{ headers:{ Authorization:`Bearer ${token}` }});
+        if(r.ok){ const d=await r.json(); window.open(d.url, '_blank'); }
+    }}>⬇️</Button>, minWidth:80 }
+];
+...
+{/* Preview dialog */}
+<Dialog open={!!previewUrl} onOpenChange={(_,v)=>{if(!v.open) setPreviewUrl(null);}}>
+  <DialogTitle>{previewMime.includes('pdf')?'PDF Preview':'Document Preview'}</DialogTitle>
+  <DialogBody>
+    {previewUrl && previewMime.includes('pdf') && (<iframe src={previewUrl} style={{width:'100%',height:'80vh'}} />)}
+    {previewUrl && previewMime.includes('word') && (
+      <iframe src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl)}`} style={{width:'100%',height:'80vh'}} />)}
+    {/* fallback link */}
+    {previewUrl && !previewMime.match(/pdf|word/) && <a href={previewUrl} target="_blank">Open File</a>}
+  </DialogBody>
+</Dialog>
+
+// ===============================================
+// END Sprint‑2

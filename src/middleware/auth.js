@@ -1,27 +1,50 @@
-import { createClient } from '@supabase/supabase-js';
-import 'dotenv/config';
+import { supabaseSrv } from '../utils/supabaseSrv.js';
+import db from '../db.js';
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-
-export async function requireAuth(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.sendStatus(401);
+/**
+ * JWT authentication middleware for TrialSage Vault
+ * - Verifies JWT token
+ * - Loads user info & organization context
+ */
+export const requireAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  
+  // No auth header
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+  
+  const token = authHeader.split(' ')[1];
   
   try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) throw error;
+    // Verify token with Supabase
+    const { data: { user }, error } = await supabaseSrv.auth.getUser(token);
     
-    // TODO: fetch org & role mapping from DB (UserOrganization)
-    req.user = { 
-      id: user.id, 
-      email: user.email, 
-      orgId: user.user_metadata?.org_id, 
-      role: user.user_metadata?.role 
+    if (error || !user) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    
+    // Get user's organization context
+    const userOrg = await db('user_organizations')
+      .where({ user_id: user.id })
+      .join('organizations', 'user_organizations.org_id', 'organizations.id')
+      .select('organizations.id as orgId', 'organizations.name as orgName', 'user_organizations.role')
+      .first();
+    
+    if (!userOrg) {
+      return res.status(403).json({ message: 'User not assigned to any organization' });
+    }
+    
+    // Attach user and org context to request
+    req.user = {
+      id: user.id,
+      email: user.email,
+      ...userOrg
     };
     
-    return next();
-  } catch (err) {
-    console.error('Auth error:', err.message);
-    return res.sendStatus(401);
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(500).json({ message: 'Authentication error' });
   }
-}
+};
