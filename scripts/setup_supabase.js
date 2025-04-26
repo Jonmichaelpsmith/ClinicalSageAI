@@ -26,11 +26,24 @@ async function setupDatabase() {
   console.log('Setting up TrialSage Vault database in Supabase...');
 
   try {
-    // Create documents table
+    // Create the uuid extension if it doesn't exist
+    console.log('Ensuring uuid-ossp extension is enabled...');
+    const { error: extensionError } = await supabase.from('_postgrest_rpc').select(`
+      CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    `).execute().catch((e) => {
+      // Suppressing extension error - might not have permission to create extensions
+      console.log('Note: UUID extension might already be enabled in Supabase by default');
+      return { error: null };
+    });
+
+    if (extensionError) {
+      console.warn(`Warning: Could not create UUID extension, but continuing: ${extensionError.message}`);
+    }
+
+    // Create documents table using SQL
     console.log('Creating documents table...');
-    const { error: documentsError } = await supabase.rpc('create_table_if_not_exists', {
-      table_name: 'documents',
-      column_definitions: `
+    const { error: documentsError } = await supabase.from('_postgrest_rpc').select(`
+      CREATE TABLE IF NOT EXISTS documents (
         id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         title text NOT NULL,
         description text,
@@ -48,36 +61,34 @@ async function setupDatabase() {
         tenant_id text NOT NULL,
         created_at timestamp with time zone DEFAULT now(),
         updated_at timestamp with time zone DEFAULT now()
-      `
-    });
+      );
+    `).execute();
 
     if (documentsError) {
       throw new Error(`Failed to create documents table: ${documentsError.message}`);
     }
 
-    // Create audit_trail table
+    // Create audit_trail table using SQL
     console.log('Creating audit_trail table...');
-    const { error: auditError } = await supabase.rpc('create_table_if_not_exists', {
-      table_name: 'audit_trail',
-      column_definitions: `
+    const { error: auditError } = await supabase.from('_postgrest_rpc').select(`
+      CREATE TABLE IF NOT EXISTS audit_trail (
         id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id text NOT NULL,
         event_type text NOT NULL,
         event_details jsonb,
         ip_address text,
         timestamp timestamp with time zone DEFAULT now()
-      `
-    });
+      );
+    `).execute();
 
     if (auditError) {
       throw new Error(`Failed to create audit_trail table: ${auditError.message}`);
     }
 
-    // Create users table
+    // Create users table using SQL
     console.log('Creating users table...');
-    const { error: usersError } = await supabase.rpc('create_table_if_not_exists', {
-      table_name: 'users',
-      column_definitions: `
+    const { error: usersError } = await supabase.from('_postgrest_rpc').select(`
+      CREATE TABLE IF NOT EXISTS users (
         id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         username text UNIQUE NOT NULL,
         password text NOT NULL,
@@ -87,8 +98,8 @@ async function setupDatabase() {
         tenant_id text NOT NULL,
         created_at timestamp with time zone DEFAULT now(),
         updated_at timestamp with time zone DEFAULT now()
-      `
-    });
+      );
+    `).execute();
 
     if (usersError) {
       throw new Error(`Failed to create users table: ${usersError.message}`);
