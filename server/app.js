@@ -27,11 +27,7 @@ app.use('/api/vault-assistant', vaultAssistantRoutes);
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Route for solution pages
-app.get('/solutions/vault-workspace', (req, res) => {
-  console.log("[App] Serving React vault-workspace.html");
-  res.sendFile(path.join(process.cwd(), 'vault-workspace.html'));
-});
+// Route for solution pages has been moved to static-routes.js for consistency
 
 // Redirect any docushare-sync requests to vault-workspace
 app.get('/solutions/docushare-sync', (req, res) => {
