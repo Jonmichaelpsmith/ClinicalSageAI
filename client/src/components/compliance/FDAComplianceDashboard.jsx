@@ -189,7 +189,7 @@ const FDAComplianceDashboard = () => {
           
           <div className="flex items-center p-3 bg-gray-50 rounded-md">
             <div className="mr-3 bg-green-100 p-2 rounded-full">
-              <Check className="h-5 w-5 text-green-600" />
+              <span className="h-5 w-5 text-green-600"><CheckIcon /></span>
             </div>
             <div>
               <p className="font-medium">Audit Trail</p>
@@ -199,7 +199,7 @@ const FDAComplianceDashboard = () => {
           
           <div className="flex items-center p-3 bg-gray-50 rounded-md">
             <div className="mr-3 bg-green-100 p-2 rounded-full">
-              <Check className="h-5 w-5 text-green-600" />
+              <span className="h-5 w-5 text-green-600"><CheckIcon /></span>
             </div>
             <div>
               <p className="font-medium">Data Integrity</p>
@@ -209,7 +209,7 @@ const FDAComplianceDashboard = () => {
           
           <div className="flex items-center p-3 bg-gray-50 rounded-md">
             <div className="mr-3 bg-green-100 p-2 rounded-full">
-              <Check className="h-5 w-5 text-green-600" />
+              <span className="h-5 w-5 text-green-600"><CheckIcon /></span>
             </div>
             <div>
               <p className="font-medium">System Validation</p>
@@ -219,7 +219,7 @@ const FDAComplianceDashboard = () => {
           
           <div className="flex items-center p-3 bg-gray-50 rounded-md">
             <div className="mr-3 bg-green-100 p-2 rounded-full">
-              <Check className="h-5 w-5 text-green-600" />
+              <span className="h-5 w-5 text-green-600"><CheckIcon /></span>
             </div>
             <div>
               <p className="font-medium">Access Controls</p>
@@ -229,7 +229,7 @@ const FDAComplianceDashboard = () => {
           
           <div className="flex items-center p-3 bg-gray-50 rounded-md">
             <div className="mr-3 bg-pink-100 p-2 rounded-full">
-              <Shield className="h-5 w-5 text-pink-600" />
+              <span className="h-5 w-5 text-pink-600"><ShieldIcon /></span>
             </div>
             <div>
               <p className="font-medium">Blockchain Security</p>
