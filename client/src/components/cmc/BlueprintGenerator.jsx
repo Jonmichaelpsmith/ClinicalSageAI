@@ -30,7 +30,6 @@ import {
   AlertDescription
 } from '@/components/ui';
 import { 
-  Flask, 
   FileText, 
   Plus, 
   Copy, 
@@ -43,7 +42,8 @@ import {
   X, 
   HelpCircle, 
   ChevronDown,
-  Loader2
+  Loader2,
+  Beaker
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -287,7 +287,7 @@ export function BlueprintGenerator() {
                 <div className="flex justify-between">
                   <div className={`w-8 h-8 rounded-full bg-${template.icon === 'flask' ? 'blue' : template.icon === 'pill' ? 'green' : 'purple'}-100 flex items-center justify-center`}>
                     {template.icon === 'flask' ? (
-                      <Flask className="w-4 h-4 text-blue-500" />
+                      <Beaker className="w-4 h-4 text-blue-500" />
                     ) : template.icon === 'pill' ? (
                       <FileText className="w-4 h-4 text-green-500" />
                     ) : (
@@ -434,7 +434,7 @@ export function BlueprintGenerator() {
                     blueprint.template?.category === 'Drug Product' ? 'green' : 'purple'
                   }-100 flex items-center justify-center`}>
                     {blueprint.template?.category === 'Drug Substance' ? (
-                      <Flask className="w-4 h-4 text-blue-500" />
+                      <Beaker className="w-4 h-4 text-blue-500" />
                     ) : blueprint.template?.category === 'Drug Product' ? (
                       <FileText className="w-4 h-4 text-green-500" />
                     ) : (

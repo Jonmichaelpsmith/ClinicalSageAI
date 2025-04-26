@@ -3,7 +3,6 @@ import { Link } from 'wouter';
 import { 
   Beaker, 
   FileText, 
-  Flask, 
   Microscope, 
   BookOpen, 
   Shield, 
@@ -13,7 +12,8 @@ import {
   Award, 
   Line, 
   Lightbulb,
-  ClipboardCheck
+  ClipboardCheck,
+  FlaskConical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -285,7 +285,7 @@ export default function PremiumLanding() {
             <SolutionCard
               title="Protocol Design™"
               description="AI-powered protocol optimization using precedent analysis and statistical simulation for better outcomes."
-              icon={Flask}
+              icon={FlaskConical}
               path="/protocol-optimization"
             />
             <SolutionCard
