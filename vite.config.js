@@ -10,10 +10,18 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, './shared'),
       '@assets': path.resolve(__dirname, './attached_assets'),
     },
+    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.json']
   },
   esbuild: {
     loader: {
       '.js': 'jsx', // Treat .js files as JSX files
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.js': 'jsx',
+      },
     },
   },
 });
