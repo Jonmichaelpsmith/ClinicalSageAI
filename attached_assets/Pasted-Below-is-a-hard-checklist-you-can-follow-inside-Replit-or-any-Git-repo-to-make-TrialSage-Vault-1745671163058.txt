@@ -1,0 +1,173 @@
+Below is a **hard-checklist** you can follow inside Replit (or any Git repo) to make TrialSage Vault production-grade: secure, stable, clean, and fully wired.
+
+---
+
+## 1 · Lock-down security layers
+
+| Area | Action |
+|------|--------|
+| **HTTP security headers** | `npm i helmet@7` → in `server/index.js`:<br>`import helmet from 'helmet';`<br>`app.use(helmet({ crossOriginResourcePolicy: false }));` |
+| **CORS** | Restrict origins: `app.use(cors({ origin: ['https://your-vault.app'], credentials:true }));` |
+| **Rate-limiting** | `npm i express-rate-limit@7` →<br>`import rateLimit from 'express-rate-limit';`<br>`app.use(rateLimit({ windowMs: 15*60*1000, max: 200 }));` |
+| **Input validation** | `npm i zod@3` → validate every POST body (e.g. `/promo/upload`) with a Zod schema before hitting Supabase |
+| **Row-Level Security** | Supabase → enable **RLS ON** for **all** tables + default policy `tenant_id = auth.jwt()->>'tenantId'` |
+| **Service-Role Key** | Expose it only in server env (`process.env.SUPABASE_SERVICE_ROLE_KEY`) – never ship to client bundle. |
+| **Secret rotation** | Replit → Secrets tab → click “rotate” on `JWT_SECRET`, `OPENAI_API_KEY` every 90 days. |
+| **Cron isolation** | In `retentionCron.js` call `process.exit(0)` on SIGTERM so Replit restarts cleanly after deploys. |
+
+---
+
+## 2 · Dependency hygiene
+
+```bash
+# install static tooling
+npm i -D eslint@8 prettier@3 eslint-plugin-react eslint-plugin-tailwindcss \
+       eslint-plugin-security eslint-config-prettier
+npx eslint --init         # choose React + import + security
+```
+
+*Add scripts to* `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev":    "concurrently \"npm:server\" \"npm:client\"",
+    "server": "nodemon server/index.js",
+    "client": "vite --port 5173",
+    "lint":   "eslint . --ext .js,.jsx --max-warnings=0",
+    "format": "prettier -w .",
+    "test":   "vitest run"
+  }
+}
+```
+
+*Optional*: `npm i -D husky@8 lint-staged` → `npx husky install`  
+Commit hook: `"husky/pre-commit": \"npm run lint && npm run format\"`.
+
+---
+
+## 3 · Automated tests
+
+```bash
+npm i -D vitest supertest
+```
+
+*`tests/api.auth.test.js`* (sample):
+
+```js
+import { describe, it, expect } from 'vitest';
+import supertest from 'supertest';
+import app from '../server/index.js';
+
+describe('Auth', () => {
+  it('rejects bad login', async () => {
+    const res = await supertest(app)
+      .post('/api/auth/login')
+      .send({ email: 'no@user.com', password: 'wrong' });
+    expect(res.status).toBe(401);
+  });
+});
+```
+
+Run: `npm run test` – CI will fail on regressions.
+
+---
+
+## 4 · Supabase migrations
+
+Create a `/migrations` folder. Use **Supabase CLI** in Replit:
+
+```bash
+npm i -D supabase
+npx supabase gen types typescript --schema public > dbTypes.ts
+```
+
+Commit SQL files (`*.sql`).  
+Deploy: `npx supabase db push`.
+
+---
+
+## 5 · Continuous deployment (optional)
+
+If you later mirror to GitHub:
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push]
+jobs:
+  test-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+```
+
+Replit will still run dev; CI guarantees quality before merges.
+
+---
+
+## 6 · Health & monitoring
+
+* **Pino logger** (`npm i pino pino-pretty`) → replace `console.log`.  
+* Add `/health` route (already present) → integrate with UptimeRobot.  
+* Enable **Supabase daily backups** (Project ► Settings ► Backups).
+
+---
+
+## 7 · Replit project-level checklist
+
+1. **Secrets tab** – confirm 4 keys present & **Private**.
+2. **Packages tab** – hit “★ Pin” on every version so Replit’s nix env is deterministic.
+3. **`.replit`** file:
+
+```ini
+run = "npm run dev"
+entrypoint = "server/index.js"
+```
+
+4. In *Shell*:
+
+```bash
+npm run lint
+npm run format
+npm audit fix --production   # patch vulnerabilities
+```
+
+5. Click **“Deploy”** → Replit will build both server & client, run `npm run dev`.
+
+---
+
+## 8 · Feature-parity QA checklist
+
+| Module | Smoke test |
+|--------|------------|
+| Upload & AI tags | Upload → summary & tags visible in `documents` table |
+| Lifecycle | Draft → Review → Approved → Effective triggers SOP training |
+| eCTD Planner | New submission outline populates, AI hint shows |
+| Site Startup | US site shows 4-item checklist → complete 100 % banner |
+| Promo Review | Upload promo → claims list renders → Med/Legal/Reg approve |
+| Quality Events | Log deviation → close & escalate → CAPA actions tracked |
+| Retention Cron | Manually run `node server/jobs/retentionCron.js` once → old test docs archived/deleted |
+
+Run these after every major change.
+
+---
+
+### 📌 Summary for Replit
+
+```bash
+# one-time
+npm install
+npm run lint
+npm run test
+npm run format
+# start dev
+npm run dev
+```
+
+*Follow the checklist* → the project will be **secure**, **stable**, **lint-clean**, all modules wired, and dependencies locked. Replit’s Secrets + pinned packages keep it reproducible; lint/tests keep it healthy; Supabase RLS + Helmet + rate-limit keep it secure.

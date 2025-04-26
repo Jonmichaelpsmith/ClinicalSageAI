@@ -675,6 +675,28 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
       const logger = createContextLogger({ module: 'routes' });
       logger.warn('Site-Startup routes could not be loaded', { error: err });
     }
+    
+    // Load promo routes for promotional materials review workflow
+    try {
+      const promoModule = await import('./routes/promo.js');
+      app.use('/api/promo', authenticate, promoModule.default);
+      const logger = createContextLogger({ module: 'routes' });
+      logger.info('Promotional Review routes loaded successfully');
+    } catch (err) {
+      const logger = createContextLogger({ module: 'routes' });
+      logger.warn('Promotional Review routes could not be loaded', { error: err });
+    }
+    
+    // Load quality routes for deviation & CAPA tracking
+    try {
+      const qualityModule = await import('./routes/quality.js');
+      app.use('/api/quality', authenticate, qualityModule.default);
+      const logger = createContextLogger({ module: 'routes' });
+      logger.info('Quality Events routes loaded successfully');
+    } catch (err) {
+      const logger = createContextLogger({ module: 'routes' });
+      logger.warn('Quality Events routes could not be loaded', { error: err });
+    }
     console.log('TrialSage Vault API routes registered successfully');
   } catch (error) {
     const logger = createContextLogger({ module: 'routes' });

@@ -91,6 +91,8 @@ const LazySiteStartup = React.lazy(() => import('./pages/SiteStartup'));
 const LazyPromoReview = React.lazy(() => import('./pages/PromoReview'));
 // Quality Events dashboard (Deviation & CAPA tracking)
 const LazyQualityDashboard = React.lazy(() => import('./pages/QualityDashboard'));
+// Auto-Retention Scheduler for configuring document archival and deletion rules
+const LazyRetentionSettings = React.lazy(() => import('./pages/RetentionSettings'));
 
 // Simple error boundary component
 class SimpleErrorBoundary extends React.Component<
