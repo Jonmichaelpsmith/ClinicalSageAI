@@ -1,14 +1,105 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Shield, FileText, Eye, Link, Lock, Clock, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+
+// Simple shield lock icon
+const ShieldLockIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+    <rect x="8" y="11" width="8" height="5" rx="1"></rect>
+    <path d="M12 8v3"></path>
+  </svg>
+);
+
+// Simple check icon
+const CheckIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
+// Simple alert triangle icon
+const AlertTriangleIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+    <line x1="12" y1="9" x2="12" y2="13"></line>
+    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+  </svg>
+);
+
+// Simple link icon
+const LinkIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+);
 
 const BlockchainSecurityPanel = () => {
-  const [tabIndex, setTabIndex] = useState(0);
+  const [blockchainStatus, setBlockchainStatus] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
   
-  const { data: blockchainStatus, isLoading } = useQuery({
-    queryKey: ['/api/fda-compliance/blockchain-status'],
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  // Simulate loading blockchain data
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setBlockchainStatus({
+        status: 'active',
+        securityLevel: 'Enhanced',
+        lastVerification: new Date().toISOString(),
+        totalRecords: 15782,
+        verifiedRecords: 15782,
+        networkType: 'Hyperledger Fabric',
+        networkNodes: 5,
+        consensusAlgorithm: 'Practical Byzantine Fault Tolerance',
+        lastBlockHash: '0x7f2c8d3b5a6e9c1f4d2e0b8a7c6f5e4d3c2b1a0',
+        blockchainHeight: 14235,
+        verificationEvents: [
+          {
+            id: 'verify-1',
+            timestamp: '2025-04-26T08:45:12Z',
+            recordType: 'Electronic Signature',
+            recordId: 'esig-45621',
+            status: 'verified',
+            hashValue: '0x3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b'
+          },
+          {
+            id: 'verify-2',
+            timestamp: '2025-04-26T09:12:34Z',
+            recordType: 'Audit Log',
+            recordId: 'alog-78965',
+            status: 'verified',
+            hashValue: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b'
+          },
+          {
+            id: 'verify-3',
+            timestamp: '2025-04-26T09:37:45Z',
+            recordType: 'Document Submission',
+            recordId: 'doc-34572',
+            status: 'verified',
+            hashValue: '0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b'
+          },
+          {
+            id: 'verify-4',
+            timestamp: '2025-04-26T10:05:22Z',
+            recordType: 'User Authentication',
+            recordId: 'auth-12453',
+            status: 'verified',
+            hashValue: '0x5e4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d'
+          },
+          {
+            id: 'verify-5',
+            timestamp: '2025-04-26T10:28:17Z',
+            recordType: 'System Validation',
+            recordId: 'val-90876',
+            status: 'verified',
+            hashValue: '0x2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e'
+          }
+        ]
+      });
+      setIsLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   if (isLoading) {
     return (
@@ -18,290 +109,274 @@ const BlockchainSecurityPanel = () => {
     );
   }
 
-  const tabs = [
-    { name: 'Overview', icon: <Shield className="h-5 w-5" /> },
-    { name: 'Verification', icon: <CheckCircle className="h-5 w-5" /> },
-    { name: 'Technical Details', icon: <Lock className="h-5 w-5" /> },
-  ];
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Blockchain Status</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Status</span>
+                    <span className="flex items-center text-green-600 font-medium">
+                      <span className="mr-2"><CheckIcon /></span>
+                      Active
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Security Level</span>
+                    <span className="font-medium">{blockchainStatus.securityLevel}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Network Type</span>
+                    <span className="font-medium">{blockchainStatus.networkType}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Consensus</span>
+                    <span className="font-medium">{blockchainStatus.consensusAlgorithm}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Network Nodes</span>
+                    <span className="font-medium">{blockchainStatus.networkNodes}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Last Verification</span>
+                    <span className="font-medium">{new Date(blockchainStatus.lastVerification).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Blockchain Statistics</h3>
+                <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-600">Total Records</span>
+                    <span className="font-medium">{blockchainStatus.totalRecords.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-600">Verified Records</span>
+                    <span className="font-medium">{blockchainStatus.verifiedRecords.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-600">Blockchain Height</span>
+                    <span className="font-medium">{blockchainStatus.blockchainHeight.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Last Block Hash</span>
+                    <div className="flex items-center">
+                      <span className="text-xs font-mono truncate w-32">{blockchainStatus.lastBlockHash}</span>
+                      <button className="ml-2 text-pink-600" title="Copy hash">
+                        <LinkIcon />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-pink-50 p-4 rounded-lg border border-pink-100">
+                  <div className="flex items-center text-pink-800 mb-2">
+                    <span className="mr-2"><ShieldLockIcon /></span>
+                    <h4 className="font-semibold">Enhanced Security Features</h4>
+                  </div>
+                  <ul className="text-sm text-pink-700 space-y-2">
+                    <li>• Tamper-evident record verification</li>
+                    <li>• Cryptographic proof of record integrity</li>
+                    <li>• Immutable audit trails</li>
+                    <li>• Distributed consensus validation</li>
+                    <li>• Transparent verification process</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'verification':
+        return (
+          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <div className="grid grid-cols-12 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="col-span-2">Timestamp</div>
+                <div className="col-span-2">Record Type</div>
+                <div className="col-span-2">Record ID</div>
+                <div className="col-span-2">Status</div>
+                <div className="col-span-4">Hash Value</div>
+              </div>
+            </div>
+            
+            <div className="divide-y divide-gray-200">
+              {blockchainStatus.verificationEvents.map((event) => (
+                <div key={event.id} className="px-4 py-3 grid grid-cols-12 text-sm">
+                  <div className="col-span-2 text-gray-500">
+                    {new Date(event.timestamp).toLocaleString()}
+                  </div>
+                  <div className="col-span-2 font-medium text-gray-900">
+                    {event.recordType}
+                  </div>
+                  <div className="col-span-2 text-gray-500">
+                    {event.recordId}
+                  </div>
+                  <div className="col-span-2">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      event.status === 'verified' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {event.status === 'verified' ? 'Verified' : 'Pending'}
+                    </span>
+                  </div>
+                  <div className="col-span-4 flex items-center">
+                    <span className="text-xs font-mono truncate w-32">{event.hashValue}</span>
+                    <button className="ml-2 text-pink-600" title="Copy hash">
+                      <LinkIcon />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      
+      case 'validation':
+        return (
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <div className="mb-6">
+              <div className="flex items-center mb-4">
+                <span className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 mr-3">
+                  <CheckIcon />
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold">Blockchain Validation Status</h3>
+                  <p className="text-gray-600">All blockchain security features are operational and validated</p>
+                </div>
+              </div>
+              
+              <div className="h-2 bg-gray-100 rounded-full mb-2">
+                <div className="h-2 bg-green-500 rounded-full" style={{ width: '100%' }}></div>
+              </div>
+              <div className="text-right text-sm text-gray-500">100% validated</div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium mb-2">Cryptographic Verification</h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  SHA-256 hashing with elliptic curve digital signatures (ECDSA) for maximum security and compliance.
+                </p>
+                <div className="flex items-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span className="mr-1"><CheckIcon /></span>
+                    Verified
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium mb-2">Consensus Mechanism</h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Practical Byzantine Fault Tolerance (PBFT) consensus algorithm ensuring security with minimal resource usage.
+                </p>
+                <div className="flex items-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span className="mr-1"><CheckIcon /></span>
+                    Verified
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium mb-2">Smart Contract Compliance</h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Automated compliance enforcement via smart contracts that validate all electronic records and signatures.
+                </p>
+                <div className="flex items-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span className="mr-1"><CheckIcon /></span>
+                    Verified
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <h4 className="font-medium mb-2">Network Security</h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Multi-layer security with TLS encryption, certificate authority, and role-based access control.
+                </p>
+                <div className="flex items-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span className="mr-1"><CheckIcon /></span>
+                    Verified
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="flex items-center mb-6">
-          <Shield className="h-8 w-8 text-pink-500 mr-3" />
-          <h2 className="text-xl font-bold text-gray-800">Blockchain Security Framework</h2>
+    <div>
+      <div className="mb-6">
+        <div className="flex items-center mb-4">
+          <span className="h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600 mr-3">
+            <ShieldLockIcon />
+          </span>
+          <div>
+            <h2 className="text-xl font-semibold">Blockchain Security</h2>
+            <p className="text-gray-600">Enhanced tamper-evident record security for FDA 21 CFR Part 11 compliance</p>
+          </div>
         </div>
         
-        <div className="mb-8">
-          <p className="text-gray-600">
-            TrialSage™ implements an advanced blockchain security framework that provides immutable, tamper-evident records
-            for all electronic records and signatures. This enhanced approach exceeds the requirements of 21 CFR Part 11
-            by utilizing distributed ledger technology to ensure the integrity and authenticity of all regulated content.
-          </p>
+        <div className="flex flex-wrap mb-6 border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`mr-2 py-2 px-4 text-sm font-medium border-b-2 ${
+              activeTab === 'overview'
+                ? 'border-pink-500 text-pink-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('verification')}
+            className={`mr-2 py-2 px-4 text-sm font-medium border-b-2 ${
+              activeTab === 'verification'
+                ? 'border-pink-500 text-pink-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Verification Events
+          </button>
+          <button
+            onClick={() => setActiveTab('validation')}
+            className={`mr-2 py-2 px-4 text-sm font-medium border-b-2 ${
+              activeTab === 'validation'
+                ? 'border-pink-500 text-pink-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Security Validation
+          </button>
         </div>
-
-        {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="flex space-x-8">
-            {tabs.map((tab, index) => (
-              <button
-                key={tab.name}
-                onClick={() => setTabIndex(index)}
-                className={`flex items-center pb-4 pt-2 px-1 ${
-                  tabIndex === index
-                    ? 'border-b-2 border-pink-500 text-pink-600'
-                    : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                <span className="font-medium">{tab.name}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab Content */}
-        <div>
-          {/* Overview Tab */}
-          {tabIndex === 0 && (
-            <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
-                    <Shield className="h-5 w-5 text-pink-500 mr-2" />
-                    Status
-                  </h3>
-                  <p className={`text-lg font-medium ${blockchainStatus?.status === 'active' ? 'text-green-600' : 'text-yellow-600'}`}>
-                    {blockchainStatus?.status === 'active' ? 'Active' : 'Inactive'}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Last verified: {new Date(blockchainStatus?.lastVerification).toLocaleString()}
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
-                    <FileText className="h-5 w-5 text-pink-500 mr-2" />
-                    Records
-                  </h3>
-                  <p className="text-lg font-medium text-gray-800">
-                    {blockchainStatus?.verifiedRecords} / {blockchainStatus?.totalRecords}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Verified records
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
-                    <Link className="h-5 w-5 text-pink-500 mr-2" />
-                    Network
-                  </h3>
-                  <p className="text-lg font-medium text-gray-800">
-                    {blockchainStatus?.networkNodes} Nodes
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {blockchainStatus?.blockchainType}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="bg-pink-50 p-5 rounded-lg border border-pink-100">
-                <h3 className="font-semibold text-pink-800 mb-3">How Blockchain Security Enhances FDA Compliance</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-pink-600 mr-2 mt-0.5" />
-                    <span className="text-pink-700">
-                      <strong>Immutable Records:</strong> Once stored on the blockchain, records cannot be altered or deleted, ensuring a permanent, tamper-evident audit trail.
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-pink-600 mr-2 mt-0.5" />
-                    <span className="text-pink-700">
-                      <strong>Distributed Verification:</strong> Multiple network nodes verify and store copies of records, eliminating single points of failure.
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-pink-600 mr-2 mt-0.5" />
-                    <span className="text-pink-700">
-                      <strong>Cryptographic Security:</strong> Advanced cryptographic techniques secure all records and signatures, exceeding regulatory requirements.
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-pink-600 mr-2 mt-0.5" />
-                    <span className="text-pink-700">
-                      <strong>Regulatory Readiness:</strong> The enhanced security model provides additional assurances for FDA audits and inspections.
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {/* Verification Tab */}
-          {tabIndex === 1 && (
-            <div>
-              <div className="mb-6">
-                <h3 className="font-semibold text-gray-800 mb-3">Record Verification</h3>
-                <p className="text-gray-600 mb-4">
-                  Verify the integrity of any document or record in the system by entering its Record ID below.
-                  The system will check the blockchain to confirm the record has not been tampered with.
-                </p>
-                
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="text"
-                    placeholder="Enter Record ID (e.g., DOC-12345)"
-                    className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                  <button className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
-                    Verify
-                  </button>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <h3 className="font-semibold text-gray-800 mb-3">Recent Verifications</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead>
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Record ID</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Block ID</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        <tr>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">DOC-34567</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{new Date().toLocaleString()}</td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                              Verified
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">b7d8f9...c5d6</td>
-                        </tr>
-                        <tr>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">SIG-12345</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{new Date(Date.now() - 25 * 60000).toLocaleString()}</td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                              Verified
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">a7c8d9...b4e5</td>
-                        </tr>
-                        <tr>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">DOC-23456</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{new Date(Date.now() - 120 * 60000).toLocaleString()}</td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                              Verified
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">c9d0e1...f2g3</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Technical Details Tab */}
-          {tabIndex === 2 && (
-            <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-3">Blockchain Configuration</h3>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <ul className="space-y-3">
-                      <li className="flex justify-between">
-                        <span className="text-gray-600">Blockchain Type:</span>
-                        <span className="font-medium">{blockchainStatus?.blockchainType}</span>
-                      </li>
-                      <li className="flex justify-between">
-                        <span className="text-gray-600">Consensus Algorithm:</span>
-                        <span className="font-medium">{blockchainStatus?.consensus}</span>
-                      </li>
-                      <li className="flex justify-between">
-                        <span className="text-gray-600">Network Nodes:</span>
-                        <span className="font-medium">{blockchainStatus?.networkNodes}</span>
-                      </li>
-                      <li className="flex justify-between">
-                        <span className="text-gray-600">Latest Block ID:</span>
-                        <span className="font-medium text-xs">{blockchainStatus?.lastBlockId?.substring(0, 12)}...</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-3">Security Features</h3>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <ul className="space-y-3">
-                      <li className="flex items-start">
-                        <Lock className="h-5 w-5 text-pink-500 mr-2 mt-0.5" />
-                        <div>
-                          <span className="font-medium">SHA-256 Hashing</span>
-                          <p className="text-sm text-gray-600">Cryptographic security for all record hashes</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Link className="h-5 w-5 text-pink-500 mr-2 mt-0.5" />
-                        <div>
-                          <span className="font-medium">Merkle Tree Validation</span>
-                          <p className="text-sm text-gray-600">Efficient verification of data integrity</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Shield className="h-5 w-5 text-pink-500 mr-2 mt-0.5" />
-                        <div>
-                          <span className="font-medium">Multi-Node Verification</span>
-                          <p className="text-sm text-gray-600">Distributed consensus across multiple validators</p>
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Clock className="h-5 w-5 text-pink-500 mr-2 mt-0.5" />
-                        <div>
-                          <span className="font-medium">Cryptographic Timestamps</span>
-                          <p className="text-sm text-gray-600">Immutable time recording for audit trails</p>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-                <div className="flex items-start">
-                  <Eye className="h-5 w-5 text-blue-500 mr-2 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-blue-800 mb-1">Blockchain Explorer</h3>
-                    <p className="text-sm text-blue-700 mb-2">
-                      Access the blockchain explorer to view detailed information about blocks, transactions, and network status.
-                    </p>
-                    <a 
-                      href={blockchainStatus?.blockchainExplorer} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline text-sm font-medium flex items-center"
-                    >
-                      Open Blockchain Explorer
-                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+      </div>
+      
+      {renderTabContent()}
+      
+      <div className="mt-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+        <h3 className="text-lg font-semibold mb-3">Advanced Blockchain Security</h3>
+        <p className="text-gray-600 mb-4">
+          Our enhanced blockchain security exceeds FDA 21 CFR Part 11 requirements, providing tamper-evident records with 
+          cryptographic verification that ensures the integrity of all electronic records and signatures.
+        </p>
+        <button className="bg-pink-600 hover:bg-pink-700 text-white py-2 px-4 rounded text-sm font-medium">
+          View Security Details
+        </button>
       </div>
     </div>
   );

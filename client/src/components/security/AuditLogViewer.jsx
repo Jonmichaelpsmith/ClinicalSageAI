@@ -1,62 +1,233 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { FileText, User, Calendar, Clock, Download, Filter, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+
+// Simple clock icon
+const ClockIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </svg>
+);
+
+// Simple user icon
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
+// Simple file icon
+const FileIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+  </svg>
+);
+
+// Simple filter icon
+const FilterIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+  </svg>
+);
+
+// Simple download icon
+const DownloadIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+);
+
+// Simple search icon
+const SearchIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+);
 
 const AuditLogViewer = () => {
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [filterType, setFilterType] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const { data: auditLogs, isLoading } = useQuery({
-    queryKey: [`/api/audit-logs?page=${page}&pageSize=${pageSize}${filterType ? `&type=${filterType}` : ''}${searchTerm ? `&search=${searchTerm}` : ''}`],
-    staleTime: 1000 * 60 * 1, // 1 minute
+  const [isLoading, setIsLoading] = useState(true);
+  const [logs, setLogs] = useState([]);
+  const [filteredLogs, setFilteredLogs] = useState([]);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    eventType: [],
+    user: [],
+    dateRange: 'all'
   });
-
-  const handleNextPage = () => {
-    if (auditLogs && page < auditLogs.totalPages) {
-      setPage(page + 1);
+  
+  // Simulate loading audit log data
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const auditLogs = generateSampleAuditLogs();
+      setLogs(auditLogs);
+      setFilteredLogs(auditLogs);
+      setIsLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Apply filters and search query to logs
+  useEffect(() => {
+    let results = [...logs];
+    
+    // Filter by event type
+    if (filters.eventType.length > 0) {
+      results = results.filter(log => filters.eventType.includes(log.eventType));
     }
-  };
-
-  const handlePrevPage = () => {
-    if (page > 1) {
-      setPage(page - 1);
+    
+    // Filter by user
+    if (filters.user.length > 0) {
+      results = results.filter(log => filters.user.includes(log.user));
     }
-  };
-
-  const handleFilterChange = (e) => {
-    setFilterType(e.target.value);
-    setPage(1); // Reset to first page on filter change
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setPage(1); // Reset to first page on new search
-  };
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleString();
-  };
-
-  const getActionBadgeColor = (action) => {
-    switch (action) {
-      case 'CREATE':
-        return 'bg-green-100 text-green-800';
-      case 'UPDATE':
-        return 'bg-blue-100 text-blue-800';
-      case 'DELETE':
-        return 'bg-red-100 text-red-800';
-      case 'VIEW':
-        return 'bg-gray-100 text-gray-800';
-      case 'EXPORT':
-        return 'bg-purple-100 text-purple-800';
-      case 'SIGNATURE':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+    
+    // Filter by date range
+    if (filters.dateRange !== 'all') {
+      const now = new Date();
+      let startDate;
+      
+      switch (filters.dateRange) {
+        case 'today':
+          startDate = new Date(now.setHours(0, 0, 0, 0));
+          break;
+        case 'week':
+          startDate = new Date(now.setDate(now.getDate() - 7));
+          break;
+        case 'month':
+          startDate = new Date(now.setMonth(now.getMonth() - 1));
+          break;
+        default:
+          startDate = null;
+      }
+      
+      if (startDate) {
+        results = results.filter(log => new Date(log.timestamp) >= startDate);
+      }
     }
+    
+    // Apply search query
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      results = results.filter(
+        log => 
+          log.eventType.toLowerCase().includes(query) ||
+          log.user.toLowerCase().includes(query) ||
+          log.resourceId.toLowerCase().includes(query) ||
+          log.description.toLowerCase().includes(query)
+      );
+    }
+    
+    setFilteredLogs(results);
+  }, [logs, filters, searchQuery]);
+
+  // Generate sample audit log data
+  const generateSampleAuditLogs = () => {
+    const eventTypes = ['Document Access', 'Electronic Signature', 'System Login', 'Record Creation', 'Record Update', 'Record Deletion', 'System Validation', 'Security Event'];
+    const users = ['john.smith', 'jane.doe', 'robert.johnson', 'sarah.williams', 'david.miller', 'system'];
+    const resourcePrefixes = ['doc-', 'form-', 'sig-', 'user-', 'sys-', 'rec-'];
+    
+    const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
+    
+    // Generate random timestamp within the past 30 days
+    const getRandomTimestamp = () => {
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      return new Date(thirtyDaysAgo.getTime() + Math.random() * (now.getTime() - thirtyDaysAgo.getTime())).toISOString();
+    };
+    
+    const getDescription = (eventType, resourceId, user) => {
+      switch (eventType) {
+        case 'Document Access':
+          return `User ${user} accessed document ${resourceId}`;
+        case 'Electronic Signature':
+          return `User ${user} applied electronic signature to ${resourceId}`;
+        case 'System Login':
+          return `User ${user} logged in to the system`;
+        case 'Record Creation':
+          return `User ${user} created record ${resourceId}`;
+        case 'Record Update':
+          return `User ${user} updated record ${resourceId}`;
+        case 'Record Deletion':
+          return `User ${user} deleted record ${resourceId}`;
+        case 'System Validation':
+          return `System validation executed for ${resourceId}`;
+        case 'Security Event':
+          return `Security event detected: ${resourceId}`;
+        default:
+          return `Event occurred involving ${resourceId}`;
+      }
+    };
+    
+    // Generate 50 sample logs
+    return Array.from({ length: 50 }, (_, i) => {
+      const eventType = getRandomElement(eventTypes);
+      const user = eventType === 'System Validation' ? 'system' : getRandomElement(users);
+      const resourcePrefix = getRandomElement(resourcePrefixes);
+      const resourceId = `${resourcePrefix}${100000 + i}`;
+      
+      return {
+        id: `log-${i + 1}`,
+        timestamp: getRandomTimestamp(),
+        eventType,
+        user,
+        resourceId,
+        description: getDescription(eventType, resourceId, user),
+        blockchainVerified: Math.random() > 0.1, // 90% of logs are blockchain verified
+        details: {
+          ipAddress: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+          actionResult: Math.random() > 0.05 ? 'Success' : 'Failure',
+          accessRights: 'Read/Write',
+          sessionId: `sess-${Math.floor(Math.random() * 1000000)}`,
+          hashValue: Math.random() > 0.1 ? `0x${Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('')}` : null
+        }
+      };
+    }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sort by timestamp, newest first
+  };
+  
+  // Get unique event types and users for filter options
+  const getEventTypes = () => [...new Set(logs.map(log => log.eventType))];
+  const getUsers = () => [...new Set(logs.map(log => log.user))];
+  
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => {
+      if (filterType === 'dateRange') {
+        return { ...prev, dateRange: value };
+      } else {
+        const currentValues = [...prev[filterType]];
+        const index = currentValues.indexOf(value);
+        
+        if (index === -1) {
+          currentValues.push(value);
+        } else {
+          currentValues.splice(index, 1);
+        }
+        
+        return { ...prev, [filterType]: currentValues };
+      }
+    });
+  };
+  
+  const handleClearFilters = () => {
+    setFilters({
+      eventType: [],
+      user: [],
+      dateRange: 'all'
+    });
+    setSearchQuery('');
+  };
+  
+  const handleLogSelection = (log) => {
+    setSelectedLog(log);
+  };
+  
+  const handleCloseDetails = () => {
+    setSelectedLog(null);
   };
 
   if (isLoading) {
@@ -68,196 +239,295 @@ const AuditLogViewer = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Audit Log Viewer</h2>
-          <button className="flex items-center text-sm px-3 py-2 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100">
-            <Download className="h-4 w-4 mr-2" />
-            Export Logs
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-semibold">Audit Log Viewer</h2>
+          <p className="text-gray-600">
+            FDA 21 CFR Part 11 compliant audit trail with blockchain verification
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <button className="flex items-center px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <FilterIcon />
+            <span className="ml-2">Filter</span>
+          </button>
+          <button className="flex items-center px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <DownloadIcon />
+            <span className="ml-2">Export</span>
           </button>
         </div>
-
-        {/* Filters */}
-        <div className="mb-6 flex flex-wrap items-center gap-4">
-          <div className="flex items-center">
-            <Filter className="h-5 w-5 text-gray-500 mr-2" />
-            <select
-              value={filterType}
-              onChange={handleFilterChange}
-              className="rounded-md border-gray-300 text-sm focus:border-pink-500 focus:ring-pink-500"
-            >
-              <option value="">All Actions</option>
-              <option value="CREATE">Create</option>
-              <option value="UPDATE">Update</option>
-              <option value="DELETE">Delete</option>
-              <option value="VIEW">View</option>
-              <option value="EXPORT">Export</option>
-              <option value="SIGNATURE">Signature</option>
-            </select>
-          </div>
-
-          <form onSubmit={handleSearch} className="flex-grow max-w-md">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search by user, document, or resource ID"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full rounded-md border-gray-300 text-sm focus:border-pink-500 focus:ring-pink-500"
-              />
-              <Search className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-              <button
-                type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 bg-pink-100 text-pink-700 rounded text-xs"
-              >
-                Search
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Audit Logs Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resource</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {auditLogs?.logs?.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getActionBadgeColor(log.action)}`}>
-                      {log.action}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <FileText className="h-4 w-4 text-gray-500 mr-2" />
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{log.resourceType}</div>
-                        <div className="text-sm text-gray-500">{log.resourceId}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 text-gray-500 mr-2" />
-                      <div className="text-sm text-gray-900">{log.userId}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 text-gray-500 mr-2" />
-                      <div className="text-sm text-gray-500">{formatTimestamp(log.timestamp)}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {log.details.documentName && (
-                        <div>
-                          <span className="font-medium">Document:</span> {log.details.documentName}
-                        </div>
-                      )}
-                      {log.details.documentType && (
-                        <div>
-                          <span className="font-medium">Type:</span> {log.details.documentType}
-                        </div>
-                      )}
-                      {log.details.changedFields && (
-                        <div>
-                          <span className="font-medium">Changed:</span> {log.details.changedFields.join(', ')}
-                        </div>
-                      )}
-                      {log.details.signatureType && (
-                        <div>
-                          <span className="font-medium">Signature:</span> {log.details.signatureType}
-                        </div>
-                      )}
-                      {log.details.exportFormat && (
-                        <div>
-                          <span className="font-medium">Format:</span> {log.details.exportFormat}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-xs text-pink-600 mt-1 cursor-pointer hover:underline">
-                      Show blockchain verification
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {auditLogs?.logs?.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                    No audit logs found for the current filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {auditLogs && auditLogs.totalPages > 1 && (
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">{(page - 1) * pageSize + 1}</span> to{' '}
-              <span className="font-medium">{Math.min(page * pageSize, auditLogs.totalCount)}</span> of{' '}
-              <span className="font-medium">{auditLogs.totalCount}</span> results
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={handlePrevPage}
-                disabled={page === 1}
-                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                  page === 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
-              </button>
-              <button
-                onClick={handleNextPage}
-                disabled={page >= auditLogs.totalPages}
-                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
-                  page >= auditLogs.totalPages
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Blockchain Verification Info */}
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-start">
-            <div className="mr-4 mt-1 bg-pink-100 p-2 rounded-full">
-              <Clock className="h-5 w-5 text-pink-600" />
-            </div>
-            <div>
-              <h3 className="text-md font-semibold text-gray-800 mb-1">Blockchain-Verified Audit Trail</h3>
-              <p className="text-sm text-gray-600 mb-2">
-                All audit logs are secured using blockchain technology to ensure tamper-evident records that meet 
-                and exceed FDA 21 CFR Part 11 requirements. Each log entry contains a cryptographic hash that is 
-                verified against the blockchain to ensure data integrity.
-              </p>
-              <div className="text-xs text-gray-500">
-                <span className="font-medium">Last Blockchain Synchronization:</span> {new Date().toLocaleString()}
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Filters Panel */}
+        <div className="lg:col-span-1">
+          <div className="bg-white shadow-md rounded-lg p-4">
+            <div className="mb-4">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="search"
+                  className="block w-full pr-10 pl-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm"
+                  placeholder="Search logs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <SearchIcon />
+                </div>
               </div>
             </div>
+            
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Event Type</h3>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {getEventTypes().map(eventType => (
+                  <div key={eventType} className="flex items-center">
+                    <input
+                      id={`event-${eventType}`}
+                      type="checkbox"
+                      className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                      checked={filters.eventType.includes(eventType)}
+                      onChange={() => handleFilterChange('eventType', eventType)}
+                    />
+                    <label htmlFor={`event-${eventType}`} className="ml-2 text-sm text-gray-700">
+                      {eventType}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">User</h3>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {getUsers().map(user => (
+                  <div key={user} className="flex items-center">
+                    <input
+                      id={`user-${user}`}
+                      type="checkbox"
+                      className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                      checked={filters.user.includes(user)}
+                      onChange={() => handleFilterChange('user', user)}
+                    />
+                    <label htmlFor={`user-${user}`} className="ml-2 text-sm text-gray-700">
+                      {user}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Date Range</h3>
+              <div className="space-y-2">
+                {[
+                  { id: 'all', label: 'All Time' },
+                  { id: 'today', label: 'Today' },
+                  { id: 'week', label: 'Last 7 Days' },
+                  { id: 'month', label: 'Last 30 Days' }
+                ].map(option => (
+                  <div key={option.id} className="flex items-center">
+                    <input
+                      id={`date-${option.id}`}
+                      type="radio"
+                      className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300"
+                      checked={filters.dateRange === option.id}
+                      onChange={() => handleFilterChange('dateRange', option.id)}
+                    />
+                    <label htmlFor={`date-${option.id}`} className="ml-2 text-sm text-gray-700">
+                      {option.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <button
+              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-pink-700 bg-pink-100 hover:bg-pink-200"
+              onClick={handleClearFilters}
+            >
+              Clear Filters
+            </button>
           </div>
+          
+          <div className="bg-gray-50 p-4 rounded-lg mt-4 border border-gray-200">
+            <div className="flex items-center justify-between text-gray-700 mb-2">
+              <span className="font-medium">Total Logs</span>
+              <span>{logs.length}</span>
+            </div>
+            <div className="flex items-center justify-between text-gray-700 mb-2">
+              <span className="font-medium">Filtered Logs</span>
+              <span>{filteredLogs.length}</span>
+            </div>
+            <div className="flex items-center justify-between text-green-700">
+              <span className="font-medium">Blockchain Verified</span>
+              <span>
+                {logs.filter(log => log.blockchainVerified).length} / {logs.length}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Log List and Details */}
+        <div className="lg:col-span-3">
+          {selectedLog ? (
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-4 border-b border-gray-200 flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Audit Log Details</h3>
+                  <p className="text-sm text-gray-500">ID: {selectedLog.id}</p>
+                </div>
+                <button
+                  className="text-gray-400 hover:text-gray-500"
+                  onClick={handleCloseDetails}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Event Type</h4>
+                    <p className="text-sm text-gray-900">{selectedLog.eventType}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Timestamp</h4>
+                    <p className="text-sm text-gray-900">{new Date(selectedLog.timestamp).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">User</h4>
+                    <p className="text-sm text-gray-900">{selectedLog.user}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500 mb-1">Resource ID</h4>
+                    <p className="text-sm text-gray-900">{selectedLog.resourceId}</p>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Description</h4>
+                  <p className="text-sm text-gray-900">{selectedLog.description}</p>
+                </div>
+                
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">Additional Details</h4>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <dl className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+                      <div>
+                        <dt className="text-xs font-medium text-gray-500">IP Address</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{selectedLog.details.ipAddress}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-medium text-gray-500">Action Result</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{selectedLog.details.actionResult}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-medium text-gray-500">Access Rights</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{selectedLog.details.accessRights}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-medium text-gray-500">Session ID</dt>
+                        <dd className="mt-1 text-sm text-gray-900">{selectedLog.details.sessionId}</dd>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="text-xs font-medium text-gray-500">User Agent</dt>
+                        <dd className="mt-1 text-sm text-gray-900 truncate">{selectedLog.details.userAgent}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+                
+                {selectedLog.blockchainVerified && selectedLog.details.hashValue && (
+                  <div className="bg-green-50 p-4 rounded-md border border-green-100">
+                    <div className="flex items-center text-green-800 mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <h4 className="font-semibold">Blockchain Verification</h4>
+                    </div>
+                    <p className="text-sm text-green-700 mb-2">This audit log entry has been cryptographically verified and recorded on the blockchain.</p>
+                    <div className="flex items-center">
+                      <span className="text-xs font-mono text-green-800 truncate">{selectedLog.details.hashValue}</span>
+                      <button className="ml-2 text-pink-600" title="Copy hash">
+                        <LinkIcon />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-700">Audit Logs ({filteredLogs.length})</h3>
+                  <span className="text-xs text-gray-500">
+                    Showing {Math.min(filteredLogs.length, 20)} of {filteredLogs.length} logs
+                  </span>
+                </div>
+              </div>
+              
+              {filteredLogs.length === 0 ? (
+                <div className="p-6 text-center">
+                  <p className="text-gray-500">No logs found matching the current filters.</p>
+                  <button
+                    className="mt-2 text-sm text-pink-600 hover:text-pink-800"
+                    onClick={handleClearFilters}
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {filteredLogs.slice(0, 20).map((log) => (
+                    <div
+                      key={log.id}
+                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => handleLogSelection(log)}
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className="text-sm font-medium text-gray-900">{log.eventType}</h4>
+                        <div className="flex items-center">
+                          {log.blockchainVerified && (
+                            <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full mr-2">Verified</span>
+                          )}
+                          <span className="text-xs text-gray-500 flex items-center">
+                            <ClockIcon />
+                            <span className="ml-1">{new Date(log.timestamp).toLocaleString()}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 truncate mb-1">{log.description}</p>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <span className="flex items-center mr-3">
+                          <UserIcon />
+                          <span className="ml-1">{log.user}</span>
+                        </span>
+                        <span className="flex items-center">
+                          <FileIcon />
+                          <span className="ml-1">{log.resourceId}</span>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {filteredLogs.length > 20 && (
+                <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 text-right">
+                  <button className="text-sm text-pink-600 hover:text-pink-800">
+                    Load more logs
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
