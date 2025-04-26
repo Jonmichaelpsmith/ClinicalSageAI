@@ -8,8 +8,17 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Alert,
+  AlertTitle,
+  AlertDescription,
 } from '@/components/ui';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+
+// Use simple icons component instead of lucide-react to avoid import issues
+const Icon = {
+  ArrowLeft: () => <span>←</span>,
+  BookOpen: () => <span>📖</span>,
+  AlertTriangle: () => <span>⚠️</span>
+};
 
 function ReferenceModelPage() {
   const [selectedDocument, setSelectedDocument] = useState(null);
@@ -20,14 +29,24 @@ function ReferenceModelPage() {
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-2 mb-6">
           <Link href="/" className="text-gray-500 hover:text-gray-700">
-            <ArrowLeft className="w-4 h-4" />
+            <Icon.ArrowLeft />
           </Link>
           <h1 className="text-2xl font-bold">Document Reference Model</h1>
         </div>
         
+        <Alert variant="warning" className="mb-4">
+          <Icon.AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Database Connection Warning</AlertTitle>
+          <AlertDescription>
+            This is a demonstration of the reference model interface. The database connection may 
+            not be available, so queries and document operations may not work correctly. When properly 
+            configured, this interface would connect to the Supabase PostgreSQL database.
+          </AlertDescription>
+        </Alert>
+        
         <div className="p-2 mb-6 border border-hotpink-200 bg-hotpink-50 rounded-md">
           <div className="flex items-start gap-3">
-            <BookOpen className="h-5 w-5 text-hotpink-500 mt-0.5" />
+            <Icon.BookOpen />
             <div>
               <h3 className="font-medium text-hotpink-900">Veeva Quality Content Reference Model</h3>
               <p className="text-sm text-hotpink-700">

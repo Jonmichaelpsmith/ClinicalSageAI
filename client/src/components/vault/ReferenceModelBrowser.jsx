@@ -229,7 +229,7 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
     if (filteredDocuments.length === 0) {
       return (
         <div className="p-4 text-center">
-          <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+          <IconComponents.FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
           <p className="text-gray-500">No documents found</p>
           {searchTerm && (
             <p className="text-sm text-gray-500">Try a different search term</p>
@@ -280,7 +280,7 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
         {subtype.review_interval && (
           <div className="border rounded-md p-3">
             <div className="flex items-center text-blue-600 mb-1">
-              <Calendar className="h-4 w-4 mr-1" />
+              <IconComponents.Calendar className="h-4 w-4 mr-1" />
               <span className="text-xs font-medium">Periodic Review</span>
             </div>
             <p className="text-sm">{subtype.review_interval} months</p>
@@ -316,11 +316,11 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="browse">
-              <FolderTree className="h-4 w-4 mr-2" />
+              <IconComponents.FolderTree className="h-4 w-4 mr-2" />
               Browse
             </TabsTrigger>
             <TabsTrigger value="search">
-              <Search className="h-4 w-4 mr-2" />
+              <IconComponents.Search className="h-4 w-4 mr-2" />
               Search
             </TabsTrigger>
           </TabsList>
@@ -337,12 +337,13 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
             <CardContent className="flex-1 overflow-auto p-2">
               {foldersQuery.isLoading ? (
                 <div className="flex items-center justify-center h-full">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                  <IconComponents.Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                 </div>
               ) : foldersQuery.error ? (
                 <div className="p-4 text-center">
-                  <CircleAlert className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                  <IconComponents.CircleAlert className="h-8 w-8 text-red-500 mx-auto mb-2" />
                   <p>Error loading folder structure</p>
+                  <p className="text-sm text-gray-500">Database connection may be unavailable</p>
                 </div>
               ) : (
                 <ScrollArea className="h-[calc(100vh-240px)]">
@@ -384,7 +385,7 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
                     className="gap-1"
                     onClick={() => setShowUploadDialog(true)}
                   >
-                    <PlusCircle className="h-4 w-4" />
+                    <IconComponents.PlusCircle className="h-4 w-4" />
                     Upload
                   </Button>
                 </div>
@@ -473,7 +474,7 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
             
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="flex items-center">
-                <Clock className="h-4 w-4 text-gray-500 mr-2" />
+                <IconComponents.Clock className="h-4 w-4 text-gray-500 mr-2" />
                 <div>
                   <p className="text-xs text-gray-500">Created</p>
                   <p className="text-sm">
@@ -484,7 +485,7 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
               
               {selectedDocument.updated_at && (
                 <div className="flex items-center">
-                  <Calendar className="h-4 w-4 text-gray-500 mr-2" />
+                  <IconComponents.Calendar className="h-4 w-4 text-gray-500 mr-2" />
                   <div>
                     <p className="text-xs text-gray-500">Last Updated</p>
                     <p className="text-sm">
@@ -502,7 +503,7 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
               Close
             </Button>
             <Button onClick={() => window.location.href = `/document/${selectedDocument.id}`}>
-              <FileText className="h-4 w-4 mr-2" />
+              <IconComponents.FileText className="h-4 w-4 mr-2" />
               Open Document
             </Button>
           </CardFooter>
