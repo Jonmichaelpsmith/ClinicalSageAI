@@ -63,6 +63,7 @@
       background: #C71585;
     }
   </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
     // Simplified login for demo purposes
     function handleLogin(event) {
@@ -71,16 +72,93 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       
-      // Simple check that something was entered
-      if (email && password) {
-        // Successful login - redirect to client portal
-        window.location.href = 'client-portal.html';
+      if (isCreateAccountMode) {
+        // Account creation logic
+        const name = document.getElementById('name').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (!name) {
+          alert('Please enter your name.');
+          return;
+        }
+        
+        if (password !== confirmPassword) {
+          alert('Passwords do not match.');
+          return;
+        }
+        
+        // Show loading indicator during "account creation"
+        document.getElementById('googleLoginIndicator').style.display = 'flex';
+        document.getElementById('googleLoginIndicator').querySelector('p').innerText = 'Creating your account...';
+        
+        // Simulate API delay
+        setTimeout(() => {
+          // Once account is created, redirect to client portal
+          window.location.href = 'client-portal.html';
+        }, 1500);
       } else {
-        // Alert if fields are empty
-        alert('Please enter both email and password.');
+        // Login logic
+        // Simple check that something was entered
+        if (email && password) {
+          // Successful login - redirect to client portal
+          window.location.href = 'client-portal.html';
+        } else {
+          // Alert if fields are empty
+          alert('Please enter both email and password.');
+        }
       }
     }
+
+    // Toggle between sign in and create account forms
+    let isCreateAccountMode = false;
+    
+    function toggleCreateAccount() {
+      isCreateAccountMode = !isCreateAccountMode;
+      
+      const titleElement = document.getElementById('formTitle');
+      const submitButton = document.getElementById('submitButton');
+      const nameField = document.getElementById('nameField');
+      const confirmPasswordField = document.getElementById('confirmPasswordField');
+      const createAccountLink = document.getElementById('createAccountLink');
+      
+      if (isCreateAccountMode) {
+        titleElement.innerText = 'Create a new account';
+        submitButton.innerText = 'Create Account';
+        nameField.style.display = 'block';
+        confirmPasswordField.style.display = 'block';
+        createAccountLink.innerHTML = 'Already have an account? <a href="#" class="text-trialsage-600 hover:text-trialsage-500 font-medium">Sign in</a>';
+      } else {
+        titleElement.innerText = 'Sign in to your account';
+        submitButton.innerText = 'Sign in';
+        nameField.style.display = 'none';
+        confirmPasswordField.style.display = 'none';
+        createAccountLink.innerHTML = 'or <a href="#" class="text-trialsage-600 hover:text-trialsage-500 font-medium">create an account</a>';
+      }
+      
+      return false;
+    }
+    
+    // Google login function
+    function loginWithGoogle() {
+      // For demo purposes, simulate a successful Google login
+      console.log("Google login clicked");
+      
+      // Show a loading indicator
+      document.getElementById('googleLoginIndicator').style.display = 'flex';
+      
+      // Simulate API delay
+      setTimeout(() => {
+        // Redirect to client portal
+        window.location.href = 'client-portal.html';
+      }, 1500);
+    }
   </script>
+  
+  <!-- Loading indicator for Google login -->
+  <div id="googleLoginIndicator" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.8); z-index: 9999; align-items: center; justify-content: center; flex-direction: column;">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-trialsage-500 mb-4"></div>
+    <p class="text-gray-700">Authenticating with Google...</p>
+  </div>
 </head>
 <body class="font-sans text-gray-900 gradient-bg min-h-screen">
   <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -91,17 +169,27 @@
           <span class="text-xs align-top font-medium text-gray-500">™</span>
         </div>
       </div>
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+      <h2 id="formTitle" class="mt-6 text-center text-3xl font-extrabold text-gray-900">
         Sign in to your account
       </h2>
       <p class="mt-2 text-center text-sm text-gray-600">
         Access the TrialSage Client Portal
+        <span id="createAccountLink" class="ml-1">or <a href="#" onclick="toggleCreateAccount()" class="text-trialsage-600 hover:text-trialsage-500 font-medium">create an account</a></span>
       </p>
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <form class="space-y-6" action="#" method="POST" onsubmit="handleLogin(event)">
+          <div id="nameField" style="display: none;">
+            <label for="name" class="block text-sm font-medium text-gray-700">
+              Full Name
+            </label>
+            <div class="mt-1">
+              <input id="name" name="name" type="text" autocomplete="name" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-trialsage-500 focus:border-trialsage-500 sm:text-sm">
+            </div>
+          </div>
+          
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700">
               Email address
@@ -117,6 +205,15 @@
             </label>
             <div class="mt-1">
               <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-trialsage-500 focus:border-trialsage-500 sm:text-sm">
+            </div>
+          </div>
+          
+          <div id="confirmPasswordField" style="display: none;">
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
+            <div class="mt-1">
+              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-trialsage-500 focus:border-trialsage-500 sm:text-sm">
             </div>
           </div>
 
@@ -136,7 +233,7 @@
           </div>
 
           <div>
-            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-trialsage-pink hover:bg-trialsage-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-trialsage-500">
+            <button id="submitButton" type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-trialsage-pink hover:bg-trialsage-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-trialsage-500">
               Sign in
             </button>
           </div>
@@ -154,7 +251,17 @@
             </div>
           </div>
 
-          <div class="mt-6 grid grid-cols-2 gap-3">
+          <div class="mt-6 grid grid-cols-3 gap-3">
+            <div>
+              <a href="#" onclick="loginWithGoogle()" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <span class="sr-only">Sign in with Google</span>
+                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"></path>
+                </svg>
+                <span class="ml-2">Google</span>
+              </a>
+            </div>
+
             <div>
               <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                 <span class="sr-only">Sign in with SSO</span>
