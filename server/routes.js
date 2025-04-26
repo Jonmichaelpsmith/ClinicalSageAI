@@ -5,6 +5,7 @@
  */
 
 const { createServer } = require('http');
+const fdaComplianceRoutes = require('./routes/fda-compliance-routes');
 
 /**
  * Register routes on the Express app
@@ -30,6 +31,110 @@ function registerRoutes(app) {
       compliance: '21 CFR Part 11',
       fdaStatusVersion: '1.2.0',
       engineVersion: '3.1.4'
+    });
+  });
+  
+  // Register FDA compliance routes
+  app.use('/api/fda-compliance', fdaComplianceRoutes);
+  
+  // Mock audit logs route for development
+  app.get('/api/audit-logs', (req, res) => {
+    const { page = 1, pageSize = 10 } = req.query;
+    
+    // Generate mock audit logs for development
+    const auditLogs = [
+      {
+        id: 'AUDIT-1681234567-123',
+        userId: 'john.smith',
+        action: 'CREATE',
+        resourceType: 'DOCUMENT',
+        resourceId: 'DOC-001',
+        timestamp: '2025-04-26T09:15:23.456Z',
+        ipAddress: '192.168.1.1',
+        userAgent: 'Mozilla/5.0',
+        details: {
+          documentName: 'Clinical Study Report',
+          documentType: 'CSR'
+        },
+        hash: 'f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8'
+      },
+      {
+        id: 'AUDIT-1681234789-456',
+        userId: 'jane.doe',
+        action: 'UPDATE',
+        resourceType: 'DOCUMENT',
+        resourceId: 'DOC-001',
+        timestamp: '2025-04-26T10:30:45.789Z',
+        ipAddress: '192.168.1.2',
+        userAgent: 'Mozilla/5.0',
+        details: {
+          documentName: 'Clinical Study Report',
+          documentType: 'CSR',
+          changedFields: ['status', 'version']
+        },
+        hash: 'a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b'
+      },
+      {
+        id: 'AUDIT-1681235012-789',
+        userId: 'robert.johnson',
+        action: 'SIGNATURE',
+        resourceType: 'DOCUMENT',
+        resourceId: 'DOC-001',
+        timestamp: '2025-04-26T11:45:12.345Z',
+        ipAddress: '192.168.1.3',
+        userAgent: 'Mozilla/5.0',
+        details: {
+          documentName: 'Clinical Study Report',
+          documentType: 'CSR',
+          signatureType: 'APPROVAL',
+          signatureId: 'SIG-001'
+        },
+        hash: 'b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c'
+      },
+      {
+        id: 'AUDIT-1681236234-012',
+        userId: 'susan.williams',
+        action: 'VIEW',
+        resourceType: 'DOCUMENT',
+        resourceId: 'DOC-001',
+        timestamp: '2025-04-26T12:30:34.567Z',
+        ipAddress: '192.168.1.4',
+        userAgent: 'Mozilla/5.0',
+        details: {
+          documentName: 'Clinical Study Report',
+          documentType: 'CSR'
+        },
+        hash: 'c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d'
+      },
+      {
+        id: 'AUDIT-1681237456-345',
+        userId: 'john.smith',
+        action: 'EXPORT',
+        resourceType: 'DOCUMENT',
+        resourceId: 'DOC-001',
+        timestamp: '2025-04-26T13:15:56.789Z',
+        ipAddress: '192.168.1.1',
+        userAgent: 'Mozilla/5.0',
+        details: {
+          documentName: 'Clinical Study Report',
+          documentType: 'CSR',
+          exportFormat: 'PDF'
+        },
+        hash: 'd1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e'
+      }
+    ];
+    
+    // Apply pagination
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const paginatedLogs = auditLogs.slice(start, end);
+    
+    res.json({
+      logs: paginatedLogs,
+      totalCount: auditLogs.length,
+      page: parseInt(page),
+      pageSize: parseInt(pageSize),
+      totalPages: Math.ceil(auditLogs.length / pageSize)
     });
   });
   
