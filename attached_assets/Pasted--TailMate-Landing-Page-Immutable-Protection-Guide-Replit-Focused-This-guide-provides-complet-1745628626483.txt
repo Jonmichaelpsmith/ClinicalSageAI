@@ -1,0 +1,289 @@
+# TailMate Landing Page Immutable Protection Guide (Replit-Focused)
+
+This guide provides **complete, copy-paste-ready code and configuration** for Replit to ensure your **landing page is fully immutable**—no changes can happen without you running the explicit unlock script.
+
+## 📂 1. Project Structure
+
+```
+root/
+├── landing/                      # Submodule: Static site files
+│   ├── index.html
+│   ├── styles.css
+│   ├── scripts.js
+│   ├── service-worker.js
+│   └── landing.hashes           # Baseline SHA256 checksums
+├── backend/                      # Express server & security middleware
+│   ├── server.js
+│   └── landing-security.js
+├── infra/                        # Deployment & audit utilities
+│   ├── backup_and_deploy.sh
+│   ├── verify_integrity.sh
+│   ├── audit.sh
+│   └── fileWatcher.js
+├── scripts/                      # Control scripts
+│   ├── tailmate-landing-security.sh
+│   ├── lock-landing
+│   └── unlock-landing
+├── .replit                       # Replit config
+├── replit.nix                    # (optional) custom environment
+├── .gitignore                    # ignore backups, node_modules
+└── .git/                         # Git folder
+```  
+
+## 🔧 2. .replit Configuration
+
+Paste this into your project’s `.replit`:
+
+```ini
+# .replit
+run = "bash infra/backup_and_deploy.sh && bash infra/verify_integrity.sh && node backend/server.js"
+onStart = "bash scripts/lock-landing"
+env = {
+  "SLACK_WEBHOOK_URL": "${SLACK_WEBHOOK_URL}",
+  "LANDING_MODE": "readonly"
+}
+schedules = [
+  { "cron": "0 2 * * *", "command": "bash infra/audit.sh" }
+]
+```
+
+- **onStart**: Locks landing files before any code runs.
+- **run**: Creates backup, verifies integrity, then starts the server.
+- **schedules**: Runs daily audit at 02:00 via Replit scheduler.
+
+## 🔐 3. Git Submodule & Branch Protection
+
+1. **Add Landing as Submodule**:
+   ```bash
+   git submodule add https://github.com/your-org/tailmate-landing.git landing
+   git commit -m "Add landing submodule"
+   ```
+2. **Lock landing on commit**:
+   ```bash
+   chmod -R 444 landing
+   git add landing
+   git commit -m "Lock landing files (read-only)"
+   ```
+3. **Branch Rules** (GitHub/GitLab):
+   - Require pull requests for `main`.
+   - Enforce GPG-signed commits.
+   - Restrict direct pushes to `main`.
+
+## 🚪 4. Lock/Unlock Scripts
+
+**scripts/lock-landing**:
+```bash
+#!/bin/bash
+# Lock landing directory
+chmod -R a-w landing && echo "🔒 landing/ locked"
+```  
+**scripts/unlock-landing**:
+```bash
+#!/bin/bash
+# Unlock landing directory
+chmod -R u+w landing && echo "✅ landing/ unlocked"
+```  
+Make executable:
+```bash
+chmod +x scripts/lock-landing scripts/unlock-landing
+```  
+Only you should run `./scripts/unlock-landing` to make edits.
+
+## 🛠 5. Backup & Deployment Utility
+
+**infra/backup_and_deploy.sh**:
+```bash
+#!/bin/bash
+set -e
+# 1. Snapshot
+TS=$(date +%Y%m%d%H%M%S)
+mkdir -p infra/backups/landing-$TS
+cp -R landing/ infra/backups/landing-$TS
+
+# 2. Verify before deploy
+bash infra/verify_integrity.sh
+
+# 3. Install backend deps
+npm install --prefix backend
+
+# Deployment of backend is triggered by Replit run
+# Landing page remains untouched
+```  
+
+## 🔍 6. Integrity Verification
+
+**infra/verify_integrity.sh**:
+```bash
+#!/bin/bash
+# Verify SHA256 checksums
+cd landing
+sha256sum -c landing.hashes --quiet || {
+  echo "🚨 Integrity check failed: landing files modified" >&2
+  exit 1
+}
+```  
+**Generate/Update Baseline** (one-time, after desired landing state):
+```bash
+cd landing
+find . -type f -exec sha256sum {} \; > landing.hashes
+chmod 444 landing.hashes
+```  
+
+## 🚨 7. Express Middleware: Block Any Writes
+
+**backend/landing-security.js**:
+```js
+module.exports = (req, res, next) => {
+  if (req.path.startsWith('/landing') && ['POST','PUT','PATCH','DELETE'].includes(req.method)) {
+    return res.status(403).send('🚫 Landing page is read-only');
+  }
+  next();
+};
+```
+**backend/server.js**:
+```js
+const express = require('express');
+const security = require('./landing-security');
+const path = require('path');
+const app = express();
+app.use(security);
+app.use('/landing', express.static(path.join(__dirname, '../landing')));
+app.listen(process.env.PORT || 3000, () => console.log('Server started'));  
+```  
+
+## ⚡️ 8. Service Worker for Caching & Fallback
+
+**landing/service-worker.js**:
+```js
+const CACHE = 'landing-cache-v1';
+const ASSETS = ['/', '/styles.css', '/scripts.js'];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(fetch(e.request)
+    .then(r => {
+      caches.open(CACHE).then(c => c.put(e.request, r.clone()));
+      return r;
+    })
+    .catch(() => caches.match(e.request))
+  );
+});
+```
+**landing/register-sw.js** (in `index.html`):
+```js
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/landing/service-worker.js')
+    .then(() => console.log('SW registered'))
+    .catch(console.error);
+}
+```  
+
+## 📅 9. Daily Audit Script
+
+**infra/audit.sh**:
+```bash
+#!/bin/bash
+cd landing
+git fetch origin
+if ! git diff --quiet origin/main -- .; then
+  echo "[AUDIT] landing/ changed" | mail -s "Landing Drift Alert" you@example.com
+fi
+```  
+Triggered by `.replit` schedule or Replit cron.
+
+## 🚀 10. CI/CD Verification (GitHub Actions)
+
+**.github/workflows/verify-landing.yml**:
+```yaml
+name: Landing Page Security
+on: [pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Check integrity
+        run: bash infra/verify_integrity.sh
+      - name: Ensure read-only
+        run: ! find landing/ -perm /u+w
+```
+
+---
+
+🔒 **With this complete Replit-focused configuration and code, your landing page is fully protected.**
+- **Immutable submodule** isolates files
+- **Lock/unlock scripts** control edits
+- **Automated backups & integrity checks** prevent drift
+- **Middleware & service worker** enforce read-only at runtime
+- **Daily audits & CI gates** catch any unauthorized changes
+
+> **Only** running `./scripts/unlock-landing` under your direct control will open the landing folder for edits. Everything else is locked down.
+
+---
+
+## 🔒 Applying to TrialSage HTML Components
+
+To extend these protections to your **TrialSage** HTML files (`DOCSLIST_ONLY.html`, `FULLPAGE_SIMPLIFIED.html`, etc.), follow the same steps by treating your HTML directory as a protected submodule:
+
+1. **Extract HTML into Submodule**  
+   ```bash
+   mv path/to/html/* trialsage-html/
+   git submodule add https://github.com/your-org/trialsage-html.git trialsage-html
+   git commit -m "Add trialsage-html as protected submodule"
+   ```
+2. **Lock File Permissions**  
+   ```bash
+   chmod -R 444 trialsage-html
+   git add trialsage-html
+   git commit -m "Lock trialsage-html files (read-only)"
+   ```
+3. **Create Lock/Unlock Scripts**  
+   - **scripts/lock-html**:
+     ```bash
+     #!/bin/bash
+     chmod -R a-w trialsage-html && echo "🔒 trialsage-html locked"
+     ```
+   - **scripts/unlock-html**:
+     ```bash
+     #!/bin/bash
+     chmod -R u+w trialsage-html && echo "✅ trialsage-html unlocked"
+     ```
+   ```bash
+   chmod +x scripts/lock-html scripts/unlock-html
+   ```
+4. **Update .replit**  
+   ```ini
+   onStart = "bash scripts/lock-landing && bash scripts/lock-html"
+   run = "bash infra/backup_and_deploy.sh && bash infra/verify_integrity.sh && node backend/server.js"
+   ```
+5. **Extend Integrity Verification**  
+   - Add checksums for `trialsage-html` in its submodule:
+     ```bash
+     cd trialsage-html
+     find . -type f -exec sha256sum {} \; > landing.hashes
+     chmod 444 landing.hashes
+     ```
+   - Update `infra/verify_integrity.sh` to verify both locations:
+     ```bash
+     cd landing && sha256sum -c landing.hashes --quiet
+     cd ../trialsage-html && sha256sum -c landing.hashes --quiet
+     ```
+6. **Extend CI Pipeline**  
+   In `.github/workflows/verify-landing.yml`, add:
+   ```yaml
+   - name: Check trialsage-html integrity
+     run: bash infra/verify_integrity.sh  # covers both submodules
+   - name: Ensure trialsage-html read-only
+     run: ! find trialsage-html/ -perm /u+w
+   ```
+7. **Runtime Middleware**  
+   In `backend/landing-security.js`, extend path check:
+   ```js
+   const blocked = req.path.startsWith('/landing') || req.path.startsWith('/trialsage-html');
+   ```
+
+By replicating the same immutable workflow for your TrialSage HTML directory, you ensure that none of those crucial files can ever be modified during backend development without your explicit unlock step.
+
