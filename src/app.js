@@ -4,6 +4,8 @@ import 'dotenv/config';
 import { requireAuth } from './middleware/auth.js';
 import programsRouter from './routes/programs.js';
 import docsRouter from './routes/documents.js';
+import searchRouter from './routes/search.js';
+import lockRouter from './routes/lock.js';
 
 const app = express();
 app.use(cors());
@@ -16,6 +18,10 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api/programs', requireAuth, programsRouter);
 // documents routes already include requireAuth middleware
 app.use('/api', docsRouter);
+// search routes
+app.use('/api', searchRouter);
+// lock routes
+app.use('/api', lockRouter);
 
 // Serve frontend in production (after running npm run build)
 if (process.env.NODE_ENV === 'production') {
