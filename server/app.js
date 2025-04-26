@@ -1,61 +1,64 @@
 /**
- * Main Server Application
+ * TrialSage Server Application
  * 
- * Express server with API routes for the TrialSage application.
+ * Main server setup with all required routes and middleware
  */
 
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
-const helmet = require('helmet');
-const session = require('express-session');
 const path = require('path');
-const apiRoutes = require('./routes');
+const dotenv = require('dotenv');
+const vaultAssistantRoutes = require('./routes/vault-assistant');
 
-// Create Express application
+// Load environment variables
+dotenv.config();
+
+// Create Express app
 const app = express();
 
-// Security and middleware
-app.use(helmet());
-app.use(cors());
-app.use(morgan('dev'));
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'trialsage-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+// Set up routes for API endpoints
+app.use('/api/vault-assistant', vaultAssistantRoutes);
 
-// API routes
-app.use('/api', apiRoutes);
-
-// Serve static files (if needed)
+// Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Error handler
+// Route for solution pages
+app.get('/solutions/vault-workspace', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/solutions/vault-workspace.html'));
+});
+
+// Redirect any docushare-sync requests to vault-workspace
+app.get('/solutions/docushare-sync', (req, res) => {
+  res.redirect('/solutions/vault-workspace');
+});
+
+// Fallback route for SPA or static files
+app.get('*', (req, res) => {
+  // Try to serve static files for paths that may exist
+  const filePath = path.join(__dirname, '../public', req.path);
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      // If the file doesn't exist, send the index.html file
+      res.sendFile(path.join(__dirname, '../public/index.html'));
+    }
+  });
+});
+
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Server error:', err);
   res.status(500).json({
-    error: 'Server Error',
+    error: 'Internal Server Error',
     message: process.env.NODE_ENV === 'production' 
       ? 'An unexpected error occurred' 
       : err.message
   });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Not Found',
-    message: 'The requested resource was not found'
-  });
-});
-
+// Export app for server.js to use
 module.exports = app;
