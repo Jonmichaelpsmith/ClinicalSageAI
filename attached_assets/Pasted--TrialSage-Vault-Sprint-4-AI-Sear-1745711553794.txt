@@ -1,0 +1,67 @@
+// =====================================================
+// TrialSage Vault™ – Sprint‑4  ✦  AI Search & Tag Filter
+//  • Backend full‑text + tag search per Study / Org
+//  • Frontend search bar + tag pill filters
+// =====================================================
+
+/* ---------- migrations/004_fts.sql ---------- */
+-- Enable pg_trgm + GIN index for full‑text search on summary
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX IF NOT EXISTS idx_documents_summary_trgm ON documents USING gin (summary gin_trgm_ops);
+
+/* ---------- src/routes/search.js ---------- */
+import { Router } from 'express';
+import db from '../db.js';
+import { requireAuth } from '../middleware/auth.js';
+const r = Router();
+
+// GET /api/search?studyId=&q=keyword&tags=tag1,tag2
+r.get('/search', requireAuth, async (req,res)=>{
+  const { studyId, q = '', tags = '' } = req.query;
+  if(!studyId) return res.status(400).json({message:'studyId required'});
+  const tagArr = tags ? tags.split(',').map(t=>t.trim()) : [];
+  let sql = db('documents').where({ study_id: studyId, organization_id: req.user.orgId });
+  if(q) sql = sql.andWhere('summary','ilike',`%${q}%`);
+  if(tagArr.length) sql = sql.andWhereRaw('tags ?| array[??]', [tagArr]);
+  const docs = await sql.select('*').orderBy('uploaded_at','desc');
+  res.json(docs);
+});
+export default r;
+
+/* ---------- mount in src/app.js ---------- */
+import searchRouter from './routes/search.js';
+app.use('/api', searchRouter);
+
+/* ---------- FRONTEND – augment VaultView.tsx ---------- */
+import { Input, Tag, TagGroup } from '@fluentui/react-components';
+...
+const [query,setQuery]=useState('');
+const [activeTags,setActiveTags]=useState<string[]>([]);
+
+const fetchDocs = async ()=>{
+  const params = new URLSearchParams();
+  params.append('studyId', studyId!);
+  if(query) params.append('q', query);
+  if(activeTags.length) params.append('tags', activeTags.join(','));
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/search?${params.toString()}`,{ headers:{ Authorization:`Bearer ${token}` }});
+  setDocs(await res.json());
+};
+
+useEffect(()=>{ fetchDocs(); }, [query, activeTags]);
+
+/* UI additions above the DetailsList */
+<div style={{display:'flex',gap:8,alignItems:'center',marginBottom:12}}>
+  <Input style={{width:240}} placeholder="Search summaries…" value={query} onChange={(_,v)=>setQuery(v.value)} />
+  {activeTags.map(t=> <Tag key={t} onDismiss={ ()=>setActiveTags(activeTags.filter(x=>x!==t)) }>{t}</Tag> )}
+</div>
+
+/* beneath DetailsList show clickable tag cloud */
+<div style={{marginTop:16}}>
+  {docs.flatMap(d=>d.tags||[]).filter((v,i,a)=>a.indexOf(v)===i).slice(0,20).map(tag=>
+    <Tag key={tag} style={{margin:4}} selected={activeTags.includes(tag)} onClick={()=>{
+      setActiveTags(activeTags.includes(tag)? activeTags.filter(t=>t!==tag): [...activeTags, tag]);
+    }}>{tag}</Tag>) }
+</div>
+
+// =====================================================
+// END Sprint‑4

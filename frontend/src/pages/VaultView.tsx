@@ -2,7 +2,19 @@ import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { DetailsList, IColumn, SelectionMode, IconButton, Link } from '@fluentui/react';
-import { Button, Spinner, Dialog, DialogTitle, DialogBody } from '@fluentui/react-components';
+import { 
+  Button, 
+  Spinner, 
+  Dialog, 
+  DialogTitle, 
+  DialogBody,
+  Panel,
+  PanelHeader,
+  PanelBody,
+  Input,
+  Tag,
+  TagGroup
+} from '@fluentui/react-components';
 
 interface Document {
   id: string;
@@ -11,12 +23,26 @@ interface Document {
   file_size: number;
   storage_path: string;
   uploaded_at: string;
+  latest_version?: number;
+  summary?: string;
+  tags?: string[];
   url?: string;
+  locked_by?: string;
+  locked_at?: string;
+  lock_expires?: string;
+}
+
+interface Version {
+  id: string;
+  version_number: number;
+  uploaded_at: string;
+  file_size: number;
+  summary?: string;
 }
 
 export default function VaultView() {
   const { studyId } = useParams();
-  const { token } = useContext(AuthContext)!;
+  const { token, user } = useContext(AuthContext)!;
   const [docs, setDocs] = useState<Document[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -24,21 +50,40 @@ export default function VaultView() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewMime, setPreviewMime] = useState<string>('');
   const [previewFilename, setPreviewFilename] = useState<string>('');
+  const [versions, setVersions] = useState<Version[]>([]);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [query, setQuery] = useState<string>('');
+  const [activeTags, setActiveTags] = useState<string[]>([]);
 
-  const loadDocs = async () => {
+  const fetchDocs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/studies/${studyId}/documents`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Build query parameters
+      const params = new URLSearchParams();
+      params.append('studyId', studyId!);
+      
+      if (query) {
+        params.append('q', query);
+      }
+      
+      if (activeTags.length) {
+        params.append('tags', activeTags.join(','));
+      }
+      
+      // Make API request
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/search?${params.toString()}`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
       if (res.ok) {
         const data = await res.json();
         setDocs(data);
       } else {
-        console.error('Failed to load documents');
+        console.error('Failed to search documents');
       }
     } catch (error) {
-      console.error('Error loading documents:', error);
+      console.error('Error searching documents:', error);
     } finally {
       setLoading(false);
     }
@@ -46,9 +91,9 @@ export default function VaultView() {
   
   useEffect(() => { 
     if (token && studyId) {
-      loadDocs(); 
+      fetchDocs(); 
     }
-  }, [token, studyId]);
+  }, [token, studyId, query, activeTags]);
 
   const handleUpload = async () => {
     if (!file) return;
@@ -66,7 +111,7 @@ export default function VaultView() {
       
       if (res.ok) { 
         setFile(null); 
-        await loadDocs(); 
+        await fetchDocs(); 
       } else {
         console.error('Upload failed');
       }
@@ -114,6 +159,86 @@ export default function VaultView() {
     }
   };
 
+  // Load document versions
+  const openVersions = async (docId: string) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/documents/${docId}/versions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setVersions(data);
+        setPanelOpen(true);
+      } else {
+        console.error('Failed to load versions');
+      }
+    } catch (error) {
+      console.error('Error loading versions:', error);
+    }
+  };
+
+  // Handle document locking
+  const lockDocument = async (docId: string) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/documents/${docId}/lock`, 
+        { 
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` } 
+        }
+      );
+      
+      if (res.ok) {
+        await fetchDocs();
+      } else if (res.status === 423) {
+        console.error('Document already locked');
+      } else {
+        console.error('Failed to lock document');
+      }
+    } catch (error) {
+      console.error('Error locking document:', error);
+    }
+  };
+
+  // Handle document unlocking
+  const unlockDocument = async (docId: string) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/documents/${docId}/unlock`, 
+        { 
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` } 
+        }
+      );
+      
+      if (res.ok) {
+        await fetchDocs();
+      } else if (res.status === 403) {
+        console.error('Not lock owner');
+      } else {
+        console.error('Failed to unlock document');
+      }
+    } catch (error) {
+      console.error('Error unlocking document:', error);
+    }
+  };
+
+  // Handle tag selection
+  const toggleTag = (tag: string) => {
+    if (activeTags.includes(tag)) {
+      setActiveTags(activeTags.filter(t => t !== tag));
+    } else {
+      setActiveTags([...activeTags, tag]);
+    }
+  };
+
+  // Extract unique tags from all documents
+  const getAllTags = () => {
+    const allTags = docs.flatMap(d => d.tags || []);
+    return [...new Set(allTags)].slice(0, 20); // Limit to 20 tags
+  };
+
   const cols: IColumn[] = [
     { 
       key: 'name', 
@@ -139,6 +264,42 @@ export default function VaultView() {
       fieldName: 'uploaded_at',
       minWidth: 150,
       onRender: (item: Document) => new Date(item.uploaded_at).toLocaleString() 
+    },
+    {
+      key: 'ver',
+      name: 'Version',
+      minWidth: 80,
+      onRender: (item: Document) => (
+        <Button 
+          size="small" 
+          onClick={() => openVersions(item.id)}
+        >
+          {item.latest_version || 1}
+        </Button>
+      )
+    },
+    {
+      key: 'lock',
+      name: 'Lock',
+      minWidth: 80,
+      onRender: (item: Document) => (
+        item.locked_by ? (
+          <Button 
+            size="small" 
+            disabled={item.locked_by !== user?.id} 
+            onClick={() => unlockDocument(item.id)}
+          >
+            Unlock
+          </Button>
+        ) : (
+          <Button 
+            size="small" 
+            onClick={() => lockDocument(item.id)}
+          >
+            Lock
+          </Button>
+        )
+      )
     },
     {
       key: 'dl',
@@ -181,16 +342,50 @@ export default function VaultView() {
         </Button>
       </div>
       
+      {/* Search and filters */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+        <Input 
+          style={{ width: 240 }} 
+          placeholder="Search summaries…" 
+          value={query} 
+          onChange={(_, v) => setQuery(v.value)} 
+        />
+        {activeTags.map(tag => (
+          <Tag 
+            key={tag} 
+            onDismiss={() => setActiveTags(activeTags.filter(t => t !== tag))}
+          >
+            {tag}
+          </Tag>
+        ))}
+      </div>
+      
       {loading ? (
         <div style={{ textAlign: 'center', padding: 20 }}>
           <Spinner label="Loading documents..." />
         </div>
       ) : (
-        <DetailsList 
-          items={docs} 
-          columns={cols} 
-          selectionMode={SelectionMode.none}
-        />
+        <>
+          <DetailsList 
+            items={docs} 
+            columns={cols} 
+            selectionMode={SelectionMode.none}
+          />
+          
+          {/* Tag cloud */}
+          <div style={{ marginTop: 16 }}>
+            {getAllTags().map(tag => (
+              <Tag 
+                key={tag} 
+                style={{ margin: 4 }} 
+                selected={activeTags.includes(tag)} 
+                onClick={() => toggleTag(tag)}
+              >
+                {tag}
+              </Tag>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Preview dialog */}
@@ -232,6 +427,38 @@ export default function VaultView() {
           )}
         </DialogBody>
       </Dialog>
+
+      {/* Versions panel */}
+      <Panel 
+        open={panelOpen} 
+        onOpenChange={(_, data) => setPanelOpen(data.open)}
+      >
+        <PanelHeader>Versions</PanelHeader>
+        <PanelBody>
+          {versions.map(v => (
+            <div 
+              key={v.id} 
+              style={{ 
+                padding: 8, 
+                borderBottom: '1px solid #eee' 
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>v{v.version_number}</span>
+                <span>{(v.file_size/1024).toFixed(1)} KB</span>
+              </div>
+              <div style={{ fontSize: 12, color: '#666' }}>
+                {new Date(v.uploaded_at).toLocaleString()}
+              </div>
+              {v.summary && (
+                <p style={{ fontSize: 12, margin: '4px 0', color: '#444' }}>
+                  {v.summary}
+                </p>
+              )}
+            </div>
+          ))}
+        </PanelBody>
+      </Panel>
     </div>
   );
 }
