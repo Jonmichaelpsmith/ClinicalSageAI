@@ -288,10 +288,18 @@ export function setupStaticRoutes(app) {
     }
   });
   
-  // Custom route for Vault Workspace
+  // Custom route for Vault Workspace (MODIFIED - DIRECT PRIORITY PATH)
   app.get('/solutions/vault-workspace', (req, res) => {
-    console.log('[StaticRoutes] Serving Vault workspace directly');
-    res.sendFile(path.join(process.cwd(), 'vault-workspace.html'));
+    console.log('[StaticRoutes] DIRECT SERVING OF VAULT WORKSPACE REACT UI');
+    // Always use the root vault-workspace.html React UI file
+    const reactUIPath = path.join(process.cwd(), 'vault-workspace.html');
+    
+    if (fs.existsSync(reactUIPath)) {
+      res.sendFile(reactUIPath);
+    } else {
+      console.error('[StaticRoutes] ERROR: Vault Workspace React UI not found at', reactUIPath);
+      res.status(404).send('Vault Workspace React UI not found');
+    }
   });
 
   // Custom route for About Us page
