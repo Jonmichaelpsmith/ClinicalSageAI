@@ -168,7 +168,12 @@ import {
   unassignDocumentFromModule
 } from '@/services/AutoLinkService';
 
+import {
+  logDocumentInteraction
+} from '@/services/RecommendationService';
+
 import InlineViewer from '@/components/InlineViewer';
+import DocumentRecommendations from '@/components/docushare/DocumentRecommendations';
 
 // Simulated user session for development - in production, this would come from authentication
 const mockUser = {
