@@ -37,23 +37,53 @@ import {
 } from '@/components/ui';
 // Import icons from a simple custom component since we may have issues with lucide-react
 // This is a temporary solution until we properly set up the icon library
+// Add some CSS for the emoji icons
+const iconStyles = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '1.2em',
+  lineHeight: 1,
+  verticalAlign: 'middle'
+};
+
+// Add a keyframes animation for the loader
+const keyframesStyle = `
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+`;
+
+// Add the animation to the document head
+React.useEffect(() => {
+  const styleElement = document.createElement('style');
+  styleElement.innerHTML = keyframesStyle;
+  document.head.appendChild(styleElement);
+  
+  return () => {
+    document.head.removeChild(styleElement);
+  };
+}, []);
+
 const IconComponents = {
-  FolderTree: (props) => <span className={`icon ${props.className || ''}`}>📁</span>,
-  Search: (props) => <span className={`icon ${props.className || ''}`}>🔍</span>,
-  Filter: (props) => <span className={`icon ${props.className || ''}`}>🔧</span>,
-  ShieldCheck: (props) => <span className={`icon ${props.className || ''}`}>🔒</span>,
-  FileText: (props) => <span className={`icon ${props.className || ''}`}>📄</span>,
-  Clock: (props) => <span className={`icon ${props.className || ''}`}>🕒</span>,
-  Calendar: (props) => <span className={`icon ${props.className || ''}`}>📅</span>,
-  Trash2: (props) => <span className={`icon ${props.className || ''}`}>🗑️</span>,
-  Archive: (props) => <span className={`icon ${props.className || ''}`}>📦</span>,
-  ChevronRight: (props) => <span className={`icon ${props.className || ''}`}>▶️</span>,
-  CheckSquare: (props) => <span className={`icon ${props.className || ''}`}>✅</span>,
-  BookOpen: (props) => <span className={`icon ${props.className || ''}`}>📖</span>,
-  FileCheck: (props) => <span className={`icon ${props.className || ''}`}>📋</span>,
-  PlusCircle: (props) => <span className={`icon ${props.className || ''}`}>➕</span>,
-  CircleAlert: (props) => <span className={`icon ${props.className || ''}`}>⚠️</span>,
-  Loader2: (props) => <span className={`icon ${props.className || ''} ${props.className?.includes('animate-spin') ? 'animate-pulse' : ''}`}>⏳</span>
+  FolderTree: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📁</span>,
+  Search: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>🔍</span>,
+  Filter: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>🔧</span>,
+  ShieldCheck: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>🔒</span>,
+  FileText: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📄</span>,
+  Clock: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>🕒</span>,
+  Calendar: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📅</span>,
+  Trash2: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>🗑️</span>,
+  Archive: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📦</span>,
+  ChevronRight: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>▶️</span>,
+  PlusCircle: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>➕</span>,
+  CircleAlert: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>⚠️</span>,
+  Loader2: (props) => <span style={{...iconStyles, animation: props.className?.includes('animate-spin') ? 'pulse 1s infinite' : 'none'}} className={`icon ${props.className || ''}`}>⏳</span>,
+  CheckSquare: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>✅</span>,
+  BookOpen: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📖</span>,
+  FileCheck: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📋</span>,
 };
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -290,7 +320,7 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
         {subtype.archive_after && (
           <div className="border rounded-md p-3">
             <div className="flex items-center text-purple-600 mb-1">
-              <Archive className="h-4 w-4 mr-1" />
+              <IconComponents.Archive className="h-4 w-4 mr-1" />
               <span className="text-xs font-medium">Archive After</span>
             </div>
             <p className="text-sm">{subtype.archive_after} months</p>
@@ -300,7 +330,7 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
         {subtype.delete_after && (
           <div className="border rounded-md p-3">
             <div className="flex items-center text-red-600 mb-1">
-              <Trash2 className="h-4 w-4 mr-1" />
+              <IconComponents.Trash2 className="h-4 w-4 mr-1" />
               <span className="text-xs font-medium">Delete After</span>
             </div>
             <p className="text-sm">{subtype.delete_after} months</p>

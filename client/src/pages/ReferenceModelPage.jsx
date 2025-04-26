@@ -14,10 +14,19 @@ import {
 } from '@/components/ui';
 
 // Use simple icons component instead of lucide-react to avoid import issues
+const iconStyles = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '1.2em',
+  lineHeight: 1,
+  verticalAlign: 'middle'
+};
+
 const Icon = {
-  ArrowLeft: () => <span>←</span>,
-  BookOpen: () => <span>📖</span>,
-  AlertTriangle: () => <span>⚠️</span>
+  ArrowLeft: () => <span style={iconStyles}>←</span>,
+  BookOpen: () => <span style={iconStyles}>📖</span>,
+  AlertTriangle: () => <span style={iconStyles}>⚠️</span>
 };
 
 function ReferenceModelPage() {
