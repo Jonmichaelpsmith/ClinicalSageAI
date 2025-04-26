@@ -1,0 +1,111 @@
+// ───────────────────────────────────────────────────────────────
+// TrialSage Vault™ – Site‑Startup Checklist Builder (Backend + Front‑end)
+// Goal: Track country‑/site‑specific startup docs (IRB, Contracts, etc.)
+// ───────────────────────────────────────────────────────────────
+// 📂 server/routes/startup.js – manage study sites + checklist items
+//----------------------------------------------------------------
+import { Router } from 'express';
+import { supabase } from '../lib/supabaseClient.js';
+import { verifyJwt } from '../middleware/auth.js';
+
+const router = Router();
+
+// Library of required docs per country (simplified)
+const COUNTRY_REQUIREMENTS = {
+  US: ['IRB Approval', '1572', 'CV', 'Budget & Contract'],
+  DE: ['Ethics Approval', 'Insurance Certificate', 'Investigator CV'],
+  IN: ['DCGI Approval', 'IEC Approval', 'Form CT‑1', 'Budget & Contract']
+};
+
+// POST /api/startup/site – create site + auto checklist
+router.post('/site', verifyJwt, async (req, res) => {
+  const { tenantId } = req.user;
+  const { siteName, country, trialId } = req.body;
+  const { data: site, error: siteErr } = await supabase.from('sites').insert({
+    tenant_id: tenantId, trial_id: trialId, name: siteName, country, status: 'Startup'
+  }).select('*').single();
+  if (siteErr) return res.status(500).json({ message: siteErr.message });
+
+  // generate checklist rows
+  const reqs = COUNTRY_REQUIREMENTS[country] || [];
+  const rows = reqs.map(label => ({ tenant_id: tenantId, site_id: site.id, label, status: 'Pending' }));
+  await supabase.from('site_checklists').insert(rows);
+
+  res.json(site);
+});
+
+// GET /api/startup/site/:id – fetch site + checklist
+router.get('/site/:id', verifyJwt, async (req, res) => {
+  const { tenantId } = req.user;
+  const { id } = req.params;
+  const { data: site } = await supabase.from('sites').select('*').eq('id', id).eq('tenant_id', tenantId).single();
+  const { data: items } = await supabase.from('site_checklists').select('*').eq('site_id', id);
+  res.json({ site, items });
+});
+
+// POST /api/startup/item/:itemId/complete – mark checklist item done
+router.post('/item/:itemId/complete', verifyJwt, async (req, res) => {
+  const { itemId } = req.params;
+  const { tenantId } = req.user;
+  const { error } = await supabase.from('site_checklists')
+    .update({ status: 'Done', completed_at: new Date() })
+    .eq('id', itemId)
+    .eq('tenant_id', tenantId);
+  if (error) return res.status(400).json({ message: error.message });
+  res.json({ ok: true });
+});
+
+export default router;
+
+//----------------------------------------------------------------
+// 📂 client/pages/SiteStartup.jsx – interactive checklist UI
+//----------------------------------------------------------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+export default function SiteStartup({ siteId }) {
+  const [site, setSite] = useState(null);
+  const [items, setItems] = useState([]);
+  useEffect(() => { load(); }, [siteId]);
+  async function load() {
+    const { data } = await axios.get(`/api/startup/site/${siteId}`);
+    setSite(data.site);
+    setItems(data.items);
+  }
+  async function complete(itemId) {
+    await axios.post(`/api/startup/item/${itemId}/complete`);
+    load();
+  }
+  if (!site) return <div className="p-8">Loading site…</div>;
+  const pct = items.length ? Math.round(items.filter(i=>i.status==='Done').length / items.length * 100) : 0;
+  return (
+    <div className="p-8 space-y-6">
+      <h1 className="text-2xl font-bold">Site Startup – {site.name} ({site.country})</h1>
+      <p className="text-sm text-gray-600">Checklist completion: {pct}%</p>
+      {items.map(it => (
+        <Card key={it.id} className="border flex justify-between items-center p-4 mb-2">
+          <CardContent className="p-0 m-0 flex-1">{it.label}</CardContent>
+          {it.status === 'Pending' ? (
+            <Button size="sm" onClick={() => complete(it.id)}>Mark Done</Button>) : (
+            <span className="text-green-600 text-sm">✔</span>) }
+        </Card>
+      ))}
+      {pct === 100 && <div className="p-4 bg-green-50 text-green-700 rounded">Site startup complete! Ready for activation.</div>}
+    </div>
+  );
+}
+
+//----------------------------------------------------------------
+// 🔗 Integration steps
+//----------------------------------------------------------------
+// 1. Supabase tables:
+//    • sites (id uuid pk, tenant_id uuid, trial_id uuid, name text, country text, status text)
+//    • site_checklists (id uuid pk, tenant_id uuid, site_id uuid, label text, status text, completed_at timestamp, created_at timestamp default now())
+// 2. server/index.js →
+//    import startupRoutes from './routes/startup.js';
+//    app.use('/api/startup', startupRoutes);
+// 3. Use SiteStartup UI wherever you manage study sites.
+//    e.g. <SiteStartup siteId={selectedSiteId} />
+// ───────────────────────────────────────────────────────────────
