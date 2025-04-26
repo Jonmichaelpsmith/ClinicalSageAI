@@ -1,378 +1,409 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { useToast } from "@/hooks/use-toast";
-import { Shield, ShieldAlert, Clock, EyeOff, Lock, CheckCircle, XCircle } from 'lucide-react';
-import { secureLocalStorage } from '@/lib/security';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Shield, Eye, Download, UserPlus, Clock, Bell, Key, Smartphone, Globe } from 'lucide-react';
+import { queryClient, apiRequest } from '../../lib/queryClient';
+import { useToast } from '../../hooks/use-toast';
+import securityClient from '../../lib/security';
 
-// Default security settings
-const defaultSettings = {
-  autoLogoutEnabled: true,
-  autoLogoutTime: 30, // minutes
-  encryptLocalStorage: true,
-  auditLoggingEnabled: false,
-  sensitiveDataMasking: true,
-  documentIntegrityCheck: true,
-  securityLevel: 'standard', // 'basic', 'standard', 'high'
-  notifications: {
-    securityEvents: true,
-    loginAttempts: true,
-    documentAccess: false
-  }
-};
-
-const SecuritySettingsPanel = () => {
-  const [settings, setSettings] = useState(defaultSettings);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+/**
+ * Security Settings Panel Component
+ * 
+ * Allows users to view and modify their security settings:
+ * - Multi-factor authentication
+ * - Session timeout
+ * - Password expiry
+ * - Document access controls
+ * - Audit logging level
+ * - Security notifications
+ */
+export default function SecuritySettingsPanel({ userId }) {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
-  // Load settings on component mount
-  useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        setLoading(true);
-        const savedSettings = await secureLocalStorage.getItem('securitySettings');
-        
-        if (savedSettings) {
-          setSettings({...defaultSettings, ...savedSettings});
-        }
-      } catch (error) {
-        console.error('Error loading security settings:', error);
-        toast({
-          title: "Error loading settings",
-          description: "Could not load your security settings. Using defaults.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadSettings();
-  }, []);
-  
-  // Save settings
-  const saveSettings = async () => {
-    try {
-      setSaving(true);
-      
-      // Save to secure storage
-      await secureLocalStorage.setItem('securitySettings', settings);
-      
-      // Enable/disable audit logging based on setting
-      localStorage.setItem('enableAuditLogging', settings.auditLoggingEnabled.toString());
-      
+  // Fetch current security settings
+  const { 
+    data: securitySettings, 
+    isLoading: isLoadingSettings,
+    error: settingsError 
+  } = useQuery({
+    queryKey: [`/api/security/settings/${userId}`],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/security/settings/${userId}`);
+      return res.json();
+    },
+    refetchOnWindowFocus: false,
+  });
+
+  // Mutation for updating security settings
+  const updateSecuritySettingsMutation = useMutation({
+    mutationFn: async (updatedSettings) => {
+      const res = await apiRequest("PUT", `/api/security/settings/${userId}`, updatedSettings);
+      return res.json();
+    },
+    onSuccess: () => {
       toast({
-        title: "Settings Saved",
-        description: "Your security preferences have been updated.",
-        icon: <CheckCircle className="h-4 w-4 text-green-500" />
+        title: "Security settings updated",
+        description: "Your security settings have been updated successfully.",
+      });
+      queryClient.invalidateQueries([`/api/security/settings/${userId}`]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to update security settings",
+        description: error.message || "An error occurred while updating security settings.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Form state
+  const [formState, setFormState] = useState({
+    mfaEnabled: false,
+    mfaMethod: 'none',
+    sessionTimeout: 3600000, // 1 hour in milliseconds
+    passwordExpiryDays: 90,
+    documentAccessLevel: 'standard',
+    allowExternalSharing: false,
+    documentWatermarking: true,
+    auditLoggingLevel: 'standard',
+    autoLogoutOnInactivity: true,
+    securityNotifications: true,
+    apiAccessEnabled: false,
+  });
+
+  // Update form state when settings are loaded
+  useEffect(() => {
+    if (securitySettings) {
+      setFormState({
+        mfaEnabled: securitySettings.mfaEnabled || false,
+        mfaMethod: securitySettings.mfaMethod || 'none',
+        sessionTimeout: securitySettings.sessionTimeout || 3600000,
+        passwordExpiryDays: securitySettings.passwordExpiryDays || 90,
+        documentAccessLevel: securitySettings.documentAccessLevel || 'standard',
+        allowExternalSharing: securitySettings.allowExternalSharing || false,
+        documentWatermarking: securitySettings.documentWatermarking || true,
+        auditLoggingLevel: securitySettings.auditLoggingLevel || 'standard',
+        autoLogoutOnInactivity: securitySettings.autoLogoutOnInactivity || true,
+        securityNotifications: securitySettings.securityNotifications || true,
+        apiAccessEnabled: securitySettings.apiAccessEnabled || false,
+      });
+    }
+  }, [securitySettings]);
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormState({
+      ...formState,
+      [name]: type === 'checkbox' ? checked : value,
+    });
+  };
+
+  // Handle session timeout change
+  const handleSessionTimeoutChange = (e) => {
+    const value = parseInt(e.target.value);
+    setFormState({
+      ...formState,
+      sessionTimeout: value,
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await updateSecuritySettingsMutation.mutateAsync(formState);
+      
+      // Log the security settings update
+      securityClient.logSecurityEvent('SECURITY_SETTINGS_UPDATED', {
+        userId,
+        changes: Object.keys(formState).join(', '),
       });
     } catch (error) {
-      console.error('Error saving security settings:', error);
-      toast({
-        title: "Error saving settings",
-        description: "An error occurred while saving your security settings.",
-        variant: "destructive",
-        icon: <XCircle className="h-4 w-4" />
-      });
+      console.error('Failed to update security settings:', error);
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
-  
-  // Handle toggle changes
-  const handleToggle = (field) => {
-    setSettings({
-      ...settings,
-      [field]: !settings[field]
-    });
-  };
-  
-  // Handle notification toggles
-  const handleNotificationToggle = (field) => {
-    setSettings({
-      ...settings,
-      notifications: {
-        ...settings.notifications,
-        [field]: !settings.notifications[field]
-      }
-    });
-  };
-  
-  // Handle slider changes
-  const handleSliderChange = (value) => {
-    setSettings({
-      ...settings,
-      autoLogoutTime: value[0]
-    });
-  };
-  
-  // Handle security level changes
-  const handleSecurityLevelChange = (value) => {
-    // Preset configurations for different security levels
-    const securityLevels = {
-      basic: {
-        autoLogoutEnabled: false,
-        autoLogoutTime: 60,
-        encryptLocalStorage: false,
-        sensitiveDataMasking: true,
-        documentIntegrityCheck: false
-      },
-      standard: {
-        autoLogoutEnabled: true,
-        autoLogoutTime: 30,
-        encryptLocalStorage: true,
-        sensitiveDataMasking: true,
-        documentIntegrityCheck: true
-      },
-      high: {
-        autoLogoutEnabled: true,
-        autoLogoutTime: 15,
-        encryptLocalStorage: true,
-        sensitiveDataMasking: true,
-        documentIntegrityCheck: true
-      }
-    };
-    
-    setSettings({
-      ...settings,
-      ...securityLevels[value],
-      securityLevel: value
-    });
-  };
-  
-  if (loading) {
+
+  // Session timeout options in hours
+  const sessionTimeoutOptions = [
+    { value: 900000, label: '15 minutes' },
+    { value: 1800000, label: '30 minutes' },
+    { value: 3600000, label: '1 hour' },
+    { value: 7200000, label: '2 hours' },
+    { value: 14400000, label: '4 hours' },
+    { value: 28800000, label: '8 hours' },
+    { value: 86400000, label: '24 hours' },
+  ];
+
+  // Render loading state
+  if (isLoadingSettings) {
     return (
-      <Card className="w-full">
-        <CardContent className="pt-6">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-hotpink"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin w-8 h-8 border-4 border-hotpink-500 border-t-transparent rounded-full" aria-label="Loading"/>
+      </div>
     );
   }
-  
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex items-center">
-          <Shield className="mr-2 h-5 w-5 text-hotpink" />
-          <CardTitle>Security Settings</CardTitle>
-        </div>
-        <CardDescription>
-          Configure your TrialSage security and privacy preferences
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {/* Security Level Preset */}
-        <div className="space-y-2">
-          <Label htmlFor="security-level" className="font-medium">
-            Security Level
-          </Label>
-          <Select
-            value={settings.securityLevel}
-            onValueChange={handleSecurityLevelChange}
-          >
-            <SelectTrigger id="security-level" className="w-full">
-              <SelectValue placeholder="Select security level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="basic">Basic - Minimal Security</SelectItem>
-              <SelectItem value="standard">Standard - Recommended</SelectItem>
-              <SelectItem value="high">High - Enhanced Protection</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-muted-foreground">
-            Choose a preset security level or customize individual settings below
-          </p>
-        </div>
-        
-        {/* Session Security */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-hotpink" />
-            <h3 className="font-medium">Session Security</h3>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="auto-logout">Automatic Logout</Label>
-              <p className="text-sm text-muted-foreground">
-                Automatically log out after a period of inactivity
-              </p>
-            </div>
-            <Switch
-              id="auto-logout"
-              checked={settings.autoLogoutEnabled}
-              onCheckedChange={() => handleToggle('autoLogoutEnabled')}
-            />
-          </div>
-          
-          {settings.autoLogoutEnabled && (
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="logout-time">Inactivity Timeout</Label>
-                <span className="text-sm font-medium">{settings.autoLogoutTime} minutes</span>
-              </div>
-              <Slider
-                id="logout-time"
-                value={[settings.autoLogoutTime]}
-                min={5}
-                max={60}
-                step={5}
-                onValueChange={handleSliderChange}
-              />
-              <p className="text-xs text-muted-foreground">
-                Set how long before inactivity triggers automatic logout
-              </p>
-            </div>
-          )}
-        </div>
-        
-        {/* Data Security */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-hotpink" />
-            <h3 className="font-medium">Data Security</h3>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="encrypt-storage">Encrypt Local Storage</Label>
-              <p className="text-sm text-muted-foreground">
-                Encrypt sensitive data stored on your device
-              </p>
-            </div>
-            <Switch
-              id="encrypt-storage"
-              checked={settings.encryptLocalStorage}
-              onCheckedChange={() => handleToggle('encryptLocalStorage')}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="data-masking">Sensitive Data Masking</Label>
-              <p className="text-sm text-muted-foreground">
-                Hide sensitive information in the interface
-              </p>
-            </div>
-            <Switch
-              id="data-masking"
-              checked={settings.sensitiveDataMasking}
-              onCheckedChange={() => handleToggle('sensitiveDataMasking')}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="integrity-check">Document Integrity Check</Label>
-              <p className="text-sm text-muted-foreground">
-                Verify documents for tampering before operations
-              </p>
-            </div>
-            <Switch
-              id="integrity-check"
-              checked={settings.documentIntegrityCheck}
-              onCheckedChange={() => handleToggle('documentIntegrityCheck')}
-            />
-          </div>
-        </div>
-        
-        {/* Security Monitoring */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="h-4 w-4 text-hotpink" />
-            <h3 className="font-medium">Security Monitoring</h3>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="audit-logging">Client-Side Audit Logging</Label>
-              <p className="text-sm text-muted-foreground">
-                Record security events in browser console (for troubleshooting)
-              </p>
-            </div>
-            <Switch
-              id="audit-logging"
-              checked={settings.auditLoggingEnabled}
-              onCheckedChange={() => handleToggle('auditLoggingEnabled')}
-            />
-          </div>
-        </div>
-        
-        {/* Notifications */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <EyeOff className="h-4 w-4 text-hotpink" />
-            <h3 className="font-medium">Security Notifications</h3>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Label htmlFor="notify-security">Security Events</Label>
-            <Switch
-              id="notify-security"
-              checked={settings.notifications.securityEvents}
-              onCheckedChange={() => handleNotificationToggle('securityEvents')}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Label htmlFor="notify-login">Login Attempts</Label>
-            <Switch
-              id="notify-login"
-              checked={settings.notifications.loginAttempts}
-              onCheckedChange={() => handleNotificationToggle('loginAttempts')}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <Label htmlFor="notify-document">Document Access</Label>
-            <Switch
-              id="notify-document"
-              checked={settings.notifications.documentAccess}
-              onCheckedChange={() => handleNotificationToggle('documentAccess')}
-            />
-          </div>
-        </div>
-      </CardContent>
-      
-      <CardFooter>
-        <Button 
-          onClick={saveSettings} 
-          disabled={saving}
-          className="ml-auto bg-hotpink hover:bg-hotpink/90"
-        >
-          {saving ? (
-            <>
-              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-              Saving...
-            </>
-          ) : "Save Security Settings"}
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-};
 
-export default SecuritySettingsPanel;
+  // Render error state
+  if (settingsError) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-700">
+        <h3 className="text-lg font-semibold mb-2">Error Loading Security Settings</h3>
+        <p>{settingsError.message || "An error occurred while loading security settings."}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-hotpink-700 flex items-center">
+          <Shield className="mr-2 h-5 w-5" />
+          Security Settings
+        </h2>
+        <p className="text-gray-600 text-sm mt-1">
+          Configure your security preferences to protect your account and data
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        {/* Authentication Section */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+            <Key className="mr-2 h-4 w-4" />
+            Authentication
+          </h3>
+          
+          <div className="bg-gray-50 p-4 rounded-md mb-4">
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="mfaEnabled"
+                name="mfaEnabled"
+                className="h-4 w-4 text-hotpink-500 focus:ring-hotpink-400 border-gray-300 rounded"
+                checked={formState.mfaEnabled}
+                onChange={handleInputChange}
+              />
+              <label htmlFor="mfaEnabled" className="ml-2 block text-sm text-gray-700 font-medium">
+                Enable multi-factor authentication
+              </label>
+            </div>
+            
+            {formState.mfaEnabled && (
+              <div className="ml-6">
+                <label htmlFor="mfaMethod" className="block text-sm text-gray-700 mb-1">
+                  Authentication method
+                </label>
+                <select
+                  id="mfaMethod"
+                  name="mfaMethod"
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-hotpink-500 focus:border-hotpink-500 sm:text-sm rounded-md"
+                  value={formState.mfaMethod}
+                  onChange={handleInputChange}
+                >
+                  <option value="app">Authenticator app</option>
+                  <option value="sms">SMS verification</option>
+                  <option value="email">Email verification</option>
+                </select>
+              </div>
+            )}
+            
+            <div className="mt-4">
+              <label htmlFor="passwordExpiryDays" className="block text-sm text-gray-700 mb-1">
+                Password expiration
+              </label>
+              <div className="flex items-center">
+                <input
+                  type="number"
+                  id="passwordExpiryDays"
+                  name="passwordExpiryDays"
+                  className="mt-1 block w-32 border-gray-300 focus:ring-hotpink-500 focus:border-hotpink-500 sm:text-sm rounded-md"
+                  min="0"
+                  max="365"
+                  value={formState.passwordExpiryDays}
+                  onChange={handleInputChange}
+                />
+                <span className="ml-2 text-sm text-gray-500">days (0 = never expires)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Session Settings */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+            <Clock className="mr-2 h-4 w-4" />
+            Session Settings
+          </h3>
+          
+          <div className="bg-gray-50 p-4 rounded-md mb-4">
+            <div className="mb-4">
+              <label htmlFor="sessionTimeout" className="block text-sm text-gray-700 mb-1">
+                Session timeout
+              </label>
+              <select
+                id="sessionTimeout"
+                name="sessionTimeout"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-hotpink-500 focus:border-hotpink-500 sm:text-sm rounded-md"
+                value={formState.sessionTimeout}
+                onChange={handleSessionTimeoutChange}
+              >
+                {sessionTimeoutOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="autoLogoutOnInactivity"
+                name="autoLogoutOnInactivity"
+                className="h-4 w-4 text-hotpink-500 focus:ring-hotpink-400 border-gray-300 rounded"
+                checked={formState.autoLogoutOnInactivity}
+                onChange={handleInputChange}
+              />
+              <label htmlFor="autoLogoutOnInactivity" className="ml-2 block text-sm text-gray-700">
+                Automatically log out after inactivity
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Document Security */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+            <Eye className="mr-2 h-4 w-4" />
+            Document Security
+          </h3>
+          
+          <div className="bg-gray-50 p-4 rounded-md mb-4">
+            <div className="mb-4">
+              <label htmlFor="documentAccessLevel" className="block text-sm text-gray-700 mb-1">
+                Document access level
+              </label>
+              <select
+                id="documentAccessLevel"
+                name="documentAccessLevel"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-hotpink-500 focus:border-hotpink-500 sm:text-sm rounded-md"
+                value={formState.documentAccessLevel}
+                onChange={handleInputChange}
+              >
+                <option value="restricted">Restricted - Minimal access</option>
+                <option value="standard">Standard - Normal access</option>
+                <option value="elevated">Elevated - Higher access</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="allowExternalSharing"
+                name="allowExternalSharing"
+                className="h-4 w-4 text-hotpink-500 focus:ring-hotpink-400 border-gray-300 rounded"
+                checked={formState.allowExternalSharing}
+                onChange={handleInputChange}
+              />
+              <label htmlFor="allowExternalSharing" className="ml-2 block text-sm text-gray-700">
+                Allow sharing documents with external users
+              </label>
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="documentWatermarking"
+                name="documentWatermarking"
+                className="h-4 w-4 text-hotpink-500 focus:ring-hotpink-400 border-gray-300 rounded"
+                checked={formState.documentWatermarking}
+                onChange={handleInputChange}
+              />
+              <label htmlFor="documentWatermarking" className="ml-2 block text-sm text-gray-700">
+                Enable document watermarking
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Advanced Security */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+            <Shield className="mr-2 h-4 w-4" />
+            Advanced Security
+          </h3>
+          
+          <div className="bg-gray-50 p-4 rounded-md mb-4">
+            <div className="mb-4">
+              <label htmlFor="auditLoggingLevel" className="block text-sm text-gray-700 mb-1">
+                Audit logging level
+              </label>
+              <select
+                id="auditLoggingLevel"
+                name="auditLoggingLevel"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-hotpink-500 focus:border-hotpink-500 sm:text-sm rounded-md"
+                value={formState.auditLoggingLevel}
+                onChange={handleInputChange}
+              >
+                <option value="minimal">Minimal - Only critical events</option>
+                <option value="standard">Standard - Important events</option>
+                <option value="verbose">Verbose - All events</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="securityNotifications"
+                name="securityNotifications"
+                className="h-4 w-4 text-hotpink-500 focus:ring-hotpink-400 border-gray-300 rounded"
+                checked={formState.securityNotifications}
+                onChange={handleInputChange}
+              />
+              <label htmlFor="securityNotifications" className="ml-2 block text-sm text-gray-700">
+                Receive security notifications
+              </label>
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="apiAccessEnabled"
+                name="apiAccessEnabled"
+                className="h-4 w-4 text-hotpink-500 focus:ring-hotpink-400 border-gray-300 rounded"
+                checked={formState.apiAccessEnabled}
+                onChange={handleInputChange}
+              />
+              <label htmlFor="apiAccessEnabled" className="ml-2 block text-sm text-gray-700">
+                Enable API access
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end mt-8">
+          <button
+            type="submit"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-hotpink-600 hover:bg-hotpink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hotpink-500"
+            disabled={loading || updateSecuritySettingsMutation.isPending}
+          >
+            {(loading || updateSecuritySettingsMutation.isPending) ? (
+              <>
+                <span className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                Saving...
+              </>
+            ) : (
+              'Save Settings'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
