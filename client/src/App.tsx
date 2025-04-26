@@ -81,6 +81,8 @@ const LazyICHWizPage = React.lazy(() => import('./pages/ICHWizPage'));
 const LazyAdminProfile = React.lazy(() => import('./pages/AdminProfile'));
 // Role-based dashboard with dynamically rendered KPIs
 const LazyRoleDashboard = React.lazy(() => import('./pages/RoleDashboard'));
+// eCTD Planner module for submission management
+const LazyEctdPlanner = React.lazy(() => import('./pages/EctdPlanner'));
 
 // Simple error boundary component
 class SimpleErrorBoundary extends React.Component<

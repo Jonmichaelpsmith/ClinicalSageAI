@@ -111,3 +111,33 @@ export async function autoTag(buffer) {
 export function isAiAvailable() {
   return !!openai;
 }
+
+/**
+ * Suggest next steps for missing eCTD modules
+ * 
+ * @param {string[]} missingArray - Array of missing module names
+ * @param {string} region - Regulatory region (e.g., 'US', 'EU')
+ * @returns {Promise<string>} Suggestion text
+ */
+export async function suggestMissing(missingArray, region) {
+  if (!openai) {
+    console.warn('OpenAI API key not configured. AI suggestions disabled.');
+    return 'AI suggestions not available. Please configure OPENAI_API_KEY.';
+  }
+  
+  try {
+    const msg = missingArray.join(', ');
+    const resp = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You are a regulatory submissions assistant.' },
+        { role: 'user', content: `We are preparing an eCTD for region ${region}. Missing modules: ${msg}. Suggest next actions in one sentence.` }
+      ],
+      max_tokens: 50
+    });
+    return resp.choices[0].message.content.trim();
+  } catch (error) {
+    console.error('Error generating suggestions for missing modules:', error);
+    return 'Consider adding documents to the missing modules based on regulatory requirements.';
+  }
+}
