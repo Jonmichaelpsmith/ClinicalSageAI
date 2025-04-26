@@ -28,6 +28,7 @@
         
         * {
             margin: 0;
+            box-sizing: border-box;
             padding: 0;
             box-sizing: border-box;
         }
@@ -406,11 +407,19 @@
             }
             
             .features-container {
-                flex-direction: column;
+                grid-template-columns: 1fr;
             }
             
             .feature-content, .feature-image {
                 width: 100%;
+            }
+            
+            .full-width-solution {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 90%;
             }
         }
         
@@ -429,7 +438,98 @@
             }
             
             .hero-title {
-                font-size: 36px;
+                font-size: 32px;
+            }
+            
+            .section-title {
+                font-size: 28px;
+            }
+            
+            .section-subtitle {
+                font-size: 16px;
+            }
+            
+            /* Fix for features grid on mobile */
+            div[style*="display: grid"] {
+                grid-template-columns: 1fr !important;
+                width: 100% !important;
+            }
+            
+            /* Ensure content stays within container */
+            .section-container {
+                padding: 0 15px;
+                width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+            
+            /* Make comparison table responsive */
+            div[style*="overflow-x: auto"] {
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -15px;
+                padding: 0 15px;
+                width: calc(100% + 30px);
+            }
+            
+            /* Fix text overflow in mobile */
+            span, p, li, td, th, h1, h2, h3, h4, h5, h6 {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                hyphens: auto;
+            }
+            
+            /* Ensure tables can be scrolled */
+            table {
+                width: 100%;
+                table-layout: auto;
+            }
+        }
+        
+        /* Additional fixes for very small screens */
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 28px;
+            }
+            
+            .hero-subtitle {
+                font-size: 16px;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stat-value {
+                font-size: 28px;
+            }
+            
+            .stat-label {
+                font-size: 14px;
+            }
+            
+            /* Ensure all content fits on mobile */
+            body {
+                overflow-x: hidden;
+                width: 100%;
+                position: relative;
+            }
+            
+            /* Fix horizontal scrolling on containers */
+            .section-container, div[style*="display: grid"], div[style*="display: flex"] {
+                max-width: 100%;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            /* Reduce padding for mobile */
+            .section {
+                padding: 30px 0;
+            }
+            
+            /* Fix for tables on mobile */
+            table {
+                font-size: 80%;
             }
         }
     </style>
@@ -2396,14 +2496,14 @@
     </section>
     
     <!-- How We Beat Veeva & Certara - YPrime Style -->
-    <section class="section" style="padding: 30px 0; background-color: white;">
-        <div class="section-container">
+    <section class="section" style="padding: 30px 0; background-color: white; max-width: 100%; width: 100%; overflow-x: hidden;">
+        <div class="section-container" style="max-width: 100%; width: 100%; box-sizing: border-box;">
             <div class="section-header">
                 <h2 class="section-title" style="color: var(--primary); font-size: 20px; margin-bottom: 5px;">How We Beat Veeva & Certara</h2>
                 <p class="section-subtitle" style="color: #555; font-size: 11px; max-width: 600px; margin: 0 auto 15px;">Feature comparison showcasing our platform's competitive advantages</p>
             </div>
             
-            <div style="overflow-x: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); max-width: 100%; -webkit-overflow-scrolling: touch;">
+            <div style="overflow-x: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); max-width: 100%; width: 100%; -webkit-overflow-scrolling: touch; margin: 0 -15px; padding: 0 15px; width: calc(100% + 30px);" class="comp-table-container">
                 <table style="width: 100%; border-collapse: collapse; font-size: 10px; min-width: 320px; table-layout: fixed;">
                     <thead>
                         <tr style="background-color: var(--primary); color: white; text-align: left;">
@@ -2502,7 +2602,7 @@
             <div style="margin-top: 40px;">
                 <h3 style="font-size: 24px; color: var(--primary); margin-bottom: 20px; text-align: center;">Features for Every Client</h3>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 30px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; width: 100%; max-width: 100%; box-sizing: border-box; overflow-x: hidden;" class="features-grid">
                     <div style="background-color: #f8f8f8; border-radius: 10px; padding: 20px; box-shadow: var(--box-shadow); width: 100%; overflow-wrap: break-word;">
                         <ul style="padding-left: 0; margin: 0; list-style: none; word-break: break-word;">
                             <li style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px;">
