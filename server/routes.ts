@@ -200,7 +200,7 @@ function createMinimalServer() {
   return server;
 }
 
-export function setupRoutes(app: express.Application): http.Server {
+export async function setupRoutes(app: express.Application): Promise<http.Server> {
   let httpServer: http.Server;
   
   try {
@@ -631,6 +631,21 @@ export function setupRoutes(app: express.Application): http.Server {
   } catch (error) {
     const logger = createContextLogger({ module: 'routes' });
     logger.error('Failed to register FDA Compliance API routes:', { 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }
+
+  // Register TrialSage Vault API proxy routes
+  console.log('Registering TrialSage Vault API routes');
+  try {
+    // Import dynamically to keep the module loading encapsulated
+    const vaultProxyModule = await import('./routes/vault-proxy.js');
+    app.use('/api/vault', vaultProxyModule.default);
+    console.log('TrialSage Vault API routes registered successfully');
+  } catch (error) {
+    const logger = createContextLogger({ module: 'routes' });
+    logger.error('Failed to register TrialSage Vault API routes:', { 
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined
     });
