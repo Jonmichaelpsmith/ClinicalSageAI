@@ -1,0 +1,95 @@
+✅ The enhanced production-quality **DocuShare backend authentication + document service** code is now loaded into Canvas under the file **Docushare Integration**.
+
+---
+
+# 📋 Replit Instructions to Deploy This:
+
+### 1. **Set Environment Variables**
+Go to your Replit project ➔ Secrets (Environment Variables):
+
+- `DS_DOMAIN` = `https://your-docushare-instance-url`
+- `DS_CLIENT_ID` = `your-client-id`
+- `DS_CLIENT_SECRET` = `your-client-secret`
+
+(⚡ Make sure no trailing slashes in DS_DOMAIN.)
+
+---
+
+### 2. **Install Axios and FormData**
+In the Replit Shell (or Packages tab), install needed libraries:
+
+```bash
+npm install axios form-data
+```
+
+---
+
+### 3. **Update Your Express Routes**
+Connect `/api/docushare` routes to use these service functions (`listDocuments`, `uploadDocument`, `downloadDocument`).
+
+Example in `server/routes/docushare.js`:
+
+```javascript
+import express from 'express';
+import { listDocuments, uploadDocument, downloadDocument } from '../services/docushare.js';
+
+const router = express.Router();
+
+router.get('/list', async (req, res) => {
+  try {
+    const docs = await listDocuments(req.query.folderId || '');
+    res.json(docs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.post('/upload', async (req, res) => {
+  try {
+    const file = req.files.file; // Use file upload middleware like express-fileupload
+    const folderId = req.body.folderId;
+    const uploadResult = await uploadDocument(folderId, file);
+    res.json(uploadResult);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get('/download/:id', async (req, res) => {
+  try {
+    const fileBlob = await downloadDocument(req.params.id);
+    res.setHeader('Content-Disposition', `attachment; filename=\"document_${req.params.id}\"`);
+    res.send(fileBlob);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+export default router;
+```
+
+---
+
+### 4. **Frontend DocuShare Service Adjustment**
+In `DocuShareService.js` (frontend):
+
+- Update fetch endpoints to hit `/api/docushare/list`, `/api/docushare/upload`, `/api/docushare/download/:id`
+- Remove mock data toggles.
+
+---
+
+### 5. **Testing**
+- Test listing documents: ✅ `/api/docushare/list`
+- Test uploading documents: ✅ `/api/docushare/upload`
+- Test downloading documents: ✅ `/api/docushare/download/:id`
+
+---
+
+# 🚀 After this:
+- I can also generate upgraded **DocuSharePanel.jsx** with drag/drop, live previews, filters, and AI Summarizer buttons if you want.
+- I can create the **Audit Trail dashboard module** after that.
+
+---
+
+Would you like me to start now with the new **full Replit DocuSharePanel.jsx** component so it's enterprise-grade? 📂✨  
+(**Ready in 1 round if yes.**)
