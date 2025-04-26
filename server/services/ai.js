@@ -141,3 +141,45 @@ export async function suggestMissing(missingArray, region) {
     return 'Consider adding documents to the missing modules based on regulatory requirements.';
   }
 }
+
+/**
+ * Analyze promotional materials for unsupported claims
+ * 
+ * @param {string} fileUrl - URL of the promotional file
+ * @returns {Promise<Array>} Array of claim objects with text, supported status, and reference suggestions
+ */
+export async function checkClaimsAI(fileUrl) {
+  if (!openai) {
+    console.warn('OpenAI API key not configured. AI claim checking disabled.');
+    return [{ text: 'AI claim analysis not available', supported: false, referenceSuggestion: 'Configure OPENAI_API_KEY' }];
+  }
+  
+  try {
+    const resp = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'You review pharmaceutical promotional claims. For each claim, say if it needs reference or is unsupported.' },
+        { role: 'user', content: `Analyze promo from url: ${fileUrl}. Return array JSON: [{text, supported, referenceSuggestion}].` }
+      ],
+      max_tokens: 300
+    });
+    
+    try { 
+      return JSON.parse(resp.choices[0].message.content); 
+    } catch (parseError) {
+      console.error('Error parsing AI claim analysis:', parseError);
+      return [{ 
+        text: 'Failed to parse claim analysis', 
+        supported: false, 
+        referenceSuggestion: 'Check promotional content manually' 
+      }];
+    }
+  } catch (error) {
+    console.error('Error analyzing claims:', error);
+    return [{ 
+      text: 'Error during AI claim analysis', 
+      supported: false, 
+      referenceSuggestion: 'System error; try again later' 
+    }];
+  }
+}
