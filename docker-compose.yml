@@ -1,63 +1,13 @@
 version: "3.9"
-
 services:
-  traefik:
-    image: traefik:v3.0
-    command:
-      - "--providers.docker=true"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.le.acme.httpchallenge=true"
-      - "--certificatesresolvers.le.acme.email=admin@example.com"
-      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=websecure"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt"
-
-  backend:
+  vault-api:
     build: .
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`{{DOMAIN}}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.tls.certresolver=le"
-    env_file: .env
-    depends_on: [db, redis]
-
-  worker:
-    build: .
-    command: celery -A ind_automation.tasks.celery_app worker --loglevel=INFO
-    env_file: .env
-    depends_on: [backend, redis]
-
-  beat:
-    build: .
-    command: celery -A ind_automation.tasks.celery_app beat --loglevel=INFO
-    env_file: .env
-    depends_on: [backend, redis]
-
-  frontend:
-    build: ./client
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.front.rule=Host(`{{DOMAIN}}`)"
-      - "traefik.http.routers.front.entrypoints=websecure"
-      - "traefik.http.routers.front.tls.certresolver=le"
-
-  redis:
-    image: redis:7-alpine
-    volumes: [redis:/data]
-
-  db:
-    image: postgres:15-alpine
     environment:
-      - POSTGRES_PASSWORD=changeme
-    volumes: [pgdata:/var/lib/postgresql/data]
-
-volumes:
-  pgdata: {}
-  redis: {}
-  letsencrypt: {}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+    ports:
+      - "4000:4000"
+    restart: always

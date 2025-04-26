@@ -1,147 +1,25 @@
-name: CI/CD Pipeline
-
+name: CI-CD
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
+    branches: [main]
 jobs:
-  test-and-build:
+  build-and-push:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        # Health check to wait for postgres to start
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: docker/build-push-action@v5
         with:
-          node-version: '16'
-          cache: 'npm'
-      
-      - name: Install Node.js dependencies
-        run: npm ci
-      
-      - name: Lint JavaScript/TypeScript
-        run: npm run lint || true
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          cache: 'pip'
-      
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      
-      - name: Run Python tests
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/trialsage-vault:latest
+          build-args: |
+            SUPABASE_URL
+            SUPABASE_SERVICE_ROLE_KEY
+            JWT_SECRET
+            OPENAI_API_KEY
+            SENTRY_DSN
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost/test_db
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          REDIS_DB: 0
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          HF_API_KEY: ${{ secrets.HF_API_KEY }}
-          JWT_SECRET_KEY: test_secret_key
-        run: |
-          # Run tests with pytest (or your preferred test runner)
-          # For example: pytest tests/ -v
-          echo "No tests implemented yet, skipping..."
-      
-      - name: Build frontend
-        run: npm run build
-
-      - name: Build Docker image
-        run: |
-          docker build -t lumen-trial-guide:${{ github.sha }} .
-          docker tag lumen-trial-guide:${{ github.sha }} lumen-trial-guide:latest
-      
-      - name: Save Docker image
-        if: github.ref == 'refs/heads/main'
-        run: |
-          docker save lumen-trial-guide:latest -o lumen-trial-guide.tar
-      
-      - name: Upload Docker image artifact
-        if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v3
-        with:
-          name: docker-image
-          path: lumen-trial-guide.tar
-          retention-days: 1
-
-  deploy:
-    needs: test-and-build
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-      
-      - name: Download Docker image artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: docker-image
-      
-      - name: Load Docker image
-        run: |
-          docker load -i lumen-trial-guide.tar
-      
-      # Uncomment and configure for your specific deployment environment
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: us-east-1
-      
-      # - name: Login to Amazon ECR
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@v1
-      
-      # - name: Push to ECR
-      #   env:
-      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     ECR_REPOSITORY: lumen-trial-guide
-      #   run: |
-      #     docker tag lumen-trial-guide:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
-      #     docker tag lumen-trial-guide:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
-      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
-      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-      
-      # Deploy notification
-      - name: Deployment notification
-        run: |
-          echo "🚀 Deployment ready. Replace this with your actual deployment command or notification."
-          echo "Image: lumen-trial-guide:${{ github.sha }}"
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
