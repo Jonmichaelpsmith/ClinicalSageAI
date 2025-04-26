@@ -1,56 +1,67 @@
-/**
- * Database Module
- * 
- * This module provides a lightweight in-memory database for development.
- * In production, this would be replaced with a connection to PostgreSQL.
- */
+// Database connection setup
+const { Pool } = require('pg');
+require('dotenv').config();
 
-// Mock database session
-export const SessionLocal = function() {
-  return {
-    query: function(model) {
-      return {
-        filter: function(condition) {
-          return this;
-        },
-        filter_by: function(conditions) {
-          return this;
-        },
-        first: function() {
-          // Return mock document
-          return {
-            id: 123,
-            path: '/path/to/document-123.pdf',
-            status: 'pending',
-            qc_json: null,
-            approved_at: null
-          };
-        }
-      };
-    },
-    add: function(model) {
-      // Mock adding model to session
-      console.log('Adding model to session:', model);
-      return true;
-    },
-    commit: function() {
-      // Mock committing session
-      console.log('Committing session');
-      return true;
-    },
-    rollback: function() {
-      // Mock rolling back session
-      console.log('Rolling back session');
-      return true;
-    },
-    close: function() {
-      // Mock closing session
-      console.log('Closing session');
-      return true;
-    }
-  };
+// Create a new database pool with the connection string from environment variables
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+// Function to set tenant context variables on the database session
+const setTenantContext = async (client, tenantContext) => {
+  const { userId, croId, clientId } = tenantContext;
+  
+  // Set session variables for row-level security policies
+  const queries = [];
+  
+  if (userId) {
+    queries.push(`SET LOCAL app.current_user_id = '${userId}';`);
+  }
+  
+  if (croId) {
+    queries.push(`SET LOCAL app.current_cro_id = '${croId}';`);
+  }
+  
+  if (clientId) {
+    queries.push(`SET LOCAL app.current_client_id = '${clientId}';`);
+  }
+  
+  if (queries.length > 0) {
+    await client.query(queries.join(' '));
+  }
 };
 
-export default {
-  SessionLocal
+// Function to get a database client with tenant context
+const getClientWithContext = async (tenantContext) => {
+  const client = await pool.connect();
+  try {
+    await setTenantContext(client, tenantContext);
+    return client;
+  } catch (error) {
+    client.release();
+    throw error;
+  }
+};
+
+module.exports = {
+  pool,
+  getClientWithContext,
+  query: (text, params, tenantContext) => {
+    if (tenantContext) {
+      return new Promise(async (resolve, reject) => {
+        const client = await getClientWithContext(tenantContext);
+        try {
+          const result = await client.query(text, params);
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        } finally {
+          client.release();
+        }
+      });
+    } else {
+      return pool.query(text, params);
+    }
+  }
 };
