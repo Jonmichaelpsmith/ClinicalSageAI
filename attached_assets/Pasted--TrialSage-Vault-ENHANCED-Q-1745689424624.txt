@@ -1,0 +1,206 @@
+// ───────────────────────────────────────────────────────────────
+// TrialSage Vault™ – ENHANCED Quality / Regulatory Reference Model
+//  • sql/reference_model.sql         – master taxonomy + seed data + triggers
+//  • server/hooks/refModel.js        – subtype & policy helper utilities
+//  • server/routes/meta.js           – meta‑data API (types / sub‑types / lifecycles)
+//  • server/jobs/periodicReview.js   – monthly scheduler for periodic reviews
+//  • client/components/SubtypeSelect.jsx – searchable, grouped pick‑list
+//  • client/components/TypeBreadcrumb.jsx – shows pyramid path for each doc
+//  • Integration checklist            – wiring & enforcement notes
+// ───────────────────────────────────────────────────────────────
+
+// ---------------- sql/reference_model.sql ----------------
+/*
+Run once in Supabase SQL editor or via CLI:
+  supabase db query < sql/reference_model.sql
+*/
+-- 1. Core tables ------------------------------------------------
+create table if not exists lifecycles (
+  id text primary key,
+  name text,
+  start_state text,
+  steady_state text
+);
+insert into lifecycles values
+ ('draft_eff','Draft→Effective','Draft','Effective') on conflict do nothing,
+ ('draft_appr','Draft→Approved','Draft','Approved') on conflict do nothing,
+ ('init_final','Initial→Final','Initial','Final') on conflict do nothing;
+
+create table if not exists document_types (
+  id text primary key,
+  name text,
+  description text,
+  sort_order int
+);
+insert into document_types(id,name,description,sort_order) values
+ ('gov','Governance & Procedures','Policies, SOPs, WIs',1),
+ ('ops','Operations','Protocols, Specs, MBR',2),
+ ('forms','Forms','Templates / executed forms',3),
+ ('records','Executed Records','GxP evidence & records',4)
+ on conflict do nothing;
+
+create table if not exists document_subtypes (
+  id text primary key,
+  type_id text references document_types(id),
+  name text,
+  description text,
+  lifecycle_id text references lifecycles(id),
+  requires_training boolean default false,
+  review_interval integer,  -- months to periodic review
+  archive_after integer,    -- months to archive
+  delete_after integer      -- months to delete
+);
+insert into document_subtypes values
+ -- Governance
+ ('sop','gov','Standard Operating Procedure','Top‑level SOP','draft_eff',true,24,60,120),
+ ('wi','gov','Work Instruction','Detailed WI','draft_eff',true,24,60,120),
+ ('policy','gov','Quality Policy','Corporate policy','draft_eff',true,36,60,120),
+ -- Operations
+ ('protocol','ops','Manufacturing Protocol','mfg protocol','draft_appr',false,null,36,120),
+ ('spec','ops','Specification','Material / product spec','draft_appr',false,12,36,120),
+ ('mbr','ops','Master Batch Record','template MBR','draft_appr',false,12,36,120),
+ -- Forms
+ ('template_form','forms','Template Form','blank form','draft_appr',false,36,60,120),
+ -- Records
+ ('executed_mbr','records','Executed Batch Record','completed MBR','init_final',false,null,120,180),
+ ('csr','records','Clinical Study Report','Final CSR','init_final',false,null,60,120)
+ on conflict do nothing;
+
+-- 2. Folder template ------------------------------------------------
+create table if not exists folder_templates (
+  id serial primary key,
+  type_id text references document_types(id),
+  name text,
+  sort_order int
+);
+insert into folder_templates(type_id,name,sort_order) values
+ ('gov','Policies',1),('gov','SOPs',2),('gov','Work Instructions',3),
+ ('ops','Protocols',1),('ops','Specs',2),('ops','Master Batch Records',3),
+ ('forms','Templates',1),
+ ('records','Executed Records',1)
+ on conflict do nothing;
+
+-- 3. Retention rules seed template -------------------------------
+create table if not exists retention_rules (
+  tenant_id uuid,
+  doc_type text,
+  archive_after integer,
+  delete_after integer,
+  primary key (tenant_id, doc_type)
+);
+insert into retention_rules
+select 'TEMPLATE', id, archive_after, delete_after from document_subtypes
+on conflict do nothing;
+
+-- 4. Periodic review tasks table ----------------------------------
+create table if not exists periodic_review_tasks (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid,
+  doc_id uuid,
+  due_date date,
+  status text default 'Open'
+);
+
+-- Trigger to schedule periodic review on doc Effective ------------
+create or replace function schedule_periodic_review()
+returns trigger as $$
+begin
+  if NEW.status = 'Effective' then
+    insert into periodic_review_tasks(tenant_id,doc_id,due_date)
+    select NEW.tenant_id, NEW.id, (now() + (ds.review_interval||' months')::interval)::date
+    from document_subtypes ds where ds.id = NEW.subtype_id and ds.review_interval is not null;
+  end if;
+  return NEW;
+end;
+$$ language plpgsql;
+
+create trigger trg_schedule_review
+after update on documents
+for each row when (old.status is distinct from new.status)
+execute procedure schedule_periodic_review();
+
+// ---------------- server/hooks/refModel.js ----------------
+import { supabase } from '../lib/supabaseClient.js';
+export async function getSubtype(id) {
+  const { data, error } = await supabase.from('document_subtypes').select('*').eq('id', id).single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+export async function enforceFolder(topId, subtypeId) {
+  const subtype = await getSubtype(subtypeId);
+  if (subtype.type_id !== topId) throw new Error('Subtype must reside under '+subtype.type_id);
+  return true;
+}
+
+// ---------------- server/routes/meta.js ----------------
+import { Router } from 'express';
+import { supabase } from '../lib/supabaseClient.js';
+const meta = Router();
+meta.get('/types', async (_,res)=>{
+  const { data } = await supabase.from('document_types').select('*').order('sort_order');
+  res.json(data);
+});
+meta.get('/subtypes', async (_,res)=>{
+  const { data } = await supabase.from('document_subtypes').select('id,name,type_id');
+  res.json(data);
+});
+meta.get('/lifecycles', async (_,res)=>{
+  const { data } = await supabase.from('lifecycles').select('*');
+  res.json(data);
+});
+export default meta;
+
+// ---------------- server/jobs/periodicReview.js ----------------
+import cron from 'node-cron';
+import { supabase } from '../lib/supabaseClient.js';
+cron.schedule('0 2 * * *', async () => {
+  const { data: tasks } = await supabase
+    .from('periodic_review_tasks')
+    .select('id, doc_id, due_date')
+    .eq('status','Open')
+    .lte('due_date', new Date().toISOString());
+  for (const t of tasks) {
+    // Notify owner (pseudo‑code)
+    // sendEmail(owner.email, `Periodic Review Due for ${doc.filename}`)
+    await supabase.from('periodic_review_tasks').update({ status: 'Due' }).eq('id', t.id);
+  }
+});
+
+// ---------------- client/components/SubtypeSelect.jsx ----------------
+import React, { useEffect, useState, useMemo } from 'react';
+import axios from 'axios';
+import { Select, SelectItem } from '@/components/ui/select';
+
+export default function SubtypeSelect({ value, onChange, topFolder }) {
+  const [subs, setSubs] = useState([]);
+  useEffect(()=>{ axios.get('/api/meta/subtypes').then(r=>setSubs(r.data)); },[]);
+  const options = useMemo(()=> subs.filter(s=>s.type_id===topFolder),[subs,topFolder]);
+  return (
+    <Select searchable value={value} onValueChange={onChange} placeholder="Document subtype…">
+      {options.map(s=> <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+    </Select>
+  );
+}
+
+// ---------------- client/components/TypeBreadcrumb.jsx ----------------
+import React from 'react';
+export default function TypeBreadcrumb({ typeName, subtypeName }) {
+  return <p className="text-xs text-gray-500">{typeName} / {subtypeName}</p>;
+}
+
+// ---------------- Integration Checklist ----------------
+1️⃣ **Run** `sql/reference_model.sql` in Supabase (creates taxonomy, triggers, periodic review table).
+2️⃣ **Add** meta routes:
+```js
+import metaRoutes from './routes/meta.js';
+app.use('/api/meta', metaRoutes);
+```
+3️⃣ **Replace** doc‑type input with `<SubtypeSelect/>`; capture `topFolder` from folder you’re in.
+4️⃣ **Enforce hierarchy** on upload: call `enforceFolder(topFolder, subtypeId)`; return 400 if mismatch.
+5️⃣ **Periodic review job**: in `server/index.js` add `import './jobs/periodicReview.js';` – cron logs tasks daily.
+6️⃣ **Tenant onboarding**: copy rows from `folder_templates` to `folders` ordered by sort_order.
+7️⃣ **Retention fallback**: in auto‑retention cron, if no rule row, pull settings from subtype.archive_after.
+8️⃣ **Migration**: run (update legacy tag → subtype) script; re‑file docs into new top‑level folders.
+9️⃣ **UI**: show `<TypeBreadcrumb typeName subTypeName />` above preview pane.
+🔟 **QA**: upload each subtype, confirm it lands in correct pyramid folder, lifecycle matches, SOP triggers training, periodic review task scheduled.
+// ───────────────────────────────────────────────────────────────
