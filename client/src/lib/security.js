@@ -1,147 +1,296 @@
 /**
- * Enhanced Security Library for TrialSage
+ * TrialSage Client Security Module
  * 
- * This module provides security utilities for protecting sensitive data and implementing 
- * security best practices throughout the application.
+ * Provides client-side security features:
+ * - Document integrity verification
+ * - CSRF token management
+ * - Secure storage handling
+ * - Client-side encryption for sensitive data
+ * - Tenant validation
  */
 
-import { AES, enc } from 'crypto-js';
+import { Buffer } from 'buffer';
+import { getCookie, setCookie } from './cookies';
 
-/**
- * Encrypts sensitive data using AES-256 encryption
- * @param {string} data - Data to encrypt
- * @param {string} key - Optional encryption key, defaults to environment variable
- * @returns {string} - Encrypted data
- */
-export function encryptData(data, key = import.meta.env.VITE_ENCRYPTION_KEY || 'trialsage-default-key') {
-  if (!data) return null;
-  return AES.encrypt(JSON.stringify(data), key).toString();
-}
+// Generate SHA-256 hash for document integrity
+export const generateDocumentHash = async (document) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(typeof document === 'string' ? document : JSON.stringify(document));
+  
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
 
-/**
- * Decrypts data that was encrypted with encryptData
- * @param {string} encryptedData - Encrypted data string
- * @param {string} key - Optional encryption key, should match the one used for encryption
- * @returns {any} - Decrypted data
- */
-export function decryptData(encryptedData, key = import.meta.env.VITE_ENCRYPTION_KEY || 'trialsage-default-key') {
-  if (!encryptedData) return null;
+// Encrypt sensitive data using AES-256-GCM
+export const encryptData = async (data, key) => {
   try {
-    const bytes = AES.decrypt(encryptedData, key);
-    return JSON.parse(bytes.toString(enc.Utf8));
+    // Convert key to format usable by WebCrypto API
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(key);
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'AES-GCM' },
+      false,
+      ['encrypt']
+    );
+    
+    // Generate IV (initialization vector)
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    
+    // Encrypt the data
+    const dataToEncrypt = encoder.encode(typeof data === 'string' ? data : JSON.stringify(data));
+    const encryptedData = await crypto.subtle.encrypt(
+      {
+        name: 'AES-GCM',
+        iv
+      },
+      cryptoKey,
+      dataToEncrypt
+    );
+    
+    // Convert to Base64 for transmission
+    const encryptedArray = new Uint8Array(encryptedData);
+    const ivString = Buffer.from(iv).toString('base64');
+    const encryptedString = Buffer.from(encryptedArray).toString('base64');
+    
+    return {
+      encryptedData: encryptedString,
+      iv: ivString,
+      method: 'AES-256-GCM'
+    };
   } catch (error) {
-    console.error('Decryption failed:', error);
-    return null;
+    console.error('Encryption error:', error);
+    throw new Error('Failed to encrypt data: ' + error.message);
   }
-}
+};
 
-/**
- * Securely stores sensitive data in localStorage with encryption
- * @param {string} key - Storage key
- * @param {any} data - Data to store
- */
-export function secureLocalStorage(key, data) {
-  if (!key || data === undefined) return;
-  const encryptedData = encryptData(data);
-  localStorage.setItem(key, encryptedData);
-}
+// Decrypt data that was encrypted with AES-256-GCM
+export const decryptData = async (encryptedObj, key) => {
+  try {
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    
+    // Import the encryption key
+    const keyData = encoder.encode(key);
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'AES-GCM' },
+      false,
+      ['decrypt']
+    );
+    
+    // Convert from Base64
+    const iv = Buffer.from(encryptedObj.iv, 'base64');
+    const encryptedData = Buffer.from(encryptedObj.encryptedData, 'base64');
+    
+    // Decrypt the data
+    const decryptedBuffer = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv: new Uint8Array(iv)
+      },
+      cryptoKey,
+      new Uint8Array(encryptedData)
+    );
+    
+    // Convert back to string
+    const decryptedString = decoder.decode(decryptedBuffer);
+    
+    try {
+      // Try to parse as JSON if possible
+      return JSON.parse(decryptedString);
+    } catch {
+      // Return as string if not valid JSON
+      return decryptedString;
+    }
+  } catch (error) {
+    console.error('Decryption error:', error);
+    throw new Error('Failed to decrypt data: ' + error.message);
+  }
+};
 
-/**
- * Retrieves and decrypts data from localStorage
- * @param {string} key - Storage key
- * @returns {any} - Decrypted data or null if not found
- */
-export function getSecureLocalStorage(key) {
-  if (!key) return null;
-  const encryptedData = localStorage.getItem(key);
-  if (!encryptedData) return null;
-  return decryptData(encryptedData);
-}
+// Get CSRF token from cookie
+export const getCsrfToken = () => {
+  return getCookie('csrfToken');
+};
 
-/**
- * Implement Content Security Policy headers in JS
- * This provides an additional layer beyond server headers
- */
-export function setupCSP() {
-  // Only run in browser environment
-  if (typeof document === 'undefined') return;
-
-  // Create and inject CSP meta tag
-  const meta = document.createElement('meta');
-  meta.httpEquiv = 'Content-Security-Policy';
-  meta.content = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.concept2cures.ai https://*.trialsage.com";
-  document.head.appendChild(meta);
-}
-
-/**
- * Sanitizes user input to prevent XSS attacks
- * @param {string} input - User input to sanitize
- * @returns {string} - Sanitized input
- */
-export function sanitizeInput(input) {
-  if (!input) return '';
+// Add CSRF token to all API requests
+export const addCsrfToken = (config) => {
+  const token = getCsrfToken();
   
-  const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
+  if (token) {
+    if (!config.headers) {
+      config.headers = {};
+    }
+    
+    config.headers['X-CSRF-Token'] = token;
+  }
+  
+  return config;
+};
+
+// Add tenant identifier to all API requests
+export const addTenantId = (config, tenantId) => {
+  if (!config.headers) {
+    config.headers = {};
+  }
+  
+  config.headers['X-Tenant-ID'] = tenantId;
+  
+  return config;
+};
+
+// Store an item securely in localStorage with encryption
+export const secureLocalStorage = {
+  getItem: async (key, encryptionKey) => {
+    try {
+      const item = localStorage.getItem(key);
+      
+      if (!item) {
+        return null;
+      }
+      
+      const parsed = JSON.parse(item);
+      
+      // If data is encrypted, decrypt it
+      if (parsed.encrypted && encryptionKey) {
+        return await decryptData(parsed.data, encryptionKey);
+      }
+      
+      // Otherwise return the plain data
+      return parsed.data;
+    } catch (error) {
+      console.error('Error getting item from secure storage:', error);
+      return null;
+    }
+  },
+  
+  setItem: async (key, value, options = {}) => {
+    try {
+      const { encrypt = false, encryptionKey = null, ttl = null } = options;
+      
+      let dataToStore = {
+        data: value,
+        encrypted: false,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Set expiration timestamp if TTL is provided
+      if (ttl) {
+        dataToStore.expiresAt = new Date(Date.now() + ttl).toISOString();
+      }
+      
+      // Encrypt the data if requested
+      if (encrypt && encryptionKey) {
+        dataToStore = {
+          data: await encryptData(value, encryptionKey),
+          encrypted: true,
+          createdAt: new Date().toISOString()
+        };
+        
+        if (ttl) {
+          dataToStore.expiresAt = new Date(Date.now() + ttl).toISOString();
+        }
+      }
+      
+      localStorage.setItem(key, JSON.stringify(dataToStore));
+      return true;
+    } catch (error) {
+      console.error('Error setting item in secure storage:', error);
+      return false;
+    }
+  },
+  
+  removeItem: (key) => {
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch (error) {
+      console.error('Error removing item from secure storage:', error);
+      return false;
+    }
+  },
+  
+  clear: () => {
+    try {
+      localStorage.clear();
+      return true;
+    } catch (error) {
+      console.error('Error clearing secure storage:', error);
+      return false;
+    }
+  }
+};
+
+// Secure document upload with integrity verification
+export const prepareSecureDocumentUpload = async (document, metadata = {}) => {
+  // Generate hash for integrity verification
+  const hash = await generateDocumentHash(document);
+  
+  return {
+    document,
+    hash,
+    metadata: {
+      ...metadata,
+      clientTimestamp: new Date().toISOString(),
+      integrityVersion: '1.0'
+    }
   };
-  
-  return input.replace(/[&<>"']/g, m => map[m]);
-}
+};
 
-/**
- * Validate that a session hasn't expired
- * @returns {boolean} - True if session is valid
- */
-export function validateSession() {
-  const sessionExpiry = getSecureLocalStorage('sessionExpiry');
-  if (!sessionExpiry) return false;
-  return new Date().getTime() < sessionExpiry;
-}
-
-/**
- * Implements a session timeout after inactivity
- * @param {number} timeoutMinutes - Timeout in minutes
- */
-export function setupSessionTimeout(timeoutMinutes = 30) {
-  if (typeof window === 'undefined') return;
+// Security audit logger for client-side events
+export const auditLog = (action, details = {}) => {
+  // Only log in development or when explicitly enabled
+  if (process.env.NODE_ENV !== 'production' || localStorage.getItem('enableAuditLogging') === 'true') {
+    console.log(`[SECURITY AUDIT] ${action}`, {
+      timestamp: new Date().toISOString(),
+      ...details
+    });
+  }
   
-  // Set initial session expiry
-  const expiryTime = new Date().getTime() + (timeoutMinutes * 60 * 1000);
-  secureLocalStorage('sessionExpiry', expiryTime);
+  // If configured, send audit events to server
+  if (typeof window !== 'undefined' && window.sendAuditEvent) {
+    window.sendAuditEvent(action, details);
+  }
+};
+
+// Auto-logout timer for security compliance
+let inactivityTimer;
+export const setupSecurityInactivityMonitor = (logoutCallback, timeoutMs = 30 * 60 * 1000) => {
+  const resetTimer = () => {
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer);
+    }
+    
+    inactivityTimer = setTimeout(() => {
+      auditLog('AUTO_LOGOUT', { reason: 'inactivity', timeoutMs });
+      logoutCallback();
+    }, timeoutMs);
+  };
   
   // Reset timer on user activity
-  const resetTimer = () => {
-    const newExpiryTime = new Date().getTime() + (timeoutMinutes * 60 * 1000);
-    secureLocalStorage('sessionExpiry', newExpiryTime);
-  };
+  if (typeof window !== 'undefined') {
+    ['mousedown', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+      window.addEventListener(event, resetTimer, { passive: true });
+    });
+    
+    // Initial timer start
+    resetTimer();
+  }
   
-  // Add event listeners for user activity
-  const events = ['mousedown', 'keypress', 'scroll', 'touchstart'];
-  events.forEach(event => {
-    window.addEventListener(event, resetTimer);
-  });
-  
-  // Check session validity periodically
-  setInterval(() => {
-    if (!validateSession()) {
-      // Redirect to login or show session timeout dialog
-      window.dispatchEvent(new CustomEvent('session-timeout'));
+  // Return function to clear listeners when component unmounts
+  return () => {
+    if (typeof window !== 'undefined') {
+      ['mousedown', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
     }
-  }, 60000); // Check every minute
-}
-
-// Export default utility object
-export default {
-  encrypt: encryptData,
-  decrypt: decryptData,
-  secureStore: secureLocalStorage,
-  secureRetrieve: getSecureLocalStorage,
-  sanitize: sanitizeInput,
-  setupCSP,
-  setupSessionTimeout,
-  validateSession
+    
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer);
+    }
+  };
 };
