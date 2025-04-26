@@ -85,6 +85,8 @@ const LazyRoleDashboard = React.lazy(() => import('./pages/RoleDashboard'));
 const LazyEctdPlanner = React.lazy(() => import('./pages/EctdPlanner'));
 // SOP Training Workflow for tracking training tasks
 const LazyTrainingTasks = React.lazy(() => import('./pages/TrainingTasks'));
+// Site Startup Checklist Builder for tracking site setup requirements
+const LazySiteStartup = React.lazy(() => import('./pages/SiteStartup'));
 
 // Simple error boundary component
 class SimpleErrorBoundary extends React.Component<
@@ -606,6 +608,20 @@ export default function App() {
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="SOP Training" />}>
                   <ProtectedRoute>
                     <LazyTrainingTasks />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/startup/site/:siteId">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Site Startup" />}>
+                  <ProtectedRoute>
+                    {({ match }) => <LazySiteStartup siteId={match.params.siteId} />}
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/vault/startup/site/:siteId">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Site Startup" />}>
+                  <ProtectedRoute>
+                    {({ match }) => <LazySiteStartup siteId={match.params.siteId} />}
                   </ProtectedRoute>
                 </SimpleErrorBoundary>
               </Route>
