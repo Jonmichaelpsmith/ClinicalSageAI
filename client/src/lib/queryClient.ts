@@ -1,66 +1,70 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient } from '@tanstack/react-query';
 
-// Create a client with very stable settings to prevent UI flickering
+export type ApiRequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+interface GetQueryFnOptions {
+  on401?: 'throw' | 'returnNull';
+}
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      retry: false,
-      staleTime: Infinity, // Prevent automatic refetching
-      // This ensures queries will never automatically refetch
-      // which prevents UI flickering due to network instability
+      retry: 1,
+      staleTime: 1000 * 60 * 5, // 5 minutes
     },
   },
 });
 
-// Utility function for making API requests with the fetch API
-export async function apiRequest(
-  method: string,
+export const apiRequest = async (
+  method: ApiRequestMethod,
   url: string,
-  body?: any
-): Promise<Response> {
-  const options: RequestInit = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
+  body?: any,
+  customHeaders?: Record<string, string>
+): Promise<Response> => {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...customHeaders,
   };
 
-  if (body && method !== "GET") {
+  const options: RequestInit = {
+    method,
+    headers,
+    credentials: 'include',
+  };
+
+  if (body && method !== 'GET') {
     options.body = JSON.stringify(body);
   }
 
-  try {
-    const response = await fetch(url, options);
-    
-    if (!response.ok) {
-      // For non-2xx responses, still return the response object
-      // so the caller can handle the error appropriately
-      return response;
-    }
-    
-    return response;
-  } catch (error) {
-    // Network errors or other unexpected issues
-    console.error("API request failed:", error);
-    throw error;
-  }
-}
+  const response = await fetch(url, options);
 
-// Helper to extract structured data from response
-export async function extractData<T>(response: Response): Promise<T> {
-  try {
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      return await response.json();
-    } else {
-      throw new Error("Non-JSON response received");
-    }
-  } catch (error) {
-    console.error("Failed to extract data from response:", error);
-    throw error;
+  if (!response.ok && response.status !== 401) {
+    const errorText = await response.text();
+    throw new Error(errorText || `API request failed with status ${response.status}`);
   }
-}
+
+  return response;
+};
+
+export const getQueryFn = (options: GetQueryFnOptions = {}) => {
+  return async ({ queryKey }: { queryKey: string[] }) => {
+    const [url] = queryKey;
+    const response = await apiRequest('GET', url);
+
+    if (response.status === 401) {
+      if (options.on401 === 'returnNull') {
+        return null;
+      }
+      throw new Error('Unauthorized');
+    }
+
+    // For empty responses or 204 No Content
+    if (response.status === 204 || response.headers.get('Content-Length') === '0') {
+      return null;
+    }
+
+    return response.json();
+  };
+};
+
+export default queryClient;
