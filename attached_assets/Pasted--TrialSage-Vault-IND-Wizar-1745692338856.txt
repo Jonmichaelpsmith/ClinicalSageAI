@@ -1,0 +1,177 @@
+// ───────────────────────────────────────────────────────────────
+//   TrialSage Vault – IND Wizard 🌐  Enterprise‑Grade Front‑End Suite  v3.0
+// ---------------------------------------------------------------------
+//  UX Goals
+//  • Microsoft 365‑calibre visual polish (Fluent style, adaptive grid, theming)
+//  • Analytics‑rich dashboard (spark‑charts, KPI cards, timeline)
+//  • Deep drill‑down views (section matrix, reviewer status, signature ledger)
+//  • Real‑time data (Supabase subscriptions) without full reloads
+//  • Accessibility (WCAG 2.1 AA), keyboard nav, dark‑light theme toggle
+// ---------------------------------------------------------------------
+//  Folder Structure
+//  client/
+//    pages/
+//      IndDashboard.jsx          – global KPI dashboard + filters
+//      SubmissionHome.jsx        – hero, KPI cards, multi‑tab workspace
+//    components/
+//      charts/MetricTile.jsx     – mini KPI card with spark‑line
+//      charts/Timeline.jsx       – vertical timeline of events (ledger)
+//      matrix/SectionMatrix.jsx  – 3‑D grid: section × status × signer
+//      modals/EsignModal.jsx     – (import from e‑sign canvas)
+//      widgets/ToastCenter.jsx   – live toast notifications
+//      layout/AppShell.jsx       – left nav + top bar + theme switch
+// ---------------------------------------------------------------------
+//  Dependencies (add)
+//  • @tanstack/react‑query  – server state & caching
+//  • @supabase/supabase‑js  – realtime hooks
+//  • recharts               – spark‑line metrics
+//  • classnames             – cx helper
+//  • heroicons              – icons
+// ---------------------------------------------------------------------
+
+// ---------------- client/layout/AppShell.jsx ----------------
+import React, { useState } from 'react';
+import { Link } from 'wouter';
+import { SunIcon, MoonIcon } from '@heroicons/react/24/solid';
+export default function AppShell({ children }){
+  const [dark,setDark]=useState(false);
+  return (
+    <div className={dark?'dark':''}>
+      <div className="flex h-screen bg-gray‑100 dark:bg‑gray‑900">
+        <aside className="w‑60 bg‑white dark:bg‑gray‑800 shadow flex flex‑col">
+          <Link href="/ind" className="px‑6 py‑4 text‑xl font‑bold text‑blue‑600">TrialSage</Link>
+          <nav className="flex‑1 px‑4 space‑y‑2 text‑sm">
+            <Link href="/ind"   className="block px‑3 py‑2 rounded hover:bg‑blue‑100 dark:hover:bg‑gray‑700">IND Dashboard</Link>
+            <Link href="/vault" className="block px‑3 py‑2 rounded hover:bg‑blue‑100 dark:hover:bg‑gray‑700">Vault</Link>
+          </nav>
+          <button onClick={()=>setDark(!dark)} className="m‑4 p‑2 rounded hover:bg‑gray‑200 dark:hover:bg‑gray‑700">
+            {dark? <SunIcon className="h‑5 w‑5 text‑yellow‑400"/> : <MoonIcon className="h‑5 w‑5 text‑gray‑600"/> }
+          </button>
+        </aside>
+        <main className="flex‑1 overflow‑auto">{children}</main>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- client/pages/IndDashboard.jsx ----------------
+import React, { useEffect } from 'react';
+import { useQuery } from '@tanstack/react‑query';
+import { supabase } from '@/lib/supa';
+import MetricTile from '../components/charts/MetricTile.jsx';
+import { Link } from 'wouter';
+export default function IndDashboard(){
+  const { data:subs=[] } = useQuery(['ind‑list'], async()=> (await supabase.from('ind_wizards').select('*')).data );
+  const total=subs.length, submitted=subs.filter(s=>s.workflow_status==='Submitted').length;
+  return (
+    <div className="p‑10 space‑y‑8 bg‑gray‑50 dark:bg‑gray‑900 min‑h‑screen">
+      <h1 className="text‑3xl font‑bold mb‑4 text‑gray‑900 dark:text‑gray‑100">IND Portfolio</h1>
+      <div className="grid grid‑cols‑2 md:grid‑cols‑4 gap‑4">
+        <MetricTile label="Total INDs" value={total}/>
+        <MetricTile label="Submitted" value={submitted} trend={submitted/total*100}/>
+        <MetricTile label="Pending Signatures" value={subs.filter(s=>s.workflow_status==='Ready').length}/>
+        <MetricTile label="Avg Completion %" value={Math.round(subs.reduce((p,c)=>p+c.completion_pct,0)/total||0)}/>
+      </div>
+      <div className="bg‑white dark:bg‑gray‑800 shadow rounded p‑4 overflow‑auto">
+        <table className="table‑auto text‑sm w‑full dark:text‑gray‑200"><thead><tr className="text‑left"><th>ID</th><th>Product</th><th>Region</th><th>Status</th><th>Completion</th><th>Updated</th></tr></thead><tbody>
+          {subs.map(s=>(<tr key={s.id} className="border‑b last:border‑0 hover:bg‑gray‑100 dark:hover:bg‑gray‑700">
+            <td><Link href={`/ind/${s.id}`}>{s.id.slice(0,8)}</Link></td>
+            <td>{s.product_name}</td>
+            <td>{s.region}</td>
+            <td><StatusChip status={s.workflow_status}/></td>
+            <td><ProgressBar pct={s.completion_pct}/></td>
+            <td className="whitespace‑nowrap">{new Date(s.updated_at).toLocaleString()}</td>
+          </tr>))}
+        </tbody></table>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- client/components/charts/MetricTile.jsx ----------------
+import React from 'react';
+import { LineChart, Line } from 'recharts';
+export default function MetricTile({ label, value, trend }){
+  const data=[ {v:value‑(trend||0)}, {v:value} ];
+  return (
+    <div className="bg‑white dark:bg‑gray‑800 rounded shadow p‑4">
+      <div className="text‑xs text‑gray‑500 dark:text‑gray‑400">{label}</div>
+      <div className="text‑2xl font‑bold text‑gray‑900 dark:text‑gray‑100">{value}</div>
+      {trend!==undefined && <LineChart width={80} height={24} data={data}><Line type="monotone" dataKey="v" stroke="#3b82f6" strokeWidth={2} dot={false}/></LineChart>}
+    </div>
+  );
+}
+
+// ---------------- client/components/matrix/SectionMatrix.jsx ----------------
+import React from 'react';
+export default function SectionMatrix({ matrix }){
+  /* matrix: [{section:'2.7.1', signer:'QA', status:'Signed'}, … ] */
+  return (
+    <table className="text‑xs border‑collapse w‑full bg‑white dark:bg‑gray‑800">
+      <thead><tr><th>Section</th><th>Author</th><th>Signer</th><th>Status</th></tr></thead>
+      <tbody>{matrix.map(r=><tr key={r.section} className="border‑b"><td>{r.section}</td><td>{r.author}</td><td>{r.signer}</td><td><StatusChip status={r.status}/></td></tr>)}</tbody>
+    </table>
+  );
+}
+
+// ---------------- client/pages/SubmissionHome.jsx ----------------
+import React, { useEffect } from 'react';
+import { useQuery } from '@tanstack/react‑query';
+import { supabase } from '@/lib/supa';
+import SectionMatrix from '../components/matrix/SectionMatrix.jsx';
+import Timeline from '../components/charts/Timeline.jsx';
+import EsgPanel from '../components/EsgPanel.jsx';
+export default function SubmissionHome({ params }){
+  const { data:sub } = useQuery(['ind',params.id], async()=> (await supabase.from('ind_wizards').select('*').eq('id',params.id).single()).data );
+  const { data:matrix=[] } = useQuery(['matrix',params.id], async()=> (await supabase.rpc('fn_section_matrix',{sub_id:params.id})).data );
+  if(!sub) return null;
+  return (
+    <div className="p‑8 space‑y‑6">
+      <h1 className="text‑3xl font‑bold mb‑2">{sub.product_name} – {sub.region}</h1>
+      <div className="grid grid‑cols‑1 md:grid‑cols‑3 gap‑6">
+        <div className="md:col‑span‑2 bg‑white dark:bg‑gray‑800 rounded shadow p‑4"><SectionMatrix matrix={matrix}/></div>
+        <div className="space‑y‑4">
+          <EsgPanel submissionId={params.id}/>
+          <div className="bg‑white dark:bg‑gray‑800 rounded shadow p‑4"><h3 className="font‑semibold mb‑2">Ledger</h3><Timeline submissionId={params.id}/></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------- client/components/charts/Timeline.jsx ----------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+export default function Timeline({ submissionId }){
+  const [events,set]=useState([]);
+  useEffect(()=>{ axios.get(`/api/ledger/${submissionId}`).then(r=>set(r.data)); },[submissionId]);
+  return (<ul className="space‑y‑2 text‑xs max‑h‑64 overflow‑auto">
+    {events.map(e=>(<li key={e.id} className="border‑l‑2 pl‑2 border‑blue‑500"><span className="font‑bold text‑blue‑600">{e.event_type}</span> – {e.payload.summary||''} <span className="text‑gray‑500">{new Date(e.ts).toLocaleString()}</span></li>))}
+  </ul>);
+}
+
+// ---------------- client/components/widgets/ToastCenter.jsx ----------------
+// lightweight toast center using Supabase realtime for ESG ACK
+import { useEffect } from 'react';
+import { createPortal } from 'react‑dom';
+import { supabase } from '@/lib/supa';
+export default function ToastCenter(){
+  useEffect(()=>{
+    const ch = supabase.channel('esg_toast')
+      .on('postgres_changes',{ event:'UPDATE', table:'esg_queue' }, payload=>{
+        const q=payload.new; if(['Ack1','Ack2','Ack3'].includes(q.status)) show(`ESG ${q.status} received for ${q.id.slice(0,8)}`);
+      }).subscribe();
+    return ()=> supabase.removeChannel(ch);
+  },[]);
+  const show=msg=>{
+    const el=document.createElement('div'); el.className='toast'; el.textContent=msg; document.body.appendChild(el);
+    setTimeout(()=>el.remove(),5000);
+  };
+  return createPortal(null, document.body);
+}
+
+// ---------------- Routing Setup (example) ----------------
+import AppShell from './layout/AppShell.jsx';
+import IndDashboard from './pages/IndDashboard.jsx';
+import SubmissionHome from './pages/SubmissionHome.jsx';
+import { Route }
