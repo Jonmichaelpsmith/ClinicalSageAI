@@ -697,6 +697,17 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
       const logger = createContextLogger({ module: 'routes' });
       logger.warn('Quality Events routes could not be loaded', { error: err });
     }
+    
+    // Load retention routes for document archival and deletion scheduling
+    try {
+      const retentionModule = await import('./routes/retention.js');
+      app.use('/api/retention', authenticate, retentionModule.default);
+      const logger = createContextLogger({ module: 'routes' });
+      logger.info('Auto-Retention routes loaded successfully');
+    } catch (err) {
+      const logger = createContextLogger({ module: 'routes' });
+      logger.warn('Auto-Retention routes could not be loaded', { error: err });
+    }
     console.log('TrialSage Vault API routes registered successfully');
   } catch (error) {
     const logger = createContextLogger({ module: 'routes' });

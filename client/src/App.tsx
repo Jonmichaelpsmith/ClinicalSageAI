@@ -631,6 +631,27 @@ export default function App() {
                   </ProtectedRoute>
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/vault/promo/:promoId">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Promotional Review" />}>
+                  <ProtectedRoute>
+                    {({ match }) => <LazyPromoReview promoId={match.params.promoId} />}
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/vault/quality">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Quality Events" />}>
+                  <ProtectedRoute>
+                    <LazyQualityDashboard />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/vault/retention">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Retention Settings" />}>
+                  <ProtectedRoute>
+                    <LazyRetentionSettings />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
               <Route>
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="404 Not Found" />}>
                   <LazyNotFound />
