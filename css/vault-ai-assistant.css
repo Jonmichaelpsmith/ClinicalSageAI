@@ -279,8 +279,8 @@
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     background-color: var(--assistant-primary);
     color: white;
@@ -288,11 +288,12 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: var(--assistant-shadow);
+    box-shadow: 0 4px 15px rgba(230, 0, 125, 0.4);
     z-index: 999;
     transform: scale(0);
     opacity: 0;
     transition: all 0.3s ease;
+    border: 3px solid white;
 }
 
 .assistant-trigger.active {
@@ -301,7 +302,33 @@
 }
 
 .assistant-trigger i {
-    font-size: 24px;
+    font-size: 28px;
+}
+
+.assistant-trigger.active::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: rgba(230, 0, 125, 0.3);
+    animation: pulse 2s infinite;
+    z-index: -1;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    70% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
 }
 
 /* Mobile adjustments */

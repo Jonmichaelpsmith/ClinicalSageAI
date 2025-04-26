@@ -209,12 +209,17 @@ class VaultAIAssistant {
         
         // Add welcome message with small delay
         setTimeout(() => {
-            this.addAssistantMessage("👋 Welcome to Vault™! I'm your personal assistant to help you get started with our platform. Let me guide you through the setup process to personalize your experience.");
+            this.addAssistantMessage("👋 Welcome to Vault™! I'm your AI assistant designed to help you navigate our enterprise regulatory document management platform. I can help with document retention, FDA compliance, cloud security, and personalize your experience.");
             
-            // Then show role selection
+            // Add a follow-up message explaining the platform
             setTimeout(() => {
-                this.showRoleOptions();
-            }, 1000);
+                this.addAssistantMessage("Vault™ simplifies regulated document creation, offering Microsoft 365-style UI with advanced retention policies and blockchain-secured audit trails for regulatory compliance. How would you like me to assist you today?");
+                
+                // Then show role selection
+                setTimeout(() => {
+                    this.showRoleOptions();
+                }, 1500);
+            }, 1500);
         }, 300);
     }
     
