@@ -1,0 +1,112 @@
+// ───────────────────────────────────────────────────────────────
+// IND Wizard – Sprint‑4 ✦  Smart Data Harvest & Auto‑Populate
+// ---------------------------------------------------------------------
+//  • sql/harvest_rules.sql           – DSL table for auto‑population rules
+//  • server/services/harvestEngine.js – rule evaluator, Vault query, block injection
+//  • server/jobs/harvestCron.js      – listens ind_events, triggers harvest
+//  • server/routes/harvest.js        – manual trigger & rule management API
+//  • client/pages/HarvestRules.jsx   – Admin UI to author rules
+//  • Integration checklist           – wiring & examples
+// ───────────────────────────────────────────────────────────────
+
+// ---------------- sql/harvest_rules.sql ----------------
+/* Rule syntax JSON sample:
+   {
+     "condition": "section=='3.2.P.5.4' && !hasTable('MethodValidation')",
+     "action":    "pullTable(source='vault', docType='Validation Report', tableId='MethodValidation')"
+   }
+*/
+create table if not exists harvest_rules (
+  id    uuid primary key default gen_random_uuid(),
+  tenant_id uuid,
+  section_code text,
+  rule_json jsonb,
+  enabled boolean default true,
+  created_at timestamp default now()
+);
+
+// ---------------- server/services/harvestEngine.js ----------------
+import { supabase } from '../lib/supabaseClient.js';
+import { run } from 'expr-eval';
+export async function executeHarvest(submissionId){
+  const { data: rules } = await supabase.from('harvest_rules').select('*').eq('enabled',true);
+  for(const r of rules){
+    const rule = r.rule_json;
+    // Gather section context
+    const { data: blocks } = await supabase.from('ind_blocks')
+      .select('*').eq('submission_id',submissionId).eq('section_code',r.section_code);
+    const ctx = {
+      section: r.section_code,
+      hasTable: (name)=> blocks.some(b=>b.block_type==='table'&&b.content.meta?.name===name)
+    };
+    if(run(rule.condition, ctx)){
+      if(rule.action.startsWith('pullTable')){
+        const params = Object.fromEntries(new URLSearchParams(rule.action.split('(')[1].split(')')[0]));
+        const { data: src } = await supabase.from('documents').select('id,path').eq('subtype_id',params.docType);
+        if(src.length){
+          // placeholder parse CSV in doc & create block
+          await supabase.from('ind_blocks').insert({
+            submission_id:submissionId,
+            section_code:r.section_code,
+            block_type:'table',
+            content:{ rows:[["auto pull placeholder"]], meta:{ name:params.tableId } },
+            created_by:null
+          });
+        }
+      }
+    }
+  }
+}
+
+// ---------------- server/jobs/harvestCron.js ----------------
+import { listenEvents } from '../events/eventBus.js';
+import { executeHarvest } from '../services/harvestEngine.js';
+listenEvents(evt=>{
+  if(evt.event_type==='block_insert'){
+    executeHarvest(evt.submission_id).catch(console.error);
+  }
+});
+
+// ---------------- server/routes/harvest.js ----------------
+import { Router } from 'express';
+import { executeHarvest } from '../services/harvestEngine.js';
+import { verifyJwt } from '../middleware/auth.js';
+const h = Router();
+// Manual run
+h.post('/:id/run', verifyJwt, async (req,res)=>{
+  await executeHarvest(req.params.id);
+  res.json({ ok:true });
+});
+export default h;
+
+// ---------------- client/pages/HarvestRules.jsx ----------------
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+export default function HarvestRules(){
+  const [rules,setRules]=useState([]);
+  const [sec,setSec]=useState('3.2.P.5.4');
+  const [json,setJson]=useState('{\n  "condition":"section==\'3.2.P.5.4\'",\n  "action":"pullTable(source=\'vault\',docType=\'Validation Report\')"\n}');
+  useEffect(()=>{ load(); },[]);
+  const load=async()=>{ const { data } = await axios.get('/api/harvest'); setRules(data); };
+  const add=async()=>{ await axios.post('/api/harvest',{ section_code:sec, rule_json:JSON.parse(json)}); load(); };
+  return (<div className="p-8 space-y-4">
+    <h1 className="text-2xl font-bold">Harvest Rules</h1>
+    <textarea className="border w-full h-32" value={json} onChange={e=>setJson(e.target.value)} />
+    <div className="flex space-x-2 items-center">
+      <input value={sec} onChange={e=>setSec(e.target.value)} className="border p-1 text-sm" />
+      <Button size="sm" onClick={add}>Add Rule</Button>
+    </div>
+    <ul className="list-disc ml-5 text-sm">
+      {rules.map(r=><li key={r.id}>{r.section_code}: {JSON.stringify(r.rule_json)}</li>)}
+    </ul>
+  </div>);
+}
+
+// ---------------- Integration Checklist ----------------
+1. `supabase db query < sql/harvest_rules.sql`.
+2. Backend: `app.use('/api/harvest', verifyJwt, harvestRoutes);` + `import './jobs/harvestCron.js';`.
+3. ENV: no extra env needed.
+4. Admin route `/admin/harvest` → render `<HarvestRules/>`.
+5. Test: add rule, insert block → event triggers harvest → new block auto‑appears.
+// ───────────────────────────────────────────────────────────────
