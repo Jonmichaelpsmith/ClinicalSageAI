@@ -37,76 +37,40 @@ const FDAComplianceDashboard = () => {
   const [blockchainStatus, setBlockchainStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Simulated data fetch using useEffect
+  // Fetch data from API endpoints
   useEffect(() => {
-    // Simulate API call delay
-    const timer = setTimeout(() => {
-      // Simulate compliance status data
-      setComplianceStatus({
-        status: 'compliant',
-        lastValidated: new Date().toISOString(),
-        complianceLevel: 'FDA 21 CFR Part 11',
-        features: {
-          electronicSignatures: true,
-          auditTrail: true,
-          dataIntegrity: true,
-          blockchainBackup: true,
-          validationFramework: true
-        },
-        certifications: [
-          {
-            name: 'FDA 21 CFR Part 11',
-            status: 'verified',
-            expiryDate: '2026-04-26T00:00:00Z'
-          }
-        ]
-      });
-      
-      // Simulate validation data
-      setValidationData({
-        validationStatus: 'validated',
-        lastValidationDate: '2025-04-20T00:00:00Z',
-        nextValidationDate: '2025-10-20T00:00:00Z',
-        validationDocuments: [
-          {
-            id: 'val-doc-1',
-            title: 'Validation Master Plan',
-            version: '1.2',
-            date: '2025-04-15T00:00:00Z',
-            approvedBy: 'John Smith, QA Director'
-          },
-          {
-            id: 'val-doc-2',
-            title: 'Requirements Specification',
-            version: '2.0',
-            date: '2025-04-16T00:00:00Z',
-            approvedBy: 'Jane Doe, Regulatory Affairs'
-          }
-        ],
-        testResults: {
-          totalTests: 248,
-          passed: 248,
-          failed: 0,
-          incomplete: 0
+    const fetchComplianceData = async () => {
+      try {
+        // Fetch compliance status
+        const statusResponse = await fetch('/api/fda-compliance/status');
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          setComplianceStatus(statusData);
         }
-      });
-      
-      // Simulate blockchain status data
-      setBlockchainStatus({
-        status: 'active',
-        lastVerification: new Date().toISOString(),
-        totalRecords: 15782,
-        verifiedRecords: 15782,
-        tamperDetected: false,
-        blockchainType: 'Hyperledger Fabric',
-        networkNodes: 5,
-        consensus: 'Practical Byzantine Fault Tolerance'
-      });
-      
-      setIsLoading(false);
-    }, 1000);
+        
+        // Fetch validation data
+        const validationResponse = await fetch('/api/fda-compliance/validation');
+        if (validationResponse.ok) {
+          const validationData = await validationResponse.json();
+          setValidationData(validationData);
+        }
+        
+        // Fetch blockchain status
+        const blockchainResponse = await fetch('/api/fda-compliance/blockchain-status');
+        if (blockchainResponse.ok) {
+          const blockchainData = await blockchainResponse.json();
+          setBlockchainStatus(blockchainData);
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching compliance data:', error);
+        // In case of API errors, we'll inform the user but continue with best effort display
+        setIsLoading(false);
+      }
+    };
     
-    return () => clearTimeout(timer);
+    fetchComplianceData();
   }, []);
 
   if (isLoading) {
