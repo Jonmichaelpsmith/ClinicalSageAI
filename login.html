@@ -64,12 +64,35 @@
     }
   </style>
   <script>
-    // Simple redirection function to simulate login
-    function handleLogin(event) {
+    // Login form submission with fetch API
+    async function handleLogin(event) {
       event.preventDefault();
-      // In a real app, this would authenticate with backend
-      // For now, just redirect to the client portal page
-      window.location.href = '/client-portal';
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Successful login - redirect to client portal
+          window.location.href = '/client-portal';
+        } else {
+          // Failed login - show error message
+          alert('Login failed: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('An error occurred during login. Please try again.');
+      }
     }
   </script>
 </head>
