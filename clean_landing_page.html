@@ -510,27 +510,75 @@
             
             /* Ensure all content fits on mobile */
             body {
-                overflow-x: hidden;
-                width: 100%;
+                overflow-x: hidden !important;
+                width: 100% !important;
                 position: relative;
+                max-width: 100vw !important;
             }
             
             /* Fix horizontal scrolling on containers */
             .section-container, div[style*="display: grid"], div[style*="display: flex"] {
-                max-width: 100%;
-                width: 100%;
-                box-sizing: border-box;
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+                overflow-x: hidden !important;
             }
             
             /* Reduce padding for mobile */
             .section {
-                padding: 30px 0;
+                padding: 20px 0 !important;
             }
             
             /* Fix for tables on mobile */
             table {
-                font-size: 80%;
+                font-size: 80% !important;
+                width: 100% !important;
+                min-width: 280px !important;
             }
+            
+            /* Fix for boxes in Features for Every Client section */
+            div[style*="background-color: #f8f8f8"] {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 15px !important;
+                box-sizing: border-box !important;
+                word-break: break-word !important;
+            }
+            
+            /* Adjust font sizes for mobile */
+            li, p, td, th {
+                font-size: 90% !important;
+            }
+            
+            /* Fix for comparison table on mobile */
+            .comp-table-container {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                overflow-x: auto !important;
+            }
+            
+            /* Ensure all text can wrap properly */
+            * {
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            /* Force narrow width for document preview */
+            div[style*="border: 1px solid #eee"] {
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+        }
+        
+        /* Critical fix for document panel cutoff */
+        .doc-panel, .file-navigator, .document-preview, [class*="navigator"], [class*="preview"] {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
         }
     </style>
 </head>
