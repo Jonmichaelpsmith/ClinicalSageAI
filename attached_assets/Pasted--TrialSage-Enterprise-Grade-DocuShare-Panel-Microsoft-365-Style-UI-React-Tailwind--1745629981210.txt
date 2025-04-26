@@ -1,0 +1,107 @@
+// --- TrialSage Enterprise-Grade DocuShare Panel (Microsoft 365 Style UI, React + Tailwind) ---
+
+import React, { useState, useEffect } from 'react';
+import { uploadDocument, listDocuments, downloadDocument } from '@/services/DocuShareService';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { useDropzone } from 'react-dropzone';
+import { Loader2, DownloadCloud, Sparkles, UploadCloud } from 'lucide-react';
+import { summarizeDocumentAI } from '@/services/OpenAIService';
+
+export default function DocuSharePanel() {
+  const [documents, setDocuments] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [selectedDocId, setSelectedDocId] = useState(null);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const fetchDocuments = async () => {
+    const docs = await listDocuments();
+    setDocuments(docs);
+  };
+
+  const onDrop = (acceptedFiles) => {
+    setSelectedFile(acceptedFiles[0]);
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+    setUploading(true);
+    await uploadDocument('', selectedFile);
+    setSelectedFile(null);
+    await fetchDocuments();
+    setUploading(false);
+  };
+
+  const handleDownload = async (id) => {
+    await downloadDocument(id);
+  };
+
+  const handleSummarize = async (id) => {
+    setLoadingSummary(true);
+    setSelectedDocId(id);
+    const sum = await summarizeDocumentAI(id);
+    setSummary(sum);
+    setLoadingSummary(false);
+  };
+
+  return (
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">DocuShare Document Library</h1>
+        <Button variant="default" onClick={handleUpload} disabled={uploading || !selectedFile} className="flex items-center gap-2">
+          {uploading ? <Loader2 className="animate-spin h-5 w-5" /> : <UploadCloud className="h-5 w-5" />}
+          {uploading ? 'Uploading...' : 'Upload Document'}
+        </Button>
+      </div>
+
+      <div {...getRootProps()} className="border-2 border-dashed border-blue-300 bg-white p-8 rounded-lg mb-10 flex flex-col items-center justify-center hover:bg-blue-50 transition cursor-pointer">
+        <input {...getInputProps()} />
+        <p className="text-blue-700 text-lg">{isDragActive ? 'Drop the file here...' : 'Drag and drop a file, or click to select'}</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {documents.map((doc) => (
+          <Card key={doc.id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition p-4">
+            <CardContent className="flex flex-col justify-between h-full">
+              <div>
+                <p className="font-semibold text-gray-900 text-lg truncate">{doc.name}</p>
+                <p className="text-gray-500 text-sm mt-1">Uploaded: {new Date(doc.createdAt).toLocaleDateString()}</p>
+              </div>
+              <div className="mt-6 flex gap-3">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => handleDownload(doc.id)}>
+                  <DownloadCloud className="h-4 w-4 mr-2" /> Download
+                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary" size="sm" className="flex-1" onClick={() => handleSummarize(doc.id)}>
+                      <Sparkles className="h-4 w-4 mr-2" /> Summarize
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="p-6">
+                    {loadingSummary && selectedDocId === doc.id ? (
+                      <div className="flex justify-center items-center py-8">
+                        <Loader2 className="animate-spin h-6 w-6 text-blue-500" />
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-700 whitespace-pre-line">{summary}</p>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
