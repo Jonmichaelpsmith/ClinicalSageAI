@@ -59,6 +59,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('./'));
 
 // Serve client portal pages
+app.get('/', (req, res) => {
+  res.redirect('/login');
+});
+
 app.get('/login', (req, res) => {
   res.sendFile(path.resolve('./login.html'));
 });
