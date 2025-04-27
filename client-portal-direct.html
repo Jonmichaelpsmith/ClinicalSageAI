@@ -431,62 +431,35 @@
   </footer>
 
   <script>
-    // Server pre-warming function to ensure server is awake
-    async function prewarmServer() {
-      console.log('Pre-warming server...');
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Initialize the resilience service
+      const resilience = new ResilienceService({
+        prewarmEndpoint: '/api/prewarm',
+        prewarmInterval: 4 * 60 * 1000,
+        authRedirectDelay: 1500,
+        silentMode: false
+      });
+      
+      // Pre-warm server before any other operations
+      console.log('Pre-warming server before authentication...');
       try {
         const startTime = Date.now();
         const response = await fetch('/api/prewarm');
         const responseTime = Date.now() - startTime;
-        console.log(`Server pre-warmed successfully in ${responseTime}ms:`, response.status);
-        return response.ok;
+        console.log(`Server warm-up response:`, response.status);
       } catch (error) {
-        console.warn('Server pre-warm failed:', error);
-        return false;
-      }
-    }
-  
-    document.addEventListener('DOMContentLoaded', async function() {
-      // Pre-warm server first to ensure it's awake
-      await prewarmServer();
-      
-      // Auto-login function to ensure access
-      function autoLogin() {
-        console.log('Performing auto-login...');
-        // Set authentication flag
-        localStorage.setItem('isAuthenticated', 'true');
-        
-        // Store user info
-        localStorage.setItem('user', JSON.stringify({
-          id: 1,
-          username: 'admin',
-          email: 'admin@trialsage.ai',
-          role: 'admin',
-          name: 'Admin User',
-          subscribed: true
-        }));
-        
-        console.log('Auto-login completed');
+        console.error('Initial server warm-up error:', error);
       }
       
-      // Authentication check
-      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-      if (!isAuthenticated) {
-        console.log('User not authenticated, performing auto-login');
-        autoLogin();
-      }
+      // Start the resilience service (prewarm + auto-login)
+      resilience.init();
       
-      // Get user information
-      const userString = localStorage.getItem('user');
-      if (userString) {
-        try {
-          const user = JSON.parse(userString);
-          const userWelcome = document.getElementById('userWelcome');
-          if (userWelcome && user.name) {
-            userWelcome.textContent = `Welcome, ${user.name}`;
-          }
-        } catch (e) {
-          console.error('Error parsing user data:', e);
+      // Get user information from resilience service
+      const user = resilience.getCurrentUser();
+      if (user) {
+        const userWelcome = document.getElementById('userWelcome');
+        if (userWelcome && user.name) {
+          userWelcome.textContent = `Welcome, ${user.name}`;
         }
       }
       
@@ -494,16 +467,15 @@
       const logoutBtn = document.getElementById('logoutBtn');
       if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
-          localStorage.removeItem('isAuthenticated');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
+          resilience.logout();
+          // Add delay before redirect to allow for server warmup
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 1000);
         });
       }
       
-      console.log('Client Portal initialized');
-      
-      // Start regular prewarming every 4 minutes (Replit hibernates after 5)
-      setInterval(prewarmServer, 4 * 60 * 1000);
+      console.log('Client Portal initialized with enhanced resilience');
     });
   </script>
 </body>
