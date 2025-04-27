@@ -3,46 +3,7 @@ import { Route, Switch, useLocation, Redirect } from 'wouter';
 import NotFound from './components/common/NotFound';
 import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
 import UnifiedPlatform from './components/UnifiedPlatform';
-
-// Simple client portal stub
-const ClientPortal = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">Client Portal</h1>
-        <form className="space-y-4">
-          <div>
-            <label className="block text-gray-700 mb-1">Email</label>
-            <input 
-              type="email" 
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="your@email.com"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 mb-1">Password</label>
-            <input 
-              type="password" 
-              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
-              placeholder="********"
-            />
-          </div>
-          <button 
-            type="button"
-            className="w-full bg-pink-600 text-white py-2 rounded-md hover:bg-pink-700 transition duration-200"
-          >
-            Sign In
-          </button>
-          <div className="text-center mt-4">
-            <a href="/" className="text-sm text-pink-600 hover:underline">
-              Return to TrialSage
-            </a>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
+import Login from './components/auth/Login';
 
 function App() {
   // Get location for navigation
@@ -71,12 +32,17 @@ function App() {
             <UnifiedPlatform />
           </Route>
           
+          {/* Login Route */}
+          <Route path="/login">
+            <Login />
+          </Route>
+          
           {/* Client Portal Routes */}
           <Route path="/portal">
-            <ClientPortal />
+            <Login />
           </Route>
           <Route path="/portal/ind">
-            <ClientPortal />
+            <Login />
           </Route>
           
           {/* 404 Route */}
