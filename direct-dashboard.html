@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Direct Dashboard Access</title>
+  <script>
+    // Immediately redirect to dashboard
+    window.location.href = '/dashboard';
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+    .loader {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #e91e63; /* Pink color */
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Redirecting to Dashboard...</h1>
+  <div class="loader"></div>
+  <p>If you're not redirected automatically, <a href="/dashboard">click here</a>.</p>
+</body>
+</html>

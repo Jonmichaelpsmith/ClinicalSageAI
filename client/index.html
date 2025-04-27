@@ -7,6 +7,12 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
   <title>TrialSage™ - AI-Powered Regulatory Documentation Platform</title>
   <meta name="description" content="TrialSage™ is an advanced AI-powered platform for regulatory and clinical documentation across the drug development lifecycle" />
+  <script>
+    // Force immediate redirection to dashboard
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      window.location.href = '/dashboard';
+    }
+  </script>
 </head>
 <body>
   <div id="root"></div>
