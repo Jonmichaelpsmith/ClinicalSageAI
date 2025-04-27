@@ -1,980 +1,417 @@
 /**
  * Security Service
  * 
- * This service provides user authentication, access control, and security features
- * for the TrialSage platform, supporting a multi-tenant model where CRO master
- * accounts can manage multiple biotech client accounts.
+ * This service manages authentication, authorization, and multi-tenant access control
+ * for the TrialSage platform, with special support for CRO master accounts managing
+ * multiple biotech clients.
  */
 
-import { jwtDecode } from 'jwt-decode';
+import { apiRequest } from '../lib/queryClient';
 
-const API_BASE = '/api/security';
+// Organization types
+const ORGANIZATION_TYPES = {
+  CRO: 'cro',           // Contract Research Organization (master account)
+  BIOTECH: 'biotech',    // Biotech company (client account)
+  PHARMA: 'pharma',      // Pharmaceutical company (client account)
+  MEDICAL_DEVICE: 'medical_device', // Medical device company (client account)
+  ACADEMIC: 'academic'   // Academic institution (client account)
+};
 
 // User roles
-export const USER_ROLES = {
+const USER_ROLES = {
   ADMIN: 'admin',
-  CRO_ADMIN: 'cro_admin',
-  CRO_USER: 'cro_user',
-  CLIENT_ADMIN: 'client_admin',
-  CLIENT_USER: 'client_user',
-  REGULATORY_SPECIALIST: 'regulatory_specialist',
-  MEDICAL_WRITER: 'medical_writer',
-  CLINICAL_RESEARCHER: 'clinical_researcher',
-  DATA_MANAGER: 'data_manager',
-  STATISTICIAN: 'statistician',
-  APPROVER: 'approver',
-  AUDITOR: 'auditor'
+  MANAGER: 'manager',
+  WRITER: 'writer',
+  REVIEWER: 'reviewer',
+  VIEWER: 'viewer'
 };
 
-// Resource types for access control
-export const RESOURCE_TYPES = {
-  MODULE: 'module',
-  DOCUMENT: 'document',
-  COLLECTION: 'collection',
-  WORKFLOW: 'workflow',
-  TASK: 'task',
-  REPORT: 'report',
-  SUBMISSION: 'submission',
-  ORGANIZATION: 'organization'
-};
-
-// Permission types
-export const PERMISSIONS = {
-  VIEW: 'view',
-  EDIT: 'edit',
-  CREATE: 'create',
-  DELETE: 'delete',
-  APPROVE: 'approve',
-  ASSIGN: 'assign',
-  ADMIN: 'admin'
+// Permission levels for module access
+const ACCESS_LEVELS = {
+  NONE: 0,
+  READ: 1,
+  WRITE: 2,
+  ADMIN: 3
 };
 
 class SecurityService {
   constructor() {
-    this.isInitialized = false;
-    this.config = {
-      multiTenant: true,
-      blockchainVerification: false,
-      passwordPolicyStrength: 'high',
-      sessionTimeout: 60 * 60 * 1000, // 1 hour
-      refreshTokenEnabled: true
-    };
-    this.currentUser = null;
+    this.authenticated = false;
+    this.user = null;
     this.currentOrganization = null;
-    this.authToken = null;
-    this.refreshToken = null;
-    this.tokenExpiry = null;
-    this.organizations = new Map();
-    this.users = new Map();
-    this.permissions = new Map();
-    this.accessControlCache = new Map();
-    this.sessionExpiryTimer = null;
+    this.childOrganizations = [];
+    this.parentOrganization = null;
+    this.availableModules = [];
+    this.permissions = {};
+    this.token = null;
+    this.initialized = false;
+    this.blockchainEnabled = false;
+    this.serviceSettings = {};
   }
 
   /**
-   * Initialize Security service
-   * @param {Object} options - Initialization options
-   * @returns {Promise<Object>} - Initialization status
+   * Initialize security service
+   * @returns {Promise<{authenticated: boolean, user: Object|null}>} Authentication result
    */
   async initialize(options = {}) {
-    if (this.isInitialized) {
-      console.log('SecurityService already initialized');
-      return { status: 'already_initialized', config: this.config };
-    }
-    
-    console.log('Initializing SecurityService...');
-    
     try {
-      // Update configuration
-      this.config = {
-        ...this.config,
-        ...options
-      };
+      // In a real implementation, would fetch from server
+      // Simulate authentication status check
+      const authResult = await this._fetchAuthStatus();
       
-      // Check for existing session
-      const storedToken = localStorage.getItem('auth_token');
-      const storedRefreshToken = localStorage.getItem('refresh_token');
+      this.authenticated = authResult.authenticated;
       
-      if (storedToken) {
-        try {
-          // Validate token
-          const decoded = jwtDecode(storedToken);
-          
-          if (decoded.exp * 1000 > Date.now()) {
-            // Token is still valid
-            this.authToken = storedToken;
-            this.refreshToken = storedRefreshToken;
-            this.tokenExpiry = new Date(decoded.exp * 1000);
-            
-            // Set current user
-            this.currentUser = {
-              id: decoded.sub,
-              username: decoded.username,
-              email: decoded.email,
-              roles: decoded.roles || [],
-              organizationId: decoded.organizationId,
-              permissions: decoded.permissions || []
-            };
-            
-            // Start session expiry timer
-            this.startSessionExpiryTimer();
-            
-            // Load current organization
-            if (this.currentUser.organizationId) {
-              await this.loadOrganization(this.currentUser.organizationId);
-            }
-          } else {
-            // Token expired, try to refresh
-            if (storedRefreshToken && this.config.refreshTokenEnabled) {
-              await this.refreshAuthToken(storedRefreshToken);
-            }
-          }
-        } catch (tokenError) {
-          console.warn('Invalid token:', tokenError);
-          // Clear invalid tokens
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('refresh_token');
+      if (this.authenticated) {
+        this.user = authResult.user;
+        this.token = authResult.token;
+        this.currentOrganization = authResult.organization;
+        this.parentOrganization = authResult.parentOrganization || null;
+        this.availableModules = authResult.availableModules || [];
+        this.permissions = authResult.permissions || {};
+        
+        // Fetch child organizations if this is a CRO
+        if (this.currentOrganization?.type === ORGANIZATION_TYPES.CRO) {
+          await this.getChildOrganizations();
         }
       }
       
-      this.isInitialized = true;
-      console.log('SecurityService initialized successfully');
+      this.blockchainEnabled = options.enableBlockchain || false;
+      this.serviceSettings = options.settings || {};
+      this.initialized = true;
       
       return {
-        status: 'success',
-        config: this.config,
-        authenticated: !!this.currentUser,
-        user: this.currentUser
+        authenticated: this.authenticated,
+        user: this.user
       };
     } catch (error) {
-      console.error('Failed to initialize SecurityService:', error);
-      
+      console.error('Security service initialization error:', error);
+      this.initialized = true;
       return {
-        status: 'error',
+        authenticated: false,
         error: error.message
       };
     }
   }
-  
+
   /**
-   * Login user
+   * Log in a user
    * @param {string} username - Username
    * @param {string} password - Password
-   * @param {Object} options - Login options
-   * @returns {Promise<Object>} - Login result
+   * @returns {Promise<{success: boolean, user: Object|null, error: string|null}>} Login result
    */
-  async login(username, password, options = {}) {
+  async login(username, password) {
     try {
-      // In production, would call API
-      // const response = await fetch(`${API_BASE}/login`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ username, password })
-      // });
-      
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(error.message || 'Login failed');
-      // }
-      
-      // const data = await response.json();
-      
-      // For now, simulate login
-      // In production, this would be handled by the server
-      const mockUsers = [
-        {
-          id: 'user-1',
-          username: 'admin',
-          password: 'password',
-          email: 'admin@trialsage.com',
-          roles: [USER_ROLES.ADMIN],
-          organizationId: 'org-1',
-          permissions: [
-            { resource: '*', type: '*', permission: '*' }
-          ]
+      // In a real implementation, would call API
+      // Simulate login API call
+      const response = await this._simulateApiCall({
+        success: true,
+        user: {
+          id: 1,
+          username: username,
+          email: `${username}@example.com`,
+          firstName: 'Demo',
+          lastName: 'User',
+          roles: [USER_ROLES.ADMIN]
         },
-        {
-          id: 'user-2',
-          username: 'cro_admin',
-          password: 'password',
-          email: 'cro_admin@trialsage.com',
-          roles: [USER_ROLES.CRO_ADMIN],
-          organizationId: 'org-2',
-          permissions: [
-            { resource: 'organization:org-2', type: RESOURCE_TYPES.ORGANIZATION, permission: PERMISSIONS.ADMIN },
-            { resource: 'module:*', type: RESOURCE_TYPES.MODULE, permission: PERMISSIONS.VIEW }
-          ]
+        token: 'demo-token-12345',
+        organization: {
+          id: 1,
+          name: 'Concept2Cures',
+          type: ORGANIZATION_TYPES.CRO
         },
-        {
-          id: 'user-3',
-          username: 'regulatory',
-          password: 'password',
-          email: 'regulatory@trialsage.com',
-          roles: [USER_ROLES.REGULATORY_SPECIALIST, USER_ROLES.CRO_USER],
-          organizationId: 'org-2',
-          permissions: [
-            { resource: 'module:ind-wizard', type: RESOURCE_TYPES.MODULE, permission: PERMISSIONS.EDIT },
-            { resource: 'module:trial-vault', type: RESOURCE_TYPES.MODULE, permission: PERMISSIONS.VIEW }
-          ]
-        },
-        {
-          id: 'user-4',
-          username: 'client_admin',
-          password: 'password',
-          email: 'client_admin@biotech.com',
-          roles: [USER_ROLES.CLIENT_ADMIN],
-          organizationId: 'org-3',
-          parentOrgId: 'org-2',
-          permissions: [
-            { resource: 'organization:org-3', type: RESOURCE_TYPES.ORGANIZATION, permission: PERMISSIONS.ADMIN },
-            { resource: 'module:*', type: RESOURCE_TYPES.MODULE, permission: PERMISSIONS.VIEW }
-          ]
+        availableModules: ['ind-wizard', 'trial-vault', 'csr-intelligence', 'study-architect', 'analytics', 'admin'],
+        permissions: {
+          'ind-wizard': ACCESS_LEVELS.ADMIN,
+          'trial-vault': ACCESS_LEVELS.ADMIN,
+          'csr-intelligence': ACCESS_LEVELS.ADMIN,
+          'study-architect': ACCESS_LEVELS.ADMIN,
+          'analytics': ACCESS_LEVELS.ADMIN,
+          'admin': ACCESS_LEVELS.ADMIN
         }
-      ];
+      });
       
-      // Find user
-      const user = mockUsers.find(u => u.username === username);
+      this.authenticated = true;
+      this.user = response.user;
+      this.token = response.token;
+      this.currentOrganization = response.organization;
+      this.availableModules = response.availableModules;
+      this.permissions = response.permissions;
       
-      if (!user || user.password !== password) {
-        throw new Error('Invalid username or password');
+      // Fetch child organizations if this is a CRO
+      if (this.currentOrganization?.type === ORGANIZATION_TYPES.CRO) {
+        await this.getChildOrganizations();
       }
-      
-      // Generate token
-      const now = Math.floor(Date.now() / 1000);
-      const expiryTime = now + 3600; // 1 hour
-      
-      const tokenPayload = {
-        sub: user.id,
-        username: user.username,
-        email: user.email,
-        roles: user.roles,
-        organizationId: user.organizationId,
-        permissions: user.permissions,
-        iat: now,
-        exp: expiryTime
-      };
-      
-      // In production, this would be signed with a server-side secret
-      const mockToken = btoa(JSON.stringify(tokenPayload));
-      const mockRefreshToken = `refresh_${mockToken}`;
-      
-      // Set tokens and user
-      this.authToken = mockToken;
-      this.refreshToken = mockRefreshToken;
-      this.tokenExpiry = new Date(expiryTime * 1000);
-      
-      this.currentUser = {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        roles: user.roles,
-        organizationId: user.organizationId,
-        permissions: user.permissions
-      };
-      
-      // Store tokens
-      localStorage.setItem('auth_token', mockToken);
-      
-      if (this.config.refreshTokenEnabled) {
-        localStorage.setItem('refresh_token', mockRefreshToken);
-      }
-      
-      // Start session expiry timer
-      this.startSessionExpiryTimer();
-      
-      // Load organization
-      if (user.organizationId) {
-        await this.loadOrganization(user.organizationId);
-      }
-      
-      // Cache user
-      this.users.set(user.id, this.currentUser);
       
       return {
         success: true,
-        user: this.currentUser,
+        user: this.user,
         organization: this.currentOrganization
       };
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.message
+      };
     }
   }
-  
+
   /**
-   * Logout current user
-   * @returns {Promise<Object>} - Logout result
+   * Log out the current user
+   * @returns {Promise<{success: boolean, error: string|null}>} Logout result
    */
   async logout() {
     try {
-      // In production, would call API
-      // await fetch(`${API_BASE}/logout`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${this.authToken}`
-      //   }
-      // });
+      // In a real implementation, would call API
+      // Simulate logout API call
+      await this._simulateApiCall({ success: true });
       
-      // Clear tokens and user
-      this.authToken = null;
-      this.refreshToken = null;
-      this.tokenExpiry = null;
-      this.currentUser = null;
+      this.authenticated = false;
+      this.user = null;
+      this.token = null;
       this.currentOrganization = null;
+      this.parentOrganization = null;
+      this.childOrganizations = [];
+      this.availableModules = [];
+      this.permissions = {};
       
-      // Clear session expiry timer
-      if (this.sessionExpiryTimer) {
-        clearTimeout(this.sessionExpiryTimer);
-        this.sessionExpiryTimer = null;
-      }
-      
-      // Clear stored tokens
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('refresh_token');
-      
-      return { success: true };
+      return {
+        success: true
+      };
     } catch (error) {
       console.error('Logout error:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Refresh authentication token
-   * @param {string} refreshToken - Refresh token (optional, uses stored token if not provided)
-   * @returns {Promise<Object>} - Refresh result
-   */
-  async refreshAuthToken(refreshToken = null) {
-    if (!this.config.refreshTokenEnabled) {
-      throw new Error('Token refresh is not enabled');
-    }
-    
-    try {
-      const tokenToUse = refreshToken || this.refreshToken;
-      
-      if (!tokenToUse) {
-        throw new Error('No refresh token available');
-      }
-      
-      // In production, would call API
-      // const response = await fetch(`${API_BASE}/refresh-token`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ refreshToken: tokenToUse })
-      // });
-      
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(error.message || 'Token refresh failed');
-      // }
-      
-      // const data = await response.json();
-      
-      // For now, simulate token refresh
-      // In production, this would be handled by the server
-      if (!tokenToUse.startsWith('refresh_')) {
-        throw new Error('Invalid refresh token');
-      }
-      
-      // Extract user info from token
-      const encodedToken = tokenToUse.substring(8); // Remove 'refresh_' prefix
-      const tokenData = JSON.parse(atob(encodedToken));
-      
-      // Generate new tokens
-      const now = Math.floor(Date.now() / 1000);
-      const expiryTime = now + 3600; // 1 hour
-      
-      const tokenPayload = {
-        ...tokenData,
-        iat: now,
-        exp: expiryTime
-      };
-      
-      // In production, this would be signed with a server-side secret
-      const mockToken = btoa(JSON.stringify(tokenPayload));
-      const mockRefreshToken = `refresh_${mockToken}`;
-      
-      // Set new tokens
-      this.authToken = mockToken;
-      this.refreshToken = mockRefreshToken;
-      this.tokenExpiry = new Date(expiryTime * 1000);
-      
-      // Update current user from token
-      this.currentUser = {
-        id: tokenPayload.sub,
-        username: tokenPayload.username,
-        email: tokenPayload.email,
-        roles: tokenPayload.roles,
-        organizationId: tokenPayload.organizationId,
-        permissions: tokenPayload.permissions
-      };
-      
-      // Store new tokens
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('refresh_token', mockRefreshToken);
-      
-      // Restart session expiry timer
-      this.startSessionExpiryTimer();
-      
       return {
-        success: true,
-        user: this.currentUser
+        success: false,
+        error: error.message
       };
-    } catch (error) {
-      console.error('Token refresh error:', error);
-      
-      // Clear tokens and user on refresh failure
-      this.authToken = null;
-      this.refreshToken = null;
-      this.tokenExpiry = null;
-      this.currentUser = null;
-      this.currentOrganization = null;
-      
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('refresh_token');
-      
-      throw error;
     }
   }
-  
+
   /**
-   * Start session expiry timer
-   */
-  startSessionExpiryTimer() {
-    // Clear existing timer
-    if (this.sessionExpiryTimer) {
-      clearTimeout(this.sessionExpiryTimer);
-      this.sessionExpiryTimer = null;
-    }
-    
-    if (!this.tokenExpiry) {
-      return;
-    }
-    
-    const timeUntilExpiry = this.tokenExpiry.getTime() - Date.now();
-    const refreshThreshold = 5 * 60 * 1000; // 5 minutes before expiry
-    
-    if (timeUntilExpiry <= 0) {
-      // Token already expired
-      this.logout();
-      return;
-    }
-    
-    if (timeUntilExpiry <= refreshThreshold && this.config.refreshTokenEnabled) {
-      // Token is close to expiring, refresh it now
-      this.refreshAuthToken().catch(() => {
-        // If refresh fails, log out
-        this.logout();
-      });
-      return;
-    }
-    
-    // Set timer to refresh token before expiry
-    const refreshTime = timeUntilExpiry - refreshThreshold;
-    
-    this.sessionExpiryTimer = setTimeout(() => {
-      if (this.config.refreshTokenEnabled && this.refreshToken) {
-        this.refreshAuthToken().catch(() => {
-          // If refresh fails, log out
-          this.logout();
-        });
-      } else {
-        // No refresh token, just log out
-        this.logout();
-      }
-    }, refreshTime);
-  }
-  
-  /**
-   * Load organization data
-   * @param {string} organizationId - Organization ID
-   * @returns {Promise<Object>} - Organization data
-   */
-  async loadOrganization(organizationId) {
-    try {
-      // Check cache
-      if (this.organizations.has(organizationId)) {
-        this.currentOrganization = this.organizations.get(organizationId);
-        return this.currentOrganization;
-      }
-      
-      // In production, would call API
-      // const response = await fetch(`${API_BASE}/organizations/${organizationId}`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${this.authToken}`
-      //   }
-      // });
-      
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(error.message || 'Failed to load organization');
-      // }
-      
-      // const organization = await response.json();
-      
-      // For now, simulate organization data
-      const mockOrganizations = [
-        {
-          id: 'org-1',
-          name: 'TrialSage Inc.',
-          type: 'platform_admin',
-          features: ['all'],
-          modules: ['all'],
-          parentId: null,
-          childOrganizations: ['org-2']
-        },
-        {
-          id: 'org-2',
-          name: 'CRO Master Account',
-          type: 'cro',
-          features: ['ind-wizard', 'trial-vault', 'csr-intelligence', 'study-architect'],
-          modules: ['ind-wizard', 'trial-vault', 'csr-intelligence', 'study-architect'],
-          parentId: 'org-1',
-          childOrganizations: ['org-3', 'org-4']
-        },
-        {
-          id: 'org-3',
-          name: 'Biotech Client A',
-          type: 'biotech',
-          features: ['trial-vault', 'csr-intelligence'],
-          modules: ['trial-vault', 'csr-intelligence'],
-          parentId: 'org-2',
-          childOrganizations: []
-        },
-        {
-          id: 'org-4',
-          name: 'Biotech Client B',
-          type: 'biotech',
-          features: ['ind-wizard', 'trial-vault'],
-          modules: ['ind-wizard', 'trial-vault'],
-          parentId: 'org-2',
-          childOrganizations: []
-        }
-      ];
-      
-      const organization = mockOrganizations.find(org => org.id === organizationId);
-      
-      if (!organization) {
-        throw new Error(`Organization not found: ${organizationId}`);
-      }
-      
-      // Cache organization
-      this.organizations.set(organizationId, organization);
-      
-      // Set current organization
-      this.currentOrganization = organization;
-      
-      return organization;
-    } catch (error) {
-      console.error(`Error loading organization ${organizationId}:`, error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Get child organizations (for multi-tenant CRO accounts)
-   * @returns {Promise<Array>} - Child organizations
+   * Get child organizations for a CRO master account
+   * @returns {Promise<Array>} Child organizations
    */
   async getChildOrganizations() {
-    if (!this.currentUser || !this.currentOrganization) {
-      throw new Error('User not authenticated');
-    }
-    
     try {
-      // In production, would call API
-      // const response = await fetch(`${API_BASE}/organizations/${this.currentOrganization.id}/children`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${this.authToken}`
-      //   }
-      // });
-      
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(error.message || 'Failed to load child organizations');
-      // }
-      
-      // const children = await response.json();
-      
-      // For now, use cached organization data
-      if (!this.currentOrganization.childOrganizations || this.currentOrganization.childOrganizations.length === 0) {
-        return [];
+      if (!this.authenticated) {
+        throw new Error('Not authenticated');
       }
       
-      const childOrgs = [];
+      if (this.currentOrganization?.type !== ORGANIZATION_TYPES.CRO) {
+        // Only CROs can have child organizations
+        this.childOrganizations = [];
+        return this.childOrganizations;
+      }
       
-      for (const childId of this.currentOrganization.childOrganizations) {
-        if (this.organizations.has(childId)) {
-          childOrgs.push(this.organizations.get(childId));
-        } else {
-          // Load organization if not cached
-          try {
-            const org = await this.loadOrganization(childId);
-            childOrgs.push(org);
-          } catch (orgError) {
-            console.warn(`Failed to load child organization ${childId}:`, orgError);
+      // In a real implementation, would call API
+      // Simulate child organizations API call
+      const response = await this._simulateApiCall({
+        organizations: [
+          {
+            id: 2,
+            name: 'BioInnovate Therapeutics',
+            type: ORGANIZATION_TYPES.BIOTECH,
+            parent: this.currentOrganization.id
+          },
+          {
+            id: 3,
+            name: 'GenomeWave Pharma',
+            type: ORGANIZATION_TYPES.PHARMA,
+            parent: this.currentOrganization.id
+          },
+          {
+            id: 4,
+            name: 'NeuroCrest Biologics',
+            type: ORGANIZATION_TYPES.BIOTECH,
+            parent: this.currentOrganization.id
+          },
+          {
+            id: 5,
+            name: 'MedTech Innovations',
+            type: ORGANIZATION_TYPES.MEDICAL_DEVICE,
+            parent: this.currentOrganization.id
           }
-        }
-      }
+        ]
+      });
       
-      return childOrgs;
+      this.childOrganizations = response.organizations;
+      return this.childOrganizations;
     } catch (error) {
-      console.error('Error getting child organizations:', error);
-      throw error;
+      console.error('Error fetching child organizations:', error);
+      return [];
     }
   }
-  
+
   /**
-   * Switch active organization (for CRO users managing multiple clients)
-   * @param {string} organizationId - Organization ID to switch to
-   * @returns {Promise<Object>} - Switch result
+   * Switch to a different organization context
+   * @param {number} organizationId - Organization ID to switch to
+   * @returns {Promise<{success: boolean, organization: Object|null, error: string|null}>} Switch result
    */
   async switchOrganization(organizationId) {
-    if (!this.currentUser) {
-      throw new Error('User not authenticated');
-    }
-    
     try {
-      // Check if organization is accessible
-      const currentOrgId = this.currentOrganization?.id;
-      
-      if (currentOrgId === organizationId) {
-        return { success: true, organization: this.currentOrganization };
+      if (!this.authenticated) {
+        throw new Error('Not authenticated');
       }
       
-      // Check if target org is a child of current org
-      if (this.currentOrganization && this.currentOrganization.childOrganizations) {
-        if (!this.currentOrganization.childOrganizations.includes(organizationId)) {
-          throw new Error('Organization not accessible');
-        }
-      } else {
-        // Admin can access any organization
-        if (!this.hasRole(USER_ROLES.ADMIN)) {
-          throw new Error('Organization not accessible');
-        }
+      // Check if target organization is the current one
+      if (this.currentOrganization?.id === organizationId) {
+        return {
+          success: true,
+          organization: this.currentOrganization
+        };
       }
       
-      // Load organization
-      const organization = await this.loadOrganization(organizationId);
+      // Check if target organization is a child organization
+      const targetOrg = this.childOrganizations.find(org => org.id === organizationId);
       
-      // In production, would update session context on server
-      // const response = await fetch(`${API_BASE}/switch-context`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${this.authToken}`,
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ organizationId })
-      // });
+      if (!targetOrg) {
+        throw new Error('Organization not found or access denied');
+      }
+      
+      // In a real implementation, would call API
+      // Simulate organization switch API call
+      const response = await this._simulateApiCall({
+        success: true,
+        organization: targetOrg,
+        parentOrganization: this.currentOrganization,
+        availableModules: ['ind-wizard', 'trial-vault', 'csr-intelligence', 'study-architect'],
+        permissions: {
+          'ind-wizard': ACCESS_LEVELS.ADMIN,
+          'trial-vault': ACCESS_LEVELS.ADMIN,
+          'csr-intelligence': ACCESS_LEVELS.ADMIN,
+          'study-architect': ACCESS_LEVELS.ADMIN
+        }
+      });
+      
+      // Store original organization as parent
+      this.parentOrganization = this.currentOrganization;
       
       // Update current organization
-      this.currentOrganization = organization;
-      
-      // Clear access control cache
-      this.accessControlCache.clear();
+      this.currentOrganization = response.organization;
+      this.availableModules = response.availableModules;
+      this.permissions = response.permissions;
       
       return {
         success: true,
-        organization
+        organization: this.currentOrganization
       };
     } catch (error) {
-      console.error(`Error switching to organization ${organizationId}:`, error);
-      throw error;
+      console.error('Error switching organization:', error);
+      return {
+        success: false,
+        error: error.message
+      };
     }
   }
-  
+
   /**
-   * Check if current user has role
-   * @param {string} role - Role to check
-   * @returns {boolean} - Whether user has role
+   * Return to parent organization (for CRO users who switched to a client)
+   * @returns {Promise<{success: boolean, organization: Object|null, error: string|null}>} Switch result
    */
-  hasRole(role) {
-    if (!this.currentUser || !this.currentUser.roles) {
-      return false;
-    }
-    
-    return this.currentUser.roles.includes(role) || this.currentUser.roles.includes(USER_ROLES.ADMIN);
-  }
-  
-  /**
-   * Check if current user has permission for resource
-   * @param {string} resource - Resource identifier
-   * @param {string} permission - Permission type
-   * @returns {boolean} - Whether user has permission
-   */
-  hasPermission(resource, permission) {
-    if (!this.currentUser) {
-      return false;
-    }
-    
-    // Admin has all permissions
-    if (this.hasRole(USER_ROLES.ADMIN)) {
-      return true;
-    }
-    
-    // Check permission cache
-    const cacheKey = `${resource}:${permission}`;
-    if (this.accessControlCache.has(cacheKey)) {
-      return this.accessControlCache.get(cacheKey);
-    }
-    
-    let hasPermission = false;
-    
-    // Check user permissions
-    if (this.currentUser.permissions) {
-      // Check for direct permission
-      const directPermission = this.currentUser.permissions.find(p => 
-        (p.resource === resource || p.resource === '*') &&
-        (p.permission === permission || p.permission === '*')
-      );
-      
-      if (directPermission) {
-        hasPermission = true;
-      } else {
-        // Check for wildcard resource permissions (e.g., module:* for all modules)
-        const resourceType = resource.split(':')[0];
-        const wildcardPermission = this.currentUser.permissions.find(p => 
-          p.resource === `${resourceType}:*` &&
-          (p.permission === permission || p.permission === '*')
-        );
-        
-        if (wildcardPermission) {
-          hasPermission = true;
-        }
+  async returnToParentOrganization() {
+    try {
+      if (!this.authenticated) {
+        throw new Error('Not authenticated');
       }
+      
+      if (!this.parentOrganization) {
+        throw new Error('No parent organization available');
+      }
+      
+      // In a real implementation, would call API
+      // Simulate return to parent organization API call
+      const response = await this._simulateApiCall({
+        success: true,
+        organization: this.parentOrganization,
+        parentOrganization: null,
+        availableModules: ['ind-wizard', 'trial-vault', 'csr-intelligence', 'study-architect', 'analytics', 'admin'],
+        permissions: {
+          'ind-wizard': ACCESS_LEVELS.ADMIN,
+          'trial-vault': ACCESS_LEVELS.ADMIN,
+          'csr-intelligence': ACCESS_LEVELS.ADMIN,
+          'study-architect': ACCESS_LEVELS.ADMIN,
+          'analytics': ACCESS_LEVELS.ADMIN,
+          'admin': ACCESS_LEVELS.ADMIN
+        }
+      });
+      
+      // Swap organizations
+      this.currentOrganization = this.parentOrganization;
+      this.parentOrganization = null;
+      this.availableModules = response.availableModules;
+      this.permissions = response.permissions;
+      
+      // Refresh child organizations
+      await this.getChildOrganizations();
+      
+      return {
+        success: true,
+        organization: this.currentOrganization
+      };
+    } catch (error) {
+      console.error('Error returning to parent organization:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Check if the user has permission for a module
+   * @param {string} moduleId - Module ID
+   * @param {number} requiredLevel - Required access level
+   * @returns {boolean} Whether the user has permission
+   */
+  hasPermission(moduleId, requiredLevel = ACCESS_LEVELS.READ) {
+    if (!this.authenticated) {
+      return false;
     }
     
-    // Cache result
-    this.accessControlCache.set(cacheKey, hasPermission);
-    
-    return hasPermission;
+    const permissionLevel = this.permissions[moduleId] || ACCESS_LEVELS.NONE;
+    return permissionLevel >= requiredLevel;
   }
-  
+
   /**
-   * Get available modules for current user/organization
-   * @returns {Array} - Available modules
+   * Get available modules for the current user
+   * @returns {Array} Available module IDs
    */
   getAvailableModules() {
-    if (!this.currentUser || !this.currentOrganization) {
+    if (!this.authenticated) {
       return [];
     }
     
-    // Admin can access all modules
-    if (this.hasRole(USER_ROLES.ADMIN)) {
-      return [
-        'ind-wizard',
-        'trial-vault',
-        'csr-intelligence',
-        'study-architect',
-        'analytics',
-        'admin'
-      ];
-    }
-    
-    // Use organization's available modules
-    if (this.currentOrganization.modules) {
-      if (this.currentOrganization.modules.includes('all')) {
-        return [
-          'ind-wizard',
-          'trial-vault',
-          'csr-intelligence',
-          'study-architect',
-          'analytics'
-        ];
-      }
-      
-      return this.currentOrganization.modules;
-    }
-    
-    return [];
+    return this.availableModules;
   }
-  
+
   /**
-   * Reset password
-   * @param {string} email - User email
-   * @returns {Promise<Object>} - Reset result
+   * Fetch authentication status (simulated)
+   * @private
+   * @returns {Promise<Object>} Authentication status
    */
-  async resetPassword(email) {
-    try {
-      // In production, would call API
-      // const response = await fetch(`${API_BASE}/reset-password`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ email })
-      // });
-      
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(error.message || 'Password reset failed');
-      // }
-      
-      // Simulate password reset
-      console.log(`Would send password reset email to: ${email}`);
-      
-      return {
-        success: true,
-        message: 'Password reset email sent'
-      };
-    } catch (error) {
-      console.error('Password reset error:', error);
-      throw error;
-    }
+  async _fetchAuthStatus() {
+    // In a real implementation, would call API
+    // Simulate a non-authenticated state by default
+    return this._simulateApiCall({
+      authenticated: false,
+      user: null
+    });
   }
-  
+
   /**
-   * Update current user's password
-   * @param {string} currentPassword - Current password
-   * @param {string} newPassword - New password
-   * @returns {Promise<Object>} - Update result
+   * Simulate API call (helper for demo)
+   * @private
+   * @param {Object} response - Simulated response
+   * @returns {Promise<Object>} Simulated response
    */
-  async updatePassword(currentPassword, newPassword) {
-    if (!this.currentUser) {
-      throw new Error('User not authenticated');
-    }
-    
-    try {
-      // In production, would call API
-      // const response = await fetch(`${API_BASE}/update-password`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${this.authToken}`,
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ currentPassword, newPassword })
-      // });
-      
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(error.message || 'Password update failed');
-      // }
-      
-      // Simulate password update
-      console.log(`Would update password for user: ${this.currentUser.username}`);
-      
-      return {
-        success: true,
-        message: 'Password updated successfully'
-      };
-    } catch (error) {
-      console.error('Password update error:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Verify if a document has been blockchain-verified
-   * @param {string} documentId - Document ID
-   * @returns {Promise<Object>} - Verification result
-   */
-  async verifyDocumentAuthenticity(documentId) {
-    if (!this.config.blockchainVerification) {
-      return {
-        verified: false,
-        message: 'Blockchain verification not enabled'
-      };
-    }
-    
-    try {
-      // In production, would call API
-      // const response = await fetch(`${API_BASE}/verify-document/${documentId}`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${this.authToken}`
-      //   }
-      // });
-      
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(error.message || 'Document verification failed');
-      // }
-      
-      // const result = await response.json();
-      
-      // Simulate verification
-      const verified = documentId.length > 5; // Mock verification
-      
-      return {
-        verified,
-        timestamp: new Date().toISOString(),
-        hash: `hash_${documentId}`,
-        message: verified ? 'Document verified' : 'Document not verified'
-      };
-    } catch (error) {
-      console.error(`Error verifying document ${documentId}:`, error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Request audit trail for resource
-   * @param {string} resourceType - Resource type (document, collection, etc.)
-   * @param {string} resourceId - Resource ID
-   * @returns {Promise<Array>} - Audit trail events
-   */
-  async getAuditTrail(resourceType, resourceId) {
-    if (!this.currentUser) {
-      throw new Error('User not authenticated');
-    }
-    
-    try {
-      // In production, would call API
-      // const response = await fetch(`${API_BASE}/audit-trail/${resourceType}/${resourceId}`, {
-      //   headers: {
-      //     'Authorization': `Bearer ${this.authToken}`
-      //   }
-      // });
-      
-      // if (!response.ok) {
-      //   const error = await response.json();
-      //   throw new Error(error.message || 'Failed to retrieve audit trail');
-      // }
-      
-      // const trail = await response.json();
-      
-      // Simulate audit trail
-      const now = new Date();
-      const trail = [
-        {
-          timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
-          user: 'user-1',
-          username: 'admin',
-          action: 'CREATE',
-          resourceType,
-          resourceId,
-          details: 'Resource created'
-        },
-        {
-          timestamp: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(),
-          user: 'user-2',
-          username: 'cro_admin',
-          action: 'MODIFY',
-          resourceType,
-          resourceId,
-          details: 'Resource modified'
-        },
-        {
-          timestamp: new Date().toISOString(),
-          user: 'user-3',
-          username: 'regulatory',
-          action: 'VIEW',
-          resourceType,
-          resourceId,
-          details: 'Resource viewed'
-        }
-      ];
-      
-      return trail;
-    } catch (error) {
-      console.error(`Error getting audit trail for ${resourceType}:${resourceId}:`, error);
-      throw error;
-    }
+  async _simulateApiCall(response) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(response);
+      }, 300);
+    });
   }
 }
 
-// Create singleton instance
 const securityService = new SecurityService();
 export default securityService;
