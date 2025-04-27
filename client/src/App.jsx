@@ -3,7 +3,7 @@ import { Route, Switch } from 'wouter';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
 import { AuthProvider } from './contexts/AuthContext';
-import { useToast, ToastContainer } from './hooks/use-toast';
+import { useToast, ToastContainer } from './hooks/use-toast.jsx';
 import { queryClient } from './lib/queryClient';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppHeader from './components/common/AppHeader';

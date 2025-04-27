@@ -1,223 +1,131 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'wouter';
-import {
-  LayoutDashboard,
-  Database,
-  FileText,
-  FlaskConical,
-  BookOpen,
+import { 
+  Home, 
+  FileText, 
+  Database, 
+  Layers, 
+  Flask, 
+  BookOpenText, 
+  BarChart3,
   ShieldCheck,
-  PieChart,
-  Users,
   Settings,
-  Bookmark,
-  HelpCircle,
-  FileQuestion,
-  Activity,
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  ChevronLeft
+  HelpCircle
 } from 'lucide-react';
-import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 
 const AppSidebar = () => {
   const [location] = useLocation();
-  const { data } = useModuleIntegration();
-  const [collapsed, setCollapsed] = useState(false);
-  const [expandedSection, setExpandedSection] = useState(null);
 
-  // Don't show sidebar on landing page
-  if (location === '/') {
-    return null;
-  }
-
-  const toggleCollapse = () => {
-    setCollapsed(!collapsed);
-    // When expanding, reset expanded sections
-    if (collapsed) {
-      setExpandedSection(null);
-    }
-  };
-
-  const toggleSection = (section) => {
-    if (expandedSection === section) {
-      setExpandedSection(null);
-    } else {
-      setExpandedSection(section);
-    }
-  };
-
-  const isActive = (path) => {
-    if (path === '/dashboard') {
-      return location === '/dashboard';
-    }
-    // Match subpaths, e.g. /vault should match /vault/documents
-    return location.startsWith(path);
-  };
-
-  // Link style based on active state
-  const getLinkClass = (path) => {
-    const baseClass = 'flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap';
-    const activeClass = 'bg-pink-50 text-pink-600';
-    const inactiveClass = 'text-gray-700 hover:bg-gray-100';
-    
-    return `${baseClass} ${isActive(path) ? activeClass : inactiveClass}`;
-  };
+  const menuItems = [
+    { 
+      id: 'dashboard', 
+      label: 'Dashboard', 
+      icon: Home, 
+      path: '/dashboard',
+      active: location === '/dashboard' 
+    },
+    { 
+      id: 'vault', 
+      label: 'TrialSage Vault', 
+      icon: Database, 
+      path: '/vault',
+      active: location === '/vault' 
+    },
+    { 
+      id: 'csr', 
+      label: 'CSR Intelligence', 
+      icon: FileText, 
+      path: '/csr-intelligence',
+      active: location === '/csr-intelligence' 
+    },
+    { 
+      id: 'architect', 
+      label: 'Study Architect', 
+      icon: Layers, 
+      path: '/study-architect',
+      active: location === '/study-architect' 
+    },
+    { 
+      id: 'ind', 
+      label: 'IND Wizard', 
+      icon: Flask, 
+      path: '/ind-wizard',
+      active: location === '/ind-wizard' 
+    },
+    { 
+      id: 'compliance', 
+      label: 'ICH Wiz', 
+      icon: ShieldCheck, 
+      path: '/compliance',
+      active: location === '/compliance' 
+    },
+    { 
+      id: 'cmdr', 
+      label: 'Metadata Repository', 
+      icon: BookOpenText, 
+      path: '/cmdr',
+      active: location === '/cmdr' 
+    },
+    { 
+      id: 'analytics', 
+      label: 'Analytics', 
+      icon: BarChart3, 
+      path: '/analytics',
+      active: location === '/analytics' 
+    },
+  ];
 
   return (
-    <aside className={`bg-white border-r border-gray-200 flex flex-col ${collapsed ? 'w-16' : 'w-64'}`}>
-      <div className="h-0 flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-        <div className="flex-1 flex flex-col px-3 space-y-1">
-          {/* Dashboard */}
-          <Link href="/dashboard">
-            <a className={getLinkClass('/dashboard')}>
-              <LayoutDashboard className="mr-3 flex-shrink-0 h-5 w-5" />
-              {!collapsed && <span>Dashboard</span>}
+    <div className="bg-white border-r border-gray-200 w-64 flex-shrink-0 h-full">
+      <div className="py-4">
+        <div className="px-4 mb-6">
+          <div className="text-xs uppercase text-gray-500 font-semibold tracking-wider">
+            Core Modules
+          </div>
+        </div>
+
+        <nav className="space-y-1 px-2">
+          {menuItems.map((item) => (
+            <Link key={item.id} href={item.path}>
+              <a 
+                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md group hover:bg-gray-100 ${
+                  item.active ? 'bg-pink-50 text-pink-700' : 'text-gray-700'
+                }`}
+              >
+                <item.icon 
+                  size={18} 
+                  className={`mr-3 flex-shrink-0 ${
+                    item.active ? 'text-pink-500' : 'text-gray-400 group-hover:text-gray-500'
+                  }`} 
+                />
+                {item.label}
+              </a>
+            </Link>
+          ))}
+        </nav>
+        
+        <div className="px-4 mt-8 mb-2">
+          <div className="text-xs uppercase text-gray-500 font-semibold tracking-wider">
+            System
+          </div>
+        </div>
+        
+        <nav className="space-y-1 px-2">
+          <Link href="/settings">
+            <a className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 group">
+              <Settings size={18} className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
+              Settings
             </a>
           </Link>
-
-          {/* Major Modules Section */}
-          <div className="pt-4">
-            <div className={`mb-2 ${collapsed ? 'px-3' : 'px-3 flex justify-between items-center'}`}>
-              {!collapsed && <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Core Modules</h3>}
-              {collapsed && <div className="h-px bg-gray-200 w-full my-2"></div>}
-            </div>
-
-            {/* Vault */}
-            <Link href="/vault">
-              <a className={getLinkClass('/vault')}>
-                <Database className="mr-3 flex-shrink-0 h-5 w-5" />
-                {!collapsed && <span>TrialSage Vault</span>}
-              </a>
-            </Link>
-
-            {/* CSR Intelligence */}
-            <Link href="/csr-intelligence">
-              <a className={getLinkClass('/csr-intelligence')}>
-                <FileText className="mr-3 flex-shrink-0 h-5 w-5" />
-                {!collapsed && <span>CSR Intelligence</span>}
-              </a>
-            </Link>
-            
-            {/* Study Architect */}
-            <Link href="/study-architect">
-              <a className={getLinkClass('/study-architect')}>
-                <FlaskConical className="mr-3 flex-shrink-0 h-5 w-5" />
-                {!collapsed && <span>Study Architect</span>}
-              </a>
-            </Link>
-
-            {/* ICH Wiz - Collapsible Section */}
-            <div>
-              <button 
-                onClick={() => toggleSection('regulatory')}
-                className={`w-full text-left ${getLinkClass('/regulatory-intelligence')}`}
-              >
-                <BookOpen className="mr-3 flex-shrink-0 h-5 w-5" />
-                {!collapsed && (
-                  <>
-                    <span className="flex-1">ICH Wiz</span>
-                    {expandedSection === 'regulatory' ? 
-                      <ChevronUp className="h-4 w-4" /> : 
-                      <ChevronDown className="h-4 w-4" />
-                    }
-                  </>
-                )}
-              </button>
-              
-              {!collapsed && expandedSection === 'regulatory' && (
-                <div className="ml-8 space-y-1 mt-1">
-                  <Link href="/regulatory-intelligence/guidance">
-                    <a className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                      location === '/regulatory-intelligence/guidance' ? 'text-pink-600' : 'text-gray-600 hover:bg-gray-50'
-                    }`}>
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      <span>Guidance Library</span>
-                    </a>
-                  </Link>
-                  <Link href="/regulatory-intelligence/compliance">
-                    <a className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                      location === '/regulatory-intelligence/compliance' ? 'text-pink-600' : 'text-gray-600 hover:bg-gray-50'
-                    }`}>
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      <span>Compliance Check</span>
-                    </a>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* IND Wizard */}
-            <Link href="/ind-wizard">
-              <a className={getLinkClass('/ind-wizard')}>
-                <FileQuestion className="mr-3 flex-shrink-0 h-5 w-5" />
-                {!collapsed && <span>IND Wizard</span>}
-              </a>
-            </Link>
-
-            {/* Analytics */}
-            <Link href="/analytics">
-              <a className={getLinkClass('/analytics')}>
-                <PieChart className="mr-3 flex-shrink-0 h-5 w-5" />
-                {!collapsed && <span>Analytics</span>}
-              </a>
-            </Link>
-          </div>
-
-          {/* Secondary Links Section */}
-          {!collapsed && (
-            <div className="pt-4 mt-4 border-t border-gray-200">
-              <div className="mb-2 px-3 flex justify-between items-center">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Administration</h3>
-              </div>
-
-              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
-                <Users className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
-                <span>Team Management</span>
-              </a>
-              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
-                <Settings className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
-                <span>Settings</span>
-              </a>
-              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
-                <Activity className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
-                <span>Audit Logs</span>
-              </a>
-            </div>
-          )}
-
-          {/* Help Section */}
-          {!collapsed && (
-            <div className="pt-4 mt-4 border-t border-gray-200">
-              <div className="mb-2 px-3 flex justify-between items-center">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Help & Resources</h3>
-              </div>
-
-              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
-                <HelpCircle className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
-                <span>Documentation</span>
-              </a>
-              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
-                <Bookmark className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
-                <span>Resources</span>
-              </a>
-            </div>
-          )}
-        </div>
+          <Link href="/help">
+            <a className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 group">
+              <HelpCircle size={18} className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
+              Help & Support
+            </a>
+          </Link>
+        </nav>
       </div>
-      
-      {/* Collapse/Expand Button */}
-      <div className="border-t border-gray-200 p-3">
-        <button
-          onClick={toggleCollapse}
-          className="flex items-center justify-center w-full p-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-100"
-        >
-          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          {!collapsed && <span className="ml-2">Collapse Sidebar</span>}
-        </button>
-      </div>
-    </aside>
+    </div>
   );
 };
 
