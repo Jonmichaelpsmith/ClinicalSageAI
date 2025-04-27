@@ -1,1112 +1,786 @@
 /**
  * Workflow Service
  * 
- * This service provides workflow automation capabilities across all TrialSage modules.
- * It enables creation, execution, and monitoring of complex multi-step workflows
- * that span across different modules of the platform.
+ * This service provides workflow and task management capabilities across modules
+ * in the TrialSage platform, with special support for cross-module workflows.
  */
 
-import regulatoryIntelligenceCore from './RegulatoryIntelligenceCore';
-import docuShareService from './DocuShareService';
+import { apiRequest } from '../lib/queryClient';
 import securityService from './SecurityService';
-
-const API_BASE = '/api/workflows';
 
 // Workflow statuses
 export const WORKFLOW_STATUS = {
-  DRAFT: 'draft',
-  PENDING: 'pending',
+  NOT_STARTED: 'not_started',
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
   FAILED: 'failed',
-  CANCELLED: 'cancelled'
+  PAUSED: 'paused',
+  CANCELED: 'canceled'
 };
 
 // Task statuses
 export const TASK_STATUS = {
-  PENDING: 'pending',
+  NOT_STARTED: 'not_started',
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
   FAILED: 'failed',
-  SKIPPED: 'skipped',
-  CANCELLED: 'cancelled'
+  BLOCKED: 'blocked',
+  SKIPPED: 'skipped'
+};
+
+// Task priorities
+export const TASK_PRIORITY = {
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  CRITICAL: 'critical'
 };
 
 class WorkflowService {
   constructor() {
-    this.isInitialized = false;
-    this.config = {
-      autoAssign: true,
-      notifyOnTaskAssignment: true,
-      recordEventHistory: true
-    };
-    this.workflowTemplates = new Map();
+    this.initialized = false;
     this.workflows = new Map();
+    this.workflowTemplates = new Map();
     this.tasks = new Map();
-    this.userTasks = [];
-    this.taskEventListeners = new Map();
-    this.workflowEventListeners = new Map();
+    this.taskTemplates = new Map();
   }
 
   /**
-   * Initialize Workflow service
+   * Initialize workflow service
    * @param {Object} options - Initialization options
-   * @returns {Promise<Object>} - Initialization status
+   * @returns {Promise<boolean>} Success status
    */
   async initialize(options = {}) {
-    if (this.isInitialized) {
-      console.log('WorkflowService already initialized');
-      return { status: 'already_initialized', config: this.config };
-    }
-    
-    console.log('Initializing WorkflowService...');
-    
     try {
-      // Update configuration
-      this.config = {
-        ...this.config,
-        ...options
-      };
+      // In a real implementation, would initialize storage and connections
+      // For now, simulate initialization with demo data
+      await this._initializeTemplates();
+      await this._initializeActiveWorkflows();
       
-      // Initialize workflow templates
-      this.initializeWorkflowTemplates();
-      
-      // In production, would fetch workflow data from API
-      // const response = await fetch(`${API_BASE}/init`);
-      // const initData = await response.json();
-      
-      this.isInitialized = true;
-      console.log('WorkflowService initialized successfully');
-      
-      // Initialize user tasks
-      await this.refreshUserTasks();
-      
-      return {
-        status: 'success',
-        config: this.config
-      };
+      this.initialized = true;
+      return true;
     } catch (error) {
-      console.error('Failed to initialize WorkflowService:', error);
-      
-      return {
-        status: 'error',
-        error: error.message
-      };
+      console.error('Workflow service initialization error:', error);
+      return false;
     }
   }
-  
-  /**
-   * Initialize workflow templates
-   */
-  initializeWorkflowTemplates() {
-    // Define standard workflow templates
-    const templates = [
-      {
-        id: 'protocol-review',
-        name: 'Protocol Review',
-        description: 'Review a clinical protocol document',
-        moduleOrigin: 'study-architect',
-        applicableModules: ['study-architect', 'trial-vault', 'ind-wizard'],
-        steps: [
-          {
-            id: 'review-request',
-            name: 'Review Request',
-            type: 'form',
-            assigneeRoles: ['regulatory_specialist'],
-            requiredFields: ['protocol', 'reviewType', 'dueDate']
-          },
-          {
-            id: 'technical-review',
-            name: 'Technical Review',
-            type: 'review',
-            assigneeRoles: ['medical_writer', 'regulatory_specialist'],
-            dependencies: ['review-request'],
-            requiredFields: ['comments', 'status']
-          },
-          {
-            id: 'regulatory-review',
-            name: 'Regulatory Review',
-            type: 'review',
-            assigneeRoles: ['regulatory_specialist'],
-            dependencies: ['technical-review'],
-            requiredFields: ['regulatoryAssessment', 'status']
-          },
-          {
-            id: 'final-approval',
-            name: 'Final Approval',
-            type: 'approval',
-            assigneeRoles: ['approver'],
-            dependencies: ['regulatory-review'],
-            requiredFields: ['approvalStatus', 'comments']
-          }
-        ],
-        outputs: {
-          documentType: 'reviewed_protocol',
-          targetModule: 'trial-vault'
-        }
-      },
-      {
-        id: 'ind-submission',
-        name: 'IND Submission',
-        description: 'Prepare and submit an IND application',
-        moduleOrigin: 'ind-wizard',
-        applicableModules: ['ind-wizard', 'trial-vault', 'csr-intelligence'],
-        steps: [
-          {
-            id: 'initiate-submission',
-            name: 'Initiate Submission',
-            type: 'form',
-            assigneeRoles: ['regulatory_specialist'],
-            requiredFields: ['productName', 'indType', 'targetSubmissionDate']
-          },
-          {
-            id: 'prepare-cmc',
-            name: 'Prepare CMC Section',
-            type: 'document',
-            assigneeRoles: ['regulatory_specialist'],
-            dependencies: ['initiate-submission'],
-            requiredFields: ['cmcDocument', 'status']
-          },
-          {
-            id: 'prepare-nonclinical',
-            name: 'Prepare Nonclinical Section',
-            type: 'document',
-            assigneeRoles: ['regulatory_specialist'],
-            dependencies: ['initiate-submission'],
-            requiredFields: ['nonclinicalDocument', 'status']
-          },
-          {
-            id: 'prepare-clinical',
-            name: 'Prepare Clinical Section',
-            type: 'document',
-            assigneeRoles: ['medical_writer', 'clinical_researcher'],
-            dependencies: ['initiate-submission'],
-            requiredFields: ['clinicalDocument', 'status']
-          },
-          {
-            id: 'review-submission',
-            name: 'Review Submission',
-            type: 'review',
-            assigneeRoles: ['regulatory_specialist'],
-            dependencies: ['prepare-cmc', 'prepare-nonclinical', 'prepare-clinical'],
-            requiredFields: ['reviewComments', 'status']
-          },
-          {
-            id: 'final-approval',
-            name: 'Final Approval',
-            type: 'approval',
-            assigneeRoles: ['approver'],
-            dependencies: ['review-submission'],
-            requiredFields: ['approvalStatus', 'comments']
-          },
-          {
-            id: 'submit-to-fda',
-            name: 'Submit to FDA',
-            type: 'submission',
-            assigneeRoles: ['regulatory_specialist'],
-            dependencies: ['final-approval'],
-            requiredFields: ['submissionDate', 'trackingNumber', 'status']
-          }
-        ],
-        outputs: {
-          documentType: 'ind_submission',
-          targetModule: 'trial-vault'
-        }
-      },
-      {
-        id: 'csr-development',
-        name: 'CSR Development',
-        description: 'Develop a Clinical Study Report',
-        moduleOrigin: 'csr-intelligence',
-        applicableModules: ['csr-intelligence', 'trial-vault'],
-        steps: [
-          {
-            id: 'initiate-csr',
-            name: 'Initiate CSR',
-            type: 'form',
-            assigneeRoles: ['medical_writer'],
-            requiredFields: ['studyId', 'templateType', 'dueDate']
-          },
-          {
-            id: 'data-collection',
-            name: 'Data Collection',
-            type: 'data',
-            assigneeRoles: ['data_manager'],
-            dependencies: ['initiate-csr'],
-            requiredFields: ['dataSource', 'status']
-          },
-          {
-            id: 'draft-development',
-            name: 'Draft Development',
-            type: 'document',
-            assigneeRoles: ['medical_writer'],
-            dependencies: ['data-collection'],
-            requiredFields: ['draftDocument', 'status']
-          },
-          {
-            id: 'medical-review',
-            name: 'Medical Review',
-            type: 'review',
-            assigneeRoles: ['clinical_researcher'],
-            dependencies: ['draft-development'],
-            requiredFields: ['medicalComments', 'status']
-          },
-          {
-            id: 'statistical-review',
-            name: 'Statistical Review',
-            type: 'review',
-            assigneeRoles: ['statistician'],
-            dependencies: ['draft-development'],
-            requiredFields: ['statisticalComments', 'status']
-          },
-          {
-            id: 'final-draft',
-            name: 'Final Draft',
-            type: 'document',
-            assigneeRoles: ['medical_writer'],
-            dependencies: ['medical-review', 'statistical-review'],
-            requiredFields: ['finalDocument', 'status']
-          },
-          {
-            id: 'final-approval',
-            name: 'Final Approval',
-            type: 'approval',
-            assigneeRoles: ['approver'],
-            dependencies: ['final-draft'],
-            requiredFields: ['approvalStatus', 'comments']
-          }
-        ],
-        outputs: {
-          documentType: 'clinical_study_report',
-          targetModule: 'trial-vault'
-        }
-      }
-    ];
-    
-    // Store templates
-    templates.forEach(template => {
-      this.workflowTemplates.set(template.id, template);
-    });
-  }
-  
-  /**
-   * Refresh user tasks
-   * @param {string} userId - User ID (optional, defaults to current user)
-   * @returns {Promise<Array>} - User tasks
-   */
-  async refreshUserTasks(userId = null) {
-    try {
-      const currentUserId = userId || securityService.currentUser?.id;
-      
-      if (!currentUserId) {
-        this.userTasks = [];
-        return [];
-      }
-      
-      // In production, would fetch from API
-      // const response = await fetch(`${API_BASE}/tasks/user/${currentUserId}`);
-      // const tasks = await response.json();
-      
-      // For now, filter tasks from cache
-      const userTasks = Array.from(this.tasks.values())
-        .filter(task => 
-          task.assignee === currentUserId || 
-          task.assigneeRoles?.some(role => securityService.hasRole(role))
-        )
-        .filter(task => 
-          task.status === TASK_STATUS.PENDING || 
-          task.status === TASK_STATUS.IN_PROGRESS
-        );
-      
-      this.userTasks = userTasks;
-      return userTasks;
-    } catch (error) {
-      console.error(`Error refreshing user tasks:`, error);
-      return [];
-    }
-  }
-  
+
   /**
    * Get workflow templates
    * @param {Object} options - Query options
-   * @returns {Array} - Workflow templates
+   * @returns {Promise<Array>} Array of workflow templates
    */
-  getWorkflowTemplates(options = {}) {
-    let templates = Array.from(this.workflowTemplates.values());
-    
-    // Filter by module origin
-    if (options.moduleOrigin) {
-      templates = templates.filter(t => t.moduleOrigin === options.moduleOrigin);
+  async getWorkflowTemplates(options = {}) {
+    if (!this.initialized) {
+      throw new Error('Workflow service not initialized');
     }
     
-    // Filter by applicable module
-    if (options.applicableModule) {
-      templates = templates.filter(t => t.applicableModules.includes(options.applicableModule));
+    // In a real implementation, would fetch from API
+    // For now, return demo workflow templates filtered by options
+    const templates = Array.from(this.workflowTemplates.values());
+    
+    // Filter by module if specified
+    if (options.module) {
+      return templates.filter(template => template.module === options.module);
     }
     
     return templates;
   }
-  
+
   /**
-   * Get workflow template by ID
-   * @param {string} templateId - Template ID
-   * @returns {Object|null} - Workflow template or null if not found
+   * Get active workflows
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} Array of active workflows
    */
-  getWorkflowTemplate(templateId) {
-    return this.workflowTemplates.get(templateId) || null;
+  async getActiveWorkflows(options = {}) {
+    if (!this.initialized) {
+      throw new Error('Workflow service not initialized');
+    }
+    
+    // In a real implementation, would fetch from API
+    // For now, return demo workflows filtered by options
+    const workflows = Array.from(this.workflows.values());
+    
+    // Filter by status if specified
+    if (options.status) {
+      return workflows.filter(workflow => workflow.status === options.status);
+    }
+    
+    // Filter by module if specified
+    if (options.module) {
+      return workflows.filter(workflow => workflow.module === options.module);
+    }
+    
+    // Filter by user if specified
+    if (options.userId) {
+      return workflows.filter(workflow => workflow.userId === options.userId);
+    }
+    
+    return workflows;
   }
-  
+
   /**
-   * Start workflow
+   * Start a workflow
    * @param {string} templateId - Workflow template ID
    * @param {Object} context - Workflow context
    * @param {Object} options - Workflow options
-   * @returns {Promise<Object>} - Started workflow
+   * @returns {Promise<Object>} Started workflow
    */
   async startWorkflow(templateId, context = {}, options = {}) {
-    if (!this.isInitialized) {
-      console.warn('WorkflowService not initialized. Initializing now...');
-      await this.initialize();
+    if (!this.initialized) {
+      throw new Error('Workflow service not initialized');
     }
     
-    try {
-      // Get workflow template
-      const template = this.workflowTemplates.get(templateId);
-      if (!template) {
-        throw new Error(`Workflow template not found: ${templateId}`);
-      }
-      
-      // Create workflow
-      const workflowId = `wf-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      const workflow = {
-        id: workflowId,
-        templateId,
-        name: options.name || template.name,
-        description: options.description || template.description,
-        status: WORKFLOW_STATUS.PENDING,
-        context,
-        createdAt: new Date().toISOString(),
-        startedAt: null,
-        completedAt: null,
-        initiatedBy: options.userId || securityService.currentUser?.id,
-        sourceModule: context.sourceModule || template.moduleOrigin,
-        tasks: [],
-        history: []
-      };
-      
-      // Store workflow
-      this.workflows.set(workflowId, workflow);
-      
-      // Create initial tasks
-      const initialTasks = template.steps
-        .filter(step => !step.dependencies || step.dependencies.length === 0)
-        .map(step => this.createTask(step, workflowId, context, options));
-      
-      // Store tasks and update workflow
-      initialTasks.forEach(task => {
-        this.tasks.set(task.id, task);
-        workflow.tasks.push(task.id);
-      });
-      
-      // Update workflow status
-      workflow.status = WORKFLOW_STATUS.IN_PROGRESS;
-      workflow.startedAt = new Date().toISOString();
-      
-      // Add history event
-      this.addWorkflowHistoryEvent(workflowId, {
-        type: 'workflow_started',
-        timestamp: workflow.startedAt,
-        user: workflow.initiatedBy,
-        details: {
-          templateId,
-          initialTasks: initialTasks.map(t => t.id)
-        }
-      });
-      
-      // Auto-assign tasks if enabled
-      if (this.config.autoAssign) {
-        initialTasks.forEach(task => {
-          this.autoAssignTask(task);
-        });
-      }
-      
-      // Notify about new tasks
-      if (this.config.notifyOnTaskAssignment) {
-        initialTasks.forEach(task => {
-          if (task.assignee) {
-            this.notifyTaskAssignment(task);
-          }
-        });
-      }
-      
-      // In production, would persist to API
-      // const response = await fetch(`${API_BASE}/workflows`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify(workflow)
-      // });
-      // const result = await response.json();
-      
-      // Refresh user tasks
-      await this.refreshUserTasks();
-      
-      // Emit workflow started event
-      this.emitWorkflowEvent('workflow_started', workflow);
-      
-      return workflow;
-    } catch (error) {
-      console.error(`Error starting workflow ${templateId}:`, error);
-      throw error;
+    // Check if template exists
+    if (!this.workflowTemplates.has(templateId)) {
+      throw new Error(`Workflow template ${templateId} not found`);
     }
-  }
-  
-  /**
-   * Create task from workflow step
-   * @param {Object} step - Workflow step
-   * @param {string} workflowId - Workflow ID
-   * @param {Object} context - Workflow context
-   * @param {Object} options - Task options
-   * @returns {Object} - Created task
-   */
-  createTask(step, workflowId, context = {}, options = {}) {
-    const taskId = `task-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     
-    const task = {
-      id: taskId,
-      workflowId,
-      stepId: step.id,
-      name: step.name,
-      type: step.type,
-      status: TASK_STATUS.PENDING,
-      assigneeRoles: step.assigneeRoles,
-      assignee: null,
-      createdAt: new Date().toISOString(),
-      startedAt: null,
+    const template = this.workflowTemplates.get(templateId);
+    
+    // In a real implementation, would call API
+    // For now, simulate workflow creation
+    const now = new Date().toISOString();
+    const workflow = {
+      id: `workflow-${Date.now()}`,
+      templateId,
+      name: template.name,
+      description: template.description,
+      module: template.module,
+      status: WORKFLOW_STATUS.IN_PROGRESS,
+      startedAt: now,
       completedAt: null,
-      data: {},
-      context,
-      requiredFields: step.requiredFields || [],
-      dependencies: step.dependencies || [],
-      history: []
+      userId: securityService.user?.id || 'system',
+      organizationId: securityService.currentOrganization?.id,
+      context: {
+        ...context,
+        sourceModule: context.sourceModule || template.module
+      },
+      tasks: [],
+      ...options
     };
     
-    // Add history event
-    this.addTaskHistoryEvent(taskId, {
-      type: 'task_created',
-      timestamp: task.createdAt,
-      details: {
-        stepId: step.id,
-        workflowId
-      }
-    });
+    // Create tasks from template
+    const tasks = await this._createTasksFromTemplate(template, workflow.id, context);
+    workflow.tasks = tasks.map(task => task.id);
     
-    return task;
+    // Add workflow to map
+    this.workflows.set(workflow.id, workflow);
+    
+    return workflow;
   }
-  
-  /**
-   * Auto-assign task to appropriate user
-   * @param {Object} task - Task to assign
-   * @returns {Object} - Updated task
-   */
-  autoAssignTask(task) {
-    // In a real implementation, this would use a sophisticated algorithm
-    // to determine the best user to assign the task to based on role,
-    // workload, expertise, etc.
-    
-    // For now, just use current user if they have the required role
-    const currentUser = securityService.currentUser;
-    
-    if (currentUser && task.assigneeRoles) {
-      const hasRequiredRole = task.assigneeRoles.some(role => 
-        securityService.hasRole(role)
-      );
-      
-      if (hasRequiredRole) {
-        // Assign to current user
-        return this.assignTask(task.id, currentUser.id);
-      }
-    }
-    
-    // Could not auto-assign
-    return task;
-  }
-  
-  /**
-   * Assign task to user
-   * @param {string} taskId - Task ID
-   * @param {string} userId - User ID
-   * @returns {Object} - Updated task
-   */
-  assignTask(taskId, userId) {
-    const task = this.tasks.get(taskId);
-    
-    if (!task) {
-      throw new Error(`Task not found: ${taskId}`);
-    }
-    
-    // Update task
-    task.assignee = userId;
-    this.tasks.set(taskId, task);
-    
-    // Add history event
-    this.addTaskHistoryEvent(taskId, {
-      type: 'task_assigned',
-      timestamp: new Date().toISOString(),
-      user: userId,
-      details: {
-        assignee: userId
-      }
-    });
-    
-    // Notify about assignment
-    if (this.config.notifyOnTaskAssignment) {
-      this.notifyTaskAssignment(task);
-    }
-    
-    // Refresh user tasks
-    this.refreshUserTasks();
-    
-    // Emit task assigned event
-    this.emitTaskEvent('task_assigned', task);
-    
-    return task;
-  }
-  
-  /**
-   * Notify user about task assignment
-   * @param {Object} task - Assigned task
-   */
-  notifyTaskAssignment(task) {
-    if (!task.assignee) {
-      return;
-    }
-    
-    // In a real implementation, this might send an email, push notification, etc.
-    // For now, just dispatch a custom event
-    const taskAssignedEvent = new CustomEvent('task-assigned', {
-      detail: {
-        id: task.id,
-        name: task.name,
-        workflowId: task.workflowId,
-        assignee: task.assignee
-      }
-    });
-    
-    window.dispatchEvent(taskAssignedEvent);
-  }
-  
-  /**
-   * Start task
-   * @param {string} taskId - Task ID
-   * @param {Object} options - Start options
-   * @returns {Promise<Object>} - Updated task
-   */
-  async startTask(taskId, options = {}) {
-    try {
-      const task = this.tasks.get(taskId);
-      
-      if (!task) {
-        throw new Error(`Task not found: ${taskId}`);
-      }
-      
-      // Check assignee
-      const userId = options.userId || securityService.currentUser?.id;
-      
-      if (task.assignee && task.assignee !== userId) {
-        throw new Error(`Task is assigned to another user: ${task.assignee}`);
-      }
-      
-      // Check status
-      if (task.status !== TASK_STATUS.PENDING) {
-        throw new Error(`Cannot start task with status: ${task.status}`);
-      }
-      
-      // Check dependencies
-      const workflow = this.workflows.get(task.workflowId);
-      
-      if (!workflow) {
-        throw new Error(`Workflow not found: ${task.workflowId}`);
-      }
-      
-      if (task.dependencies && task.dependencies.length > 0) {
-        const dependencyTasks = task.dependencies.map(depStepId => {
-          const depTaskId = workflow.tasks.find(id => {
-            const t = this.tasks.get(id);
-            return t && t.stepId === depStepId;
-          });
-          
-          return depTaskId ? this.tasks.get(depTaskId) : null;
-        }).filter(t => t !== null);
-        
-        const incompleteDepTasks = dependencyTasks.filter(
-          t => t.status !== TASK_STATUS.COMPLETED && 
-               t.status !== TASK_STATUS.SKIPPED
-        );
-        
-        if (incompleteDepTasks.length > 0) {
-          const incompleteTaskNames = incompleteDepTasks.map(t => t.name).join(', ');
-          throw new Error(`Dependencies not completed: ${incompleteTaskNames}`);
-        }
-      }
-      
-      // Update task
-      task.status = TASK_STATUS.IN_PROGRESS;
-      task.startedAt = new Date().toISOString();
-      
-      if (!task.assignee) {
-        task.assignee = userId;
-      }
-      
-      this.tasks.set(taskId, task);
-      
-      // Add history event
-      this.addTaskHistoryEvent(taskId, {
-        type: 'task_started',
-        timestamp: task.startedAt,
-        user: userId,
-        details: {}
-      });
-      
-      // In production, would update via API
-      // const response = await fetch(`${API_BASE}/tasks/${taskId}/start`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ userId })
-      // });
-      // const result = await response.json();
-      
-      // Emit task started event
-      this.emitTaskEvent('task_started', task);
-      
-      return task;
-    } catch (error) {
-      console.error(`Error starting task ${taskId}:`, error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Complete task
-   * @param {string} taskId - Task ID
-   * @param {Object} data - Task completion data
-   * @param {Object} options - Completion options
-   * @returns {Promise<Object>} - Updated task and any newly activated tasks
-   */
-  async completeTask(taskId, data = {}, options = {}) {
-    try {
-      const task = this.tasks.get(taskId);
-      
-      if (!task) {
-        throw new Error(`Task not found: ${taskId}`);
-      }
-      
-      // Check assignee
-      const userId = options.userId || securityService.currentUser?.id;
-      
-      if (task.assignee && task.assignee !== userId) {
-        throw new Error(`Task is assigned to another user: ${task.assignee}`);
-      }
-      
-      // Check status
-      if (task.status !== TASK_STATUS.IN_PROGRESS && task.status !== TASK_STATUS.PENDING) {
-        throw new Error(`Cannot complete task with status: ${task.status}`);
-      }
-      
-      // Check required fields
-      if (task.requiredFields && task.requiredFields.length > 0) {
-        const missingFields = task.requiredFields.filter(field => !(field in data));
-        
-        if (missingFields.length > 0) {
-          throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
-        }
-      }
-      
-      // Update task
-      task.status = TASK_STATUS.COMPLETED;
-      task.completedAt = new Date().toISOString();
-      task.data = {
-        ...task.data,
-        ...data
-      };
-      
-      if (!task.assignee) {
-        task.assignee = userId;
-      }
-      
-      this.tasks.set(taskId, task);
-      
-      // Add history event
-      this.addTaskHistoryEvent(taskId, {
-        type: 'task_completed',
-        timestamp: task.completedAt,
-        user: userId,
-        details: {
-          data: JSON.stringify(data)
-        }
-      });
-      
-      // Get workflow
-      const workflow = this.workflows.get(task.workflowId);
-      
-      if (!workflow) {
-        throw new Error(`Workflow not found: ${task.workflowId}`);
-      }
-      
-      // Find the step that was completed
-      const template = this.workflowTemplates.get(workflow.templateId);
-      const completedStep = template.steps.find(s => s.id === task.stepId);
-      
-      if (!completedStep) {
-        throw new Error(`Step not found: ${task.stepId}`);
-      }
-      
-      // Find steps that depend on this step
-      const nextSteps = template.steps.filter(step => 
-        step.dependencies && 
-        step.dependencies.includes(completedStep.id)
-      );
-      
-      // Check if these steps can be activated
-      const activatedTasks = [];
-      
-      for (const nextStep of nextSteps) {
-        // Check if all dependencies are completed
-        const allDependenciesCompleted = nextStep.dependencies.every(depStepId => {
-          const depTaskId = workflow.tasks.find(id => {
-            const t = this.tasks.get(id);
-            return t && t.stepId === depStepId;
-          });
-          
-          if (!depTaskId) {
-            return false;
-          }
-          
-          const depTask = this.tasks.get(depTaskId);
-          return depTask.status === TASK_STATUS.COMPLETED || depTask.status === TASK_STATUS.SKIPPED;
-        });
-        
-        if (allDependenciesCompleted) {
-          // Check if task already exists
-          const existingTaskId = workflow.tasks.find(id => {
-            const t = this.tasks.get(id);
-            return t && t.stepId === nextStep.id;
-          });
-          
-          if (!existingTaskId) {
-            // Create new task
-            const newTask = this.createTask(nextStep, workflow.id, workflow.context, options);
-            this.tasks.set(newTask.id, newTask);
-            workflow.tasks.push(newTask.id);
-            activatedTasks.push(newTask);
-            
-            // Auto-assign if enabled
-            if (this.config.autoAssign) {
-              this.autoAssignTask(newTask);
-            }
-            
-            // Notify about new task
-            if (this.config.notifyOnTaskAssignment && newTask.assignee) {
-              this.notifyTaskAssignment(newTask);
-            }
-          }
-        }
-      }
-      
-      // Check if workflow is completed
-      const allWorkflowTasksCompleted = workflow.tasks.every(taskId => {
-        const t = this.tasks.get(taskId);
-        return t.status === TASK_STATUS.COMPLETED || 
-               t.status === TASK_STATUS.SKIPPED ||
-               t.status === TASK_STATUS.CANCELLED;
-      });
-      
-      if (allWorkflowTasksCompleted) {
-        // Complete workflow
-        workflow.status = WORKFLOW_STATUS.COMPLETED;
-        workflow.completedAt = new Date().toISOString();
-        
-        // Add history event
-        this.addWorkflowHistoryEvent(workflow.id, {
-          type: 'workflow_completed',
-          timestamp: workflow.completedAt,
-          user: userId,
-          details: {}
-        });
-        
-        // Process workflow outputs
-        if (template.outputs) {
-          this.processWorkflowOutputs(workflow, template.outputs);
-        }
-        
-        // Emit workflow completed event
-        this.emitWorkflowEvent('workflow_completed', workflow);
-      }
-      
-      // In production, would update via API
-      // const response = await fetch(`${API_BASE}/tasks/${taskId}/complete`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ userId, data })
-      // });
-      // const result = await response.json();
-      
-      // Refresh user tasks
-      await this.refreshUserTasks();
-      
-      // Emit task completed event
-      this.emitTaskEvent('task_completed', task);
-      
-      return {
-        task,
-        activatedTasks,
-        workflowCompleted: allWorkflowTasksCompleted
-      };
-    } catch (error) {
-      console.error(`Error completing task ${taskId}:`, error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Process workflow outputs
-   * @param {Object} workflow - Completed workflow
-   * @param {Object} outputs - Workflow output configuration
-   */
-  async processWorkflowOutputs(workflow, outputs) {
-    try {
-      // This would perform actions based on the workflow outputs
-      // such as creating documents, updating records, etc.
-      
-      // For example, if the output is a document, create it in the target module
-      if (outputs.documentType && outputs.targetModule) {
-        // Collect data from completed tasks
-        const taskData = workflow.tasks
-          .map(taskId => this.tasks.get(taskId))
-          .filter(task => task.status === TASK_STATUS.COMPLETED)
-          .reduce((data, task) => ({ ...data, [task.stepId]: task.data }), {});
-        
-        console.log(`Would create ${outputs.documentType} in ${outputs.targetModule} from workflow ${workflow.id}`);
-        
-        // If target module is Trial Vault, create a collection
-        if (outputs.targetModule === 'trial-vault' && docuShareService.isInitialized) {
-          const collectionName = `${workflow.name} - ${new Date().toLocaleDateString()}`;
-          
-          try {
-            const collection = await docuShareService.createCollection(
-              collectionName,
-              outputs.targetModule,
-              {
-                description: `Output from workflow: ${workflow.id}`,
-                tags: [outputs.documentType, 'workflow-output', workflow.templateId]
-              }
-            );
-            
-            console.log(`Created document collection ${collection.id} for workflow outputs`);
-          } catch (collectionError) {
-            console.warn('Failed to create document collection for workflow outputs:', collectionError);
-          }
-        }
-      }
-    } catch (error) {
-      console.error(`Error processing workflow outputs for ${workflow.id}:`, error);
-    }
-  }
-  
+
   /**
    * Get workflow by ID
    * @param {string} workflowId - Workflow ID
-   * @returns {Object|null} - Workflow or null if not found
+   * @returns {Promise<Object>} Workflow
    */
-  getWorkflow(workflowId) {
-    return this.workflows.get(workflowId) || null;
+  async getWorkflow(workflowId) {
+    if (!this.initialized) {
+      throw new Error('Workflow service not initialized');
+    }
+    
+    // Check if workflow exists
+    if (!this.workflows.has(workflowId)) {
+      throw new Error(`Workflow ${workflowId} not found`);
+    }
+    
+    // In a real implementation, would fetch from API
+    // For now, return workflow from map
+    return this.workflows.get(workflowId);
   }
-  
+
   /**
-   * Get workflow tasks
+   * Get tasks for a workflow
    * @param {string} workflowId - Workflow ID
-   * @returns {Array} - Workflow tasks
+   * @returns {Promise<Array>} Array of tasks
    */
-  getWorkflowTasks(workflowId) {
+  async getWorkflowTasks(workflowId) {
+    if (!this.initialized) {
+      throw new Error('Workflow service not initialized');
+    }
+    
+    // Check if workflow exists
+    if (!this.workflows.has(workflowId)) {
+      throw new Error(`Workflow ${workflowId} not found`);
+    }
+    
+    // In a real implementation, would fetch from API
+    // For now, filter tasks by workflow ID
     const workflow = this.workflows.get(workflowId);
     
-    if (!workflow) {
-      return [];
-    }
-    
-    return workflow.tasks
-      .map(taskId => this.tasks.get(taskId))
-      .filter(task => task !== undefined);
+    return Array.from(this.tasks.values())
+      .filter(task => workflow.tasks.includes(task.id));
   }
-  
+
   /**
-   * Get task by ID
+   * Update task status
    * @param {string} taskId - Task ID
-   * @returns {Object|null} - Task or null if not found
+   * @param {string} status - New status
+   * @param {Object} result - Task result
+   * @returns {Promise<Object>} Updated task
    */
-  getTask(taskId) {
-    return this.tasks.get(taskId) || null;
-  }
-  
-  /**
-   * Add workflow history event
-   * @param {string} workflowId - Workflow ID
-   * @param {Object} event - History event
-   */
-  addWorkflowHistoryEvent(workflowId, event) {
-    if (!this.config.recordEventHistory) {
-      return;
+  async updateTaskStatus(taskId, status, result = {}) {
+    if (!this.initialized) {
+      throw new Error('Workflow service not initialized');
     }
     
-    const workflow = this.workflows.get(workflowId);
-    
-    if (!workflow) {
-      return;
+    // Check if task exists
+    if (!this.tasks.has(taskId)) {
+      throw new Error(`Task ${taskId} not found`);
     }
     
-    workflow.history.push(event);
-  }
-  
-  /**
-   * Add task history event
-   * @param {string} taskId - Task ID
-   * @param {Object} event - History event
-   */
-  addTaskHistoryEvent(taskId, event) {
-    if (!this.config.recordEventHistory) {
-      return;
-    }
-    
+    // In a real implementation, would call API
+    // For now, update task in map
     const task = this.tasks.get(taskId);
+    const now = new Date().toISOString();
     
-    if (!task) {
-      return;
+    // Update task
+    const updatedTask = {
+      ...task,
+      status,
+      result,
+      updatedAt: now
+    };
+    
+    // If task is completed, set completed date
+    if (status === TASK_STATUS.COMPLETED) {
+      updatedTask.completedAt = now;
     }
     
-    task.history.push(event);
+    // Update task in map
+    this.tasks.set(taskId, updatedTask);
+    
+    // Check if workflow is complete
+    await this._checkWorkflowCompletion(task.workflowId);
+    
+    return updatedTask;
   }
-  
+
   /**
-   * Register task event listener
-   * @param {string} eventType - Event type
-   * @param {Function} callback - Event callback
-   * @returns {string} - Listener ID
+   * Get user tasks
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} Array of tasks
    */
-  onTaskEvent(eventType, callback) {
-    const listenerId = `listener-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    
-    if (!this.taskEventListeners.has(eventType)) {
-      this.taskEventListeners.set(eventType, new Map());
+  async getUserTasks(options = {}) {
+    if (!this.initialized) {
+      throw new Error('Workflow service not initialized');
     }
     
-    this.taskEventListeners.get(eventType).set(listenerId, callback);
+    // In a real implementation, would fetch from API
+    // For now, filter tasks by user ID
+    const userId = securityService.user?.id || 'system';
     
-    return listenerId;
-  }
-  
-  /**
-   * Remove task event listener
-   * @param {string} eventType - Event type
-   * @param {string} listenerId - Listener ID
-   * @returns {boolean} - Whether listener was removed
-   */
-  offTaskEvent(eventType, listenerId) {
-    if (!this.taskEventListeners.has(eventType)) {
-      return false;
+    let tasks = Array.from(this.tasks.values())
+      .filter(task => task.assignedTo === userId);
+    
+    // Filter by status if specified
+    if (options.status) {
+      tasks = tasks.filter(task => task.status === options.status);
     }
     
-    return this.taskEventListeners.get(eventType).delete(listenerId);
-  }
-  
-  /**
-   * Emit task event
-   * @param {string} eventType - Event type
-   * @param {Object} task - Task object
-   */
-  emitTaskEvent(eventType, task) {
-    if (!this.taskEventListeners.has(eventType)) {
-      return;
+    // Filter by priority if specified
+    if (options.priority) {
+      tasks = tasks.filter(task => task.priority === options.priority);
     }
     
-    this.taskEventListeners.get(eventType).forEach(callback => {
-      try {
-        callback(task);
-      } catch (error) {
-        console.error(`Error in task event listener for ${eventType}:`, error);
-      }
-    });
-  }
-  
-  /**
-   * Register workflow event listener
-   * @param {string} eventType - Event type
-   * @param {Function} callback - Event callback
-   * @returns {string} - Listener ID
-   */
-  onWorkflowEvent(eventType, callback) {
-    const listenerId = `listener-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    
-    if (!this.workflowEventListeners.has(eventType)) {
-      this.workflowEventListeners.set(eventType, new Map());
-    }
-    
-    this.workflowEventListeners.get(eventType).set(listenerId, callback);
-    
-    return listenerId;
-  }
-  
-  /**
-   * Remove workflow event listener
-   * @param {string} eventType - Event type
-   * @param {string} listenerId - Listener ID
-   * @returns {boolean} - Whether listener was removed
-   */
-  offWorkflowEvent(eventType, listenerId) {
-    if (!this.workflowEventListeners.has(eventType)) {
-      return false;
-    }
-    
-    return this.workflowEventListeners.get(eventType).delete(listenerId);
-  }
-  
-  /**
-   * Emit workflow event
-   * @param {string} eventType - Event type
-   * @param {Object} workflow - Workflow object
-   */
-  emitWorkflowEvent(eventType, workflow) {
-    if (!this.workflowEventListeners.has(eventType)) {
-      return;
-    }
-    
-    this.workflowEventListeners.get(eventType).forEach(callback => {
-      try {
-        callback(workflow);
-      } catch (error) {
-        console.error(`Error in workflow event listener for ${eventType}:`, error);
-      }
-    });
-    
-    // For workflow_completed, also dispatch a DOM event
-    if (eventType === 'workflow_completed') {
-      const workflowCompletedEvent = new CustomEvent('workflow-completed', {
-        detail: {
-          id: workflow.id,
-          name: workflow.name,
-          templateId: workflow.templateId
-        }
+    // Sort by due date if specified
+    if (options.sortBy === 'dueDate') {
+      tasks.sort((a, b) => {
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return new Date(a.dueDate) - new Date(b.dueDate);
       });
+    } else if (options.sortBy === 'priority') {
+      // Sort by priority if specified
+      const priorityOrder = {
+        [TASK_PRIORITY.CRITICAL]: 0,
+        [TASK_PRIORITY.HIGH]: 1,
+        [TASK_PRIORITY.MEDIUM]: 2,
+        [TASK_PRIORITY.LOW]: 3
+      };
       
-      window.dispatchEvent(workflowCompletedEvent);
+      tasks.sort((a, b) => {
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      });
     }
+    
+    return tasks;
+  }
+
+  /**
+   * Refresh user tasks
+   * @returns {Promise<Array>} Array of tasks
+   */
+  async refreshUserTasks() {
+    // Just a wrapper around getUserTasks for React Query
+    return this.getUserTasks({
+      status: [
+        TASK_STATUS.NOT_STARTED,
+        TASK_STATUS.IN_PROGRESS,
+        TASK_STATUS.BLOCKED
+      ]
+    });
+  }
+
+  /**
+   * Initialize workflow templates with demo data
+   * @private
+   */
+  async _initializeTemplates() {
+    // Create demo workflow templates
+    const workflowTemplates = [
+      {
+        id: 'workflow-template-1',
+        name: 'IND Submission Workflow',
+        description: 'End-to-end workflow for preparing and submitting an IND application',
+        module: 'ind-wizard',
+        steps: [
+          {
+            name: 'Document Preparation',
+            tasks: ['task-template-1', 'task-template-2']
+          },
+          {
+            name: 'Quality Check',
+            tasks: ['task-template-3']
+          },
+          {
+            name: 'Submission',
+            tasks: ['task-template-4']
+          }
+        ]
+      },
+      {
+        id: 'workflow-template-2',
+        name: 'CSR Generation Workflow',
+        description: 'Workflow for generating and reviewing a Clinical Study Report',
+        module: 'csr-intelligence',
+        steps: [
+          {
+            name: 'Data Collection',
+            tasks: ['task-template-5']
+          },
+          {
+            name: 'Report Generation',
+            tasks: ['task-template-6']
+          },
+          {
+            name: 'Review',
+            tasks: ['task-template-7']
+          }
+        ]
+      },
+      {
+        id: 'workflow-template-3',
+        name: 'Cross-Module Study Planning',
+        description: 'Collaborative workflow spanning multiple modules for study planning',
+        module: 'study-architect',
+        steps: [
+          {
+            name: 'Protocol Development',
+            tasks: ['task-template-8']
+          },
+          {
+            name: 'Document Sharing',
+            tasks: ['task-template-9']
+          },
+          {
+            name: 'Approval',
+            tasks: ['task-template-10']
+          }
+        ]
+      }
+    ];
+    
+    // Add workflow templates to map
+    workflowTemplates.forEach(template => {
+      this.workflowTemplates.set(template.id, template);
+    });
+    
+    // Create demo task templates
+    const taskTemplates = [
+      {
+        id: 'task-template-1',
+        name: 'Prepare Protocol',
+        description: 'Create and finalize protocol document',
+        module: 'ind-wizard',
+        estimatedDuration: 'P3D', // 3 days
+        priority: TASK_PRIORITY.HIGH
+      },
+      {
+        id: 'task-template-2',
+        name: 'Prepare Investigator Brochure',
+        description: 'Create and finalize investigator brochure',
+        module: 'ind-wizard',
+        estimatedDuration: 'P2D', // 2 days
+        priority: TASK_PRIORITY.MEDIUM
+      },
+      {
+        id: 'task-template-3',
+        name: 'Quality Check Documents',
+        description: 'Perform quality check on all IND documents',
+        module: 'ind-wizard',
+        estimatedDuration: 'P1D', // 1 day
+        priority: TASK_PRIORITY.HIGH
+      },
+      {
+        id: 'task-template-4',
+        name: 'Submit to FDA',
+        description: 'Submit IND application to FDA',
+        module: 'ind-wizard',
+        estimatedDuration: 'PT4H', // 4 hours
+        priority: TASK_PRIORITY.CRITICAL
+      },
+      {
+        id: 'task-template-5',
+        name: 'Collect Clinical Data',
+        description: 'Collect and organize clinical data for CSR',
+        module: 'csr-intelligence',
+        estimatedDuration: 'P2D', // 2 days
+        priority: TASK_PRIORITY.HIGH
+      },
+      {
+        id: 'task-template-6',
+        name: 'Generate CSR Draft',
+        description: 'Generate initial CSR draft using AI assistant',
+        module: 'csr-intelligence',
+        estimatedDuration: 'P1D', // 1 day
+        priority: TASK_PRIORITY.HIGH
+      },
+      {
+        id: 'task-template-7',
+        name: 'Review CSR',
+        description: 'Review and finalize CSR',
+        module: 'csr-intelligence',
+        estimatedDuration: 'P3D', // 3 days
+        priority: TASK_PRIORITY.MEDIUM
+      },
+      {
+        id: 'task-template-8',
+        name: 'Develop Study Protocol',
+        description: 'Create study protocol document',
+        module: 'study-architect',
+        estimatedDuration: 'P5D', // 5 days
+        priority: TASK_PRIORITY.HIGH
+      },
+      {
+        id: 'task-template-9',
+        name: 'Share Documents with Team',
+        description: 'Share protocol with IND and CSR teams',
+        module: 'study-architect',
+        estimatedDuration: 'PT2H', // 2 hours
+        priority: TASK_PRIORITY.LOW
+      },
+      {
+        id: 'task-template-10',
+        name: 'Get Final Approval',
+        description: 'Obtain final approval for study plan',
+        module: 'study-architect',
+        estimatedDuration: 'P1D', // 1 day
+        priority: TASK_PRIORITY.CRITICAL
+      }
+    ];
+    
+    // Add task templates to map
+    taskTemplates.forEach(template => {
+      this.taskTemplates.set(template.id, template);
+    });
+  }
+
+  /**
+   * Initialize active workflows with demo data
+   * @private
+   */
+  async _initializeActiveWorkflows() {
+    const now = new Date();
+    
+    // Create demo workflows
+    const workflows = [
+      {
+        id: 'workflow-1',
+        templateId: 'workflow-template-1',
+        name: 'BTX-331 IND Submission',
+        description: 'IND submission for BTX-331 drug candidate',
+        module: 'ind-wizard',
+        status: WORKFLOW_STATUS.IN_PROGRESS,
+        startedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+        completedAt: null,
+        userId: 'system',
+        organizationId: null,
+        context: {
+          productName: 'BTX-331',
+          indNumber: 'IND123456',
+          sourceModule: 'ind-wizard'
+        },
+        tasks: ['task-1', 'task-2', 'task-3', 'task-4']
+      },
+      {
+        id: 'workflow-2',
+        templateId: 'workflow-template-2',
+        name: 'BX-107 Phase I CSR',
+        description: 'Clinical Study Report for BX-107 Phase I trial',
+        module: 'csr-intelligence',
+        status: WORKFLOW_STATUS.IN_PROGRESS,
+        startedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+        completedAt: null,
+        userId: 'system',
+        organizationId: null,
+        context: {
+          studyId: 'BX-107-001',
+          phase: 'Phase I',
+          sourceModule: 'csr-intelligence'
+        },
+        tasks: ['task-5', 'task-6', 'task-7']
+      }
+    ];
+    
+    // Add workflows to map
+    workflows.forEach(workflow => {
+      this.workflows.set(workflow.id, workflow);
+    });
+    
+    // Create demo tasks
+    const tasks = [
+      {
+        id: 'task-1',
+        name: 'Prepare BTX-331 Protocol',
+        description: 'Create and finalize protocol document for BTX-331',
+        module: 'ind-wizard',
+        status: TASK_STATUS.COMPLETED,
+        priority: TASK_PRIORITY.HIGH,
+        workflowId: 'workflow-1',
+        templateId: 'task-template-1',
+        assignedTo: 'system',
+        createdAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+        updatedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+        completedAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+        dueDate: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
+        result: {
+          documentId: 'document-1'
+        }
+      },
+      {
+        id: 'task-2',
+        name: 'Prepare BTX-331 Investigator Brochure',
+        description: 'Create and finalize investigator brochure for BTX-331',
+        module: 'ind-wizard',
+        status: TASK_STATUS.COMPLETED,
+        priority: TASK_PRIORITY.MEDIUM,
+        workflowId: 'workflow-1',
+        templateId: 'task-template-2',
+        assignedTo: 'system',
+        createdAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+        updatedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
+        completedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
+        dueDate: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+        result: {
+          documentId: 'document-2'
+        }
+      },
+      {
+        id: 'task-3',
+        name: 'Quality Check BTX-331 IND Documents',
+        description: 'Perform quality check on all BTX-331 IND documents',
+        module: 'ind-wizard',
+        status: TASK_STATUS.IN_PROGRESS,
+        priority: TASK_PRIORITY.HIGH,
+        workflowId: 'workflow-1',
+        templateId: 'task-template-3',
+        assignedTo: 'system',
+        createdAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
+        updatedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        completedAt: null,
+        dueDate: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day from now
+        result: {}
+      },
+      {
+        id: 'task-4',
+        name: 'Submit BTX-331 IND to FDA',
+        description: 'Submit BTX-331 IND application to FDA',
+        module: 'ind-wizard',
+        status: TASK_STATUS.NOT_STARTED,
+        priority: TASK_PRIORITY.CRITICAL,
+        workflowId: 'workflow-1',
+        templateId: 'task-template-4',
+        assignedTo: 'system',
+        createdAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
+        updatedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
+        completedAt: null,
+        dueDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
+        result: {}
+      },
+      {
+        id: 'task-5',
+        name: 'Collect BX-107 Clinical Data',
+        description: 'Collect and organize clinical data for BX-107 CSR',
+        module: 'csr-intelligence',
+        status: TASK_STATUS.COMPLETED,
+        priority: TASK_PRIORITY.HIGH,
+        workflowId: 'workflow-2',
+        templateId: 'task-template-5',
+        assignedTo: 'system',
+        createdAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+        updatedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        completedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        dueDate: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+        result: {}
+      },
+      {
+        id: 'task-6',
+        name: 'Generate BX-107 CSR Draft',
+        description: 'Generate initial BX-107 CSR draft using AI assistant',
+        module: 'csr-intelligence',
+        status: TASK_STATUS.IN_PROGRESS,
+        priority: TASK_PRIORITY.HIGH,
+        workflowId: 'workflow-2',
+        templateId: 'task-template-6',
+        assignedTo: 'system',
+        createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        updatedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+        completedAt: null,
+        dueDate: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day from now
+        result: {
+          progress: 0.75
+        }
+      },
+      {
+        id: 'task-7',
+        name: 'Review BX-107 CSR',
+        description: 'Review and finalize BX-107 CSR',
+        module: 'csr-intelligence',
+        status: TASK_STATUS.NOT_STARTED,
+        priority: TASK_PRIORITY.MEDIUM,
+        workflowId: 'workflow-2',
+        templateId: 'task-template-7',
+        assignedTo: 'system',
+        createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        updatedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        completedAt: null,
+        dueDate: new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days from now
+        result: {}
+      }
+    ];
+    
+    // Add tasks to map
+    tasks.forEach(task => {
+      this.tasks.set(task.id, task);
+    });
+  }
+
+  /**
+   * Create tasks from a workflow template
+   * @param {Object} template - Workflow template
+   * @param {string} workflowId - Workflow ID
+   * @param {Object} context - Workflow context
+   * @returns {Promise<Array>} Array of created tasks
+   * @private
+   */
+  async _createTasksFromTemplate(template, workflowId, context) {
+    const tasks = [];
+    const now = new Date().toISOString();
+    
+    // Flatten tasks from template steps
+    const taskTemplateIds = template.steps.flatMap(step => step.tasks);
+    
+    // Create tasks for each template
+    for (const templateId of taskTemplateIds) {
+      if (!this.taskTemplates.has(templateId)) {
+        console.warn(`Task template ${templateId} not found, skipping`);
+        continue;
+      }
+      
+      const taskTemplate = this.taskTemplates.get(templateId);
+      
+      // Calculate due date based on estimated duration
+      let dueDate = null;
+      
+      if (taskTemplate.estimatedDuration) {
+        // Parse ISO 8601 duration
+        const duration = taskTemplate.estimatedDuration;
+        const daysMatch = duration.match(/P(\d+)D/);
+        const hoursMatch = duration.match(/PT(\d+)H/);
+        
+        const days = daysMatch ? parseInt(daysMatch[1], 10) : 0;
+        const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+        
+        const totalHours = days * 24 + hours;
+        
+        dueDate = new Date(new Date().getTime() + totalHours * 60 * 60 * 1000).toISOString();
+      }
+      
+      // Create task
+      const task = {
+        id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
+        name: taskTemplate.name,
+        description: taskTemplate.description,
+        module: taskTemplate.module,
+        status: TASK_STATUS.NOT_STARTED,
+        priority: taskTemplate.priority,
+        workflowId,
+        templateId,
+        assignedTo: securityService.user?.id || 'system',
+        createdAt: now,
+        updatedAt: now,
+        completedAt: null,
+        dueDate,
+        result: {}
+      };
+      
+      // Add task to map
+      this.tasks.set(task.id, task);
+      tasks.push(task);
+    }
+    
+    return tasks;
+  }
+
+  /**
+   * Check if a workflow is complete
+   * @param {string} workflowId - Workflow ID
+   * @returns {Promise<boolean>} Whether the workflow is complete
+   * @private
+   */
+  async _checkWorkflowCompletion(workflowId) {
+    // Check if workflow exists
+    if (!this.workflows.has(workflowId)) {
+      return false;
+    }
+    
+    const workflow = this.workflows.get(workflowId);
+    
+    // Skip if workflow is already completed or failed
+    if ([WORKFLOW_STATUS.COMPLETED, WORKFLOW_STATUS.FAILED].includes(workflow.status)) {
+      return false;
+    }
+    
+    // Get workflow tasks
+    const tasks = await this.getWorkflowTasks(workflowId);
+    
+    // Check if all tasks are completed
+    const allCompleted = tasks.every(
+      task => task.status === TASK_STATUS.COMPLETED || task.status === TASK_STATUS.SKIPPED
+    );
+    
+    const anyFailed = tasks.some(task => task.status === TASK_STATUS.FAILED);
+    
+    if (allCompleted || anyFailed) {
+      // Update workflow status
+      const now = new Date().toISOString();
+      const updatedWorkflow = {
+        ...workflow,
+        status: allCompleted ? WORKFLOW_STATUS.COMPLETED : WORKFLOW_STATUS.FAILED,
+        completedAt: now
+      };
+      
+      // Update workflow in map
+      this.workflows.set(workflowId, updatedWorkflow);
+      
+      return true;
+    }
+    
+    return false;
   }
 }
 
-// Create singleton instance
 const workflowService = new WorkflowService();
 export default workflowService;

@@ -1,153 +1,103 @@
+/**
+ * QueryClient Configuration
+ * 
+ * This module configures the React Query client and provides utility functions for API requests.
+ */
+
 import { QueryClient } from '@tanstack/react-query';
 
-/**
- * API request function for making HTTP requests
- * 
- * @param {string} method HTTP method (GET, POST, etc.)
- * @param {string} url API endpoint URL
- * @param {object} data Request body data (for POST, PUT, etc.)
- * @param {object} options Additional request options
- * @returns {Promise} Fetch promise
- */
-export const apiRequest = async (method, url, data, options = {}) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
-
-  const config = {
-    method,
-    headers,
-    ...options,
-  };
-
-  if (data) {
-    config.body = JSON.stringify(data);
-  }
-
-  const response = await fetch(url, config);
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const error = new Error(errorData.error || 'API request failed');
-    error.status = response.status;
-    error.data = errorData;
-    throw error;
-  }
-
-  return response;
-};
-
-/**
- * Default fetcher function for react-query
- * 
- * @param {string} url API endpoint URL
- * @returns {Promise} Response JSON data
- */
-export const defaultFetcher = async (url) => {
-  const response = await fetch(url);
-  
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const error = new Error(errorData.error || 'API request failed');
-    error.status = response.status;
-    error.data = errorData;
-    throw error;
-  }
-  
-  return response.json();
-};
-
-/**
- * Get query function with error handling options
- * 
- * @param {object} options Error handling options
- * @returns {Function} Query function for react-query
- */
-export const getQueryFn = (options = {}) => {
-  return async ({ queryKey }) => {
-    const url = Array.isArray(queryKey) ? queryKey[0] : queryKey;
-    try {
-      const response = await fetch(url);
-      
-      if (response.status === 401 && options.on401 === 'returnNull') {
-        return null;
-      }
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const error = new Error(errorData.error || 'API request failed');
-        error.status = response.status;
-        error.data = errorData;
-        throw error;
-      }
-      
-      return response.json();
-    } catch (error) {
-      console.error(`Error fetching ${url}:`, error);
-      throw error;
-    }
-  };
-};
-
-/**
- * Fetch FDA compliance status
- * 
- * @returns {Promise} FDA compliance status data
- */
-export const fetchFDAComplianceStatus = async () => {
-  return defaultFetcher('/api/fda-compliance/status');
-};
-
-/**
- * Run FDA compliance validation
- * 
- * @returns {Promise} Validation results
- */
-export const runFDAComplianceValidation = async () => {
-  const response = await apiRequest('POST', '/api/fda-compliance/validate');
-  return response.json();
-};
-
-/**
- * Generate FDA compliance report
- * 
- * @returns {Promise} FDA compliance report data
- */
-export const generateFDAComplianceReport = async () => {
-  return defaultFetcher('/api/fda-compliance/report');
-};
-
-/**
- * Get blockchain status
- * 
- * @returns {Promise} Blockchain status data
- */
-export const getBlockchainStatus = async () => {
-  return defaultFetcher('/api/fda-compliance/blockchain/status');
-};
-
-/**
- * Get recent blockchain transactions
- * 
- * @param {number} limit Maximum number of transactions to return
- * @returns {Promise} Blockchain transactions data
- */
-export const getBlockchainTransactions = async (limit = 5) => {
-  return defaultFetcher(`/api/fda-compliance/blockchain/transactions?limit=${limit}`);
-};
-
-/**
- * Create QueryClient instance with default options
- */
+// Create a client
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn(),
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      cacheTime: 1000 * 60 * 30, // 30 minutes
-      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
       refetchOnWindowFocus: false,
-    },
-  },
+      retry: 1
+    }
+  }
 });
+
+/**
+ * Helper to handle HTTP errors
+ * @param {Response} response - Fetch Response object
+ * @param {Object} options - Options for error handling
+ * @returns {Promise<Response>} Response if ok, throws otherwise
+ */
+async function handleErrors(response, options = {}) {
+  if (!response.ok) {
+    // Handle 401 specially for auth
+    if (response.status === 401 && options.on401 === 'returnNull') {
+      return null;
+    }
+    
+    // Try to parse error message
+    let errorMessage;
+    
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorData.error || `Error: ${response.status} ${response.statusText}`;
+    } catch (e) {
+      errorMessage = `Error: ${response.status} ${response.statusText}`;
+    }
+    
+    throw new Error(errorMessage);
+  }
+  
+  return response;
+}
+
+/**
+ * API request function
+ * @param {string} method - HTTP method
+ * @param {string} url - Request URL
+ * @param {any} body - Request body
+ * @param {Object} options - Request options
+ * @returns {Promise<Response>} Fetch response
+ */
+export async function apiRequest(method, url, body, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+  
+  const fetchOptions = {
+    method,
+    headers,
+    credentials: 'include',
+    ...options
+  };
+  
+  if (body && method !== 'GET') {
+    fetchOptions.body = JSON.stringify(body);
+  }
+  
+  return fetch(url, fetchOptions);
+}
+
+/**
+ * Get a query function with error handling
+ * @param {Object} options - Query function options
+ * @returns {Function} Query function for React Query
+ */
+export function getQueryFn(options = {}) {
+  return async ({ queryKey }) => {
+    // Extract URL from query key
+    const url = Array.isArray(queryKey) ? queryKey[0] : queryKey;
+    
+    // Make the fetch request
+    const response = await apiRequest('GET', url, null, options);
+    
+    // Handle errors
+    const checkedResponse = await handleErrors(response, options);
+    
+    // Return null for 401 if specified
+    if (checkedResponse === null) {
+      return undefined;
+    }
+    
+    // Parse and return JSON
+    return await checkedResponse.json();
+  };
+}
+
+export default queryClient;
