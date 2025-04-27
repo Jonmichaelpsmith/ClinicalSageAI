@@ -30,6 +30,8 @@ import { useToast } from '@/hooks/use-toast';
 // Import form generators
 import Form1571Generator from './Form1571Generator';
 import Form1572Generator from './Form1572Generator';
+import Form3674Generator from './Form3674Generator';
+import Form3454Generator from './Form3454Generator';
 
 // Define form types with detailed metadata
 const FDA_FORMS = [
@@ -64,7 +66,7 @@ const FDA_FORMS = [
     difficulty: 'Low',
     estimatedTime: '15-20 min',
     icon: FileText,
-    component: null // Will be implemented in future
+    component: Form3674Generator
   },
   {
     id: '3454',
@@ -75,7 +77,7 @@ const FDA_FORMS = [
     difficulty: 'Medium',
     estimatedTime: '25-35 min',
     icon: FileText,
-    component: null // Will be implemented in future
+    component: Form3454Generator
   }
 ];
 
