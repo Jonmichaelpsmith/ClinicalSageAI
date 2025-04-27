@@ -62,13 +62,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Serve static files
 app.use(express.static('./'));
 
-// Health check endpoint for server pre-warming
+// Health check and prewarm endpoints for server pre-warming
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+app.get('/api/prewarm', (req, res) => {
+  res.status(200).send('Server is warm!');
 });
 
 // Serve client portal pages
