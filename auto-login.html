@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TrialSage™ - Auto Login</title>
+  <script src="/js/resilience-service.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -29,10 +30,27 @@
     }
     .loading-container {
       text-align: center;
+      background-color: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    h2 {
+      color: #ff1493;
+      margin-bottom: 15px;
+      font-weight: 700;
     }
     .loading-text {
       color: #333;
-      margin-top: 20px;
+      margin-top: 0;
+      font-size: 16px;
+    }
+    .status-text {
+      color: #666;
+      font-size: 14px;
+      margin-top: 15px;
+      min-height: 40px;
     }
   </style>
 </head>
@@ -41,47 +59,55 @@
     <div class="loader"></div>
     <h2>TrialSage™</h2>
     <p class="loading-text">Logging you in automatically...</p>
+    <div id="status" class="status-text">Initializing...</div>
   </div>
 
   <script>
-    // Server pre-warming function
-    async function prewarmServer() {
-      console.log('Pre-warming server...');
-      try {
-        const response = await fetch('/api/prewarm');
-        console.log('Server pre-warmed successfully:', response.status);
-        return response.ok;
-      } catch (error) {
-        console.warn('Server pre-warm failed:', error);
-        return false;
+    // Update status display
+    function updateStatus(message) {
+      const statusElement = document.getElementById('status');
+      if (statusElement) {
+        statusElement.textContent = message;
       }
     }
     
-    // Auto-login with server pre-warming
-    async function autoLogin() {
-      // Pre-warm the server first
-      await prewarmServer();
+    // Immediately pre-warm the server
+    (async function() {
+      updateStatus("Pre-warming server...");
+      try {
+        const startTime = Date.now();
+        const response = await fetch('/api/prewarm');
+        const responseTime = Date.now() - startTime;
+        updateStatus(`Server ready (${responseTime}ms)`);
+      } catch (error) {
+        updateStatus("Pre-warming failed, retrying...");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        return;
+      }
       
-      // Set authentication token in localStorage
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify({
-        id: 1,
-        username: 'admin',
-        email: 'admin@trialsage.ai',
-        role: 'admin',
-        name: 'Admin User',
-        subscribed: true
-      }));
-
-      // Redirect to client portal direct page after a short delay
-      setTimeout(function() {
-        // Use the direct client portal page that has additional functionality
+      // Create resilience service
+      const resilience = new ResilienceService({
+        prewarmEndpoint: '/api/prewarm',
+        prewarmInterval: 4 * 60 * 1000,
+        authRedirectDelay: 1500,
+        silentMode: true
+      });
+      
+      // Perform auto-login
+      updateStatus("Setting up authentication...");
+      await resilience.performAutoLogin();
+      
+      // Start the resilience service
+      resilience.startPrewarming();
+      
+      // Redirect with delay
+      updateStatus("Authentication complete, redirecting...");
+      setTimeout(() => {
         window.location.href = '/client-portal-direct';
-      }, 1000);
-    }
-    
-    // Start the auto-login process
-    autoLogin();
+      }, 1500);
+    })();
   </script>
 </body>
 </html>
