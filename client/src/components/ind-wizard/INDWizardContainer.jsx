@@ -38,6 +38,7 @@ import { apiRequest } from '@/lib/queryClient';
 // Import wizard step components
 import FdaFormsStep from './steps/FdaFormsStep';
 import RegulatoryIntelligenceStep from './steps/RegulatoryIntelligenceStep';
+import ProtocolBuilderStep from './steps/ProtocolBuilderStep';
 import { useDatabaseStatus } from '@/components/providers/database-status-provider';
 import ErrorBoundary from '@/components/ui/error-boundary';
 
@@ -612,6 +613,14 @@ export default function INDWizardContainer({ projectId = '12345' }) {
                     projectId={projectId} 
                     onComplete={() => setLocation('/ind-wizard/protocol')}
                     onPrevious={() => setLocation('/ind-wizard')}
+                  />
+                </Route>
+                
+                <Route path="/ind-wizard/protocol">
+                  <ProtocolBuilderStep 
+                    projectId={projectId} 
+                    onComplete={() => setLocation('/ind-wizard/cmc')}
+                    onPrevious={() => setLocation('/ind-wizard/regulatory-intelligence')}
                   />
                 </Route>
                 
