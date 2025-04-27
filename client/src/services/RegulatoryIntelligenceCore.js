@@ -1,85 +1,38 @@
 /**
  * Regulatory Intelligence Core
  * 
- * This is the central intelligence system for the TrialSage platform, acting as the 
- * "brain" that coordinates across all modules and provides advanced regulatory and
- * scientific insights. It integrates with all other services to create a unified 
- * intelligence layer powered by state-of-the-art AI models and blockchain technology.
+ * This service acts as the central AI intelligence system for the TrialSage platform.
+ * It provides regulatory and scientific intelligence, document processing capabilities,
+ * and integrates with blockchain for enhanced security and verification.
  * 
- * Key features:
- * - Cross-module intelligence coordination
- * - Real-time regulatory monitoring and insights
- * - Scientific data analysis and pattern recognition
- * - Blockchain-powered data integrity and verification
- * - Predictive analytics for regulatory submission success
- * - Smart document generation with regulatory compliance checks
- * - Global regulatory authority database with AI-powered updates
+ * The intelligence core serves as the "central nervous system" for the platform,
+ * connecting all modules with shared intelligence and insights.
  */
 
-import securityService from './SecurityService';
-import docuShareService from './DocuShareService';
-import mashableService from './MashableService';
-import workflowService from './WorkflowService';
-import adminService from './AdminService';
-import enterpriseService from './EnterpriseService';
-
-// Intelligence modules for specific domains
-export const INTELLIGENCE_MODULES = {
-  REGULATORY: 'regulatory',
-  SCIENTIFIC: 'scientific',
-  CLINICAL: 'clinical',
-  CMC: 'cmc',
-  SAFETY: 'safety',
-  COMPLIANCE: 'compliance',
-  PROTOCOL: 'protocol',
-  NONCLINICAL: 'nonclinical',
-  SUBMISSION: 'submission',
-  STRATEGIC: 'strategic'
-};
-
-// Regulatory authorities tracked by the system
-export const REGULATORY_AUTHORITIES = {
-  FDA: 'fda',
-  EMA: 'ema',
-  PMDA: 'pmda',
-  NMPA: 'nmpa',
-  HEALTH_CANADA: 'health_canada',
-  MHRA: 'mhra',
-  TGA: 'tga',
-  ANVISA: 'anvisa',
-  KFDA: 'kfda',
-  WHO: 'who'
-};
-
-// AI model tiers for different capabilities
-export const AI_MODEL_TIERS = {
-  STANDARD: 'standard',
-  ADVANCED: 'advanced',
-  EXPERT: 'expert',
-  ENTERPRISE: 'enterprise'
-};
-
-// Blockchain verification types
-export const BLOCKCHAIN_VERIFICATION_TYPES = {
-  DOCUMENT_INTEGRITY: 'document_integrity',
-  REGULATORY_SUBMISSION: 'regulatory_submission',
-  AUDIT_TRAIL: 'audit_trail',
-  SCIENTIFIC_DATA: 'scientific_data',
-  COMPLIANCE_RECORD: 'compliance_record',
-  PROTOCOL_VERSION: 'protocol_version'
-};
+// API client 
+const API_BASE = '/api/intelligence';
 
 class RegulatoryIntelligenceCore {
   constructor() {
-    this.apiBase = '/api/intelligence';
-    this.blockchainApiBase = '/api/blockchain';
-    this.intelligenceListeners = new Map();
-    this.activePredictions = new Map();
-    this.cachedInsights = new Map();
-    this.activeAuthorities = [];
-    this.currentActiveModel = null;
-    this.modelLoadStatus = 'unloaded';
-    this.lastModelUpdate = null;
+    this.isInitialized = false;
+    this.config = {
+      blockchain: {
+        enabled: false,
+        verificationEnabled: false
+      },
+      ai: {
+        enabled: false,
+        model: null
+      },
+      regulatory: {
+        enabled: false,
+        lastUpdate: null
+      }
+    };
+    this.user = null;
+    this.insightsCache = new Map();
+    this.documentsCache = new Map();
+    this.pendingRequests = new Map();
   }
 
   /**
@@ -88,887 +41,948 @@ class RegulatoryIntelligenceCore {
    * @returns {Promise<Object>} - Initialization status
    */
   async initialize(options = {}) {
+    if (this.isInitialized) {
+      console.log('RegulatoryIntelligenceCore already initialized');
+      return { status: 'already_initialized', config: this.config };
+    }
+    
+    console.log('Initializing RegulatoryIntelligenceCore...');
+    
     try {
-      const response = await fetch(`${this.apiBase}/initialize`, {
+      // Initialize services
+      const response = await fetch(`${API_BASE}/initialize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(options)
+        body: JSON.stringify({
+          blockchain: options.enableBlockchain ? { enabled: true } : undefined
+        })
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Failed to initialize intelligence core: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(`Failed to initialize services: ${errorData.message || response.statusText}`);
       }
-
+      
       const initStatus = await response.json();
       
-      // Cache available regulatory authorities
-      if (initStatus.authorities) {
-        this.activeAuthorities = initStatus.authorities;
-      }
+      // Check service status
+      const statusResponse = await fetch(`${API_BASE}/status`);
+      const serviceStatus = await statusResponse.json();
       
-      // Set active AI model
-      if (initStatus.activeModel) {
-        this.currentActiveModel = initStatus.activeModel;
-        this.modelLoadStatus = 'loaded';
-        this.lastModelUpdate = new Date();
-      }
+      // Update configuration
+      this.config = {
+        blockchain: {
+          enabled: serviceStatus.services.blockchain.initialized && serviceStatus.services.blockchain.config.enabled,
+          verificationEnabled: serviceStatus.services.blockchain.config?.verificationEnabled || false
+        },
+        ai: {
+          enabled: serviceStatus.services.ai.available,
+          model: serviceStatus.services.ai.model
+        },
+        regulatory: {
+          enabled: serviceStatus.services.regulatory.isUpToDate,
+          lastUpdate: serviceStatus.services.regulatory.lastUpdated
+        }
+      };
       
-      // Initialize blockchain connection
-      if (options.enableBlockchain !== false) {
-        await this._initializeBlockchain();
-      }
+      this.isInitialized = true;
+      console.log('RegulatoryIntelligenceCore initialized successfully');
       
-      return initStatus;
+      return {
+        status: 'success',
+        config: this.config,
+        serviceStatus
+      };
     } catch (error) {
-      console.error('Error initializing intelligence core:', error);
-      throw error;
+      console.error('Failed to initialize RegulatoryIntelligenceCore:', error);
+      
+      return {
+        status: 'error',
+        error: error.message
+      };
     }
   }
-
+  
   /**
-   * Initialize blockchain connection
-   * @private
+   * Set user context
+   * @param {Object} user - User object
    */
-  async _initializeBlockchain() {
-    try {
-      const response = await fetch(`${this.blockchainApiBase}/initialize`, {
-        method: 'POST'
-      });
-      
-      if (!response.ok) {
-        console.warn('Blockchain initialization failed, operating in fallback mode');
-      }
-    } catch (error) {
-      console.warn('Blockchain service unavailable, operating in fallback mode:', error);
-    }
+  setUser(user) {
+    this.user = user;
   }
-
+  
   /**
-   * Get regulatory insights for a specific context
-   * @param {string} contextType - Context type (e.g., project, document, submission)
+   * Get regulatory insights for a context
+   * @param {string} contextType - Context type (document, submission, product, etc.)
    * @param {string} contextId - Context ID
-   * @param {Object} options - Analysis options
+   * @param {Object} options - Query options
    * @returns {Promise<Object>} - Regulatory insights
    */
   async getRegulatoryInsights(contextType, contextId, options = {}) {
-    const cacheKey = `${contextType}:${contextId}:regulatory`;
-    
-    // Check cache first if not forcing refresh
-    if (!options.forceRefresh && this.cachedInsights.has(cacheKey)) {
-      return Promise.resolve(this.cachedInsights.get(cacheKey));
-    }
-    
     try {
-      const queryParams = new URLSearchParams({
-        contextType,
-        contextId,
-        ...options
-      }).toString();
-
-      const response = await fetch(`${this.apiBase}/regulatory-insights?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get regulatory insights: ${response.statusText}`);
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
       }
       
-      const insights = await response.json();
+      // Check cache first if caching is enabled
+      if (options.useCache !== false) {
+        const cacheKey = `regulatory-${contextType}-${contextId}-${JSON.stringify(options)}`;
+        
+        if (this.insightsCache.has(cacheKey)) {
+          console.log(`Using cached regulatory insights for ${contextType}:${contextId}`);
+          return this.insightsCache.get(cacheKey);
+        }
+      }
       
-      // Cache insights for future use
-      this.cachedInsights.set(cacheKey, insights);
+      // Build the topic from context
+      let topic;
+      if (options.topic) {
+        topic = options.topic;
+      } else {
+        topic = `${contextType} ${contextId}`;
+        if (options.keywords && options.keywords.length > 0) {
+          topic += ` ${options.keywords.join(' ')}`;
+        }
+      }
       
-      return insights;
+      // Call API
+      const response = await fetch(`${API_BASE}/regulatory/intelligence`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          topic,
+          options: {
+            authority: options.authority,
+            limit: options.limit || 5,
+            includeGuidance: options.includeGuidance !== false,
+            includeRegulations: options.includeRegulations !== false,
+            includeStandards: options.includeStandards !== false
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to get regulatory insights: ${errorData.message || response.statusText}`);
+      }
+      
+      const insightsData = await response.json();
+      
+      // Cache results if caching is enabled
+      if (options.useCache !== false) {
+        const cacheKey = `regulatory-${contextType}-${contextId}-${JSON.stringify(options)}`;
+        this.insightsCache.set(cacheKey, insightsData);
+        
+        // Set cache expiry (24 hours)
+        setTimeout(() => {
+          this.insightsCache.delete(cacheKey);
+        }, 24 * 60 * 60 * 1000);
+      }
+      
+      return insightsData;
     } catch (error) {
-      console.error('Error getting regulatory insights:', error);
+      console.error(`Error getting regulatory insights for ${contextType}:${contextId}:`, error);
       throw error;
     }
   }
-
+  
   /**
-   * Get scientific insights for a specific context
-   * @param {string} contextType - Context type (e.g., project, document, protocol)
+   * Get scientific insights for a context
+   * @param {string} contextType - Context type (document, submission, product, etc.)
    * @param {string} contextId - Context ID
-   * @param {Object} options - Analysis options
+   * @param {Object} options - Query options
    * @returns {Promise<Object>} - Scientific insights
    */
   async getScientificInsights(contextType, contextId, options = {}) {
-    const cacheKey = `${contextType}:${contextId}:scientific`;
-    
-    // Check cache first if not forcing refresh
-    if (!options.forceRefresh && this.cachedInsights.has(cacheKey)) {
-      return Promise.resolve(this.cachedInsights.get(cacheKey));
-    }
-    
     try {
-      const queryParams = new URLSearchParams({
-        contextType,
-        contextId,
-        ...options
-      }).toString();
-
-      const response = await fetch(`${this.apiBase}/scientific-insights?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get scientific insights: ${response.statusText}`);
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
       }
       
-      const insights = await response.json();
+      // Check cache first if caching is enabled
+      if (options.useCache !== false) {
+        const cacheKey = `scientific-${contextType}-${contextId}-${JSON.stringify(options)}`;
+        
+        if (this.insightsCache.has(cacheKey)) {
+          console.log(`Using cached scientific insights for ${contextType}:${contextId}`);
+          return this.insightsCache.get(cacheKey);
+        }
+      }
       
-      // Cache insights for future use
-      this.cachedInsights.set(cacheKey, insights);
+      // This would call a scientific insights endpoint in production
+      // For now, we'll simulate with regulatory insights endpoint
       
-      return insights;
-    } catch (error) {
-      console.error('Error getting scientific insights:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate smart regulatory recommendations
-   * @param {string} contextType - Context type
-   * @param {string} contextId - Context ID
-   * @param {Object} options - Recommendation options
-   * @returns {Promise<Array>} - List of recommendations
-   */
-  async generateRecommendations(contextType, contextId, options = {}) {
-    try {
-      const response = await fetch(`${this.apiBase}/recommendations`, {
+      // Build the topic from context
+      let topic;
+      if (options.topic) {
+        topic = options.topic;
+      } else {
+        topic = `scientific ${contextType} ${contextId}`;
+        if (options.keywords && options.keywords.length > 0) {
+          topic += ` ${options.keywords.join(' ')}`;
+        }
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/regulatory/intelligence`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          contextType,
-          contextId,
-          options
+          topic,
+          options: {
+            limit: options.limit || 5,
+            includeGuidance: options.includeGuidance !== false,
+            includeRegulations: false, // Not relevant for scientific insights
+            includeStandards: options.includeStandards !== false
+          }
         })
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Failed to generate recommendations: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(`Failed to get scientific insights: ${errorData.message || response.statusText}`);
       }
-
-      return await response.json();
+      
+      const insightsData = await response.json();
+      
+      // Transform to scientific insights format
+      const scientificInsights = {
+        ...insightsData,
+        insightType: 'scientific',
+        analysis: {
+          ...insightsData.analysis,
+          scientificRelevance: 'high'
+        }
+      };
+      
+      // Cache results if caching is enabled
+      if (options.useCache !== false) {
+        const cacheKey = `scientific-${contextType}-${contextId}-${JSON.stringify(options)}`;
+        this.insightsCache.set(cacheKey, scientificInsights);
+        
+        // Set cache expiry (24 hours)
+        setTimeout(() => {
+          this.insightsCache.delete(cacheKey);
+        }, 24 * 60 * 60 * 1000);
+      }
+      
+      return scientificInsights;
     } catch (error) {
-      console.error('Error generating recommendations:', error);
+      console.error(`Error getting scientific insights for ${contextType}:${contextId}:`, error);
       throw error;
     }
   }
-
+  
   /**
-   * Predict regulatory submission success probability
-   * @param {string} submissionType - Submission type (e.g., IND, NDA, BLA)
-   * @param {string} projectId - Project ID
-   * @param {Object} submissionData - Submission data for analysis
-   * @returns {Promise<Object>} - Success prediction with factors
-   */
-  async predictSubmissionSuccess(submissionType, projectId, submissionData) {
-    try {
-      const response = await fetch(`${this.apiBase}/predict/submission-success`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          submissionType,
-          projectId,
-          submissionData
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to predict submission success: ${response.statusText}`);
-      }
-
-      const prediction = await response.json();
-      
-      // Store active prediction
-      this.activePredictions.set(`${submissionType}:${projectId}`, prediction);
-      
-      return prediction;
-    } catch (error) {
-      console.error('Error predicting submission success:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate regulatory document with AI
-   * @param {string} documentType - Document type to generate
-   * @param {Object} contextData - Context data for generation
+   * Generate text with AI for regulatory content
+   * @param {string} prompt - Generation prompt
    * @param {Object} options - Generation options
-   * @returns {Promise<Object>} - Generated document
+   * @returns {Promise<string>} - Generated text
    */
-  async generateRegulatoryDocument(documentType, contextData, options = {}) {
+  async generateRegulatoryText(prompt, options = {}) {
     try {
-      const response = await fetch(`${this.apiBase}/generate/document`, {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/regulatory-text`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          documentType,
-          contextData,
-          options
+          prompt,
+          options: {
+            temperature: options.temperature || 0.2,
+            maxTokens: options.maxTokens || 2000,
+            model: options.model || this.config.ai.model,
+            systemPrompt: options.systemPrompt
+          }
         })
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Failed to generate document: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(`Failed to generate regulatory text: ${errorData.message || response.statusText}`);
       }
-
-      return await response.json();
+      
+      const result = await response.json();
+      return result.text;
     } catch (error) {
-      console.error('Error generating document:', error);
+      console.error('Error generating regulatory text:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Smart extraction of data from regulatory documents
-   * @param {string} documentId - Document ID to analyze
-   * @param {Array} extractionPoints - Data points to extract
+   * Extract structured data from regulatory text
+   * @param {string} text - Text to extract from
+   * @param {Array} fields - Fields to extract
    * @param {Object} options - Extraction options
    * @returns {Promise<Object>} - Extracted data
    */
-  async extractRegulatoryData(documentId, extractionPoints = [], options = {}) {
+  async extractRegulatoryData(text, fields, options = {}) {
     try {
-      const response = await fetch(`${this.apiBase}/extract/document-data`, {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/extract-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          documentId,
-          extractionPoints,
-          options
+          text,
+          fields,
+          options: {
+            model: options.model || this.config.ai.model,
+            systemPrompt: options.systemPrompt
+          }
         })
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Failed to extract data: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(`Failed to extract regulatory data: ${errorData.message || response.statusText}`);
       }
-
-      return await response.json();
+      
+      const result = await response.json();
+      return result.data;
     } catch (error) {
       console.error('Error extracting regulatory data:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Get global regulatory requirements for a product type
-   * @param {string} productType - Product type
-   * @param {Array} authorities - Regulatory authorities to include
-   * @param {Object} options - Query options
-   * @returns {Promise<Object>} - Regulatory requirements
-   */
-  async getGlobalRegulatoryRequirements(productType, authorities = [], options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        productType,
-        authorities: authorities.join(','),
-        ...options
-      }).toString();
-
-      const response = await fetch(`${this.apiBase}/global-requirements?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get global requirements: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting global regulatory requirements:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Perform regulatory gap analysis
-   * @param {string} projectId - Project ID
-   * @param {string} targetAuthority - Target regulatory authority
+   * Analyze document for regulatory compliance
+   * @param {string} text - Document text
+   * @param {string} standard - Regulatory standard
    * @param {Object} options - Analysis options
-   * @returns {Promise<Object>} - Gap analysis results
+   * @returns {Promise<Object>} - Compliance analysis
    */
-  async performRegulatoryGapAnalysis(projectId, targetAuthority, options = {}) {
+  async analyzeCompliance(text, standard, options = {}) {
     try {
-      const response = await fetch(`${this.apiBase}/gap-analysis`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          projectId,
-          targetAuthority,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to perform gap analysis: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error performing regulatory gap analysis:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get regulatory authority updates and guidance
-   * @param {Array} authorities - Authorities to include
-   * @param {Object} options - Filter options
-   * @returns {Promise<Array>} - Regulatory updates
-   */
-  async getRegulatoryUpdates(authorities = [], options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        authorities: authorities.join(','),
-        ...options
-      }).toString();
-
-      const response = await fetch(`${this.apiBase}/regulatory-updates?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get regulatory updates: ${response.statusText}`);
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
       }
       
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting regulatory updates:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Check document compliance with regulatory standards
-   * @param {string} documentId - Document ID
-   * @param {Array} standards - Compliance standards to check
-   * @param {Object} options - Check options
-   * @returns {Promise<Object>} - Compliance check results
-   */
-  async checkDocumentCompliance(documentId, standards = [], options = {}) {
-    try {
-      const response = await fetch(`${this.apiBase}/compliance/check-document`, {
+      // Call API
+      const response = await fetch(`${API_BASE}/compliance-analysis`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          documentId,
-          standards,
-          options
+          text,
+          standard,
+          options: {
+            model: options.model || this.config.ai.model,
+            systemPrompt: options.systemPrompt
+          }
         })
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Failed to check document compliance: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(`Failed to analyze compliance: ${errorData.message || response.statusText}`);
       }
-
-      return await response.json();
+      
+      const result = await response.json();
+      return result.analysis;
     } catch (error) {
-      console.error('Error checking document compliance:', error);
+      console.error('Error analyzing compliance:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Add document to blockchain for verification
-   * @param {string} documentId - Document ID
-   * @param {string} verificationType - Verification type
-   * @param {Object} options - Blockchain options
-   * @returns {Promise<Object>} - Blockchain receipt
+   * Generate summary of regulatory document
+   * @param {string} text - Document text
+   * @param {Object} options - Summary options
+   * @returns {Promise<string>} - Generated summary
    */
-  async addDocumentToBlockchain(documentId, verificationType, options = {}) {
+  async generateDocumentSummary(text, options = {}) {
     try {
-      const response = await fetch(`${this.blockchainApiBase}/add-document`, {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/document-summary`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          documentId,
-          verificationType,
-          options
+          text,
+          options: {
+            length: options.length,
+            focus: options.focus,
+            includeHeadings: options.includeHeadings,
+            maxTokens: options.maxTokens,
+            model: options.model || this.config.ai.model,
+            systemPrompt: options.systemPrompt
+          }
         })
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Failed to add document to blockchain: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(`Failed to generate document summary: ${errorData.message || response.statusText}`);
       }
-
-      return await response.json();
+      
+      const result = await response.json();
+      return result.summary;
     } catch (error) {
-      console.error('Error adding document to blockchain:', error);
+      console.error('Error generating document summary:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Verify document integrity using blockchain
-   * @param {string} documentId - Document ID
-   * @param {string} blockchainReceipt - Blockchain receipt
+   * Process document (PDF)
+   * @param {File} file - File object
+   * @param {Object} options - Processing options
+   * @returns {Promise<Object>} - Processing result
+   */
+  async processDocument(file, options = {}) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      // Create form data
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      if (options.title) formData.append('title', options.title);
+      if (options.author) formData.append('author', options.author);
+      if (options.options) formData.append('options', JSON.stringify(options.options));
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/documents/process`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to process document: ${errorData.message || response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      // Cache document info
+      this.documentsCache.set(result.resultId, {
+        fileName: result.fileName,
+        metadata: result.metadata,
+        status: result.status,
+        processedAt: new Date().toISOString()
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Error processing document:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Extract structured data from processed document
+   * @param {string} resultId - Processing result ID
+   * @param {Object} options - Extraction options
+   * @returns {Promise<Object>} - Structured data
+   */
+  async extractDocumentData(resultId, options = {}) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/documents/extract/${resultId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          options
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to extract document data: ${errorData.message || response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error(`Error extracting data from document ${resultId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Generate document from template
+   * @param {string} templateId - Template ID
+   * @param {Object} data - Template data
+   * @param {Object} options - Generation options
+   * @returns {Promise<Object>} - Generated document
+   */
+  async generateDocument(templateId, data, options = {}) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/documents/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          templateId,
+          data,
+          options
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to generate document: ${errorData.message || response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result.document;
+    } catch (error) {
+      console.error(`Error generating document from template ${templateId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Register document in blockchain
+   * @param {Object} document - Document object
+   * @returns {Promise<Object>} - Registration result
+   */
+  async registerDocumentWithBlockchain(document) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      if (!this.config.blockchain.enabled) {
+        throw new Error('Blockchain service is not enabled');
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/blockchain/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          document
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to register document in blockchain: ${errorData.message || response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error(`Error registering document ${document.id} in blockchain:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Update document in blockchain
+   * @param {Object} document - Document object
+   * @returns {Promise<Object>} - Update result
+   */
+  async updateDocumentInBlockchain(document) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      if (!this.config.blockchain.enabled) {
+        throw new Error('Blockchain service is not enabled');
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/blockchain/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          document
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to update document in blockchain: ${errorData.message || response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error(`Error updating document ${document.id} in blockchain:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Verify document with blockchain
+   * @param {Object} document - Document object
    * @returns {Promise<Object>} - Verification result
    */
-  async verifyDocumentWithBlockchain(documentId, blockchainReceipt = null) {
+  async verifyDocumentWithBlockchain(document) {
     try {
-      const response = await fetch(`${this.blockchainApiBase}/verify-document`, {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      if (!this.config.blockchain.enabled || !this.config.blockchain.verificationEnabled) {
+        throw new Error('Blockchain verification is not enabled');
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/blockchain/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          documentId,
-          blockchainReceipt
+          document
         })
       });
-
+      
       if (!response.ok) {
-        throw new Error(`Failed to verify document: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(`Failed to verify document with blockchain: ${errorData.message || response.statusText}`);
       }
-
-      return await response.json();
+      
+      const result = await response.json();
+      return result;
     } catch (error) {
-      console.error('Error verifying document with blockchain:', error);
+      console.error(`Error verifying document ${document.id} with blockchain:`, error);
       throw error;
     }
   }
-
+  
   /**
-   * Create blockchain-verified audit trail
+   * Create blockchain audit trail
+   * @param {string} operation - Operation type
+   * @param {string} resourceId - Resource ID
+   * @param {Object} data - Audit data
+   * @returns {Promise<Object>} - Audit trail result
+   */
+  async createBlockchainAuditTrail(operation, resourceId, data) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      if (!this.config.blockchain.enabled) {
+        throw new Error('Blockchain service is not enabled');
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/blockchain/audit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          operation,
+          resourceId,
+          data
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to create blockchain audit trail: ${errorData.message || response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error(`Error creating blockchain audit trail for ${resourceId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get document blockchain history
+   * @param {string} documentId - Document ID
+   * @returns {Promise<Object>} - Blockchain history
+   */
+  async getDocumentBlockchainHistory(documentId) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      if (!this.config.blockchain.enabled) {
+        throw new Error('Blockchain service is not enabled');
+      }
+      
+      // Call API
+      const response = await fetch(`${API_BASE}/blockchain/history/${documentId}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to get document blockchain history: ${errorData.message || response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error(`Error getting blockchain history for document ${documentId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get chat response from AI
+   * @param {string} message - User message
+   * @param {Object} context - Chat context
+   * @returns {Promise<string>} - AI response
+   */
+  async getChatResponse(message, context = {}) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
+      }
+      
+      if (!this.config.ai.enabled) {
+        throw new Error('AI service is not enabled');
+      }
+      
+      // Build prompt based on context
+      let prompt = message;
+      
+      if (context.activeModule) {
+        prompt = `[Module: ${context.moduleName || context.activeModule}] ${prompt}`;
+      }
+      
+      // Add previous messages if available
+      let systemPrompt = "You are an AI specialized in regulatory science, drug development, and clinical trial documentation. Provide accurate and helpful responses to questions about regulatory affairs, document preparation, and scientific topics.";
+      
+      if (context.previousMessages && context.previousMessages.length > 0) {
+        // Would use a more sophisticated prompt building approach in production
+        systemPrompt += "\n\nHere's the conversation history:";
+        context.previousMessages.forEach(msg => {
+          if (msg.type === 'user') {
+            systemPrompt += `\nUser: ${msg.content}`;
+          } else if (msg.type === 'assistant') {
+            systemPrompt += `\nAssistant: ${msg.content}`;
+          }
+        });
+      }
+      
+      // Generate text
+      return await this.generateRegulatoryText(prompt, {
+        systemPrompt,
+        temperature: 0.7 // More creative for chat
+      });
+    } catch (error) {
+      console.error('Error getting chat response:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Generate recommendations based on context
    * @param {string} contextType - Context type
    * @param {string} contextId - Context ID
-   * @param {Object} auditData - Audit data
-   * @returns {Promise<Object>} - Blockchain audit receipt
-   */
-  async createBlockchainAuditTrail(contextType, contextId, auditData) {
-    try {
-      const response = await fetch(`${this.blockchainApiBase}/audit-trail`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contextType,
-          contextId,
-          auditData
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to create blockchain audit trail: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error creating blockchain audit trail:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate intelligent clinical protocol
-   * @param {Object} protocolParams - Protocol parameters
    * @param {Object} options - Generation options
-   * @returns {Promise<Object>} - Generated protocol
+   * @returns {Promise<Array>} - Recommendations
    */
-  async generateIntelligentProtocol(protocolParams, options = {}) {
+  async generateRecommendations(contextType, contextId, options = {}) {
     try {
-      const response = await fetch(`${this.apiBase}/generate/protocol`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          protocolParams,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate protocol: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error generating intelligent protocol:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get scientific literature analysis
-   * @param {string} query - Scientific query
-   * @param {Object} options - Analysis options
-   * @returns {Promise<Object>} - Scientific literature analysis
-   */
-  async getScientificLiteratureAnalysis(query, options = {}) {
-    try {
-      const response = await fetch(`${this.apiBase}/scientific/literature-analysis`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          query,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to analyze scientific literature: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error analyzing scientific literature:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate CMC strategies
-   * @param {string} projectId - Project ID
-   * @param {Object} productData - Product data
-   * @param {Object} options - Strategy options
-   * @returns {Promise<Array>} - CMC strategies
-   */
-  async generateCmcStrategies(projectId, productData, options = {}) {
-    try {
-      const response = await fetch(`${this.apiBase}/generate/cmc-strategies`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          projectId,
-          productData,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate CMC strategies: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error generating CMC strategies:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get safety signal detection analysis
-   * @param {string} productId - Product ID
-   * @param {Object} safetyData - Safety data
-   * @param {Object} options - Analysis options
-   * @returns {Promise<Object>} - Safety analysis results
-   */
-  async getSafetySignalDetection(productId, safetyData, options = {}) {
-    try {
-      const response = await fetch(`${this.apiBase}/safety/signal-detection`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          productId,
-          safetyData,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to get safety signal detection: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting safety signal detection:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get strategic development recommendations
-   * @param {string} projectId - Project ID
-   * @param {Object} developmentData - Development data
-   * @param {Object} options - Recommendation options
-   * @returns {Promise<Object>} - Strategic recommendations
-   */
-  async getStrategicRecommendations(projectId, developmentData, options = {}) {
-    try {
-      const response = await fetch(`${this.apiBase}/strategic/recommendations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          projectId,
-          developmentData,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to get strategic recommendations: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting strategic recommendations:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update AI model parameters
-   * @param {Object} modelParams - Model parameters
-   * @returns {Promise<Object>} - Updated model status
-   */
-  async updateAiModelParameters(modelParams) {
-    try {
-      const response = await fetch(`${this.apiBase}/model/update-parameters`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(modelParams)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update AI model parameters: ${response.statusText}`);
-      }
-
-      const status = await response.json();
-      this.currentActiveModel = status.model;
-      this.lastModelUpdate = new Date();
-      
-      return status;
-    } catch (error) {
-      console.error('Error updating AI model parameters:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get available intelligence modules
-   * @returns {Promise<Array>} - Available modules
-   */
-  async getAvailableModules() {
-    try {
-      const response = await fetch(`${this.apiBase}/modules`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch available modules: ${response.statusText}`);
+      if (!this.isInitialized) {
+        console.warn('RegulatoryIntelligenceCore not initialized. Initializing now...');
+        await this.initialize();
       }
       
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching available modules:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get intelligence module configuration
-   * @param {string} moduleType - Module type
-   * @returns {Promise<Object>} - Module configuration
-   */
-  async getModuleConfiguration(moduleType) {
-    try {
-      const response = await fetch(`${this.apiBase}/modules/${moduleType}/configuration`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch module configuration: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching module configuration:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Configure intelligence module
-   * @param {string} moduleType - Module type
-   * @param {Object} config - Module configuration
-   * @returns {Promise<Object>} - Updated configuration
-   */
-  async configureModule(moduleType, config) {
-    try {
-      const response = await fetch(`${this.apiBase}/modules/${moduleType}/configuration`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(config)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to configure module: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error configuring module:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get intelligence system health status
-   * @returns {Promise<Object>} - System health status
-   */
-  async getSystemHealth() {
-    try {
-      const response = await fetch(`${this.apiBase}/system-health`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch system health: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching system health:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get AI model performance metrics
-   * @param {Object} options - Metrics options
-   * @returns {Promise<Object>} - Performance metrics
-   */
-  async getModelPerformanceMetrics(options = {}) {
-    try {
-      const queryParams = new URLSearchParams(options).toString();
-      const response = await fetch(`${this.apiBase}/model/performance?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch model performance: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching model performance:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Analyze cross-module data patterns
-   * @param {Object} analysisConfig - Analysis configuration
-   * @returns {Promise<Object>} - Analysis results
-   */
-  async analyzeCrossModulePatterns(analysisConfig) {
-    try {
-      const response = await fetch(`${this.apiBase}/analyze/cross-module`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(analysisConfig)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to analyze cross-module patterns: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error analyzing cross-module patterns:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate enterprise intelligence dashboard
-   * @param {Object} dashboardConfig - Dashboard configuration
-   * @returns {Promise<Object>} - Dashboard data
-   */
-  async generateIntelligenceDashboard(dashboardConfig) {
-    try {
-      const response = await fetch(`${this.apiBase}/dashboard/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dashboardConfig)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate intelligence dashboard: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error generating intelligence dashboard:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Subscribe to intelligence updates
-   * @param {string} updateType - Update type
-   * @param {Function} callback - Callback function
-   * @returns {string} - Subscription ID
-   */
-  subscribeToIntelligenceUpdates(updateType, callback) {
-    const subscriptionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-    
-    if (!this.intelligenceListeners.has(updateType)) {
-      this.intelligenceListeners.set(updateType, new Map());
-    }
-    
-    this.intelligenceListeners.get(updateType).set(subscriptionId, callback);
-    return subscriptionId;
-  }
-
-  /**
-   * Unsubscribe from intelligence updates
-   * @param {string} updateType - Update type
-   * @param {string} subscriptionId - Subscription ID
-   */
-  unsubscribeFromIntelligenceUpdates(updateType, subscriptionId) {
-    if (this.intelligenceListeners.has(updateType)) {
-      this.intelligenceListeners.get(updateType).delete(subscriptionId);
-    }
-  }
-
-  /**
-   * Clear cached insights
-   * @param {string} contextType - Context type to clear (optional)
-   * @param {string} contextId - Context ID to clear (optional)
-   * @returns {number} - Number of cleared cache entries
-   */
-  clearCachedInsights(contextType = null, contextId = null) {
-    if (contextType && contextId) {
-      // Clear specific context
-      let count = 0;
-      for (const key of this.cachedInsights.keys()) {
-        if (key.startsWith(`${contextType}:${contextId}:`)) {
-          this.cachedInsights.delete(key);
-          count++;
+      // Check cache first if caching is enabled
+      if (options.useCache !== false) {
+        const cacheKey = `recommendations-${contextType}-${contextId}-${JSON.stringify(options)}`;
+        
+        if (this.insightsCache.has(cacheKey)) {
+          console.log(`Using cached recommendations for ${contextType}:${contextId}`);
+          return this.insightsCache.get(cacheKey);
         }
       }
-      return count;
-    } else {
-      // Clear all cached insights
-      const count = this.cachedInsights.size;
-      this.cachedInsights.clear();
-      return count;
+      
+      // Get context data
+      let contextData = null;
+      if (options.contextData) {
+        contextData = options.contextData;
+      }
+      
+      // Get regulatory insights
+      const regulatoryInsights = await this.getRegulatoryInsights(contextType, contextId, {
+        ...options,
+        useCache: true
+      });
+      
+      // Generate recommendations using insights
+      const prompt = `
+        Generate actionable recommendations based on the following regulatory insights:
+        ${JSON.stringify(regulatoryInsights)}
+        
+        ${contextData ? `Additional context: ${JSON.stringify(contextData)}` : ''}
+        
+        Provide 3-5 specific recommendations that are:
+        1. Practical and actionable
+        2. Relevant to the regulatory context
+        3. Prioritized by importance
+        
+        Format each recommendation with:
+        - A clear title
+        - A concise description
+        - A priority level (high, medium, low)
+        - A category (regulatory, scientific, operational, etc.)
+        
+        Return as a JSON array of recommendation objects.
+      `;
+      
+      const systemPrompt = "You are an AI regulatory expert that provides practical recommendations to help users navigate complex regulatory environments. Focus on actionable advice that is well-prioritized.";
+      
+      // Generate text
+      const recommendationsText = await this.generateRegulatoryText(prompt, {
+        systemPrompt,
+        temperature: 0.3
+      });
+      
+      // Parse recommendations
+      let recommendations = [];
+      try {
+        recommendations = JSON.parse(recommendationsText);
+      } catch (e) {
+        console.error('Error parsing recommendations JSON:', e);
+        
+        // Try to extract JSON if not valid
+        const jsonStart = recommendationsText.indexOf('[');
+        const jsonEnd = recommendationsText.lastIndexOf(']');
+        
+        if (jsonStart >= 0 && jsonEnd > jsonStart) {
+          const jsonStr = recommendationsText.substring(jsonStart, jsonEnd + 1);
+          try {
+            recommendations = JSON.parse(jsonStr);
+          } catch (e2) {
+            console.error('Error parsing extracted recommendations JSON:', e2);
+          }
+        }
+      }
+      
+      // Cache results if caching is enabled
+      if (options.useCache !== false && recommendations.length > 0) {
+        const cacheKey = `recommendations-${contextType}-${contextId}-${JSON.stringify(options)}`;
+        this.insightsCache.set(cacheKey, recommendations);
+        
+        // Set cache expiry (24 hours)
+        setTimeout(() => {
+          this.insightsCache.delete(cacheKey);
+        }, 24 * 60 * 60 * 1000);
+      }
+      
+      return recommendations;
+    } catch (error) {
+      console.error(`Error generating recommendations for ${contextType}:${contextId}:`, error);
+      throw error;
     }
   }
-
+  
   /**
-   * Get active AI model info
-   * @returns {Object} - AI model info
+   * Get status of intelligence services
+   * @returns {Promise<Object>} - Service status
    */
-  getActiveModelInfo() {
-    return {
-      model: this.currentActiveModel,
-      status: this.modelLoadStatus,
-      lastUpdate: this.lastModelUpdate
-    };
+  async getStatus() {
+    try {
+      const response = await fetch(`${API_BASE}/status`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to get service status: ${errorData.message || response.statusText}`);
+      }
+      
+      const statusData = await response.json();
+      
+      // Update configuration
+      this.config = {
+        blockchain: {
+          enabled: statusData.services.blockchain.initialized && statusData.services.blockchain.config.enabled,
+          verificationEnabled: statusData.services.blockchain.config?.verificationEnabled || false
+        },
+        ai: {
+          enabled: statusData.services.ai.available,
+          model: statusData.services.ai.model
+        },
+        regulatory: {
+          enabled: statusData.services.regulatory.isUpToDate,
+          lastUpdate: statusData.services.regulatory.lastUpdated
+        }
+      };
+      
+      return statusData;
+    } catch (error) {
+      console.error('Error getting intelligence service status:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Clear caches
+   * @param {string} cacheType - Type of cache to clear (insights, documents, all)
+   */
+  clearCaches(cacheType = 'all') {
+    if (cacheType === 'all' || cacheType === 'insights') {
+      this.insightsCache.clear();
+    }
+    
+    if (cacheType === 'all' || cacheType === 'documents') {
+      this.documentsCache.clear();
+    }
+    
+    console.log(`Cleared ${cacheType} caches`);
   }
 }
 

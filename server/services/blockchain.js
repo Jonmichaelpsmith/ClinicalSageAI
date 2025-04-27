@@ -1,478 +1,577 @@
 /**
- * Blockchain Verification Service
+ * Blockchain Service
  * 
- * This service provides blockchain-based verification and immutable audit trails
- * for all TrialSage modules. It ensures data integrity, tamper resistance, and
- * cryptographic verification for regulatory documents, submissions, and critical actions.
- * 
- * The service integrates with a private blockchain network specifically designed
- * for pharmaceutical and healthcare regulatory documentation, providing enhanced
- * security while maintaining HIPAA/GDPR compliance.
+ * This service provides blockchain-based security features for the TrialSage platform,
+ * including document verification, audit trails, and cryptographic security.
+ * It integrates with a private Ethereum-based blockchain for enhanced security.
  */
 
 import crypto from 'crypto';
 import { db } from '../db.js';
 
-// Blockchain network configuration
-const BLOCKCHAIN_CONFIG = {
-  networkUrl: process.env.BLOCKCHAIN_NETWORK_URL || 'https://trialsage-blockchain.example.com',
-  apiKey: process.env.BLOCKCHAIN_API_KEY,
-  privateKey: process.env.BLOCKCHAIN_PRIVATE_KEY,
-  networkType: process.env.BLOCKCHAIN_NETWORK_TYPE || 'private',
-  contractAddress: process.env.BLOCKCHAIN_CONTRACT_ADDRESS
+// Mock Web3 client (in production, would connect to actual blockchain)
+const mockWeb3 = {
+  async connect() {
+    console.log('[Blockchain] Connecting to private blockchain...');
+    return true;
+  },
+  
+  async writeTransaction(data) {
+    const txHash = crypto.createHash('sha256').update(JSON.stringify(data) + Date.now()).digest('hex');
+    
+    console.log(`[Blockchain] Transaction written with hash: ${txHash}`);
+    return {
+      hash: txHash,
+      blockNumber: Math.floor(Math.random() * 1000000),
+      timestamp: new Date().toISOString()
+    };
+  },
+  
+  async verifyTransaction(txHash) {
+    // In production, this would check the blockchain
+    console.log(`[Blockchain] Verifying transaction: ${txHash}`);
+    return true;
+  },
+  
+  async getTransactionReceipt(txHash) {
+    console.log(`[Blockchain] Getting receipt for transaction: ${txHash}`);
+    return {
+      hash: txHash,
+      blockNumber: Math.floor(Math.random() * 1000000),
+      status: 'confirmed',
+      timestamp: new Date().toISOString()
+    };
+  }
 };
 
-class BlockchainVerificationService {
-  constructor() {
-    this.initialized = false;
-    this.client = null;
-    this.networkStatus = {
-      connected: false,
-      lastConnection: null,
-      chainId: null
+// Blockchain Operations
+let isInitialized = false;
+let config = {
+  enabled: false,
+  privateChain: true,
+  verificationEnabled: true
+};
+
+/**
+ * Initialize blockchain service
+ * @param {Object} options - Initialization options
+ * @returns {Promise<Object>} - Initialization status
+ */
+export async function initialize(options = {}) {
+  if (isInitialized) return { status: 'already_initialized' };
+  
+  try {
+    console.log('[Blockchain] Initializing blockchain service...');
+    
+    // Update configuration
+    config = {
+      ...config,
+      ...options
     };
-    this.pendingTransactions = [];
-    this.verificationCache = new Map();
-  }
-
-  /**
-   * Initialize blockchain connection
-   * @returns {Promise<Object>} Connection status
-   */
-  async initialize() {
-    try {
-      // In a real implementation, this would create a connection to the blockchain network
-      // Using the Web3 library or an appropriate blockchain client
-      
-      // For now, we'll simulate the connection
-      this.initialized = true;
-      this.networkStatus = {
-        connected: true,
-        lastConnection: new Date(),
-        chainId: '0x12345',
-        networkType: BLOCKCHAIN_CONFIG.networkType
-      };
-      
-      console.log('Blockchain service initialized successfully');
-      
-      return {
-        enabled: true,
-        connected: true,
-        networkType: BLOCKCHAIN_CONFIG.networkType,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('Failed to initialize blockchain service:', error);
-      this.networkStatus.connected = false;
-      return {
-        enabled: false,
-        connected: false,
-        error: error.message
-      };
-    }
-  }
-
-  /**
-   * Generate document hash for blockchain storage
-   * @param {Object} document - Document to hash
-   * @returns {string} - Document hash
-   * @private
-   */
-  _generateDocumentHash(document) {
-    // Create a deterministic string representation of the document
-    const documentString = typeof document === 'string' 
-      ? document 
-      : JSON.stringify(document, Object.keys(document).sort());
     
-    // Generate SHA-256 hash
-    return crypto.createHash('sha256').update(documentString).digest('hex');
-  }
-
-  /**
-   * Add document to blockchain
-   * @param {Object} params - Document parameters
-   * @param {string} params.documentType - Document type
-   * @param {Object|string} params.content - Document content
-   * @param {string} params.userId - User ID
-   * @param {string} params.timestamp - Timestamp
-   * @param {Object} params.metadata - Additional metadata
-   * @returns {Promise<Object>} - Blockchain transaction receipt
-   */
-  async addDocument(params) {
-    if (!this.initialized) {
-      await this.initialize();
+    if (!config.enabled) {
+      console.log('[Blockchain] Service disabled in configuration');
+      return { 
+        status: 'disabled',
+        config
+      };
     }
     
-    if (!this.networkStatus.connected) {
-      throw new Error('Blockchain network not connected');
+    // Connect to blockchain
+    const connected = await mockWeb3.connect();
+    
+    if (!connected) {
+      throw new Error('Failed to connect to blockchain network');
     }
     
-    try {
-      const { documentType, content, userId, timestamp = new Date().toISOString(), metadata = {} } = params;
-      
-      // Generate document hash
-      const documentHash = this._generateDocumentHash(content);
-      
-      // Create blockchain record
-      const blockchainRecord = {
-        documentHash,
-        documentType,
-        timestamp,
-        userId,
-        metadata: {
-          ...metadata,
-          source: 'TrialSage',
-          apiVersion: '1.0'
-        }
-      };
-      
-      // In a real implementation, this would submit the hash to the blockchain
-      // via a smart contract call or blockchain API
-      
-      // Simulate blockchain transaction
-      const transactionId = 'tx_' + crypto.randomBytes(16).toString('hex');
-      const blockNumber = Math.floor(Math.random() * 1000000 + 1000000);
-      const blockHash = '0x' + crypto.randomBytes(32).toString('hex');
-      
-      // Store in database for lookup
-      await db.query(`
-        INSERT INTO blockchain_verifications 
-        (document_hash, document_type, user_id, transaction_id, block_number, timestamp, metadata)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-      `, [
-        documentHash,
-        documentType,
-        userId,
-        transactionId,
-        blockNumber,
-        timestamp,
-        JSON.stringify(blockchainRecord.metadata)
-      ]);
-      
-      return {
-        documentHash,
-        transactionId,
-        blockNumber,
-        blockHash,
-        timestamp: new Date().toISOString(),
-        verified: true
-      };
-    } catch (error) {
-      console.error('Error adding document to blockchain:', error);
-      
-      // Store in pending transactions for retry
-      this.pendingTransactions.push({
-        params,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-      
-      throw error;
-    }
-  }
-
-  /**
-   * Verify document integrity using blockchain
-   * @param {Object} params - Verification parameters
-   * @param {string} params.documentId - Document ID
-   * @param {string} params.documentHash - Document hash (optional)
-   * @param {string} params.transactionId - Blockchain transaction ID (optional)
-   * @returns {Promise<Object>} - Verification result
-   */
-  async verifyDocument(params) {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    // Initialize database tables if needed
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS blockchain_transactions (
+        id SERIAL PRIMARY KEY,
+        tx_hash VARCHAR(66) NOT NULL,
+        block_number INTEGER,
+        document_id VARCHAR(255),
+        document_type VARCHAR(50),
+        user_id INTEGER,
+        operation VARCHAR(50) NOT NULL,
+        metadata JSONB,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
     
-    try {
-      const { documentId, documentHash, transactionId } = params;
-      
-      // Check cache first
-      const cacheKey = documentId || documentHash || transactionId;
-      if (this.verificationCache.has(cacheKey)) {
-        return this.verificationCache.get(cacheKey);
-      }
-      
-      // Get document from database if ID provided
-      let document;
-      let hash = documentHash;
-      
-      if (documentId) {
-        const documentQuery = await db.query(`
-          SELECT * FROM documents WHERE id = $1
-        `, [documentId]);
-        
-        if (!documentQuery.rows.length) {
-          throw new Error('Document not found');
-        }
-        
-        document = documentQuery.rows[0];
-        hash = this._generateDocumentHash(document.content);
-      }
-      
-      // Query verification data
-      let verificationQuery;
-      
-      if (hash) {
-        verificationQuery = await db.query(`
-          SELECT * FROM blockchain_verifications 
-          WHERE document_hash = $1
-          ORDER BY timestamp DESC
-          LIMIT 1
-        `, [hash]);
-      } else if (transactionId) {
-        verificationQuery = await db.query(`
-          SELECT * FROM blockchain_verifications 
-          WHERE transaction_id = $1
-        `, [transactionId]);
-      } else {
-        throw new Error('Either documentId, documentHash, or transactionId is required');
-      }
-      
-      if (!verificationQuery.rows.length) {
-        return {
-          verified: false,
-          reason: 'No blockchain verification record found',
-          timestamp: new Date().toISOString()
-        };
-      }
-      
-      const verification = verificationQuery.rows[0];
-      
-      // In a real implementation, this would verify the hash on the blockchain
-      // via a smart contract call or blockchain API
-      
-      // Simulate blockchain verification
-      const verificationResult = {
-        verified: true,
-        documentHash: verification.document_hash,
-        documentType: verification.document_type,
-        transactionId: verification.transaction_id,
-        blockNumber: verification.block_number,
-        timestamp: verification.timestamp,
-        verifiedAt: new Date().toISOString()
-      };
-      
-      // Store in cache
-      this.verificationCache.set(cacheKey, verificationResult);
-      
-      return verificationResult;
-    } catch (error) {
-      console.error('Error verifying document:', error);
-      return {
-        verified: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      };
-    }
-  }
-
-  /**
-   * Create blockchain audit trail for specific action
-   * @param {Object} params - Audit parameters
-   * @param {string} params.action - Action type
-   * @param {string} params.userId - User ID
-   * @param {string} params.resourceType - Resource type
-   * @param {string} params.resourceId - Resource ID
-   * @param {Object} params.metadata - Additional metadata
-   * @returns {Promise<Object>} - Blockchain transaction receipt
-   */
-  async createAuditTrail(params) {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS blockchain_verifications (
+        id SERIAL PRIMARY KEY,
+        document_id VARCHAR(255) NOT NULL,
+        document_type VARCHAR(50) NOT NULL,
+        document_hash VARCHAR(64) NOT NULL,
+        tx_hash VARCHAR(66) NOT NULL,
+        verified_at TIMESTAMP,
+        status VARCHAR(20) NOT NULL,
+        verification_count INTEGER DEFAULT 0,
+        last_verified_by INTEGER,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
     
-    if (!this.networkStatus.connected) {
-      throw new Error('Blockchain network not connected');
-    }
+    isInitialized = true;
     
-    try {
-      const { action, userId, resourceType, resourceId, metadata = {} } = params;
-      
-      // Create audit record
-      const auditRecord = {
-        action,
-        userId,
-        resourceType,
-        resourceId,
-        timestamp: new Date().toISOString(),
-        metadata: {
-          ...metadata,
-          source: 'TrialSage',
-          ipAddress: metadata.ipAddress || '0.0.0.0'
-        }
-      };
-      
-      // Generate audit record hash
-      const auditHash = this._generateDocumentHash(auditRecord);
-      
-      // In a real implementation, this would submit the audit hash to the blockchain
-      // via a smart contract call or blockchain API
-      
-      // Simulate blockchain transaction
-      const transactionId = 'tx_' + crypto.randomBytes(16).toString('hex');
-      const blockNumber = Math.floor(Math.random() * 1000000 + 1000000);
-      const blockHash = '0x' + crypto.randomBytes(32).toString('hex');
-      
-      // Store in database for lookup
-      await db.query(`
-        INSERT INTO blockchain_audit_trails 
-        (audit_hash, action, user_id, resource_type, resource_id, transaction_id, block_number, timestamp, metadata)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `, [
-        auditHash,
-        action,
-        userId,
-        resourceType,
-        resourceId,
-        transactionId,
-        blockNumber,
-        auditRecord.timestamp,
-        JSON.stringify(auditRecord.metadata)
-      ]);
-      
-      return {
-        auditHash,
-        transactionId,
-        blockNumber,
-        blockHash,
-        timestamp: auditRecord.timestamp,
-        verified: true
-      };
-    } catch (error) {
-      console.error('Error creating blockchain audit trail:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Verify audit trail integrity
-   * @param {Object} params - Verification parameters
-   * @param {string} params.auditHash - Audit hash
-   * @param {string} params.transactionId - Transaction ID
-   * @returns {Promise<Object>} - Verification result
-   */
-  async verifyAuditTrail(params) {
-    if (!this.initialized) {
-      await this.initialize();
-    }
+    console.log('[Blockchain] Service initialized successfully');
     
-    try {
-      const { auditHash, transactionId } = params;
-      
-      if (!auditHash && !transactionId) {
-        throw new Error('Either auditHash or transactionId is required');
-      }
-      
-      // Query verification data
-      let verificationQuery;
-      
-      if (auditHash) {
-        verificationQuery = await db.query(`
-          SELECT * FROM blockchain_audit_trails 
-          WHERE audit_hash = $1
-        `, [auditHash]);
-      } else {
-        verificationQuery = await db.query(`
-          SELECT * FROM blockchain_audit_trails 
-          WHERE transaction_id = $1
-        `, [transactionId]);
-      }
-      
-      if (!verificationQuery.rows.length) {
-        return {
-          verified: false,
-          reason: 'No blockchain audit trail found',
-          timestamp: new Date().toISOString()
-        };
-      }
-      
-      const verification = verificationQuery.rows[0];
-      
-      // In a real implementation, this would verify the hash on the blockchain
-      
-      // Simulate blockchain verification
-      return {
-        verified: true,
-        auditHash: verification.audit_hash,
-        action: verification.action,
-        resourceType: verification.resource_type,
-        resourceId: verification.resource_id,
-        transactionId: verification.transaction_id,
-        blockNumber: verification.block_number,
-        timestamp: verification.timestamp,
-        verifiedAt: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('Error verifying audit trail:', error);
-      return {
-        verified: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      };
-    }
-  }
-
-  /**
-   * Check blockchain service health
-   * @returns {Promise<Object>} - Health status
-   */
-  async checkHealth() {
-    try {
-      if (!this.initialized) {
-        await this.initialize();
-      }
-      
-      // In a real implementation, this would check the blockchain network status
-      
-      return {
-        enabled: true,
-        available: this.networkStatus.connected,
-        networkType: BLOCKCHAIN_CONFIG.networkType,
-        lastConnection: this.networkStatus.lastConnection,
-        chainId: this.networkStatus.chainId,
-        pendingTransactions: this.pendingTransactions.length
-      };
-    } catch (error) {
-      console.error('Error checking blockchain health:', error);
-      return {
-        enabled: true,
-        available: false,
-        error: error.message
-      };
-    }
-  }
-
-  /**
-   * Get blockchain verification history for a resource
-   * @param {string} resourceType - Resource type
-   * @param {string} resourceId - Resource ID
-   * @returns {Promise<Array>} - Verification history
-   */
-  async getVerificationHistory(resourceType, resourceId) {
-    try {
-      const historyQuery = await db.query(`
-        SELECT * FROM blockchain_verifications 
-        WHERE 
-          metadata->>'resourceType' = $1 AND 
-          metadata->>'resourceId' = $2
-        ORDER BY timestamp DESC
-      `, [resourceType, resourceId]);
-      
-      return historyQuery.rows.map(row => ({
-        documentHash: row.document_hash,
-        documentType: row.document_type,
-        transactionId: row.transaction_id,
-        blockNumber: row.block_number,
-        timestamp: row.timestamp,
-        metadata: JSON.parse(row.metadata)
-      }));
-    } catch (error) {
-      console.error('Error getting verification history:', error);
-      throw error;
-    }
+    return {
+      status: 'success',
+      config,
+      initialized: true
+    };
+  } catch (error) {
+    console.error('[Blockchain] Initialization error:', error);
+    
+    return {
+      status: 'error',
+      error: error.message,
+      initialized: false
+    };
   }
 }
 
-// Create and export singleton instance
-export const verifyBlockchain = new BlockchainVerificationService();
+/**
+ * Create a hash for a document
+ * @param {string} documentContent - Document content to hash
+ * @returns {string} - Document hash
+ */
+export function hashDocument(documentContent) {
+  return crypto.createHash('sha256').update(documentContent).digest('hex');
+}
+
+/**
+ * Register a document in the blockchain
+ * @param {Object} document - Document metadata
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} - Registration result
+ */
+export async function registerDocument(document, userId) {
+  if (!isInitialized || !config.enabled) {
+    throw new Error('Blockchain service not initialized or disabled');
+  }
+  
+  try {
+    console.log(`[Blockchain] Registering document: ${document.id}`);
+    
+    // Create document hash
+    const documentHash = hashDocument(document.content || JSON.stringify(document));
+    
+    // Prepare transaction data
+    const txData = {
+      operation: 'REGISTER_DOCUMENT',
+      documentId: document.id,
+      documentType: document.type,
+      documentHash,
+      timestamp: new Date().toISOString(),
+      userId
+    };
+    
+    // Write to blockchain
+    const txReceipt = await mockWeb3.writeTransaction(txData);
+    
+    // Store transaction details in database
+    await db.query(`
+      INSERT INTO blockchain_transactions
+      (tx_hash, block_number, document_id, document_type, user_id, operation, metadata)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      txReceipt.hash,
+      txReceipt.blockNumber,
+      document.id,
+      document.type,
+      userId,
+      txData.operation,
+      JSON.stringify({
+        documentHash,
+        timestamp: txData.timestamp
+      })
+    ]);
+    
+    // Create verification record
+    await db.query(`
+      INSERT INTO blockchain_verifications
+      (document_id, document_type, document_hash, tx_hash, status, created_at)
+      VALUES ($1, $2, $3, $4, $5, NOW())
+    `, [
+      document.id,
+      document.type,
+      documentHash,
+      txReceipt.hash,
+      'REGISTERED'
+    ]);
+    
+    return {
+      documentId: document.id,
+      documentHash,
+      transactionHash: txReceipt.hash,
+      blockNumber: txReceipt.blockNumber,
+      timestamp: txData.timestamp,
+      status: 'REGISTERED'
+    };
+  } catch (error) {
+    console.error(`[Blockchain] Error registering document ${document.id}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Update document in blockchain (register new version)
+ * @param {Object} document - Document metadata
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} - Update result
+ */
+export async function updateDocument(document, userId) {
+  if (!isInitialized || !config.enabled) {
+    throw new Error('Blockchain service not initialized or disabled');
+  }
+  
+  try {
+    console.log(`[Blockchain] Updating document: ${document.id}`);
+    
+    // Get previous document hash
+    const prevDocQuery = await db.query(`
+      SELECT document_hash, tx_hash
+      FROM blockchain_verifications
+      WHERE document_id = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [document.id]);
+    
+    const prevDocData = prevDocQuery.rows[0];
+    
+    // Create new document hash
+    const documentHash = hashDocument(document.content || JSON.stringify(document));
+    
+    // Prepare transaction data
+    const txData = {
+      operation: 'UPDATE_DOCUMENT',
+      documentId: document.id,
+      documentType: document.type,
+      documentHash,
+      previousHash: prevDocData ? prevDocData.document_hash : null,
+      previousTx: prevDocData ? prevDocData.tx_hash : null,
+      version: document.version || 'new',
+      timestamp: new Date().toISOString(),
+      userId
+    };
+    
+    // Write to blockchain
+    const txReceipt = await mockWeb3.writeTransaction(txData);
+    
+    // Store transaction details in database
+    await db.query(`
+      INSERT INTO blockchain_transactions
+      (tx_hash, block_number, document_id, document_type, user_id, operation, metadata)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      txReceipt.hash,
+      txReceipt.blockNumber,
+      document.id,
+      document.type,
+      userId,
+      txData.operation,
+      JSON.stringify({
+        documentHash,
+        previousHash: txData.previousHash,
+        previousTx: txData.previousTx,
+        version: txData.version,
+        timestamp: txData.timestamp
+      })
+    ]);
+    
+    // Create verification record
+    await db.query(`
+      INSERT INTO blockchain_verifications
+      (document_id, document_type, document_hash, tx_hash, status, created_at)
+      VALUES ($1, $2, $3, $4, $5, NOW())
+    `, [
+      document.id,
+      document.type,
+      documentHash,
+      txReceipt.hash,
+      'UPDATED'
+    ]);
+    
+    return {
+      documentId: document.id,
+      documentHash,
+      transactionHash: txReceipt.hash,
+      blockNumber: txReceipt.blockNumber,
+      previousHash: txData.previousHash,
+      version: txData.version,
+      timestamp: txData.timestamp,
+      status: 'UPDATED'
+    };
+  } catch (error) {
+    console.error(`[Blockchain] Error updating document ${document.id}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Verify document against blockchain record
+ * @param {Object} document - Document to verify
+ * @param {string} userId - User ID performing verification
+ * @returns {Promise<Object>} - Verification result
+ */
+export async function verifyDocument(document, userId) {
+  if (!isInitialized || !config.enabled || !config.verificationEnabled) {
+    throw new Error('Blockchain verification not available');
+  }
+  
+  try {
+    console.log(`[Blockchain] Verifying document: ${document.id}`);
+    
+    // Get document hash
+    const documentHash = hashDocument(document.content || JSON.stringify(document));
+    
+    // Get blockchain record
+    const verificationQuery = await db.query(`
+      SELECT *
+      FROM blockchain_verifications
+      WHERE document_id = $1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [document.id]);
+    
+    if (verificationQuery.rows.length === 0) {
+      return {
+        documentId: document.id,
+        verified: false,
+        status: 'NOT_REGISTERED',
+        error: 'Document not registered in blockchain'
+      };
+    }
+    
+    const verification = verificationQuery.rows[0];
+    
+    // Compare hashes
+    const hashesMatch = verification.document_hash === documentHash;
+    
+    // Verify transaction in blockchain
+    const txValid = await mockWeb3.verifyTransaction(verification.tx_hash);
+    
+    // Update verification record
+    await db.query(`
+      UPDATE blockchain_verifications
+      SET 
+        verified_at = NOW(),
+        verification_count = verification_count + 1,
+        last_verified_by = $1,
+        status = $2
+      WHERE id = $3
+    `, [
+      userId,
+      hashesMatch && txValid ? 'VERIFIED' : 'INVALID',
+      verification.id
+    ]);
+    
+    // Add verification transaction
+    const txData = {
+      operation: 'VERIFY_DOCUMENT',
+      documentId: document.id,
+      documentType: document.type,
+      verificationResult: hashesMatch && txValid,
+      originalTxHash: verification.tx_hash,
+      timestamp: new Date().toISOString(),
+      userId
+    };
+    
+    const txReceipt = await mockWeb3.writeTransaction(txData);
+    
+    await db.query(`
+      INSERT INTO blockchain_transactions
+      (tx_hash, block_number, document_id, document_type, user_id, operation, metadata)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      txReceipt.hash,
+      txReceipt.blockNumber,
+      document.id,
+      document.type,
+      userId,
+      txData.operation,
+      JSON.stringify({
+        verificationResult: txData.verificationResult,
+        originalTxHash: txData.originalTxHash,
+        timestamp: txData.timestamp
+      })
+    ]);
+    
+    return {
+      documentId: document.id,
+      verified: hashesMatch && txValid,
+      hashValid: hashesMatch,
+      blockchainValid: txValid,
+      storedHash: verification.document_hash,
+      calculatedHash: documentHash,
+      transactionHash: verification.tx_hash,
+      verificationTransactionHash: txReceipt.hash,
+      timestamp: new Date().toISOString(),
+      status: hashesMatch && txValid ? 'VERIFIED' : 'INVALID'
+    };
+  } catch (error) {
+    console.error(`[Blockchain] Error verifying document ${document.id}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Create blockchain audit trail
+ * @param {string} operation - Audit operation
+ * @param {string} resourceId - Resource ID
+ * @param {Object} data - Audit data
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} - Audit result
+ */
+export async function createAuditTrail(operation, resourceId, data, userId) {
+  if (!isInitialized || !config.enabled) {
+    throw new Error('Blockchain service not initialized or disabled');
+  }
+  
+  try {
+    console.log(`[Blockchain] Creating audit trail: ${operation} for ${resourceId}`);
+    
+    // Prepare transaction data
+    const txData = {
+      operation,
+      resourceId,
+      timestamp: new Date().toISOString(),
+      data,
+      userId
+    };
+    
+    // Create hash of audit data
+    const auditHash = hashDocument(JSON.stringify(txData));
+    
+    // Write to blockchain
+    const txReceipt = await mockWeb3.writeTransaction({
+      ...txData,
+      auditHash
+    });
+    
+    // Store transaction details in database
+    await db.query(`
+      INSERT INTO blockchain_transactions
+      (tx_hash, block_number, document_id, document_type, user_id, operation, metadata)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      txReceipt.hash,
+      txReceipt.blockNumber,
+      resourceId,
+      'AUDIT',
+      userId,
+      operation,
+      JSON.stringify({
+        auditHash,
+        data,
+        timestamp: txData.timestamp
+      })
+    ]);
+    
+    return {
+      operation,
+      resourceId,
+      auditHash,
+      transactionHash: txReceipt.hash,
+      blockNumber: txReceipt.blockNumber,
+      timestamp: txData.timestamp,
+      status: 'RECORDED'
+    };
+  } catch (error) {
+    console.error(`[Blockchain] Error creating audit trail for ${resourceId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get document blockchain history
+ * @param {string} documentId - Document ID
+ * @returns {Promise<Array>} - Document history
+ */
+export async function getDocumentHistory(documentId) {
+  if (!isInitialized || !config.enabled) {
+    throw new Error('Blockchain service not initialized or disabled');
+  }
+  
+  try {
+    console.log(`[Blockchain] Getting history for document: ${documentId}`);
+    
+    // Get transactions for document
+    const transactionsQuery = await db.query(`
+      SELECT tx.*
+      FROM blockchain_transactions tx
+      WHERE tx.document_id = $1
+      ORDER BY tx.created_at DESC
+    `, [documentId]);
+    
+    // Get verifications for document
+    const verificationsQuery = await db.query(`
+      SELECT *
+      FROM blockchain_verifications
+      WHERE document_id = $1
+      ORDER BY created_at DESC
+    `, [documentId]);
+    
+    // Format history
+    const history = transactionsQuery.rows.map(tx => {
+      let metadata = tx.metadata;
+      
+      // If metadata is stored as string, parse it
+      if (typeof metadata === 'string') {
+        try {
+          metadata = JSON.parse(metadata);
+        } catch (e) {
+          console.warn(`[Blockchain] Error parsing metadata JSON for tx ${tx.tx_hash}`);
+        }
+      }
+      
+      return {
+        timestamp: tx.created_at,
+        operation: tx.operation,
+        transactionHash: tx.tx_hash,
+        blockNumber: tx.block_number,
+        userId: tx.user_id,
+        metadata
+      };
+    });
+    
+    const verifications = verificationsQuery.rows.map(v => ({
+      documentHash: v.document_hash,
+      transactionHash: v.tx_hash,
+      status: v.status,
+      verifiedAt: v.verified_at,
+      verificationCount: v.verification_count,
+      createdAt: v.created_at
+    }));
+    
+    return {
+      documentId,
+      verifications,
+      history,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`[Blockchain] Error getting document history for ${documentId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get blockchain status
+ * @returns {Promise<Object>} - Blockchain status
+ */
+export async function getBlockchainStatus() {
+  return {
+    initialized: isInitialized,
+    config,
+    uptime: isInitialized ? '(simulated)' : 0,
+    lastChecked: new Date().toISOString()
+  };
+}
+
+// Export module config for testing
+export const getConfig = () => ({ ...config });
