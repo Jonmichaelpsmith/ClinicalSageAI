@@ -29,6 +29,7 @@ import indProxyRouter from './routes/ind-proxy.js';
 import indFormsRouter from './routes/ind-forms.js';
 import healthRoutes from './routes/health.js';
 import mashableBiRoutes from './routes/mashable-bi.js';
+import prewarmRoutes from './routes/prewarm.js';
 
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
@@ -92,6 +93,7 @@ app.get('/client-portal', (req, res) => {
 initAnalytics();
 
 // Register routes
+app.use('/api/prewarm', prewarmRoutes);  // Add prewarm routes (no JWT needed)
 app.use('/api/reference-model', verifyJwt, referenceModelRoutes);
 app.use('/api/esg', verifyJwt, esgRoutes);
 app.use('/api/analytics', verifyJwt, analyticsRoutes);
