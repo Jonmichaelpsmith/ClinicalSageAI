@@ -10,11 +10,22 @@ const port = 3000;
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname)); // Serve all files in the root directory
 app.use(express.json());
 
 // Route for main application
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'trialsage.html'));
+});
+
+// Client portal route
+app.get('/client-portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client-portal.html'));
+});
+
+// Admin portal route
+app.get('/admin-portal', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin-portal.html'));
 });
 
 // Login API
