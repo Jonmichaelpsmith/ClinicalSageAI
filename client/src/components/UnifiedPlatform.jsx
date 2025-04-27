@@ -64,119 +64,124 @@ const UnifiedPlatform = () => {
           </div>
 
           {/* CSR Intelligence */}
-          <Link href="/csr-intelligence">
-            <a 
-              className="module-card"
-              onClick={() => handleModuleClick('csr-intelligence')}
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
-                  <FileText size={20} className="text-pink-600" />
-                </div>
-                <h3 className="text-lg font-semibold">CSR Intelligence</h3>
+          <div 
+            className="module-card cursor-pointer"
+            onClick={() => {
+              handleModuleClick('csr-intelligence');
+              navigate('/csr-intelligence');
+            }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                <FileText size={20} className="text-pink-600" />
               </div>
-              <p className="text-gray-600 mb-4">
-                AI-powered creation and analysis of clinical study reports for global submissions
-              </p>
-              <div className="flex flex-wrap gap-1">
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">AI Analysis</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Templates</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Compliance</span>
-              </div>
-            </a>
-          </Link>
+              <h3 className="text-lg font-semibold">CSR Intelligence</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              AI-powered creation and analysis of clinical study reports for global submissions
+            </p>
+            <div className="flex flex-wrap gap-1">
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">AI Analysis</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Templates</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Compliance</span>
+            </div>
+          </div>
 
           {/* Study Architect */}
-          <Link href="/study-architect">
-            <a 
-              className="module-card"
-              onClick={() => handleModuleClick('study-architect')}
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
-                  <FlaskConical size={20} className="text-pink-600" />
-                </div>
-                <h3 className="text-lg font-semibold">Study Architect</h3>
+          <div 
+            className="module-card cursor-pointer"
+            onClick={() => {
+              handleModuleClick('study-architect');
+              navigate('/study-architect');
+            }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                <FlaskConical size={20} className="text-pink-600" />
               </div>
-              <p className="text-gray-600 mb-4">
-                Design clinical trials and create protocols with intelligent templates
-              </p>
-              <div className="flex flex-wrap gap-1">
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Protocol Design</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Workflow</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Templates</span>
-              </div>
-            </a>
-          </Link>
+              <h3 className="text-lg font-semibold">Study Architect</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Design clinical trials and create protocols with intelligent templates
+            </p>
+            <div className="flex flex-wrap gap-1">
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Protocol Design</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Workflow</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Templates</span>
+            </div>
+          </div>
 
           {/* Analytics */}
-          <Link href="/analytics">
-            <a 
-              className="module-card"
-              onClick={() => handleModuleClick('analytics')}
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
-                  <BarChartBig size={20} className="text-pink-600" />
-                </div>
-                <h3 className="text-lg font-semibold">Analytics Module</h3>
+          <div 
+            className="module-card cursor-pointer"
+            onClick={() => {
+              handleModuleClick('analytics');
+              navigate('/analytics');
+            }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                <BarChartBig size={20} className="text-pink-600" />
               </div>
-              <p className="text-gray-600 mb-4">
-                Comprehensive data visualization and insights across your regulatory portfolio
-              </p>
-              <div className="flex flex-wrap gap-1">
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Dashboards</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Reporting</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Metrics</span>
-              </div>
-            </a>
-          </Link>
+              <h3 className="text-lg font-semibold">Analytics Module</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Comprehensive data visualization and insights across your regulatory portfolio
+            </p>
+            <div className="flex flex-wrap gap-1">
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Dashboards</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Reporting</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Metrics</span>
+            </div>
+          </div>
 
           {/* ICH Wiz */}
-          <Link href="/regulatory-intelligence">
-            <a 
-              className="module-card"
-              onClick={() => handleModuleClick('regulatory-intelligence')}
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
-                  <BookText size={20} className="text-pink-600" />
-                </div>
-                <h3 className="text-lg font-semibold">ICH Wiz™</h3>
+          <div 
+            className="module-card cursor-pointer"
+            onClick={() => {
+              handleModuleClick('regulatory-intelligence');
+              navigate('/regulatory-intelligence');
+            }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                <BookText size={20} className="text-pink-600" />
               </div>
-              <p className="text-gray-600 mb-4">
-                Digital compliance coach for ICH guidelines and global regulatory standards
-              </p>
-              <div className="flex flex-wrap gap-1">
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Guidance</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Regulations</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">AI Assistant</span>
-              </div>
-            </a>
-          </Link>
+              <h3 className="text-lg font-semibold">ICH Wiz™</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Digital compliance coach for ICH guidelines and global regulatory standards
+            </p>
+            <div className="flex flex-wrap gap-1">
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Guidance</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Regulations</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">AI Assistant</span>
+            </div>
+          </div>
 
           {/* IND Wizard */}
-          <Link href="/ind-wizard">
-            <a 
-              className="module-card"
-              onClick={() => handleModuleClick('ind-wizard')}
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
-                  <ShieldCheck size={20} className="text-pink-600" />
-                </div>
-                <h3 className="text-lg font-semibold">IND Wizard™</h3>
+          <div 
+            className="module-card cursor-pointer"
+            onClick={() => {
+              handleModuleClick('ind-wizard');
+              navigate('/ind-wizard');
+            }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                <ShieldCheck size={20} className="text-pink-600" />
               </div>
-              <p className="text-gray-600 mb-4">
-                Streamlined creation and management of Investigational New Drug applications
-              </p>
-              <div className="flex flex-wrap gap-1">
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">FDA Submissions</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Forms</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Validation</span>
-              </div>
-            </a>
-          </Link>
+              <h3 className="text-lg font-semibold">IND Wizard™</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Streamlined creation and management of Investigational New Drug applications
+            </p>
+            <div className="flex flex-wrap gap-1">
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">FDA Submissions</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Forms</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Validation</span>
+            </div>
+          </div>
         </div>
       </section>
 
