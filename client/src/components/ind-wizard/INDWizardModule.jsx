@@ -1,381 +1,390 @@
 /**
  * IND Wizard Module Component
  * 
- * This component provides the IND Wizard interface for the TrialSage platform.
+ * This component provides the IND Wizard interface for the TrialSage platform,
+ * guiding users through the process of creating and submitting IND applications.
  */
 
 import React, { useState } from 'react';
 import { 
-  FileText, 
-  PlusCircle, 
-  Filter, 
-  Search, 
-  Copy, 
-  ArrowRight, 
-  BarChart4,
+  FileInput, 
+  CheckCircle, 
+  ChevronRight,
+  Plus,
   Clock,
-  CheckCircle,
-  AlertCircle
+  Search,
+  FileText,
+  FileCheck,
+  ClipboardCheck,
+  Beaker,
+  Users,
+  BookOpen,
+  Server
 } from 'lucide-react';
 import { useIntegration } from '../integration/ModuleIntegrationLayer';
 
 const INDWizardModule = () => {
-  const { workflowService } = useIntegration();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { regulatoryIntelligenceCore } = useIntegration();
+  const [activeIND, setActiveIND] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Get active workflows
-  const indWorkflows = workflowService.getActiveWorkflows();
-  
-  // Get IND template
-  const indTemplate = workflowService.getWorkflowTemplates().find(
-    template => template.name === 'IND Submission Workflow'
-  );
-  
-  // Get tasks for active workflows
-  const indTasks = workflowService.getTasks();
-  
-  // Filter tasks by status
-  const pendingTasks = indTasks.filter(task => ['Not Started', 'Pending', 'In Progress'].includes(task.status));
-  const completedTasks = indTasks.filter(task => task.status === 'Completed');
-  
-  // Tabs configuration
-  const tabs = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'submissions', label: 'My Submissions' },
-    { id: 'forms', label: 'FDA Forms' },
-    { id: 'templates', label: 'Templates' },
-    { id: 'guidance', label: 'Guidance' }
+  // Sample IND applications (in a real app, would come from API)
+  const applications = [
+    {
+      id: 'ind-001',
+      name: 'IND-23456 - XYZ-123',
+      drug: 'XYZ-123',
+      stage: 'preparation',
+      progress: 45,
+      createdAt: '2025-03-15T10:00:00Z',
+      updatedAt: '2025-04-20T14:30:00Z',
+      status: 'in-progress',
+      owner: 'John Smith',
+      sections: [
+        { id: 'cov', name: 'Cover Letter', status: 'completed' },
+        { id: 'toc', name: 'Table of Contents', status: 'completed' },
+        { id: '1571', name: 'Form FDA 1571', status: 'completed' },
+        { id: '1572', name: 'Form FDA 1572', status: 'completed' },
+        { id: 'cv', name: 'Investigator CV', status: 'completed' },
+        { id: 'protocol', name: 'Protocol', status: 'in-progress' },
+        { id: 'pharm-tox', name: 'Pharmacology/Toxicology', status: 'in-progress' },
+        { id: 'chem-manuf', name: 'Chemistry, Manufacturing, and Control', status: 'not-started' },
+        { id: 'prev-human', name: 'Previous Human Experience', status: 'not-started' },
+        { id: 'add-info', name: 'Additional Information', status: 'not-started' }
+      ]
+    },
+    {
+      id: 'ind-002',
+      name: 'IND-34567 - ABC-456',
+      drug: 'ABC-456',
+      stage: 'review',
+      progress: 75,
+      createdAt: '2025-01-10T09:15:00Z',
+      updatedAt: '2025-04-18T11:45:00Z',
+      status: 'in-progress',
+      owner: 'Jane Doe',
+      sections: [
+        { id: 'cov', name: 'Cover Letter', status: 'completed' },
+        { id: 'toc', name: 'Table of Contents', status: 'completed' },
+        { id: '1571', name: 'Form FDA 1571', status: 'completed' },
+        { id: '1572', name: 'Form FDA 1572', status: 'completed' },
+        { id: 'cv', name: 'Investigator CV', status: 'completed' },
+        { id: 'protocol', name: 'Protocol', status: 'completed' },
+        { id: 'pharm-tox', name: 'Pharmacology/Toxicology', status: 'completed' },
+        { id: 'chem-manuf', name: 'Chemistry, Manufacturing, and Control', status: 'in-progress' },
+        { id: 'prev-human', name: 'Previous Human Experience', status: 'completed' },
+        { id: 'add-info', name: 'Additional Information', status: 'in-progress' }
+      ]
+    },
+    {
+      id: 'ind-003',
+      name: 'IND-45678 - DEF-789',
+      drug: 'DEF-789',
+      stage: 'submission',
+      progress: 95,
+      createdAt: '2024-11-05T13:30:00Z',
+      updatedAt: '2025-04-15T16:20:00Z',
+      status: 'ready-for-review',
+      owner: 'Robert Chen',
+      sections: [
+        { id: 'cov', name: 'Cover Letter', status: 'completed' },
+        { id: 'toc', name: 'Table of Contents', status: 'completed' },
+        { id: '1571', name: 'Form FDA 1571', status: 'completed' },
+        { id: '1572', name: 'Form FDA 1572', status: 'completed' },
+        { id: 'cv', name: 'Investigator CV', status: 'completed' },
+        { id: 'protocol', name: 'Protocol', status: 'completed' },
+        { id: 'pharm-tox', name: 'Pharmacology/Toxicology', status: 'completed' },
+        { id: 'chem-manuf', name: 'Chemistry, Manufacturing, and Control', status: 'completed' },
+        { id: 'prev-human', name: 'Previous Human Experience', status: 'completed' },
+        { id: 'add-info', name: 'Additional Information', status: 'in-progress' }
+      ]
+    }
   ];
   
-  // Handle tab change
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-  };
+  // Filter applications based on search query
+  const filteredApplications = applications.filter(app => 
+    app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    app.drug.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   
   // Handle search input change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
   
-  // Render tab content based on active tab
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return renderDashboard();
-      case 'submissions':
-        return renderSubmissions();
-      case 'forms':
-        return renderForms();
-      case 'templates':
-        return renderTemplates();
-      case 'guidance':
-        return renderGuidance();
+  // Handle application selection
+  const handleSelectApplication = (appId) => {
+    // In a real app, this would fetch the application details
+    const app = applications.find(a => a.id === appId);
+    setActiveIND(app);
+  };
+  
+  // Get status badge color
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'ready-for-review':
+        return 'bg-purple-100 text-purple-800';
+      case 'not-started':
+        return 'bg-gray-100 text-gray-800';
       default:
-        return renderDashboard();
+        return 'bg-gray-100 text-gray-800';
     }
   };
   
-  // Dashboard tab content
+  // Render dashboard (application list view)
   const renderDashboard = () => {
     return (
-      <div className="space-y-6">
-        {/* Quick stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg shadow p-5 border">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Active IND Applications</p>
-                <p className="text-2xl font-semibold mt-1">{indWorkflows.length}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <FileText className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center text-xs text-gray-500">
-                <ArrowRight className="h-3 w-3 mr-1 text-green-500" />
-                <span className="text-green-500 font-medium">2 submissions</span>
-                <span className="mx-1">planned in the next 30 days</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-5 border">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Pending Tasks</p>
-                <p className="text-2xl font-semibold mt-1">{pendingTasks.length}</p>
-              </div>
-              <div className="bg-amber-100 p-3 rounded-full">
-                <Clock className="h-6 w-6 text-amber-600" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center text-xs text-gray-500">
-                <AlertCircle className="h-3 w-3 mr-1 text-amber-500" />
-                <span className="text-amber-500 font-medium">1 task</span>
-                <span className="mx-1">due in the next 48 hours</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-5 border">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Completed Tasks</p>
-                <p className="text-2xl font-semibold mt-1">{completedTasks.length}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center text-xs text-gray-500">
-                <BarChart4 className="h-3 w-3 mr-1 text-blue-500" />
-                <span>Completion rate: </span>
-                <span className="ml-1 text-blue-500 font-medium">
-                  {Math.round((completedTasks.length / (pendingTasks.length + completedTasks.length)) * 100) || 0}%
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Active IND submissions */}
-        <div className="bg-white rounded-lg shadow border">
-          <div className="px-6 py-4 border-b flex justify-between items-center">
-            <h3 className="font-medium">Active IND Submissions</h3>
-            <button className="text-sm text-primary flex items-center">
-              <PlusCircle className="h-4 w-4 mr-1" />
-              New Submission
+      <div>
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-medium text-gray-900">Your IND Applications</h2>
+            <button className="py-2 px-4 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center text-sm">
+              <Plus className="h-4 w-4 mr-1" />
+              New IND Application
             </button>
           </div>
           
-          <div className="p-6">
-            <div className="flex justify-between mb-4">
-              <div className="relative max-w-xs">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400" />
+          <div className="relative max-w-xs mb-4">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+              placeholder="Search applications..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
+          
+          <div className="space-y-4">
+            {filteredApplications.map((app) => (
+              <div
+                key={app.id}
+                className="bg-white rounded-lg shadow border hover:shadow-md cursor-pointer"
+                onClick={() => handleSelectApplication(app.id)}
+              >
+                <div className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">{app.name}</h3>
+                      <p className="text-sm text-gray-500 mt-1">Owner: {app.owner}</p>
+                    </div>
+                    <div className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(app.status)}`}>
+                      {app.status === 'in-progress' ? 'In Progress' : 
+                       app.status === 'ready-for-review' ? 'Ready for Review' : 
+                       app.status.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>Progress</span>
+                      <span>{app.progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full" 
+                        style={{ width: `${app.progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="text-xs text-gray-500">
+                      Last updated: {new Date(app.updatedAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center text-primary hover:text-primary-dark text-sm">
+                      <span>View details</span>
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </div>
+                  </div>
                 </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                  placeholder="Search submissions..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                />
               </div>
-              
-              <button className="flex items-center text-sm text-gray-600">
-                <Filter className="h-4 w-4 mr-1" />
-                Filter
-              </button>
-            </div>
+            ))}
             
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      IND Application
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Progress
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Due Date
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Assigned To
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {indWorkflows.map((workflow) => (
-                    <tr key={workflow.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <FileText className="h-5 w-5 text-primary mr-3" />
-                          <div>
-                            <div className="font-medium text-gray-900">{workflow.name}</div>
-                            <div className="text-xs text-gray-500">Started: {new Date(workflow.startedAt).toLocaleDateString()}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          workflow.status === 'In Progress'
-                            ? 'bg-blue-100 text-blue-800'
-                            : workflow.status === 'Completed'
-                              ? 'bg-green-100 text-green-800'
-                              : workflow.status === 'Not Started'
-                                ? 'bg-gray-100 text-gray-800'
-                                : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {workflow.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full" 
-                            style={{ width: `${workflow.progress}%` }}
-                          ></div>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">{workflow.progress}% Complete</div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(workflow.dueDate).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {workflow.assignedTo}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button className="text-primary hover:text-primary-dark mr-3">View</button>
-                        <button className="text-gray-600 hover:text-gray-900">
-                          <Copy className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {indWorkflows.length === 0 && (
-              <div className="text-center py-8">
+            {filteredApplications.length === 0 && (
+              <div className="text-center py-8 bg-white rounded-lg shadow">
                 <div className="bg-gray-100 rounded-full p-3 w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-gray-500" />
+                  <FileInput className="h-6 w-6 text-gray-500" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No active submissions</h3>
-                <p className="text-gray-500 mb-4">Get started by creating your first IND submission</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">No applications found</h3>
+                <p className="text-gray-500 mb-4">Try adjusting your search or create a new IND application</p>
                 <button className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
-                  Create IND Submission
+                  Create IND Application
                 </button>
               </div>
             )}
           </div>
         </div>
         
-        {/* Recent tasks */}
-        <div className="bg-white rounded-lg shadow border">
-          <div className="px-6 py-4 border-b">
-            <h3 className="font-medium">Recent Tasks</h3>
-          </div>
-          
-          <div className="p-6">
-            <ul className="divide-y divide-gray-200">
-              {indTasks.slice(0, 5).map((task) => (
-                <li key={task.id} className="py-4 flex items-start">
-                  <div className={`flex-shrink-0 rounded-full p-2 mr-3 ${
-                    task.status === 'Completed'
-                      ? 'bg-green-100 text-green-600'
-                      : task.status === 'In Progress'
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'bg-amber-100 text-amber-600'
-                  }`}>
-                    {task.status === 'Completed' 
-                      ? <CheckCircle className="h-5 w-5" /> 
-                      : <Clock className="h-5 w-5" />
-                    }
+        {/* Recent FDA Guidance */}
+        <div className="mb-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Recent FDA Guidance</h2>
+          <div className="bg-white rounded-lg shadow border">
+            <div className="divide-y">
+              <div className="p-4">
+                <h3 className="font-medium text-gray-900">IND Safety Reporting Requirements</h3>
+                <p className="text-sm text-gray-500 mt-1">Updated guidance on safety reporting for INDs</p>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-xs text-gray-500">April 15, 2025</div>
+                  <div className="flex items-center text-primary hover:text-primary-dark text-sm">
+                    <span>Read more</span>
+                    <ChevronRight className="h-4 w-4 ml-1" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium">{task.name}</p>
-                      <span className="text-xs text-gray-500">
-                        {new Date(task.dueDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">{task.description}</p>
-                    <div className="mt-2 flex items-center text-xs">
-                      <span className="text-gray-500 mr-2">Assigned to:</span>
-                      <span className="font-medium">{task.assignedTo}</span>
-                      <span className={`ml-3 px-2 py-0.5 rounded-full ${
-                        task.status === 'Completed'
-                          ? 'bg-green-100 text-green-800'
-                          : task.status === 'In Progress'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {task.status}
-                      </span>
-                      <span className={`ml-3 px-2 py-0.5 rounded-full ${
-                        task.priority === 'High'
-                          ? 'bg-red-100 text-red-800'
-                          : task.priority === 'Medium'
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-green-100 text-green-800'
-                      }`}>
-                        {task.priority}
-                      </span>
-                    </div>
+                </div>
+              </div>
+              <div className="p-4">
+                <h3 className="font-medium text-gray-900">Clinical Hold Considerations</h3>
+                <p className="text-sm text-gray-500 mt-1">Guidance on clinical hold processes and resolution</p>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-xs text-gray-500">March 22, 2025</div>
+                  <div className="flex items-center text-primary hover:text-primary-dark text-sm">
+                    <span>Read more</span>
+                    <ChevronRight className="h-4 w-4 ml-1" />
                   </div>
-                </li>
-              ))}
-            </ul>
-            
-            {indTasks.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-500">No tasks available</p>
+                </div>
               </div>
-            )}
-            
-            {indTasks.length > 0 && (
-              <div className="mt-4 text-center">
-                <button className="text-primary hover:text-primary-dark text-sm font-medium">
-                  View All Tasks
-                </button>
+              <div className="p-4">
+                <h3 className="font-medium text-gray-900">Expanded Access Protocol Updates</h3>
+                <p className="text-sm text-gray-500 mt-1">New templates for expanded access protocols</p>
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-xs text-gray-500">March 10, 2025</div>
+                  <div className="flex items-center text-primary hover:text-primary-dark text-sm">
+                    <span>Read more</span>
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
     );
   };
   
-  // Submissions tab content
-  const renderSubmissions = () => {
+  // Render application details
+  const renderApplicationDetails = () => {
     return (
-      <div className="bg-white rounded-lg shadow border p-6">
-        <h3 className="text-lg font-medium mb-4">My IND Submissions</h3>
-        <p className="text-gray-500">This tab will list all your IND submissions.</p>
-      </div>
-    );
-  };
-  
-  // FDA Forms tab content
-  const renderForms = () => {
-    return (
-      <div className="bg-white rounded-lg shadow border p-6">
-        <h3 className="text-lg font-medium mb-4">FDA Forms Library</h3>
-        <p className="text-gray-500">This tab will provide access to FDA forms like 1571, 1572, etc.</p>
-      </div>
-    );
-  };
-  
-  // Templates tab content
-  const renderTemplates = () => {
-    return (
-      <div className="bg-white rounded-lg shadow border p-6">
-        <h3 className="text-lg font-medium mb-4">IND Templates</h3>
-        <p className="text-gray-500">This tab will provide IND application templates.</p>
-      </div>
-    );
-  };
-  
-  // Guidance tab content
-  const renderGuidance = () => {
-    return (
-      <div className="bg-white rounded-lg shadow border p-6">
-        <h3 className="text-lg font-medium mb-4">Regulatory Guidance</h3>
-        <p className="text-gray-500">This tab will provide FDA guidance documents related to INDs.</p>
+      <div>
+        <div className="mb-6">
+          <button
+            onClick={() => setActiveIND(null)}
+            className="flex items-center text-primary hover:text-primary-dark"
+          >
+            <ChevronRight className="h-4 w-4 mr-1 transform rotate-180" />
+            <span>Back to Applications</span>
+          </button>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow border mb-6">
+          <div className="p-4 border-b">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-xl font-medium text-gray-900">{activeIND.name}</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Created: {new Date(activeIND.createdAt).toLocaleDateString()} | 
+                  Owner: {activeIND.owner}
+                </p>
+              </div>
+              <div className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(activeIND.status)}`}>
+                {activeIND.status === 'in-progress' ? 'In Progress' : 
+                 activeIND.status === 'ready-for-review' ? 'Ready for Review' : 
+                 activeIND.status.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <span>Overall Progress</span>
+                <span>{activeIND.progress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-primary h-2 rounded-full" 
+                  style={{ width: `${activeIND.progress}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-4">
+            <h3 className="font-medium text-gray-900 mb-4">IND Sections</h3>
+            <div className="space-y-4">
+              {activeIND.sections.map((section) => (
+                <div key={section.id} className="border rounded-md overflow-hidden">
+                  <div className="px-4 py-3 bg-gray-50 flex items-center justify-between">
+                    <h4 className="font-medium text-gray-900">{section.name}</h4>
+                    <div className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(section.status)}`}>
+                      {section.status === 'in-progress' ? 'In Progress' : 
+                       section.status === 'not-started' ? 'Not Started' : 
+                       section.status.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </div>
+                  </div>
+                  <div className="p-4 flex justify-end space-x-2">
+                    <button className="py-1 px-3 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200">
+                      View
+                    </button>
+                    <button className="py-1 px-3 bg-primary text-white rounded text-sm hover:bg-primary-dark">
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Submission Timeline */}
+        <div className="bg-white rounded-lg shadow border mb-6">
+          <div className="p-4 border-b">
+            <h3 className="font-medium text-gray-900">Submission Timeline</h3>
+          </div>
+          <div className="p-4">
+            <div className="border-l-2 border-gray-200 ml-4 space-y-6 py-2">
+              <div className="relative">
+                <div className="absolute -left-6 top-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                </div>
+                <div className="ml-8">
+                  <h4 className="font-medium text-gray-900">Initial Draft Completed</h4>
+                  <p className="text-sm text-gray-500 mt-1">April 10, 2025</p>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="absolute -left-6 top-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="ml-8">
+                  <h4 className="font-medium text-gray-900">Internal Review</h4>
+                  <p className="text-sm text-gray-500 mt-1">In Progress (Due: April 30, 2025)</p>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="absolute -left-6 top-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                  <ClipboardCheck className="h-5 w-5 text-gray-500" />
+                </div>
+                <div className="ml-8">
+                  <h4 className="font-medium text-gray-900">QC Review</h4>
+                  <p className="text-sm text-gray-500 mt-1">Scheduled for May 5, 2025</p>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="absolute -left-6 top-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                  <FileCheck className="h-5 w-5 text-gray-500" />
+                </div>
+                <div className="ml-8">
+                  <h4 className="font-medium text-gray-900">Final Submission</h4>
+                  <p className="text-sm text-gray-500 mt-1">Target: May 15, 2025</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
@@ -385,35 +394,54 @@ const INDWizardModule = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">IND Wizard™</h1>
         <p className="text-gray-500 mt-1">
-          Streamline your Investigational New Drug application process
+          Streamlined IND application preparation and submission
         </p>
       </div>
       
-      {/* Tabs */}
-      <div className="mb-6">
-        <div className="border-b">
-          <nav className="-mb-px flex space-x-8">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-                onClick={() => handleTabChange(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+      {/* Quick Access Icons */}
+      {!activeIND && (
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+          <button className="bg-white rounded-lg shadow p-4 border hover:shadow-md flex flex-col items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+              <Plus className="h-5 w-5 text-blue-600" />
+            </div>
+            <span className="text-xs text-gray-700 text-center">New IND</span>
+          </button>
+          <button className="bg-white rounded-lg shadow p-4 border hover:shadow-md flex flex-col items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-2">
+              <FileText className="h-5 w-5 text-green-600" />
+            </div>
+            <span className="text-xs text-gray-700 text-center">Templates</span>
+          </button>
+          <button className="bg-white rounded-lg shadow p-4 border hover:shadow-md flex flex-col items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-2">
+              <BookOpen className="h-5 w-5 text-purple-600" />
+            </div>
+            <span className="text-xs text-gray-700 text-center">Guidance</span>
+          </button>
+          <button className="bg-white rounded-lg shadow p-4 border hover:shadow-md flex flex-col items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mb-2">
+              <Beaker className="h-5 w-5 text-amber-600" />
+            </div>
+            <span className="text-xs text-gray-700 text-center">CMC Tools</span>
+          </button>
+          <button className="bg-white rounded-lg shadow p-4 border hover:shadow-md flex flex-col items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mb-2">
+              <Users className="h-5 w-5 text-red-600" />
+            </div>
+            <span className="text-xs text-gray-700 text-center">Investigators</span>
+          </button>
+          <button className="bg-white rounded-lg shadow p-4 border hover:shadow-md flex flex-col items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
+              <Server className="h-5 w-5 text-indigo-600" />
+            </div>
+            <span className="text-xs text-gray-700 text-center">eCTD Export</span>
+          </button>
         </div>
-      </div>
+      )}
       
-      {/* Tab content */}
-      <div>
-        {renderTabContent()}
-      </div>
+      {/* Main Content */}
+      {activeIND ? renderApplicationDetails() : renderDashboard()}
     </div>
   );
 };
