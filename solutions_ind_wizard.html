@@ -1755,11 +1755,16 @@
                 projectsEmpty.style.display = 'none';
                 
                 fetch('/api/projects')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to load projects: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(projects => {
                         projectsLoading.style.display = 'none';
                         
-                        if (projects.length === 0) {
+                        if (!projects || projects.length === 0) {
                             projectsEmpty.style.display = 'flex';
                             return;
                         }
