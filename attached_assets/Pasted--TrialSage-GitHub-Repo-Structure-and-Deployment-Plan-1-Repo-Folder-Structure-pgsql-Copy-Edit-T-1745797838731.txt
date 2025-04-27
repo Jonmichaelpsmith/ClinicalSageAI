@@ -1,0 +1,123 @@
+
+✨ TrialSage GitHub Repo Structure and Deployment Plan
+📂 1. Repo Folder Structure
+pgsql
+Copy
+Edit
+TrialSage/
+├── client/                 
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── client-portal-direct.html
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   ├── components/
+│   │   ├── pages/
+│   ├── package.json         
+│   ├── .env.example         
+├── server/                 
+│   ├── server.js
+│   ├── routes/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── uploads/             
+│   ├── package.json         
+│   ├── .env.example         
+├── .gitignore
+├── README.md
+🛡️ 2. Sample .env.example Files
+client/.env.example
+
+bash
+Copy
+Edit
+REACT_APP_API_URL=http://localhost:3000/api
+REACT_APP_OPENAI_KEY=your-openai-public-key-here
+server/.env.example
+
+bash
+Copy
+Edit
+PORT=3000
+OPENAI_API_KEY=your-openai-private-key-here
+DATABASE_URL=your-database-connection-string
+SESSION_SECRET=your-session-secret-here
+🚀 3. Basic Deployment Scripts
+vercel.json (for deploying on Vercel)
+
+json
+Copy
+Edit
+{
+  "version": 2,
+  "builds": [
+    { "src": "client/package.json", "use": "@vercel/static-build", "config": { "distDir": "client/build" } },
+    { "src": "server/server.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/server/server.js" },
+    { "src": "/(.*)", "dest": "/client/build/$1" }
+  ]
+}
+lovable.json (if Lovable needs a config)
+
+json
+Copy
+Edit
+{
+  "builds": {
+    "frontend": "cd client && npm install && npm run build",
+    "backend": "cd server && npm install"
+  },
+  "run": {
+    "frontend": "serve -s client/build",
+    "backend": "node server/server.js"
+  }
+}
+⚙️ 4. Starter GitHub Actions Workflow (CI/CD)
+.github/workflows/deploy.yml
+
+yaml
+Copy
+Edit
+name: Deploy TrialSage
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies and build frontend
+        run: |
+          cd client
+          npm install
+          npm run build
+
+      - name: Install backend dependencies
+        run: |
+          cd server
+          npm install
+
+      - name: Deploy
+        run: echo "Deploy script goes here (e.g., upload to cloud or server)"
+✅ This makes TrialSage ready for CI/CD professional deployment in minutes.
+
+🎯 Final Notes
+.env files must NOT be committed — always listed in .gitignore.
+
+README.md should explain setup + folder structure.
+
+GitHub repo should initially be private until you're ready to launch or demo to clients/investors
