@@ -21,7 +21,7 @@ const Login = () => {
       name: 'Admin User',
       organization: 'TrialSage'
     }));
-    window.location.href = '/direct-dashboard.html';
+    window.location.href = '/client-portal-direct.html';
   };
 
   const handleSubmit = (e) => {

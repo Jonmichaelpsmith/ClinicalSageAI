@@ -3,58 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrialSage™ Auto Login</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>TrialSage™ - Auto Login</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
       background: linear-gradient(to bottom, white 80%, #ffd1dc 100%);
-      min-height: 100vh;
     }
-    .text-primary {
-      color: #ff1493;
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #ff1493;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
     }
-    .bg-primary {
-      background-color: #ff1493;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading-container {
+      text-align: center;
+    }
+    .loading-text {
+      color: #333;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
-      <h1 class="text-2xl font-bold mb-6 text-primary">TrialSage™ Auto Login</h1>
-      
-      <div class="mb-6">
-        <div class="w-16 h-16 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 text-gray-600">Logging you in automatically...</p>
-      </div>
-      
-      <button id="manualLoginBtn" class="bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90 transition-all">
-        Click if not redirected
-      </button>
-    </div>
+  <div class="loading-container">
+    <div class="loader"></div>
+    <h2>TrialSage™</h2>
+    <p class="loading-text">Logging you in automatically...</p>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Set authentication
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify({
-        username: 'admin',
-        role: 'admin',
-        name: 'Admin User',
-        organization: 'TrialSage'
-      }));
-      
-      // Redirect after a short delay
-      setTimeout(function() {
-        window.location.href = '/client-portal.html';
-      }, 1500);
-      
-      // Manual login button
-      document.getElementById('manualLoginBtn').addEventListener('click', function() {
-        window.location.href = '/client-portal.html';
-      });
-    });
+    // Set authentication token in localStorage
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('user', JSON.stringify({
+      username: 'admin',
+      role: 'admin',
+      name: 'Admin User',
+      organization: 'TrialSage'
+    }));
+
+    // Redirect to client portal page after a short delay
+    setTimeout(function() {
+      window.location.href = '/client-portal-direct.html';
+    }, 1000);
   </script>
 </body>
 </html>
