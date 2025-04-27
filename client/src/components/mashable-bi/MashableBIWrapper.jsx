@@ -448,36 +448,70 @@ export function MashableBIWrapper({
         
         {/* Dashboard iframe container */}
         <CardContent className={`p-0 ${isExpanded ? 'flex-1' : ''}`}>
-          {error ? (
+          {/* Show API key configuration form when needed */}
+          {showConfigForm && (
+            <div className="flex flex-col items-center justify-center p-10 text-center" 
+                style={{ height: isExpanded ? '100%' : `${height}px` }}>
+              <MashableAPIKeyForm onKeyConfigured={handleApiKeyConfigured} />
+            </div>
+          )}
+          
+          {/* Show unconfigured state */}
+          {!isConfigured && !showConfigForm && (
+            <div className="flex flex-col items-center justify-center p-10 text-center"
+                style={{ height: isExpanded ? '100%' : `${height}px` }}>
+              <Settings className="h-14 w-14 text-muted-foreground mb-6 opacity-30" />
+              <h3 className="text-xl font-semibold mb-2">MashableBI Not Configured</h3>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                MashableBI Analytics integration is available but needs to be configured 
+                with an API key before dashboards can be displayed.
+              </p>
+              <Button onClick={() => setShowConfigForm(true)}>
+                Configure MashableBI
+              </Button>
+            </div>
+          )}
+          
+          {/* Show error state */}
+          {error && isConfigured && !showConfigForm ? (
             <div className="flex flex-col items-center justify-center p-10 text-center">
               <AlertTriangle className="h-10 w-10 text-destructive mb-4" />
               <h3 className="text-lg font-semibold mb-2">Dashboard Error</h3>
               <p className="text-muted-foreground mb-4">{error}</p>
-              <Button onClick={handleRefresh}>Retry</Button>
+              <div className="flex gap-3">
+                <Button onClick={handleRefresh} variant="default">
+                  Retry
+                </Button>
+                <Button onClick={() => setShowConfigForm(true)} variant="outline">
+                  Reconfigure API Key
+                </Button>
+              </div>
             </div>
           ) : (
-            <div className="relative" style={{ height: isExpanded ? '100%' : `${height}px` }}>
-              {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-                  <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-                    <p className="text-muted-foreground">Loading analytics dashboard...</p>
+            /* Show the iframe when configured and no errors */
+            isConfigured && !showConfigForm && (
+              <div className="relative" style={{ height: isExpanded ? '100%' : `${height}px` }}>
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+                    <div className="text-center">
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+                      <p className="text-muted-foreground">Loading analytics dashboard...</p>
+                    </div>
                   </div>
-                </div>
-              )}
-              
-              <iframe
-                ref={iframeRef}
-                src={getMashableBIUrl(activeDashboard)}
-                className="w-full h-full border-0"
-                title={`MashableBI - ${dashboards[activeDashboard]?.name || 'Dashboard'}`}
-                allow="fullscreen"
-                onLoad={() => setIsLoading(false)}
-                onError={() => {
-                  setError('Failed to load dashboard. Please try again later.');
-                  setIsLoading(false);
-                }}
-              />
+                )}
+                
+                <iframe
+                  ref={iframeRef}
+                  src={getMashableBIUrl(activeDashboard)}
+                  className="w-full h-full border-0"
+                  title={`MashableBI - ${dashboards[activeDashboard]?.name || 'Dashboard'}`}
+                  allow="fullscreen"
+                  onLoad={() => setIsLoading(false)}
+                  onError={() => {
+                    setError('Failed to load dashboard. Please try again later.');
+                    setIsLoading(false);
+                  }}
+                />
             </div>
           )}
         </CardContent>

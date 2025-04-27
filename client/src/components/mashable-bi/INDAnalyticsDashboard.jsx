@@ -38,6 +38,34 @@ export function INDAnalyticsDashboard({ projectId, showSummary = true }) {
   const { toast } = useToast();
   const [activeInsightTab, setActiveInsightTab] = useState('key-metrics');
   
+  // Check if MashableBI is configured
+  const [isMashableConfigured, setIsMashableConfigured] = useState(true);
+  
+  // Check MashableBI configuration status
+  const {
+    data: mashableStatus,
+    isLoading: isStatusLoading
+  } = useQuery({
+    queryKey: ['mashable-bi-status'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/mashable-bi/status');
+        if (!response.ok) throw new Error('Failed to check MashableBI status');
+        return response.json();
+      } catch (error) {
+        console.error('Error checking MashableBI configuration:', error);
+        return { configured: false };
+      }
+    }
+  });
+  
+  // Update configuration status when data is available
+  React.useEffect(() => {
+    if (mashableStatus) {
+      setIsMashableConfigured(mashableStatus.configured);
+    }
+  }, [mashableStatus]);
+  
   // Fetch analytics summary data
   const { 
     data: analyticsSummary, 
@@ -46,6 +74,11 @@ export function INDAnalyticsDashboard({ projectId, showSummary = true }) {
     queryKey: ['ind-analytics-summary', projectId],
     queryFn: async () => {
       try {
+        // Check if MashableBI is configured
+        if (!isMashableConfigured) {
+          throw new Error('MashableBI not configured');
+        }
+        
         const response = await apiRequest('GET', `/api/ind/projects/${projectId}/analytics-summary`);
         if (!response.ok) throw new Error('Failed to fetch analytics summary');
         return response.json();
@@ -92,7 +125,7 @@ export function INDAnalyticsDashboard({ projectId, showSummary = true }) {
         };
       }
     },
-    enabled: !!projectId
+    enabled: !!projectId && isMashableConfigured
   });
   
   // Get trend indicator component
