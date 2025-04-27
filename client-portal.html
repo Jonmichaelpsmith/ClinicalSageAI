@@ -15,7 +15,7 @@
     (function() {
       const isAuthenticated = localStorage.getItem('authenticated') === 'true';
       if (!isAuthenticated) {
-        window.location.href = '/login.html';
+        window.location.href = '/login';
       }
       
       // Update user information from localStorage
@@ -50,7 +50,7 @@
       localStorage.removeItem('authenticated');
       localStorage.removeItem('userEmail');
       localStorage.removeItem('userName');
-      window.location.href = '/login.html';
+      window.location.href = '/login';
     }
     
     tailwind.config = {

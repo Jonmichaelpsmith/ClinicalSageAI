@@ -110,7 +110,7 @@
           localStorage.setItem('userEmail', email);
           
           // Successful login - redirect to client portal
-          window.location.href = 'client-portal.html';
+          window.location.href = '/client-portal';
         } else {
           // Alert if fields are empty
           alert('Please enter both email and password.');
@@ -163,7 +163,7 @@
         localStorage.setItem('userName', 'Google User');
         
         // Redirect to client portal
-        window.location.href = 'client-portal.html';
+        window.location.href = '/client-portal';
       }, 1500);
     }
   </script>
