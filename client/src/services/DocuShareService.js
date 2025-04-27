@@ -1,86 +1,28 @@
 /**
  * DocuShare Service
  * 
- * This service provides cross-module document sharing, versioning, and collaboration
- * capabilities for the TrialSage platform. It enables seamless document workflows across
- * all platform modules and ensures consistent document management throughout the
- * regulatory lifecycle.
- * 
- * Features:
- * - Cross-module document sharing and access control
- * - Real-time collaborative editing and commenting
- * - Document versioning and change tracking
- * - Automated document routing between modules
- * - Regulatory metadata preservation
- * - Integration with blockchain verification
- * - Customizable document workflows
+ * This service provides document sharing capabilities across all TrialSage modules.
+ * It enables secure, structured, and context-aware document sharing with version control,
+ * permissions management, and blockchain verification integration.
  */
 
 import regulatoryIntelligenceCore from './RegulatoryIntelligenceCore';
+import securityService from './SecurityService';
 
 const API_BASE = '/api/docushare';
 
-/**
- * Document sharing levels
- */
-export const SHARING_LEVELS = {
-  PRIVATE: 'private',           // Only owner can access
-  TEAM: 'team',                 // Team members can access
-  ORGANIZATION: 'organization',  // Organization members can access
-  PUBLIC: 'public'              // All authenticated users can access
-};
-
-/**
- * Document permission types
- */
-export const PERMISSIONS = {
-  VIEW: 'view',                 // Can view document
-  COMMENT: 'comment',           // Can comment on document
-  EDIT: 'edit',                 // Can edit document
-  APPROVE: 'approve',           // Can approve document changes
-  ADMIN: 'admin',               // Full administrative control
-  OWNER: 'owner'                // Document owner
-};
-
-/**
- * Document states
- */
-export const DOCUMENT_STATES = {
-  DRAFT: 'draft',               // Initial draft stage
-  REVIEW: 'review',             // Under review
-  APPROVED: 'approved',         // Approved version
-  LOCKED: 'locked',             // Locked/finalized version
-  ARCHIVED: 'archived',         // Archived version
-  DEPRECATED: 'deprecated',     // Deprecated version
-  PUBLISHED: 'published'        // Published version
-};
-
-/**
- * Document workflow types
- */
-export const WORKFLOW_TYPES = {
-  SEQUENTIAL: 'sequential',     // Sequential approval workflow
-  PARALLEL: 'parallel',         // Parallel approval workflow
-  HYBRID: 'hybrid',             // Hybrid approval workflow
-  COLLABORATIVE: 'collaborative' // Collaborative editing workflow
-};
-
 class DocuShareService {
   constructor() {
-    this.currentUser = null;
-    this.collaborationSessions = new Map();
-    this.documentListeners = new Map();
-    this.currentFilters = {};
-    this.lastSyncTimestamp = null;
-    this.moduleIntegrations = {
-      'ind-wizard': true,
-      'csr-intelligence': true,
-      'trial-vault': true,
-      'study-architect': true,
-      'ich-wiz': true,
-      'clinical-metadata': true,
-      'analytics': true
+    this.isInitialized = false;
+    this.config = {
+      blockchainIntegration: false,
+      versionControl: true,
+      autoReindex: true
     };
+    this.documentCache = new Map();
+    this.collectionCache = new Map();
+    this.pendingUploads = new Map();
+    this.activeSubscriptions = new Map();
   }
 
   /**
@@ -89,998 +31,813 @@ class DocuShareService {
    * @returns {Promise<Object>} - Initialization status
    */
   async initialize(options = {}) {
+    if (this.isInitialized) {
+      console.log('DocuShareService already initialized');
+      return { status: 'already_initialized', config: this.config };
+    }
+    
+    console.log('Initializing DocuShareService...');
+    
     try {
-      const response = await fetch(`${API_BASE}/initialize`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(options)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to initialize DocuShare: ${response.statusText}`);
-      }
-
-      const initStatus = await response.json();
-      this.currentUser = initStatus.currentUser;
-      this.lastSyncTimestamp = new Date().toISOString();
+      // Update configuration
+      this.config = {
+        ...this.config,
+        ...options
+      };
       
-      // Setup real-time connections if WebSockets available
-      if (initStatus.socketEnabled) {
-        this._setupRealtimeConnections();
+      // Initialize intelligence core if needed
+      if (!regulatoryIntelligenceCore.isInitialized) {
+        await regulatoryIntelligenceCore.initialize({
+          enableBlockchain: this.config.blockchainIntegration
+        });
       }
       
-      // Initialize blockchain verification if enabled
-      if (options.enableBlockchain !== false) {
-        await regulatoryIntelligenceCore.initialize({ enableBlockchain: true });
-      }
+      this.isInitialized = true;
+      console.log('DocuShareService initialized successfully');
       
-      return initStatus;
+      return {
+        status: 'success',
+        config: this.config
+      };
     } catch (error) {
-      console.error('Error initializing DocuShare service:', error);
+      console.error('Failed to initialize DocuShareService:', error);
+      
+      return {
+        status: 'error',
+        error: error.message
+      };
+    }
+  }
+  
+  /**
+   * Create document collection
+   * @param {string} name - Collection name
+   * @param {string} module - Source module
+   * @param {Object} options - Collection options
+   * @returns {Promise<Object>} - Created collection
+   */
+  async createCollection(name, module, options = {}) {
+    if (!this.isInitialized) {
+      console.warn('DocuShareService not initialized. Initializing now...');
+      await this.initialize();
+    }
+    
+    try {
+      const collection = {
+        id: `collection-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        name,
+        module,
+        description: options.description || '',
+        createdAt: new Date().toISOString(),
+        createdBy: options.userId || securityService.currentUser?.id,
+        tags: options.tags || [],
+        permissions: options.permissions || {
+          read: ['*'],
+          write: [options.userId || securityService.currentUser?.id],
+          admin: [options.userId || securityService.currentUser?.id]
+        },
+        documentCount: 0,
+        documents: []
+      };
+      
+      // Store in cache
+      this.collectionCache.set(collection.id, collection);
+      
+      // In production, would call API to persist collection
+      // const response = await fetch(`${API_BASE}/collections`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify(collection)
+      // });
+      // const result = await response.json();
+      
+      return collection;
+    } catch (error) {
+      console.error('Error creating document collection:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Setup real-time connections for collaborative features
-   * @private
+   * Get document collections
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} - Document collections
    */
-  _setupRealtimeConnections() {
-    if (typeof window === 'undefined') return;
-    
-    // Setup WebSocket for real-time updates
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.host}/ws-docushare`;
+  async getCollections(options = {}) {
+    if (!this.isInitialized) {
+      console.warn('DocuShareService not initialized. Initializing now...');
+      await this.initialize();
+    }
     
     try {
-      this.socket = new WebSocket(wsUrl);
+      // In production, would call API to retrieve collections
+      // const queryParams = new URLSearchParams({
+      //   module: options.module || '',
+      //   userId: options.userId || '',
+      //   ...options
+      // });
       
-      this.socket.onopen = () => {
-        console.log('DocuShare WebSocket connection established');
-        this.socket.send(JSON.stringify({
-          type: 'authenticate',
-          userId: this.currentUser?.id
-        }));
-      };
+      // const response = await fetch(`${API_BASE}/collections?${queryParams}`);
+      // const collections = await response.json();
       
-      this.socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        
-        switch (message.type) {
-          case 'document_update':
-            this._handleDocumentUpdate(message.data);
-            break;
-          case 'comment_added':
-            this._handleCommentAdded(message.data);
-            break;
-          case 'workflow_update':
-            this._handleWorkflowUpdate(message.data);
-            break;
-          case 'collaboration_update':
-            this._handleCollaborationUpdate(message.data);
-            break;
+      // For now, use cached collections
+      let collections = Array.from(this.collectionCache.values());
+      
+      // Filter based on options
+      if (options.module) {
+        collections = collections.filter(c => c.module === options.module);
+      }
+      
+      if (options.userId) {
+        collections = collections.filter(
+          c => c.createdBy === options.userId || 
+               c.permissions.read.includes('*') || 
+               c.permissions.read.includes(options.userId)
+        );
+      }
+      
+      // Sort by created date (newest first)
+      collections.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      
+      return collections;
+    } catch (error) {
+      console.error('Error getting document collections:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Share document with collection
+   * @param {Object} document - Document to share
+   * @param {string} collectionId - Collection ID
+   * @param {Object} options - Sharing options
+   * @returns {Promise<Object>} - Shared document
+   */
+  async shareDocument(document, collectionId, options = {}) {
+    if (!this.isInitialized) {
+      console.warn('DocuShareService not initialized. Initializing now...');
+      await this.initialize();
+    }
+    
+    try {
+      // Verify document
+      if (!document || !document.id) {
+        throw new Error('Invalid document: Document ID is required');
+      }
+      
+      // Get collection
+      const collection = this.collectionCache.get(collectionId);
+      if (!collection) {
+        throw new Error(`Collection not found: ${collectionId}`);
+      }
+      
+      // Check permissions
+      const userId = options.userId || securityService.currentUser?.id;
+      if (!collection.permissions.write.includes('*') && 
+          !collection.permissions.write.includes(userId) &&
+          !collection.permissions.admin.includes(userId)) {
+        throw new Error('You do not have permission to share documents in this collection');
+      }
+      
+      // Prepare shared document
+      const sharedDocument = {
+        id: document.id,
+        name: document.name || document.title,
+        type: document.type,
+        sourceModule: document.module || options.sourceModule,
+        originalPath: document.path,
+        collectionId,
+        sharedAt: new Date().toISOString(),
+        sharedBy: userId,
+        tags: options.tags || document.tags || [],
+        metadata: {
+          ...document.metadata,
+          shared: true,
+          sharedFrom: document.module || options.sourceModule,
+          originalId: document.originalId || document.id
         }
       };
       
-      this.socket.onerror = (error) => {
-        console.error('DocuShare WebSocket error:', error);
-      };
+      // Store document in cache
+      this.documentCache.set(document.id, {
+        ...document,
+        shared: true,
+        collections: [...(document.collections || []), collectionId]
+      });
       
-      this.socket.onclose = () => {
-        console.log('DocuShare WebSocket connection closed');
-        // Attempt to reconnect after 5 seconds
-        setTimeout(() => this._setupRealtimeConnections(), 5000);
-      };
+      // Update collection
+      collection.documents.push(sharedDocument.id);
+      collection.documentCount = collection.documents.length;
+      this.collectionCache.set(collectionId, collection);
+      
+      // Register document in blockchain if enabled
+      if (this.config.blockchainIntegration && regulatoryIntelligenceCore.config.blockchain.enabled) {
+        try {
+          await regulatoryIntelligenceCore.registerDocumentWithBlockchain({
+            id: document.id,
+            type: document.type,
+            content: JSON.stringify(document)
+          });
+        } catch (blockchainError) {
+          console.warn('Failed to register document in blockchain:', blockchainError);
+          // Continue even if blockchain registration fails
+        }
+      }
+      
+      // In production, would call API to persist shared document
+      // const response = await fetch(`${API_BASE}/collections/${collectionId}/documents`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify(sharedDocument)
+      // });
+      // const result = await response.json();
+      
+      return sharedDocument;
     } catch (error) {
-      console.error('Failed to establish WebSocket connection:', error);
+      console.error(`Error sharing document to collection ${collectionId}:`, error);
+      throw error;
     }
   }
   
   /**
-   * Handle real-time document updates
-   * @param {Object} data - Update data
-   * @private
+   * Get shared documents from a collection
+   * @param {string} collectionId - Collection ID
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} - Shared documents
    */
-  _handleDocumentUpdate(data) {
-    // Notify all document listeners
-    if (this.documentListeners.has(data.documentId)) {
-      const listeners = this.documentListeners.get(data.documentId);
-      listeners.forEach(listener => {
-        listener(data);
-      });
+  async getSharedDocuments(collectionId, options = {}) {
+    if (!this.isInitialized) {
+      console.warn('DocuShareService not initialized. Initializing now...');
+      await this.initialize();
     }
     
-    // Update collaboration session if active
-    if (this.collaborationSessions.has(data.documentId)) {
-      const session = this.collaborationSessions.get(data.documentId);
-      session.latestRevision = data.revision;
-      session.lastUpdated = new Date().toISOString();
-    }
-  }
-  
-  /**
-   * Handle real-time comment notifications
-   * @param {Object} data - Comment data
-   * @private
-   */
-  _handleCommentAdded(data) {
-    // Notify document listeners about new comments
-    if (this.documentListeners.has(data.documentId)) {
-      const listeners = this.documentListeners.get(data.documentId);
-      listeners.forEach(listener => {
-        listener({
-          type: 'comment_added',
-          comment: data
-        });
-      });
-    }
-  }
-  
-  /**
-   * Handle real-time workflow updates
-   * @param {Object} data - Workflow update data
-   * @private
-   */
-  _handleWorkflowUpdate(data) {
-    // Notify document listeners about workflow changes
-    if (this.documentListeners.has(data.documentId)) {
-      const listeners = this.documentListeners.get(data.documentId);
-      listeners.forEach(listener => {
-        listener({
-          type: 'workflow_update',
-          workflow: data
-        });
-      });
-    }
-  }
-  
-  /**
-   * Handle real-time collaboration updates
-   * @param {Object} data - Collaboration update data
-   * @private
-   */
-  _handleCollaborationUpdate(data) {
-    // Update active collaboration session
-    if (this.collaborationSessions.has(data.documentId)) {
-      const session = this.collaborationSessions.get(data.documentId);
+    try {
+      // Get collection
+      const collection = this.collectionCache.get(collectionId);
+      if (!collection) {
+        throw new Error(`Collection not found: ${collectionId}`);
+      }
       
-      // Update session with latest collaboration data
-      session.activeUsers = data.activeUsers;
-      session.cursorPositions = data.cursorPositions;
-      session.lastActivity = new Date().toISOString();
+      // Check read permissions
+      const userId = options.userId || securityService.currentUser?.id;
+      if (!collection.permissions.read.includes('*') && 
+          !collection.permissions.read.includes(userId) &&
+          !collection.permissions.write.includes(userId) &&
+          !collection.permissions.admin.includes(userId)) {
+        throw new Error('You do not have permission to view documents in this collection');
+      }
       
-      // Notify listeners
-      if (session.listeners) {
-        session.listeners.forEach(listener => {
-          listener(data);
+      // Get documents
+      const documents = collection.documents
+        .map(docId => this.documentCache.get(docId))
+        .filter(doc => doc !== undefined);
+      
+      // Apply filters
+      let filteredDocuments = [...documents];
+      
+      if (options.type) {
+        filteredDocuments = filteredDocuments.filter(
+          doc => doc.type === options.type
+        );
+      }
+      
+      if (options.sourceModule) {
+        filteredDocuments = filteredDocuments.filter(
+          doc => doc.sourceModule === options.sourceModule
+        );
+      }
+      
+      if (options.tags && options.tags.length > 0) {
+        filteredDocuments = filteredDocuments.filter(
+          doc => options.tags.some(tag => doc.tags.includes(tag))
+        );
+      }
+      
+      // Apply sorting
+      if (options.sort) {
+        const [field, direction] = options.sort.split(':');
+        const multiplier = direction === 'desc' ? -1 : 1;
+        
+        filteredDocuments.sort((a, b) => {
+          if (field === 'name') {
+            return multiplier * a.name.localeCompare(b.name);
+          } else if (field === 'sharedAt') {
+            return multiplier * (new Date(a.sharedAt) - new Date(b.sharedAt));
+          } else {
+            return 0;
+          }
+        });
+      } else {
+        // Default sort by shared date (newest first)
+        filteredDocuments.sort((a, b) => new Date(b.sharedAt) - new Date(a.sharedAt));
+      }
+      
+      return filteredDocuments;
+    } catch (error) {
+      console.error(`Error getting shared documents from collection ${collectionId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Upload document to collection
+   * @param {File} file - File to upload
+   * @param {string} collectionId - Collection ID
+   * @param {Object} metadata - Document metadata
+   * @param {Object} options - Upload options
+   * @returns {Promise<Object>} - Upload result
+   */
+  async uploadDocument(file, collectionId, metadata = {}, options = {}) {
+    if (!this.isInitialized) {
+      console.warn('DocuShareService not initialized. Initializing now...');
+      await this.initialize();
+    }
+    
+    try {
+      // Get collection
+      const collection = this.collectionCache.get(collectionId);
+      if (!collection) {
+        throw new Error(`Collection not found: ${collectionId}`);
+      }
+      
+      // Check write permissions
+      const userId = options.userId || securityService.currentUser?.id;
+      if (!collection.permissions.write.includes('*') && 
+          !collection.permissions.write.includes(userId) &&
+          !collection.permissions.admin.includes(userId)) {
+        throw new Error('You do not have permission to upload documents to this collection');
+      }
+      
+      // Create upload ID
+      const uploadId = `upload-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      
+      // Store upload in pendingUploads
+      this.pendingUploads.set(uploadId, {
+        file,
+        collectionId,
+        metadata,
+        options,
+        status: 'pending',
+        progress: 0,
+        startedAt: new Date().toISOString()
+      });
+      
+      // Simulate upload process
+      const processUpload = async () => {
+        // Update progress
+        const updateProgress = (progress) => {
+          const upload = this.pendingUploads.get(uploadId);
+          if (upload) {
+            this.pendingUploads.set(uploadId, {
+              ...upload,
+              progress
+            });
+          }
+        };
+        
+        try {
+          // Simulate upload steps
+          updateProgress(10);
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          updateProgress(30);
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          updateProgress(60);
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          updateProgress(90);
+          
+          // Create document object
+          const document = {
+            id: `doc-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            name: metadata.name || file.name,
+            type: metadata.type || this.detectDocumentType(file),
+            size: file.size,
+            fileName: file.name,
+            collectionId,
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: userId,
+            tags: metadata.tags || [],
+            module: collection.module,
+            metadata: {
+              ...metadata,
+              fileType: file.type,
+              originalFileName: file.name
+            },
+            shared: true,
+            collections: [collectionId],
+            sourceModule: collection.module
+          };
+          
+          // Store document in cache
+          this.documentCache.set(document.id, document);
+          
+          // Update collection
+          collection.documents.push(document.id);
+          collection.documentCount = collection.documents.length;
+          this.collectionCache.set(collectionId, collection);
+          
+          // Register document in blockchain if enabled
+          if (this.config.blockchainIntegration && regulatoryIntelligenceCore.config.blockchain.enabled) {
+            try {
+              await regulatoryIntelligenceCore.registerDocumentWithBlockchain({
+                id: document.id,
+                type: document.type,
+                content: JSON.stringify(document)
+              });
+            } catch (blockchainError) {
+              console.warn('Failed to register document in blockchain:', blockchainError);
+              // Continue even if blockchain registration fails
+            }
+          }
+          
+          // Update upload status
+          this.pendingUploads.set(uploadId, {
+            ...this.pendingUploads.get(uploadId),
+            status: 'completed',
+            progress: 100,
+            completedAt: new Date().toISOString(),
+            document
+          });
+          
+          // In production, would process document text with intelligence core
+          if (options.processContent !== false) {
+            // Simulating document processing
+            console.log(`Would process document content for ${document.id}`);
+          }
+          
+          return document;
+        } catch (error) {
+          // Update upload status on error
+          this.pendingUploads.set(uploadId, {
+            ...this.pendingUploads.get(uploadId),
+            status: 'failed',
+            error: error.message
+          });
+          
+          throw error;
+        }
+      };
+      
+      // Start upload process (don't await it)
+      const uploadPromise = processUpload();
+      
+      // Return initial upload status
+      return {
+        uploadId,
+        status: 'started',
+        message: 'Document upload started'
+      };
+    } catch (error) {
+      console.error(`Error uploading document to collection ${collectionId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get upload status
+   * @param {string} uploadId - Upload ID
+   * @returns {Object} - Upload status
+   */
+  getUploadStatus(uploadId) {
+    const upload = this.pendingUploads.get(uploadId);
+    
+    if (!upload) {
+      return {
+        status: 'not_found',
+        message: `Upload not found: ${uploadId}`
+      };
+    }
+    
+    return {
+      id: uploadId,
+      status: upload.status,
+      progress: upload.progress,
+      startedAt: upload.startedAt,
+      completedAt: upload.completedAt,
+      document: upload.document,
+      error: upload.error
+    };
+  }
+  
+  /**
+   * Remove document from collection
+   * @param {string} documentId - Document ID
+   * @param {string} collectionId - Collection ID
+   * @param {Object} options - Removal options
+   * @returns {Promise<Object>} - Removal result
+   */
+  async removeDocument(documentId, collectionId, options = {}) {
+    if (!this.isInitialized) {
+      console.warn('DocuShareService not initialized. Initializing now...');
+      await this.initialize();
+    }
+    
+    try {
+      // Get collection
+      const collection = this.collectionCache.get(collectionId);
+      if (!collection) {
+        throw new Error(`Collection not found: ${collectionId}`);
+      }
+      
+      // Check write permissions
+      const userId = options.userId || securityService.currentUser?.id;
+      if (!collection.permissions.write.includes('*') && 
+          !collection.permissions.write.includes(userId) &&
+          !collection.permissions.admin.includes(userId)) {
+        throw new Error('You do not have permission to remove documents from this collection');
+      }
+      
+      // Get document
+      const document = this.documentCache.get(documentId);
+      if (!document) {
+        throw new Error(`Document not found: ${documentId}`);
+      }
+      
+      // Remove document from collection
+      collection.documents = collection.documents.filter(id => id !== documentId);
+      collection.documentCount = collection.documents.length;
+      this.collectionCache.set(collectionId, collection);
+      
+      // Update document collections
+      document.collections = document.collections.filter(id => id !== collectionId);
+      
+      // If document is no longer in any collections, mark as not shared
+      if (document.collections.length === 0) {
+        document.shared = false;
+      }
+      
+      this.documentCache.set(documentId, document);
+      
+      // In production, would call API to persist changes
+      // const response = await fetch(`${API_BASE}/collections/${collectionId}/documents/${documentId}`, {
+      //   method: 'DELETE',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   }
+      // });
+      // const result = await response.json();
+      
+      return {
+        success: true,
+        documentId,
+        collectionId,
+        message: 'Document removed from collection'
+      };
+    } catch (error) {
+      console.error(`Error removing document ${documentId} from collection ${collectionId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Update collection
+   * @param {string} collectionId - Collection ID
+   * @param {Object} updates - Collection updates
+   * @param {Object} options - Update options
+   * @returns {Promise<Object>} - Updated collection
+   */
+  async updateCollection(collectionId, updates, options = {}) {
+    if (!this.isInitialized) {
+      console.warn('DocuShareService not initialized. Initializing now...');
+      await this.initialize();
+    }
+    
+    try {
+      // Get collection
+      const collection = this.collectionCache.get(collectionId);
+      if (!collection) {
+        throw new Error(`Collection not found: ${collectionId}`);
+      }
+      
+      // Check admin permissions
+      const userId = options.userId || securityService.currentUser?.id;
+      if (!collection.permissions.admin.includes('*') && 
+          !collection.permissions.admin.includes(userId)) {
+        throw new Error('You do not have permission to update this collection');
+      }
+      
+      // Update collection
+      const updatedCollection = {
+        ...collection,
+        ...updates,
+        updatedAt: new Date().toISOString(),
+        updatedBy: userId
+      };
+      
+      // Store updated collection
+      this.collectionCache.set(collectionId, updatedCollection);
+      
+      // In production, would call API to persist changes
+      // const response = await fetch(`${API_BASE}/collections/${collectionId}`, {
+      //   method: 'PATCH',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify(updates)
+      // });
+      // const result = await response.json();
+      
+      return updatedCollection;
+    } catch (error) {
+      console.error(`Error updating collection ${collectionId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Search for documents across collections
+   * @param {string} query - Search query
+   * @param {Object} options - Search options
+   * @returns {Promise<Array>} - Search results
+   */
+  async searchDocuments(query, options = {}) {
+    if (!this.isInitialized) {
+      console.warn('DocuShareService not initialized. Initializing now...');
+      await this.initialize();
+    }
+    
+    try {
+      const userId = options.userId || securityService.currentUser?.id;
+      
+      // Get all collections the user has access to
+      const allCollections = Array.from(this.collectionCache.values());
+      const accessibleCollections = allCollections.filter(
+        c => c.permissions.read.includes('*') || 
+             c.permissions.read.includes(userId) ||
+             c.permissions.write.includes(userId) ||
+             c.permissions.admin.includes(userId)
+      );
+      
+      const accessibleCollectionIds = accessibleCollections.map(c => c.id);
+      
+      // Get all documents from accessible collections
+      let documents = Array.from(this.documentCache.values())
+        .filter(doc => doc.collections.some(cId => accessibleCollectionIds.includes(cId)));
+      
+      // Filter by keyword
+      if (query && query.trim() !== '') {
+        const normalizedQuery = query.toLowerCase();
+        documents = documents.filter(
+          doc => doc.name.toLowerCase().includes(normalizedQuery) ||
+                 doc.tags.some(tag => tag.toLowerCase().includes(normalizedQuery)) ||
+                 (doc.metadata.description && doc.metadata.description.toLowerCase().includes(normalizedQuery))
+        );
+      }
+      
+      // Apply additional filters
+      if (options.module) {
+        documents = documents.filter(
+          doc => doc.module === options.module || doc.sourceModule === options.module
+        );
+      }
+      
+      if (options.type) {
+        documents = documents.filter(
+          doc => doc.type === options.type
+        );
+      }
+      
+      if (options.tags && options.tags.length > 0) {
+        documents = documents.filter(
+          doc => options.tags.some(tag => doc.tags.includes(tag))
+        );
+      }
+      
+      if (options.collections && options.collections.length > 0) {
+        documents = documents.filter(
+          doc => doc.collections.some(cId => options.collections.includes(cId))
+        );
+      }
+      
+      // Apply sorting
+      if (options.sort) {
+        const [field, direction] = options.sort.split(':');
+        const multiplier = direction === 'desc' ? -1 : 1;
+        
+        documents.sort((a, b) => {
+          if (field === 'name') {
+            return multiplier * a.name.localeCompare(b.name);
+          } else if (field === 'uploadedAt') {
+            return multiplier * (new Date(a.uploadedAt) - new Date(b.uploadedAt));
+          } else if (field === 'size') {
+            return multiplier * (a.size - b.size);
+          } else {
+            return 0;
+          }
+        });
+      } else {
+        // Default sort by uploaded date (newest first)
+        documents.sort((a, b) => {
+          const dateA = a.uploadedAt || a.sharedAt;
+          const dateB = b.uploadedAt || b.sharedAt;
+          return new Date(dateB) - new Date(dateA);
         });
       }
+      
+      // Apply pagination
+      if (options.limit) {
+        const start = options.offset || 0;
+        const end = start + options.limit;
+        documents = documents.slice(start, end);
+      }
+      
+      return {
+        results: documents,
+        total: documents.length,
+        query
+      };
+    } catch (error) {
+      console.error(`Error searching documents:`, error);
+      throw error;
     }
   }
-
+  
   /**
    * Get document by ID
    * @param {string} documentId - Document ID
-   * @param {Object} options - Request options
-   * @returns {Promise<Object>} - Document data
+   * @returns {Object|null} - Document or null if not found
    */
-  async getDocument(documentId, options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        ...options
-      }).toString();
-
-      const response = await fetch(`${API_BASE}/documents/${documentId}?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get document: ${response.statusText}`);
-      }
-      
-      const document = await response.json();
-      
-      // Register for real-time updates if requested
-      if (options.subscribe && this.socket && this.socket.readyState === WebSocket.OPEN) {
-        this.socket.send(JSON.stringify({
-          type: 'subscribe',
-          documentId
-        }));
-      }
-      
-      return document;
-    } catch (error) {
-      console.error(`Error getting document ${documentId}:`, error);
-      throw error;
+  getDocument(documentId) {
+    return this.documentCache.get(documentId) || null;
+  }
+  
+  /**
+   * Detect document type from file
+   * @param {File} file - File object
+   * @returns {string} - Document type
+   */
+  detectDocumentType(file) {
+    const fileName = file.name.toLowerCase();
+    const fileType = file.type;
+    
+    if (fileName.includes('protocol')) {
+      return 'protocol';
+    } else if (fileName.includes('csr') || fileName.includes('clinical study report')) {
+      return 'csr';
+    } else if (fileName.includes('ib') || fileName.includes('investigator') && fileName.includes('brochure')) {
+      return 'investigator_brochure';
+    } else if (fileName.includes('ind') || fileName.includes('application')) {
+      return 'application';
+    } else if (fileName.includes('cmc')) {
+      return 'cmc';
+    } else if (fileType === 'application/pdf') {
+      return 'document';
+    } else if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+               fileType === 'application/msword') {
+      return 'document';
+    } else if (fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+               fileType === 'application/vnd.ms-excel') {
+      return 'spreadsheet';
+    } else if (fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+               fileType === 'application/vnd.ms-powerpoint') {
+      return 'presentation';
+    } else {
+      return 'other';
     }
   }
-
+  
   /**
-   * Get document metadata
+   * Create document subscription
    * @param {string} documentId - Document ID
-   * @returns {Promise<Object>} - Document metadata
-   */
-  async getDocumentMetadata(documentId) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/metadata`);
-      if (!response.ok) {
-        throw new Error(`Failed to get document metadata: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting document metadata for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get document version history
-   * @param {string} documentId - Document ID
-   * @param {Object} options - Request options
-   * @returns {Promise<Array>} - Version history
-   */
-  async getDocumentVersions(documentId, options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        ...options
-      }).toString();
-
-      const response = await fetch(`${API_BASE}/documents/${documentId}/versions?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get document versions: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting document versions for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create new document
-   * @param {Object} document - Document data
-   * @param {Object} options - Creation options
-   * @returns {Promise<Object>} - Created document
-   */
-  async createDocument(document, options = {}) {
-    try {
-      const response = await fetch(`${API_BASE}/documents`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          document,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to create document: ${response.statusText}`);
-      }
-
-      const createdDocument = await response.json();
-      
-      // Create blockchain verification if requested
-      if (options.enableBlockchain) {
-        try {
-          const blockchainResult = await regulatoryIntelligenceCore.addDocumentToBlockchain(
-            createdDocument.id,
-            'document_creation',
-            { documentType: document.documentType }
-          );
-          
-          createdDocument.blockchain = blockchainResult;
-        } catch (blockchainError) {
-          console.error('Error adding document to blockchain:', blockchainError);
-        }
-      }
-      
-      return createdDocument;
-    } catch (error) {
-      console.error('Error creating document:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update existing document
-   * @param {string} documentId - Document ID
-   * @param {Object} updates - Document updates
-   * @param {Object} options - Update options
-   * @returns {Promise<Object>} - Updated document
-   */
-  async updateDocument(documentId, updates, options = {}) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          updates,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update document: ${response.statusText}`);
-      }
-
-      const updatedDocument = await response.json();
-      
-      // Create blockchain verification if requested
-      if (options.enableBlockchain) {
-        try {
-          const blockchainResult = await regulatoryIntelligenceCore.addDocumentToBlockchain(
-            documentId,
-            'document_update',
-            { 
-              documentType: updatedDocument.documentType,
-              revisionNumber: updatedDocument.revision
-            }
-          );
-          
-          updatedDocument.blockchain = blockchainResult;
-        } catch (blockchainError) {
-          console.error('Error adding document update to blockchain:', blockchainError);
-        }
-      }
-      
-      return updatedDocument;
-    } catch (error) {
-      console.error(`Error updating document ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Delete document
-   * @param {string} documentId - Document ID
-   * @param {Object} options - Deletion options
-   * @returns {Promise<Object>} - Deletion result
-   */
-  async deleteDocument(documentId, options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        ...options
-      }).toString();
-
-      const response = await fetch(`${API_BASE}/documents/${documentId}?${queryParams}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete document: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Create blockchain audit trail for deletion
-      if (options.enableBlockchain) {
-        try {
-          await regulatoryIntelligenceCore.createBlockchainAuditTrail(
-            'document',
-            documentId,
-            {
-              action: 'document_deletion',
-              reason: options.reason || 'User requested deletion'
-            }
-          );
-        } catch (blockchainError) {
-          console.error('Error creating blockchain audit trail for deletion:', blockchainError);
-        }
-      }
-      
-      return result;
-    } catch (error) {
-      console.error(`Error deleting document ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Share document with users or teams
-   * @param {string} documentId - Document ID
-   * @param {Object} shareSettings - Share settings
-   * @returns {Promise<Object>} - Updated sharing status
-   */
-  async shareDocument(documentId, shareSettings) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/share`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(shareSettings)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to share document: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Error sharing document ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get document sharing settings
-   * @param {string} documentId - Document ID
-   * @returns {Promise<Object>} - Sharing settings
-   */
-  async getDocumentSharing(documentId) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/share`);
-      if (!response.ok) {
-        throw new Error(`Failed to get document sharing: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting document sharing for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Start collaborative editing session
-   * @param {string} documentId - Document ID
-   * @param {Object} options - Collaboration options
-   * @returns {Promise<Object>} - Collaboration session
-   */
-  async startCollaboration(documentId, options = {}) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/collaborate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(options)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to start collaboration: ${response.statusText}`);
-      }
-
-      const session = await response.json();
-      
-      // Register collaboration session
-      this.collaborationSessions.set(documentId, {
-        ...session,
-        listeners: new Set(),
-        lastActivity: new Date().toISOString()
-      });
-      
-      // Subscribe to real-time updates
-      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        this.socket.send(JSON.stringify({
-          type: 'join_collaboration',
-          documentId,
-          sessionId: session.id
-        }));
-      }
-      
-      return session;
-    } catch (error) {
-      console.error(`Error starting collaboration for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * End collaborative editing session
-   * @param {string} documentId - Document ID
-   * @param {string} sessionId - Session ID
-   * @returns {Promise<Object>} - End session result
-   */
-  async endCollaboration(documentId, sessionId) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/collaborate/${sessionId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to end collaboration: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Clean up collaboration session
-      this.collaborationSessions.delete(documentId);
-      
-      // Unsubscribe from real-time updates
-      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        this.socket.send(JSON.stringify({
-          type: 'leave_collaboration',
-          documentId,
-          sessionId
-        }));
-      }
-      
-      return result;
-    } catch (error) {
-      console.error(`Error ending collaboration for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Send collaborative editing update
-   * @param {string} documentId - Document ID
-   * @param {string} sessionId - Session ID
-   * @param {Object} update - Collaboration update
-   * @returns {Promise<Object>} - Update result
-   */
-  async sendCollaborationUpdate(documentId, sessionId, update) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/collaborate/${sessionId}/update`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(update)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to send collaboration update: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Error sending collaboration update for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Add comment to document
-   * @param {string} documentId - Document ID
-   * @param {Object} comment - Comment data
-   * @returns {Promise<Object>} - Created comment
-   */
-  async addComment(documentId, comment) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(comment)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to add comment: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Error adding comment to ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get comments for a document
-   * @param {string} documentId - Document ID
-   * @param {Object} options - Request options
-   * @returns {Promise<Array>} - Document comments
-   */
-  async getComments(documentId, options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        ...options
-      }).toString();
-
-      const response = await fetch(`${API_BASE}/documents/${documentId}/comments?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get comments: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting comments for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create document workflow
-   * @param {string} documentId - Document ID
-   * @param {Object} workflow - Workflow definition
-   * @returns {Promise<Object>} - Created workflow
-   */
-  async createWorkflow(documentId, workflow) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/workflow`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(workflow)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to create workflow: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Error creating workflow for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get document workflow status
-   * @param {string} documentId - Document ID
-   * @returns {Promise<Object>} - Workflow status
-   */
-  async getWorkflowStatus(documentId) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/workflow`);
-      if (!response.ok) {
-        throw new Error(`Failed to get workflow status: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting workflow status for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update workflow status
-   * @param {string} documentId - Document ID
-   * @param {string} workflowId - Workflow ID
-   * @param {Object} update - Workflow update
-   * @returns {Promise<Object>} - Updated workflow
-   */
-  async updateWorkflow(documentId, workflowId, update) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/workflow/${workflowId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(update)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update workflow: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Error updating workflow ${workflowId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Approve document in workflow
-   * @param {string} documentId - Document ID
-   * @param {string} workflowId - Workflow ID
-   * @param {Object} approval - Approval data
-   * @returns {Promise<Object>} - Approval result
-   */
-  async approveDocument(documentId, workflowId, approval) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/workflow/${workflowId}/approve`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(approval)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to approve document: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Create blockchain verification for approval
-      try {
-        const blockchainResult = await regulatoryIntelligenceCore.createBlockchainAuditTrail(
-          'workflow',
-          workflowId,
-          {
-            action: 'document_approval',
-            documentId,
-            workflowId,
-            approver: this.currentUser?.id,
-            timestamp: new Date().toISOString()
-          }
-        );
-        
-        result.blockchain = blockchainResult;
-      } catch (blockchainError) {
-        console.error('Error creating blockchain audit trail for approval:', blockchainError);
-      }
-      
-      return result;
-    } catch (error) {
-      console.error(`Error approving document ${documentId} in workflow ${workflowId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Reject document in workflow
-   * @param {string} documentId - Document ID
-   * @param {string} workflowId - Workflow ID
-   * @param {Object} rejection - Rejection data
-   * @returns {Promise<Object>} - Rejection result
-   */
-  async rejectDocument(documentId, workflowId, rejection) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/workflow/${workflowId}/reject`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(rejection)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to reject document: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Create blockchain verification for rejection
-      try {
-        const blockchainResult = await regulatoryIntelligenceCore.createBlockchainAuditTrail(
-          'workflow',
-          workflowId,
-          {
-            action: 'document_rejection',
-            documentId,
-            workflowId,
-            rejector: this.currentUser?.id,
-            reason: rejection.reason,
-            timestamp: new Date().toISOString()
-          }
-        );
-        
-        result.blockchain = blockchainResult;
-      } catch (blockchainError) {
-        console.error('Error creating blockchain audit trail for rejection:', blockchainError);
-      }
-      
-      return result;
-    } catch (error) {
-      console.error(`Error rejecting document ${documentId} in workflow ${workflowId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Search for documents
-   * @param {Object} query - Search query
-   * @param {Object} options - Search options
-   * @returns {Promise<Object>} - Search results
-   */
-  async searchDocuments(query, options = {}) {
-    try {
-      const response = await fetch(`${API_BASE}/search`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          query,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to search documents: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error searching documents:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Transfer document to another module
-   * @param {string} documentId - Document ID
-   * @param {string} targetModule - Target module
-   * @param {Object} options - Transfer options
-   * @returns {Promise<Object>} - Transfer result
-   */
-  async transferToModule(documentId, targetModule, options = {}) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/transfer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          targetModule,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to transfer document: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Create blockchain audit trail for transfer
-      if (options.enableBlockchain) {
-        try {
-          const blockchainResult = await regulatoryIntelligenceCore.createBlockchainAuditTrail(
-            'document',
-            documentId,
-            {
-              action: 'document_transfer',
-              sourceModule: result.sourceModule,
-              targetModule,
-              timestamp: new Date().toISOString()
-            }
-          );
-          
-          result.blockchain = blockchainResult;
-        } catch (blockchainError) {
-          console.error('Error creating blockchain audit trail for transfer:', blockchainError);
-        }
-      }
-      
-      return result;
-    } catch (error) {
-      console.error(`Error transferring document ${documentId} to ${targetModule}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get document access history
-   * @param {string} documentId - Document ID
-   * @param {Object} options - History options
-   * @returns {Promise<Array>} - Access history
-   */
-  async getDocumentAccessHistory(documentId, options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        ...options
-      }).toString();
-
-      const response = await fetch(`${API_BASE}/documents/${documentId}/access-history?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get access history: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting access history for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Verify document with blockchain
-   * @param {string} documentId - Document ID
-   * @returns {Promise<Object>} - Verification result
-   */
-  async verifyWithBlockchain(documentId) {
-    try {
-      return await regulatoryIntelligenceCore.verifyDocumentWithBlockchain(documentId);
-    } catch (error) {
-      console.error(`Error verifying document ${documentId} with blockchain:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get document audit trail
-   * @param {string} documentId - Document ID
-   * @param {Object} options - Audit options
-   * @returns {Promise<Array>} - Audit trail
-   */
-  async getDocumentAuditTrail(documentId, options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        ...options
-      }).toString();
-
-      const response = await fetch(`${API_BASE}/documents/${documentId}/audit-trail?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get audit trail: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting audit trail for ${documentId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Export document to format
-   * @param {string} documentId - Document ID
-   * @param {string} format - Export format
-   * @param {Object} options - Export options
-   * @returns {Promise<Object>} - Export result
-   */
-  async exportDocument(documentId, format, options = {}) {
-    try {
-      const response = await fetch(`${API_BASE}/documents/${documentId}/export`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          format,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to export document: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Error exporting document ${documentId} to ${format}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Subscribe to document updates
-   * @param {string} documentId - Document ID
-   * @param {Function} listener - Update listener
+   * @param {Function} callback - Subscription callback
    * @returns {string} - Subscription ID
    */
-  subscribeToDocumentUpdates(documentId, listener) {
-    const subscriptionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+  subscribeToDocument(documentId, callback) {
+    const subscriptionId = `sub-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     
-    if (!this.documentListeners.has(documentId)) {
-      this.documentListeners.set(documentId, new Map());
-    }
-    
-    this.documentListeners.get(documentId).set(subscriptionId, listener);
-    
-    // Subscribe to real-time updates if available
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({
-        type: 'subscribe',
-        documentId
-      }));
-    }
+    this.activeSubscriptions.set(subscriptionId, {
+      documentId,
+      callback,
+      createdAt: new Date().toISOString()
+    });
     
     return subscriptionId;
   }
-
+  
   /**
-   * Unsubscribe from document updates
-   * @param {string} documentId - Document ID
+   * Remove document subscription
    * @param {string} subscriptionId - Subscription ID
+   * @returns {boolean} - Whether subscription was removed
    */
-  unsubscribeFromDocumentUpdates(documentId, subscriptionId) {
-    if (this.documentListeners.has(documentId)) {
-      this.documentListeners.get(documentId).delete(subscriptionId);
-      
-      // If no more listeners, unsubscribe from real-time updates
-      if (this.documentListeners.get(documentId).size === 0) {
-        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-          this.socket.send(JSON.stringify({
-            type: 'unsubscribe',
-            documentId
-          }));
-        }
-      }
-    }
+  unsubscribeFromDocument(subscriptionId) {
+    const removed = this.activeSubscriptions.delete(subscriptionId);
+    return removed;
+  }
+  
+  /**
+   * Clear document cache
+   */
+  clearCache() {
+    this.documentCache.clear();
+    this.collectionCache.clear();
+    this.pendingUploads.clear();
+    console.log('DocuShareService cache cleared');
   }
 }
 
