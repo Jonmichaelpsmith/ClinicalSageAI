@@ -1,74 +1,198 @@
-/**
- * Authentication utilities for the RegIntel API
- * 
- * This module provides JWT authentication functions for the Express application.
- */
+const express = require('express');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { Pool } = require('pg');
 
-// JWT secret - in production, use an environment variable
-const JWT_SECRET = process.env.JWT_SECRET_KEY || 'regintel_development_key';
+// Initialize PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
-/**
- * Middleware to authenticate JWT tokens
- * 
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next function
- */
-function authenticateToken(req, res, next) {
-  // Get the authorization header
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-  
-  if (!token) {
-    // Also check localStorage token set via frontend JavaScript
-    const localToken = req.cookies && req.cookies.authToken;
-    if (!localToken) {
-      return res.status(401).json({ error: 'Unauthorized - No token provided' });
-    }
+// Initialize auth router
+const router = express.Router();
+
+// Sample users for demonstration
+// In production, these would be stored in the database
+const mockUsers = [
+  {
+    id: 1,
+    username: 'admin',
+    password: '$2a$10$CrxmIiUSRB.ixEr9oS1k2eBxD8CW7ZH/AkE7L7CRmxCnJ3AjTyX4y', // hashed 'password123'
+    email: 'admin@trialsage.com',
+    fullName: 'Admin User',
+    role: 'admin',
+    organization: 'TrialSage',
+    lastLogin: null
+  },
+  {
+    id: 2,
+    username: 'demo',
+    password: '$2a$10$CrxmIiUSRB.ixEr9oS1k2eBxD8CW7ZH/AkE7L7CRmxCnJ3AjTyX4y', // hashed 'password123'
+    email: 'demo@trialsage.com',
+    fullName: 'Demo User',
+    role: 'user',
+    organization: 'BioPharma Inc.',
+    lastLogin: null
   }
-  
-  // Use either the Authorization header token or localStorage token
-  const tokenToVerify = token || req.cookies.authToken;
-  
-  jwt.verify(tokenToVerify, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      console.error('JWT verification error:', err.message);
-      return res.status(403).json({ error: 'Forbidden - Invalid token' });
+];
+
+// Login endpoint
+router.post('/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Username and password are required' 
+      });
+    }
+
+    // In a real implementation, fetch user from the database
+    // For demonstration, we'll use the mock user data
+    const user = mockUsers.find(u => u.username === username);
+
+    if (!user) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      });
+    }
+
+    // Validate password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      });
+    }
+
+    // Update last login timestamp
+    user.lastLogin = new Date().toISOString();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: user.id, 
+        username: user.username,
+        role: user.role
+      }, 
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    // Return user data without sensitive information
+    const userResponse = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      organization: user.organization,
+      lastLogin: user.lastLogin
+    };
+
+    res.json({
+      success: true,
+      message: 'Authentication successful',
+      token,
+      user: userResponse
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during authentication' 
+    });
+  }
+});
+
+// Protected route to get user profile
+router.get('/profile', authenticateToken, async (req, res) => {
+  try {
+    // In a real implementation, fetch user from database using req.user.id
+    const user = mockUsers.find(u => u.id === req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
     }
     
-    // Add user data to request
-    req.user = {
-      id: decoded.user_id,
-      username: decoded.username,
-      tenant_id: decoded.tenant_id || 'default',
+    // Return user data without sensitive information
+    const userResponse = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      organization: user.organization,
+      lastLogin: user.lastLogin
     };
     
+    res.json({
+      success: true,
+      user: userResponse
+    });
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error fetching profile' 
+    });
+  }
+});
+
+// Logout endpoint (client-side token removal)
+router.post('/logout', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Logout successful'
+  });
+});
+
+// Middleware to authenticate JWT token
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ 
+      success: false, 
+      message: 'Authentication token is required' 
+    });
+  }
+  
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Invalid or expired token' 
+      });
+    }
+    
+    req.user = user;
     next();
   });
 }
 
-/**
- * Generate a JWT token for a user
- * 
- * @param {Object} user - User object
- * @param {number} expiresIn - Token expiration time in seconds (default: 24 hours)
- * @returns {string} - JWT token
- */
-function generateToken(user, expiresIn = 60 * 60 * 24) {
-  return jwt.sign(
-    {
-      sub: String(user.id),
-      user_id: user.id,
-      username: user.username,
-      tenant_id: user.tenant_id || 'default',
-    },
-    JWT_SECRET,
-    { expiresIn }
-  );
+// Helper function to verify a token (for other server components)
+function verifyToken(token) {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(decoded);
+      }
+    });
+  });
 }
 
 module.exports = {
+  router,
   authenticateToken,
-  generateToken,
+  verifyToken
 };
