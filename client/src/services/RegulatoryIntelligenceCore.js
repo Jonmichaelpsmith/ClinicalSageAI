@@ -1,33 +1,37 @@
 /**
  * Regulatory Intelligence Core Service
  * 
- * This service provides the "central nervous system" for regulatory and scientific
- * intelligence throughout the TrialSage platform.
+ * This service provides centralized access to regulatory guidance,
+ * scientific knowledge, and AI-powered assistance.
  */
 
 class RegulatoryIntelligenceCore {
   constructor() {
     this.isInitialized = false;
-    this.guidanceCache = new Map();
-    this.scientificKnowledgeBase = new Map();
-    this.regulatoryUpdates = [];
+    this.regulatoryGuidance = new Map();
+    this.scientificKnowledge = new Map();
+    this.apiKey = null;
+    this.updateStream = null;
   }
   
   /**
-   * Initialize the regulatory intelligence core
+   * Initialize the service
    */
   async initialize() {
     try {
       console.log('Initializing Regulatory Intelligence Core');
       
-      // Load initial regulatory guidance
+      // Load regulatory guidance
+      console.log('Loading regulatory guidance');
       await this.loadRegulatoryGuidance();
       
       // Load scientific knowledge base
+      console.log('Loading scientific knowledge base');
       await this.loadScientificKnowledgeBase();
       
       // Set up regulatory update stream
-      this.setupRegulatoryUpdateStream();
+      console.log('Setting up regulatory update stream');
+      this.setupUpdateStream();
       
       this.isInitialized = true;
       return true;
@@ -38,46 +42,84 @@ class RegulatoryIntelligenceCore {
   }
   
   /**
-   * Load regulatory guidance from backend
+   * Load regulatory guidance
    */
   async loadRegulatoryGuidance() {
     try {
-      // In production, this would make an API call to the backend
-      console.log('Loading regulatory guidance');
+      // In production, this would load from an API or database
+      // For development, we'll simulate some regulatory guidance
       
-      // Simulate loading time
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Simulate loaded guidance
-      this.guidanceCache.set('FDA', [
+      // FDA Guidance
+      const fdaGuidance = [
         {
-          id: 'fda-001',
-          title: 'IND Application Guidelines',
+          id: 'guid-001',
           agency: 'FDA',
-          datePublished: '2024-01-15',
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
-          summary: 'Guidelines for preparing and submitting Investigational New Drug (IND) applications.'
+          title: 'IND Applications for Clinical Investigations: Content and Format',
+          type: 'Guidance Document',
+          releaseDate: '2022-05-15',
+          lastUpdated: '2023-02-10',
+          fileType: 'PDF',
+          url: 'https://example.com/fda-ind-guidance',
+          summary: 'Guidance for industry on the content and format of IND applications.'
         },
         {
-          id: 'fda-002',
-          title: 'ICH E6(R3) Good Clinical Practice',
+          id: 'guid-002',
           agency: 'FDA',
-          datePublished: '2023-12-01',
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
-          summary: 'Updated guidelines for the conduct of clinical trials of investigational products.'
+          title: 'Clinical Study Reports: Structure and Content',
+          type: 'Guidance Document',
+          releaseDate: '2021-08-22',
+          lastUpdated: '2022-11-05',
+          fileType: 'PDF',
+          url: 'https://example.com/fda-csr-guidance',
+          summary: 'Guidance for industry on preparing clinical study reports.'
         }
-      ]);
+      ];
       
-      this.guidanceCache.set('EMA', [
+      // ICH Guidance
+      const ichGuidance = [
         {
-          id: 'ema-001',
-          title: 'Clinical Trial Application Process',
-          agency: 'EMA',
-          datePublished: '2024-02-10',
-          url: 'https://www.ema.europa.eu/en/human-regulatory/research-development/clinical-trials',
-          summary: 'Guidance on the Clinical Trials Information System (CTIS) and application process.'
+          id: 'guid-003',
+          agency: 'ICH',
+          title: 'ICH E6(R3) Good Clinical Practice',
+          type: 'Guideline',
+          releaseDate: '2023-01-20',
+          lastUpdated: '2023-01-20',
+          fileType: 'PDF',
+          url: 'https://example.com/ich-e6r3',
+          summary: 'International standard for designing, conducting, recording, and reporting clinical trials.'
+        },
+        {
+          id: 'guid-004',
+          agency: 'ICH',
+          title: 'ICH E3 Structure and Content of Clinical Study Reports',
+          type: 'Guideline',
+          releaseDate: '1995-11-30',
+          lastUpdated: '2012-06-25',
+          fileType: 'PDF',
+          url: 'https://example.com/ich-e3',
+          summary: 'Guideline on the structure and content of clinical study reports.'
         }
-      ]);
+      ];
+      
+      // EMA Guidance
+      const emaGuidance = [
+        {
+          id: 'guid-005',
+          agency: 'EMA',
+          title: 'Guideline on the evaluation of medicinal products indicated for treatment of bacterial infections',
+          type: 'Guideline',
+          releaseDate: '2022-04-18',
+          lastUpdated: '2022-04-18',
+          fileType: 'PDF',
+          url: 'https://example.com/ema-bacterial',
+          summary: 'Guidance on evaluating medicinal products for bacterial infections.'
+        }
+      ];
+      
+      // Store guidance
+      this.regulatoryGuidance.set('FDA', fdaGuidance);
+      this.regulatoryGuidance.set('ICH', ichGuidance);
+      this.regulatoryGuidance.set('EMA', emaGuidance);
       
       console.log('Regulatory guidance loaded');
       return true;
@@ -88,36 +130,57 @@ class RegulatoryIntelligenceCore {
   }
   
   /**
-   * Load scientific knowledge base from backend
+   * Load scientific knowledge base
    */
   async loadScientificKnowledgeBase() {
     try {
-      // In production, this would make an API call to the backend
-      console.log('Loading scientific knowledge base');
+      // In production, this would load from an API or database
+      // For development, we'll simulate some scientific knowledge
       
-      // Simulate loading time
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Clinical research methods
+      const clinicalMethods = {
+        id: 'knlg-001',
+        category: 'Clinical Research Methods',
+        topics: [
+          {
+            id: 'topic-001',
+            title: 'Study Design',
+            subtopics: ['Randomized Controlled Trials', 'Observational Studies', 'Adaptive Designs']
+          },
+          {
+            id: 'topic-002',
+            title: 'Statistical Methods',
+            subtopics: ['Sample Size Calculation', 'Hypothesis Testing', 'Survival Analysis']
+          }
+        ]
+      };
       
-      // Simulate loaded knowledge base
-      this.scientificKnowledgeBase.set('oncology', [
-        {
-          id: 'onc-001',
-          title: 'Endpoints for Cancer Clinical Trials',
-          category: 'oncology',
-          keywords: ['endpoints', 'overall survival', 'progression-free survival'],
-          content: 'Overview of primary and secondary endpoints in oncology trials...'
-        }
-      ]);
+      // Therapeutic areas
+      const therapeuticAreas = {
+        id: 'knlg-002',
+        category: 'Therapeutic Areas',
+        topics: [
+          {
+            id: 'topic-003',
+            title: 'Oncology',
+            subtopics: ['Solid Tumors', 'Hematologic Malignancies', 'Immunotherapy']
+          },
+          {
+            id: 'topic-004',
+            title: 'Neurology',
+            subtopics: ['Neurodegenerative Diseases', 'Stroke', 'Pain Management']
+          },
+          {
+            id: 'topic-005',
+            title: 'Cardiology',
+            subtopics: ['Heart Failure', 'Arrhythmias', 'Coronary Artery Disease']
+          }
+        ]
+      };
       
-      this.scientificKnowledgeBase.set('cardiology', [
-        {
-          id: 'card-001',
-          title: 'Cardiovascular Outcome Trials',
-          category: 'cardiology',
-          keywords: ['MACE', 'cardiovascular outcomes', 'heart failure'],
-          content: 'Design considerations for cardiovascular outcome trials...'
-        }
-      ]);
+      // Store knowledge
+      this.scientificKnowledge.set('Clinical Research Methods', clinicalMethods);
+      this.scientificKnowledge.set('Therapeutic Areas', therapeuticAreas);
       
       console.log('Scientific knowledge base loaded');
       return true;
@@ -128,173 +191,179 @@ class RegulatoryIntelligenceCore {
   }
   
   /**
-   * Set up stream for regulatory updates
+   * Set up regulatory update stream
    */
-  setupRegulatoryUpdateStream() {
-    // In production, this would use WebSockets or Server-Sent Events
-    console.log('Setting up regulatory update stream');
-    
-    // Simulate periodic updates
-    this.updateInterval = setInterval(() => {
-      const update = {
-        id: `update-${Date.now()}`,
-        title: 'New FDA Guidance',
-        agency: 'FDA',
-        datePublished: new Date().toISOString(),
-        summary: 'FDA has released new guidance on COVID-19 clinical trial conduct.'
+  setupUpdateStream() {
+    try {
+      // In production, this would set up a WebSocket or polling mechanism
+      // For development, we'll just simulate an update stream
+      
+      // Every 30 minutes, check for updates (simulated)
+      this.updateStream = {
+        interval: 30 * 60 * 1000, // 30 minutes
+        start: () => {
+          console.log('Started regulatory update stream');
+        },
+        stop: () => {
+          console.log('Stopped regulatory update stream');
+        }
       };
       
-      this.regulatoryUpdates.unshift(update);
+      this.updateStream.start();
+      return true;
+    } catch (error) {
+      console.error('Error setting up regulatory update stream:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get regulatory guidance
+   */
+  getRegulatoryGuidance(agency, query = null) {
+    if (!this.isInitialized) {
+      throw new Error('Regulatory Intelligence Core not initialized');
+    }
+    
+    try {
+      const guidance = this.regulatoryGuidance.get(agency) || [];
       
-      // Trim to keep only recent updates
-      if (this.regulatoryUpdates.length > 20) {
-        this.regulatoryUpdates.pop();
+      if (!query) {
+        return guidance;
       }
       
-      console.log('Received regulatory update:', update.title);
-    }, 60000); // 1 minute interval (would be much longer in production)
+      // Filter by query
+      return guidance.filter(item => 
+        item.title.toLowerCase().includes(query.toLowerCase()) ||
+        item.summary.toLowerCase().includes(query.toLowerCase())
+      );
+    } catch (error) {
+      console.error('Error getting regulatory guidance:', error);
+      throw error;
+    }
   }
   
   /**
-   * Get guidance for a specific agency
+   * Get all regulatory guidance
    */
-  getAgencyGuidance(agency) {
+  getAllRegulatoryGuidance() {
     if (!this.isInitialized) {
       throw new Error('Regulatory Intelligence Core not initialized');
     }
     
-    return this.guidanceCache.get(agency) || [];
-  }
-  
-  /**
-   * Get scientific knowledge for a specific category
-   */
-  getScientificKnowledge(category) {
-    if (!this.isInitialized) {
-      throw new Error('Regulatory Intelligence Core not initialized');
-    }
-    
-    return this.scientificKnowledgeBase.get(category) || [];
-  }
-  
-  /**
-   * Get recent regulatory updates
-   */
-  getRecentUpdates(limit = 10) {
-    if (!this.isInitialized) {
-      throw new Error('Regulatory Intelligence Core not initialized');
-    }
-    
-    return this.regulatoryUpdates.slice(0, limit);
-  }
-  
-  /**
-   * Search regulatory guidance and scientific knowledge
-   */
-  search(query, options = {}) {
-    if (!this.isInitialized) {
-      throw new Error('Regulatory Intelligence Core not initialized');
-    }
-    
-    const results = [];
-    
-    // Search guidance
-    if (!options.scientificOnly) {
-      for (const [agency, guidanceList] of this.guidanceCache.entries()) {
-        for (const guidance of guidanceList) {
-          if (
-            guidance.title.toLowerCase().includes(query.toLowerCase()) ||
-            guidance.summary.toLowerCase().includes(query.toLowerCase())
-          ) {
-            results.push({
-              ...guidance,
-              source: 'guidance',
-              agency
-            });
-          }
-        }
+    try {
+      const allGuidance = [];
+      
+      for (const guidance of this.regulatoryGuidance.values()) {
+        allGuidance.push(...guidance);
       }
+      
+      return allGuidance;
+    } catch (error) {
+      console.error('Error getting all regulatory guidance:', error);
+      throw error;
     }
-    
-    // Search scientific knowledge
-    if (!options.guidanceOnly) {
-      for (const [category, knowledgeList] of this.scientificKnowledgeBase.entries()) {
-        for (const knowledge of knowledgeList) {
-          if (
-            knowledge.title.toLowerCase().includes(query.toLowerCase()) ||
-            knowledge.content.toLowerCase().includes(query.toLowerCase()) ||
-            knowledge.keywords.some(keyword => keyword.toLowerCase().includes(query.toLowerCase()))
-          ) {
-            results.push({
-              ...knowledge,
-              source: 'scientific',
-              category
-            });
-          }
-        }
-      }
-    }
-    
-    return results;
   }
   
   /**
-   * Get scientific guidance based on user query
+   * Get scientific knowledge
+   */
+  getScientificKnowledge(category, topic = null) {
+    if (!this.isInitialized) {
+      throw new Error('Regulatory Intelligence Core not initialized');
+    }
+    
+    try {
+      const knowledge = this.scientificKnowledge.get(category);
+      
+      if (!knowledge) {
+        return null;
+      }
+      
+      if (!topic) {
+        return knowledge;
+      }
+      
+      // Filter by topic
+      const matchedTopic = knowledge.topics.find(t => 
+        t.title.toLowerCase() === topic.toLowerCase()
+      );
+      
+      return matchedTopic || null;
+    } catch (error) {
+      console.error('Error getting scientific knowledge:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get scientific guidance using AI
    */
   async getScientificGuidance(query) {
     if (!this.isInitialized) {
       throw new Error('Regulatory Intelligence Core not initialized');
     }
     
-    // In production, this would use OpenAI or another AI service
-    console.log('Getting scientific guidance for query:', query);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Provide a response based on the query
-    const lcQuery = query.toLowerCase();
-    
-    let response = {
-      response: "I understand you're asking about \"" + query + "\". This is an important area in clinical research and regulatory affairs. Would you like more specific information about regulatory requirements, scientific considerations, or best practices in this area?",
-      sources: []
-    };
-    
-    if (lcQuery.includes('ind') || lcQuery.includes('application')) {
-      response = {
-        response: "INDs (Investigational New Drug applications) are required for clinical investigation of new drugs. The FDA's Center for Drug Evaluation and Research (CDER) and Center for Biologics Evaluation and Research (CBER) review INDs. Required elements include: preclinical data, manufacturing information, clinical protocols, investigator information, and commitments to obtain informed consent and IRB review.",
-        sources: [
-          {
-            title: "IND Application Guidelines",
-            url: "https://www.fda.gov/regulatory-information/search-fda-guidance-documents"
-          }
-        ]
+    try {
+      // In production, this would call an AI service (OpenAI, etc.)
+      // For development, we'll simulate an AI response
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Simple keyword-based response
+      let response;
+      let sources = [];
+      
+      if (query.toLowerCase().includes('ind')) {
+        response = "An Investigational New Drug (IND) application is a request for authorization from the FDA to administer an investigational drug to humans. The IND includes data from animal studies, manufacturing information, clinical protocols, and investigator information. For IND preparation, you should focus on the three main technical sections: Chemistry, Manufacturing, and Controls (CMC); Pharmacology and Toxicology; and Clinical.";
+        sources = [
+          { title: 'FDA IND Guidance Document', url: 'https://example.com/fda-ind-guidance' },
+          { title: 'Code of Federal Regulations Title 21, Part 312', url: 'https://example.com/21-cfr-312' }
+        ];
+      } else if (query.toLowerCase().includes('csr')) {
+        response = "A Clinical Study Report (CSR) is a comprehensive document that describes the methods and results of a clinical trial. It should follow the ICH E3 structure, which includes a title page, synopsis, table of contents, list of abbreviations, ethics, investigators, study objectives, methodology, statistical methods, results, discussion, and references. The CSR serves as an essential document for regulatory submissions.";
+        sources = [
+          { title: 'ICH E3 Guideline on Structure and Content of CSRs', url: 'https://example.com/ich-e3' },
+          { title: 'FDA Guidance on CSR Preparation', url: 'https://example.com/fda-csr-guidance' }
+        ];
+      } else if (query.toLowerCase().includes('protocol')) {
+        response = "A clinical trial protocol is a document that describes the objectives, design, methodology, statistical considerations, and organization of a clinical trial. Key elements include background information, study objectives, eligibility criteria, treatment plan, assessment schedule, statistical methods, and ethical considerations. A well-designed protocol is essential for conducting a successful clinical trial.";
+        sources = [
+          { title: 'ICH E6(R3) Good Clinical Practice', url: 'https://example.com/ich-e6r3' },
+          { title: 'FDA Guidance on Protocol Design', url: 'https://example.com/fda-protocol-guidance' }
+        ];
+      } else {
+        response = "I'm sorry, I don't have specific guidance on that topic. Please try refining your query to focus on regulatory submissions, clinical trial documentation, or specific therapeutic areas. I can provide information on IND applications, clinical study reports, protocols, and various regulatory guidelines.";
+      }
+      
+      return {
+        response,
+        sources,
+        timestamp: new Date().toISOString()
       };
-    } else if (lcQuery.includes('protocol') || lcQuery.includes('study design')) {
-      response = {
-        response: "Clinical trial protocols should follow ICH E6(R3) guidelines and include: background information, study objectives, design, eligibility criteria, treatments, endpoints, safety considerations, quality control, statistics, data handling, ethical considerations, and administrative aspects.",
-        sources: [
-          {
-            title: "ICH E6(R3) Good Clinical Practice",
-            url: "https://www.fda.gov/regulatory-information/search-fda-guidance-documents"
-          }
-        ]
-      };
+    } catch (error) {
+      console.error('Error getting scientific guidance:', error);
+      throw new Error(`Unable to get scientific guidance: ${error.message}`);
     }
-    
-    return response;
   }
   
   /**
    * Clean up resources
    */
   cleanup() {
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval);
+    try {
+      if (this.updateStream) {
+        this.updateStream.stop();
+      }
+      
+      this.isInitialized = false;
+      console.log('Regulatory Intelligence Core cleaned up');
+      return true;
+    } catch (error) {
+      console.error('Error cleaning up Regulatory Intelligence Core:', error);
+      throw error;
     }
-    
-    this.isInitialized = false;
-    console.log('Regulatory Intelligence Core cleaned up');
   }
 }
 

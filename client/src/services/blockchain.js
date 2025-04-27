@@ -1,235 +1,202 @@
 /**
- * Blockchain Verification Service
+ * Blockchain Service
  * 
- * This module provides blockchain verification functionality for documents
- * in the TrialSage platform, ensuring immutability and audit trails.
+ * This service provides blockchain verification for documents in the TrialSage platform,
+ * ensuring immutability and provenance of regulatory submissions.
  */
 
-// Simulate blockchain connection and functions
-let isInitialized = false;
-let verificationEvents = [];
-let documentHashes = new Map();
-let verificationKeys = new Map();
-
-/**
- * Initialize the blockchain service
- */
-export async function initBlockchainService() {
-  try {
-    console.log('Initializing Blockchain Verification Service');
+const blockchainService = {
+  /**
+   * Initialize the blockchain service
+   */
+  async initBlockchainService() {
+    try {
+      console.log('Initializing Blockchain Verification Service');
+      
+      // Load verification events
+      console.log('Loading verification events');
+      const verificationEvents = await this.loadVerificationEvents();
+      
+      console.log('Verification events loaded:', verificationEvents.length);
+      
+      return {
+        isInitialized: true,
+        verifyDocument: this.verifyDocument,
+        validateDocument: this.validateDocument,
+        getVerificationHistory: this.getVerificationHistory,
+        verificationEvents
+      };
+    } catch (error) {
+      console.error('Error initializing blockchain service:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Load verification events from the blockchain
+   */
+  async loadVerificationEvents() {
+    // In production, this would load events from a blockchain node
+    // For development, we'll simulate blockchain events
     
-    // Simulate initialization delay
-    await new Promise(resolve => setTimeout(resolve, 700));
-    
-    // Load verification events and hashes
-    await loadVerificationEvents();
-    
-    isInitialized = true;
-    
-    console.log('Blockchain Verification Service initialized');
-    
-    return {
-      verifyDocument,
-      checkVerificationStatus,
-      getVerificationHistory,
-      isInitialized: () => isInitialized
-    };
-  } catch (error) {
-    console.error('Error initializing Blockchain Verification Service:', error);
-    throw error;
-  }
-}
-
-/**
- * Load verification events
- */
-async function loadVerificationEvents() {
-  try {
-    console.log('Loading verification events');
-    
-    // Simulate loading delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Simulate verification events
-    verificationEvents = [
+    return [
       {
-        id: 'verify-001',
+        id: 'event-001',
         documentId: 'doc-002',
-        documentName: 'Clinical Study Report - Study XYZ-123',
-        hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-        timestamp: '2024-03-05T16:50:00Z',
-        blockNumber: 12345678,
-        transactionId: 'tx-0x7890abcdef12345',
-        verifiedBy: 'Jane Doe',
-        status: 'Verified'
+        transactionHash: '0x8f5b54a32e5983d161a71a166e0e79096f48cf64d1c64f7457672fcc528e2206',
+        blockNumber: 15482721,
+        timestamp: '2025-03-15T14:30:00Z',
+        verifier: 'Jane Doe',
+        operation: 'Verify',
+        documentHash: '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
+        previousDocumentHash: null
       },
       {
-        id: 'verify-002',
+        id: 'event-002',
         documentId: 'doc-003',
-        documentName: 'FDA Form 1571',
-        hash: 'a1b2c3d4e5f67890abcdef1234567890abcdef1234567890abcdef1234567890',
-        timestamp: '2024-03-10T11:25:00Z',
-        blockNumber: 12346789,
-        transactionId: 'tx-0x1234567890abcd',
-        verifiedBy: 'Alex Johnson',
-        status: 'Verified'
+        transactionHash: '0x2d6a7b0f6adeff38423d4c62cd8b6ccb708ddad85da5d3d0f2d0e9a2b41349a0',
+        blockNumber: 15498345,
+        timestamp: '2025-03-20T09:15:00Z',
+        verifier: 'Robert Chen',
+        operation: 'Verify',
+        documentHash: '0x9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86ea',
+        previousDocumentHash: null
       }
     ];
-    
-    // Store document hashes for verification lookup
-    verificationEvents.forEach(event => {
-      documentHashes.set(event.documentId, event.hash);
-      verificationKeys.set(event.documentId, {
-        blockNumber: event.blockNumber,
-        transactionId: event.transactionId
-      });
-    });
-    
-    console.log('Verification events loaded:', verificationEvents.length);
-    return verificationEvents;
-  } catch (error) {
-    console.error('Error loading verification events:', error);
-    throw error;
-  }
-}
-
-/**
- * Generate a hash for a document
- */
-function generateDocumentHash(document, content) {
-  // In production, this would calculate a real SHA-256 hash of the document content
-  // For simulation, generate a pseudo-random hash
-  const randomHex = () => Math.floor(Math.random() * 16).toString(16);
-  const chars = new Array(64).fill(0).map(() => randomHex()).join('');
-  return chars;
-}
-
-/**
- * Verify a document on the blockchain
- */
-export async function verifyDocument(documentData, user) {
-  if (!isInitialized) {
-    throw new Error('Blockchain Verification Service not initialized');
-  }
+  },
   
-  try {
-    console.log('Verifying document on blockchain:', documentData.id);
-    
-    // Simulate document verification delay (blockchain transaction)
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Generate hash for document
-    const documentHash = generateDocumentHash(documentData, documentData.content);
-    
-    // Simulate blockchain transaction
-    const blockNumber = 12340000 + Math.floor(Math.random() * 10000);
-    const transactionId = `tx-0x${new Array(16).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-    
-    // Create verification event
-    const verificationEvent = {
-      id: `verify-${Date.now()}`,
-      documentId: documentData.id,
-      documentName: documentData.title,
-      hash: documentHash,
-      timestamp: new Date().toISOString(),
-      blockNumber,
-      transactionId,
-      verifiedBy: user?.name || 'System',
-      status: 'Verified'
-    };
-    
-    // Store verification data
-    verificationEvents.unshift(verificationEvent);
-    documentHashes.set(documentData.id, documentHash);
-    verificationKeys.set(documentData.id, {
-      blockNumber,
-      transactionId
-    });
-    
-    console.log('Document verified successfully:', documentData.id);
-    
-    return {
-      success: true,
-      verificationEvent,
-      documentId: documentData.id,
-      hash: documentHash,
-      blockNumber,
-      transactionId
-    };
-  } catch (error) {
-    console.error('Error verifying document:', error);
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
-
-/**
- * Check verification status of a document
- */
-export async function checkVerificationStatus(documentId) {
-  if (!isInitialized) {
-    throw new Error('Blockchain Verification Service not initialized');
-  }
+  /**
+   * Verify a document on the blockchain
+   * 
+   * @param {Object} document Document to verify
+   * @param {Object} user User verifying the document
+   * @returns {Promise<Object>} Verification result
+   */
+  async verifyDocument(document, user) {
+    try {
+      // In production, this would create a transaction on the blockchain
+      // For development, we'll simulate the verification process
+      
+      // Calculate document hash (simulated)
+      const documentHash = `0x${Math.random().toString(16).substring(2, 34)}`;
+      
+      // Create transaction (simulated)
+      const transaction = {
+        id: `tx-${Date.now()}`,
+        hash: `0x${Math.random().toString(16).substring(2, 66)}`,
+        blockNumber: 15500000 + Math.floor(Math.random() * 1000),
+        timestamp: new Date().toISOString(),
+        from: user.id,
+        to: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
+        data: {
+          documentId: document.id,
+          documentHash,
+          operation: 'Verify'
+        }
+      };
+      
+      // Simulate blockchain confirmation delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      return {
+        success: true,
+        transaction,
+        documentHash,
+        message: 'Document verified successfully'
+      };
+    } catch (error) {
+      console.error('Blockchain verification error:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Document verification failed'
+      };
+    }
+  },
   
-  try {
-    console.log('Checking verification status for document:', documentId);
-    
-    // Simulate verification check delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const isVerified = documentHashes.has(documentId);
-    const verificationData = isVerified ? verificationKeys.get(documentId) : null;
-    
-    return {
-      isVerified,
-      documentId,
-      verificationData
-    };
-  } catch (error) {
-    console.error('Error checking verification status:', error);
-    return {
-      isVerified: false,
-      error: error.message
-    };
-  }
-}
-
-/**
- * Get verification history for a document
- */
-export async function getVerificationHistory(documentId) {
-  if (!isInitialized) {
-    throw new Error('Blockchain Verification Service not initialized');
-  }
+  /**
+   * Validate a document against its blockchain record
+   * 
+   * @param {Object} document Document to validate
+   * @returns {Promise<Object>} Validation result
+   */
+  async validateDocument(document) {
+    try {
+      // In production, this would validate the document against blockchain records
+      // For development, we'll simulate the validation process
+      
+      // Calculate document hash (simulated)
+      const calculatedHash = `0x${Math.random().toString(16).substring(2, 34)}`;
+      
+      // For this simulation, documents with ID doc-002 or doc-003 are valid
+      const isValid = ['doc-002', 'doc-003'].includes(document.id);
+      const storedHash = isValid ? calculatedHash : `0x${Math.random().toString(16).substring(2, 34)}`;
+      
+      // Simulate blockchain query delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      return {
+        success: true,
+        isValid,
+        calculatedHash,
+        storedHash,
+        message: isValid 
+          ? 'Document is valid and matches blockchain record' 
+          : 'Document has been modified since verification'
+      };
+    } catch (error) {
+      console.error('Blockchain validation error:', error);
+      return {
+        success: false,
+        error: error.message,
+        message: 'Document validation failed'
+      };
+    }
+  },
   
-  try {
-    console.log('Getting verification history for document:', documentId);
-    
-    // Simulate history lookup delay
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
-    // Filter verification events for this document
-    const history = verificationEvents.filter(event => event.documentId === documentId);
-    
-    return {
-      documentId,
-      history
-    };
-  } catch (error) {
-    console.error('Error getting verification history:', error);
-    return {
-      documentId,
-      history: [],
-      error: error.message
-    };
+  /**
+   * Get verification history for a document
+   * 
+   * @param {string} documentId Document ID
+   * @returns {Promise<Array>} Verification history
+   */
+  async getVerificationHistory(documentId) {
+    try {
+      // In production, this would query the blockchain for all events related to the document
+      // For development, we'll return simulated events
+      
+      // Simulate blockchain query delay
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      const events = [
+        {
+          id: 'event-001',
+          documentId: 'doc-002',
+          transactionHash: '0x8f5b54a32e5983d161a71a166e0e79096f48cf64d1c64f7457672fcc528e2206',
+          blockNumber: 15482721,
+          timestamp: '2025-03-15T14:30:00Z',
+          verifier: 'Jane Doe',
+          operation: 'Verify',
+          documentHash: '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069'
+        },
+        {
+          id: 'event-002',
+          documentId: 'doc-003',
+          transactionHash: '0x2d6a7b0f6adeff38423d4c62cd8b6ccb708ddad85da5d3d0f2d0e9a2b41349a0',
+          blockNumber: 15498345,
+          timestamp: '2025-03-20T09:15:00Z',
+          verifier: 'Robert Chen',
+          operation: 'Verify',
+          documentHash: '0x9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86ea'
+        }
+      ];
+      
+      return events.filter(event => event.documentId === documentId);
+    } catch (error) {
+      console.error('Error getting verification history:', error);
+      throw error;
+    }
   }
-}
-
-export default {
-  initBlockchainService,
-  verifyDocument,
-  checkVerificationStatus,
-  getVerificationHistory
 };
+
+export default blockchainService;

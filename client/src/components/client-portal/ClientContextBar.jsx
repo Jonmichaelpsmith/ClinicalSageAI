@@ -1,12 +1,12 @@
 /**
  * Client Context Bar Component
  * 
- * This component provides a persistent bar showing the current organization context
- * and allows switching between accessible organizations.
+ * This component provides the organization context for the current user session
+ * in the multi-tenant TrialSage platform.
  */
 
 import React, { useState } from 'react';
-import { Building, ChevronDown, Globe } from 'lucide-react';
+import { Building, ChevronDown } from 'lucide-react';
 import { useIntegration } from '../integration/ModuleIntegrationLayer';
 import OrganizationSwitcher from './OrganizationSwitcher';
 
@@ -14,76 +14,86 @@ const ClientContextBar = () => {
   const { securityService } = useIntegration();
   const [showOrgSwitcher, setShowOrgSwitcher] = useState(false);
   
-  const currentOrg = securityService.currentOrganization;
+  const currentUser = securityService.currentUser;
+  const currentOrg = securityService.getCurrentOrganization();
   
-  // Function to handle organization switching
+  // Toggle organization switcher
+  const toggleOrgSwitcher = () => {
+    setShowOrgSwitcher(!showOrgSwitcher);
+  };
+  
+  // Handle organization switch
   const handleSwitchOrg = async (orgId) => {
-    if (orgId === currentOrg?.id) {
-      setShowOrgSwitcher(false);
-      return;
-    }
-    
     try {
-      const result = await securityService.switchOrganization(orgId);
-      
-      if (result.success) {
-        setShowOrgSwitcher(false);
-        // In a production app, we might reload certain data based on the new organization context
-      } else {
-        console.error('Failed to switch organization:', result.error);
-      }
+      await securityService.switchOrganization(orgId);
+      setShowOrgSwitcher(false);
+      // In a real app, this might reload certain data
     } catch (error) {
       console.error('Error switching organization:', error);
     }
   };
   
-  // If we don't have an organization context, don't render the bar
-  if (!currentOrg) {
-    return null;
-  }
-  
-  // Get organization type icon
-  const getOrgIcon = (type) => {
-    switch (type) {
+  // Get organization type badge class
+  const getOrgTypeBadgeClass = (type) => {
+    switch (type?.toLowerCase()) {
       case 'cro':
-        return <Globe size={16} className="text-blue-500" />;
+        return 'bg-blue-100 text-blue-800';
+      case 'pharma':
+        return 'bg-purple-100 text-purple-800';
+      case 'biotech':
+        return 'bg-green-100 text-green-800';
       default:
-        return <Building size={16} className="text-gray-500" />;
+        return 'bg-gray-100 text-gray-800';
     }
   };
   
+  if (!currentUser || !currentOrg) {
+    return null; // Don't render if no user or org
+  }
+  
   return (
-    <>
-      <div className="bg-gray-100 px-4 py-2 flex items-center justify-between border-b">
+    <div className="bg-gray-100 py-1.5 px-4 border-b text-sm">
+      <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <span className="text-sm text-gray-500 mr-2">Organization:</span>
-          
           <button
-            className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-gray-200 transition-colors"
-            onClick={() => setShowOrgSwitcher(true)}
+            onClick={toggleOrgSwitcher}
+            className="flex items-center hover:bg-gray-200 rounded px-2 py-1"
           >
-            <div className="flex items-center mr-1">
-              {getOrgIcon(currentOrg.type)}
-            </div>
-            
-            <span className="font-medium text-gray-800">{currentOrg.name}</span>
-            
-            <ChevronDown size={14} className="text-gray-500 ml-1" />
+            <Building size={16} className="mr-2 text-gray-500" />
+            <span className="font-medium">{currentOrg.name}</span>
+            <ChevronDown size={14} className="ml-1 text-gray-500" />
           </button>
+          
+          <span className="mx-2 text-gray-300">|</span>
+          
+          <span className={`px-2 py-0.5 rounded text-xs font-medium ${getOrgTypeBadgeClass(currentOrg.type)}`}>
+            {currentOrg.type}
+          </span>
+          
+          <span className="mx-2 text-gray-400 hidden md:inline">•</span>
+          
+          <span className="text-gray-500 hidden md:inline">
+            Role: <span className="font-medium">{currentOrg.role}</span>
+          </span>
         </div>
         
-        <div className="text-xs text-gray-500">
-          {currentOrg.type.toUpperCase()} • Role: {currentOrg.role.charAt(0).toUpperCase() + currentOrg.role.slice(1)}
+        <div className="flex items-center text-xs text-gray-500">
+          <span>
+            Serving <span className="font-medium">{securityService.getClientCount()}</span> clients
+          </span>
+          <span className="mx-2">•</span>
+          <span>Last updated: <time dateTime={currentOrg.lastUpdated}>{currentOrg.lastUpdated}</time></span>
         </div>
       </div>
       
+      {/* Organization Switcher Modal */}
       {showOrgSwitcher && (
         <OrganizationSwitcher
           onClose={() => setShowOrgSwitcher(false)}
           onSwitchOrg={handleSwitchOrg}
         />
       )}
-    </>
+    </div>
   );
 };
 

@@ -1,25 +1,28 @@
 /**
- * Main App Component
+ * Main Application Component
  * 
- * This is the root component for the TrialSage platform.
- * It provides the integration layer and routing for the application.
+ * This is the entry point for the TrialSage platform.
  */
 
 import React from 'react';
-import { Route, Switch } from 'wouter';
+import { Switch, Route, Redirect } from 'wouter';
 import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
 import UnifiedPlatform from './components/UnifiedPlatform';
 
-// Import CSS
-import './index.css';
+// Authentication pages
+import AuthPage from './pages/AuthPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const App = () => {
   return (
     <ModuleIntegrationProvider>
-      <Switch>
-        <Route path="/" component={UnifiedPlatform} />
-        {/* Add more routes as needed */}
-      </Switch>
+      <div className="min-h-screen bg-white">
+        <Switch>
+          <Route path="/auth" component={AuthPage} />
+          <Route path="/" component={UnifiedPlatform} />
+          <Route component={NotFoundPage} />
+        </Switch>
+      </div>
     </ModuleIntegrationProvider>
   );
 };
