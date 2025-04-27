@@ -4,57 +4,164 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TrialSage™ - Client Portal</title>
-  <meta name="description" content="TrialSage Client Portal - Access your regulatory management tools and documents">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Authentication check - redirect to login if not authenticated
-    (function() {
-      const isAuthenticated = localStorage.getItem('authenticated') === 'true';
-      if (!isAuthenticated) {
-        // Store the intended destination for after login
-        localStorage.setItem('redirectAfterLogin', '/client-portal');
-        window.location.href = '/login';
-      }
-      
-      // Update user information from localStorage
-      window.addEventListener('DOMContentLoaded', () => {
-        const userEmail = localStorage.getItem('userEmail');
-        const userName = localStorage.getItem('userName');
-        
-        // Get user's first name for welcome message
-        let firstName = "User";
-        if (userName) {
-          firstName = userName.split(' ')[0];
-          document.getElementById('userName').textContent = userName;
-          
-          // Set initials
-          const initials = userName.split(' ')
-            .map(name => name.charAt(0))
-            .join('')
-            .toUpperCase();
-          document.getElementById('userInitials').textContent = initials;
-        } else if (userEmail) {
-          document.getElementById('userName').textContent = userEmail;
-          document.getElementById('userInitials').textContent = userEmail.charAt(0).toUpperCase();
-        }
-        
-        // Set welcome message
-        document.getElementById('welcomeName').textContent = firstName;
-      });
-    })();
-    
-    // Logout function - clears authentication and redirects to login
-    function logout() {
-      localStorage.removeItem('authenticated');
-      localStorage.removeItem('userEmail');
-      localStorage.removeItem('userName');
-      window.location.href = '/login';
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to bottom, #fff 80%, #fff0f6 100%);
+      min-height: 100vh;
     }
     
+    .sidebar {
+      background-color: #1a1a1a;
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      transition: all 0.3s;
+    }
+    
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+    
+    .sidebar-collapsed .sidebar {
+      width: 60px;
+    }
+    
+    .sidebar-collapsed .main-content {
+      margin-left: 60px;
+    }
+    
+    .sidebar-collapsed .menu-text {
+      display: none;
+    }
+    
+    .sidebar-collapsed .logo-text {
+      display: none;
+    }
+    
+    .menu-item {
+      color: #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    
+    .menu-item:hover, .menu-item.active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .menu-item i {
+      min-width: 20px;
+      margin-right: 16px;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+    
+    .primary-button {
+      background: #FF1493;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .primary-button:hover {
+      background: #e00082;
+    }
+    
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+    
+    .badge-green {
+      background-color: #e6f7e6;
+      color: #22863a;
+    }
+    
+    .badge-amber {
+      background-color: #fff5e6;
+      color: #e36209;
+    }
+    
+    .badge-blue {
+      background-color: #e6f3ff;
+      color: #0366d6;
+    }
+    
+    /* Modules buttons */
+    .module-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+      cursor: pointer;
+      height: 100%;
+    }
+    
+    .module-button:hover {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    
+    .module-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #FF1493, #e00082);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    
+    .module-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .module-description {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+  <script>
     tailwind.config = {
       theme: {
         extend: {
@@ -74,648 +181,346 @@
               800: '#A5005C',
               900: '#89004C'
             }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif']
           }
         }
       }
     }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check for authentication
+      if (!localStorage.getItem('authenticated')) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // Set user information
+      document.getElementById('user-name').textContent = localStorage.getItem('userName') || 'Admin User';
+      
+      // Toggle sidebar
+      document.getElementById('toggle-sidebar').addEventListener('click', () => {
+        document.body.classList.toggle('sidebar-collapsed');
+      });
+      
+      // Activate the dashboard menu item
+      document.querySelector('[data-menu="dashboard"]').classList.add('active');
+      
+      // Module navigation
+      document.querySelectorAll('.module-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const module = button.getAttribute('data-module');
+          navigateToModule(module);
+        });
+      });
+    });
+    
+    function navigateToModule(moduleName) {
+      console.log(`Navigating to module: ${moduleName}`);
+      // In a real app, this would redirect to the specific module
+      // For now, let's just show an alert
+      alert(`Navigating to ${moduleName} module`);
+    }
   </script>
-  <style>
-    /* Custom styles */
-    .gradient-bg {
-      background: linear-gradient(to bottom, white 80%, #FFF0F6 100%);
-    }
-    
-    .module-card {
-      transition: all 0.3s ease;
-    }
-    
-    .module-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #FF1493;
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #C71585;
-    }
-  </style>
 </head>
-<body class="font-sans text-gray-900 gradient-bg min-h-screen">
-  <!-- Header -->
-  <header class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center py-3">
+<body class="bg-gray-50">
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="py-5 px-4 flex items-center">
+      <img src="https://via.placeholder.com/30" alt="Logo" class="mr-3">
+      <span class="text-white font-bold text-lg logo-text">TrialSage™</span>
+    </div>
+    
+    <div class="mt-8">
+      <a href="#" class="menu-item" data-menu="dashboard">
+        <i class="fas fa-chart-pie"></i>
+        <span class="menu-text">Dashboard</span>
+      </a>
+      <a href="#" class="menu-item" data-menu="clients">
+        <i class="fas fa-users"></i>
+        <span class="menu-text">Clients</span>
+      </a>
+      <a href="#" class="menu-item" data-menu="submissions">
+        <i class="fas fa-file-medical"></i>
+        <span class="menu-text">Submissions</span>
+      </a>
+      <a href="#" class="menu-item" data-menu="documents">
+        <i class="fas fa-folder"></i>
+        <span class="menu-text">Documents</span>
+      </a>
+      <a href="#" class="menu-item" data-menu="projects">
+        <i class="fas fa-tasks"></i>
+        <span class="menu-text">Projects</span>
+      </a>
+      <a href="#" class="menu-item" data-menu="analytics">
+        <i class="fas fa-chart-bar"></i>
+        <span class="menu-text">Analytics</span>
+      </a>
+      <a href="#" class="menu-item" data-menu="settings">
+        <i class="fas fa-cog"></i>
+        <span class="menu-text">Settings</span>
+      </a>
+    </div>
+    
+    <div class="absolute bottom-0 left-0 right-0 p-4">
+      <a href="/login.html" class="menu-item">
+        <i class="fas fa-sign-out-alt"></i>
+        <span class="menu-text">Logout</span>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="flex items-center">
+        <button id="toggle-sidebar" class="mr-4 text-gray-500 hover:text-gray-700">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="text-xl font-semibold">Client Portal</h1>
+      </div>
+      
+      <div class="flex items-center">
+        <div class="relative mr-4">
+          <i class="fas fa-bell text-gray-500"></i>
+          <span class="absolute -top-1 -right-1 bg-trialsage-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">3</span>
+        </div>
         <div class="flex items-center">
-          <a href="/" class="flex items-center">
-            <span class="text-2xl font-bold text-trialsage-pink">TrialSage</span>
-            <span class="text-xs align-top font-medium text-gray-500">™</span>
-            <span class="text-sm text-gray-400 ml-2 hidden md:inline-block">Client Portal</span>
-          </a>
+          <img src="https://via.placeholder.com/32" alt="User Avatar" class="w-8 h-8 rounded-full mr-2">
+          <span id="user-name" class="text-sm font-medium">Admin User</span>
         </div>
-        
-        <div class="hidden md:flex items-center space-x-6">
-          <nav class="flex space-x-6">
-            <a href="#" class="text-sm font-medium text-gray-700 hover:text-trialsage-pink">Dashboard</a>
-            <a href="#" class="text-sm font-medium text-gray-700 hover:text-trialsage-pink">Submissions</a>
-            <a href="#" class="text-sm font-medium text-gray-700 hover:text-trialsage-pink">Documents</a>
-            <a href="#" class="text-sm font-medium text-gray-700 hover:text-trialsage-pink">Analytics</a>
-            <a href="#" class="text-sm font-medium text-gray-700 hover:text-trialsage-pink">Support</a>
-          </nav>
-          <div class="flex items-center space-x-3">
-            <div class="relative">
-              <div class="flex items-center">
-                <span class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-2" id="userInitials">
-                  JS
-                </span>
-                <span id="userName">John Smith</span>
-                <button type="button" onClick="logout()" class="ml-3 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700">
-                  Logout
-                </button>
-              </div>
-            </div>
-            
-            <div class="h-6 w-px bg-gray-300"></div>
-            
-            <button type="button" class="p-2 rounded-full text-gray-500 hover:text-trialsage-pink hover:bg-trialsage-50">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
-            
-            <button type="button" class="p-2 rounded-full text-gray-500 hover:text-trialsage-pink hover:bg-trialsage-50">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
+      </div>
+    </div>
+    
+    <!-- Dashboard Content -->
+    <div class="p-6">
+      <!-- Welcome Card -->
+      <div class="card p-6 mb-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl font-bold">Welcome to TrialSage™ Client Portal</h2>
+            <p class="text-gray-600 mt-1">Manage your regulatory projects and clinical trials</p>
           </div>
-        </div>
-        
-        <div class="md:hidden">
-          <button type="button" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-trialsage-pink">
-            <span class="sr-only">Open menu</span>
-            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+          <button class="primary-button">
+            <i class="fas fa-plus mr-2"></i> New Project
           </button>
         </div>
       </div>
-    </div>
-  </header>
-
-  <!-- Welcome Section -->
-  <section class="py-8">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <div class="flex items-center justify-between mb-4">
-          <h1 class="text-2xl font-bold text-gray-900">Welcome back, <span id="welcomeName">John</span></h1>
-          <div class="text-sm text-gray-500">
-            Last login: April 26, 2025, 8:12 AM EDT
+      
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm text-gray-500">Active Clients</p>
+              <h3 class="text-2xl font-bold mt-1">24</h3>
+              <p class="text-xs text-green-600 mt-1">
+                <i class="fas fa-arrow-up"></i> +3 this month
+              </p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+              <i class="fas fa-users"></i>
+            </div>
           </div>
         </div>
         
-        <p class="text-gray-600 mb-6">
-          Access your TrialSage modules and ongoing submissions below. You have <span class="font-semibold text-trialsage-pink">3 submissions</span> in progress and <span class="font-semibold text-trialsage-pink">2 updates</span> from your team.
-        </p>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-trialsage-50 rounded-lg p-4 flex items-center">
-            <div class="w-10 h-10 rounded-full bg-trialsage-pink flex items-center justify-center text-white mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
+        <div class="card p-5">
+          <div class="flex justify-between items-start">
             <div>
-              <div class="text-xs text-gray-500">Active Documents</div>
-              <div class="text-lg font-semibold">128</div>
+              <p class="text-sm text-gray-500">Active Projects</p>
+              <h3 class="text-2xl font-bold mt-1">18</h3>
+              <p class="text-xs text-green-600 mt-1">
+                <i class="fas fa-arrow-up"></i> +2 this week
+              </p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-trialsage-100 flex items-center justify-center text-trialsage-600">
+              <i class="fas fa-tasks"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm text-gray-500">Pending Submissions</p>
+              <h3 class="text-2xl font-bold mt-1">7</h3>
+              <p class="text-xs text-amber-600 mt-1">
+                <i class="fas fa-arrow-up"></i> +1 this week
+              </p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600">
+              <i class="fas fa-file-medical"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-sm text-gray-500">Regulatory Alerts</p>
+              <h3 class="text-2xl font-bold mt-1">5</h3>
+              <p class="text-xs text-red-600 mt-1">
+                <i class="fas fa-exclamation-circle"></i> 2 need action
+              </p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+              <i class="fas fa-bell"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Platform Modules -->
+      <div class="mb-8">
+        <h2 class="text-lg font-semibold mb-4">TrialSage™ Platform Modules</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <!-- Trial Vault Module -->
+          <div class="module-button" data-module="trial-vault">
+            <div class="module-icon">
+              <i class="fas fa-database"></i>
+            </div>
+            <div class="module-title">TrialSage Vault™</div>
+            <div class="module-description">Document management and structured data extraction</div>
+          </div>
+          
+          <!-- ICH Wiz Module -->
+          <div class="module-button" data-module="ich-wiz">
+            <div class="module-icon">
+              <i class="fas fa-check-square"></i>
+            </div>
+            <div class="module-title">ICH Wiz™</div>
+            <div class="module-description">Digital compliance coaching for ICH guidelines</div>
+          </div>
+          
+          <!-- IND Wizard Module -->
+          <div class="module-button" data-module="ind-wizard">
+            <div class="module-icon">
+              <i class="fas fa-magic"></i>
+            </div>
+            <div class="module-title">IND Wizard™</div>
+            <div class="module-description">Guided IND application assembly and submission</div>
+          </div>
+          
+          <!-- CSR Intelligence Module -->
+          <div class="module-button" data-module="csr-intelligence">
+            <div class="module-icon">
+              <i class="fas fa-file-medical-alt"></i>
+            </div>
+            <div class="module-title">CSR Intelligence™</div>
+            <div class="module-description">Clinical Study Report generation and analysis</div>
+          </div>
+          
+          <!-- Study Architect Module -->
+          <div class="module-button" data-module="study-architect">
+            <div class="module-icon">
+              <i class="fas fa-drafting-compass"></i>
+            </div>
+            <div class="module-title">Study Architect™</div>
+            <div class="module-description">Protocol development and study design optimization</div>
+          </div>
+          
+          <!-- Clinical Metadata Repository -->
+          <div class="module-button" data-module="cmdr">
+            <div class="module-icon">
+              <i class="fas fa-microscope"></i>
+            </div>
+            <div class="module-title">CMDR™</div>
+            <div class="module-description">Clinical Metadata Repository for standardization</div>
+          </div>
+          
+          <!-- Analytics Module -->
+          <div class="module-button" data-module="analytics">
+            <div class="module-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="module-title">Analytics Module</div>
+            <div class="module-description">Real-time metrics and regulatory intelligence</div>
+          </div>
+          
+          <!-- Admin Module -->
+          <div class="module-button" data-module="admin">
+            <div class="module-icon">
+              <i class="fas fa-users-cog"></i>
+            </div>
+            <div class="module-title">Admin Panel</div>
+            <div class="module-description">User management and system configuration</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Recent Activity -->
+      <div class="mb-8">
+        <h2 class="text-lg font-semibold mb-4">Recent Activity</h2>
+        
+        <div class="card">
+          <div class="p-4 border-b">
+            <div class="flex items-center">
+              <span class="text-sm font-medium">Today</span>
             </div>
           </div>
           
-          <div class="bg-blue-50 rounded-lg p-4 flex items-center">
-            <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
+          <div class="divide-y">
+            <!-- Activity Item 1 -->
+            <div class="p-4 flex items-start">
+              <div class="mr-4 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm">
+                  <span class="font-medium">GenomaCure IND</span> - Protocol amendment approved
+                </p>
+                <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+              </div>
+              <div>
+                <span class="badge badge-green">Completed</span>
+              </div>
             </div>
-            <div>
-              <div class="text-xs text-gray-500">Submissions</div>
-              <div class="text-lg font-semibold">3</div>
+            
+            <!-- Activity Item 2 -->
+            <div class="p-4 flex items-start">
+              <div class="mr-4 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                <i class="fas fa-upload"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm">
+                  <span class="font-medium">NeuraTech CSR</span> - New document uploaded
+                </p>
+                <p class="text-xs text-gray-500 mt-1">3 hours ago</p>
+              </div>
+              <div>
+                <span class="badge badge-blue">New</span>
+              </div>
+            </div>
+            
+            <!-- Activity Item 3 -->
+            <div class="p-4 flex items-start">
+              <div class="mr-4 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm">
+                  <span class="font-medium">ImmunoGenix FDA</span> - Information request received
+                </p>
+                <p class="text-xs text-gray-500 mt-1">5 hours ago</p>
+              </div>
+              <div>
+                <span class="badge badge-amber">Action Required</span>
+              </div>
             </div>
           </div>
           
-          <div class="bg-green-50 rounded-lg p-4 flex items-center">
-            <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <div class="text-xs text-gray-500">Approved Documents</div>
-              <div class="text-lg font-semibold">42</div>
-            </div>
-          </div>
-          
-          <div class="bg-amber-50 rounded-lg p-4 flex items-center">
-            <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <div class="text-xs text-gray-500">Awaiting Review</div>
-              <div class="text-lg font-semibold">8</div>
-            </div>
+          <div class="p-3 bg-gray-50 text-center">
+            <a href="#" class="text-sm text-trialsage-600 hover:underline">View All Activity</a>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Module Access Section -->
-  <section class="py-6">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 class="text-xl font-bold text-gray-900 mb-6">Your TrialSage Modules</h2>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- TrialSage Vault Module -->
-        <div class="module-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-trialsage-50 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-trialsage-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                </svg>
-              </div>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Active
-              </span>
-            </div>
-            
-            <h3 class="text-lg font-bold text-gray-900 mb-2">TrialSage Vault™</h3>
-            <p class="text-sm text-gray-500 mb-4">
-              Secure document management with advanced retention, approval workflows, and 21 CFR Part 11 compliance.
-            </p>
-            
-            <div class="mt-6">
-              <a href="/solutions_vault.html" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-trialsage-pink hover:bg-trialsage-700 focus:outline-none">
-                Access Vault
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <!-- IND Wizard Module -->
-        <div class="module-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Active
-              </span>
-            </div>
-            
-            <h3 class="text-lg font-bold text-gray-900 mb-2">IND Wizard™</h3>
-            <p class="text-sm text-gray-500 mb-4">
-              Guided IND application preparation with automated document generation and FDA submission tools.
-            </p>
-            
-            <div class="mt-6">
-              <a href="/solutions_ind_wizard.html" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none">
-                Access IND Wizard
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <!-- CSR Intelligence Module -->
-        <div class="module-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Active
-              </span>
-            </div>
-            
-            <h3 class="text-lg font-bold text-gray-900 mb-2">CSR Intelligence™</h3>
-            <p class="text-sm text-gray-500 mb-4">
-              Analyze and extract insights from clinical study reports with powerful AI search and visualization.
-            </p>
-            
-            <div class="mt-6">
-              <a href="/solutions_csr_intelligence.html" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 focus:outline-none">
-                Access CSR Intelligence
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Study Architect Module -->
-        <div class="module-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-                </svg>
-              </div>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Active
-              </span>
-            </div>
-            
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Study Architect™</h3>
-            <p class="text-sm text-gray-500 mb-4">
-              Design protocols with statistical simulations, interactive section management, and smart content organization.
-            </p>
-            
-            <div class="mt-6">
-              <a href="/solutions_study_architect.html" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none">
-                Access Study Architect
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <!-- ICH Wiz Module -->
-        <div class="module-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
-              </div>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Active
-              </span>
-            </div>
-            
-            <h3 class="text-lg font-bold text-gray-900 mb-2">ICH Wiz™</h3>
-            <p class="text-sm text-gray-500 mb-4">
-              Digital compliance coach for global regulatory guidelines with real-time guidance and validation.
-            </p>
-            
-            <div class="mt-6">
-              <a href="/clinical_trial_modules.html" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 focus:outline-none">
-                Access ICH Wiz
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Clinical Metadata Repository -->
-        <div class="module-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-                </svg>
-              </div>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Active
-              </span>
-            </div>
-            
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Clinical Metadata Repository</h3>
-            <p class="text-sm text-gray-500 mb-4">
-              Centralized management of clinical metadata with CDISC standards and cross-study validation.
-            </p>
-            
-            <div class="mt-6">
-              <a href="/solutions/cmdr" class="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none">
-                Access CMDR
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Active Submissions Section -->
-  <section class="py-6">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-gray-900">Active Submissions</h2>
-        
-        <a href="#" class="text-sm font-medium text-trialsage-pink hover:text-trialsage-700">
-          View all submissions
-          <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </a>
       </div>
       
-      <div class="overflow-hidden bg-white rounded-lg shadow-sm border border-gray-200">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Submission
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Last Updated
-              </th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Progress
-              </th>
-              <th scope="col" class="relative px-6 py-3">
-                <span class="sr-only">Action</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">
-                      ENZYMAX FORTE
-                    </div>
-                    <div class="text-xs text-gray-500">
-                      IND #129584
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">Initial IND</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  In Review
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                April 25, 2025
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div class="bg-green-500 h-2.5 rounded-full" style="width: 85%"></div>
-                </div>
-                <div class="text-xs text-gray-500 mt-1">85% Complete</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a href="#" class="text-trialsage-pink hover:text-trialsage-700">View</a>
-              </td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">
-                      CARDIOPLEX
-                    </div>
-                    <div class="text-xs text-gray-500">
-                      NDA #275931
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">NDA Amendment</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                  In Progress
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                April 24, 2025
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 67%"></div>
-                </div>
-                <div class="text-xs text-gray-500 mt-1">67% Complete</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a href="#" class="text-trialsage-pink hover:text-trialsage-700">View</a>
-              </td>
-            </tr>
-            <tr>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">
-                      NEUROEASE
-                    </div>
-                    <div class="text-xs text-gray-500">
-                      IND #132075
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">Annual Report</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                  Requires Attention
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                April 22, 2025
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div class="bg-red-500 h-2.5 rounded-full" style="width: 42%"></div>
-                </div>
-                <div class="text-xs text-gray-500 mt-1">42% Complete</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a href="#" class="text-trialsage-pink hover:text-trialsage-700">View</a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Footer -->
+      <div class="mt-12 text-center text-sm text-gray-500">
+        <p>&copy; 2025 Concept2Cures Inc. All rights reserved.</p>
+        <p class="mt-1">TrialSage™ Platform v2.5.1</p>
       </div>
     </div>
-  </section>
-
-  <!-- Recent Activity Section -->
-  <section class="py-6">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-gray-900">Recent Activity</h2>
-        
-        <a href="#" class="text-sm font-medium text-trialsage-pink hover:text-trialsage-700">
-          View all activity
-          <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </a>
-      </div>
-      
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div class="flow-root">
-          <ul role="list" class="-mb-8">
-            <li>
-              <div class="relative pb-8">
-                <span class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-                <div class="relative flex items-start space-x-3">
-                  <div class="relative">
-                    <div class="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div>
-                      <div class="text-sm">
-                        <a href="#" class="font-medium text-gray-900">Maria Rodriguez</a> approved <a href="#" class="font-medium text-trialsage-pink">Section 2.7.1</a> in <a href="#" class="font-medium text-trialsage-pink">ENZYMAX FORTE</a>
-                      </div>
-                      <p class="mt-0.5 text-xs text-gray-500">
-                        Today at 8:32 AM
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-            
-            <li>
-              <div class="relative pb-8">
-                <span class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-                <div class="relative flex items-start space-x-3">
-                  <div class="relative">
-                    <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div>
-                      <div class="text-sm">
-                        <a href="#" class="font-medium text-gray-900">Alex Chen</a> commented on <a href="#" class="font-medium text-trialsage-pink">CMC Section 3.2.P</a> in <a href="#" class="font-medium text-trialsage-pink">CARDIOPLEX</a>
-                      </div>
-                      <p class="mt-0.5 text-xs text-gray-500">
-                        Yesterday at 2:45 PM
-                      </p>
-                      <div class="mt-2 text-sm text-gray-700 bg-gray-50 p-3 rounded-md">
-                        <p>Please add additional stability data for the 25mg dose as well.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-            
-            <li>
-              <div class="relative pb-8">
-                <span class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-                <div class="relative flex items-start space-x-3">
-                  <div class="relative">
-                    <div class="h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center ring-8 ring-white">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div>
-                      <div class="text-sm">
-                        <a href="#" class="font-medium text-gray-900">Sarah Johnson</a> uploaded <a href="#" class="font-medium text-trialsage-pink">10 new documents</a> to <a href="#" class="font-medium text-trialsage-pink">NEUROEASE</a>
-                      </div>
-                      <p class="mt-0.5 text-xs text-gray-500">
-                        April 24, 2025 at 10:12 AM
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-            
-            <li>
-              <div class="relative pb-8">
-                <div class="relative flex items-start space-x-3">
-                  <div class="relative">
-                    <div class="h-10 w-10 rounded-full bg-amber-500 flex items-center justify-center ring-8 ring-white">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div>
-                      <div class="text-sm">
-                        <a href="#" class="font-medium text-gray-900">System</a> flagged <a href="#" class="font-medium text-trialsage-pink">FDA response required</a> for <a href="#" class="font-medium text-trialsage-pink">CARDIOPLEX</a>
-                      </div>
-                      <p class="mt-0.5 text-xs text-gray-500">
-                        April 22, 2025 at 3:30 PM
-                      </p>
-                      <div class="mt-2 text-sm text-gray-700 bg-amber-50 p-3 rounded-md">
-                        <p>FDA has requested additional information on drug-drug interactions. Response due by May 6, 2025.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="bg-white border-t border-gray-200 mt-10">
-    <div class="container mx-auto px-4 py-6">
-      <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="flex items-center">
-          <span class="text-lg font-bold text-trialsage-pink">TrialSage</span>
-          <span class="text-xs align-top font-medium text-gray-500">™</span>
-          <span class="text-sm text-gray-400 ml-2">Client Portal</span>
-        </div>
-        
-        <div class="mt-4 md:mt-0">
-          <p class="text-sm text-gray-500">
-            &copy; 2025 Concept2Cures Inc. All rights reserved.
-          </p>
-        </div>
-        
-        <div class="mt-4 md:mt-0 flex space-x-4">
-          <a href="#" class="text-sm text-gray-500 hover:text-gray-700">Privacy Policy</a>
-          <a href="#" class="text-sm text-gray-500 hover:text-gray-700">Terms of Service</a>
-          <a href="#" class="text-sm text-gray-500 hover:text-gray-700">Support</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  </div>
 </body>
 </html>
