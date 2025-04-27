@@ -1,106 +1,107 @@
 /**
  * Unified Platform Component
  * 
- * This component serves as the main wrapper for the TrialSage platform,
- * integrating all modules and shared UI elements.
+ * This is the main container component for the TrialSage platform,
+ * integrating all modules and services in a unified interface.
  */
 
-import React, { useState, useEffect } from 'react';
-import { useLocation, useRoute } from 'wouter';
-import { useIntegration } from './integration/ModuleIntegrationLayer';
+import React, { useState } from 'react';
+import { Route, Switch, useLocation } from 'wouter';
 
 // Common components
 import AppHeader from './common/AppHeader';
 import AppSidebar from './common/AppSidebar';
+import ClientContextBar from './common/ClientContextBar';
 import AIAssistantButton from './AIAssistantButton';
-import ClientContextBar from './client-portal/ClientContextBar';
 
 // Module components
 import INDWizardModule from './ind-wizard/INDWizardModule';
-import TrialVaultModule from './trial-vault/TrialVaultModule';
 import CSRIntelligenceModule from './csr-intelligence/CSRIntelligenceModule';
+import TrialVaultModule from './trial-vault/TrialVaultModule';
 import StudyArchitectModule from './study-architect/StudyArchitectModule';
 import AnalyticsModule from './analytics/AnalyticsModule';
+import DashboardModule from './dashboard/DashboardModule';
+
+// Not found page
+import NotFoundPage from '../pages/NotFoundPage';
 
 const UnifiedPlatform = () => {
-  const [location, setLocation] = useLocation();
-  const { isAuthenticated, getCurrentUser } = useIntegration();
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
-  
-  // Available modules
-  const [modules] = useState([
-    { id: 'ind-wizard', name: 'IND Wizard™', disabled: false },
-    { id: 'trial-vault', name: 'TrialSage Vault™', disabled: false },
-    { id: 'csr-intelligence', name: 'CSR Intelligence™', disabled: false },
-    { id: 'study-architect', name: 'Study Architect™', disabled: false },
-    { id: 'analytics', name: 'Analytics', disabled: false }
-  ]);
-  
   // Active module state
-  const [activeModule, setActiveModule] = useState('ind-wizard');
+  const [activeModule, setActiveModule] = useState('dashboard');
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [location] = useLocation();
   
-  // Authentication check
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      setLocation('/auth');
+  // Extract module from location
+  React.useEffect(() => {
+    const pathSegments = location.split('/').filter(Boolean);
+    if (pathSegments.length > 0) {
+      setActiveModule(pathSegments[0]);
+    } else {
+      setActiveModule('dashboard');
     }
-  }, [isAuthenticated, setLocation]);
+  }, [location]);
   
-  // Toggle AI assistant
+  // Toggle AI Assistant
   const toggleAIAssistant = () => {
     setShowAIAssistant(!showAIAssistant);
   };
   
-  // Handle module change
-  const handleModuleChange = (moduleId) => {
-    setActiveModule(moduleId);
-  };
-  
-  // Render active module component
-  const renderActiveModule = () => {
-    switch (activeModule) {
-      case 'ind-wizard':
-        return <INDWizardModule />;
-      case 'trial-vault':
-        return <TrialVaultModule />;
-      case 'csr-intelligence':
-        return <CSRIntelligenceModule />;
-      case 'study-architect':
-        return <StudyArchitectModule />;
-      case 'analytics':
-        return <AnalyticsModule />;
-      default:
-        return <INDWizardModule />;
-    }
+  // Close AI Assistant
+  const closeAIAssistant = () => {
+    setShowAIAssistant(false);
   };
   
   return (
-    <div className="flex flex-col h-screen bg-white">
-      {/* Client context bar */}
-      <ClientContextBar />
-      
-      {/* Main header */}
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Header */}
       <AppHeader onToggleAIAssistant={toggleAIAssistant} />
       
-      {/* Main content area */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Client Context Bar */}
+      <ClientContextBar />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <AppSidebar 
-          modules={modules} 
-          activeModule={activeModule} 
-          onModuleChange={handleModuleChange} 
-        />
+        <AppSidebar activeModule={activeModule} />
         
-        {/* Main content */}
-        <div className="flex-1 overflow-auto">
-          {renderActiveModule()}
-        </div>
+        {/* Module Content */}
+        <main className="flex-1 overflow-y-auto">
+          <Switch>
+            <Route path="/" exact>
+              <DashboardModule />
+            </Route>
+            
+            <Route path="/ind-wizard">
+              <INDWizardModule />
+            </Route>
+            
+            <Route path="/csr-intelligence">
+              <CSRIntelligenceModule />
+            </Route>
+            
+            <Route path="/trial-vault">
+              <TrialVaultModule />
+            </Route>
+            
+            <Route path="/study-architect">
+              <StudyArchitectModule />
+            </Route>
+            
+            <Route path="/analytics">
+              <AnalyticsModule />
+            </Route>
+            
+            <Route>
+              <NotFoundPage />
+            </Route>
+          </Switch>
+        </main>
       </div>
       
       {/* AI Assistant */}
       {showAIAssistant && (
         <AIAssistantButton 
-          onClose={toggleAIAssistant} 
+          onClose={closeAIAssistant} 
           context={{ activeModule }}
         />
       )}

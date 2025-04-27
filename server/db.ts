@@ -21,20 +21,32 @@ try {
       connectionString: process.env.DATABASE_URL,
       max: 20, // Maximum number of clients in the pool
       idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
-      connectionTimeoutMillis: 2000, // How long to wait for a connection to become available
+      connectionTimeoutMillis: 10000, // How long to wait for a connection to become available (increased to 10 seconds for Replit environment)
     });
     
-    // Test connection
-    pool.query('SELECT NOW()', (err, res) => {
-      if (err) {
-        logger.error('Database connection test failed', { error: err.message });
-      } else {
-        logger.info('Database connection successful', { 
-          timestamp: res.rows[0].now,
-          poolSize: pool?.totalCount || 0
-        });
-      }
-    });
+    // Test connection with retry mechanism
+    const testConnection = (retries = 3, delay = 3000) => {
+      pool!.query('SELECT NOW()', (err, res) => {
+        if (err) {
+          logger.error('Database connection test failed', { error: err.message, retriesLeft: retries });
+          
+          if (retries > 0) {
+            logger.info(`Retrying database connection in ${delay/1000} seconds...`);
+            setTimeout(() => testConnection(retries - 1, delay), delay);
+          } else {
+            logger.error('All database connection attempts failed');
+          }
+        } else {
+          logger.info('Database connection successful', { 
+            timestamp: res.rows[0].now,
+            poolSize: pool?.totalCount || 0
+          });
+        }
+      });
+    };
+    
+    // Start the connection test with retries
+    testConnection();
     
     // Log database errors
     pool.on('error', (err) => {
