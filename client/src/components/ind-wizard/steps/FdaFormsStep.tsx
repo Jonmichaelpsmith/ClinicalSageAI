@@ -527,7 +527,7 @@ export default function FdaFormsStep() {
                             </tr>
                           </thead>
                           <tbody className="divide-y">
-                            {documentHistory.map((doc, index) => (
+                            {documentHistory.map((doc: any, index: number) => (
                               <tr key={doc.objectId} className={index % 2 === 0 ? 'bg-white' : 'bg-muted/10'}>
                                 <td className="px-4 py-3 text-sm">{doc.displayName}</td>
                                 <td className="px-4 py-3 text-sm">
