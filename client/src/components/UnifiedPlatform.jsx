@@ -40,27 +40,28 @@ const UnifiedPlatform = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {/* TrialSage Vault */}
-          <Link href="/vault">
-            <a 
-              className="module-card"
-              onClick={() => handleModuleClick('vault')}
-            >
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
-                  <Database size={20} className="text-pink-600" />
-                </div>
-                <h3 className="text-lg font-semibold">TrialSage Vault</h3>
+          <div 
+            className="module-card cursor-pointer"
+            onClick={() => {
+              handleModuleClick('vault');
+              navigate('/vault');
+            }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                <Database size={20} className="text-pink-600" />
               </div>
-              <p className="text-gray-600 mb-4">
-                Secure document storage with blockchain verification for regulatory submissions
-              </p>
-              <div className="flex flex-wrap gap-1">
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Document Management</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Blockchain</span>
-                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Audit Trail</span>
-              </div>
-            </a>
-          </Link>
+              <h3 className="text-lg font-semibold">TrialSage Vault</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Secure document storage with blockchain verification for regulatory submissions
+            </p>
+            <div className="flex flex-wrap gap-1">
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Document Management</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Blockchain</span>
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Audit Trail</span>
+            </div>
+          </div>
 
           {/* CSR Intelligence */}
           <Link href="/csr-intelligence">

@@ -1,10 +1,13 @@
-import React from 'react';
-import { Route, Switch } from 'wouter';
+import React, { useState, useEffect } from 'react';
+import { Route, Switch, useLocation } from 'wouter';
 import NotFound from './components/common/NotFound';
 import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
 import UnifiedPlatform from './components/UnifiedPlatform';
 
 function App() {
+  // Get location for navigation
+  const [location, setLocation] = useLocation();
+
   return (
     <ModuleIntegrationProvider>
       <div className="min-h-screen flex flex-col">
