@@ -1042,7 +1042,7 @@
                                     <h4>Form FDA 1571</h4>
                                     <p>Investigational New Drug Application</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="1571">
-                                        <i class="fas fa-file-download"></i> Download Form
+                                        <i class="fas fa-file-download"></i> Download Form 1571
                                     </button>
                                 </div>
                                 <div class="ind-form-card" data-form="1572">
@@ -1052,7 +1052,7 @@
                                     <h4>Form FDA 1572</h4>
                                     <p>Statement of Investigator</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="1572">
-                                        <i class="fas fa-file-download"></i> Download Form
+                                        <i class="fas fa-file-download"></i> Download Form 1572
                                     </button>
                                 </div>
                                 <div class="ind-form-card" data-form="3674">
@@ -1335,10 +1335,31 @@
         }
         
         /* Button states */
+        .ind-generate-form-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: var(--primary);
+            transition: all 0.2s ease;
+        }
+        
+        .ind-generate-form-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ind-generate-form-btn i {
+            font-size: 0.875rem;
+        }
+        
         .ind-generate-form-btn.loading {
             position: relative;
             background-color: var(--primary-dark);
             cursor: wait;
+            transform: none;
+            box-shadow: none;
         }
         
         .ind-timeline {
@@ -1891,8 +1912,13 @@
             
             // Form generation
             async function generateForm(projectId, formType) {
-                if (!projectId || !formType) {
-                    showToast('Please select a project first', 'error');
+                if (!projectId) {
+                    showToast('Please select a project before downloading forms', 'warning');
+                    return;
+                }
+                
+                if (!formType) {
+                    showToast('Invalid form type selected', 'error');
                     return;
                 }
                 
@@ -1959,7 +1985,7 @@
                     loadProjectHistory(projectId);
                 } catch (error) {
                     console.error('Error generating form:', error);
-                    showToast(`Error generating form: ${error.message}`, 'error');
+                    showToast(`Unable to download form: ${error.message || 'Please try again later'}`, 'error');
                 } finally {
                     // Reset button state
                     button.disabled = false;
