@@ -1,263 +1,292 @@
 /**
  * AI Assistant Button Component
  * 
- * This component provides the AI assistant interface that can be toggled
- * in the platform. It provides context-aware AI assistance.
+ * This component provides an AI assistance interface that integrates
+ * with the platform's regulatory intelligence services.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Sparkles, Maximize2, Minimize2, Copy, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  MessageSquare, 
+  Send, 
+  X, 
+  Mic, 
+  Image,
+  Paperclip,
+  Zap,
+  RotateCw
+} from 'lucide-react';
 import { useIntegration } from './integration/ModuleIntegrationLayer';
 
 const AIAssistantButton = ({ onClose, context }) => {
   const { regulatoryCore } = useIntegration();
   const [messages, setMessages] = useState([
     {
-      id: 'welcome',
-      type: 'assistant',
-      content: 'Hello! I\'m your TrialSage AI Assistant. How can I help you today?',
-      timestamp: new Date().toISOString()
+      role: 'assistant',
+      content: "Hello! I'm the TrialSage™ AI Assistant. How can I help you with your regulatory and clinical documentation needs today?",
+      timestamp: new Date()
     }
   ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
-  
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
   
-  // Scroll to bottom on new messages
+  // Suggestions based on the current context
+  const getContextSuggestions = () => {
+    switch (context?.activeModule) {
+      case 'ind-wizard':
+        return [
+          "What sections should be included in my IND application?",
+          "How do I prepare for a pre-IND meeting?",
+          "What FDA guidance applies to my IND submission?"
+        ];
+      case 'trial-vault':
+        return [
+          "How does the blockchain verification work?",
+          "How can I securely share documents with external stakeholders?",
+          "What's the recommended document structure for regulatory submissions?"
+        ];
+      case 'csr-intelligence':
+        return [
+          "What are ICH E3 guidelines for CSR preparation?",
+          "How can I improve my CSR's compliance score?",
+          "What statistical analyses should be included in my CSR?"
+        ];
+      default:
+        return [
+          "What documents do I need for my regulatory submission?",
+          "Help me understand ICH guidelines",
+          "What are the best practices for clinical documentation?"
+        ];
+    }
+  };
+  
+  const suggestions = getContextSuggestions();
+  
+  // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollToBottom();
   }, [messages]);
   
-  // Focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-  
-  // Get module-specific context
-  const getContextMessage = () => {
-    const moduleId = context?.activeModule;
-    
-    switch (moduleId) {
-      case 'ind-wizard':
-        return 'I see you\'re working in the IND Wizard™ module. I can help with IND applications, FDA forms, and regulatory requirements.';
-      case 'trial-vault':
-        return 'I see you\'re working in the Trial Vault™ module. I can help with document management, blockchain verification, and secure sharing.';
-      case 'csr-intelligence':
-        return 'I see you\'re working in the CSR Intelligence™ module. I can help with clinical study reports, ICH E3 compliance, and scientific writing.';
-      case 'study-architect':
-        return 'I see you\'re working in the Study Architect™ module. I can help with protocol design, study planning, and statistical considerations.';
-      case 'analytics':
-        return 'I see you\'re working in the Analytics module. I can help with data visualization, trend analysis, and reporting.';
-      default:
-        return null;
-    }
+  // Scroll to bottom helper
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
-  // Add context message if one exists and hasn't been added yet
-  useEffect(() => {
-    const contextMessage = getContextMessage();
-    
-    if (contextMessage && messages.length === 1) {
-      setMessages(prev => [
-        ...prev,
-        {
-          id: 'context',
-          type: 'assistant',
-          content: contextMessage,
-          timestamp: new Date().toISOString()
-        }
-      ]);
-    }
-  }, [context, messages.length]);
-  
-  // Handle sending a message
-  const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-    
-    const userMessage = {
-      id: `user-${Date.now()}`,
-      type: 'user',
-      content: input,
-      timestamp: new Date().toISOString()
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-    
-    try {
-      // In a real implementation, this would use the AI service
-      // Here we simulate a response using the regulatory core
-      let response;
-      
-      if (regulatoryCore) {
-        response = await regulatoryCore.getScientificGuidance(input);
-      } else {
-        // Fallback response if regulatory core is not available
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        response = {
-          response: `I understand you're asking about "${input}". This would be answered by our AI response system in the production environment. Is there something specific about regulatory documents or clinical trials that I can help explain?`
-        };
-      }
-      
-      const assistantMessage = {
-        id: `assistant-${Date.now()}`,
-        type: 'assistant',
-        content: response.response,
-        timestamp: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      
-      const errorMessage = {
-        id: `error-${Date.now()}`,
-        type: 'error',
-        content: 'Sorry, I encountered an error while processing your request. Please try again.',
-        timestamp: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // Handle input key press (Enter to send)
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-  
-  // Format timestamp
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
+  // Get a formatted timestamp
+  const getFormattedTime = (date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
-  // Copy message to clipboard
-  const copyToClipboard = (content) => {
-    navigator.clipboard.writeText(content);
-    setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 2000);
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion) => {
+    sendMessage(suggestion);
+  };
+  
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      sendMessage(inputValue);
+      setInputValue('');
+    }
+  };
+  
+  // Send a message and process the response
+  const sendMessage = async (content) => {
+    // Add user message
+    const userMessage = {
+      role: 'user',
+      content,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setLoading(true);
+    
+    try {
+      // Get response from regulatory intelligence core
+      const response = await regulatoryCore.getScientificGuidance(content);
+      
+      // Add assistant message
+      const assistantMessage = {
+        role: 'assistant',
+        content: response.response,
+        sources: response.sources || [],
+        timestamp: new Date()
+      };
+      
+      // Add a small delay for a more natural conversation flow
+      setTimeout(() => {
+        setMessages(prev => [...prev, assistantMessage]);
+        setLoading(false);
+      }, 800);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      
+      // Add error message
+      const errorMessage = {
+        role: 'assistant',
+        content: "I'm sorry, I encountered an error while processing your request. Please try again later.",
+        error: true,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+      setLoading(false);
+    }
   };
   
   return (
-    <div 
-      className={`fixed bottom-4 right-4 bg-white rounded-lg shadow-xl border overflow-hidden flex flex-col z-50 transition-all ${
-        expanded ? 'w-96 h-[32rem]' : 'w-80 h-96'
-      }`}
-    >
-      {/* Header */}
-      <div className="px-4 py-3 bg-primary text-white flex items-center justify-between">
-        <div className="flex items-center">
-          <Sparkles size={18} className="mr-2" />
-          <h3 className="font-semibold">AI Assistant</h3>
-        </div>
-        
-        <div className="flex items-center space-x-1">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mb-2 flex flex-col border overflow-hidden" style={{ height: '520px' }}>
+        {/* Header */}
+        <div className="p-4 border-b bg-primary text-white flex items-center justify-between">
+          <div className="flex items-center">
+            <MessageSquare className="mr-2" size={20} />
+            <h3 className="font-semibold">TrialSage™ AI Assistant</h3>
+          </div>
           <button 
-            className="p-1 hover:bg-white hover:bg-opacity-20 rounded"
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-          </button>
-          
-          <button 
-            className="p-1 hover:bg-white hover:bg-opacity-20 rounded"
+            className="text-white hover:text-gray-200"
             onClick={onClose}
           >
-            <X size={16} />
+            <X size={20} />
           </button>
         </div>
-      </div>
-      
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div 
-            key={message.id}
-            className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+        
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.map((message, index) => (
             <div 
-              className={`max-w-[80%] relative group ${
-                message.type === 'user' 
-                  ? 'bg-primary text-white rounded-t-lg rounded-bl-lg' 
-                  : message.type === 'error'
-                    ? 'bg-red-100 text-red-800 rounded-t-lg rounded-br-lg'
-                    : 'bg-gray-100 text-gray-800 rounded-t-lg rounded-br-lg'
-              } px-4 py-3`}
+              key={index} 
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-              
-              <div className="mt-1 flex justify-between items-center">
-                <span className="text-xs opacity-70">
-                  {formatTimestamp(message.timestamp)}
-                </span>
+              <div 
+                className={`max-w-[80%] rounded-lg p-3 ${
+                  message.role === 'user' 
+                    ? 'bg-primary-light text-gray-800' 
+                    : message.error
+                      ? 'bg-red-50 text-red-800 border border-red-100'
+                      : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                 
-                {message.type !== 'user' && (
-                  <button
-                    className="opacity-0 group-hover:opacity-70 transition-opacity p-1 hover:bg-black hover:bg-opacity-10 rounded"
-                    onClick={() => copyToClipboard(message.content)}
-                    title="Copy to clipboard"
-                  >
-                    {copySuccess ? <Check size={12} /> : <Copy size={12} />}
-                  </button>
+                {message.sources && message.sources.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-gray-200 text-xs">
+                    <div className="font-medium mb-1">Sources:</div>
+                    <ul className="space-y-1">
+                      {message.sources.map((source, idx) => (
+                        <li key={idx}>
+                          <a 
+                            href={source.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            {source.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
+                
+                <div className="text-xs mt-1 text-gray-500 text-right">
+                  {getFormattedTime(message.timestamp)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-        
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-800 rounded-lg px-4 py-3">
-              <div className="flex space-x-2">
-                <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          ))}
+          
+          {loading && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
               </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+        
+        {/* Suggestions */}
+        {messages.length < 3 && suggestions.length > 0 && (
+          <div className="p-4 border-t bg-gray-50">
+            <p className="text-xs text-gray-500 mb-2">Suggested questions:</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  className="px-3 py-1.5 text-xs bg-white border rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
             </div>
           </div>
         )}
         
-        <div ref={messagesEndRef} />
-      </div>
-      
-      {/* Input */}
-      <div className="p-3 border-t">
-        <div className="flex items-end space-x-2">
-          <textarea
-            ref={inputRef}
-            className="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
-            placeholder="Type your message..."
-            rows="2"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-          />
+        {/* Input */}
+        <div className="p-4 border-t">
+          <form onSubmit={handleSubmit} className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary pr-8"
+                placeholder="Type your question..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                disabled={loading}
+              />
+              
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 space-x-1">
+                <button
+                  type="button"
+                  className="text-gray-400 hover:text-gray-600"
+                  disabled={loading}
+                >
+                  <Paperclip size={16} />
+                </button>
+              </div>
+            </div>
+            
+            <button
+              type="submit"
+              className={`p-2 rounded-md ${
+                loading || !inputValue.trim()
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'bg-primary text-white hover:bg-primary-dark'
+              }`}
+              disabled={loading || !inputValue.trim()}
+            >
+              {loading ? <RotateCw size={20} className="animate-spin" /> : <Send size={20} />}
+            </button>
+          </form>
           
-          <button
-            className={`p-2 rounded-full bg-primary text-white ${
-              !input.trim() || isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-opacity-90'
-            }`}
-            onClick={handleSendMessage}
-            disabled={!input.trim() || isLoading}
-          >
-            <Send size={18} />
-          </button>
-        </div>
-        
-        <div className="mt-2 text-xs text-gray-500 flex justify-center">
-          <Sparkles size={12} className="mr-1" />
-          <span>Powered by TrialSage AI</span>
+          <div className="mt-2 flex justify-between items-center">
+            <div className="flex space-x-2">
+              <button className="text-xs text-gray-500 hover:text-gray-700 flex items-center">
+                <Mic size={14} className="mr-1" />
+                <span>Voice</span>
+              </button>
+              
+              <button className="text-xs text-gray-500 hover:text-gray-700 flex items-center">
+                <Image size={14} className="mr-1" />
+                <span>Image</span>
+              </button>
+            </div>
+            
+            <button className="text-xs text-primary hover:text-primary-dark flex items-center">
+              <Zap size={14} className="mr-1" />
+              <span>Quick Actions</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

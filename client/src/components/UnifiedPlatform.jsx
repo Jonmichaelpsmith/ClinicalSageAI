@@ -1,128 +1,110 @@
 /**
  * Unified Platform Component
  * 
- * This component provides the core unified platform for TrialSage,
- * integrating all modules with shared navigation, context, and layouts.
+ * This is the main container for the TrialSage platform, integrating
+ * all modules and shared services.
  */
 
 import React, { useState, useEffect } from 'react';
-import { useIntegration } from './integration/ModuleIntegrationLayer';
 import AppHeader from './common/AppHeader';
 import AppSidebar from './common/AppSidebar';
-import AIAssistantButton from './AIAssistantButton';
 import ClientContextBar from './client-portal/ClientContextBar';
+import AIAssistantButton from './AIAssistantButton';
+import { useIntegration } from './integration/ModuleIntegrationLayer';
+
+// Import modules
 import INDWizardModule from './ind-wizard/INDWizardModule';
 import TrialVaultModule from './trial-vault/TrialVaultModule';
 import CSRIntelligenceModule from './csr-intelligence/CSRIntelligenceModule';
 
-// Import module components as needed
-// These will be conditionally rendered based on selected module
-
-// Define available modules
-const MODULES = {
-  'ind-wizard': {
-    id: 'ind-wizard',
-    name: 'IND Wizard™',
-    component: INDWizardModule,
-    icon: 'file-text'
-  },
-  'trial-vault': {
-    id: 'trial-vault',
-    name: 'Trial Vault™',
-    component: TrialVaultModule,
-    icon: 'database'
-  },
-  'csr-intelligence': {
-    id: 'csr-intelligence',
-    name: 'CSR Intelligence™',
-    component: CSRIntelligenceModule,
-    icon: 'file-text'
-  },
-  'study-architect': {
-    id: 'study-architect',
-    name: 'Study Architect™',
-    component: () => <div>Study Architect Module</div>,
-    icon: 'layout'
-  },
-  'analytics': {
-    id: 'analytics',
-    name: 'Analytics',
-    component: () => <div>Analytics Module</div>,
-    icon: 'bar-chart'
-  },
-  'admin': {
-    id: 'admin',
-    name: 'Admin',
-    component: () => <div>Admin Module</div>,
-    icon: 'settings'
-  }
-};
-
 const UnifiedPlatform = () => {
-  const { securityService } = useIntegration();
+  const integration = useIntegration();
   const [activeModule, setActiveModule] = useState('ind-wizard');
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   
+  // Available modules definition
+  const modules = [
+    {
+      id: 'ind-wizard',
+      name: 'IND Wizard™',
+      description: 'Investigational New Drug Application Management'
+    },
+    {
+      id: 'trial-vault',
+      name: 'TrialSage Vault™',
+      description: 'Document Management and Blockchain Verification'
+    },
+    {
+      id: 'csr-intelligence',
+      name: 'CSR Intelligence™',
+      description: 'Clinical Study Report Management'
+    },
+    {
+      id: 'study-architect',
+      name: 'Study Architect™',
+      description: 'Protocol Design and Statistical Planning',
+      disabled: true // Not implemented yet
+    },
+    {
+      id: 'analytics',
+      name: 'Analytics',
+      description: 'Data Visualization and Reporting',
+      disabled: true // Not implemented yet
+    }
+  ];
+  
+  // Effect to handle any initialization
+  useEffect(() => {
+    document.title = 'TrialSage™ Platform';
+  }, []);
+  
   // Handle module change
   const handleModuleChange = (moduleId) => {
-    if (MODULES[moduleId]) {
-      setActiveModule(moduleId);
-    }
+    setActiveModule(moduleId);
   };
   
-  // Toggle AI assistant
-  const toggleAIAssistant = () => {
+  // Toggle AI Assistant
+  const handleToggleAIAssistant = () => {
     setShowAIAssistant(!showAIAssistant);
   };
   
-  // Get available modules for the current user/organization
-  const getAvailableModules = () => {
-    return Object.values(MODULES).filter(module => 
-      securityService.hasModuleAccess(module.id)
-    );
-  };
-  
-  // Render the active module component
+  // Render active module
   const renderActiveModule = () => {
-    const ModuleComponent = MODULES[activeModule]?.component;
-    
-    if (!ModuleComponent) {
-      return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Module Not Found</h2>
-            <p className="text-gray-500">
-              The selected module could not be found or is not accessible.
-            </p>
-          </div>
-        </div>
-      );
+    switch (activeModule) {
+      case 'ind-wizard':
+        return <INDWizardModule />;
+      case 'trial-vault':
+        return <TrialVaultModule />;
+      case 'csr-intelligence':
+        return <CSRIntelligenceModule />;
+      case 'study-architect':
+        return <div className="p-8 text-center text-gray-500">Study Architect™ module coming soon.</div>;
+      case 'analytics':
+        return <div className="p-8 text-center text-gray-500">Analytics module coming soon.</div>;
+      default:
+        return <div className="p-8 text-center text-gray-500">Module not found.</div>;
     }
-    
-    return <ModuleComponent />;
   };
   
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-100">
-      {/* Sidebar */}
-      <AppSidebar 
-        modules={getAvailableModules()}
-        activeModule={activeModule}
-        onModuleChange={handleModuleChange}
-      />
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* Header */}
+      <AppHeader onToggleAIAssistant={handleToggleAIAssistant} />
       
-      {/* Main content area */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Header */}
-        <AppHeader
-          onToggleAIAssistant={toggleAIAssistant}
+      {/* Organization context bar */}
+      <ClientContextBar />
+      
+      {/* Main content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <AppSidebar 
+          modules={modules.filter(m => !m.disabled)} 
+          activeModule={activeModule} 
+          onModuleChange={handleModuleChange} 
         />
         
-        {/* Client context bar */}
-        <ClientContextBar />
-        
         {/* Module content */}
-        <main className="flex-1 overflow-hidden">
+        <main className="flex-1 overflow-auto">
           {renderActiveModule()}
         </main>
       </div>
@@ -130,7 +112,7 @@ const UnifiedPlatform = () => {
       {/* AI Assistant */}
       {showAIAssistant && (
         <AIAssistantButton 
-          onClose={() => setShowAIAssistant(false)}
+          onClose={handleToggleAIAssistant} 
           context={{ activeModule }}
         />
       )}
