@@ -1,0 +1,62 @@
+// =====================================================
+// TrialSage Vault™ – Sprint‑5  ✦  Document Lock / Check‑Out
+//  • Prevent simultaneous edits
+//  • Simple lock flag + expiry
+// =====================================================
+
+/* ---------- migrations/005_lock.sql ---------- */
+ALTER TABLE documents
+  ADD COLUMN locked_by UUID REFERENCES users(id),
+  ADD COLUMN locked_at TIMESTAMPTZ,
+  ADD COLUMN lock_expires TIMESTAMPTZ;
+
+/* ---------- src/routes/lock.js ---------- */
+import { Router } from 'express';
+import db from '../db.js';
+import { requireAuth } from '../middleware/auth.js';
+const r = Router();
+
+// POST /api/documents/:docId/lock
+r.post('/documents/:docId/lock', requireAuth, async (req,res)=>{
+  const { docId } = req.params;
+  const now = new Date();
+  const expires = new Date(Date.now()+60*60*1000); // 1‑h lock
+  // lock only if currently unlocked or expired
+  const updated = await db('documents')
+    .where({ id: docId, organization_id: req.user.orgId })
+    .andWhere(function(){ this.whereNull('locked_by').orWhere('lock_expires','<', now); })
+    .update({ locked_by: req.user.id, locked_at: now, lock_expires: expires });
+  if(!updated) return res.status(423).json({ message:'Document already locked' });
+  res.json({ ok:true, locked_by: req.user.id, lock_expires: expires });
+});
+
+// POST /api/documents/:docId/unlock
+r.post('/documents/:docId/unlock', requireAuth, async (req,res)=>{
+  const { docId } = req.params;
+  const doc = await db('documents').where({ id: docId }).first();
+  if(doc.locked_by!==req.user.id) return res.status(403).json({ message:'Not lock owner' });
+  await db('documents').where({ id: docId }).update({ locked_by:null, locked_at:null, lock_expires:null });
+  res.json({ ok:true });
+});
+export default r;
+
+/* ---------- mount in src/app.js ---------- */
+import lockRouter from './routes/lock.js';
+app.use('/api', lockRouter);
+
+/* ---------- FRONTEND – extend VaultView.tsx ---------- */
+...
+const lockDoc= async(id:string)=>{
+  const r = await fetch(`${import.meta.env.VITE_API_URL}/api/documents/${id}/lock`,{method:'POST',headers:{Authorization:`Bearer ${token}`}});
+  if(r.ok) fetchDocs();
+};
+const unlockDoc= async(id:string)=>{
+  const r = await fetch(`${import.meta.env.VITE_API_URL}/api/documents/${id}/unlock`,{method:'POST',headers:{Authorization:`Bearer ${token}`}});
+  if(r.ok) fetchDocs();
+};
+cols.push({ key:'lock', name:'Lock', minWidth:80, onRender:(i)=> i.locked_by?
+  <Button size="small" disabled={i.locked_by!==user?.id} onClick={()=>unlockDoc(i.id)}>Unlock</Button>:
+  <Button size="small" onClick={()=>lockDoc(i.id)}>Lock</Button> });
+
+// =====================================================
+// END Sprint‑5
