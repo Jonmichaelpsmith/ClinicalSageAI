@@ -1042,7 +1042,7 @@
                                     <h4>Form FDA 1571</h4>
                                     <p>Investigational New Drug Application</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="1571">
-                                        Generate
+                                        <i class="fas fa-download"></i> Generate
                                     </button>
                                 </div>
                                 <div class="ind-form-card" data-form="1572">
@@ -1052,7 +1052,7 @@
                                     <h4>Form FDA 1572</h4>
                                     <p>Statement of Investigator</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="1572">
-                                        Generate
+                                        <i class="fas fa-download"></i> Generate
                                     </button>
                                 </div>
                                 <div class="ind-form-card" data-form="3674">
@@ -1062,7 +1062,7 @@
                                     <h4>Form FDA 3674</h4>
                                     <p>Certification of Compliance</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="3674">
-                                        Generate
+                                        <i class="fas fa-download"></i> Generate
                                     </button>
                                 </div>
                                 <div class="ind-form-card" data-form="3454">
@@ -1072,7 +1072,7 @@
                                     <h4>Form FDA 3454</h4>
                                     <p>Certification: Financial Interests</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="3454">
-                                        Generate
+                                        <i class="fas fa-download"></i> Generate
                                     </button>
                                 </div>
                             </div>
@@ -1882,11 +1882,53 @@
             // Add event listeners
             document.getElementById('create-project-btn').addEventListener('click', createProject);
             
+            // Form generation
+            function generateForm(projectId, formType) {
+                if (!projectId || !formType) {
+                    showToast('Please select a project first', 'error');
+                    return;
+                }
+                
+                const button = document.querySelector(`.ind-generate-form-btn[data-form="${formType}"]`);
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                
+                // Create a direct download link to the FastAPI endpoint
+                const downloadUrl = `/api/ind/${projectId}/forms/${formType}`;
+                
+                // Create a hidden link element to trigger the download
+                const downloadLink = document.createElement('a');
+                downloadLink.href = downloadUrl;
+                downloadLink.download = `Form_FDA_${formType}_${projectId}.txt`;
+                downloadLink.style.display = 'none';
+                document.body.appendChild(downloadLink);
+                
+                // Trigger the download
+                downloadLink.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(downloadLink);
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                    
+                    // Show toast notification
+                    showToast(`Form FDA ${formType} generated successfully!`, 'success');
+                    
+                    // Refresh history for this project
+                    loadProjectHistory(projectId);
+                }, 1500);
+            }
+            
             // Form generation buttons
             document.querySelectorAll('.ind-generate-form-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const formType = e.target.dataset.form;
+                    // Get the form type from the button's data attribute
+                    const formType = e.currentTarget.dataset.form;
+                    // Get the selected project ID
                     const projectId = document.getElementById('form-project-select').value;
+                    // Generate the form
                     generateForm(projectId, formType);
                 });
             });
@@ -2079,25 +2121,7 @@
                 }
             }
             
-            // Generate a form document
-            function generateForm(formNumber) {
-                if (!currentProject) {
-                    showMessage('Please save a project first.', 'warning');
-                    return;
-                }
-                
-                const url = `${apiBaseUrl}/api/ind/${currentProject.project_id}/forms/${formNumber}`;
-                
-                // Update the current href to the direct form download URL
-                window.open(url, '_blank');
-                
-                // Update the checklist
-                const formCheckItem = document.querySelector(`.checklist-item:nth-child(${parseInt(formNumber === '1571' ? 2 : formNumber === '1572' ? 3 : 4)})`);
-                if (formCheckItem) {
-                    formCheckItem.classList.add('complete');
-                    formCheckItem.querySelector('i').className = 'fas fa-check-circle';
-                }
-            }
+            // Generate a form document is now handled in the new implementation above
             
             // Generate a new sequence number
             async function generateSequence() {
@@ -2173,26 +2197,57 @@
             
             // Show a message to the user
             function showMessage(message, type = 'info') {
-                // Create message element if it doesn't exist
-                let messageContainer = document.querySelector('.message-container');
-                if (!messageContainer) {
-                    messageContainer = document.createElement('div');
-                    messageContainer.className = 'message-container';
-                    document.body.appendChild(messageContainer);
+                showToast(message, type);
+            }
+            
+            // Show toast notification
+            function showToast(message, type = 'info') {
+                // Create toast container if it doesn't exist
+                let toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.className = 'toast-container';
+                    document.body.appendChild(toastContainer);
                 }
                 
-                const messageElement = document.createElement('div');
-                messageElement.className = `message ${type}`;
-                messageElement.textContent = message;
+                const toastElement = document.createElement('div');
+                toastElement.className = `toast toast-${type}`;
                 
-                messageContainer.appendChild(messageElement);
+                let icon = 'info-circle';
+                if (type === 'success') icon = 'check-circle';
+                if (type === 'error') icon = 'exclamation-circle';
+                if (type === 'warning') icon = 'exclamation-triangle';
                 
-                // Remove after 5 seconds
+                toastElement.innerHTML = `
+                    <div class="toast-icon">
+                        <i class="fas fa-${icon}"></i>
+                    </div>
+                    <div class="toast-content">
+                        ${message}
+                    </div>
+                    <button class="toast-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                // Add close functionality
+                toastElement.querySelector('.toast-close').addEventListener('click', () => {
+                    toastElement.classList.add('toast-hiding');
+                    setTimeout(() => toastElement.remove(), 300);
+                });
+                
+                toastContainer.appendChild(toastElement);
+                
+                // Auto remove after 5 seconds
                 setTimeout(() => {
-                    messageElement.classList.add('fade-out');
-                    setTimeout(() => {
-                        messageElement.remove();
-                    }, 500);
+                    if (toastElement.parentNode) {
+                        toastElement.classList.add('toast-hiding');
+                        setTimeout(() => {
+                            if (toastElement.parentNode) {
+                                toastElement.remove();
+                            }
+                        }, 300);
+                    }
                 }, 5000);
             }
             
