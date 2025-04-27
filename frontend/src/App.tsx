@@ -5,6 +5,7 @@ import StudyWorkspace from './pages/StudyWorkspace';
 import VaultView from './pages/VaultView';
 import IndWizard from './pages/IndWizard';
 import AdminOrgUsers from './pages/AdminOrgUsers';
+import AnalyticsChat from './pages/AnalyticsChat';
 import Login from './pages/Login';
 import PortalShell from './layouts/PortalShell';
 import { PortalProvider } from './context/PortalContext';
@@ -25,6 +26,9 @@ export default function App() {
           
           {/* Admin routes */}
           <Route path="/admin/org-users" element={<AdminOrgUsers />} />
+          
+          {/* Analytics route */}
+          <Route path="/analytics" element={<AnalyticsChat />} />
         </Route>
         
         <Route path="*" element={<Navigate to="/dashboard" />} />

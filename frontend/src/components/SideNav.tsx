@@ -127,6 +127,16 @@ export default function SideNav() {
       <h3 style={{ margin: '0 0 16px 0', borderBottom: '1px solid #ddd', paddingBottom: 8 }}>
         TrialSage™
       </h3>
+
+      {/* Global links section */}
+      <div style={{ marginBottom: 16 }}>
+        <Link onClick={() => navigate('/dashboard')} styles={{ root: { display: 'block', padding: '4px 0' }}}>
+          Dashboard
+        </Link>
+        <Link onClick={() => navigate('/analytics')} styles={{ root: { display: 'block', padding: '4px 0' }}}>
+          Analytics
+        </Link>
+      </div>
       
       <h4 style={{ margin: '16px 0 8px 0' }}>Organizations</h4>
       {orgs.map(o => (
