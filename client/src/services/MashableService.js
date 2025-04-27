@@ -1,115 +1,376 @@
 /**
- * Mashable Services Layer
+ * Mashable Analytics Service
  * 
- * This service provides unified analytics, business intelligence, and data visualization capabilities
- * that work seamlessly across all modules of the TrialSage platform. It enables data-driven
- * decision making by consolidating metrics from different modules into cohesive dashboards and reports.
+ * This service provides cross-module analytics, visualizations, and dashboards
+ * for the TrialSage platform. It enables seamless data aggregation, integration,
+ * and analysis across all platform modules to provide comprehensive regulatory
+ * and clinical insights.
+ * 
+ * Features:
+ * - Cross-module data aggregation and analytics
+ * - Real-time metrics and KPIs
+ * - Interactive dashboards and visualizations
+ * - Custom report generation
+ * - Intelligent trend detection
+ * - Predictive analytics for regulatory outcomes
+ * - Configurable alerts and notifications
  */
 
-// Analytics types
-export const ANALYTICS_TYPES = {
-  REGULATORY: 'regulatory',
-  CLINICAL: 'clinical',
-  FINANCIAL: 'financial',
-  OPERATIONAL: 'operational',
-  COMPLIANCE: 'compliance',
-  PROJECT: 'project',
-  USER: 'user'
+import regulatoryIntelligenceCore from './RegulatoryIntelligenceCore';
+
+const API_BASE = '/api/mashable';
+
+/**
+ * Analytics data granularity levels
+ */
+export const DATA_GRANULARITY = {
+  HOURLY: 'hourly',
+  DAILY: 'daily',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  YEARLY: 'yearly'
 };
 
-// Visualization types
-export const VISUALIZATION_TYPES = {
-  BAR_CHART: 'bar-chart',
-  LINE_CHART: 'line-chart',
-  PIE_CHART: 'pie-chart',
-  SCATTER_PLOT: 'scatter-plot',
-  HEAT_MAP: 'heat-map',
+/**
+ * Analytics chart types
+ */
+export const CHART_TYPES = {
+  LINE: 'line',
+  BAR: 'bar',
+  PIE: 'pie',
+  SCATTER: 'scatter',
+  AREA: 'area',
+  BUBBLE: 'bubble',
+  RADAR: 'radar',
+  HEATMAP: 'heatmap',
   SANKEY: 'sankey',
-  TABLE: 'table',
-  CALENDAR: 'calendar',
-  GAUGE: 'gauge',
-  CARD: 'card'
+  TIMELINE: 'timeline'
+};
+
+/**
+ * Analytics metric types
+ */
+export const METRIC_TYPES = {
+  COUNT: 'count',
+  SUM: 'sum',
+  AVERAGE: 'average',
+  MEDIAN: 'median',
+  MINIMUM: 'minimum',
+  MAXIMUM: 'maximum',
+  PERCENTILE: 'percentile',
+  STANDARD_DEVIATION: 'standard_deviation',
+  VARIANCE: 'variance'
+};
+
+/**
+ * Dashboard types
+ */
+export const DASHBOARD_TYPES = {
+  EXECUTIVE: 'executive',
+  OPERATIONAL: 'operational',
+  REGULATORY: 'regulatory',
+  CLINICAL: 'clinical',
+  SCIENTIFIC: 'scientific',
+  SUBMISSION: 'submission',
+  CUSTOM: 'custom'
 };
 
 class MashableService {
   constructor() {
-    this.apiBase = '/api/mashable';
-    this.dataListeners = new Map();
-    this.cachedDashboards = new Map();
-    this.cachedReports = new Map();
+    this.currentUser = null;
+    this.dashboardCache = new Map();
+    this.datasetCache = new Map();
+    this.metricListeners = new Map();
+    this.lastSyncTimestamp = null;
+    this.activeWidgets = new Set();
+    this.visualizationConfigs = {};
+    this.moduleIntegrations = {
+      'ind-wizard': true,
+      'csr-intelligence': true,
+      'trial-vault': true,
+      'study-architect': true,
+      'ich-wiz': true,
+      'clinical-metadata': true,
+      'analytics': true
+    };
   }
 
   /**
-   * Fetch a dashboard by ID
-   * @param {string} dashboardId - The dashboard ID
-   * @param {boolean} refresh - Whether to refresh cached data
-   * @returns {Promise<Object>} - The dashboard data
+   * Initialize Mashable service
+   * @param {Object} options - Initialization options
+   * @returns {Promise<Object>} - Initialization status
    */
-  async getDashboard(dashboardId, refresh = false) {
-    if (!refresh && this.cachedDashboards.has(dashboardId)) {
-      return Promise.resolve(this.cachedDashboards.get(dashboardId));
-    }
-
+  async initialize(options = {}) {
     try {
-      const response = await fetch(`${this.apiBase}/dashboards/${dashboardId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch dashboard: ${response.statusText}`);
-      }
-      
-      const dashboard = await response.json();
-      this.cachedDashboards.set(dashboardId, dashboard);
-      return dashboard;
-    } catch (error) {
-      console.error('Error fetching dashboard:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get available dashboards by category
-   * @param {string} category - The dashboard category
-   * @returns {Promise<Array>} - List of available dashboards
-   */
-  async getAvailableDashboards(category) {
-    try {
-      const url = category 
-        ? `${this.apiBase}/dashboards?category=${category}`
-        : `${this.apiBase}/dashboards`;
-        
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch dashboards: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching dashboards:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create a custom dashboard
-   * @param {Object} dashboardConfig - The dashboard configuration
-   * @returns {Promise<Object>} - The created dashboard
-   */
-  async createDashboard(dashboardConfig) {
-    try {
-      const response = await fetch(`${this.apiBase}/dashboards`, {
+      const response = await fetch(`${API_BASE}/initialize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(dashboardConfig)
+        body: JSON.stringify(options)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to initialize Mashable: ${response.statusText}`);
+      }
+
+      const initStatus = await response.json();
+      this.currentUser = initStatus.currentUser;
+      this.lastSyncTimestamp = new Date().toISOString();
+      this.visualizationConfigs = initStatus.visualizationConfigs || {};
+      
+      // Setup real-time metric connections if WebSockets available
+      if (initStatus.socketEnabled) {
+        this._setupRealtimeConnections();
+      }
+      
+      // Initialize intelligence core for predictive analytics
+      if (options.enableIntelligence !== false) {
+        await regulatoryIntelligenceCore.initialize();
+      }
+      
+      return initStatus;
+    } catch (error) {
+      console.error('Error initializing Mashable service:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Setup real-time connections for metric updates
+   * @private
+   */
+  _setupRealtimeConnections() {
+    if (typeof window === 'undefined') return;
+    
+    // Setup WebSocket for real-time updates
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}/ws-analytics`;
+    
+    try {
+      this.socket = new WebSocket(wsUrl);
+      
+      this.socket.onopen = () => {
+        console.log('Mashable WebSocket connection established');
+        this.socket.send(JSON.stringify({
+          type: 'authenticate',
+          userId: this.currentUser?.id
+        }));
+      };
+      
+      this.socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        
+        switch (message.type) {
+          case 'metric_update':
+            this._handleMetricUpdate(message.data);
+            break;
+          case 'dashboard_update':
+            this._handleDashboardUpdate(message.data);
+            break;
+          case 'alert_triggered':
+            this._handleAlertTriggered(message.data);
+            break;
+        }
+      };
+      
+      this.socket.onerror = (error) => {
+        console.error('Mashable WebSocket error:', error);
+      };
+      
+      this.socket.onclose = () => {
+        console.log('Mashable WebSocket connection closed');
+        // Attempt to reconnect after 5 seconds
+        setTimeout(() => this._setupRealtimeConnections(), 5000);
+      };
+    } catch (error) {
+      console.error('Failed to establish WebSocket connection:', error);
+    }
+  }
+  
+  /**
+   * Handle real-time metric updates
+   * @param {Object} data - Metric update data
+   * @private
+   */
+  _handleMetricUpdate(data) {
+    // Notify all metric listeners
+    if (this.metricListeners.has(data.metricId)) {
+      const listeners = this.metricListeners.get(data.metricId);
+      listeners.forEach(listener => {
+        listener(data);
+      });
+    }
+    
+    // Update dashboard cache if affected
+    if (data.affectedDashboards && data.affectedDashboards.length) {
+      data.affectedDashboards.forEach(dashboardId => {
+        if (this.dashboardCache.has(dashboardId)) {
+          const dashboard = this.dashboardCache.get(dashboardId);
+          const widgetIndex = dashboard.widgets.findIndex(w => w.metrics.includes(data.metricId));
+          
+          if (widgetIndex >= 0) {
+            // Update widget data
+            dashboard.widgets[widgetIndex].latestData = data.value;
+            dashboard.widgets[widgetIndex].lastUpdated = new Date().toISOString();
+            dashboard.lastUpdated = new Date().toISOString();
+            
+            // Update cache
+            this.dashboardCache.set(dashboardId, dashboard);
+          }
+        }
+      });
+    }
+    
+    // Update dataset cache if affected
+    if (data.affectedDatasets && data.affectedDatasets.length) {
+      data.affectedDatasets.forEach(datasetId => {
+        if (this.datasetCache.has(datasetId)) {
+          const dataset = this.datasetCache.get(datasetId);
+          
+          // Update dataset if it contains this metric
+          if (dataset.metrics.includes(data.metricId)) {
+            dataset.lastUpdated = new Date().toISOString();
+            this.datasetCache.set(datasetId, dataset);
+          }
+        }
+      });
+    }
+  }
+  
+  /**
+   * Handle real-time dashboard updates
+   * @param {Object} data - Dashboard update data
+   * @private
+   */
+  _handleDashboardUpdate(data) {
+    // Update dashboard cache
+    if (data.dashboardId && this.dashboardCache.has(data.dashboardId)) {
+      const dashboard = this.dashboardCache.get(data.dashboardId);
+      
+      // Update with new data
+      Object.assign(dashboard, data.updates);
+      dashboard.lastUpdated = new Date().toISOString();
+      
+      // Update cache
+      this.dashboardCache.set(data.dashboardId, dashboard);
+    }
+  }
+  
+  /**
+   * Handle real-time alert notifications
+   * @param {Object} data - Alert data
+   * @private
+   */
+  _handleAlertTriggered(data) {
+    // Dispatch event for UI to show notification
+    if (typeof window !== 'undefined') {
+      const alertEvent = new CustomEvent('mashable-alert', { detail: data });
+      window.dispatchEvent(alertEvent);
+    }
+    
+    // Log alert
+    console.log('Mashable Alert:', data.alertName, '-', data.message);
+  }
+
+  /**
+   * Get dashboard by ID
+   * @param {string} dashboardId - Dashboard ID
+   * @param {Object} options - Request options
+   * @returns {Promise<Object>} - Dashboard data
+   */
+  async getDashboard(dashboardId, options = {}) {
+    try {
+      // Check cache first if not forcing refresh
+      if (!options.forceRefresh && this.dashboardCache.has(dashboardId)) {
+        return Promise.resolve(this.dashboardCache.get(dashboardId));
+      }
+      
+      const queryParams = new URLSearchParams({
+        ...options
+      }).toString();
+
+      const response = await fetch(`${API_BASE}/dashboards/${dashboardId}?${queryParams}`);
+      if (!response.ok) {
+        throw new Error(`Failed to get dashboard: ${response.statusText}`);
+      }
+      
+      const dashboard = await response.json();
+      
+      // Cache dashboard data
+      this.dashboardCache.set(dashboardId, dashboard);
+      
+      // Subscribe to real-time updates if requested
+      if (options.subscribe && this.socket && this.socket.readyState === WebSocket.OPEN) {
+        this.socket.send(JSON.stringify({
+          type: 'subscribe_dashboard',
+          dashboardId
+        }));
+      }
+      
+      return dashboard;
+    } catch (error) {
+      console.error(`Error getting dashboard ${dashboardId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user dashboards
+   * @param {Object} options - Request options
+   * @returns {Promise<Array>} - User dashboards
+   */
+  async getUserDashboards(options = {}) {
+    try {
+      const queryParams = new URLSearchParams({
+        ...options
+      }).toString();
+
+      const response = await fetch(`${API_BASE}/dashboards?${queryParams}`);
+      if (!response.ok) {
+        throw new Error(`Failed to get user dashboards: ${response.statusText}`);
+      }
+      
+      const dashboards = await response.json();
+      
+      // Cache dashboards
+      dashboards.forEach(dashboard => {
+        this.dashboardCache.set(dashboard.id, dashboard);
+      });
+      
+      return dashboards;
+    } catch (error) {
+      console.error('Error getting user dashboards:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create dashboard
+   * @param {Object} dashboard - Dashboard configuration
+   * @returns {Promise<Object>} - Created dashboard
+   */
+  async createDashboard(dashboard) {
+    try {
+      const response = await fetch(`${API_BASE}/dashboards`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dashboard)
       });
 
       if (!response.ok) {
         throw new Error(`Failed to create dashboard: ${response.statusText}`);
       }
 
-      const dashboard = await response.json();
-      this.cachedDashboards.set(dashboard.id, dashboard);
-      return dashboard;
+      const createdDashboard = await response.json();
+      
+      // Cache dashboard
+      this.dashboardCache.set(createdDashboard.id, createdDashboard);
+      
+      return createdDashboard;
     } catch (error) {
       console.error('Error creating dashboard:', error);
       throw error;
@@ -117,14 +378,14 @@ class MashableService {
   }
 
   /**
-   * Update a dashboard configuration
-   * @param {string} dashboardId - The dashboard ID
-   * @param {Object} updates - The dashboard updates
-   * @returns {Promise<Object>} - The updated dashboard
+   * Update dashboard
+   * @param {string} dashboardId - Dashboard ID
+   * @param {Object} updates - Dashboard updates
+   * @returns {Promise<Object>} - Updated dashboard
    */
   async updateDashboard(dashboardId, updates) {
     try {
-      const response = await fetch(`${this.apiBase}/dashboards/${dashboardId}`, {
+      const response = await fetch(`${API_BASE}/dashboards/${dashboardId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -136,364 +397,707 @@ class MashableService {
         throw new Error(`Failed to update dashboard: ${response.statusText}`);
       }
 
-      const dashboard = await response.json();
-      this.cachedDashboards.set(dashboardId, dashboard);
-      return dashboard;
+      const updatedDashboard = await response.json();
+      
+      // Update cache
+      this.dashboardCache.set(dashboardId, updatedDashboard);
+      
+      return updatedDashboard;
     } catch (error) {
-      console.error('Error updating dashboard:', error);
+      console.error(`Error updating dashboard ${dashboardId}:`, error);
       throw error;
     }
   }
 
   /**
-   * Get project analytics data
-   * @param {string} projectId - The project ID
-   * @param {Object} options - Options for filtering analytics data
-   * @returns {Promise<Object>} - The project analytics data
+   * Delete dashboard
+   * @param {string} dashboardId - Dashboard ID
+   * @returns {Promise<Object>} - Deletion result
    */
-  async getProjectAnalytics(projectId, options = {}) {
-    const queryParams = new URLSearchParams({
-      ...options
-    }).toString();
-
+  async deleteDashboard(dashboardId) {
     try {
-      const response = await fetch(`${this.apiBase}/analytics/projects/${projectId}?${queryParams}`);
+      const response = await fetch(`${API_BASE}/dashboards/${dashboardId}`, {
+        method: 'DELETE'
+      });
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch project analytics: ${response.statusText}`);
+        throw new Error(`Failed to delete dashboard: ${response.statusText}`);
       }
+
+      // Remove from cache
+      this.dashboardCache.delete(dashboardId);
       
       return await response.json();
     } catch (error) {
-      console.error('Error fetching project analytics:', error);
+      console.error(`Error deleting dashboard ${dashboardId}:`, error);
       throw error;
     }
   }
 
   /**
-   * Get module-specific analytics
-   * @param {string} moduleType - The module type
-   * @param {string} moduleId - The module instance ID
-   * @param {Object} options - Options for filtering analytics data
-   * @returns {Promise<Object>} - The module analytics data
+   * Get dashboard widget data
+   * @param {string} dashboardId - Dashboard ID
+   * @param {string} widgetId - Widget ID
+   * @param {Object} options - Request options
+   * @returns {Promise<Object>} - Widget data
    */
-  async getModuleAnalytics(moduleType, moduleId, options = {}) {
-    const queryParams = new URLSearchParams({
-      ...options
-    }).toString();
-
+  async getWidgetData(dashboardId, widgetId, options = {}) {
     try {
-      const response = await fetch(`${this.apiBase}/analytics/modules/${moduleType}/${moduleId}?${queryParams}`);
+      const queryParams = new URLSearchParams({
+        ...options
+      }).toString();
+
+      const response = await fetch(`${API_BASE}/dashboards/${dashboardId}/widgets/${widgetId}/data?${queryParams}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch module analytics: ${response.statusText}`);
+        throw new Error(`Failed to get widget data: ${response.statusText}`);
       }
       
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching module analytics:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get organization-level analytics
-   * @param {Object} options - Options for filtering analytics data
-   * @returns {Promise<Object>} - The organization analytics data
-   */
-  async getOrganizationAnalytics(options = {}) {
-    const queryParams = new URLSearchParams({
-      ...options
-    }).toString();
-
-    try {
-      const response = await fetch(`${this.apiBase}/analytics/organization?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch organization analytics: ${response.statusText}`);
+      const widgetData = await response.json();
+      
+      // Update widget in dashboard cache
+      if (this.dashboardCache.has(dashboardId)) {
+        const dashboard = this.dashboardCache.get(dashboardId);
+        const widgetIndex = dashboard.widgets.findIndex(w => w.id === widgetId);
+        
+        if (widgetIndex >= 0) {
+          dashboard.widgets[widgetIndex].data = widgetData.data;
+          dashboard.widgets[widgetIndex].lastUpdated = new Date().toISOString();
+          this.dashboardCache.set(dashboardId, dashboard);
+        }
       }
       
-      return await response.json();
+      // Register active widget
+      this.activeWidgets.add(widgetId);
+      
+      return widgetData;
     } catch (error) {
-      console.error('Error fetching organization analytics:', error);
+      console.error(`Error getting widget data for ${widgetId}:`, error);
       throw error;
     }
   }
 
   /**
-   * Generate a report from analytics data
-   * @param {string} reportType - The report type
-   * @param {Object} reportConfig - The report configuration
-   * @returns {Promise<Object>} - The generated report
+   * Create dashboard widget
+   * @param {string} dashboardId - Dashboard ID
+   * @param {Object} widget - Widget configuration
+   * @returns {Promise<Object>} - Created widget
    */
-  async generateReport(reportType, reportConfig) {
+  async createWidget(dashboardId, widget) {
     try {
-      const response = await fetch(`${this.apiBase}/reports/${reportType}`, {
+      const response = await fetch(`${API_BASE}/dashboards/${dashboardId}/widgets`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(reportConfig)
+        body: JSON.stringify(widget)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create widget: ${response.statusText}`);
+      }
+
+      const createdWidget = await response.json();
+      
+      // Update dashboard cache
+      if (this.dashboardCache.has(dashboardId)) {
+        const dashboard = this.dashboardCache.get(dashboardId);
+        dashboard.widgets.push(createdWidget);
+        dashboard.lastUpdated = new Date().toISOString();
+        this.dashboardCache.set(dashboardId, dashboard);
+      }
+      
+      return createdWidget;
+    } catch (error) {
+      console.error(`Error creating widget for dashboard ${dashboardId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update dashboard widget
+   * @param {string} dashboardId - Dashboard ID
+   * @param {string} widgetId - Widget ID
+   * @param {Object} updates - Widget updates
+   * @returns {Promise<Object>} - Updated widget
+   */
+  async updateWidget(dashboardId, widgetId, updates) {
+    try {
+      const response = await fetch(`${API_BASE}/dashboards/${dashboardId}/widgets/${widgetId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update widget: ${response.statusText}`);
+      }
+
+      const updatedWidget = await response.json();
+      
+      // Update dashboard cache
+      if (this.dashboardCache.has(dashboardId)) {
+        const dashboard = this.dashboardCache.get(dashboardId);
+        const widgetIndex = dashboard.widgets.findIndex(w => w.id === widgetId);
+        
+        if (widgetIndex >= 0) {
+          dashboard.widgets[widgetIndex] = updatedWidget;
+          dashboard.lastUpdated = new Date().toISOString();
+          this.dashboardCache.set(dashboardId, dashboard);
+        }
+      }
+      
+      return updatedWidget;
+    } catch (error) {
+      console.error(`Error updating widget ${widgetId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete dashboard widget
+   * @param {string} dashboardId - Dashboard ID
+   * @param {string} widgetId - Widget ID
+   * @returns {Promise<Object>} - Deletion result
+   */
+  async deleteWidget(dashboardId, widgetId) {
+    try {
+      const response = await fetch(`${API_BASE}/dashboards/${dashboardId}/widgets/${widgetId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete widget: ${response.statusText}`);
+      }
+
+      // Update dashboard cache
+      if (this.dashboardCache.has(dashboardId)) {
+        const dashboard = this.dashboardCache.get(dashboardId);
+        dashboard.widgets = dashboard.widgets.filter(w => w.id !== widgetId);
+        dashboard.lastUpdated = new Date().toISOString();
+        this.dashboardCache.set(dashboardId, dashboard);
+      }
+      
+      // Remove from active widgets
+      this.activeWidgets.delete(widgetId);
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`Error deleting widget ${widgetId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get metric data
+   * @param {string} metricId - Metric ID
+   * @param {Object} options - Request options
+   * @returns {Promise<Object>} - Metric data
+   */
+  async getMetricData(metricId, options = {}) {
+    try {
+      const queryParams = new URLSearchParams({
+        ...options
+      }).toString();
+
+      const response = await fetch(`${API_BASE}/metrics/${metricId}/data?${queryParams}`);
+      if (!response.ok) {
+        throw new Error(`Failed to get metric data: ${response.statusText}`);
+      }
+      
+      const metricData = await response.json();
+      
+      // Subscribe to real-time updates if requested
+      if (options.subscribe && this.socket && this.socket.readyState === WebSocket.OPEN) {
+        this.socket.send(JSON.stringify({
+          type: 'subscribe_metric',
+          metricId
+        }));
+      }
+      
+      return metricData;
+    } catch (error) {
+      console.error(`Error getting metric data for ${metricId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create metric
+   * @param {Object} metric - Metric configuration
+   * @returns {Promise<Object>} - Created metric
+   */
+  async createMetric(metric) {
+    try {
+      const response = await fetch(`${API_BASE}/metrics`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(metric)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create metric: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating metric:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update metric
+   * @param {string} metricId - Metric ID
+   * @param {Object} updates - Metric updates
+   * @returns {Promise<Object>} - Updated metric
+   */
+  async updateMetric(metricId, updates) {
+    try {
+      const response = await fetch(`${API_BASE}/metrics/${metricId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update metric: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`Error updating metric ${metricId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete metric
+   * @param {string} metricId - Metric ID
+   * @returns {Promise<Object>} - Deletion result
+   */
+  async deleteMetric(metricId) {
+    try {
+      const response = await fetch(`${API_BASE}/metrics/${metricId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete metric: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`Error deleting metric ${metricId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create dataset
+   * @param {Object} dataset - Dataset configuration
+   * @returns {Promise<Object>} - Created dataset
+   */
+  async createDataset(dataset) {
+    try {
+      const response = await fetch(`${API_BASE}/datasets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dataset)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create dataset: ${response.statusText}`);
+      }
+
+      const createdDataset = await response.json();
+      
+      // Cache dataset
+      this.datasetCache.set(createdDataset.id, createdDataset);
+      
+      return createdDataset;
+    } catch (error) {
+      console.error('Error creating dataset:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get dataset by ID
+   * @param {string} datasetId - Dataset ID
+   * @param {Object} options - Request options
+   * @returns {Promise<Object>} - Dataset data
+   */
+  async getDataset(datasetId, options = {}) {
+    try {
+      // Check cache first if not forcing refresh
+      if (!options.forceRefresh && this.datasetCache.has(datasetId)) {
+        return Promise.resolve(this.datasetCache.get(datasetId));
+      }
+      
+      const queryParams = new URLSearchParams({
+        ...options
+      }).toString();
+
+      const response = await fetch(`${API_BASE}/datasets/${datasetId}?${queryParams}`);
+      if (!response.ok) {
+        throw new Error(`Failed to get dataset: ${response.statusText}`);
+      }
+      
+      const dataset = await response.json();
+      
+      // Cache dataset
+      this.datasetCache.set(datasetId, dataset);
+      
+      return dataset;
+    } catch (error) {
+      console.error(`Error getting dataset ${datasetId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Execute dataset query
+   * @param {string} datasetId - Dataset ID
+   * @param {Object} query - Query parameters
+   * @returns {Promise<Object>} - Query results
+   */
+  async queryDataset(datasetId, query) {
+    try {
+      const response = await fetch(`${API_BASE}/datasets/${datasetId}/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(query)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to execute dataset query: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`Error querying dataset ${datasetId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get cross-module analytics
+   * @param {Array} modules - Modules to include
+   * @param {Object} options - Analytics options
+   * @returns {Promise<Object>} - Cross-module analytics
+   */
+  async getCrossModuleAnalytics(modules, options = {}) {
+    try {
+      const response = await fetch(`${API_BASE}/cross-module-analytics`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          modules,
+          options
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to get cross-module analytics: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting cross-module analytics:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate report
+   * @param {string} reportType - Report type
+   * @param {Object} parameters - Report parameters
+   * @returns {Promise<Object>} - Generated report
+   */
+  async generateReport(reportType, parameters) {
+    try {
+      const response = await fetch(`${API_BASE}/reports/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reportType,
+          parameters
+        })
       });
 
       if (!response.ok) {
         throw new Error(`Failed to generate report: ${response.statusText}`);
       }
 
-      const report = await response.json();
-      return report;
+      return await response.json();
     } catch (error) {
-      console.error('Error generating report:', error);
+      console.error(`Error generating ${reportType} report:`, error);
       throw error;
     }
   }
 
   /**
-   * Get scheduled reports
-   * @returns {Promise<Array>} - List of scheduled reports
+   * Get available report templates
+   * @returns {Promise<Array>} - Report templates
    */
-  async getScheduledReports() {
+  async getReportTemplates() {
     try {
-      const response = await fetch(`${this.apiBase}/reports/scheduled`);
+      const response = await fetch(`${API_BASE}/reports/templates`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch scheduled reports: ${response.statusText}`);
+        throw new Error(`Failed to get report templates: ${response.statusText}`);
       }
       
       return await response.json();
     } catch (error) {
-      console.error('Error fetching scheduled reports:', error);
+      console.error('Error getting report templates:', error);
       throw error;
     }
   }
 
   /**
-   * Schedule a report to run periodically
-   * @param {string} reportId - The report ID
-   * @param {Object} scheduleConfig - The schedule configuration
-   * @returns {Promise<Object>} - The scheduled report
+   * Create visualization
+   * @param {Object} visualization - Visualization configuration
+   * @returns {Promise<Object>} - Created visualization
    */
-  async scheduleReport(reportId, scheduleConfig) {
+  async createVisualization(visualization) {
     try {
-      const response = await fetch(`${this.apiBase}/reports/${reportId}/schedule`, {
+      const response = await fetch(`${API_BASE}/visualizations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(scheduleConfig)
+        body: JSON.stringify(visualization)
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to schedule report: ${response.statusText}`);
+        throw new Error(`Failed to create visualization: ${response.statusText}`);
       }
 
-      return await response.json();
+      const createdVisualization = await response.json();
+      
+      // Update visualization configs
+      this.visualizationConfigs[createdVisualization.id] = createdVisualization;
+      
+      return createdVisualization;
     } catch (error) {
-      console.error('Error scheduling report:', error);
+      console.error('Error creating visualization:', error);
       throw error;
     }
   }
 
   /**
-   * Get data visualization component
-   * @param {string} visualizationType - The visualization type
-   * @param {Object} dataConfig - The data configuration
-   * @returns {Promise<Object>} - The visualization configuration
+   * Get visualization by ID
+   * @param {string} visualizationId - Visualization ID
+   * @returns {Promise<Object>} - Visualization configuration
    */
-  async getVisualization(visualizationType, dataConfig) {
+  async getVisualization(visualizationId) {
     try {
-      const response = await fetch(`${this.apiBase}/visualizations/${visualizationType}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dataConfig)
-      });
-
+      // Check cache first
+      if (this.visualizationConfigs[visualizationId]) {
+        return Promise.resolve(this.visualizationConfigs[visualizationId]);
+      }
+      
+      const response = await fetch(`${API_BASE}/visualizations/${visualizationId}`);
       if (!response.ok) {
         throw new Error(`Failed to get visualization: ${response.statusText}`);
       }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting visualization:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get cross-module metrics for a project
-   * @param {string} projectId - The project ID
-   * @returns {Promise<Object>} - The cross-module metrics
-   */
-  async getCrossModuleMetrics(projectId) {
-    try {
-      const response = await fetch(`${this.apiBase}/metrics/cross-module/${projectId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch cross-module metrics: ${response.statusText}`);
-      }
       
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching cross-module metrics:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get workflow efficiency metrics
-   * @param {string} projectId - The project ID
-   * @param {Object} options - Options for filtering workflow data
-   * @returns {Promise<Object>} - The workflow efficiency metrics
-   */
-  async getWorkflowEfficiencyMetrics(projectId, options = {}) {
-    const queryParams = new URLSearchParams({
-      ...options
-    }).toString();
-
-    try {
-      const response = await fetch(`${this.apiBase}/metrics/workflow/${projectId}?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch workflow metrics: ${response.statusText}`);
-      }
+      const visualization = await response.json();
       
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching workflow metrics:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get real-time module activity
-   * @param {string} moduleType - The module type
-   * @returns {Promise<Array>} - List of recent module activities
-   */
-  async getModuleActivity(moduleType) {
-    try {
-      const response = await fetch(`${this.apiBase}/activity/${moduleType}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch module activity: ${response.statusText}`);
-      }
+      // Update visualization configs
+      this.visualizationConfigs[visualizationId] = visualization;
       
-      return await response.json();
+      return visualization;
     } catch (error) {
-      console.error('Error fetching module activity:', error);
+      console.error(`Error getting visualization ${visualizationId}:`, error);
       throw error;
     }
   }
 
   /**
-   * Get dashboard KPIs (Key Performance Indicators)
-   * @param {string} category - The KPI category
-   * @param {Object} options - Options for filtering KPI data
-   * @returns {Promise<Array>} - List of KPIs
+   * Create alert
+   * @param {Object} alert - Alert configuration
+   * @returns {Promise<Object>} - Created alert
    */
-  async getKPIs(category, options = {}) {
-    const queryParams = new URLSearchParams({
-      category,
-      ...options
-    }).toString();
-
+  async createAlert(alert) {
     try {
-      const response = await fetch(`${this.apiBase}/kpis?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch KPIs: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching KPIs:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get regulatory compliance metrics
-   * @param {string} projectId - The project ID
-   * @returns {Promise<Object>} - The compliance metrics
-   */
-  async getComplianceMetrics(projectId) {
-    try {
-      const response = await fetch(`${this.apiBase}/metrics/compliance/${projectId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch compliance metrics: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching compliance metrics:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Export analytics data to a file format
-   * @param {string} dataType - The type of data to export
-   * @param {string} format - The export format (e.g., 'csv', 'excel', 'pdf')
-   * @param {Object} options - Export options
-   * @returns {Promise<Blob>} - The exported data as a blob
-   */
-  async exportData(dataType, format, options = {}) {
-    try {
-      const response = await fetch(`${this.apiBase}/export/${dataType}/${format}`, {
+      const response = await fetch(`${API_BASE}/alerts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(options)
+        body: JSON.stringify(alert)
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to export data: ${response.statusText}`);
+        throw new Error(`Failed to create alert: ${response.statusText}`);
       }
 
-      return await response.blob();
+      return await response.json();
     } catch (error) {
-      console.error('Error exporting data:', error);
+      console.error('Error creating alert:', error);
       throw error;
     }
   }
 
   /**
-   * Subscribe to analytics data updates
-   * @param {string} dataType - The data type to subscribe to
-   * @param {Function} callback - The callback function
+   * Get user alerts
+   * @param {Object} options - Request options
+   * @returns {Promise<Array>} - User alerts
+   */
+  async getUserAlerts(options = {}) {
+    try {
+      const queryParams = new URLSearchParams({
+        ...options
+      }).toString();
+
+      const response = await fetch(`${API_BASE}/alerts?${queryParams}`);
+      if (!response.ok) {
+        throw new Error(`Failed to get user alerts: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting user alerts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update alert
+   * @param {string} alertId - Alert ID
+   * @param {Object} updates - Alert updates
+   * @returns {Promise<Object>} - Updated alert
+   */
+  async updateAlert(alertId, updates) {
+    try {
+      const response = await fetch(`${API_BASE}/alerts/${alertId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update alert: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`Error updating alert ${alertId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get predictive analytics
+   * @param {string} modelType - Predictive model type
+   * @param {Object} parameters - Model parameters
+   * @returns {Promise<Object>} - Predictive analytics
+   */
+  async getPredictiveAnalytics(modelType, parameters) {
+    try {
+      // Forward to intelligence core for advanced predictions
+      switch (modelType) {
+        case 'submission_success':
+          return await regulatoryIntelligenceCore.predictSubmissionSuccess(
+            parameters.submissionType,
+            parameters.projectId,
+            parameters
+          );
+        case 'study_outcome':
+          return await regulatoryIntelligenceCore.analyzeCrossModulePatterns({
+            analysisType: 'study_outcome_prediction',
+            parameters
+          });
+        case 'approval_timeline':
+          return await regulatoryIntelligenceCore.analyzeCrossModulePatterns({
+            analysisType: 'approval_timeline_prediction',
+            parameters
+          });
+        default:
+          const response = await fetch(`${API_BASE}/predictive-analytics`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              modelType,
+              parameters
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to get predictive analytics: ${response.statusText}`);
+          }
+
+          return await response.json();
+      }
+    } catch (error) {
+      console.error(`Error getting predictive analytics for ${modelType}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Subscribe to metric updates
+   * @param {string} metricId - Metric ID
+   * @param {Function} listener - Update listener
    * @returns {string} - Subscription ID
    */
-  subscribeToDataUpdates(dataType, callback) {
+  subscribeToMetricUpdates(metricId, listener) {
     const subscriptionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
     
-    if (!this.dataListeners.has(dataType)) {
-      this.dataListeners.set(dataType, new Map());
+    if (!this.metricListeners.has(metricId)) {
+      this.metricListeners.set(metricId, new Map());
     }
     
-    this.dataListeners.get(dataType).set(subscriptionId, callback);
+    this.metricListeners.get(metricId).set(subscriptionId, listener);
+    
+    // Subscribe to real-time updates if available
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({
+        type: 'subscribe_metric',
+        metricId
+      }));
+    }
+    
     return subscriptionId;
   }
 
   /**
-   * Unsubscribe from data updates
-   * @param {string} dataType - The data type
-   * @param {string} subscriptionId - The subscription ID
+   * Unsubscribe from metric updates
+   * @param {string} metricId - Metric ID
+   * @param {string} subscriptionId - Subscription ID
    */
-  unsubscribeFromDataUpdates(dataType, subscriptionId) {
-    if (this.dataListeners.has(dataType)) {
-      this.dataListeners.get(dataType).delete(subscriptionId);
-    }
-  }
-
-  /**
-   * Notify data update listeners
-   * @param {string} dataType - The data type
-   * @param {Object} data - The updated data
-   * @private
-   */
-  _notifyDataListeners(dataType, data) {
-    if (this.dataListeners.has(dataType)) {
-      this.dataListeners.get(dataType).forEach(callback => {
-        try {
-          callback(data);
-        } catch (error) {
-          console.error(`Error in data update listener for ${dataType}:`, error);
+  unsubscribeFromMetricUpdates(metricId, subscriptionId) {
+    if (this.metricListeners.has(metricId)) {
+      this.metricListeners.get(metricId).delete(subscriptionId);
+      
+      // If no more listeners, unsubscribe from real-time updates
+      if (this.metricListeners.get(metricId).size === 0) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+          this.socket.send(JSON.stringify({
+            type: 'unsubscribe_metric',
+            metricId
+          }));
         }
-      });
+      }
     }
   }
 }
