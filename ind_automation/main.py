@@ -1,330 +1,305 @@
-import sqlparse
-import babel.dates as bdates
-import io, datetime, uuid
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import StreamingResponse
+"""
+IND Wizard FastAPI Application
+
+This module provides the API endpoints for the IND Wizard functionality,
+including project management, form generation, and submission tracking.
+"""
+
+import os
+import uuid
+from datetime import datetime
+from typing import Dict, List, Optional, Any
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+import json
+from pathlib import Path
 
-from ind_automation.templates import render_form1571, render_form1572, render_form3674
-from ind_automation import widgets_sql, db
-from ind_automation import widgets_sql, module3, ai_narratives, metrics, ectd_ga, auth, users, rbac
-from ind_automation.db import append_history, get_history
-from ind_automation import widgets_sql, esg_credentials_api
-from ind_automation import widgets_sql, saml_settings_api
-from ind_automation import widgets_sql, teams_webhook_api
+# Initialize FastAPI application
+app = FastAPI(
+    title="IND Wizard API",
+    description="API for IND Wizard functionality",
+    version="1.0.0"
+)
 
-app = FastAPI(title="IND Automation Service v2")
-
-# Security
-security = HTTPBearer()
-
-# CORS (relax during dev)
+# Add CORS middleware to allow cross-origin requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---------- Models ----------
-class ProjectMeta(BaseModel):
-    project_id: str
+# Define data models
+class Project(BaseModel):
+    """Model for an IND project."""
+    project_id: Optional[str] = None
     sponsor: str
     drug_name: str
     protocol: str
     pi_name: str
     pi_address: str
-    nct_number: str | None = None
-    ind_number: str | None = None
-    serial_number: int = 0                # auto‑increments per submission
-    created: str = datetime.date.today().isoformat()
-    updated: str | None = None
+    nct_number: Optional[str] = None
+    created: Optional[str] = None
+    serial_number: Optional[int] = None
 
-# ---------- REST: Projects ----------
-@app.get("/api/projects", response_model=List[ProjectMeta])
-async def list_projects():
-    return db.list_projects()
+class ProjectResponse(Project):
+    """Response model for an IND project."""
+    pass
 
-@app.post("/api/projects", response_model=ProjectMeta)
-async def create_project(p: ProjectMeta):
-    if db.load(p.project_id):
-        raise HTTPException(400, "Project already exists")
-    db.save(p.project_id, p.dict())
-    return p
+class GenerateSequenceResponse(BaseModel):
+    """Response model for sequence generation."""
+    serial_number: str
 
-@app.put("/api/projects/{pid}", response_model=ProjectMeta)
-async def update_project(pid: str, p: ProjectMeta):
-    record = p.dict()
-    record["updated"] = datetime.date.today().isoformat()
-    db.save(pid, record)
-    return p
+class HistoryItem(BaseModel):
+    """Model for a history item."""
+    serial: str
+    timestamp: str
+    type: str
 
-@app.get("/api/projects/{pid}", response_model=ProjectMeta)
-async def get_project(pid: str):
-    rec = db.load(pid)
-    if not rec: raise HTTPException(404, "Not found")
-    return rec
+# In-memory storage
+# In a real implementation, this would be replaced with a database
+projects: Dict[str, Dict[str, Any]] = {}
+history: Dict[str, List[Dict[str, Any]]] = {}
 
-# ---------- Utils ----------
-def _doc(buf: io.BytesIO, fname: str):
-    return StreamingResponse(
-        buf,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": f'attachment; filename=\"{fname}\"'}
-    )
+# Data file paths
+DATA_DIR = Path("ind_automation/data")
+PROJECTS_FILE = DATA_DIR / "projects.json"
+HISTORY_FILE = DATA_DIR / "history.json"
 
-def _get_meta(pid: str) -> ProjectMeta:
-    rec = db.load(pid)
-    if not rec: raise HTTPException(404, "Project not found")
-    return ProjectMeta(**rec)
+# Create data directory if it doesn't exist
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# ---------- Forms ----------
-@app.get("/api/ind/{pid}/forms/1571")
-async def get_1571(pid: str):
-    m = _get_meta(pid)
-    context = m.dict()
-    context["submission_date"] = datetime.date.today().isoformat()
-    buf = render_form1571(context)
-    return _doc(buf, f"Form1571_{pid}.docx")
+# Load data from files if they exist
+def load_data():
+    """Load projects and history data from files."""
+    global projects, history
+    
+    if PROJECTS_FILE.exists():
+        try:
+            with open(PROJECTS_FILE, "r") as f:
+                projects = json.load(f)
+        except Exception as e:
+            print(f"Error loading projects: {e}")
+    
+    if HISTORY_FILE.exists():
+        try:
+            with open(HISTORY_FILE, "r") as f:
+                history = json.load(f)
+        except Exception as e:
+            print(f"Error loading history: {e}")
 
-@app.get("/api/ind/{pid}/forms/1572")
-async def get_1572(pid: str):
-    m = _get_meta(pid)
-    buf = render_form1572(m.dict())
-    return _doc(buf, f"Form1572_{pid}.docx")
+# Save data to files
+def save_data():
+    """Save projects and history data to files."""
+    try:
+        with open(PROJECTS_FILE, "w") as f:
+            json.dump(projects, f, indent=2)
+    except Exception as e:
+        print(f"Error saving projects: {e}")
+    
+    try:
+        with open(HISTORY_FILE, "w") as f:
+            json.dump(history, f, indent=2)
+    except Exception as e:
+        print(f"Error saving history: {e}")
 
-@app.get("/api/ind/{pid}/forms/3674")
-async def get_3674(pid: str):
-    m = _get_meta(pid)
-    buf = render_form3674(m.dict())
-    return _doc(buf, f"Form3674_{pid}.docx")
+# Load data on startup
+@app.on_event("startup")
+async def startup_event():
+    """Load data on application startup."""
+    load_data()
+    print("IND Wizard API server started")
 
-# ---------- Serial Number increment endpoint ----------
-@app.post("/api/ind/{pid}/sequence")
-async def new_sequence(pid: str):
-    m = _get_meta(pid)
-    m.serial_number += 1
-
-    # save history entry
-    append_history(pid, {
-        "serial": f"{m.serial_number:04d}",
-        "timestamp": datetime.datetime.utcnow().isoformat()
-    })
-
-    db.save(pid, m.dict())
-    if body.alert_channels is not None: users.set_channels(username, body.alert_channels)
-    return {"serial_number": f"{m.serial_number:04d}"}
-
-# ---------- Health ----------
+# API Endpoints
 @app.get("/health")
-async def health(): return {"status": "ok"}
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
-# ---------- History endpoint ----------
-@app.get("/api/ind/{pid}/history")
-async def get_history_endpoint(pid: str):
-    return get_history(pid)
+@app.post("/api/projects", response_model=ProjectResponse)
+async def create_project(project: Project, background_tasks: BackgroundTasks):
+    """Create a new IND project."""
+    # Generate a unique project ID
+    project_id = f"IND-{datetime.now().strftime('%Y%m')}-{str(uuid.uuid4())[:8].upper()}"
+    
+    # Set created date and initial serial number
+    project_dict = project.dict()
+    project_dict["project_id"] = project_id
+    project_dict["created"] = datetime.now().strftime("%Y-%m-%d")
+    project_dict["serial_number"] = 0
+    
+    # Store the project
+    projects[project_id] = project_dict
+    
+    # Initialize history for this project
+    history[project_id] = [{
+        "serial": "0001",
+        "timestamp": datetime.now().isoformat(),
+        "type": "creation"
+    }]
+    
+    # Save data in the background
+    background_tasks.add_task(save_data)
+    
+    return project_dict
 
-# ------------ Backward Compatibility -------------
+@app.get("/api/projects", response_model=List[ProjectResponse])
+async def get_projects():
+    """Get all IND projects."""
+    return list(projects.values())
 
-# Include Module 3 router
-app.include_router(module3.router)
+@app.get("/api/projects/{project_id}", response_model=ProjectResponse)
+async def get_project(project_id: str):
+    """Get an IND project by ID."""
+    if project_id not in projects:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    return projects[project_id]
 
-# Include AI narratives router
-app.include_router(ai_narratives.router)
+@app.put("/api/projects/{project_id}", response_model=ProjectResponse)
+async def update_project(project_id: str, project: Project, background_tasks: BackgroundTasks):
+    """Update an IND project."""
+    if project_id not in projects:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Update project data
+    project_dict = project.dict(exclude_unset=True)
+    for key, value in project_dict.items():
+        if value is not None:
+            projects[project_id][key] = value
+    
+    # Add history entry
+    if project_id in history:
+        history[project_id].append({
+            "serial": f"{projects[project_id]['serial_number'] + 1:04d}",
+            "timestamp": datetime.now().isoformat(),
+            "type": "update"
+        })
+    
+    # Save data in the background
+    background_tasks.add_task(save_data)
+    
+    return projects[project_id]
 
-# Include ESG credentials API
-app.include_router(esg_credentials_api.router)
+@app.post("/api/ind/{project_id}/sequence", response_model=GenerateSequenceResponse)
+async def generate_sequence(project_id: str, background_tasks: BackgroundTasks):
+    """Generate a new sequence number for an IND project."""
+    if project_id not in projects:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Increment the serial number
+    projects[project_id]["serial_number"] += 1
+    serial_number = f"{projects[project_id]['serial_number']:04d}"
+    
+    # Add history entry
+    if project_id in history:
+        history[project_id].append({
+            "serial": serial_number,
+            "timestamp": datetime.now().isoformat(),
+            "type": "submission"
+        })
+    
+    # Save data in the background
+    background_tasks.add_task(save_data)
+    
+    return {"serial_number": serial_number}
 
-# Include SAML settings API
-app.include_router(saml_settings_api.router)
+@app.get("/api/ind/{project_id}/history", response_model=List[HistoryItem])
+async def get_history(project_id: str):
+    """Get the submission history for an IND project."""
+    if project_id not in history:
+        return []
+    
+    return history[project_id]
 
-# Include Teams webhook API
-app.include_router(teams_webhook_api.router)
-
-
-# ---------- SAML (pySAML2) ----------
-from fastapi.responses import RedirectResponse
-@app.get('/saml/{org}/login')
-async def saml_login(org: str, relay: str = '/'):
-    url = saml_sp_pysaml2.login_redirect(org, relay)
-    return RedirectResponse(url)
-
-@app.post('/saml/{org}/acs')
-async def saml_acs(org: str, request: Request):
-    attrs, nameid = await saml_sp_pysaml2.acs_process(org, request)
-    users.create(nameid, 'saml', role='user')
-    perms = attrs.get('trialsage-perms', [])
-    _d = users._load(); _d[nameid]['perms'] = perms; users._save(_d)
-    token = auth.create_token(nameid)
-    return RedirectResponse(f'/#/login-callback?token={token}')
-
-# ---------- Compliance Rules Settings ----------
-@app.get('/api/org/{org}/rules', dependencies=[Depends(rbac.requires('admin.esg'))])
-async def get_rules(org:str):
-    return rules_store.load(org)
-
-@app.put('/api/org/{org}/rules', dependencies=[Depends(rbac.requires('admin.esg'))])
-async def set_rules(org:str, body:UserUpdate):
-    rules_store.save(org, body)
-    append_history(org, {"type":"rule_change", "timestamp": datetime.datetime.utcnow().isoformat()})
-    return {'status':'saved'}
-
-# ---------- Compliance Metrics API ----------
-@app.get('/api/org/{org}/metrics')
-async def get_metrics(org:str, rule:str|None=None, limit:int=200, offset:int=0, from_:str|None=None, to:str|None=None):
-    return metrics.load(org).to_dict(orient='records')
-
-@app.get('/api/org/{org}/insights/pdf')
-async def insights_pdf(org:str):
-    return insights_pdf.insights_pdf_endpoint(org)
-
-from fastapi.staticfiles import StaticFiles
-app.mount('/files', StaticFiles(directory='public'), name='files')
-
-# ---------- User / Permission management ----------
-@app.get('/api/org/{org}/users', dependencies=[Depends(rbac.requires('admin.esg'))])
-async def list_users(org:str):
-    return users.all_users()
-
-@app.post('/api/org/{org}/users', dependencies=[Depends(rbac.requires('admin.esg'))])
-async def invite_user(org:str, body:UserUpdate):
-    users.create(body['username'], body.get('password','changeme'), role=body.get('role','user'))
-    users.set_permissions(body['username'], body.get('perms',[]))
-    return {'status':'created'}
-
-@app.put('/api/org/{org}/users/{username}', dependencies=[Depends(rbac.requires('admin.esg'))])
-async from pydantic import BaseModel, conint
-class UserUpdate(BaseModel):
-    role:str|None=None
-    perms:list[str]|None=None
-    alert_channels:conint(ge=0,le=3)|None=None  # bitmask
-
-def update_user(org:str, username:str, body:UserUpdate):
-    if body.role: # quick role update
-        data=users.all_users(); data[username]['role']=body['role']; users._save(data)
-    if body.perms is not None:
-        users.set_permissions(username, body['perms'])
-    return {'status':'updated'}
-
-@app.delete('/api/org/{org}/users/{username}', dependencies=[Depends(rbac.requires('admin.esg'))])
-async def delete_user(org:str, username:str):
-    data=users.all_users(); data.pop(username, None); users._save(data)
-    return {'status':'deleted'}
-
-from ind_automation import widgets_sql, gdpr
 from fastapi.responses import StreamingResponse
+from .form_generator import generate_form as generate_form_document
 
-@app.get('/api/user/{username}/export')
-async def user_export(username:str, user:str=Depends(auth.get_current_user)):
-    if user!=username and users.get_role(user)!="admin": raise HTTPException(403)
-    buf=gdpr.export_user(username)
-    return StreamingResponse(buf,media_type='application/zip',headers={'Content-Disposition':f'attachment; filename={username}_export.zip'})
+@app.get("/api/ind/{project_id}/forms/{form_type}")
+async def generate_form(project_id: str, form_type: str, background_tasks: BackgroundTasks):
+    """Generate an FDA form for an IND project."""
+    if project_id not in projects:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    try:
+        # Generate the form document
+        form_data = generate_form_document(form_type, projects[project_id])
+        
+        # Add history entry for form generation
+        if project_id in history:
+            history[project_id].append({
+                "serial": f"{projects[project_id]['serial_number'] + 1:04d}",
+                "timestamp": datetime.now().isoformat(),
+                "type": "form_generation"
+            })
+        
+        # Save data in the background
+        background_tasks.add_task(save_data)
+        
+        # Set the appropriate content type based on the form type
+        # In a real implementation, this would be application/vnd.openxmlformats-officedocument.wordprocessingml.document
+        # For now, we'll use text/plain
+        media_type = "text/plain"
+        
+        # Return the form as a streaming response
+        return StreamingResponse(
+            form_data, 
+            media_type=media_type,
+            headers={
+                "Content-Disposition": f'attachment; filename="Form{form_type}_{project_id}.txt"'
+            }
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating form: {str(e)}")
 
-@app.post('/api/user/{username}/purge')
-async def user_purge(username:str, user:str=Depends(auth.get_current_user)):
-    if users.get_role(user)!="admin": raise HTTPException(403)
-    gdpr.purge_user(username); return {'status':'scheduled'}
-
-from ind_automation import widgets_sql, pii_filter, db, users
-from starlette.middleware.base import BaseHTTPMiddleware
-import json, asyncio
-
-class RedactionMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        if request.headers.get("content-type","").startswith("application/json"):
-            body=await request.body()
-            data=json.loads(body or "{}")
-            redacted=False
-            matches=[]
-
-            def _clean(obj):
-                nonlocal redacted,matches
-                if isinstance(obj,str):
-                    clean,hit=pii_filter.redact(obj)
-                    matches+=hit
-                    redacted|=bool(hit)
-                    return clean
-                if isinstance(obj,dict): 
-                    return {k:_clean(v) for k,v in obj.items()}
-                if isinstance(obj,list): 
-                    return [_clean(v) for v in obj]
-                return obj
-
-            clean=_clean(data)
-            if redacted:
-                # replace request stream
-                request._receive = lambda: {"type":"http.request","body":json.dumps(clean).encode()}
-                user=request.headers.get("x-user", "unknown")
-                db.append_history("system",{"type":"redaction","user":user,"matches":matches,"timestamp":datetime.datetime.utcnow().isoformat()})
-        return await call_next(request)
-
-app.add_middleware(RedactionMiddleware)
-
-@app.middleware('http')
-async def locale_middleware(request, call_next):
-    response = await call_next(request)
-    lang=request.headers.get('accept-language','en')[:2]
-    if response.media_type=='application/json' and isinstance(response.body,bytes):
-        import json, datetime
-        data=json.loads(response.body)
-        def _local(d):
-            if isinstance(d,dict):
-                if 'timestamp' in d and 'timestamp_local' not in d:
-                    try:
-                        d['timestamp_local']=bdates.format_datetime(datetime.datetime.fromisoformat(d['timestamp']),locale=lang)
-                    except: pass
-                for v in d.values(): _local(v)
-            if isinstance(d,list):
-                for v in d: _local(v)
-        _local(data)
-        response.body=json.dumps(data).encode()
-    return response
-
-@app.get('/api/org/{org}/widgets')
-async def widgets(org: str, user: str = Depends(auth.get_current_user)):
-    user_role = users.get_role(user); widgets = widgets_sql.list_widgets(org, user); return resolve_visibility(widgets, user_role)
-
-@app.post('/api/org/{org}/widgets')
-async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current_user)):
-    widgets_sql.save_widget(org, user, body)
-    return {"status": "ok"}
-
-@app.get('/api/org/{org}/widgets')
-async def widgets(org: str, user: str = Depends(auth.get_current_user)):
-    user_role = users.get_role(user); widgets = widgets_sql.list_widgets(org, user); return resolve_visibility(widgets, user_role)
-
-@app.post('/api/org/{org}/widgets')
-async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current_user)):
-    return widgets_sql.save_widget(org, user, body)
-
-@app.delete('/api/org/{org}/widgets/{widget_id}')
-async def delete_widget(org: str, widget_id: int, user: str = Depends(auth.get_current_user)):
-    return {"success": widgets_sql.delete_widget(org, user, widget_id)}
-
-@app.post('/api/org/{org}/widgets/layouts')
-async def save_layouts(org: str, body: list, user: str = Depends(auth.get_current_user)):
-    return {"success": widgets_sql.update_layout(org, user, body)}
-
-@app.post('/api/org/{org}/widgets/execute')
-async def execute_sql(org: str, body: dict, user: str = Depends(auth.get_current_user)):
-    widget_id = body.get('widget_id')
-    sql = body.get('sql')
-    return widgets_sql.execute_widget_sql(org, widget_id, sql)
-
-
-def resolve_visibility(widgets, user_role):
-    if user_role == "admin": return widgets
-    return [w for w in widgets if w.get("visibility", "private") in ("public", "role")]
-
-@app.get('/api/org/{org}/widget/{wid}/data')
-async def widget_data(org: str, wid: int, user: str = Depends(auth.get_current_user)):
-    w = [w for w in widgets_sql.list_widgets(org, user) if w['id'] == wid]
-    if not w: raise HTTPException(404)
-    sql = sqlparse.format(w[0]['sql'], strip_comments=True)
-    if any(k in sql.lower() for k in ('insert', 'update', 'delete', 'drop')):
-        raise HTTPException(400, 'Write statements not allowed')
-    db = sqlite3.connect('data/metrics.db'); db.row_factory = sqlite3.Row
-    rows = db.execute(sql).fetchall(); return [dict(r) for r in rows]
+# Add a demo endpoint for the ENZYMAX FORTE sample project
+@app.get("/api/demo/enzymax")
+async def create_demo_project(background_tasks: BackgroundTasks):
+    """Create a demo project for ENZYMAX FORTE."""
+    # Check if demo project already exists
+    demo_project_id = None
+    for pid, project in projects.items():
+        if project["drug_name"] == "ENZYMAX FORTE":
+            demo_project_id = pid
+            break
+    
+    if demo_project_id:
+        return {"message": "Demo project already exists", "project_id": demo_project_id}
+    
+    # Create demo project
+    project = Project(
+        sponsor="TrialSage Pharma",
+        drug_name="ENZYMAX FORTE",
+        protocol="TS-ENZ-2025",
+        pi_name="Dr. Jane Smith",
+        pi_address="123 Medical Center, San Francisco, CA 94158",
+        nct_number="NCT03456789"
+    )
+    
+    # Use the create_project endpoint
+    result = await create_project(project, background_tasks)
+    
+    # Generate some history for the demo project
+    project_id = result["project_id"]
+    
+    # Generate a sequence
+    await generate_sequence(project_id, background_tasks)
+    
+    # Add some additional history
+    if project_id in history:
+        # Add form generation entries
+        for form_type in ["1571", "1572", "3674"]:
+            history[project_id].append({
+                "serial": f"{len(history[project_id]) + 1:04d}",
+                "timestamp": (datetime.now()).isoformat(),
+                "type": "form_generation"
+            })
+    
+    # Save data in the background
+    background_tasks.add_task(save_data)
+    
+    return {"message": "Demo project created", "project_id": project_id}

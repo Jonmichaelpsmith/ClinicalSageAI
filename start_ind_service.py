@@ -52,13 +52,15 @@ def start_service():
         
         # Monitor the process logs
         while True:
-            output = process.stdout.readline()
-            if output:
-                logger.info(f"IND: {output.strip()}")
+            if process.stdout is not None:
+                output = process.stdout.readline()
+                if output:
+                    logger.info(f"IND: {output.strip()}")
             
-            error = process.stderr.readline()
-            if error:
-                logger.error(f"IND ERROR: {error.strip()}")
+            if process.stderr is not None:
+                error = process.stderr.readline()
+                if error:
+                    logger.error(f"IND ERROR: {error.strip()}")
             
             # Check if process is still running
             if process.poll() is not None:
