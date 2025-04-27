@@ -31,6 +31,10 @@ import {
   Info
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
+import ErrorBoundary from '@/components/ui/error-boundary';
+import { useDatabaseStatus } from '@/components/providers/database-status-provider';
+import { DatabaseAware, DataAware } from '@/components/ui/database-aware';
+import { retryOperation } from '@/utils/databaseUtils';
 
 export default function Form1571Generator({ projectId, onSuccess }) {
   const { toast } = useToast();
@@ -235,25 +239,29 @@ export default function Form1571Generator({ projectId, onSuccess }) {
     );
   }
 
+  // Get database connection status
+  const { isConnected } = useDatabaseStatus();
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>Form FDA 1571</CardTitle>
-              <CardDescription>Investigational New Drug Application</CardDescription>
+    <ErrorBoundary title="Form 1571 Error" description="An error occurred while loading the Form FDA 1571 component.">
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>Form FDA 1571</CardTitle>
+                <CardDescription>Investigational New Drug Application</CardDescription>
+              </div>
+              <div className="flex space-x-2">
+                <Badge variant="outline" className="font-normal">
+                  Required
+                </Badge>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                  Primary Form
+                </Badge>
+              </div>
             </div>
-            <div className="flex space-x-2">
-              <Badge variant="outline" className="font-normal">
-                Required
-              </Badge>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                Primary Form
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
+          </CardHeader>
         <CardContent>
           <Tabs defaultValue={formView} value={formView} onValueChange={setFormView}>
             <TabsList className="grid grid-cols-2 mb-4">
