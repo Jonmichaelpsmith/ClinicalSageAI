@@ -6,12 +6,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3000;
+// Use PORT environment variable for deployment compatibility
+// Default to port 5000 for Replit workflow compatibility
+const port = process.env.PORT || 5000;
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname)); // Serve all files in the root directory
 app.use(express.json());
+
+// Health check endpoint for deployment platforms
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
 
 // Route for main application
 app.get('/', (req, res) => {
@@ -52,5 +59,6 @@ app.post('/api/login', (req, res) => {
 // Start the server
 app.listen(port, '0.0.0.0', () => {
   console.log(`TrialSage server running on http://0.0.0.0:${port}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log('Open the Webview or Open Website button in Replit to view the app');
 });
