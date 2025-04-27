@@ -1,148 +1,298 @@
 /**
  * Module Integration Layer
  * 
- * This component provides a centralized integration layer for all TrialSage modules,
- * managing shared services and state.
+ * This component provides a unified integration layer for all modules and services
+ * in the TrialSage platform, serving as the central nervous system for data and services.
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Import services
-import DocuShareService from '../../services/DocuShareService';
+// Services
 import RegulatoryIntelligenceCore from '../../services/RegulatoryIntelligenceCore';
-import WorkflowService from '../../services/WorkflowService';
 import SecurityService from '../../services/SecurityService';
+import WorkflowService from '../../services/WorkflowService';
 import blockchainService from '../../services/blockchain';
 
-// Create contexts
+// Document sharing service (simulated)
+class DocuShareService {
+  constructor() {
+    this.isInitialized = false;
+    this.documents = [];
+  }
+  
+  async initialize() {
+    try {
+      console.log('Initializing DocuShare Service');
+      
+      // Simulate loading documents
+      this.documents = [
+        {
+          id: 'doc-001',
+          name: 'IND Application - XYZ-123',
+          type: 'IND',
+          status: 'Draft',
+          createdAt: '2025-04-10T09:00:00Z',
+          updatedAt: '2025-04-20T14:30:00Z',
+          owner: 'John Smith',
+          size: '4.2 MB',
+          path: '/documents/ind/xyz-123.pdf'
+        },
+        {
+          id: 'doc-002',
+          name: 'Clinical Study Report - ABC-456',
+          type: 'CSR',
+          status: 'Final',
+          createdAt: '2025-03-15T11:30:00Z',
+          updatedAt: '2025-03-28T16:45:00Z',
+          owner: 'Jane Doe',
+          size: '8.7 MB',
+          path: '/documents/csr/abc-456.pdf'
+        },
+        {
+          id: 'doc-003',
+          name: 'Statistical Analysis Plan - DEF-789',
+          type: 'SAP',
+          status: 'In Review',
+          createdAt: '2025-04-05T13:15:00Z',
+          updatedAt: '2025-04-18T10:00:00Z',
+          owner: 'Robert Chen',
+          size: '2.1 MB',
+          path: '/documents/sap/def-789.pdf'
+        }
+      ];
+      
+      this.isInitialized = true;
+      console.log('DocuShare Service initialized');
+      return true;
+    } catch (error) {
+      console.error('Error initializing DocuShare Service:', error);
+      throw error;
+    }
+  }
+  
+  getAllDocuments() {
+    if (!this.isInitialized) {
+      throw new Error('DocuShare Service not initialized');
+    }
+    
+    return this.documents;
+  }
+  
+  getDocument(documentId) {
+    if (!this.isInitialized) {
+      throw new Error('DocuShare Service not initialized');
+    }
+    
+    return this.documents.find(doc => doc.id === documentId);
+  }
+  
+  addDocument(document) {
+    if (!this.isInitialized) {
+      throw new Error('DocuShare Service not initialized');
+    }
+    
+    this.documents.push(document);
+    return document;
+  }
+  
+  updateDocument(documentId, updates) {
+    if (!this.isInitialized) {
+      throw new Error('DocuShare Service not initialized');
+    }
+    
+    const index = this.documents.findIndex(doc => doc.id === documentId);
+    
+    if (index === -1) {
+      throw new Error(`Document not found: ${documentId}`);
+    }
+    
+    this.documents[index] = { ...this.documents[index], ...updates };
+    return this.documents[index];
+  }
+  
+  deleteDocument(documentId) {
+    if (!this.isInitialized) {
+      throw new Error('DocuShare Service not initialized');
+    }
+    
+    const index = this.documents.findIndex(doc => doc.id === documentId);
+    
+    if (index === -1) {
+      throw new Error(`Document not found: ${documentId}`);
+    }
+    
+    this.documents.splice(index, 1);
+    return true;
+  }
+  
+  cleanup() {
+    this.isInitialized = false;
+    this.documents = [];
+    console.log('DocuShare Service cleaned up');
+  }
+}
+
+// Create context
 const IntegrationContext = createContext(null);
 
-export const ModuleIntegrationProvider = ({ children }) => {
-  // Create service instances
-  const [docuShareService] = useState(new DocuShareService());
-  const [regulatoryCore] = useState(new RegulatoryIntelligenceCore());
-  const [workflowService] = useState(new WorkflowService());
-  const [securityService] = useState(new SecurityService());
-  const [blockchainInstance, setBlockchainInstance] = useState(null);
+/**
+ * Integration Provider Component
+ * 
+ * This component provides access to all centralized services for the TrialSage platform.
+ */
+export const IntegrationProvider = ({ children }) => {
+  const [initialized, setInitialized] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Initializing services...');
+  const [error, setError] = useState(null);
   
-  // Track service initialization status
-  const [servicesInitialized, setServicesInitialized] = useState(false);
-  const [initializationError, setInitializationError] = useState(null);
+  // Service instances
+  const [services] = useState({
+    regulatoryIntelligenceCore: new RegulatoryIntelligenceCore(),
+    securityService: new SecurityService(),
+    workflowService: new WorkflowService(),
+    docuShareService: new DocuShareService(),
+    blockchainService: null // Will be initialized later
+  });
   
-  // Initialize services
+  // Initialize all services on mount
   useEffect(() => {
     const initializeServices = async () => {
       try {
-        console.log('Initializing TrialSage services...');
+        // Initialize security service
+        setLoadingMessage('Initializing security services...');
+        await services.securityService.initialize();
         
-        // Initialize services in parallel
-        await Promise.all([
-          docuShareService.initialize(),
-          regulatoryCore.initialize(),
-          workflowService.initialize(),
-          securityService.initialize()
-        ]);
+        // Initialize regulatory intelligence core
+        setLoadingMessage('Initializing regulatory intelligence...');
+        await services.regulatoryIntelligenceCore.initialize();
         
-        // Initialize blockchain service separately
-        const blockchain = await blockchainService.initBlockchainService();
-        setBlockchainInstance(blockchain);
+        // Initialize workflow service
+        setLoadingMessage('Initializing workflow services...');
+        await services.workflowService.initialize();
         
-        console.log('All services initialized successfully');
-        setServicesInitialized(true);
+        // Initialize document service
+        setLoadingMessage('Initializing document services...');
+        await services.docuShareService.initialize();
+        
+        // Initialize blockchain service
+        setLoadingMessage('Initializing blockchain verification...');
+        services.blockchainService = await blockchainService.initBlockchainService();
+        
+        // All services initialized
+        setInitialized(true);
+        setLoadingMessage(null);
       } catch (error) {
         console.error('Error initializing services:', error);
-        setInitializationError(error);
+        setError(error.message);
       }
     };
     
     initializeServices();
     
-    // Cleanup on unmount
+    // Cleanup services on unmount
     return () => {
-      console.log('Cleaning up services...');
-      docuShareService.cleanup();
-      regulatoryCore.cleanup();
-      workflowService.cleanup();
-      securityService.cleanup();
+      services.regulatoryIntelligenceCore.cleanup();
+      services.securityService.cleanup();
+      services.workflowService.cleanup();
+      services.docuShareService.cleanup();
     };
-  }, [docuShareService, regulatoryCore, workflowService, securityService]);
+  }, [services]);
   
-  // Create integration context value
-  const integrationValue = {
-    // Services
-    docuShareService,
-    regulatoryCore,
-    workflowService,
-    securityService,
-    blockchainService: blockchainInstance,
-    
-    // Status
-    servicesInitialized,
-    initializationError,
-    
-    // Helper methods
-    isAuthenticated: () => securityService.isAuthenticated(),
-    getCurrentUser: () => securityService.currentUser,
-    getCurrentOrganization: () => securityService.getCurrentOrganization(),
-    
-    // Event emitters
-    emitEvent: (eventName, data) => {
-      console.log(`Event emitted: ${eventName}`, data);
-      // In a production app, this would use a proper event bus
-    }
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    return services.securityService.isAuthenticated();
   };
   
+  // Get current user
+  const getCurrentUser = () => {
+    return services.securityService.currentUser;
+  };
+  
+  // Login
+  const login = async (credentials) => {
+    return await services.securityService.login(credentials);
+  };
+  
+  // Logout
+  const logout = async () => {
+    return await services.securityService.logout();
+  };
+  
+  // Helper to query scientific guidance
+  const getScientificGuidance = async (query) => {
+    return await services.regulatoryIntelligenceCore.getScientificGuidance(query);
+  };
+  
+  // Value object with all services and utilities
+  const value = {
+    // Service objects
+    ...services,
+    
+    // Status
+    initialized,
+    loadingMessage,
+    error,
+    
+    // Authentication utilities
+    isAuthenticated,
+    getCurrentUser,
+    login,
+    logout,
+    
+    // Helper utilities
+    getScientificGuidance
+  };
+  
+  // If not initialized, show loading screen
+  if (!initialized && !error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-gray-600">{loadingMessage}</p>
+      </div>
+    );
+  }
+  
+  // If there was an error initializing services
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+        <div className="rounded-full bg-red-100 p-4 text-red-600">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h1 className="mt-4 text-xl font-bold text-gray-900">Service Initialization Error</h1>
+        <p className="mt-2 text-gray-600">{error}</p>
+        <button 
+          className="mt-6 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+  
+  // Render children with services provided
   return (
-    <IntegrationContext.Provider value={integrationValue}>
-      {/* Loading state handling */}
-      {!servicesInitialized && !initializationError ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold mb-2">Loading TrialSage™</h2>
-            <p className="text-gray-500">Initializing platform services...</p>
-          </div>
-        </div>
-      ) : initializationError ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-          <div className="text-center max-w-md p-6">
-            <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold mb-2">Initialization Error</h2>
-            <p className="text-gray-700 mb-4">
-              An error occurred while initializing the platform services:
-            </p>
-            <div className="bg-red-50 p-3 rounded-md text-red-700 text-sm mb-4">
-              {initializationError.message || 'Unknown error'}
-            </div>
-            <button 
-              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
-              onClick={() => window.location.reload()}
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      ) : (
-        // Render children once services are initialized
-        children
-      )}
+    <IntegrationContext.Provider value={value}>
+      {children}
     </IntegrationContext.Provider>
   );
 };
 
-// Hook for accessing the integration context
+/**
+ * useIntegration Hook
+ * 
+ * Custom hook to access the integration layer and all services.
+ */
 export const useIntegration = () => {
   const context = useContext(IntegrationContext);
   
   if (!context) {
-    throw new Error('useIntegration must be used within a ModuleIntegrationProvider');
+    throw new Error('useIntegration must be used within an IntegrationProvider');
   }
   
   return context;
 };
-
-export default ModuleIntegrationProvider;

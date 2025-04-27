@@ -1,293 +1,338 @@
 /**
  * AI Assistant Button Component
  * 
- * This component provides an AI assistance interface that integrates
- * with the platform's regulatory intelligence services.
+ * This component provides a floating AI assistant button that expands
+ * into a chat interface when clicked, providing context-aware help.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  MessageSquare, 
-  Send, 
-  X, 
-  Mic, 
-  Image,
-  Paperclip,
-  Zap,
-  RotateCw
-} from 'lucide-react';
+import { MessageSquare, X, Send, Bot, ArrowRight } from 'lucide-react';
 import { useIntegration } from './integration/ModuleIntegrationLayer';
 
-const AIAssistantButton = ({ onClose, context }) => {
-  const { regulatoryCore } = useIntegration();
+const AIAssistantButton = ({ onClose, context = {} }) => {
+  const { getScientificGuidance } = useIntegration();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: "Hello! I'm the TrialSage™ AI Assistant. How can I help you with your regulatory and clinical documentation needs today?",
-      timestamp: new Date()
+    { 
+      id: 'welcome',
+      type: 'assistant', 
+      content: 'Hello! I\'m your TrialSage AI Assistant. How can I help you with your regulatory documentation today?',
+      timestamp: new Date().toISOString()
     }
   ]);
-  const [inputValue, setInputValue] = useState('');
-  const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Suggestions based on the current context
-  const getContextSuggestions = () => {
-    switch (context?.activeModule) {
-      case 'ind-wizard':
-        return [
-          "What sections should be included in my IND application?",
-          "How do I prepare for a pre-IND meeting?",
-          "What FDA guidance applies to my IND submission?"
-        ];
-      case 'trial-vault':
-        return [
-          "How does the blockchain verification work?",
-          "How can I securely share documents with external stakeholders?",
-          "What's the recommended document structure for regulatory submissions?"
-        ];
-      case 'csr-intelligence':
-        return [
-          "What are ICH E3 guidelines for CSR preparation?",
-          "How can I improve my CSR's compliance score?",
-          "What statistical analyses should be included in my CSR?"
-        ];
-      default:
-        return [
-          "What documents do I need for my regulatory submission?",
-          "Help me understand ICH guidelines",
-          "What are the best practices for clinical documentation?"
-        ];
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  
+  // Expand assistant on mount
+  useEffect(() => {
+    setTimeout(() => {
+      setIsExpanded(true);
+    }, 300);
+  }, []);
+  
+  // Auto-scroll to bottom of messages
+  useEffect(() => {
+    if (messagesEndRef.current && isExpanded) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isExpanded]);
+  
+  // Focus input when expanded
+  useEffect(() => {
+    if (isExpanded && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isExpanded]);
+  
+  // Handle closing the assistant
+  const handleClose = () => {
+    setIsExpanded(false);
+    setTimeout(() => {
+      if (onClose) {
+        onClose();
+      }
+    }, 300);
+  };
+  
+  // Handle input change
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+  
+  // Handle input submission
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
+    
+    if (!inputValue.trim() || isLoading) {
+      return;
+    }
+    
+    const userMessage = {
+      id: `user-${Date.now()}`,
+      type: 'user',
+      content: inputValue,
+      timestamp: new Date().toISOString()
+    };
+    
+    setMessages(prevMessages => [...prevMessages, userMessage]);
+    setInputValue('');
+    setIsLoading(true);
+    
+    try {
+      // Get module-specific context
+      let moduleContext = '';
+      if (context.activeModule) {
+        switch (context.activeModule) {
+          case 'ind-wizard':
+            moduleContext = 'IND application';
+            break;
+          case 'trial-vault':
+            moduleContext = 'document management';
+            break;
+          case 'csr-intelligence':
+            moduleContext = 'clinical study reports';
+            break;
+          case 'study-architect':
+            moduleContext = 'protocol design';
+            break;
+          case 'analytics':
+            moduleContext = 'regulatory analytics';
+            break;
+          default:
+            moduleContext = '';
+        }
+      }
+      
+      // Append context to query if available
+      const query = moduleContext 
+        ? `${inputValue} (In the context of ${moduleContext})`
+        : inputValue;
+      
+      // Get AI response
+      const response = await getScientificGuidance(query);
+      
+      // Format sources as Markdown links if available
+      let formattedResponse = response.response;
+      
+      if (response.sources && response.sources.length > 0) {
+        formattedResponse += '\n\n**Sources:**\n';
+        response.sources.forEach(source => {
+          formattedResponse += `- [${source.title}](${source.url})\n`;
+        });
+      }
+      
+      const assistantMessage = {
+        id: `assistant-${Date.now()}`,
+        type: 'assistant',
+        content: formattedResponse,
+        timestamp: new Date().toISOString(),
+        sources: response.sources || []
+      };
+      
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      
+      const errorMessage = {
+        id: `error-${Date.now()}`,
+        type: 'assistant',
+        isError: true,
+        content: 'I apologize, but I encountered an error processing your request. Please try again later.',
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
   
-  const suggestions = getContextSuggestions();
-  
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-  
-  // Scroll to bottom helper
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Handle keydown events
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
   
-  // Get a formatted timestamp
-  const getFormattedTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // Get suggestion for current module
+  const getSuggestionForModule = () => {
+    switch (context.activeModule) {
+      case 'ind-wizard':
+        return 'What sections are required in an IND application?';
+      case 'trial-vault':
+        return 'How can I verify a document using blockchain?';
+      case 'csr-intelligence':
+        return 'What is the structure of a CSR according to ICH E3?';
+      case 'study-architect':
+        return 'What endpoints should I include for a Phase II oncology trial?';
+      case 'analytics':
+        return 'How can I analyze protocol deviations across studies?';
+      default:
+        return 'How can I navigate between modules?';
+    }
   };
   
   // Handle suggestion click
   const handleSuggestionClick = (suggestion) => {
-    sendMessage(suggestion);
-  };
-  
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (inputValue.trim()) {
-      sendMessage(inputValue);
-      setInputValue('');
-    }
-  };
-  
-  // Send a message and process the response
-  const sendMessage = async (content) => {
-    // Add user message
-    const userMessage = {
-      role: 'user',
-      content,
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setLoading(true);
-    
-    try {
-      // Get response from regulatory intelligence core
-      const response = await regulatoryCore.getScientificGuidance(content);
-      
-      // Add assistant message
-      const assistantMessage = {
-        role: 'assistant',
-        content: response.response,
-        sources: response.sources || [],
-        timestamp: new Date()
-      };
-      
-      // Add a small delay for a more natural conversation flow
-      setTimeout(() => {
-        setMessages(prev => [...prev, assistantMessage]);
-        setLoading(false);
-      }, 800);
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      
-      // Add error message
-      const errorMessage = {
-        role: 'assistant',
-        content: "I'm sorry, I encountered an error while processing your request. Please try again later.",
-        error: true,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-      setLoading(false);
+    setInputValue(suggestion);
+    // Focus the input
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
   
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mb-2 flex flex-col border overflow-hidden" style={{ height: '520px' }}>
-        {/* Header */}
-        <div className="p-4 border-b bg-primary text-white flex items-center justify-between">
-          <div className="flex items-center">
-            <MessageSquare className="mr-2" size={20} />
-            <h3 className="font-semibold">TrialSage™ AI Assistant</h3>
-          </div>
-          <button 
-            className="text-white hover:text-gray-200"
-            onClick={onClose}
-          >
-            <X size={20} />
-          </button>
-        </div>
-        
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message, index) => (
-            <div 
-              key={index} 
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+    <div 
+      className={`fixed bottom-4 right-4 z-50 transition-all duration-300 flex flex-col ${
+        isExpanded ? 'w-96 h-[30rem] max-h-[80vh]' : 'w-14 h-14'
+      }`}
+    >
+      <div className="relative w-full h-full">
+        <div 
+          className={`
+            absolute inset-0 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden
+            flex flex-col transition-all duration-300
+            ${isExpanded ? 'opacity-100' : 'opacity-0'}
+          `}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between bg-primary text-white px-4 py-3">
+            <div className="flex items-center">
+              <Bot className="h-5 w-5 mr-2" />
+              <h3 className="font-medium">TrialSage AI Assistant</h3>
+            </div>
+            <button
+              onClick={handleClose}
+              className="text-white hover:bg-primary-dark rounded-full p-1"
             >
-              <div 
-                className={`max-w-[80%] rounded-lg p-3 ${
-                  message.role === 'user' 
-                    ? 'bg-primary-light text-gray-800' 
-                    : message.error
-                      ? 'bg-red-50 text-red-800 border border-red-100'
-                      : 'bg-gray-100 text-gray-800'
-                }`}
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                
-                {message.sources && message.sources.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-gray-200 text-xs">
-                    <div className="font-medium mb-1">Sources:</div>
-                    <ul className="space-y-1">
-                      {message.sources.map((source, idx) => (
-                        <li key={idx}>
-                          <a 
-                            href={source.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline"
-                          >
-                            {source.title}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                <div className="text-xs mt-1 text-gray-500 text-right">
-                  {getFormattedTime(message.timestamp)}
+                <div
+                  className={`
+                    rounded-lg px-4 py-2 max-w-[80%]
+                    ${message.type === 'user' 
+                      ? 'bg-primary text-white' 
+                      : message.isError
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }
+                  `}
+                >
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  
+                  {message.sources && message.sources.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-200 text-xs">
+                      <p className="font-medium">Sources:</p>
+                      <ul className="mt-1">
+                        {message.sources.map((source, index) => (
+                          <li key={index} className="truncate">
+                            <a 
+                              href={source.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              {source.title}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
-          
-          {loading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg p-3 max-w-[80%]">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 rounded-lg px-4 py-2 max-w-[80%]">
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
                 </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+          
+          {/* Suggestions */}
+          {messages.length === 1 && !isLoading && (
+            <div className="px-4 pb-3">
+              <p className="text-xs text-gray-500 mb-2">Try asking:</p>
+              <div className="space-y-2">
+                <button
+                  onClick={() => handleSuggestionClick(getSuggestionForModule())}
+                  className="w-full text-left text-sm bg-gray-100 hover:bg-gray-200 rounded-md px-3 py-2 flex items-center text-gray-700"
+                >
+                  <ArrowRight className="h-3 w-3 mr-2 text-primary" />
+                  {getSuggestionForModule()}
+                </button>
+                <button
+                  onClick={() => handleSuggestionClick('What are the ICH guidelines for my document?')}
+                  className="w-full text-left text-sm bg-gray-100 hover:bg-gray-200 rounded-md px-3 py-2 flex items-center text-gray-700"
+                >
+                  <ArrowRight className="h-3 w-3 mr-2 text-primary" />
+                  What are the ICH guidelines for my document?
+                </button>
               </div>
             </div>
           )}
           
-          <div ref={messagesEndRef} />
-        </div>
-        
-        {/* Suggestions */}
-        {messages.length < 3 && suggestions.length > 0 && (
-          <div className="p-4 border-t bg-gray-50">
-            <p className="text-xs text-gray-500 mb-2">Suggested questions:</p>
-            <div className="flex flex-wrap gap-2">
-              {suggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  className="px-3 py-1.5 text-xs bg-white border rounded-full text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={() => handleSuggestionClick(suggestion)}
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* Input */}
-        <div className="p-4 border-t">
-          <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-            <div className="relative flex-1">
+          {/* Input */}
+          <form onSubmit={handleSubmit} className="p-4 border-t">
+            <div className="relative">
               <input
+                ref={inputRef}
                 type="text"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary pr-8"
-                placeholder="Type your question..."
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                disabled={loading}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Type your question..."
+                className="w-full py-2 pl-4 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                disabled={isLoading}
               />
-              
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 space-x-1">
-                <button
-                  type="button"
-                  className="text-gray-400 hover:text-gray-600"
-                  disabled={loading}
-                >
-                  <Paperclip size={16} />
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={!inputValue.trim() || isLoading}
+                className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full ${
+                  inputValue.trim() && !isLoading
+                    ? 'text-primary hover:bg-gray-100'
+                    : 'text-gray-400'
+                }`}
+              >
+                <Send className="h-5 w-5" />
+              </button>
             </div>
-            
-            <button
-              type="submit"
-              className={`p-2 rounded-md ${
-                loading || !inputValue.trim()
-                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  : 'bg-primary text-white hover:bg-primary-dark'
-              }`}
-              disabled={loading || !inputValue.trim()}
-            >
-              {loading ? <RotateCw size={20} className="animate-spin" /> : <Send size={20} />}
-            </button>
           </form>
-          
-          <div className="mt-2 flex justify-between items-center">
-            <div className="flex space-x-2">
-              <button className="text-xs text-gray-500 hover:text-gray-700 flex items-center">
-                <Mic size={14} className="mr-1" />
-                <span>Voice</span>
-              </button>
-              
-              <button className="text-xs text-gray-500 hover:text-gray-700 flex items-center">
-                <Image size={14} className="mr-1" />
-                <span>Image</span>
-              </button>
-            </div>
-            
-            <button className="text-xs text-primary hover:text-primary-dark flex items-center">
-              <Zap size={14} className="mr-1" />
-              <span>Quick Actions</span>
-            </button>
-          </div>
         </div>
+        
+        {/* Floating button (visible when collapsed) */}
+        <button
+          onClick={() => setIsExpanded(true)}
+          className={`
+            absolute bottom-0 right-0 w-14 h-14 rounded-full bg-primary text-white shadow-lg
+            flex items-center justify-center transition-all duration-300
+            ${isExpanded ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-100 scale-100'}
+          `}
+        >
+          <MessageSquare className="h-6 w-6" />
+        </button>
       </div>
     </div>
   );

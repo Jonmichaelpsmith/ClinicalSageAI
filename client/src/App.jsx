@@ -1,29 +1,50 @@
 /**
- * Main Application Component
+ * Main App Component
  * 
- * This is the entry point for the TrialSage platform.
+ * Entry point for the TrialSage platform.
  */
 
 import React from 'react';
-import { Switch, Route, Redirect } from 'wouter';
-import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
-import UnifiedPlatform from './components/UnifiedPlatform';
+import { Route, Switch } from 'wouter';
 
-// Authentication pages
+// Integration Provider
+import { IntegrationProvider } from './components/integration/ModuleIntegrationLayer';
+
+// Pages
 import AuthPage from './pages/AuthPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+// Main Platform Component
+import UnifiedPlatform from './components/UnifiedPlatform';
+
+// Protected Route Component
+const ProtectedRoute = ({ path, children }) => {
+  return (
+    <Route path={path}>
+      {children}
+    </Route>
+  );
+};
+
 const App = () => {
   return (
-    <ModuleIntegrationProvider>
-      <div className="min-h-screen bg-white">
+    <IntegrationProvider>
+      <div className="App min-h-screen bg-gray-50">
         <Switch>
-          <Route path="/auth" component={AuthPage} />
-          <Route path="/" component={UnifiedPlatform} />
-          <Route component={NotFoundPage} />
+          <Route path="/auth">
+            <AuthPage />
+          </Route>
+          
+          <ProtectedRoute path="/">
+            <UnifiedPlatform />
+          </ProtectedRoute>
+          
+          <Route path="/:rest*">
+            <NotFoundPage />
+          </Route>
         </Switch>
       </div>
-    </ModuleIntegrationProvider>
+    </IntegrationProvider>
   );
 };
 
