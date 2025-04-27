@@ -1,7 +1,16 @@
 import { useContext, useState, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { VegaLite } from 'react-vega';
-import { Input, Button } from '@fluentui/react-components';
+// Import regular components instead of specialized visualization components
+// due to package installation issues
+import { Text, Stack, TextField, PrimaryButton, Label } from '@fluentui/react';
+
+// Type definitions
+interface Message {
+  type: 'user' | 'text' | 'rows' | 'vega' | 'error';
+  content?: string;
+  data?: any[];
+  spec?: any;
+}
 
 export default function AnalyticsChat() {
   const { token } = useContext(AuthContext)!;
@@ -24,27 +33,37 @@ export default function AnalyticsChat() {
     evSrcRef.current = ev;
     
     // Initialize EventSource and set up event listeners
-    ev.onopen = _ => ev.send?.({ prompt });
+    ev.onopen = () => {
+      // Send the prompt through a separate fetch
+      fetch(`${import.meta.env.VITE_API_URL}/api/analytics/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ prompt })
+      }).catch(err => console.error("Error sending prompt:", err));
+    };
     
-    ev.addEventListener('rows', e => {
+    ev.addEventListener('rows', (e: MessageEvent) => {
       const data = JSON.parse(e.data);
       setMsgs(m => [...m, { type: 'rows', data }]);
       // Show save option when we get data
       setShowSave(true);
     });
     
-    ev.addEventListener('vega', e => {
+    ev.addEventListener('vega', (e: MessageEvent) => {
       const spec = JSON.parse(e.data); 
       if (spec) {
         setMsgs(m => [...m, { type: 'vega', spec }]);
       }
     });
     
-    ev.addEventListener('text', e => {
+    ev.addEventListener('text', (e: MessageEvent) => {
       setMsgs(m => [...m, { type: 'text', content: JSON.parse(e.data) }]);
     });
     
-    ev.addEventListener('error', e => {
+    ev.addEventListener('error', (e: MessageEvent) => {
       const errorData = JSON.parse(e.data);
       setMsgs(m => [...m, { type: 'error', content: `Error: ${errorData.message}` }]);
       ev.close();
