@@ -1,103 +1,78 @@
-/**
- * QueryClient Configuration
- * 
- * This module configures the React Query client and provides utility functions for API requests.
- */
-
 import { QueryClient } from '@tanstack/react-query';
 
-// Create a client
+// Default options for query fetcher
+export const createDefaultOptions = () => ({
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Common options for API queries that might need auth handling
+export const getQueryOptions = ({ on401 = 'throw' } = {}) => ({
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  retry: (failureCount, error) => {
+    // Don't retry on 401/403
+    if (error?.status === 401 || error?.status === 403) {
+      if (on401 === 'returnNull') {
+        return false;
+      } else {
+        throw new Error('Unauthorized');
+      }
+    }
+    return failureCount < 3;
+  },
+});
+
+// Fetcher function for useQuery
+export const getQueryFn = (options = {}) => async ({ queryKey }) => {
+  const [path] = queryKey;
+  const response = await fetch(path, createDefaultOptions());
+
+  // Handle authentication failures
+  if (response.status === 401) {
+    if (options.on401 === 'returnNull') {
+      return null;
+    } else {
+      throw new Error('Unauthorized');
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  // For endpoints that return no content
+  if (response.status === 204) {
+    return null;
+  }
+
+  return response.json();
+};
+
+// Helper for API requests (mainly for mutations)
+export const apiRequest = async (method, url, body = undefined) => {
+  const options = {
+    method,
+    ...createDefaultOptions(),
+    ...(body && { body: JSON.stringify(body) }),
+  };
+
+  const response = await fetch(url, options);
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || `Request failed with status ${response.status}`);
+  }
+
+  return response;
+};
+
+// Create the Query Client
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
-      retry: 1
-    }
-  }
+      ...getQueryOptions(),
+      queryFn: getQueryFn(),
+    },
+  },
 });
-
-/**
- * Helper to handle HTTP errors
- * @param {Response} response - Fetch Response object
- * @param {Object} options - Options for error handling
- * @returns {Promise<Response>} Response if ok, throws otherwise
- */
-async function handleErrors(response, options = {}) {
-  if (!response.ok) {
-    // Handle 401 specially for auth
-    if (response.status === 401 && options.on401 === 'returnNull') {
-      return null;
-    }
-    
-    // Try to parse error message
-    let errorMessage;
-    
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorData.error || `Error: ${response.status} ${response.statusText}`;
-    } catch (e) {
-      errorMessage = `Error: ${response.status} ${response.statusText}`;
-    }
-    
-    throw new Error(errorMessage);
-  }
-  
-  return response;
-}
-
-/**
- * API request function
- * @param {string} method - HTTP method
- * @param {string} url - Request URL
- * @param {any} body - Request body
- * @param {Object} options - Request options
- * @returns {Promise<Response>} Fetch response
- */
-export async function apiRequest(method, url, body, options = {}) {
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {})
-  };
-  
-  const fetchOptions = {
-    method,
-    headers,
-    credentials: 'include',
-    ...options
-  };
-  
-  if (body && method !== 'GET') {
-    fetchOptions.body = JSON.stringify(body);
-  }
-  
-  return fetch(url, fetchOptions);
-}
-
-/**
- * Get a query function with error handling
- * @param {Object} options - Query function options
- * @returns {Function} Query function for React Query
- */
-export function getQueryFn(options = {}) {
-  return async ({ queryKey }) => {
-    // Extract URL from query key
-    const url = Array.isArray(queryKey) ? queryKey[0] : queryKey;
-    
-    // Make the fetch request
-    const response = await apiRequest('GET', url, null, options);
-    
-    // Handle errors
-    const checkedResponse = await handleErrors(response, options);
-    
-    // Return null for 401 if specified
-    if (checkedResponse === null) {
-      return undefined;
-    }
-    
-    // Parse and return JSON
-    return await checkedResponse.json();
-  };
-}
-
-export default queryClient;
