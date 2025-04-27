@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useWizard } from '../IndWizardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,11 +7,32 @@ import {
   AlertTriangle, CircleDashed, FilePlus, TestTube, ShieldAlert
 } from 'lucide-react';
 
-export default function CmcStep() {
-  const { indData, updateIndData } = useWizard();
+interface CmcStepProps {
+  projectId: string;
+  onComplete?: () => void;
+  onPrevious?: () => void;
+}
+
+export default function CmcStep({ projectId, onComplete, onPrevious }: CmcStepProps) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [cmcData, setCmcData] = useState<any>({});
   
-  const cmc = indData.cmcData || {};
+  // In a real implementation, we would fetch the CMC data using the projectId
+  // For now, we'll use a placeholder
+  const cmc = cmcData || {};
+
+  // Add navigation buttons to bottom of step
+  const handleComplete = () => {
+    if (onComplete) {
+      onComplete();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (onPrevious) {
+      onPrevious();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -496,6 +516,21 @@ export default function CmcStep() {
           </Tabs>
         </CardContent>
       </Card>
+      
+      {/* Navigation Buttons */}
+      <div className="flex justify-between pt-6">
+        <Button 
+          variant="outline" 
+          onClick={handlePrevious}
+        >
+          Back to Protocol Builder
+        </Button>
+        <Button 
+          onClick={handleComplete}
+        >
+          Continue to Nonclinical Data
+        </Button>
+      </div>
     </div>
   );
 }

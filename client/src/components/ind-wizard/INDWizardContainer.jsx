@@ -652,6 +652,40 @@ export default function INDWizardContainer({ projectId = '12345' }) {
                   <MedicalWriterContainer projectId={projectId} />
                 </Route>
                 
+                <Route path="/ind-wizard/ai-assistant">
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-2xl font-bold">ASK LUMEN AI Assistant</h2>
+                      <p className="text-muted-foreground">Your regulatory intelligence and document preparation assistant</p>
+                    </div>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>AI Assistance Hub</CardTitle>
+                        <CardDescription>
+                          The ASK LUMEN AI Assistant provides regulatory guidance, document drafting assistance, 
+                          and answers questions about IND preparation and submission.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-96 flex items-center justify-center border rounded-lg p-6">
+                          <div className="text-center space-y-4">
+                            <MessageSquare className="h-16 w-16 mx-auto text-primary/70" />
+                            <h3 className="text-xl font-medium">ASK LUMEN AI Assistant</h3>
+                            <p className="text-muted-foreground max-w-md mx-auto">
+                              Click the assistant button in the bottom right corner to start a conversation 
+                              with our AI assistant for regulatory guidance and document preparation help.
+                            </p>
+                            <Button className="mt-2" onClick={() => document.querySelector('[aria-label="Ask Lumen AI Assistant"]').click()}>
+                              Open Assistant
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </Route>
+                
                 <Route>
                   <div className="flex items-center justify-center h-64 bg-muted/30 rounded-lg border border-dashed">
                     <div className="text-center">
