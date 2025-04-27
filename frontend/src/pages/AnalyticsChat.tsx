@@ -1,8 +1,16 @@
 import { useContext, useState, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
-// Import regular components instead of specialized visualization components
-// due to package installation issues
-import { Text, Stack, TextField, PrimaryButton, Label } from '@fluentui/react';
+// Using FluentUI react-components instead of legacy @fluentui/react
+import { 
+  Body1, 
+  Stack, 
+  Input, 
+  Button, 
+  Label, 
+  Title3,
+  Card,
+  CardHeader 
+} from '@fluentui/react-components';
 
 // Type definitions
 interface Message {
@@ -136,11 +144,11 @@ export default function AnalyticsChat() {
             const rowsData = msgs.find((r: Message) => r.type === 'rows')?.data || [];
             return (
               <div key={i} style={{ marginBottom: 16, background: 'white', padding: 16, borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <Text variant="large" block>Data Visualization</Text>
-                <Text block style={{ margin: '8px 0' }}>
+                <Title3>Data Visualization</Title3>
+                <Body1 style={{ margin: '8px 0' }}>
                   Note: Chart visualization would appear here. 
                   Using tabular data display as fallback.
-                </Text>
+                </Body1>
                 
                 {rowsData.length > 0 && (
                   <div style={{ overflowX: 'auto' }}>
@@ -203,33 +211,37 @@ export default function AnalyticsChat() {
       
       {showSave && (
         <div style={{ padding: 16, borderTop: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
-          <TextField 
+          <Input 
             value={dashboardTitle} 
-            onChange={(e, newValue) => setDashboardTitle(newValue || '')} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDashboardTitle(e.target.value)} 
             placeholder="Dashboard title" 
-            styles={{ root: { width: '50%' } }} 
+            style={{ width: '50%' }} 
           />
-          <PrimaryButton 
+          <Button 
+            appearance="primary"
             onClick={saveDashboard} 
-            styles={{ root: { marginLeft: 8 } }}
-            text="Save Dashboard"
-          />
+            style={{ marginLeft: 8 }}
+          >
+            Save Dashboard
+          </Button>
         </div>
       )}
       
       <div style={{ padding: 16, borderTop: '1px solid #eee', display: 'flex' }}>
-        <TextField 
+        <Input 
           value={prompt} 
-          onChange={(e, newValue) => setPrompt(newValue || '')}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrompt(e.target.value)}
           placeholder="Ask analytics..." 
-          styles={{ root: { width: '80%' } }}
+          style={{ width: '80%' }}
           onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && send()}
         />
-        <PrimaryButton 
+        <Button 
+          appearance="primary"
           onClick={send} 
-          styles={{ root: { marginLeft: 8 } }}
-          text="Send"
-        />
+          style={{ marginLeft: 8 }}
+        >
+          Send
+        </Button>
       </div>
     </div>
   );

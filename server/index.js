@@ -55,20 +55,44 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve static files
+// Serve static files - prioritize public folder for React app
+app.use(express.static('public'));
+
+// Serve legacy static files for backwards compatibility
 app.use(express.static('./'));
 
-// Serve client portal pages
-app.get('/', (req, res) => {
-  res.redirect('/login');
-});
+// Set up Vite dev server integration for React frontend
+if (process.env.NODE_ENV === 'development') {
+  const { createServer: createViteServer } = require('vite');
+  
+  (async () => {
+    try {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+        root: './'
+      });
+      
+      // Use Vite's connect middleware
+      app.use(vite.middlewares);
+      
+      console.log('Vite development server middleware attached');
+    } catch (err) {
+      console.error('Error setting up Vite:', err);
+    }
+  })();
+}
 
+// API endpoints are under /api
+// All other routes should fall through to React app
+
+// Legacy endpoints - will be fully migrated to React app
 app.get('/login', (req, res) => {
-  res.sendFile(path.resolve('./login.html'));
+  res.sendFile(path.resolve('./public/index.html'));
 });
 
 app.get('/client-portal', (req, res) => {
-  res.sendFile(path.resolve('./client-portal.html'));
+  res.sendFile(path.resolve('./public/index.html'));
 });
 
 // Initialize services
@@ -107,9 +131,41 @@ app.get('/api/ledger/:submissionId', verifyJwt, async (req, res) => {
   }
 });
 
-// Handle 404s
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'Not Found', path: req.path });
+// Serve React app for any non-API routes (SPA catch-all)
+app.get('/dashboard/*', (req, res) => {
+  res.sendFile(path.resolve('./public/index.html'));
+});
+
+app.get('/programs/*', (req, res) => {
+  res.sendFile(path.resolve('./public/index.html'));
+});
+
+app.get('/studies/*', (req, res) => {
+  res.sendFile(path.resolve('./public/index.html'));
+});
+
+app.get('/analytics*', (req, res) => {
+  res.sendFile(path.resolve('./public/index.html'));
+});
+
+app.get('/admin/*', (req, res) => {
+  res.sendFile(path.resolve('./public/index.html'));
+});
+
+// Root route - redirect to dashboard if not already handled
+app.get('/', (req, res) => {
+  res.sendFile(path.resolve('./public/index.html'));
+});
+
+// Universal fallback for SPA
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  
+  // For all other routes, serve the React app
+  res.sendFile(path.resolve('./public/index.html'));
 });
 
 // Error handling middleware
