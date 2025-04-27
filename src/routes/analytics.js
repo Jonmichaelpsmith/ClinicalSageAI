@@ -29,6 +29,42 @@ function sseSend(res, event, data) {
   res.write(`event:${event}\ndata:${JSON.stringify(data)}\n\n`); 
 }
 
+// GET /api/analytics/dashboards - list all dashboards for the organization
+r.get('/analytics/dashboards', requireAuth, async (req, res) => {
+  try {
+    const dashboards = await db('dashboards')
+      .select('*')
+      .where('organization_id', req.user.orgId)
+      .orderBy('created_at', 'desc');
+    
+    res.json(dashboards);
+  } catch (error) {
+    console.error('Error fetching dashboards:', error);
+    res.status(500).json({ message: 'Failed to fetch dashboards' });
+  }
+});
+
+// GET /api/analytics/dashboards/:id - get a specific dashboard
+r.get('/analytics/dashboards/:id', requireAuth, async (req, res) => {
+  try {
+    const [dashboard] = await db('dashboards')
+      .select('*')
+      .where({
+        id: req.params.id,
+        organization_id: req.user.orgId
+      });
+    
+    if (!dashboard) {
+      return res.status(404).json({ message: 'Dashboard not found' });
+    }
+    
+    res.json(dashboard);
+  } catch (error) {
+    console.error('Error fetching dashboard:', error);
+    res.status(500).json({ message: 'Failed to fetch dashboard' });
+  }
+});
+
 // POST /api/analytics/chat – SSE stream
 r.post('/analytics/chat', requireAuth, async (req, res) => {
   const { prompt, studyId } = req.body;
@@ -102,15 +138,51 @@ r.post('/analytics/chat', requireAuth, async (req, res) => {
 
 // POST /api/analytics/save – save dashboard
 r.post('/analytics/save', requireAuth, async (req, res) => {
-  const { title, vega_spec } = req.body;
-  const [d] = await db('dashboards').insert({ 
-    title, 
-    vega_spec, 
-    organization_id: req.user.orgId, 
-    created_by: req.user.id 
-  }).returning('*');
-  
-  res.status(201).json(d);
+  try {
+    const { title, vega_spec } = req.body;
+    
+    if (!title || !vega_spec) {
+      return res.status(400).json({ message: 'Title and visualization spec required' });
+    }
+    
+    const [dashboard] = await db('dashboards').insert({ 
+      title, 
+      vega_spec, 
+      organization_id: req.user.orgId, 
+      created_by: req.user.id 
+    }).returning('*');
+    
+    res.status(201).json(dashboard);
+  } catch (error) {
+    console.error('Error saving dashboard:', error);
+    res.status(500).json({ message: 'Failed to save dashboard' });
+  }
+});
+
+// DELETE /api/analytics/dashboards/:id - delete a dashboard
+r.delete('/analytics/dashboards/:id', requireAuth, async (req, res) => {
+  try {
+    // Verify ownership before deletion
+    const [dashboard] = await db('dashboards')
+      .select('id')
+      .where({
+        id: req.params.id,
+        organization_id: req.user.orgId
+      });
+    
+    if (!dashboard) {
+      return res.status(404).json({ message: 'Dashboard not found' });
+    }
+    
+    await db('dashboards')
+      .where('id', req.params.id)
+      .delete();
+    
+    res.status(204).end();
+  } catch (error) {
+    console.error('Error deleting dashboard:', error);
+    res.status(500).json({ message: 'Failed to delete dashboard' });
+  }
 });
 
 export default r;
