@@ -1,0 +1,79 @@
+// --- Step 1: UptimeRobot Setup (no code, instructions only) ---
+// Go to https://uptimerobot.com/, create an account, add a new HTTP(s) monitor.
+// URL: your Replit app URL (e.g., https://yourapp.repl.co)
+// Interval: every 5 minutes.
+
+// --- Step 2: Add Prewarm Endpoint to Backend (Express Server) ---
+
+// In your server.js or app.js file, add:
+
+app.get('/api/prewarm', (req, res) => {
+  res.status(200).send('Server is warm!');
+});
+
+// --- Step 3: Prewarm Frontend Auto-Ping ---
+
+// In your homepage component (React or similar):
+import { useEffect } from 'react';
+
+useEffect(() => {
+  fetch('/api/prewarm')
+    .then(res => console.log('Prewarmed server', res))
+    .catch(err => console.error('Prewarm failed', err));
+}, []);
+
+// --- Step 4: Optional - Delay Login Redirect After Successful Login ---
+
+const handleLoginSuccess = () => {
+  setTimeout(() => {
+    window.location.href = '/portal'; // Or use your router to navigate
+  }, 1500); // 1.5 second delay
+};
+
+// --- Step 5: Bonus - Simple JWT LocalStorage Token Auth ---
+
+// After successful login, store token in localStorage:
+
+// Assume the server returns a token after login
+const loginUser = async (username, password) => {
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+
+  const data = await response.json();
+  if (data.token) {
+    localStorage.setItem('trialSageToken', data.token);
+    handleLoginSuccess();
+  } else {
+    alert('Login failed.');
+  }
+};
+
+// Then, on every protected page:
+const token = localStorage.getItem('trialSageToken');
+if (!token) {
+  // No token means user is not logged in
+  window.location.href = '/login';
+}
+
+// Optionally: Add token to Authorization header when making authenticated API calls
+const fetchWithAuth = (url, options = {}) => {
+  const token = localStorage.getItem('trialSageToken');
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+};
+
+// --- END ---
+
+// With this full setup:
+// - Your server stays warm
+// - Users experience faster login
+// - Sessions survive Replit hibernation issues
+// - Authenticated API calls remain protected using localStorage JWT

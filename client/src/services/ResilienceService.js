@@ -37,15 +37,15 @@ class ResilienceService {
     this.isWarming = true;
 
     try {
-      // Send a request to a non-critical endpoint to wake up the server
-      const response = await fetch('/api/health', {
+      // Just try to fetch the root page which will definitely exist
+      // Unlike specific API endpoints which might not be implemented yet
+      const response = await fetch('/', {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
         cache: 'no-cache'
       });
       
       console.log('Server warm-up response:', response.status);
-      return response.ok;
+      return response.status >= 200 && response.status < 500;
     } catch (error) {
       console.warn('Server warmup error:', error);
       return false;
