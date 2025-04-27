@@ -1,129 +1,139 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
 import { 
-  Home, 
-  FileText, 
+  LayoutDashboard, 
   Database, 
+  FileText, 
   Layers, 
   Flask, 
-  BookOpenText, 
-  BarChart3,
   ShieldCheck,
-  Settings,
-  HelpCircle
+  BookOpenText,
+  BarChart3,
+  FileQuestion,
+  Users
 } from 'lucide-react';
 
 const AppSidebar = () => {
   const [location] = useLocation();
-
+  
   const menuItems = [
     { 
-      id: 'dashboard', 
+      path: '/dashboard', 
       label: 'Dashboard', 
-      icon: Home, 
-      path: '/dashboard',
-      active: location === '/dashboard' 
+      icon: LayoutDashboard 
     },
     { 
-      id: 'vault', 
-      label: 'TrialSage Vault', 
-      icon: Database, 
-      path: '/vault',
-      active: location === '/vault' 
+      path: '/vault', 
+      label: 'Vault', 
+      icon: Database,
+      tooltip: 'TrialSage Vault™'
     },
     { 
-      id: 'csr', 
+      path: '/csr-intelligence', 
       label: 'CSR Intelligence', 
-      icon: FileText, 
-      path: '/csr-intelligence',
-      active: location === '/csr-intelligence' 
+      icon: FileText,
+      tooltip: 'CSR Intelligence™'
     },
     { 
-      id: 'architect', 
+      path: '/study-architect', 
       label: 'Study Architect', 
-      icon: Layers, 
-      path: '/study-architect',
-      active: location === '/study-architect' 
+      icon: Layers,
+      tooltip: 'Study Architect™'
     },
     { 
-      id: 'ind', 
+      path: '/ind-wizard', 
       label: 'IND Wizard', 
-      icon: Flask, 
-      path: '/ind-wizard',
-      active: location === '/ind-wizard' 
+      icon: Flask,
+      tooltip: 'IND Wizard™'
     },
     { 
-      id: 'compliance', 
-      label: 'ICH Wiz', 
-      icon: ShieldCheck, 
-      path: '/compliance',
-      active: location === '/compliance' 
+      path: '/compliance', 
+      label: 'ICH Compliance', 
+      icon: ShieldCheck,
+      tooltip: 'ICH Wiz™' 
     },
     { 
-      id: 'cmdr', 
+      path: '/cmdr', 
       label: 'Metadata Repository', 
-      icon: BookOpenText, 
-      path: '/cmdr',
-      active: location === '/cmdr' 
+      icon: BookOpenText,
+      tooltip: 'Clinical Metadata Repository'
     },
     { 
-      id: 'analytics', 
+      path: '/analytics', 
       label: 'Analytics', 
-      icon: BarChart3, 
-      path: '/analytics',
-      active: location === '/analytics' 
+      icon: BarChart3 
     },
   ];
+  
+  const adminItems = [
+    {
+      path: '/admin/users',
+      label: 'User Management',
+      icon: Users
+    },
+    {
+      path: '/admin/help',
+      label: 'Help Center',
+      icon: FileQuestion
+    }
+  ];
+
+  const MenuItem = ({ item }) => {
+    const isActive = location === item.path || location.startsWith(`${item.path}/`);
+    
+    return (
+      <Link href={item.path}>
+        <a 
+          className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+            isActive 
+              ? 'text-pink-600 bg-pink-50' 
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          }`}
+          title={item.tooltip || item.label}
+        >
+          <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-pink-500' : 'text-gray-400'}`} />
+          <span className="truncate">{item.label}</span>
+        </a>
+      </Link>
+    );
+  };
 
   return (
-    <div className="bg-white border-r border-gray-200 w-64 flex-shrink-0 h-full">
-      <div className="py-4">
-        <div className="px-4 mb-6">
-          <div className="text-xs uppercase text-gray-500 font-semibold tracking-wider">
-            Core Modules
-          </div>
-        </div>
-
-        <nav className="space-y-1 px-2">
+    <div className="hidden md:flex h-screen bg-white border-r border-gray-200 flex-col w-60 fixed inset-y-0 pt-16">
+      <div className="mt-6 flex-1 flex flex-col overflow-y-auto">
+        <nav className="flex-1 px-2 space-y-1">
           {menuItems.map((item) => (
-            <Link key={item.id} href={item.path}>
-              <a 
-                className={`flex items-center px-3 py-2 text-sm font-medium rounded-md group hover:bg-gray-100 ${
-                  item.active ? 'bg-pink-50 text-pink-700' : 'text-gray-700'
-                }`}
-              >
-                <item.icon 
-                  size={18} 
-                  className={`mr-3 flex-shrink-0 ${
-                    item.active ? 'text-pink-500' : 'text-gray-400 group-hover:text-gray-500'
-                  }`} 
-                />
-                {item.label}
-              </a>
-            </Link>
+            <MenuItem key={item.path} item={item} />
           ))}
         </nav>
         
-        <div className="px-4 mt-8 mb-2">
-          <div className="text-xs uppercase text-gray-500 font-semibold tracking-wider">
-            System
+        {/* Admin section */}
+        <div className="px-3 mt-6 mb-3">
+          <h3 className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Administration
+          </h3>
+          <div className="mt-2 space-y-1">
+            {adminItems.map((item) => (
+              <MenuItem key={item.path} item={item} />
+            ))}
           </div>
         </div>
-        
-        <nav className="space-y-1 px-2">
-          <Link href="/settings">
-            <a className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 group">
-              <Settings size={18} className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
-              Settings
-            </a>
-          </Link>
-          <Link href="/help">
-            <a className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 group">
-              <HelpCircle size={18} className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
-              Help & Support
-            </a>
-          </Link>
-        </nav>
+      </div>
+      
+      {/* Environment label - could indicate dev/staging/prod */}
+      <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
+        <div className="flex-shrink-0 w-full group block">
+          <div className="flex items-center">
+            <div>
+              <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">
+                Environment: <span className="font-bold text-green-600">Production</span>
+              </p>
+              <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">
+                Version: 2.5.0
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

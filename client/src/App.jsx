@@ -1,114 +1,123 @@
 import React from 'react';
 import { Route, Switch } from 'wouter';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
-import { AuthProvider } from './contexts/AuthContext';
-import { useToast, ToastContainer } from './hooks/use-toast.jsx';
 import { queryClient } from './lib/queryClient';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import { Toaster } from './components/ui/toaster';
+import { AuthProvider } from './contexts/AuthContext';
+import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
+
+// Common layout components
 import AppHeader from './components/common/AppHeader';
 import AppSidebar from './components/common/AppSidebar';
 import ClientContextBar from './components/common/ClientContextBar';
+import AIAssistantButton from './components/AIAssistantButton';
+import NotFound from './components/common/NotFound';
+
+// Protected route component
+import ProtectedRoute from './components/auth/ProtectedRoute';
+
+// Pages
+import LoginPage from './pages/LoginPage';
+import UnifiedPlatform from './components/UnifiedPlatform';
 import DashboardModule from './components/dashboard/DashboardModule';
 import TrialVaultModule from './components/trial-vault/TrialVaultModule';
 import CSRIntelligenceModule from './components/csr-intelligence/CSRIntelligenceModule';
 import StudyArchitectModule from './components/study-architect/StudyArchitectModule';
-import UnifiedPlatform from './components/UnifiedPlatform';
-import NotFound from './components/common/NotFound';
-import AIAssistantButton from './components/AIAssistantButton';
-import LoginPage from './pages/LoginPage';
-import { useAuth } from './contexts/AuthContext';
 
-// Main application layout with navigation and protected content
-const AppLayout = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-
-  if (!isAuthenticated) {
-    return <LoginPage />;
-  }
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header is consistent across all pages */}
-      <AppHeader />
+// Layout wrapper for authenticated pages
+const AuthenticatedLayout = ({ children }) => (
+  <div className="min-h-screen bg-gray-50">
+    <AppHeader />
+    <AppSidebar />
+    <div className="md:ml-60 pt-16">
       <ClientContextBar />
-
-      <div className="flex flex-1">
-        {/* Sidebar for navigation between modules */}
-        <AppSidebar />
-
-        {/* Main content area */}
-        <main className="flex-1 p-6 overflow-auto">
-          {children}
-        </main>
+      <div className="container mx-auto px-4 py-6">
+        {children}
       </div>
-
-      {/* AI Assistant button */}
-      <AIAssistantButton />
     </div>
-  );
-};
+    <AIAssistantButton />
+  </div>
+);
 
-// Wrapper component to provide toast functionality
-const AppContent = () => {
-  const { toast, dismissToast, toasts } = useToast();
-  
-  return (
-    <ModuleIntegrationProvider>
-      <Switch>
-        <Route path="/login" component={LoginPage} />
-        
-        <Route path="/">
-          <AppLayout>
-            <Route path="/" component={UnifiedPlatform} />
-          </AppLayout>
-        </Route>
-        
-        <Route path="/dashboard">
-          <AppLayout>
-            <DashboardModule />
-          </AppLayout>
-        </Route>
-        
-        <Route path="/vault">
-          <AppLayout>
-            <TrialVaultModule />
-          </AppLayout>
-        </Route>
-        
-        <Route path="/csr-intelligence">
-          <AppLayout>
-            <CSRIntelligenceModule />
-          </AppLayout>
-        </Route>
-        
-        <Route path="/study-architect">
-          <AppLayout>
-            <StudyArchitectModule />
-          </AppLayout>
-        </Route>
-        
-        <Route>
-          <AppLayout>
-            <NotFound />
-          </AppLayout>
-        </Route>
-      </Switch>
-      
-      {/* Toast notifications */}
-      <ToastContainer toasts={toasts} dismissToast={dismissToast} />
-    </ModuleIntegrationProvider>
-  );
-};
-
-function App() {
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppContent />
+        <ModuleIntegrationProvider>
+          <Switch>
+            {/* Public routes */}
+            <Route path="/login" component={LoginPage} />
+            
+            {/* Protected route for home/landing */}
+            <ProtectedRoute 
+              path="/" 
+              component={() => (
+                <AuthenticatedLayout>
+                  <UnifiedPlatform />
+                </AuthenticatedLayout>
+              )} 
+            />
+            
+            {/* Protected dashboard route */}
+            <ProtectedRoute 
+              path="/dashboard" 
+              component={() => (
+                <AuthenticatedLayout>
+                  <DashboardModule />
+                </AuthenticatedLayout>
+              )} 
+            />
+            
+            {/* Protected vault route */}
+            <ProtectedRoute 
+              path="/vault" 
+              component={() => (
+                <AuthenticatedLayout>
+                  <TrialVaultModule />
+                </AuthenticatedLayout>
+              )} 
+            />
+            
+            {/* Protected CSR Intelligence route */}
+            <ProtectedRoute 
+              path="/csr-intelligence" 
+              component={() => (
+                <AuthenticatedLayout>
+                  <CSRIntelligenceModule />
+                </AuthenticatedLayout>
+              )} 
+            />
+            
+            {/* Protected Study Architect route */}
+            <ProtectedRoute 
+              path="/study-architect" 
+              component={() => (
+                <AuthenticatedLayout>
+                  <StudyArchitectModule />
+                </AuthenticatedLayout>
+              )} 
+            />
+            
+            {/* Admin routes with role requirement */}
+            <ProtectedRoute 
+              path="/admin" 
+              component={() => (
+                <AuthenticatedLayout>
+                  <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                </AuthenticatedLayout>
+              )} 
+              requiredRoles={['admin']}
+            />
+            
+            {/* 404 Not Found */}
+            <Route component={NotFound} />
+          </Switch>
+          
+          <Toaster />
+        </ModuleIntegrationProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
-}
+};
 
 export default App;
