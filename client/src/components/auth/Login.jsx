@@ -27,7 +27,7 @@ const Login = () => {
       }));
       
       // Redirect to client portal directly
-      window.location.href = '/portal';
+      window.location.href = '/client-portal.html';
     } else {
       alert('Invalid credentials. Use admin/admin123');
     }
@@ -69,9 +69,12 @@ const Login = () => {
           >
             Sign In
           </button>
-          <div className="text-center mt-4">
+          <div className="text-center mt-4 flex justify-between">
             <a href="/" className="text-sm text-pink-600 hover:underline">
               Return to Home
+            </a>
+            <a href="/client-portal.html" className="text-sm font-bold bg-pink-100 text-pink-800 px-2 py-1 rounded hover:bg-pink-200">
+              DIRECT PORTAL ACCESS
             </a>
           </div>
         </form>
@@ -80,6 +83,15 @@ const Login = () => {
           <h2 className="text-sm font-semibold text-gray-700 mb-2">Demo Credentials</h2>
           <p className="text-xs text-gray-600">Username: <span className="font-mono bg-gray-100 px-1">admin</span></p>
           <p className="text-xs text-gray-600">Password: <span className="font-mono bg-gray-100 px-1">admin123</span></p>
+          
+          <div className="mt-4 flex justify-center">
+            <a 
+              href="/client-portal.html" 
+              className="text-white bg-green-600 hover:bg-green-700 px-4 py-2 text-sm font-bold rounded transition-colors"
+            >
+              ➤ ACCESS CLIENT PORTAL NOW ➤
+            </a>
+          </div>
         </div>
       </div>
     </div>
