@@ -13,9 +13,19 @@ function App() {
   
   // Check for authentication on mount
   useEffect(() => {
-    // In a real app, this would check localStorage, session or cookies
-    // For demo purposes, we're defaulting to not authenticated
-    setIsAuthenticated(false);
+    // Check localStorage for authentication
+    const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+    setIsAuthenticated(isAuth);
+    console.log('Authentication state:', isAuth);
+    
+    // Listen for storage changes (in case auth changes in another tab)
+    const handleStorageChange = () => {
+      const newAuthState = localStorage.getItem('isAuthenticated') === 'true';
+      setIsAuthenticated(newAuthState);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   return (
