@@ -1,0 +1,92 @@
+// =====================================================
+// TrialSage Admin Panel – Sprint‑7  ✦  Org & Role Provisioning
+//  • Admin page (client‑side) for CRO super‑admins
+//  • Backend routes to invite users & assign roles
+// =====================================================
+
+/* ---------- migrations/006_roles.sql ---------- */
+CREATE TABLE roles (
+  id SERIAL PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL
+);
+INSERT INTO roles (name) VALUES ('Admin'),('Editor'),('Viewer') ON CONFLICT DO NOTHING;
+
+ALTER TABLE user_organizations ADD COLUMN role_id INT REFERENCES roles(id) DEFAULT 2; -- default Editor
+
+/* ---------- src/routes/admin.js ---------- */
+import { Router } from 'express';
+import { requireAuth } from '../middleware/auth.js';
+import { authorizeRole } from '../middleware/rbac.js';
+import db from '../db.js';
+const r = Router();
+
+// List users in an org
+r.get('/admin/orgs/:orgId/users', requireAuth, authorizeRole('Admin'), async (req,res)=>{
+  const rows = await db('user_organizations as uo')
+    .join('users as u','u.id','uo.user_id')
+    .join('roles as r','r.id','uo.role_id')
+    .where({'uo.org_id': req.params.orgId})
+    .select('u.id','u.email','r.name as role');
+  res.json(rows);
+});
+
+// Invite user (email) to org with roleId
+r.post('/admin/orgs/:orgId/invite', requireAuth, authorizeRole('Admin'), async (req,res)=>{
+  const { email, roleId } = req.body;
+  // 1) create user in users table if not exists
+  let [user] = await db('users').where({ email }).select('*');
+  if(!user){ [user] = await db('users').insert({ id: crypto.randomUUID(), email }).returning('*'); }
+  // 2) insert mapping
+  await db('user_organizations').insert({ user_id:user.id, org_id:req.params.orgId, role_id: roleId });
+  // 3) send email via Supabase invite (omitted)
+  res.status(201).json({ ok:true });
+});
+export default r;
+
+/* ---------- mount in src/app.js ---------- */
+import adminRouter from './routes/admin.js';
+app.use('/api', adminRouter);
+
+/* ---------- FRONTEND – src/pages/AdminOrgUsers.tsx ---------- */
+import { useEffect, useState, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { PortalContext } from '../context/PortalContext';
+import { Table, TableHeader, TableBody, TableRow, TableCell, Input, Select, Button } from '@fluentui/react-components';
+export default function AdminOrgUsers(){
+  const { token } = useContext(AuthContext)!;
+  const { orgId } = useContext(PortalContext);
+  const [users,setUsers]=useState<any[]>([]);
+  const [email,setEmail]=useState('');
+  const [role,setRole]=useState('2'); // Editor default
+  useEffect(()=>{ if(!orgId) return; (async()=>{
+    const r=await fetch(`${import.meta.env.VITE_API_URL}/api/admin/orgs/${orgId}/users`,{headers:{Authorization:`Bearer ${token}`}});
+    setUsers(await r.json());})(); },[orgId]);
+  const invite=async()=>{
+    await fetch(`${import.meta.env.VITE_API_URL}/api/admin/orgs/${orgId}/invite`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({email,roleId:Number(role)})});
+    setEmail(''); setRole('2');
+  };
+  return (
+    <div style={{padding:24}}>
+      <h3>Organization Users</h3>
+      <Table arialabel="users">
+        <TableHeader>
+          <TableRow><TableCell>Email</TableCell><TableCell>Role</TableCell></TableRow>
+        </TableHeader>
+        <TableBody>{users.map(u=><TableRow key={u.id}><TableCell>{u.email}</TableCell><TableCell>{u.role}</TableCell></TableRow>)}</TableBody>
+      </Table>
+      <h4 style={{marginTop:24}}>Invite User</h4>
+      <Input placeholder="email" value={email} onChange={(_,v)=>setEmail(v.value)} />
+      <Select value={role} onChange={(_,v)=>setRole(v.value)} style={{marginLeft:8}}>
+        <option value="1">Admin</option><option value="2">Editor</option><option value="3">Viewer</option>
+      </Select>
+      <Button appearance="primary" onClick={invite} style={{marginLeft:8}}>Invite</Button>
+    </div>
+  );
+}
+
+/* ---------- add route ---------- */
+// in App.tsx inside PortalShell routes
+<Route path="/admin/org-users" element={<AdminOrgUsers/>} />
+
+// =====================================================
+// END Sprint‑7

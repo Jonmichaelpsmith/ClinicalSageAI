@@ -1,0 +1,80 @@
+// =====================================================
+// TrialSage Client Portal – Sprint‑6  ✦  Multi‑Tenant Dashboard Navigation
+//  • SideNav with Org → Program → Study drill‑down
+//  • Context keeps current selections
+//  • Reusable layout shell
+// =====================================================
+
+/* ---------- src/context/PortalContext.tsx ---------- */
+import React, { createContext, useState } from 'react';
+export interface PortalCtx { orgId?:string; programId?:string; studyId?:string; set:(p:Partial<PortalCtx>)=>void; }
+export const PortalContext = createContext<PortalCtx>({ set: ()=>{} });
+export const PortalProvider:React.FC<{children:React.ReactNode}> = ({children})=>{
+  const [state,setState] = useState<PortalCtx>({});
+  return <PortalContext.Provider value={{...state,set:(p)=>setState(s=>({...s,...p}))}}>{children}</PortalContext.Provider>;
+};
+
+/* ---------- src/components/SideNav.tsx ---------- */
+import { useContext, useEffect, useState } from 'react';
+import { PortalContext } from '../context/PortalContext';
+import { AuthContext } from '../context/AuthContext';
+import { Link } from '@fluentui/react';
+export default function SideNav(){
+  const { token } = useContext(AuthContext)!;
+  const ctx = useContext(PortalContext);
+  const [orgs,setOrgs]=useState<any[]>([]);
+  const [programs,setPrograms]=useState<any[]>([]);
+  const [studies,setStudies]=useState<any[]>([]);
+
+  // load orgs for CRO user; else current user org
+  useEffect(()=>{ (async()=>{
+    const r=await fetch(`${import.meta.env.VITE_API_URL}/api/organizations`,{headers:{Authorization:`Bearer ${token}`}});
+    setOrgs(await r.json());})(); },[]);
+  useEffect(()=>{ if(!ctx.orgId) return; (async()=>{
+    const r=await fetch(`${import.meta.env.VITE_API_URL}/api/programs?orgId=${ctx.orgId}`,{headers:{Authorization:`Bearer ${token}`}});
+    setPrograms(await r.json());})(); },[ctx.orgId]);
+  useEffect(()=>{ if(!ctx.programId) return; (async()=>{
+    const r=await fetch(`${import.meta.env.VITE_API_URL}/api/programs/${ctx.programId}/studies`,{headers:{Authorization:`Bearer ${token}`}});
+    setStudies(await r.json());})(); },[ctx.programId]);
+
+  return (
+    <div style={{width:260,borderRight:'1px solid #ddd',height:'100vh',overflowY:'auto',padding:8}}>
+      <h4>Organizations</h4>
+      {orgs.map(o=> <div key={o.id}><Link onClick={()=>ctx.set({orgId:o.id,programId:undefined,studyId:undefined})}>{o.name}</Link></div> )}
+      {ctx.orgId && <>
+        <h4 style={{marginTop:16}}>Programs</h4>
+        {programs.map(p=> <div key={p.id} style={{paddingLeft:12}}><Link onClick={()=>ctx.set({programId:p.id,studyId:undefined})}>{p.name}</Link></div>) }
+      </>}
+      {ctx.programId && <>
+        <h4 style={{marginTop:16}}>Studies</h4>
+        {studies.map(s=> <div key={s.id} style={{paddingLeft:24}}><Link onClick={()=>ctx.set({studyId:s.id})}>{s.name}</Link></div>) }
+      </>}
+    </div>
+  );
+}
+
+/* ---------- src/layouts/PortalShell.tsx ---------- */
+import SideNav from '../components/SideNav';
+import { Outlet } from 'react-router-dom';
+export default function PortalShell(){
+  return (
+    <div style={{display:'flex'}}>
+      <SideNav />
+      <div style={{flex:1}}>
+        <Outlet />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- adjust App.tsx routes ---------- */
+import PortalShell from './layouts/PortalShell';
+...
+<Route element={<PortalShell />}>
+  <Route path="/dashboard" element={<ClientDashboard/>}/>
+  <Route path="/programs/:programId" element={<ProgramDashboard/>}/>
+  <Route path="/studies/:studyId/*" element={<StudyWorkspace/>}/>
+</Route>
+
+// =====================================================
+// END Sprint‑6
