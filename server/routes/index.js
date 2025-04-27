@@ -5,11 +5,13 @@
  * - Blockchain security routes
  * - AI security routes
  * - Security middleware
+ * - IND Wizard routes (Protocol Builder, Regulatory Intelligence)
  */
 
 const blockchainRoutes = require('./blockchain');
 const aiRoutes = require('./ai');
 const rolePrivilegeService = require('../services/role-privilege-service');
+import protocolRoutes from './protocol.js';
 
 /**
  * Register all API routes with the Express application
@@ -25,6 +27,9 @@ function registerRoutes(app) {
   
   // Register role and privilege routes
   rolePrivilegeService.setupRolePrivilegeRoutes(app);
+  
+  // Register IND Wizard protocol routes
+  app.use('/api/ind', protocolRoutes);
   
   // Root API status endpoint
   app.get('/api/status', (req, res) => {
