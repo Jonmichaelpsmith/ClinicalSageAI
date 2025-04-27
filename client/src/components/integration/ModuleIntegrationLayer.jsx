@@ -12,6 +12,9 @@ export const useModuleIntegration = () => {
   return context;
 };
 
+// Alias for backward compatibility
+export const useIntegration = useModuleIntegration;
+
 export const ModuleIntegrationProvider = ({ children }) => {
   // Shared state between modules
   const [sharedData, setSharedData] = useState({

@@ -1,487 +1,603 @@
-/**
- * CSR Intelligence Module Component
- * 
- * This component provides the Clinical Study Report Intelligence interface
- * for the TrialSage platform, helping users automate and optimize CSR creation.
- */
-
 import React, { useState } from 'react';
-import { 
-  FileText, 
-  Search, 
-  Filter,
-  Upload,
-  Download,
-  Clock,
-  Play,
-  CheckCircle,
-  AlertCircle,
-  Plus,
-  Sparkles
-} from 'lucide-react';
+import { FileText, BookOpen, Zap, Users, BarChart2, Layout, Search, CheckCircle, FileQuestion, Pen, Brain, AlignLeft, FileDown } from 'lucide-react';
 import { useIntegration } from '../integration/ModuleIntegrationLayer';
 
 const CSRIntelligenceModule = () => {
-  const { regulatoryIntelligenceCore } = useIntegration();
-  const [activeView, setActiveView] = useState('dashboard');
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Sample CSR projects (in a real app, would come from API)
-  const csrProjects = [
+  const { data, aiProcessing, runAiAnalysis, addAuditEntry } = useIntegration();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
+
+  // CSR Template data
+  const csrTemplates = [
     {
-      id: 'csr-001',
-      name: 'CSR-XYZ-Phase1',
-      studyId: 'ABC-123-P1',
-      drug: 'XYZ-123',
-      status: 'in-progress',
-      progress: 65,
-      createdAt: '2025-03-10T09:30:00Z',
-      updatedAt: '2025-04-22T15:45:00Z',
-      dueDate: '2025-05-15T00:00:00Z',
-      author: 'Jane Doe',
-      sections: [
-        { id: 'title', name: 'Title Page', status: 'completed' },
-        { id: 'synopsis', name: 'Synopsis', status: 'completed' },
-        { id: 'ethics', name: 'Ethics', status: 'completed' },
-        { id: 'investigators', name: 'Investigators', status: 'completed' },
-        { id: 'intro', name: 'Introduction', status: 'in-progress' },
-        { id: 'objectives', name: 'Study Objectives', status: 'completed' },
-        { id: 'methods', name: 'Methods', status: 'in-progress' },
-        { id: 'results', name: 'Results', status: 'not-started' },
-        { id: 'discussion', name: 'Discussion', status: 'not-started' },
-        { id: 'conclusion', name: 'Conclusion', status: 'not-started' },
-        { id: 'references', name: 'References', status: 'in-progress' },
-        { id: 'appendices', name: 'Appendices', status: 'not-started' }
-      ]
+      id: 'csr-ich-e3',
+      name: 'ICH E3 Compliant Template',
+      description: 'Standard template following ICH E3 guidance for Clinical Study Reports',
+      regulatory: ['FDA', 'EMA', 'PMDA', 'NMPA'],
+      popularity: 'High',
+      sections: 16,
+      lastUpdated: '2025-03-01',
     },
     {
-      id: 'csr-002',
-      name: 'CSR-ABC-Phase2',
-      studyId: 'ABC-456-P2',
-      drug: 'ABC-456',
-      status: 'review',
-      progress: 90,
-      createdAt: '2025-02-05T11:15:00Z',
-      updatedAt: '2025-04-20T10:30:00Z',
-      dueDate: '2025-04-30T00:00:00Z',
-      author: 'John Smith',
-      sections: []
+      id: 'csr-ema-2025',
+      name: 'EMA Enhanced Template',
+      description: 'Optimized for European Medicines Agency with additional data transparency sections',
+      regulatory: ['EMA'],
+      popularity: 'Medium',
+      sections: 18,
+      lastUpdated: '2025-02-15',
     },
     {
-      id: 'csr-003',
-      name: 'CSR-DEF-Pivotal',
-      studyId: 'DEF-789-P3',
-      drug: 'DEF-789',
-      status: 'completed',
-      progress: 100,
-      createdAt: '2025-01-15T14:00:00Z',
-      updatedAt: '2025-03-25T16:45:00Z',
-      dueDate: '2025-03-31T00:00:00Z',
-      author: 'Robert Chen',
-      sections: []
-    }
+      id: 'csr-fda-expedited',
+      name: 'FDA Expedited Review Template',
+      description: 'Streamlined template for expedited review pathways with the FDA',
+      regulatory: ['FDA'],
+      popularity: 'Medium',
+      sections: 14,
+      lastUpdated: '2025-01-20',
+    },
+    {
+      id: 'csr-japan-pmda',
+      name: 'PMDA Specialized Template',
+      description: 'Customized for Japanese PMDA submissions with country-specific requirements',
+      regulatory: ['PMDA'],
+      popularity: 'Low',
+      sections: 17,
+      lastUpdated: '2024-12-10',
+    },
   ];
-  
-  // Filter CSR projects based on search query
-  const filteredProjects = csrProjects.filter(project => 
-    project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.studyId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.drug.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+
+  // Recently generated CSRs
+  const recentCsrs = [
+    {
+      id: 'csr1',
+      title: 'Phase 2 Study XYZ-123 in Rheumatoid Arthritis',
+      template: 'ICH E3 Compliant',
+      status: 'Complete',
+      generatedDate: '2025-03-10T15:22:43Z',
+      progress: 100,
+    },
+    {
+      id: 'csr2',
+      title: 'Phase 1b Safety Study ABC-456 in Healthy Volunteers',
+      template: 'FDA Expedited Review',
+      status: 'In Progress',
+      generatedDate: '2025-03-08T09:15:30Z',
+      progress: 65,
+    },
+    {
+      id: 'csr3',
+      title: 'Phase 3 Pivotal Study DEF-789 in Type 2 Diabetes',
+      template: 'ICH E3 Compliant',
+      status: 'Complete',
+      generatedDate: '2025-02-22T14:05:11Z',
+      progress: 100,
+    },
+  ];
+
+  // Stats for dashboard
+  const stats = [
+    { name: 'Total CSRs Generated', value: '24', icon: <FileText size={20} className="text-blue-500" /> },
+    { name: 'Time Saved', value: '312 hrs', icon: <Zap size={20} className="text-yellow-500" /> },
+    { name: 'AI Analyses Performed', value: '47', icon: <Brain size={20} className="text-purple-500" /> },
+    { name: 'Compliance Score', value: '97%', icon: <CheckCircle size={20} className="text-green-500" /> },
+  ];
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    addAuditEntry('csr_tab_changed', { tab });
   };
-  
-  // Get status badge color
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'in-progress':
-        return 'bg-blue-100 text-blue-800';
-      case 'review':
-        return 'bg-amber-100 text-amber-800';
-      case 'not-started':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+
+  const handleGenerateClick = () => {
+    setShowGenerate(true);
+  };
+
+  const handleTemplateSelect = (index) => {
+    setSelectedTemplateIndex(index);
+  };
+
+  const startGeneration = async () => {
+    try {
+      await runAiAnalysis({ templateId: csrTemplates[selectedTemplateIndex].id }, 'csr_generation');
+      setShowGenerate(false);
+      
+      // Add to recent CSRs (in a real app, this would come from the backend)
+      const newCsr = {
+        id: 'csr' + (recentCsrs.length + 1),
+        title: 'New CSR from ' + csrTemplates[selectedTemplateIndex].name,
+        template: csrTemplates[selectedTemplateIndex].name,
+        status: 'In Progress',
+        generatedDate: new Date().toISOString(),
+        progress: 10,
+      };
+      
+      // We would update state here in a real application
+      console.log('New CSR started:', newCsr);
+      
+    } catch (error) {
+      console.error('Error generating CSR:', error);
     }
   };
-  
-  // Calculate days remaining
-  const getDaysRemaining = (dueDate) => {
-    const today = new Date();
-    const due = new Date(dueDate);
-    const diffTime = due - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
-  
-  // Render dashboard view
-  const renderDashboard = () => {
-    return (
-      <div>
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-900">CSR Projects</h2>
-            <button className="py-2 px-4 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center text-sm">
-              <Plus className="h-4 w-4 mr-1" />
-              New CSR Project
-            </button>
-          </div>
-          
-          <div className="flex flex-wrap gap-4 mb-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                className="block w-64 pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="Search projects..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
-            </div>
-            
-            <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-            </button>
-            
-            <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-              <Upload className="h-4 w-4 mr-2" />
-              Import
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-white rounded-lg shadow border hover:shadow-md cursor-pointer"
-                onClick={() => setActiveView('project')}
-              >
-                <div className="p-4 border-b">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">{project.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">Study ID: {project.studyId}</p>
-                    </div>
-                    <div className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(project.status)}`}>
-                      {project.status === 'in-progress' ? 'In Progress' : 
-                       project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="text-sm">
-                      <span className="text-gray-500">Drug: </span>
-                      <span className="font-medium text-gray-700">{project.drug}</span>
-                    </div>
-                    <div className="text-sm">
-                      <span className="text-gray-500">Author: </span>
-                      <span className="font-medium text-gray-700">{project.author}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>Progress</span>
-                      <span>{project.progress}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full" 
-                        style={{ width: `${project.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  {project.status !== 'completed' && (
-                    <div className="mb-3 flex items-center">
-                      <Clock className="h-4 w-4 text-gray-400 mr-1" />
-                      <span className="text-xs text-gray-500">
-                        Due in <span className={`font-medium ${
-                          getDaysRemaining(project.dueDate) < 7 ? 'text-red-600' : 'text-gray-700'
-                        }`}>{getDaysRemaining(project.dueDate)}</span> days
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="text-xs text-gray-500">
-                      Last updated: {new Date(project.updatedAt).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button className="inline-flex items-center px-2 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <Download className="h-3 w-3 mr-1" />
-                        Export
-                      </button>
-                      {project.status !== 'completed' && (
-                        <button className="inline-flex items-center px-2 py-1 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-primary hover:bg-primary-dark">
-                          <Play className="h-3 w-3 mr-1" />
-                          {project.status === 'in-progress' ? 'Continue' : 'Start'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
+
+  return (
+    <div className="flex flex-col">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">CSR Intelligence™</h1>
+        <p className="text-gray-600">
+          AI-powered creation and analysis of clinical study reports for global submissions
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="flex -mb-px">
+          <button
+            className={`py-3 px-4 flex items-center text-sm font-medium ${
+              activeTab === 'dashboard'
+                ? 'border-b-2 border-pink-600 text-pink-600'
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+            onClick={() => handleTabChange('dashboard')}
+          >
+            <Layout size={16} className="mr-2" />
+            Dashboard
+          </button>
+          <button
+            className={`py-3 px-4 flex items-center text-sm font-medium ${
+              activeTab === 'templates'
+                ? 'border-b-2 border-pink-600 text-pink-600'
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+            onClick={() => handleTabChange('templates')}
+          >
+            <BookOpen size={16} className="mr-2" />
+            Templates
+          </button>
+          <button
+            className={`py-3 px-4 flex items-center text-sm font-medium ${
+              activeTab === 'analysis'
+                ? 'border-b-2 border-pink-600 text-pink-600'
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+            onClick={() => handleTabChange('analysis')}
+          >
+            <BarChart2 size={16} className="mr-2" />
+            Analysis
+          </button>
+          <button
+            className={`py-3 px-4 flex items-center text-sm font-medium ${
+              activeTab === 'review'
+                ? 'border-b-2 border-pink-600 text-pink-600'
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+            onClick={() => handleTabChange('review')}
+          >
+            <Users size={16} className="mr-2" />
+            Review
+          </button>
+        </nav>
+      </div>
+
+      {/* Dashboard Tab */}
+      {activeTab === 'dashboard' && (
+        <div>
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {stats.map((stat, index) => (
+              <div key={index} className="bg-white p-4 rounded-lg border border-gray-200 flex items-center">
+                <div className="mr-4">{stat.icon}</div>
+                <div>
+                  <div className="text-sm text-gray-500">{stat.name}</div>
+                  <div className="text-xl font-semibold">{stat.value}</div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Recent CSRs */}
+          <div className="bg-white p-5 rounded-lg border border-gray-200 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium">Recent CSRs</h2>
+              <button 
+                className="hot-pink-btn flex items-center" 
+                onClick={handleGenerateClick}
+              >
+                <Pen size={16} className="mr-2" />
+                Generate New CSR
+              </button>
+            </div>
             
-            {/* Add new CSR project card */}
-            <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 hover:border-primary hover:bg-gray-100 flex flex-col items-center justify-center p-6 cursor-pointer">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                <Plus className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-1">New CSR Project</h3>
-              <p className="text-sm text-gray-500 text-center">
-                Create a new Clinical Study Report project
-              </p>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3">Title</th>
+                    <th className="px-4 py-3">Template</th>
+                    <th className="px-4 py-3">Generated</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {recentCsrs.map((csr) => (
+                    <tr key={csr.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-4 font-medium text-gray-900">{csr.title}</td>
+                      <td className="px-4 py-4 text-gray-500">{csr.template}</td>
+                      <td className="px-4 py-4 text-gray-500">{formatDate(csr.generatedDate)}</td>
+                      <td className="px-4 py-4">
+                        {csr.status === 'Complete' ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <CheckCircle size={12} className="mr-1" />
+                            Complete
+                          </span>
+                        ) : (
+                          <div>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-1">
+                              In Progress
+                            </span>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className="bg-blue-600 h-1.5 rounded-full" 
+                                style={{ width: `${csr.progress}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center space-x-3">
+                          <button className="p-1 text-gray-500 hover:text-gray-700">
+                            <FileDown size={16} />
+                          </button>
+                          <button className="p-1 text-gray-500 hover:text-gray-700">
+                            <Pen size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-        
-        {/* AI Assistant Suggestions */}
-        <div className="mb-6">
-          <div className="flex items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-900">AI Suggestions</h2>
-            <div className="ml-2 px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full flex items-center">
-              <Sparkles className="h-3 w-3 mr-1" />
-              Powered by AI
-            </div>
-          </div>
-          <div className="bg-white rounded-lg shadow border">
-            <div className="p-4 border-b">
-              <h3 className="font-medium">CSR Enhancement Recommendations</h3>
-            </div>
-            <div className="divide-y">
-              <div className="p-4 flex">
-                <div className="flex-shrink-0 mr-4">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <FileText className="h-4 w-4 text-blue-600" />
-                  </div>
+
+          {/* Getting Started */}
+          <div className="bg-white p-5 rounded-lg border border-gray-200">
+            <h2 className="text-lg font-medium mb-4">Getting Started</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                  <BookOpen size={18} className="text-blue-600" />
                 </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">Results Section Optimization</h4>
-                  <p className="text-sm text-gray-500 mt-1">
-                    AI analysis suggests adding additional statistical context to the CSR-XYZ-Phase1 results section.
-                  </p>
-                  <div className="mt-2">
-                    <button className="text-primary hover:text-primary-dark text-sm font-medium">
-                      Apply Suggestion
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 flex">
-                <div className="flex-shrink-0 mr-4">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">ICH E3 Compliance Check</h4>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Automated compliance check completed for CSR-ABC-Phase2 with 97% adherence to ICH E3 guidelines.
-                  </p>
-                  <div className="mt-2">
-                    <button className="text-primary hover:text-primary-dark text-sm font-medium">
-                      View Report
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 flex">
-                <div className="flex-shrink-0 mr-4">
-                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                    <AlertCircle className="h-4 w-4 text-amber-600" />
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">Data Inconsistency Alert</h4>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Potential data inconsistency detected between tables 4.2 and 6.3 in CSR-XYZ-Phase1.
-                  </p>
-                  <div className="mt-2">
-                    <button className="text-primary hover:text-primary-dark text-sm font-medium">
-                      Review Issue
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Recent CSR Templates */}
-        <div>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">CSR Templates & Resources</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg shadow border p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mr-3">
-                  <div className="w-10 h-10 rounded-md bg-blue-100 flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">ICH E3 Template</h3>
-                  <p className="text-sm text-gray-500 mt-1">Standard CSR template following ICH E3 guidelines</p>
-                  <button className="mt-2 text-primary hover:text-primary-dark text-sm font-medium">
-                    Use Template
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow border p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mr-3">
-                  <div className="w-10 h-10 rounded-md bg-purple-100 flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-purple-600" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">FDA Submission Template</h3>
-                  <p className="text-sm text-gray-500 mt-1">Optimized for FDA regulatory submissions</p>
-                  <button className="mt-2 text-primary hover:text-primary-dark text-sm font-medium">
-                    Use Template
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow border p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mr-3">
-                  <div className="w-10 h-10 rounded-md bg-green-100 flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-green-600" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">EMA Format Template</h3>
-                  <p className="text-sm text-gray-500 mt-1">Compliant with European Medicines Agency requirements</p>
-                  <button className="mt-2 text-primary hover:text-primary-dark text-sm font-medium">
-                    Use Template
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-  
-  // Render project view (placeholder)
-  const renderProject = () => {
-    return (
-      <div>
-        <div className="mb-6">
-          <button
-            onClick={() => setActiveView('dashboard')}
-            className="flex items-center text-primary hover:text-primary-dark"
-          >
-            <Play className="h-4 w-4 mr-1 transform rotate-180" />
-            <span>Back to Dashboard</span>
-          </button>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow border mb-6">
-          <div className="p-4 border-b">
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-xl font-medium text-gray-900">CSR-XYZ-Phase1</h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  Study ID: ABC-123-P1 | Drug: XYZ-123
+                <h3 className="font-medium mb-1">1. Choose a Template</h3>
+                <p className="text-sm text-gray-600">
+                  Select from our library of regulatory-compliant CSR templates
                 </p>
               </div>
-              <div className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                In Progress
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-3">
+                  <AlignLeft size={18} className="text-green-600" />
+                </div>
+                <h3 className="font-medium mb-1">2. Import Trial Data</h3>
+                <p className="text-sm text-gray-600">
+                  Connect your clinical trial data or import from TrialSage Vault
+                </p>
               </div>
-            </div>
-          </div>
-          <div className="p-4">
-            <p className="text-gray-700 mb-4">
-              This view would display the CSR editor and section management interface.
-            </p>
-            <p className="text-sm text-gray-500">
-              Coming soon in the next development iteration.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  };
-  
-  return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">CSR Intelligence™</h1>
-        <p className="text-gray-500 mt-1">
-          AI-powered Clinical Study Report automation and optimization
-        </p>
-      </div>
-      
-      {/* Quick Stats */}
-      {activeView === 'dashboard' && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4 border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Active CSRs</p>
-                <p className="text-xl font-semibold mt-1">5</p>
-              </div>
-              <div className="bg-blue-100 p-2 rounded-full">
-                <FileText className="h-5 w-5 text-blue-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-4 border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Due This Month</p>
-                <p className="text-xl font-semibold mt-1">2</p>
-              </div>
-              <div className="bg-amber-100 p-2 rounded-full">
-                <Clock className="h-5 w-5 text-amber-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-4 border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Completed</p>
-                <p className="text-xl font-semibold mt-1">12</p>
-              </div>
-              <div className="bg-green-100 p-2 rounded-full">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-4 border">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">AI Suggestions</p>
-                <p className="text-xl font-semibold mt-1">8</p>
-              </div>
-              <div className="bg-indigo-100 p-2 rounded-full">
-                <Sparkles className="h-5 w-5 text-indigo-600" />
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-3">
+                  <Brain size={18} className="text-purple-600" />
+                </div>
+                <h3 className="font-medium mb-1">3. Generate with AI</h3>
+                <p className="text-sm text-gray-600">
+                  Let our AI engine create a compliant CSR draft in minutes
+                </p>
               </div>
             </div>
           </div>
         </div>
       )}
-      
-      {/* Main Content */}
-      {activeView === 'dashboard' ? renderDashboard() : renderProject()}
+
+      {/* Templates Tab */}
+      {activeTab === 'templates' && (
+        <div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+            <div className="relative w-full sm:w-64">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={16} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search templates..."
+                className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-md text-sm"
+              />
+            </div>
+            <button 
+              className="hot-pink-btn flex items-center" 
+              onClick={handleGenerateClick}
+            >
+              <FileText size={16} className="mr-2" />
+              Generate New CSR
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {csrTemplates.map((template, index) => (
+              <div key={template.id} className="bg-white p-5 rounded-lg border border-gray-200 flex flex-col">
+                <div className="font-medium text-lg mb-2">{template.name}</div>
+                <p className="text-gray-600 text-sm mb-4 flex-grow">{template.description}</p>
+                
+                <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Sections:</span>
+                    <span className="ml-2 font-medium">{template.sections}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Popularity:</span>
+                    <span className="ml-2 font-medium">{template.popularity}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Updated:</span>
+                    <span className="ml-2 font-medium">{template.lastUpdated}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Agencies:</span>
+                    <span className="ml-2 font-medium">{template.regulatory.join(', ')}</span>
+                  </div>
+                </div>
+                
+                <button className="hot-pink-btn" onClick={() => {
+                  handleTemplateSelect(index);
+                  handleGenerateClick();
+                }}>
+                  Use Template
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Analysis Tab */}
+      {activeTab === 'analysis' && (
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
+          <h2 className="text-lg font-medium mb-6">CSR Intelligent Analysis</h2>
+          
+          <div className="mb-6">
+            <p className="text-gray-600 mb-4">
+              Upload an existing CSR to receive AI-powered analysis, compliance checking, and enhancement recommendations.
+            </p>
+            
+            <div className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center">
+              <FileQuestion size={48} className="text-gray-400 mb-2" />
+              <p className="text-sm text-gray-500 text-center mb-2">
+                Drag and drop a CSR document here, or click to select a file
+              </p>
+              <button className="bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm font-medium">
+                Browse Files
+              </button>
+              <input type="file" className="hidden" />
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="font-medium mb-3">Recent Analyses</h3>
+            
+            <div className="space-y-4">
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-medium">Phase 3 Study CSR Analysis</div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Complete
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500 mb-3">
+                  Analyzed on March 15, 2025
+                </div>
+                <div className="flex space-x-2">
+                  <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded">
+                    View Report
+                  </button>
+                  <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded">
+                    Download Analysis
+                  </button>
+                </div>
+              </div>
+              
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-medium">Safety Study CSR Analysis</div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Complete
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500 mb-3">
+                  Analyzed on March 10, 2025
+                </div>
+                <div className="flex space-x-2">
+                  <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded">
+                    View Report
+                  </button>
+                  <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded">
+                    Download Analysis
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Tab */}
+      {activeTab === 'review' && (
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
+          <h2 className="text-lg font-medium mb-6">Collaborative Review</h2>
+          
+          <div className="mb-6">
+            <p className="text-gray-600 mb-4">
+              Collaborate with your team to review and finalize CSR documents with real-time comments and tracked changes.
+            </p>
+            
+            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+              <Users size={48} className="text-gray-400 mx-auto mb-2" />
+              <h3 className="font-medium mb-1">No active review sessions</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Start a new review session by uploading a CSR document or selecting one from your recent CSRs
+              </p>
+              <button className="hot-pink-btn mx-auto">
+                Start New Review
+              </button>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="font-medium mb-3">Recent Reviews</h3>
+            
+            <div className="space-y-4">
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-medium mb-1">Phase 2 Study CSR Review</div>
+                    <div className="text-sm text-gray-500">
+                      Started on March 12, 2025 • 3 participants
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    In Progress
+                  </span>
+                </div>
+                <div className="mt-3 flex space-x-2">
+                  <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded">
+                    Resume Review
+                  </button>
+                  <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded">
+                    Review Status
+                  </button>
+                </div>
+              </div>
+              
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-medium mb-1">Phase 1 PK Study CSR Review</div>
+                    <div className="text-sm text-gray-500">
+                      Completed on March 5, 2025 • 4 participants
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Completed
+                  </span>
+                </div>
+                <div className="mt-3 flex space-x-2">
+                  <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded">
+                    View Review
+                  </button>
+                  <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded">
+                    Download Report
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generate CSR Modal */}
+      {showGenerate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <h3 className="text-lg font-semibold mb-4">Generate New CSR</h3>
+            
+            <div className="mb-6">
+              <h4 className="font-medium mb-2">Selected Template</h4>
+              <div className="p-4 border border-pink-100 bg-pink-50 rounded-lg">
+                <div className="font-medium">{csrTemplates[selectedTemplateIndex].name}</div>
+                <p className="text-sm text-gray-600 mt-1">{csrTemplates[selectedTemplateIndex].description}</p>
+                <div className="mt-2 text-xs text-gray-500">
+                  <span className="mr-4">Regulatory: {csrTemplates[selectedTemplateIndex].regulatory.join(', ')}</span>
+                  <span>Sections: {csrTemplates[selectedTemplateIndex].sections}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Study Title
+              </label>
+              <input
+                type="text"
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                placeholder="Enter the title of your clinical study"
+              />
+            </div>
+            
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Protocol Number
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  placeholder="e.g., ABC-123-P2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Study Phase
+                </label>
+                <select className="w-full border border-gray-300 rounded-md px-3 py-2">
+                  <option value="">Select study phase</option>
+                  <option value="phase1">Phase 1</option>
+                  <option value="phase2">Phase 2</option>
+                  <option value="phase3">Phase 3</option>
+                  <option value="phase4">Phase 4</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Data Source
+              </label>
+              <select className="w-full border border-gray-300 rounded-md px-3 py-2">
+                <option value="">Select data source</option>
+                <option value="import">Import from TrialSage Vault</option>
+                <option value="upload">Upload clinical trial data</option>
+                <option value="manual">Enter data manually</option>
+              </select>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button 
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                onClick={() => setShowGenerate(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="hot-pink-btn"
+                onClick={startGeneration}
+                disabled={aiProcessing.status === 'processing'}
+              >
+                {aiProcessing.status === 'processing' ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  'Generate CSR'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

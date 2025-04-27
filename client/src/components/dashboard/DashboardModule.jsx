@@ -1,339 +1,435 @@
-/**
- * Dashboard Module Component
- * 
- * This component provides the main dashboard interface for the TrialSage platform,
- * showing an overview of all modules and recent activities.
- */
-
-import React from 'react';
-import { Link } from 'wouter';
-import { 
-  FileInput, 
-  FileText, 
-  Database, 
-  FileSymlink,
-  BarChart3,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  ArrowRight
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { BarChart3, BookOpen, Calendar, CheckCircle, ClipboardList, FileText, FileWarning, Layers, SlidersHorizontal, Users, FileCheck, ArrowRight, Clock, ListTodo, BookText, Database, Shield, PieChart, ArrowUpRight, FlaskConical, BarChart, Bell } from 'lucide-react';
 import { useIntegration } from '../integration/ModuleIntegrationLayer';
+import { Link } from 'wouter';
 
 const DashboardModule = () => {
-  const { regulatoryIntelligenceCore } = useIntegration();
-  
-  // Module cards configuration
-  const moduleCards = [
-    {
-      id: 'ind-wizard',
-      name: 'IND Wizard™',
-      description: 'Streamlined IND application preparation',
-      icon: FileInput,
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-600',
-      path: '/ind-wizard',
-      stats: { active: 3, completed: 7 }
-    },
-    {
-      id: 'csr-intelligence',
-      name: 'CSR Intelligence™',
-      description: 'Automated clinical study report generation',
-      icon: FileText,
-      iconBg: 'bg-emerald-100',
-      iconColor: 'text-emerald-600',
-      path: '/csr-intelligence',
-      stats: { active: 5, completed: 12 }
-    },
-    {
-      id: 'trial-vault',
-      name: 'TrialSage Vault™',
-      description: 'Secure document management with blockchain verification',
-      icon: Database,
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-600',
-      path: '/trial-vault',
-      stats: { documents: 342, verified: 286 }
-    },
-    {
-      id: 'study-architect',
-      name: 'Study Architect™',
-      description: 'Intelligent protocol development & optimization',
-      icon: FileSymlink,
-      iconBg: 'bg-amber-100',
-      iconColor: 'text-amber-600',
-      path: '/study-architect',
-      stats: { active: 4, completed: 9 }
-    },
-    {
-      id: 'analytics',
-      name: 'Analytics',
-      description: 'Regulatory insights & reporting',
-      icon: BarChart3,
-      iconBg: 'bg-red-100',
-      iconColor: 'text-red-600',
-      path: '/analytics',
-      stats: { reports: 18, insights: 45 }
-    }
+  const { data, blockchainStatus, addAuditEntry } = useIntegration();
+  const [dateRange, setDateRange] = useState('month');
+
+  const handleDateRangeChange = (range) => {
+    setDateRange(range);
+    addAuditEntry('dashboard_date_range_changed', { range });
+  };
+
+  // Dashboard stats
+  const stats = [
+    { name: 'Active Studies', value: '14', icon: <FlaskConical size={24} className="text-blue-500" />, trend: '+2 this month' },
+    { name: 'Documents Stored', value: '3,842', icon: <Database size={24} className="text-purple-500" />, trend: '+210 this month' },
+    { name: 'CSRs Generated', value: '26', icon: <FileText size={24} className="text-pink-500" />, trend: '+5 this month' },
+    { name: 'Verified Documents', value: '3,651', icon: <Shield size={24} className="text-green-500" />, trend: '95% of total' },
   ];
-  
+
   // Recent activities
   const recentActivities = [
     {
-      id: 'activity-1',
-      title: 'Protocol XYZ-123 updated',
-      timestamp: '2025-04-27T10:23:00Z',
-      module: 'study-architect',
+      id: 'act1',
       user: 'John Smith',
-      status: 'completed',
-      icon: CheckCircle
+      action: 'uploaded',
+      item: 'Phase 2 Protocol Amendment',
+      timestamp: '2025-03-15T13:45:22Z',
+      module: 'Vault'
     },
     {
-      id: 'activity-2',
-      title: 'CSR for Study ABC-456 requires review',
-      timestamp: '2025-04-27T09:15:00Z',
-      module: 'csr-intelligence',
-      user: 'Jane Doe',
-      status: 'pending',
-      icon: AlertCircle
+      id: 'act2',
+      user: 'Sarah Johnson',
+      action: 'generated',
+      item: 'Final CSR for XYZ-123 Study',
+      timestamp: '2025-03-15T10:20:15Z',
+      module: 'CSR Intelligence'
     },
     {
-      id: 'activity-3',
-      title: 'Document verification in progress',
-      timestamp: '2025-04-27T08:45:00Z',
-      module: 'trial-vault',
-      user: 'Robert Chen',
-      status: 'in-progress',
-      icon: Clock
+      id: 'act3',
+      user: 'Michael Chen',
+      action: 'created',
+      item: 'New Phase 1 Protocol',
+      timestamp: '2025-03-14T16:30:05Z',
+      module: 'Study Architect'
     },
     {
-      id: 'activity-4',
-      title: 'New FDA guidance detected',
-      timestamp: '2025-04-26T17:30:00Z',
-      module: 'regulatory-intelligence',
-      user: 'AI System',
-      status: 'notification',
-      icon: AlertCircle
+      id: 'act4',
+      user: 'Lisa Rodriguez',
+      action: 'edited',
+      item: 'Site Feasibility Questionnaire',
+      timestamp: '2025-03-14T15:15:33Z',
+      module: 'Study Architect'
+    },
+    {
+      id: 'act5',
+      user: 'AI Assistant',
+      action: 'analyzed',
+      item: 'Phase 3 Protocol Compliance',
+      timestamp: '2025-03-14T11:05:47Z',
+      module: 'Study Architect'
     }
   ];
-  
-  // Format relative time
-  const formatRelativeTime = (timestamp) => {
-    const date = new Date(timestamp);
+
+  // Upcoming tasks
+  const upcomingTasks = [
+    {
+      id: 'task1',
+      title: 'Review Phase 2 CSR Draft',
+      dueDate: '2025-03-18T00:00:00Z',
+      priority: 'High',
+      assignedTo: 'John Smith'
+    },
+    {
+      id: 'task2',
+      title: 'Submit FDA Form 1572 for Study XYZ-123',
+      dueDate: '2025-03-20T00:00:00Z',
+      priority: 'Medium',
+      assignedTo: 'Sarah Johnson'
+    },
+    {
+      id: 'task3',
+      title: 'Finalize Protocol for ABC-456 Study',
+      dueDate: '2025-03-25T00:00:00Z',
+      priority: 'High',
+      assignedTo: 'Michael Chen'
+    }
+  ];
+
+  // Recent regulatory guidance updates
+  const regulatoryUpdates = [
+    {
+      id: 'reg1',
+      title: 'FDA Guidance for COVID-19 Trial Conduct',
+      agency: 'FDA',
+      date: '2025-03-10T00:00:00Z',
+      type: 'Draft Guidance'
+    },
+    {
+      id: 'reg2',
+      title: 'EMA Update on Real-World Evidence Requirements',
+      agency: 'EMA',
+      date: '2025-03-07T00:00:00Z',
+      type: 'Final Guidance'
+    },
+    {
+      id: 'reg3',
+      title: 'ICH E6(R3) Good Clinical Practice Update',
+      agency: 'ICH',
+      date: '2025-03-05T00:00:00Z',
+      type: 'Draft Revision'
+    }
+  ];
+
+  // Study status
+  const studyStatusData = [
+    { name: 'Planning', count: 3 },
+    { name: 'Startup', count: 2 },
+    { name: 'Enrolling', count: 5 },
+    { name: 'Ongoing', count: 4 },
+    { name: 'Reporting', count: 3 },
+    { name: 'Closed', count: 7 },
+  ];
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const formatDateTime = (dateString) => {
+    const options = { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const getRelativeTime = (dateString) => {
+    const date = new Date(dateString);
     const now = new Date();
-    const diffMs = now - date;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHr = Math.floor(diffMin / 60);
-    const diffDays = Math.floor(diffHr / 24);
+    const diffInSeconds = Math.floor((now - date) / 1000);
     
-    if (diffSec < 60) {
-      return 'just now';
-    } else if (diffMin < 60) {
-      return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
-    } else if (diffHr < 24) {
-      return `${diffHr} hour${diffHr > 1 ? 's' : ''} ago`;
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
     } else {
-      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+      return formatDate(dateString);
     }
   };
-  
-  // Get status color class
-  const getStatusColorClass = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green-600 bg-green-100';
-      case 'pending':
-        return 'text-amber-600 bg-amber-100';
-      case 'in-progress':
-        return 'text-blue-600 bg-blue-100';
-      case 'notification':
-        return 'text-purple-600 bg-purple-100';
+
+  const getModuleColor = (module) => {
+    switch (module) {
+      case 'Vault':
+        return 'bg-purple-100 text-purple-800';
+      case 'CSR Intelligence':
+        return 'bg-pink-100 text-pink-800';
+      case 'Study Architect':
+        return 'bg-blue-100 text-blue-800';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'bg-gray-100 text-gray-800';
     }
   };
-  
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'High':
+        return 'bg-red-100 text-red-800';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="flex flex-col">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
+        <p className="text-gray-600">
+          Overview of your TrialSage platform activity and regulatory operations
+        </p>
+      </div>
+
+      {/* Filters and date range selector */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">
-            Welcome to TrialSage™ - Your regulatory compliance platform
-          </p>
+          <div className="inline-flex rounded-md shadow-sm" role="group">
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
+                dateRange === 'week' 
+                  ? 'bg-pink-600 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              } border border-gray-200`}
+              onClick={() => handleDateRangeChange('week')}
+            >
+              Week
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm font-medium ${
+                dateRange === 'month' 
+                  ? 'bg-pink-600 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              } border-t border-b border-gray-200`}
+              onClick={() => handleDateRangeChange('month')}
+            >
+              Month
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
+                dateRange === 'quarter' 
+                  ? 'bg-pink-600 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              } border border-gray-200`}
+              onClick={() => handleDateRangeChange('quarter')}
+            >
+              Quarter
+            </button>
+          </div>
         </div>
-        <div className="text-sm text-gray-500">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </div>
+        
+        <button className="text-sm flex items-center text-gray-700 hover:text-gray-900">
+          <SlidersHorizontal size={16} className="mr-1" />
+          Customize Dashboard
+        </button>
       </div>
-      
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4 border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Active Documents</p>
-              <p className="text-xl font-semibold mt-1">152</p>
-            </div>
-            <div className="bg-blue-100 p-2 rounded-full">
-              <FileText className="h-5 w-5 text-blue-600" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-4 border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Pending Approvals</p>
-              <p className="text-xl font-semibold mt-1">8</p>
-            </div>
-            <div className="bg-amber-100 p-2 rounded-full">
-              <Clock className="h-5 w-5 text-amber-600" />
+
+      {/* Stats Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {stats.map((stat, index) => (
+          <div key={index} className="bg-white p-5 rounded-lg border border-gray-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-gray-500">{stat.name}</p>
+                <p className="text-2xl font-semibold mt-1">{stat.value}</p>
+                <p className="text-xs text-gray-500 mt-1">{stat.trend}</p>
+              </div>
+              <div className="p-2 rounded-lg bg-gray-50">
+                {stat.icon}
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-4 border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Recent Updates</p>
-              <p className="text-xl font-semibold mt-1">24</p>
-            </div>
-            <div className="bg-emerald-100 p-2 rounded-full">
-              <CheckCircle className="h-5 w-5 text-emerald-600" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-4 border">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Regulatory Alerts</p>
-              <p className="text-xl font-semibold mt-1">3</p>
-            </div>
-            <div className="bg-red-100 p-2 rounded-full">
-              <AlertCircle className="h-5 w-5 text-red-600" />
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
-      
-      {/* Main Content Grid */}
+
+      {/* Main dashboard content - 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Module Cards */}
-        <div className="lg:col-span-2">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Modules</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {moduleCards.map((module) => (
-              <Link key={module.id} href={module.path}>
-                <a className="bg-white rounded-lg shadow p-5 border hover:shadow-md transition-shadow">
-                  <div className="flex items-start">
-                    <div className={`p-3 rounded-full ${module.iconBg} mr-4`}>
-                      <module.icon className={`h-6 w-6 ${module.iconColor}`} />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">{module.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">{module.description}</p>
-                      
-                      {/* Module-specific stats */}
-                      <div className="mt-3">
-                        {module.id === 'trial-vault' ? (
-                          <div className="flex items-center text-sm text-gray-700">
-                            <span className="font-medium">{module.stats.documents}</span>
-                            <span className="mx-1">documents,</span>
-                            <span className="font-medium">{module.stats.verified}</span>
-                            <span className="ml-1">verified</span>
-                          </div>
-                        ) : module.id === 'analytics' ? (
-                          <div className="flex items-center text-sm text-gray-700">
-                            <span className="font-medium">{module.stats.reports}</span>
-                            <span className="mx-1">reports,</span>
-                            <span className="font-medium">{module.stats.insights}</span>
-                            <span className="ml-1">insights</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center text-sm text-gray-700">
-                            <span className="font-medium">{module.stats.active}</span>
-                            <span className="mx-1">active,</span>
-                            <span className="font-medium">{module.stats.completed}</span>
-                            <span className="ml-1">completed</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </a>
+        {/* Left column */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Recent Activity */}
+          <div className="bg-white p-5 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium">Recent Activity</h2>
+              <Link href="#" className="text-sm text-pink-600 hover:underline flex items-center">
+                View All <ArrowRight size={14} className="ml-1" />
               </Link>
-            ))}
-          </div>
-        </div>
-        
-        {/* Recent Activity */}
-        <div>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
-          <div className="bg-white rounded-lg shadow border">
-            <div className="p-4 border-b">
-              <h3 className="font-medium">Activity Feed</h3>
             </div>
-            <div className="divide-y">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="p-4 hover:bg-gray-50">
-                  <div className="flex items-start">
-                    <div className={`p-2 rounded-full ${getStatusColorClass(activity.status)} mr-3`}>
-                      <activity.icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        By {activity.user} &middot; {formatRelativeTime(activity.timestamp)}
+            
+            <div className="space-y-4">
+              {recentActivities.map(activity => (
+                <div key={activity.id} className="flex items-start gap-4">
+                  <div className="rounded-full h-9 w-9 flex items-center justify-center bg-gray-100 shrink-0 mt-1">
+                    {activity.action === 'uploaded' && <FileCheck size={18} className="text-gray-600" />}
+                    {activity.action === 'generated' && <FileText size={18} className="text-gray-600" />}
+                    {activity.action === 'created' && <PlusCircle size={18} className="text-gray-600" />}
+                    {activity.action === 'edited' && <Pen size={18} className="text-gray-600" />}
+                    {activity.action === 'analyzed' && <Brain size={18} className="text-gray-600" />}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
+                      <p className="text-sm">
+                        <span className="font-medium">{activity.user}</span>
+                        <span className="text-gray-500"> {activity.action} </span>
+                        <span className="font-medium">{activity.item}</span>
                       </p>
+                      <span className="text-xs text-gray-500 whitespace-nowrap">
+                        {getRelativeTime(activity.timestamp)}
+                      </span>
+                    </div>
+                    <div className="mt-1">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getModuleColor(activity.module)}`}>
+                        {activity.module}
+                      </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="p-4 border-t">
-              <Link href="/activities">
-                <a className="text-sm text-primary hover:text-primary-dark flex items-center justify-center">
-                  <span>View all activity</span>
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </a>
-              </Link>
+          </div>
+          
+          {/* Study Status Chart */}
+          <div className="bg-white p-5 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium">Study Status Overview</h2>
+              <div className="flex gap-2">
+                <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                  By Phase
+                </button>
+                <button className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">
+                  By Status
+                </button>
+              </div>
             </div>
+            
+            <div className="h-64 flex items-center justify-center">
+              {/* This would be a real chart in the actual implementation */}
+              <div className="w-full flex items-end justify-between h-48 px-4">
+                {studyStatusData.map((item, index) => (
+                  <div key={index} className="flex flex-col items-center">
+                    <div 
+                      className="w-12 bg-pink-500 rounded-t-md transition-all duration-500 ease-in-out hover:bg-pink-600"
+                      style={{ height: `${item.count * 20}px` }}
+                    ></div>
+                    <div className="mt-2 text-xs text-gray-600">{item.name}</div>
+                    <div className="text-sm font-medium">{item.count}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Upcoming Tasks */}
+          <div className="bg-white p-5 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium">Upcoming Tasks</h2>
+              <button className="text-sm text-pink-600 hover:underline flex items-center">
+                <ListTodo size={14} className="mr-1" />
+                Task Manager
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {upcomingTasks.map(task => (
+                <div key={task.id} className="border border-gray-200 rounded-md p-3">
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-medium text-sm">{task.title}</h3>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                      {task.priority}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex justify-between items-center text-xs text-gray-500">
+                    <div className="flex items-center">
+                      <Clock size={12} className="mr-1" />
+                      Due: {formatDate(task.dueDate)}
+                    </div>
+                    <div>
+                      Assigned to: {task.assignedTo}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <button className="w-full mt-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 py-2 rounded-md text-sm font-medium flex items-center justify-center">
+              <Plus size={14} className="mr-1" />
+              Add New Task
+            </button>
           </div>
           
           {/* Regulatory Updates */}
-          <h2 className="text-lg font-medium text-gray-900 mt-6 mb-4">Regulatory Updates</h2>
-          <div className="bg-white rounded-lg shadow border">
-            <div className="p-4">
-              <div className="space-y-4">
-                <div className="border-l-4 border-blue-500 pl-3 py-1">
-                  <p className="text-sm font-medium text-gray-900">FDA Guidance Update</p>
-                  <p className="text-xs text-gray-500 mt-1">New guidance for Oncology trials published</p>
-                </div>
-                <div className="border-l-4 border-amber-500 pl-3 py-1">
-                  <p className="text-sm font-medium text-gray-900">EMA Protocol Requirements</p>
-                  <p className="text-xs text-gray-500 mt-1">Updated pediatric study requirements</p>
-                </div>
-                <div className="border-l-4 border-emerald-500 pl-3 py-1">
-                  <p className="text-sm font-medium text-gray-900">ICH E6(R3) Update</p>
-                  <p className="text-xs text-gray-500 mt-1">Implementation timeline extended</p>
-                </div>
-              </div>
+          <div className="bg-white p-5 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium">Regulatory Updates</h2>
+              <button className="text-sm text-pink-600 hover:underline flex items-center">
+                <BookText size={14} className="mr-1" />
+                ICH Wiz
+              </button>
             </div>
-            <div className="p-4 border-t">
-              <Link href="/regulatory-updates">
-                <a className="text-sm text-primary hover:text-primary-dark flex items-center justify-center">
-                  <span>View all updates</span>
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </a>
-              </Link>
+            
+            <div className="space-y-3">
+              {regulatoryUpdates.map(update => (
+                <div key={update.id} className="p-3 border-l-2 border-blue-500 bg-blue-50">
+                  <h3 className="font-medium text-sm">{update.title}</h3>
+                  <div className="mt-1 flex justify-between items-center text-xs">
+                    <span className="text-blue-700">{update.agency}</span>
+                    <span className="text-gray-500">{formatDate(update.date)}</span>
+                  </div>
+                  <div className="mt-1 text-xs text-gray-600">{update.type}</div>
+                </div>
+              ))}
+            </div>
+            
+            <button className="w-full mt-3 text-blue-600 hover:bg-blue-50 border border-blue-200 py-2 rounded-md text-sm font-medium flex items-center justify-center">
+              View All Updates
+            </button>
+          </div>
+          
+          {/* Blockchain Status */}
+          <div className="bg-white p-5 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-lg font-medium">Blockchain Status</h2>
+              <span 
+                className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                  blockchainStatus.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                }`}
+              >
+                {blockchainStatus.verified ? 'Operational' : 'Verification Needed'}
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md mb-3">
+              <div className="flex items-center">
+                <Shield size={16} className="text-green-600 mr-2" />
+                <span className="text-sm font-medium">Document Integrity</span>
+              </div>
+              <span className="text-sm">95% Verified</span>
+            </div>
+            
+            <div className="text-xs text-gray-500 flex items-center">
+              <Clock size={12} className="mr-1" />
+              <span>Last verified: {new Date(blockchainStatus.lastVerified).toLocaleTimeString()}</span>
             </div>
           </div>
         </div>
@@ -341,5 +437,31 @@ const DashboardModule = () => {
     </div>
   );
 };
+
+// Components needed for the activities list
+const PlusCircle = ({ size, className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="16" />
+    <line x1="8" y1="12" x2="16" y2="12" />
+  </svg>
+);
+
+const Pen = ({ size, className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+    <path d="m15 5 4 4" />
+  </svg>
+);
+
+const Brain = ({ size, className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M9.5 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
+    <path d="M14.5 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
+    <path d="M3 11v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-1a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3" />
+    <path d="M7 9h10" />
+    <path d="M8 11v6a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-6" />
+  </svg>
+);
 
 export default DashboardModule;
