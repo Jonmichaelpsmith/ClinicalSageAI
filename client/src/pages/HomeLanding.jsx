@@ -120,7 +120,7 @@ export default function HomeLanding() {
             Get Started <ArrowRight size={18}/>
           </Link>
           <Link to="/demo" className="px-6 py-3 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-slate-800">Request Live Demo</Link>
-          <Link to="/portal/ind" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Client Login</Link>
+          <a href="/portal/ind" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-block">Client Login</a>
         </div>
       </section>
 
