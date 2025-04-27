@@ -10,7 +10,7 @@ const http = require('http');
 
 class ServerKeepAlive {
   constructor(options = {}) {
-    this.interval = options.interval || 5 * 60 * 1000; // Default: ping every 5 minutes
+    this.interval = options.interval || 4 * 60 * 1000; // Default: ping every 4 minutes (Replit hibernates after 5)
     this.target = options.target || null; // Target URL to ping
     this.silent = options.silent || false; // Whether to log pings
     this.pingTimer = null;
@@ -96,14 +96,25 @@ class ServerKeepAlive {
    * Attempt to determine the server's own URL
    */
   getSelfUrl() {
-    // Try to get host from environment variables (Replit provides this)
+    // Check for Replit deployment URL in environment variables
+    if (process.env.REPL_SLUG && process.env.REPL_ID && process.env.REPL_OWNER) {
+      // New Replit URL format (recent change)
+      return `${process.env.REPL_ID}-00-${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+    }
+    
+    // Legacy Replit URL format
     if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
       return `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
     }
     
-    // Try to get from Replit-specific environment variables
+    // Try to get from Replit-specific environment variables (another format)
     if (process.env.REPL_ID) {
       return `${process.env.REPL_ID}.id.repl.co`;
+    }
+    
+    // Get hostname from any request headers if available
+    if (global.lastRequestHost) {
+      return global.lastRequestHost;
     }
     
     // Fallback to localhost - this won't prevent hibernation but at least keeps the service running
