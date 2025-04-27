@@ -113,7 +113,7 @@ export default function AnalyticsChat() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-        {msgs.map((m, i) => {
+        {msgs.map((m: Message, i) => {
           if (m.type === 'user') {
             return (
               <div key={i} style={{ marginBottom: 16, textAlign: 'right' }}>
@@ -132,12 +132,42 @@ export default function AnalyticsChat() {
           }
           
           if (m.type === 'vega') {
+            // Fallback for visualization - display data in a simple table
+            const rowsData = msgs.find((r: Message) => r.type === 'rows')?.data || [];
             return (
               <div key={i} style={{ marginBottom: 16, background: 'white', padding: 16, borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <VegaLite 
-                  spec={m.spec} 
-                  data={{ table: msgs.find(r => r.type === 'rows')?.data || [] }} 
-                />
+                <Text variant="large" block>Data Visualization</Text>
+                <Text block style={{ margin: '8px 0' }}>
+                  Note: Chart visualization would appear here. 
+                  Using tabular data display as fallback.
+                </Text>
+                
+                {rowsData.length > 0 && (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+                      <thead>
+                        <tr>
+                          {Object.keys(rowsData[0]).map((key) => (
+                            <th key={key} style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>
+                              {key}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rowsData.map((row, idx) => (
+                          <tr key={idx}>
+                            {Object.values(row).map((val: any, valIdx) => (
+                              <td key={valIdx} style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             );
           }
@@ -173,37 +203,33 @@ export default function AnalyticsChat() {
       
       {showSave && (
         <div style={{ padding: 16, borderTop: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
-          <Input 
+          <TextField 
             value={dashboardTitle} 
-            onChange={(_, v) => setDashboardTitle(v.value)} 
+            onChange={(e, newValue) => setDashboardTitle(newValue || '')} 
             placeholder="Dashboard title" 
-            style={{ width: '50%' }} 
+            styles={{ root: { width: '50%' } }} 
           />
-          <Button 
-            appearance="primary"
+          <PrimaryButton 
             onClick={saveDashboard} 
-            style={{ marginLeft: 8 }}
-          >
-            Save Dashboard
-          </Button>
+            styles={{ root: { marginLeft: 8 } }}
+            text="Save Dashboard"
+          />
         </div>
       )}
       
       <div style={{ padding: 16, borderTop: '1px solid #eee', display: 'flex' }}>
-        <Input 
+        <TextField 
           value={prompt} 
-          onChange={(_, v) => setPrompt(v.value)} 
+          onChange={(e, newValue) => setPrompt(newValue || '')}
           placeholder="Ask analytics..." 
-          style={{ width: '80%' }} 
-          onKeyPress={(e) => e.key === 'Enter' && send()}
+          styles={{ root: { width: '80%' } }}
+          onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && send()}
         />
-        <Button 
-          appearance="primary" 
+        <PrimaryButton 
           onClick={send} 
-          style={{ marginLeft: 8 }}
-        >
-          Send
-        </Button>
+          styles={{ root: { marginLeft: 8 } }}
+          text="Send"
+        />
       </div>
     </div>
   );
