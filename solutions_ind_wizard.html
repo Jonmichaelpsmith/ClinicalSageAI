@@ -1062,7 +1062,7 @@
                                     <h4>Form FDA 3674</h4>
                                     <p>Certification of Compliance</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="3674">
-                                        <i class="fas fa-file-download"></i> Download Form
+                                        <i class="fas fa-file-download"></i> Download Form 3674
                                     </button>
                                 </div>
                                 <div class="ind-form-card" data-form="3454">
@@ -1072,13 +1072,19 @@
                                     <h4>Form FDA 3454</h4>
                                     <p>Certification: Financial Interests</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="3454">
-                                        <i class="fas fa-file-download"></i> Download Form
+                                        <i class="fas fa-file-download"></i> Download Form 3454
                                     </button>
                                 </div>
                             </div>
                             <div class="ind-empty" id="forms-empty">
-                                <i class="fas fa-file-alt"></i>
-                                <p>Please select a project to enable form generation.</p>
+                                <div class="ind-empty-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <h4>No Project Selected</h4>
+                                <p>Please select a project from the dropdown above to enable form generation and download options.</p>
+                                <button class="btn btn-outline-primary btn-sm ind-new-project-btn">
+                                    <i class="fas fa-plus"></i> Create New Project
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1103,8 +1109,14 @@
                                 <!-- History data will be loaded here -->
                             </div>
                             <div class="ind-empty" id="history-empty">
-                                <i class="fas fa-history"></i>
-                                <p>No submission history found for the selected project.</p>
+                                <div class="ind-empty-icon">
+                                    <i class="fas fa-history"></i>
+                                </div>
+                                <h4>No Submission History</h4>
+                                <p>There is no submission history found for the selected project. Generate forms using the Forms tab to create submission history.</p>
+                                <button class="btn btn-outline-primary btn-sm" id="go-to-forms-btn">
+                                    <i class="fas fa-file-alt"></i> Go to Forms
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1287,10 +1299,35 @@
             text-align: center;
         }
         
-        .ind-empty i {
-            font-size: 3rem;
+        .ind-empty-icon {
+            width: 5rem;
+            height: 5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--gray-100);
+            border-radius: 50%;
             margin-bottom: 1rem;
-            opacity: 0.5;
+        }
+        
+        .ind-empty-icon i {
+            font-size: 2.5rem;
+            color: var(--gray-400);
+        }
+        
+        .ind-empty h4 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+        }
+        
+        .ind-empty p {
+            margin-bottom: 1.5rem;
+            max-width: 400px;
+        }
+        
+        .ind-empty .btn {
+            margin-top: 0.5rem;
         }
         
         .ind-forms-grid {
@@ -1308,6 +1345,14 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .ind-form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
         }
         
         .ind-form-icon {
@@ -1321,6 +1366,14 @@
             border-radius: 50%;
             margin-bottom: 1rem;
             font-size: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ind-form-card:hover .ind-form-icon {
+            transform: scale(1.05);
+            background-color: var(--primary);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
         
         .ind-form-card h4 {
@@ -1565,20 +1618,30 @@
             const tabs = document.querySelectorAll('.ind-tab');
             const tabContents = document.querySelectorAll('.ind-tab-content');
             
+            // Function to switch tabs
+            function switchToTab(tabName) {
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                document.querySelector(`.ind-tab[data-tab="${tabName}"]`).classList.add('active');
+                
+                // Show selected tab content
+                tabContents.forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.getElementById(`${tabName}-tab`).style.display = 'block';
+            }
+            
+            // Tab click handlers
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     const tabName = tab.dataset.tab;
-                    
-                    // Update active tab
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    
-                    // Show selected tab content
-                    tabContents.forEach(content => {
-                        content.style.display = 'none';
-                    });
-                    document.getElementById(`${tabName}-tab`).style.display = 'block';
+                    switchToTab(tabName);
                 });
+            });
+            
+            // Go to Forms button handler
+            document.getElementById('go-to-forms-btn').addEventListener('click', () => {
+                switchToTab('forms');
             });
             
             // Modal Functionality
