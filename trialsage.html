@@ -626,10 +626,14 @@
       
       // Demo credentials
       if (username === 'admin' && password === 'admin123') {
-        loginError.classList.add('hidden');
-        loginPage.classList.add('hidden');
-        dashboardPage.classList.remove('hidden');
-        userName.textContent = 'Administrator';
+        // Store authentication for persistence
+        localStorage.setItem('authenticated', 'true');
+        localStorage.setItem('userName', 'Administrator');
+        localStorage.setItem('userEmail', 'admin@trialsage.com');
+        localStorage.setItem('userRole', 'admin');
+        
+        // Redirect to client portal
+        window.location.href = 'client-portal.html';
       } else {
         loginError.textContent = 'Invalid username or password';
         loginError.classList.remove('hidden');
@@ -638,6 +642,13 @@
     
     // Logout functionality
     logoutButton.addEventListener('click', () => {
+      // Clear authentication data
+      localStorage.removeItem('authenticated');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userRole');
+      
+      // Show landing page
       dashboardPage.classList.add('hidden');
       landingPage.classList.remove('hidden');
     });

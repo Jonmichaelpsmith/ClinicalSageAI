@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrialSage™ - Administration Portal</title>
+  <meta name="description" content="TrialSage Administration Portal - Configure and manage your regulatory platform">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Authentication check - redirect to login if not authenticated
+    (function() {
+      const isAuthenticated = localStorage.getItem('authenticated') === 'true';
+      const userRole = localStorage.getItem('userRole');
+      
+      if (!isAuthenticated) {
+        // Store the intended destination for after login
+        localStorage.setItem('redirectAfterLogin', '/admin-portal.html');
+        window.location.href = 'trialsage.html';
+        return;
+      }
+      
+      // Check if user has admin role
+      if (userRole !== 'admin') {
+        alert('You do not have permission to access the administration portal');
+        window.location.href = 'client-portal.html';
+        return;
+      }
+      
+      // Update user information from localStorage
+      window.addEventListener('DOMContentLoaded', () => {
+        const userEmail = localStorage.getItem('userEmail');
+        const userName = localStorage.getItem('userName');
+        
+        // Set user information in the UI
+        if (userName) {
+          document.getElementById('adminUserName').textContent = userName;
+          
+          // Set initials
+          const initials = userName.split(' ')
+            .map(name => name.charAt(0))
+            .join('')
+            .toUpperCase();
+          document.getElementById('adminUserInitials').textContent = initials;
+        } else if (userEmail) {
+          document.getElementById('adminUserName').textContent = userEmail;
+          document.getElementById('adminUserInitials').textContent = userEmail.charAt(0).toUpperCase();
+        }
+      });
+    })();
+    
+    // Logout function - clears authentication and redirects to login
+    function logout() {
+      localStorage.removeItem('authenticated');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userRole');
+      window.location.href = 'trialsage.html';
+    }
+    
+    function switchTab(tabId) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+      
+      // Show the selected tab content
+      document.getElementById(tabId).classList.remove('hidden');
+      
+      // Update active tab styling
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('bg-trialsage-50', 'text-trialsage-600', 'border-trialsage-600');
+        button.classList.add('text-gray-500', 'border-transparent');
+      });
+      
+      // Add active styles to the clicked tab button
+      document.querySelector(`[data-tab="${tabId}"]`).classList.add('bg-trialsage-50', 'text-trialsage-600', 'border-trialsage-600');
+      document.querySelector(`[data-tab="${tabId}"]`).classList.remove('text-gray-500', 'border-transparent');
+    }
+    
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            trialsage: {
+              pink: '#FF1493',
+              lightpink: '#FFB6C1',
+              darkpink: '#C71585',
+              50: '#FFF0F6',
+              100: '#FFE3EE', 
+              200: '#FFC6DD',
+              300: '#FF99C0',
+              400: '#FF5CA3',
+              500: '#FF1493',
+              600: '#E60082',
+              700: '#C8006E',
+              800: '#A5005C',
+              900: '#89004C'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom styles */
+    .gradient-bg {
+      background: linear-gradient(to bottom, white 80%, #FFF0F6 100%);
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #FF1493;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C71585;
+    }
+  </style>
+</head>
+<body class="font-sans text-gray-900 gradient-bg min-h-screen">
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-3">
+        <div class="flex items-center">
+          <a href="/" class="flex items-center">
+            <span class="text-2xl font-bold text-trialsage-pink">TrialSage</span>
+            <span class="text-xs align-top font-medium text-gray-500">™</span>
+            <span class="text-sm text-gray-500 ml-2 hidden md:inline-block">Administration Portal</span>
+          </a>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+          <div class="flex items-center">
+            <span class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-2" id="adminUserInitials">A</span>
+            <span id="adminUserName">Administrator</span>
+            <button type="button" onClick="logout()" class="ml-3 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700">
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-sm mb-8 overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <h1 class="text-xl font-bold text-gray-900">Administration Dashboard</h1>
+        <p class="text-sm text-gray-500 mt-1">Configure TrialSage platform settings, manage users, and monitor system performance</p>
+      </div>
+      
+      <!-- Admin Tabs -->
+      <div class="border-b border-gray-200">
+        <div class="flex -mb-px overflow-x-auto">
+          <button 
+            class="tab-button flex items-center px-4 py-3 text-sm font-medium text-trialsage-600 border-b-2 border-trialsage-600 bg-trialsage-50" 
+            data-tab="tabDashboard"
+            onclick="switchTab('tabDashboard')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+            </svg>
+            Dashboard
+          </button>
+          <button 
+            class="tab-button flex items-center px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300" 
+            data-tab="tabUsers"
+            onclick="switchTab('tabUsers')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            User Management
+          </button>
+          <button 
+            class="tab-button flex items-center px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300" 
+            data-tab="tabOrganizations"
+            onclick="switchTab('tabOrganizations')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            Organizations
+          </button>
+          <button 
+            class="tab-button flex items-center px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300" 
+            data-tab="tabSecurity"
+            onclick="switchTab('tabSecurity')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            Security & Compliance
+          </button>
+          <button 
+            class="tab-button flex items-center px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300" 
+            data-tab="tabModules"
+            onclick="switchTab('tabModules')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            Module Management
+          </button>
+          <button 
+            class="tab-button flex items-center px-4 py-3 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300" 
+            data-tab="tabSettings"
+            onclick="switchTab('tabSettings')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            System Settings
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tab Contents -->
+      <div class="p-6">
+        <!-- Dashboard Tab -->
+        <div id="tabDashboard" class="tab-content">
+          <div class="mb-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">System Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-sm text-gray-500">Active Users</div>
+                    <div class="text-2xl font-semibold">42</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-sm text-gray-500">System Uptime</div>
+                    <div class="text-2xl font-semibold">99.9%</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="text-sm text-gray-500">Pending Tasks</div>
+                    <div class="text-2xl font-semibold">12</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-6">
+              <h3 class="font-medium text-gray-900 mb-3">Recent System Activity</h3>
+              <div class="divide-y divide-gray-200">
+                <div class="py-3">
+                  <div class="flex">
+                    <span class="text-green-600 mr-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </span>
+                    <div>
+                      <div class="text-sm">System backup completed successfully</div>
+                      <div class="text-xs text-gray-500">Today, 3:24 AM</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="py-3">
+                  <div class="flex">
+                    <span class="text-blue-600 mr-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </span>
+                    <div>
+                      <div class="text-sm">User Sarah Johnson created a new account</div>
+                      <div class="text-xs text-gray-500">Yesterday, 4:45 PM</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="py-3">
+                  <div class="flex">
+                    <span class="text-blue-600 mr-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </span>
+                    <div>
+                      <div class="text-sm">New organization BioGenesis added to the platform</div>
+                      <div class="text-xs text-gray-500">Apr 24, 2025, 10:11 AM</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <h3 class="font-medium text-gray-900 mb-3">Module Utilization</h3>
+                <div class="space-y-4">
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span>IND Wizard™</span>
+                      <span class="font-medium">78%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="bg-blue-600 h-2 rounded-full" style="width: 78%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span>CSR Intelligence™</span>
+                      <span class="font-medium">64%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="bg-purple-600 h-2 rounded-full" style="width: 64%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-sm mb-1">
+                      <span>TrialSage Vault™</span>
+                      <span class="font-medium">92%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="bg-trialsage-500 h-2 rounded-full" style="width: 92%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                <h3 class="font-medium text-gray-900 mb-3">Upcoming Maintenance</h3>
+                <div class="divide-y divide-gray-200">
+                  <div class="py-3">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 w-10 h-10 rounded-md bg-blue-100 flex items-center justify-center text-blue-600 mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div class="font-medium text-sm">Database Maintenance</div>
+                        <div class="text-xs text-gray-500">Apr 30, 2025, 1:00 AM - 3:00 AM EDT</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="py-3">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 w-10 h-10 rounded-md bg-amber-100 flex items-center justify-center text-amber-600 mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div class="font-medium text-sm">System Update Deployment</div>
+                        <div class="text-xs text-gray-500">May 5, 2025, 11:00 PM - 1:00 AM EDT</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <a href="#" class="text-trialsage-600 font-medium flex items-center">
+              <span>View full system status</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </div>
+        
+        <!-- User Management Tab -->
+        <div id="tabUsers" class="tab-content hidden">
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-medium text-gray-900">User Management</h2>
+              <button class="px-3 py-2 text-sm bg-trialsage-600 text-white rounded-md hover:bg-trialsage-700 focus:outline-none focus:ring-2 focus:ring-trialsage-500 focus:ring-offset-2">
+                Add New User
+              </button>
+            </div>
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+              <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="font-medium">All Users (42)</h3>
+                <div class="flex items-center">
+                  <div class="relative">
+                    <input type="text" placeholder="Search users..." class="pl-9 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-trialsage-500 focus:border-trialsage-500">
+                    <div class="absolute left-3 top-2.5 text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="ml-2">
+                    <select class="text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-trialsage-500 focus:border-trialsage-500">
+                      <option>All Roles</option>
+                      <option>Administrator</option>
+                      <option>Manager</option>
+                      <option>Reviewer</option>
+                      <option>Standard User</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="divide-y divide-gray-200">
+                <div class="flex items-center p-4 hover:bg-gray-50">
+                  <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-4">
+                    JS
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <div class="font-medium">John Smith</div>
+                      <span class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-trialsage-100 text-trialsage-800">
+                        Administrator
+                      </span>
+                    </div>
+                    <div class="text-sm text-gray-500">john.smith@trialsage.com</div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <button class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="flex items-center p-4 hover:bg-gray-50">
+                  <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-4">
+                    SJ
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <div class="font-medium">Sarah Johnson</div>
+                      <span class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                        Manager
+                      </span>
+                    </div>
+                    <div class="text-sm text-gray-500">sarah.johnson@biogenesis.com</div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <button class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="flex items-center p-4 hover:bg-gray-50">
+                  <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-4">
+                    DW
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <div class="font-medium">David Williams</div>
+                      <span class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                        Reviewer
+                      </span>
+                    </div>
+                    <div class="text-sm text-gray-500">david.williams@luxtrial.com</div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <button class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="flex items-center p-4 hover:bg-gray-50">
+                  <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 mr-4">
+                    AT
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center">
+                      <div class="font-medium">Amy Thompson</div>
+                      <span class="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                        Standard User
+                      </span>
+                    </div>
+                    <div class="text-sm text-gray-500">amy.thompson@pharmahealth.com</div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <button class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button class="p-1.5 rounded-md hover:bg-gray-100 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="p-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm text-gray-500">
+                    Showing 4 of 42 users
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <button class="p-1.5 rounded-md bg-white border border-gray-300 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button class="p-1.5 rounded-md bg-white border border-gray-300 text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Security & Compliance Tab -->
+        <div id="tabSecurity" class="tab-content hidden">
+          <div class="mb-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Security & Compliance Settings</h2>
+            
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
+              <h3 class="text-base font-medium mb-4 border-b border-gray-200 pb-2">Authentication</h3>
+              
+              <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Multi-Factor Authentication (MFA)</div>
+                    <div class="text-sm text-gray-500">Require all users to set up MFA for their accounts</div>
+                  </div>
+                  <label class="inline-flex relative items-center cursor-pointer">
+                    <input type="checkbox" value="" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-trialsage-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-trialsage-600"></div>
+                  </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Password Policy</div>
+                    <div class="text-sm text-gray-500">Enforce strong password requirements</div>
+                  </div>
+                  <div>
+                    <button class="text-sm font-medium text-trialsage-600 hover:text-trialsage-800">Configure</button>
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Session Timeout</div>
+                    <div class="text-sm text-gray-500">Automatically log out inactive users</div>
+                  </div>
+                  <div>
+                    <select class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-trialsage-500 focus:border-trialsage-500">
+                      <option>15 minutes</option>
+                      <option>30 minutes</option>
+                      <option selected>60 minutes</option>
+                      <option>120 minutes</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
+              <h3 class="text-base font-medium mb-4 border-b border-gray-200 pb-2">21 CFR Part 11 Compliance</h3>
+              
+              <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Electronic Signatures</div>
+                    <div class="text-sm text-gray-500">Enable compliant e-signatures for document approvals</div>
+                  </div>
+                  <label class="inline-flex relative items-center cursor-pointer">
+                    <input type="checkbox" value="" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-trialsage-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-trialsage-600"></div>
+                  </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Audit Trail</div>
+                    <div class="text-sm text-gray-500">Maintain comprehensive system activity logs</div>
+                  </div>
+                  <label class="inline-flex relative items-center cursor-pointer">
+                    <input type="checkbox" value="" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-trialsage-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-trialsage-600"></div>
+                  </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Version Control</div>
+                    <div class="text-sm text-gray-500">Maintain document history and prevent unauthorized changes</div>
+                  </div>
+                  <label class="inline-flex relative items-center cursor-pointer">
+                    <input type="checkbox" value="" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-trialsage-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-trialsage-600"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+              <h3 class="text-base font-medium mb-4 border-b border-gray-200 pb-2">Data Protection</h3>
+              
+              <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Data Encryption</div>
+                    <div class="text-sm text-gray-500">Encrypt all data at rest and in transit</div>
+                  </div>
+                  <label class="inline-flex relative items-center cursor-pointer">
+                    <input type="checkbox" value="" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-trialsage-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-trialsage-600"></div>
+                  </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Data Retention Policy</div>
+                    <div class="text-sm text-gray-500">Automatically archive or delete data after specified period</div>
+                  </div>
+                  <div>
+                    <button class="text-sm font-medium text-trialsage-600 hover:text-trialsage-800">Configure</button>
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium">Access Control</div>
+                    <div class="text-sm text-gray-500">Manage permissions and role-based access</div>
+                  </div>
+                  <div>
+                    <button class="text-sm font-medium text-trialsage-600 hover:text-trialsage-800">Manage Roles</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button class="px-4 py-2 bg-trialsage-600 text-white rounded-md hover:bg-trialsage-700 focus:outline-none focus:ring-2 focus:ring-trialsage-500 focus:ring-offset-2">
+              Save Changes
+            </button>
+          </div>
+        </div>
+        
+        <!-- Other tab contents would go here -->
+        <div id="tabOrganizations" class="tab-content hidden">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Organization Management</h2>
+          <p>Organization management content would go here.</p>
+        </div>
+        
+        <div id="tabModules" class="tab-content hidden">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Module Management</h2>
+          <p>Module management content would go here.</p>
+        </div>
+        
+        <div id="tabSettings" class="tab-content hidden">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">System Settings</h2>
+          <p>System settings content would go here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Additional JavaScript would go here
+  </script>
+</body>
+</html>
