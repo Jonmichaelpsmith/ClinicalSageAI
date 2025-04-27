@@ -1,1080 +1,812 @@
 /**
  * Intelligence API Routes
  * 
- * This module provides the server-side implementation of the central intelligence system
- * for TrialSage, exposing endpoints for AI-powered regulatory and scientific intelligence,
- * blockchain verification, and cross-module data analysis.
+ * This module provides API routes for the TrialSage platform's AI and intelligence services,
+ * including regulatory intelligence, document processing, and blockchain verification.
  */
 
-import { Router } from 'express';
-import { OpenAI } from 'openai';
-import { db } from '../db.js';
-import { verifyAuthorization } from '../middleware/auth.js';
-import { verifyBlockchain } from '../services/blockchain.js';
-import { getRegulationsByAuthority } from '../services/regulatory-database.js';
-import { extractDocumentData } from '../services/document-processor.js';
-import { generatePredictiveModel } from '../services/ai-models.js';
+import express from 'express';
+import multer from 'multer';
+import { join } from 'path';
+import fs from 'fs/promises';
+import { 
+  generatePredictiveModel, 
+  generateRegulatoryText, 
+  extractRegulatoryData, 
+  analyzeRegulatoryCompliance,
+  generateRegulatoryDocumentSummary
+} from '../services/ai-models.js';
+import {
+  extractTextFromPDF,
+  extractStructuredData,
+  generateDocument,
+  convertDocument,
+  searchDocuments,
+  validateDocument,
+  getProcessingResult
+} from '../services/document-processor.js';
+import {
+  getRegulationsByAuthority,
+  getRegulatoryGuidance,
+  getRegulatoryStandards,
+  getSubmissionRequirements,
+  searchRegulatoryDatabase,
+  getRegulatoryIntelligence,
+  getRegulatoryUpdates,
+  clearRegulatoryCaches,
+  checkRegulatoryDatabaseStatus
+} from '../services/regulatory-database.js';
+import {
+  initialize as initializeBlockchain,
+  registerDocument,
+  updateDocument,
+  verifyDocument,
+  createAuditTrail,
+  getDocumentHistory,
+  getBlockchainStatus
+} from '../services/blockchain.js';
 
-const router = Router();
+// Create router
+const router = express.Router();
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+// Set up file upload middleware
+const upload = multer({
+  dest: 'uploads/',
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
 });
 
-// AI model configurations
-const MODEL_CONFIGURATIONS = {
-  standard: {
-    model: 'gpt-4o',
-    temperature: 0.2,
-    maxTokens: 4000,
-    blockchainEnabled: false
-  },
-  advanced: {
-    model: 'gpt-4o',
-    temperature: 0.1,
-    maxTokens: 8000,
-    blockchainEnabled: true
-  },
-  expert: {
-    model: 'gpt-4o-2024-08', // Example of future model
-    temperature: 0.1,
-    maxTokens: 16000,
-    blockchainEnabled: true
-  },
-  enterprise: {
-    model: 'gpt-4-turbo-preview',
-    temperature: 0.05,
-    maxTokens: 32000,
-    blockchainEnabled: true,
-    enhancedSecurity: true
-  }
-};
+// Helper to get user ID from request (would use auth middleware in production)
+function getUserId(req) {
+  return req.user?.id || 1; // Default ID for testing
+}
 
-// Current active model configuration (can be updated via API)
-let currentModelConfig = MODEL_CONFIGURATIONS.advanced;
-
-// Initialize the intelligence system
-router.post('/initialize', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { aiModelTier = 'advanced', enableBlockchain = true } = req.body;
-    
-    // Set model configuration based on tier
-    if (MODEL_CONFIGURATIONS[aiModelTier]) {
-      currentModelConfig = MODEL_CONFIGURATIONS[aiModelTier];
-    }
-    
-    // Get active regulatory authorities from database
-    const authorities = await db.query(`
-      SELECT code, name, country, last_update 
-      FROM regulatory_authorities 
-      WHERE is_active = true
-    `);
-    
-    // Test connection to OpenAI
-    const aiTest = await openai.chat.completions.create({
-      model: currentModelConfig.model,
-      messages: [{ role: 'user', content: 'Test connection' }],
-      max_tokens: 5
+// Middleware to check if AI service is available
+function checkAIService(req, res, next) {
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(503).json({
+      error: 'AI service unavailable',
+      message: 'OpenAI API key not configured'
     });
+  }
+  
+  next();
+}
+
+// Initialize services
+router.post('/initialize', async (req, res) => {
+  try {
+    console.log('[Intelligence API] Initializing services...');
     
-    // Initialize blockchain if enabled
-    let blockchainStatus = { enabled: false };
-    if (enableBlockchain) {
-      blockchainStatus = await verifyBlockchain.initialize();
-    }
+    // Initialize blockchain service
+    const blockchainOptions = req.body.blockchain || { enabled: true };
+    const blockchainStatus = await initializeBlockchain(blockchainOptions);
     
-    return res.status(200).json({
+    // Clear regulatory database caches
+    clearRegulatoryCaches();
+    
+    res.json({
       status: 'success',
-      aiStatus: {
-        connected: !!aiTest,
-        model: currentModelConfig.model
-      },
-      authorities: authorities.rows,
-      blockchainStatus,
-      activeModel: {
-        tier: aiModelTier,
-        config: currentModelConfig
-      }
+      blockchain: blockchainStatus,
+      initialized: true,
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error initializing intelligence system:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to initialize intelligence system',
-      error: error.message
+    console.error('[Intelligence API] Initialization error:', error);
+    res.status(500).json({
+      error: 'Initialization failed',
+      message: error.message
     });
   }
 });
 
-// Get regulatory insights
-router.get('/regulatory-insights', verifyAuthorization(['user', 'admin']), async (req, res) => {
+// Check service status
+router.get('/status', async (req, res) => {
   try {
-    const { contextType, contextId } = req.query;
+    // Get blockchain status
+    const blockchainStatus = await getBlockchainStatus();
     
-    if (!contextType || !contextId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Missing required parameters: contextType and contextId'
-      });
-    }
+    // Check regulatory database status
+    const regulatoryStatus = await checkRegulatoryDatabaseStatus();
     
-    // Retrieve context data based on type
-    let contextData;
-    switch (contextType) {
-      case 'project':
-        contextData = await db.query(`
-          SELECT * FROM projects WHERE id = $1
-        `, [contextId]);
-        break;
-      case 'document':
-        contextData = await db.query(`
-          SELECT * FROM documents WHERE id = $1
-        `, [contextId]);
-        break;
-      case 'submission':
-        contextData = await db.query(`
-          SELECT * FROM regulatory_submissions WHERE id = $1
-        `, [contextId]);
-        break;
-      default:
-        return res.status(400).json({
-          status: 'error',
-          message: 'Invalid contextType'
-        });
-    }
-    
-    if (!contextData.rows.length) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Context not found'
-      });
-    }
-    
-    // Get related regulatory information
-    const projectId = contextType === 'project' ? contextId : contextData.rows[0].project_id;
-    
-    // Get project information
-    const projectInfo = await db.query(`
-      SELECT * FROM projects WHERE id = $1
-    `, [projectId]);
-    
-    // Get applicable regulations
-    const regulations = await getRegulationsByAuthority(projectInfo.rows[0].target_authority);
-    
-    // Generate AI insights based on context and regulations
-    const prompt = `
-      You are TrialSage's Regulatory Intelligence System, a specialized AI for pharmaceutical regulatory affairs.
-      
-      Context: ${JSON.stringify(contextData.rows[0])}
-      
-      Project Information: ${JSON.stringify(projectInfo.rows[0])}
-      
-      Applicable Regulations: ${JSON.stringify(regulations)}
-      
-      Based on the above information, provide comprehensive regulatory insights including:
-      1. Key regulatory considerations for this ${contextType}
-      2. Potential regulatory challenges or gaps
-      3. Strategic recommendations to enhance regulatory compliance
-      4. Relevant regulatory guidance documents
-      5. Submission strategy recommendations
-      
-      Format your response as a structured JSON object with the following keys:
-      - keyConsiderations (array of objects with title and description)
-      - challenges (array of objects with title, description, and severity)
-      - recommendations (array of objects with title, description, and priority)
-      - guidanceDocuments (array of objects with title, authority, and relevance)
-      - submissionStrategy (object with approach, timeline, and recommendations)
-    `;
-    
-    const completion = await openai.chat.completions.create({
-      model: currentModelConfig.model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: currentModelConfig.temperature,
-      max_tokens: currentModelConfig.maxTokens,
-      response_format: { type: 'json_object' }
-    });
-    
-    const insights = JSON.parse(completion.choices[0].message.content);
-    
-    // Enrich with additional metadata
-    const enhancedInsights = {
-      ...insights,
-      metadata: {
-        generatedAt: new Date().toISOString(),
-        contextType,
-        contextId,
-        targetAuthority: projectInfo.rows[0].target_authority,
-        modelVersion: currentModelConfig.model,
-        confidenceScore: 0.85 // This would be dynamically calculated in a real system
-      }
+    // Check AI service
+    const aiStatus = {
+      available: !!process.env.OPENAI_API_KEY,
+      model: 'gpt-4o'
     };
     
-    return res.status(200).json(enhancedInsights);
-  } catch (error) {
-    console.error('Error generating regulatory insights:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to generate regulatory insights',
-      error: error.message
-    });
-  }
-});
-
-// Get scientific insights
-router.get('/scientific-insights', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { contextType, contextId } = req.query;
-    
-    if (!contextType || !contextId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Missing required parameters: contextType and contextId'
-      });
-    }
-    
-    // Retrieve context data based on type
-    let contextData;
-    let scientificData = {};
-    
-    switch (contextType) {
-      case 'project':
-        contextData = await db.query(`
-          SELECT * FROM projects WHERE id = $1
-        `, [contextId]);
-        
-        // Get scientific data related to the project
-        const clinicalData = await db.query(`
-          SELECT * FROM clinical_data WHERE project_id = $1
-        `, [contextId]);
-        
-        const nonclinicalData = await db.query(`
-          SELECT * FROM nonclinical_data WHERE project_id = $1
-        `, [contextId]);
-        
-        scientificData = {
-          clinical: clinicalData.rows,
-          nonclinical: nonclinicalData.rows
-        };
-        break;
-        
-      case 'protocol':
-        contextData = await db.query(`
-          SELECT * FROM protocols WHERE id = $1
-        `, [contextId]);
-        
-        // Get protocol-specific scientific data
-        const endpointData = await db.query(`
-          SELECT * FROM protocol_endpoints WHERE protocol_id = $1
-        `, [contextId]);
-        
-        scientificData = {
-          endpoints: endpointData.rows
-        };
-        break;
-        
-      default:
-        return res.status(400).json({
-          status: 'error',
-          message: 'Invalid contextType for scientific insights'
-        });
-    }
-    
-    if (!contextData.rows.length) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Context not found'
-      });
-    }
-    
-    // Generate AI insights based on context and scientific data
-    const prompt = `
-      You are TrialSage's Scientific Intelligence System, a specialized AI for pharmaceutical and clinical research.
-      
-      Context: ${JSON.stringify(contextData.rows[0])}
-      
-      Scientific Data: ${JSON.stringify(scientificData)}
-      
-      Based on the above information, provide comprehensive scientific insights including:
-      1. Scientific rationale and approach analysis
-      2. Endpoint and outcome measure evaluation
-      3. Statistical considerations and recommendations
-      4. Study design and methodology assessment
-      5. Potential scientific challenges and solutions
-      
-      Format your response as a structured JSON object with the following keys:
-      - scientificRationale (object with strengths, gaps, and recommendations)
-      - endpointEvaluation (array of objects with endpoint, evaluation, and recommendations)
-      - statisticalConsiderations (object with approach, sampleSize, powering, and recommendations)
-      - studyDesignAssessment (object with design, strengths, limitations, and alternatives)
-      - scientificChallenges (array of objects with challenge, impact, and solutions)
-    `;
-    
-    const completion = await openai.chat.completions.create({
-      model: currentModelConfig.model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: currentModelConfig.temperature,
-      max_tokens: currentModelConfig.maxTokens,
-      response_format: { type: 'json_object' }
-    });
-    
-    const insights = JSON.parse(completion.choices[0].message.content);
-    
-    // Enrich with additional metadata
-    const enhancedInsights = {
-      ...insights,
-      metadata: {
-        generatedAt: new Date().toISOString(),
-        contextType,
-        contextId,
-        dataPoints: Object.keys(scientificData).reduce((acc, key) => acc + (Array.isArray(scientificData[key]) ? scientificData[key].length : 0), 0),
-        modelVersion: currentModelConfig.model,
-        confidenceScore: 0.83 // This would be dynamically calculated in a real system
-      }
-    };
-    
-    return res.status(200).json(enhancedInsights);
-  } catch (error) {
-    console.error('Error generating scientific insights:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to generate scientific insights',
-      error: error.message
-    });
-  }
-});
-
-// Generate recommendations
-router.post('/recommendations', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { contextType, contextId, options = {} } = req.body;
-    
-    if (!contextType || !contextId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Missing required parameters: contextType and contextId'
-      });
-    }
-    
-    // Get context data
-    let contextData;
-    switch (contextType) {
-      case 'project':
-        contextData = await db.query(`
-          SELECT p.*, 
-                 a.name as authority_name, 
-                 pt.name as product_type_name
-          FROM projects p
-          LEFT JOIN regulatory_authorities a ON p.target_authority = a.code
-          LEFT JOIN product_types pt ON p.product_type = pt.code
-          WHERE p.id = $1
-        `, [contextId]);
-        break;
-        
-      case 'document':
-        contextData = await db.query(`
-          SELECT d.*, 
-                 dt.name as document_type_name,
-                 p.name as project_name,
-                 p.target_authority
-          FROM documents d
-          LEFT JOIN document_types dt ON d.document_type = dt.code
-          LEFT JOIN projects p ON d.project_id = p.id
-          WHERE d.id = $1
-        `, [contextId]);
-        break;
-        
-      case 'submission':
-        contextData = await db.query(`
-          SELECT s.*, 
-                 p.name as project_name,
-                 p.target_authority,
-                 a.name as authority_name
-          FROM regulatory_submissions s
-          LEFT JOIN projects p ON s.project_id = p.id
-          LEFT JOIN regulatory_authorities a ON p.target_authority = a.code
-          WHERE s.id = $1
-        `, [contextId]);
-        break;
-        
-      default:
-        return res.status(400).json({
-          status: 'error',
-          message: 'Invalid contextType'
-        });
-    }
-    
-    if (!contextData.rows.length) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Context not found'
-      });
-    }
-    
-    // Generate AI recommendations
-    const prompt = `
-      You are TrialSage's Strategic Recommendation Engine, a specialized AI for pharmaceutical development and regulatory strategy.
-      
-      Context: ${JSON.stringify(contextData.rows[0])}
-      
-      Options: ${JSON.stringify(options)}
-      
-      Based on the above information, provide strategic recommendations for this ${contextType} including:
-      1. Action items with priority levels
-      2. Strategic considerations
-      3. Risk mitigation approaches
-      4. Timeline optimization suggestions
-      5. Resource allocation recommendations
-      
-      Format your response as an array of recommendation objects, each containing:
-      - title (string): The recommendation title
-      - description (string): Detailed description
-      - category (string): Category of the recommendation (strategic, tactical, compliance, etc.)
-      - priority (number): 1-5 with 5 being highest priority
-      - impact (string): Expected impact of implementing this recommendation
-      - timeframe (string): When this should be implemented
-      - risks (array): Potential risks of not implementing this recommendation
-      - implementationSteps (array): Steps to implement this recommendation
-    `;
-    
-    const completion = await openai.chat.completions.create({
-      model: currentModelConfig.model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: currentModelConfig.temperature,
-      max_tokens: currentModelConfig.maxTokens,
-      response_format: { type: 'json_object' }
-    });
-    
-    const recommendations = JSON.parse(completion.choices[0].message.content);
-    
-    // Store recommendations in database for future reference
-    const recommendationInsert = await db.query(`
-      INSERT INTO ai_recommendations
-      (context_type, context_id, recommendations, created_by, created_at)
-      VALUES ($1, $2, $3, $4, NOW())
-      RETURNING id
-    `, [contextType, contextId, JSON.stringify(recommendations), req.user.id]);
-    
-    return res.status(200).json({
-      recommendations,
-      metadata: {
-        id: recommendationInsert.rows[0].id,
-        generatedAt: new Date().toISOString(),
-        contextType,
-        contextId,
-        modelVersion: currentModelConfig.model
-      }
-    });
-  } catch (error) {
-    console.error('Error generating recommendations:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to generate recommendations',
-      error: error.message
-    });
-  }
-});
-
-// Predict submission success
-router.post('/predict/submission-success', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { submissionType, projectId, submissionData } = req.body;
-    
-    if (!submissionType || !projectId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Missing required parameters: submissionType and projectId'
-      });
-    }
-    
-    // Get project information
-    const projectInfo = await db.query(`
-      SELECT p.*, 
-             a.name as authority_name, 
-             pt.name as product_type_name
-      FROM projects p
-      LEFT JOIN regulatory_authorities a ON p.target_authority = a.code
-      LEFT JOIN product_types pt ON p.product_type = pt.code
-      WHERE p.id = $1
-    `, [projectId]);
-    
-    if (!projectInfo.rows.length) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Project not found'
-      });
-    }
-    
-    // Get historical submission data for similar products
-    const historicalData = await db.query(`
-      SELECT * FROM submission_outcomes
-      WHERE submission_type = $1 AND product_type = $2
-    `, [submissionType, projectInfo.rows[0].product_type]);
-    
-    // Generate predictive model
-    const predictionModel = await generatePredictiveModel(
-      submissionType, 
-      projectInfo.rows[0].product_type,
-      historicalData.rows
-    );
-    
-    // Apply model to current submission data
-    const prediction = predictionModel.predict(submissionData);
-    
-    // Generate AI analysis of prediction factors
-    const prompt = `
-      You are TrialSage's Submission Success Predictor, a specialized AI for regulatory submission outcomes.
-      
-      Project Information: ${JSON.stringify(projectInfo.rows[0])}
-      
-      Submission Type: ${submissionType}
-      
-      Submission Data: ${JSON.stringify(submissionData)}
-      
-      Predicted Success Probability: ${prediction.probability}
-      
-      Based on the above information, provide a comprehensive analysis of the factors affecting this submission's success probability, including:
-      1. Key strengths that enhance the probability of success
-      2. Critical gaps or weaknesses that could jeopardize approval
-      3. Comparison to similar historical submissions
-      4. Specific recommendations to improve the success probability
-      
-      Format your response as a JSON object with the following keys:
-      - strengths (array of objects with factor and impact)
-      - weaknesses (array of objects with factor, impact, and recommendations)
-      - historicalComparison (object with similarities, differences, and insights)
-      - recommendations (array of objects with title, description, and expectedImpact)
-    `;
-    
-    const completion = await openai.chat.completions.create({
-      model: currentModelConfig.model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: currentModelConfig.temperature,
-      max_tokens: currentModelConfig.maxTokens,
-      response_format: { type: 'json_object' }
-    });
-    
-    const analysis = JSON.parse(completion.choices[0].message.content);
-    
-    // Store prediction in database
-    const predictionInsert = await db.query(`
-      INSERT INTO submission_predictions
-      (project_id, submission_type, probability, factors, created_at)
-      VALUES ($1, $2, $3, $4, NOW())
-      RETURNING id
-    `, [projectId, submissionType, prediction.probability, JSON.stringify(analysis)]);
-    
-    return res.status(200).json({
-      probability: prediction.probability,
-      confidenceInterval: prediction.confidenceInterval,
-      analysis,
-      metadata: {
-        id: predictionInsert.rows[0].id,
-        generatedAt: new Date().toISOString(),
-        projectId,
-        submissionType,
-        modelVersion: predictionModel.version
-      }
-    });
-  } catch (error) {
-    console.error('Error predicting submission success:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to predict submission success',
-      error: error.message
-    });
-  }
-});
-
-// Generate regulatory document
-router.post('/generate/document', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { documentType, contextData, options = {} } = req.body;
-    
-    if (!documentType || !contextData) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Missing required parameters: documentType and contextData'
-      });
-    }
-    
-    // Get document template
-    const templateQuery = await db.query(`
-      SELECT * FROM document_templates
-      WHERE document_type = $1 AND active = true
-      ORDER BY version DESC
-      LIMIT 1
-    `, [documentType]);
-    
-    if (!templateQuery.rows.length) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Document template not found'
-      });
-    }
-    
-    const template = templateQuery.rows[0];
-    
-    // Get regulatory requirements for document type
-    const regulatoryRequirements = await db.query(`
-      SELECT r.* 
-      FROM regulatory_requirements r
-      JOIN document_type_requirements dtr ON r.id = dtr.requirement_id
-      WHERE dtr.document_type = $1 AND r.authority = $2
-    `, [documentType, contextData.authority || 'FDA']);
-    
-    // Generate document content
-    const prompt = `
-      You are TrialSage's Document Generator, a specialized AI for pharmaceutical regulatory documentation.
-      
-      Document Type: ${documentType}
-      
-      Template: ${template.content}
-      
-      Context Data: ${JSON.stringify(contextData)}
-      
-      Regulatory Requirements: ${JSON.stringify(regulatoryRequirements.rows)}
-      
-      Options: ${JSON.stringify(options)}
-      
-      Based on the above information, generate a complete and compliant ${documentType} document:
-      1. Follow the document template structure exactly
-      2. Incorporate all context data appropriately
-      3. Ensure compliance with all regulatory requirements
-      4. Maintain scientific accuracy and clarity
-      5. Use formal, professional language appropriate for regulatory submissions
-      
-      Format your response as a JSON object with the following keys:
-      - title (string): Document title
-      - content (object): The document content structured according to the template sections
-      - metadata (object): Generated document metadata
-    `;
-    
-    const completion = await openai.chat.completions.create({
-      model: currentModelConfig.model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: currentModelConfig.temperature,
-      max_tokens: currentModelConfig.maxTokens,
-      response_format: { type: 'json_object' }
-    });
-    
-    const generatedDocument = JSON.parse(completion.choices[0].message.content);
-    
-    // Add additional metadata
-    generatedDocument.metadata = {
-      ...generatedDocument.metadata,
-      generatedAt: new Date().toISOString(),
-      documentType,
-      templateId: template.id,
-      templateVersion: template.version,
-      modelVersion: currentModelConfig.model
-    };
-    
-    // Store document in database if requested
-    if (options.saveToDatabase) {
-      const documentInsert = await db.query(`
-        INSERT INTO documents
-        (title, content, document_type, project_id, created_by, created_at, is_ai_generated)
-        VALUES ($1, $2, $3, $4, $5, NOW(), true)
-        RETURNING id
-      `, [
-        generatedDocument.title,
-        JSON.stringify(generatedDocument.content),
-        documentType,
-        contextData.projectId,
-        req.user.id
-      ]);
-      
-      generatedDocument.metadata.id = documentInsert.rows[0].id;
-    }
-    
-    // Create blockchain verification if enabled
-    if (currentModelConfig.blockchainEnabled && options.enableBlockchain) {
-      const blockchainResult = await verifyBlockchain.addDocument({
-        documentType,
-        content: JSON.stringify(generatedDocument),
-        userId: req.user.id,
-        timestamp: new Date().toISOString()
-      });
-      
-      generatedDocument.metadata.blockchain = {
-        verified: true,
-        transactionId: blockchainResult.transactionId,
-        timestamp: blockchainResult.timestamp
-      };
-    }
-    
-    return res.status(200).json(generatedDocument);
-  } catch (error) {
-    console.error('Error generating document:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to generate document',
-      error: error.message
-    });
-  }
-});
-
-// Extract data from regulatory documents
-router.post('/extract/document-data', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { documentId, extractionPoints = [], options = {} } = req.body;
-    
-    if (!documentId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Missing required parameter: documentId'
-      });
-    }
-    
-    // Get document from database
-    const documentQuery = await db.query(`
-      SELECT d.*, dt.name as document_type_name
-      FROM documents d
-      LEFT JOIN document_types dt ON d.document_type = dt.code
-      WHERE d.id = $1
-    `, [documentId]);
-    
-    if (!documentQuery.rows.length) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Document not found'
-      });
-    }
-    
-    const document = documentQuery.rows[0];
-    
-    // Extract data using document processor service
-    const extractionResult = await extractDocumentData(document, extractionPoints, options);
-    
-    return res.status(200).json({
-      documentId,
-      documentType: document.document_type,
-      extractedData: extractionResult.extractedData,
-      metadata: {
-        extractionTimestamp: new Date().toISOString(),
-        confidenceScores: extractionResult.confidenceScores,
-        processingTime: extractionResult.processingTime
-      }
-    });
-  } catch (error) {
-    console.error('Error extracting document data:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to extract document data',
-      error: error.message
-    });
-  }
-});
-
-// Get global regulatory requirements
-router.get('/global-requirements', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { productType, authorities = '', ...options } = req.query;
-    
-    if (!productType) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Missing required parameter: productType'
-      });
-    }
-    
-    // Parse authorities parameter
-    const authorityList = authorities ? authorities.split(',') : [];
-    
-    // Get global requirements from database
-    let requirementsQuery;
-    if (authorityList.length > 0) {
-      requirementsQuery = await db.query(`
-        SELECT r.*, a.name as authority_name 
-        FROM regulatory_requirements r
-        JOIN regulatory_authorities a ON r.authority = a.code
-        WHERE r.product_type = $1 AND r.authority = ANY($2)
-        ORDER BY r.authority, r.category, r.id
-      `, [productType, authorityList]);
-    } else {
-      requirementsQuery = await db.query(`
-        SELECT r.*, a.name as authority_name 
-        FROM regulatory_requirements r
-        JOIN regulatory_authorities a ON r.authority = a.code
-        WHERE r.product_type = $1
-        ORDER BY r.authority, r.category, r.id
-      `, [productType]);
-    }
-    
-    // Group requirements by authority
-    const groupedRequirements = {};
-    
-    for (const req of requirementsQuery.rows) {
-      if (!groupedRequirements[req.authority]) {
-        groupedRequirements[req.authority] = {
-          authorityCode: req.authority,
-          authorityName: req.authority_name,
-          requirements: []
-        };
-      }
-      
-      groupedRequirements[req.authority].requirements.push({
-        id: req.id,
-        category: req.category,
-        description: req.description,
-        complianceLevel: req.compliance_level,
-        documentationNeeded: req.documentation_needed,
-        effectiveDate: req.effective_date,
-        reference: req.reference
-      });
-    }
-    
-    return res.status(200).json({
-      productType,
-      authorities: Object.values(groupedRequirements),
-      metadata: {
-        timestamp: new Date().toISOString(),
-        totalRequirements: requirementsQuery.rows.length
-      }
-    });
-  } catch (error) {
-    console.error('Error getting global regulatory requirements:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to get global regulatory requirements',
-      error: error.message
-    });
-  }
-});
-
-// Perform regulatory gap analysis
-router.post('/gap-analysis', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { projectId, targetAuthority, options = {} } = req.body;
-    
-    if (!projectId || !targetAuthority) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Missing required parameters: projectId and targetAuthority'
-      });
-    }
-    
-    // Get project information
-    const projectQuery = await db.query(`
-      SELECT p.*, pt.name as product_type_name
-      FROM projects p
-      LEFT JOIN product_types pt ON p.product_type = pt.code
-      WHERE p.id = $1
-    `, [projectId]);
-    
-    if (!projectQuery.rows.length) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Project not found'
-      });
-    }
-    
-    const project = projectQuery.rows[0];
-    
-    // Get project documents
-    const documentsQuery = await db.query(`
-      SELECT d.*, dt.name as document_type_name
-      FROM documents d
-      LEFT JOIN document_types dt ON d.document_type = dt.code
-      WHERE d.project_id = $1
-    `, [projectId]);
-    
-    // Get target authority requirements
-    const requirementsQuery = await db.query(`
-      SELECT r.*, a.name as authority_name 
-      FROM regulatory_requirements r
-      JOIN regulatory_authorities a ON r.authority = a.code
-      WHERE r.product_type = $1 AND r.authority = $2
-      ORDER BY r.category, r.id
-    `, [project.product_type, targetAuthority]);
-    
-    // Generate gap analysis
-    const prompt = `
-      You are TrialSage's Regulatory Gap Analyzer, a specialized AI for regulatory compliance analysis.
-      
-      Project Information: ${JSON.stringify(project)}
-      
-      Project Documents: ${JSON.stringify(documentsQuery.rows)}
-      
-      Target Authority Requirements: ${JSON.stringify(requirementsQuery.rows)}
-      
-      Based on the above information, perform a comprehensive regulatory gap analysis:
-      1. Identify requirements that are fully met by existing documentation
-      2. Identify requirements that are partially met and need additional information
-      3. Identify requirements that are completely unaddressed
-      4. Prioritize gaps based on criticality and impact on submission success
-      5. Provide specific recommendations to address each gap
-      
-      Format your response as a JSON object with the following keys:
-      - summary (object with overview, compliancePercentage, and criticalGapsCount)
-      - metRequirements (array of requirement objects that are fully met)
-      - partialRequirements (array of requirement objects with what's missing and recommendations)
-      - missingRequirements (array of requirement objects with impact and recommendations)
-      - strategicRecommendations (array of high-level recommendations)
-    `;
-    
-    const completion = await openai.chat.completions.create({
-      model: currentModelConfig.model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: currentModelConfig.temperature,
-      max_tokens: currentModelConfig.maxTokens,
-      response_format: { type: 'json_object' }
-    });
-    
-    const gapAnalysis = JSON.parse(completion.choices[0].message.content);
-    
-    // Store gap analysis in database
-    const analysisInsert = await db.query(`
-      INSERT INTO gap_analysis
-      (project_id, target_authority, analysis_data, created_by, created_at)
-      VALUES ($1, $2, $3, $4, NOW())
-      RETURNING id
-    `, [projectId, targetAuthority, JSON.stringify(gapAnalysis), req.user.id]);
-    
-    return res.status(200).json({
-      ...gapAnalysis,
-      metadata: {
-        id: analysisInsert.rows[0].id,
-        generatedAt: new Date().toISOString(),
-        projectId,
-        targetAuthority,
-        modelVersion: currentModelConfig.model
-      }
-    });
-  } catch (error) {
-    console.error('Error performing gap analysis:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to perform gap analysis',
-      error: error.message
-    });
-  }
-});
-
-// Get regulatory authority updates
-router.get('/regulatory-updates', verifyAuthorization(['user', 'admin']), async (req, res) => {
-  try {
-    const { authorities = '', ...options } = req.query;
-    
-    // Parse authorities parameter
-    const authorityList = authorities ? authorities.split(',') : [];
-    
-    // Get regulatory updates from database
-    let updatesQuery;
-    if (authorityList.length > 0) {
-      updatesQuery = await db.query(`
-        SELECT u.*, a.name as authority_name 
-        FROM regulatory_updates u
-        JOIN regulatory_authorities a ON u.authority = a.code
-        WHERE u.authority = ANY($1)
-        ORDER BY u.published_date DESC
-        LIMIT $2
-      `, [authorityList, options.limit || 100]);
-    } else {
-      updatesQuery = await db.query(`
-        SELECT u.*, a.name as authority_name 
-        FROM regulatory_updates u
-        JOIN regulatory_authorities a ON u.authority = a.code
-        ORDER BY u.published_date DESC
-        LIMIT $1
-      `, [options.limit || 100]);
-    }
-    
-    // Group updates by authority
-    const groupedUpdates = {};
-    
-    for (const update of updatesQuery.rows) {
-      if (!groupedUpdates[update.authority]) {
-        groupedUpdates[update.authority] = {
-          authorityCode: update.authority,
-          authorityName: update.authority_name,
-          updates: []
-        };
-      }
-      
-      groupedUpdates[update.authority].updates.push({
-        id: update.id,
-        title: update.title,
-        summary: update.summary,
-        category: update.category,
-        impactLevel: update.impact_level,
-        publishedDate: update.published_date,
-        effectiveDate: update.effective_date,
-        url: update.url
-      });
-    }
-    
-    return res.status(200).json({
-      authorities: Object.values(groupedUpdates),
-      metadata: {
-        timestamp: new Date().toISOString(),
-        totalUpdates: updatesQuery.rows.length
-      }
-    });
-  } catch (error) {
-    console.error('Error getting regulatory updates:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to get regulatory updates',
-      error: error.message
-    });
-  }
-});
-
-// System health endpoint
-router.get('/system-health', verifyAuthorization(['admin']), async (req, res) => {
-  try {
-    // Check database connection
-    const dbCheck = await db.query('SELECT NOW()');
-    
-    // Check OpenAI connection
-    let aiStatus = { available: false, error: null };
-    try {
-      const aiCheck = await openai.chat.completions.create({
-        model: currentModelConfig.model,
-        messages: [{ role: 'user', content: 'System check' }],
-        max_tokens: 5
-      });
-      
-      aiStatus.available = true;
-      aiStatus.model = currentModelConfig.model;
-    } catch (error) {
-      aiStatus.error = error.message;
-    }
-    
-    // Check blockchain service if enabled
-    let blockchainStatus = { enabled: currentModelConfig.blockchainEnabled, available: false, error: null };
-    if (currentModelConfig.blockchainEnabled) {
-      try {
-        blockchainStatus = await verifyBlockchain.checkHealth();
-      } catch (error) {
-        blockchainStatus.error = error.message;
-      }
-    }
-    
-    return res.status(200).json({
-      status: 'operational',
-      components: {
-        database: {
-          available: !!dbCheck,
-          timestamp: dbCheck?.rows[0]?.now
-        },
-        aiService: aiStatus,
-        blockchainService: blockchainStatus
-      },
-      configuration: {
-        aiModel: currentModelConfig.model,
-        blockchainEnabled: currentModelConfig.blockchainEnabled
+    res.json({
+      status: 'ok',
+      services: {
+        blockchain: blockchainStatus,
+        regulatory: regulatoryStatus,
+        ai: aiStatus
       },
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error checking system health:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Failed to check system health',
-      error: error.message
+    console.error('[Intelligence API] Status check error:', error);
+    res.status(500).json({
+      error: 'Status check failed',
+      message: error.message
+    });
+  }
+});
+
+// AI Models Routes
+
+// Generate regulatory text
+router.post('/regulatory-text', checkAIService, async (req, res) => {
+  try {
+    const { prompt, options } = req.body;
+    
+    if (!prompt) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Prompt is required'
+      });
+    }
+    
+    const text = await generateRegulatoryText(prompt, options);
+    
+    res.json({
+      text,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Text generation error:', error);
+    res.status(500).json({
+      error: 'Text generation failed',
+      message: error.message
+    });
+  }
+});
+
+// Extract data from regulatory text
+router.post('/extract-data', checkAIService, async (req, res) => {
+  try {
+    const { text, fields, options } = req.body;
+    
+    if (!text || !fields || !Array.isArray(fields)) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Text and fields array are required'
+      });
+    }
+    
+    const data = await extractRegulatoryData(text, fields, options);
+    
+    res.json({
+      data,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Data extraction error:', error);
+    res.status(500).json({
+      error: 'Data extraction failed',
+      message: error.message
+    });
+  }
+});
+
+// Analyze regulatory compliance
+router.post('/compliance-analysis', checkAIService, async (req, res) => {
+  try {
+    const { text, standard, options } = req.body;
+    
+    if (!text || !standard) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Text and standard are required'
+      });
+    }
+    
+    const analysis = await analyzeRegulatoryCompliance(text, standard, options);
+    
+    res.json({
+      analysis,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Compliance analysis error:', error);
+    res.status(500).json({
+      error: 'Compliance analysis failed',
+      message: error.message
+    });
+  }
+});
+
+// Generate document summary
+router.post('/document-summary', checkAIService, async (req, res) => {
+  try {
+    const { text, options } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Text is required'
+      });
+    }
+    
+    const summary = await generateRegulatoryDocumentSummary(text, options);
+    
+    res.json({
+      summary,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Document summary error:', error);
+    res.status(500).json({
+      error: 'Document summary failed',
+      message: error.message
+    });
+  }
+});
+
+// Generate predictive model
+router.post('/predictive-model', checkAIService, async (req, res) => {
+  try {
+    const { submissionType, productType, historicalData } = req.body;
+    
+    if (!submissionType || !productType || !historicalData) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Submission type, product type, and historical data are required'
+      });
+    }
+    
+    const model = await generatePredictiveModel(submissionType, productType, historicalData);
+    
+    res.json({
+      model,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Predictive model error:', error);
+    res.status(500).json({
+      error: 'Predictive model generation failed',
+      message: error.message
+    });
+  }
+});
+
+// Document Processor Routes
+
+// Upload and process document
+router.post('/documents/process', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        error: 'Missing file',
+        message: 'No file uploaded'
+      });
+    }
+    
+    // Check file type
+    const filename = req.file.originalname.toLowerCase();
+    if (!filename.endsWith('.pdf')) {
+      // Clean up uploaded file
+      await fs.unlink(req.file.path);
+      
+      return res.status(400).json({
+        error: 'Invalid file type',
+        message: 'Only PDF files are supported'
+      });
+    }
+    
+    // Get options from request
+    const options = req.body.options ? JSON.parse(req.body.options) : {};
+    
+    // Extract text from PDF
+    const result = await extractTextFromPDF(req.file.path, {
+      title: req.body.title || req.file.originalname,
+      author: req.body.author,
+      ...options
+    });
+    
+    res.json({
+      ...result,
+      message: 'Document processed successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Document processing error:', error);
+    res.status(500).json({
+      error: 'Document processing failed',
+      message: error.message
+    });
+  }
+});
+
+// Get processing result
+router.get('/documents/result/:resultId', async (req, res) => {
+  try {
+    const { resultId } = req.params;
+    
+    const result = getProcessingResult(resultId);
+    
+    if (!result) {
+      return res.status(404).json({
+        error: 'Result not found',
+        message: `Processing result not found: ${resultId}`
+      });
+    }
+    
+    res.json({
+      result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Get result error:', error);
+    res.status(500).json({
+      error: 'Failed to get processing result',
+      message: error.message
+    });
+  }
+});
+
+// Extract structured data from document
+router.post('/documents/extract/:resultId', checkAIService, async (req, res) => {
+  try {
+    const { resultId } = req.params;
+    const { options } = req.body;
+    
+    const result = await extractStructuredData(resultId, options || {});
+    
+    res.json({
+      ...result,
+      message: 'Data extracted successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Data extraction error:', error);
+    res.status(500).json({
+      error: 'Data extraction failed',
+      message: error.message
+    });
+  }
+});
+
+// Generate document from template
+router.post('/documents/generate', async (req, res) => {
+  try {
+    const { templateId, data, options } = req.body;
+    
+    if (!templateId || !data) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Template ID and data are required'
+      });
+    }
+    
+    const userId = getUserId(req);
+    
+    const document = await generateDocument(templateId, data, {
+      ...options,
+      userId
+    });
+    
+    res.json({
+      document,
+      message: 'Document generated successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Document generation error:', error);
+    res.status(500).json({
+      error: 'Document generation failed',
+      message: error.message
+    });
+  }
+});
+
+// Convert document format
+router.post('/documents/convert', async (req, res) => {
+  try {
+    const { documentId, targetFormat, options } = req.body;
+    
+    if (!documentId || !targetFormat) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Document ID and target format are required'
+      });
+    }
+    
+    const userId = getUserId(req);
+    
+    const document = await convertDocument(documentId, targetFormat, {
+      ...options,
+      userId
+    });
+    
+    res.json({
+      document,
+      message: 'Document converted successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Document conversion error:', error);
+    res.status(500).json({
+      error: 'Document conversion failed',
+      message: error.message
+    });
+  }
+});
+
+// Search documents
+router.post('/documents/search', async (req, res) => {
+  try {
+    const { query, options } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Search query is required'
+      });
+    }
+    
+    const results = await searchDocuments(query, options || {});
+    
+    res.json({
+      ...results,
+      message: 'Search completed successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Document search error:', error);
+    res.status(500).json({
+      error: 'Document search failed',
+      message: error.message
+    });
+  }
+});
+
+// Validate document against template
+router.post('/documents/validate', async (req, res) => {
+  try {
+    const { documentId, templateId, options } = req.body;
+    
+    if (!documentId || !templateId) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Document ID and template ID are required'
+      });
+    }
+    
+    const validation = await validateDocument(documentId, templateId, options || {});
+    
+    res.json({
+      ...validation,
+      message: 'Document validation completed',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Document validation error:', error);
+    res.status(500).json({
+      error: 'Document validation failed',
+      message: error.message
+    });
+  }
+});
+
+// Regulatory Database Routes
+
+// Get regulations by authority
+router.get('/regulatory/regulations/:authority', async (req, res) => {
+  try {
+    const { authority } = req.params;
+    const options = req.query;
+    
+    const regulations = await getRegulationsByAuthority(authority, options);
+    
+    res.json({
+      regulations,
+      count: regulations.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Get regulations error:', error);
+    res.status(500).json({
+      error: 'Failed to get regulations',
+      message: error.message
+    });
+  }
+});
+
+// Get regulatory guidance
+router.get('/regulatory/guidance', async (req, res) => {
+  try {
+    const options = req.query;
+    
+    const guidance = await getRegulatoryGuidance(options);
+    
+    res.json({
+      guidance,
+      count: guidance.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Get guidance error:', error);
+    res.status(500).json({
+      error: 'Failed to get guidance',
+      message: error.message
+    });
+  }
+});
+
+// Get regulatory standards
+router.get('/regulatory/standards', async (req, res) => {
+  try {
+    const options = req.query;
+    
+    const standards = await getRegulatoryStandards(options);
+    
+    res.json({
+      standards,
+      count: standards.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Get standards error:', error);
+    res.status(500).json({
+      error: 'Failed to get standards',
+      message: error.message
+    });
+  }
+});
+
+// Get submission requirements
+router.get('/regulatory/requirements/:authority/:productType', async (req, res) => {
+  try {
+    const { authority, productType } = req.params;
+    const options = req.query;
+    
+    const requirements = await getSubmissionRequirements(authority, productType, options);
+    
+    if (!requirements) {
+      return res.status(404).json({
+        error: 'Requirements not found',
+        message: `No requirements found for ${authority}/${productType}`
+      });
+    }
+    
+    res.json({
+      requirements,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Get requirements error:', error);
+    res.status(500).json({
+      error: 'Failed to get requirements',
+      message: error.message
+    });
+  }
+});
+
+// Search regulatory database
+router.post('/regulatory/search', async (req, res) => {
+  try {
+    const { query, options } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Search query is required'
+      });
+    }
+    
+    const results = await searchRegulatoryDatabase(query, options || {});
+    
+    res.json({
+      ...results,
+      message: 'Search completed successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Regulatory search error:', error);
+    res.status(500).json({
+      error: 'Regulatory search failed',
+      message: error.message
+    });
+  }
+});
+
+// Get regulatory intelligence
+router.post('/regulatory/intelligence', checkAIService, async (req, res) => {
+  try {
+    const { topic, options } = req.body;
+    
+    if (!topic) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Topic is required'
+      });
+    }
+    
+    const intelligence = await getRegulatoryIntelligence(topic, options || {});
+    
+    res.json({
+      ...intelligence,
+      message: 'Regulatory intelligence generated successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Regulatory intelligence error:', error);
+    res.status(500).json({
+      error: 'Regulatory intelligence failed',
+      message: error.message
+    });
+  }
+});
+
+// Get regulatory updates
+router.get('/regulatory/updates', async (req, res) => {
+  try {
+    const { since, ...options } = req.query;
+    
+    // Parse date or use default (30 days ago)
+    let sinceDate;
+    if (since) {
+      sinceDate = new Date(since);
+    } else {
+      sinceDate = new Date();
+      sinceDate.setDate(sinceDate.getDate() - 30);
+    }
+    
+    const updates = await getRegulatoryUpdates(sinceDate, options);
+    
+    res.json({
+      ...updates,
+      message: 'Regulatory updates retrieved successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Regulatory updates error:', error);
+    res.status(500).json({
+      error: 'Failed to get regulatory updates',
+      message: error.message
+    });
+  }
+});
+
+// Blockchain Routes
+
+// Register document in blockchain
+router.post('/blockchain/register', async (req, res) => {
+  try {
+    const { document } = req.body;
+    
+    if (!document || !document.id) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Document with ID is required'
+      });
+    }
+    
+    const userId = getUserId(req);
+    
+    const result = await registerDocument(document, userId);
+    
+    res.json({
+      ...result,
+      message: 'Document registered in blockchain successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Blockchain register error:', error);
+    res.status(500).json({
+      error: 'Blockchain registration failed',
+      message: error.message
+    });
+  }
+});
+
+// Update document in blockchain
+router.post('/blockchain/update', async (req, res) => {
+  try {
+    const { document } = req.body;
+    
+    if (!document || !document.id) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Document with ID is required'
+      });
+    }
+    
+    const userId = getUserId(req);
+    
+    const result = await updateDocument(document, userId);
+    
+    res.json({
+      ...result,
+      message: 'Document updated in blockchain successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Blockchain update error:', error);
+    res.status(500).json({
+      error: 'Blockchain update failed',
+      message: error.message
+    });
+  }
+});
+
+// Verify document in blockchain
+router.post('/blockchain/verify', async (req, res) => {
+  try {
+    const { document } = req.body;
+    
+    if (!document || !document.id) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Document with ID is required'
+      });
+    }
+    
+    const userId = getUserId(req);
+    
+    const result = await verifyDocument(document, userId);
+    
+    res.json({
+      ...result,
+      message: 'Document verification completed',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Blockchain verification error:', error);
+    res.status(500).json({
+      error: 'Blockchain verification failed',
+      message: error.message
+    });
+  }
+});
+
+// Create blockchain audit trail
+router.post('/blockchain/audit', async (req, res) => {
+  try {
+    const { operation, resourceId, data } = req.body;
+    
+    if (!operation || !resourceId || !data) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        message: 'Operation, resource ID, and data are required'
+      });
+    }
+    
+    const userId = getUserId(req);
+    
+    const result = await createAuditTrail(operation, resourceId, data, userId);
+    
+    res.json({
+      ...result,
+      message: 'Audit trail created successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Blockchain audit error:', error);
+    res.status(500).json({
+      error: 'Blockchain audit failed',
+      message: error.message
+    });
+  }
+});
+
+// Get document blockchain history
+router.get('/blockchain/history/:documentId', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    
+    const history = await getDocumentHistory(documentId);
+    
+    res.json({
+      ...history,
+      message: 'Document blockchain history retrieved successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Intelligence API] Blockchain history error:', error);
+    res.status(500).json({
+      error: 'Failed to get blockchain history',
+      message: error.message
     });
   }
 });

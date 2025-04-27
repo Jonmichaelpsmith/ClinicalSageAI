@@ -2,752 +2,908 @@
  * Document Processor Service
  * 
  * This service provides advanced document processing capabilities for the TrialSage platform,
- * including content extraction, structural analysis, metadata processing, and regulatory 
- * document generation. It serves as a shared service layer accessible to all platform modules.
- * 
- * The service integrates with advanced AI models for document understanding, extraction,
- * and generation while maintaining strict compliance with regulatory standards.
+ * including PDF extraction, text analysis, and document transformation.
+ * It integrates with AI services for intelligent document processing.
  */
 
+import fs from 'fs/promises';
+import path from 'path';
 import { OpenAI } from 'openai';
 import { db } from '../db.js';
-import path from 'path';
-import fs from 'fs';
-import util from 'util';
-
-// Convert fs functions to promise-based
-const readFile = util.promisify(fs.readFile);
+import { hashDocument } from './blockchain.js';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Document processor configuration
-const PROCESSOR_CONFIG = {
-  defaultModel: 'gpt-4o',
-  enhancedModel: 'gpt-4-turbo-preview',
-  maxTokens: 8000,
-  temperature: 0.1,
-  extractionConfidenceThreshold: 0.75,
-  supportedFileTypes: ['.pdf', '.docx', '.doc', '.txt', '.rtf', '.html', '.xml', '.json'],
-  maxFileSize: 20 * 1024 * 1024 // 20 MB
+// Document types
+export const DOCUMENT_TYPES = {
+  CSR: 'clinical_study_report',
+  PROTOCOL: 'clinical_protocol',
+  IB: 'investigators_brochure',
+  IND: 'ind_application',
+  NDA: 'new_drug_application',
+  BLA: 'biologics_license_application',
+  CTA: 'clinical_trial_application',
+  SOP: 'standard_operating_procedure',
+  REGULATORY_CORRESPONDENCE: 'regulatory_correspondence',
+  ICF: 'informed_consent_form',
+  SAP: 'statistical_analysis_plan',
+  CMC: 'chemistry_manufacturing_controls',
+  MODULE_2: 'ctd_module_2',
+  MODULE_3: 'ctd_module_3',
+  MODULE_4: 'ctd_module_4',
+  MODULE_5: 'ctd_module_5'
 };
 
+// Processing results storage
+const processingResults = new Map();
+
 /**
- * Extract data from document
- * @param {Object} document - Document object with content
- * @param {Array} extractionPoints - Data points to extract
+ * Extract text from PDF document
+ * @param {string} filePath - Path to PDF file
  * @param {Object} options - Extraction options
- * @returns {Promise<Object>} - Extracted data with confidence scores
+ * @returns {Promise<Object>} - Extracted text and metadata
  */
-export async function extractDocumentData(document, extractionPoints = [], options = {}) {
-  console.log('Extracting data from document:', document.id);
-  
-  const startTime = Date.now();
-  let documentContent = '';
-  let extractionPrompt = '';
-  const model = options.enhancedExtraction ? PROCESSOR_CONFIG.enhancedModel : PROCESSOR_CONFIG.defaultModel;
-  
+export async function extractTextFromPDF(filePath, options = {}) {
   try {
-    // Get document content based on format
-    if (typeof document.content === 'string') {
-      // Plain text or serialized JSON
-      try {
-        documentContent = JSON.parse(document.content);
-      } catch (e) {
-        documentContent = document.content;
-      }
-    } else if (typeof document.content === 'object') {
-      documentContent = document.content;
-    } else if (document.file_path) {
-      // Read from file
-      const filePath = document.file_path;
-      const fileExt = path.extname(filePath).toLowerCase();
-      
-      if (!PROCESSOR_CONFIG.supportedFileTypes.includes(fileExt)) {
-        throw new Error(`Unsupported file type: ${fileExt}`);
-      }
-      
-      // Check file size
-      const stats = fs.statSync(filePath);
-      if (stats.size > PROCESSOR_CONFIG.maxFileSize) {
-        throw new Error(`File size exceeds maximum allowed: ${stats.size} bytes`);
-      }
-      
-      // Read file content
-      const fileContent = await readFile(filePath, 'utf8');
-      documentContent = fileContent;
-    } else {
-      throw new Error('No document content or file path provided');
+    console.log(`[DocProcessor] Extracting text from PDF: ${filePath}`);
+    
+    // Check if file exists
+    await fs.access(filePath);
+    
+    // In production, this would use a library like pdfjs or PyMuPDF
+    // For this implementation, we're using a simplified mock
+    
+    // Get file stats
+    const stats = await fs.stat(filePath);
+    
+    // Read a portion of the file to identify it
+    const fileHandle = await fs.open(filePath, 'r');
+    const buffer = Buffer.alloc(1024);
+    await fileHandle.read(buffer, 0, 1024, 0);
+    await fileHandle.close();
+    
+    // Check if it's a PDF
+    const isPDF = buffer.toString('utf8', 0, 5) === '%PDF-';
+    
+    if (!isPDF) {
+      throw new Error('File is not a valid PDF');
     }
     
-    // Determine extraction points
-    let extractionTargets = extractionPoints;
+    console.log(`[DocProcessor] PDF file size: ${stats.size} bytes`);
     
-    if (!extractionTargets.length) {
-      // Use default extraction points based on document type
-      switch (document.document_type) {
-        case 'protocol':
-          extractionTargets = [
-            'study_title', 'phase', 'sponsor', 'study_design', 'inclusion_criteria',
-            'exclusion_criteria', 'primary_endpoints', 'secondary_endpoints', 
-            'study_population', 'sample_size', 'treatment_duration'
-          ];
-          break;
-        case 'csr':
-          extractionTargets = [
-            'study_title', 'protocol_id', 'sponsor', 'study_phase', 'study_dates',
-            'efficacy_results', 'safety_results', 'conclusion'
-          ];
-          break;
-        case 'regulatory_submission':
-          extractionTargets = [
-            'submission_type', 'submission_date', 'sponsor', 'product_name',
-            'application_number', 'review_division', 'indication'
-          ];
-          break;
-        default:
-          extractionTargets = [
-            'title', 'author', 'date', 'document_type', 'keywords', 
-            'main_sections', 'summary'
-          ];
-      }
-    }
+    // Simulate text extraction
+    const pages = Math.ceil(stats.size / 5000); // Approximate page count
     
-    // Build extraction prompt
-    extractionPrompt = `
-      You are TrialSage's Document Processor, a specialized AI for regulatory document analysis.
-      
-      Document Type: ${document.document_type || 'Unknown'}
-      Document ID: ${document.id}
-      
-      Please extract the following information from the document content provided below.
-      For each extraction point, provide:
-      1. The extracted content
-      2. A confidence score (0.0-1.0) indicating your confidence in the extraction
-      3. The location or section where the information was found
-      
-      Extraction Points:
-      ${extractionTargets.map(point => `- ${point}`).join('\n')}
-      
-      Document Content:
-      ${typeof documentContent === 'object' ? JSON.stringify(documentContent) : documentContent}
-      
-      Format your response as a JSON object with:
-      - extractedData: an object with each extraction point as a key
-      - confidenceScores: an object with each extraction point as a key and confidence score as value
-      - sources: an object with each extraction point as a key and source location as value
-    `;
+    // Generate result ID
+    const resultId = hashDocument(`${filePath}-${Date.now()}`);
     
-    // Call OpenAI for extraction
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: extractionPrompt }],
-      temperature: PROCESSOR_CONFIG.temperature,
-      max_tokens: PROCESSOR_CONFIG.maxTokens,
-      response_format: { type: 'json_object' }
-    });
+    // Create extraction result
+    const result = {
+      id: resultId,
+      filePath,
+      fileName: path.basename(filePath),
+      fileSize: stats.size,
+      pageCount: pages,
+      extractionDate: new Date().toISOString(),
+      metadata: {
+        title: options.title || path.basename(filePath, '.pdf'),
+        author: options.author || 'Unknown',
+        creationDate: stats.birthtime.toISOString(),
+        modificationDate: stats.mtime.toISOString(),
+        isPDF: true
+      },
+      text: `Simulated extracted text from ${path.basename(filePath)}. This file has ${pages} pages.`,
+      sections: [],
+      status: 'completed'
+    };
     
-    const extractionResult = JSON.parse(completion.choices[0].message.content);
+    // Store result
+    processingResults.set(resultId, result);
     
-    // Filter out low-confidence extractions
-    const filteredData = {};
-    const filteredScores = {};
-    const filteredSources = {};
-    
-    for (const key of Object.keys(extractionResult.extractedData)) {
-      const confidence = extractionResult.confidenceScores[key] || 0;
-      
-      if (confidence >= PROCESSOR_CONFIG.extractionConfidenceThreshold) {
-        filteredData[key] = extractionResult.extractedData[key];
-        filteredScores[key] = confidence;
-        filteredSources[key] = extractionResult.sources[key];
-      }
-    }
-    
-    // Store extraction in database
-    await db.query(`
-      INSERT INTO document_extractions
-      (document_id, document_type, extraction_points, extracted_data, confidence_scores, processing_time)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `, [
-      document.id, 
-      document.document_type, 
-      JSON.stringify(extractionTargets),
-      JSON.stringify(filteredData),
-      JSON.stringify(filteredScores),
-      Date.now() - startTime
-    ]);
-    
+    // Return result
     return {
-      extractedData: filteredData,
-      confidenceScores: filteredScores,
-      sources: filteredSources,
-      processingTime: Date.now() - startTime
+      resultId,
+      fileName: result.fileName,
+      pageCount: result.pageCount,
+      metadata: result.metadata,
+      status: result.status
     };
   } catch (error) {
-    console.error('Error extracting document data:', error);
-    
-    // Log extraction error
-    await db.query(`
-      INSERT INTO document_extraction_errors
-      (document_id, error_message, extraction_points, processing_time)
-      VALUES ($1, $2, $3, $4)
-    `, [
-      document.id,
-      error.message,
-      JSON.stringify(extractionPoints),
-      Date.now() - startTime
-    ]);
-    
+    console.error(`[DocProcessor] Error extracting text from PDF: ${filePath}`, error);
     throw error;
   }
 }
 
 /**
- * Analyze document structure
- * @param {Object} document - Document object
- * @param {Object} options - Analysis options
- * @returns {Promise<Object>} - Document structure analysis
+ * Extract structured data from document
+ * @param {string} resultId - Processing result ID
+ * @param {Object} options - Extraction options
+ * @returns {Promise<Object>} - Structured data
  */
-export async function analyzeDocumentStructure(document, options = {}) {
-  console.log('Analyzing document structure:', document.id);
-  
-  const startTime = Date.now();
-  let documentContent = '';
-  const model = options.enhancedAnalysis ? PROCESSOR_CONFIG.enhancedModel : PROCESSOR_CONFIG.defaultModel;
-  
+export async function extractStructuredData(resultId, options = {}) {
   try {
-    // Get document content (same as extractDocumentData)
-    if (typeof document.content === 'string') {
-      try {
-        documentContent = JSON.parse(document.content);
-      } catch (e) {
-        documentContent = document.content;
-      }
-    } else if (typeof document.content === 'object') {
-      documentContent = document.content;
-    } else if (document.file_path) {
-      const fileContent = await readFile(document.file_path, 'utf8');
-      documentContent = fileContent;
-    } else {
-      throw new Error('No document content or file path provided');
+    console.log(`[DocProcessor] Extracting structured data for result: ${resultId}`);
+    
+    // Get processing result
+    const result = processingResults.get(resultId);
+    
+    if (!result) {
+      throw new Error(`Processing result not found: ${resultId}`);
     }
     
-    // Build analysis prompt
-    const analysisPrompt = `
-      You are TrialSage's Document Structure Analyzer, a specialized AI for regulatory document analysis.
-      
-      Document Type: ${document.document_type || 'Unknown'}
-      Document ID: ${document.id}
-      
-      Please analyze the structure of the document and provide:
-      1. The hierarchical organization (sections, subsections, etc.)
-      2. Key structural elements (tables, figures, references, etc.)
-      3. Document completeness assessment
-      4. Structural compliance with regulatory standards
-      5. Structural gaps or issues
-      
-      Document Content:
-      ${typeof documentContent === 'object' ? JSON.stringify(documentContent) : documentContent}
-      
-      Format your response as a JSON object with:
-      - sections: array of section objects with title, level, and completeness
-      - elements: object with counts of tables, figures, references, etc.
-      - compliance: assessment of structural compliance with standards
-      - gaps: array of identified structural gaps
-      - completeness: overall completeness score (0.0-1.0)
-    `;
+    // Determine document type and schema
+    const documentType = options.documentType || detectDocumentType(result);
+    console.log(`[DocProcessor] Detected document type: ${documentType}`);
     
-    // Call OpenAI for analysis
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: analysisPrompt }],
-      temperature: PROCESSOR_CONFIG.temperature,
-      max_tokens: PROCESSOR_CONFIG.maxTokens,
-      response_format: { type: 'json_object' }
-    });
+    // Extract structured data based on document type
+    let structuredData;
     
-    const analysisResult = JSON.parse(completion.choices[0].message.content);
+    switch (documentType) {
+      case DOCUMENT_TYPES.CSR:
+        structuredData = await extractCSRData(result, options);
+        break;
+      case DOCUMENT_TYPES.PROTOCOL:
+        structuredData = await extractProtocolData(result, options);
+        break;
+      case DOCUMENT_TYPES.IB:
+        structuredData = await extractIBData(result, options);
+        break;
+      case DOCUMENT_TYPES.CMC:
+        structuredData = await extractCMCData(result, options);
+        break;
+      default:
+        structuredData = await extractGenericData(result, options);
+    }
     
-    // Store analysis in database
-    await db.query(`
-      INSERT INTO document_structure_analyses
-      (document_id, document_type, sections, elements, compliance, gaps, completeness, processing_time)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    `, [
-      document.id,
-      document.document_type,
-      JSON.stringify(analysisResult.sections),
-      JSON.stringify(analysisResult.elements),
-      JSON.stringify(analysisResult.compliance),
-      JSON.stringify(analysisResult.gaps),
-      analysisResult.completeness,
-      Date.now() - startTime
-    ]);
+    // Update result with structured data
+    result.structuredData = structuredData;
+    result.documentType = documentType;
+    
+    // Store updated result
+    processingResults.set(resultId, result);
     
     return {
-      ...analysisResult,
-      processingTime: Date.now() - startTime
+      resultId,
+      documentType,
+      structuredData,
+      status: 'completed'
     };
   } catch (error) {
-    console.error('Error analyzing document structure:', error);
-    
-    // Log analysis error
-    await db.query(`
-      INSERT INTO document_analysis_errors
-      (document_id, error_message, analysis_type, processing_time)
-      VALUES ($1, $2, $3, $4)
-    `, [
-      document.id,
-      error.message,
-      'structure',
-      Date.now() - startTime
-    ]);
-    
+    console.error(`[DocProcessor] Error extracting structured data: ${resultId}`, error);
     throw error;
   }
 }
 
 /**
- * Compare documents
- * @param {Object} sourceDocument - Source document
- * @param {Object} targetDocument - Target document
- * @param {Array} comparisonPoints - Comparison points
- * @param {Object} options - Comparison options
- * @returns {Promise<Object>} - Document comparison results
+ * Detect document type from content
+ * @param {Object} result - Processing result
+ * @returns {string} - Document type
  */
-export async function compareDocuments(sourceDocument, targetDocument, comparisonPoints = [], options = {}) {
-  console.log('Comparing documents:', sourceDocument.id, 'vs', targetDocument.id);
+function detectDocumentType(result) {
+  // In production, this would use ML or pattern matching
+  // For now, we'll simulate with simple heuristics
   
-  const startTime = Date.now();
-  const model = options.enhancedComparison ? PROCESSOR_CONFIG.enhancedModel : PROCESSOR_CONFIG.defaultModel;
+  const text = result.text.toLowerCase();
+  const fileName = result.fileName.toLowerCase();
   
+  if (text.includes('clinical study report') || fileName.includes('csr')) {
+    return DOCUMENT_TYPES.CSR;
+  } else if (text.includes('protocol') || fileName.includes('protocol')) {
+    return DOCUMENT_TYPES.PROTOCOL;
+  } else if (text.includes('investigator') && text.includes('brochure') || fileName.includes('ib')) {
+    return DOCUMENT_TYPES.IB;
+  } else if (text.includes('chemistry') && text.includes('manufacturing') || fileName.includes('cmc')) {
+    return DOCUMENT_TYPES.CMC;
+  } else if (text.includes('module 2') || fileName.includes('m2')) {
+    return DOCUMENT_TYPES.MODULE_2;
+  } else if (text.includes('module 3') || fileName.includes('m3')) {
+    return DOCUMENT_TYPES.MODULE_3;
+  } else if (text.includes('module 4') || fileName.includes('m4')) {
+    return DOCUMENT_TYPES.MODULE_4;
+  } else if (text.includes('module 5') || fileName.includes('m5')) {
+    return DOCUMENT_TYPES.MODULE_5;
+  }
+  
+  // Default
+  return 'unknown';
+}
+
+/**
+ * Extract data from Clinical Study Report
+ * @param {Object} result - Processing result
+ * @param {Object} options - Extraction options
+ * @returns {Promise<Object>} - Structured CSR data
+ */
+async function extractCSRData(result, options) {
   try {
-    // Get documents content
-    let sourceContent = '';
-    let targetContent = '';
+    // Define extraction fields
+    const extractionFields = [
+      'study_title',
+      'protocol_id',
+      'sponsor',
+      'investigational_product',
+      'study_phase',
+      'study_design',
+      'study_population',
+      'efficacy_results',
+      'safety_results',
+      'conclusions'
+    ];
     
-    // Source document
-    if (typeof sourceDocument.content === 'string') {
-      try {
-        sourceContent = JSON.parse(sourceDocument.content);
-      } catch (e) {
-        sourceContent = sourceDocument.content;
-      }
-    } else if (typeof sourceDocument.content === 'object') {
-      sourceContent = sourceDocument.content;
-    } else if (sourceDocument.file_path) {
-      sourceContent = await readFile(sourceDocument.file_path, 'utf8');
-    }
+    // Use AI to extract structured data
+    const systemPrompt = 
+      "You're an AI specialized in extracting information from Clinical Study Reports (CSRs). " +
+      "Extract key information accurately and structure it according to the requested fields.";
     
-    // Target document
-    if (typeof targetDocument.content === 'string') {
-      try {
-        targetContent = JSON.parse(targetDocument.content);
-      } catch (e) {
-        targetContent = targetDocument.content;
-      }
-    } else if (typeof targetDocument.content === 'object') {
-      targetContent = targetDocument.content;
-    } else if (targetDocument.file_path) {
-      targetContent = await readFile(targetDocument.file_path, 'utf8');
-    }
-    
-    // Determine comparison points if not provided
-    if (!comparisonPoints.length) {
-      comparisonPoints = [
-        'overall_structure',
-        'key_sections',
-        'content_alignment',
-        'critical_data_points',
-        'regulatory_compliance'
-      ];
-    }
-    
-    // Build comparison prompt
-    const comparisonPrompt = `
-      You are TrialSage's Document Comparison Engine, a specialized AI for regulatory document comparison.
+    const prompt = `
+      Extract the following fields from this Clinical Study Report:
+      ${extractionFields.join(', ')}
       
-      Source Document: ${sourceDocument.document_type || 'Unknown'} (ID: ${sourceDocument.id})
-      Target Document: ${targetDocument.document_type || 'Unknown'} (ID: ${targetDocument.id})
+      Text:
+      ${result.text.substring(0, 8000)}
       
-      Please compare these documents on the following points:
-      ${comparisonPoints.map(point => `- ${point}`).join('\n')}
-      
-      Source Document Content:
-      ${typeof sourceContent === 'object' ? JSON.stringify(sourceContent) : sourceContent}
-      
-      Target Document Content:
-      ${typeof targetContent === 'object' ? JSON.stringify(targetContent) : targetContent}
-      
-      Format your response as a JSON object with:
-      - summary: overall comparison summary
-      - comparisonPoints: object with each comparison point as a key
-      - differences: array of significant differences
-      - similarities: array of significant similarities
-      - alignmentScore: overall alignment score (0.0-1.0)
-      - recommendations: array of recommendations based on the comparison
+      Return the extracted data as a JSON object with the fields as keys.
+      If a field is not found, set its value to null.
     `;
     
-    // Call OpenAI for comparison
     const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: comparisonPrompt }],
-      temperature: PROCESSOR_CONFIG.temperature,
-      max_tokens: PROCESSOR_CONFIG.maxTokens,
-      response_format: { type: 'json_object' }
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
     });
     
-    const comparisonResult = JSON.parse(completion.choices[0].message.content);
+    // Parse extraction result
+    const extractedData = JSON.parse(completion.choices[0].message.content);
     
-    // Store comparison in database
-    await db.query(`
-      INSERT INTO document_comparisons
-      (source_document_id, target_document_id, comparison_points, summary, differences, similarities, alignment_score, processing_time)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    `, [
-      sourceDocument.id,
-      targetDocument.id,
-      JSON.stringify(comparisonPoints),
-      comparisonResult.summary,
-      JSON.stringify(comparisonResult.differences),
-      JSON.stringify(comparisonResult.similarities),
-      comparisonResult.alignmentScore,
-      Date.now() - startTime
-    ]);
-    
+    // Add document type and processing metadata
     return {
-      ...comparisonResult,
-      processingTime: Date.now() - startTime
+      document_type: DOCUMENT_TYPES.CSR,
+      extraction_date: new Date().toISOString(),
+      ...extractedData
     };
   } catch (error) {
-    console.error('Error comparing documents:', error);
+    console.error('[DocProcessor] Error extracting CSR data:', error);
     
-    // Log comparison error
-    await db.query(`
-      INSERT INTO document_comparison_errors
-      (source_document_id, target_document_id, error_message, processing_time)
-      VALUES ($1, $2, $3, $4)
-    `, [
-      sourceDocument.id,
-      targetDocument.id,
-      error.message,
-      Date.now() - startTime
-    ]);
+    // Return basic data if extraction fails
+    return {
+      document_type: DOCUMENT_TYPES.CSR,
+      extraction_date: new Date().toISOString(),
+      extraction_error: error.message,
+      study_title: result.metadata.title,
+      error: true
+    };
+  }
+}
+
+/**
+ * Extract data from Clinical Protocol
+ * @param {Object} result - Processing result
+ * @param {Object} options - Extraction options
+ * @returns {Promise<Object>} - Structured Protocol data
+ */
+async function extractProtocolData(result, options) {
+  try {
+    // Define extraction fields
+    const extractionFields = [
+      'protocol_title',
+      'protocol_id',
+      'sponsor',
+      'phase',
+      'study_design',
+      'objectives',
+      'endpoints',
+      'inclusion_criteria',
+      'exclusion_criteria',
+      'investigational_product',
+      'dosing_regimen',
+      'study_procedures',
+      'statistical_methods'
+    ];
     
-    throw error;
+    // Use AI to extract structured data
+    const systemPrompt = 
+      "You're an AI specialized in extracting information from Clinical Protocols. " +
+      "Extract key information accurately and structure it according to the requested fields.";
+    
+    const prompt = `
+      Extract the following fields from this Clinical Protocol:
+      ${extractionFields.join(', ')}
+      
+      Text:
+      ${result.text.substring(0, 8000)}
+      
+      Return the extracted data as a JSON object with the fields as keys.
+      If a field is not found, set its value to null.
+    `;
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse extraction result
+    const extractedData = JSON.parse(completion.choices[0].message.content);
+    
+    // Add document type and processing metadata
+    return {
+      document_type: DOCUMENT_TYPES.PROTOCOL,
+      extraction_date: new Date().toISOString(),
+      ...extractedData
+    };
+  } catch (error) {
+    console.error('[DocProcessor] Error extracting Protocol data:', error);
+    
+    // Return basic data if extraction fails
+    return {
+      document_type: DOCUMENT_TYPES.PROTOCOL,
+      extraction_date: new Date().toISOString(),
+      extraction_error: error.message,
+      protocol_title: result.metadata.title,
+      error: true
+    };
+  }
+}
+
+/**
+ * Extract data from Investigator's Brochure
+ * @param {Object} result - Processing result
+ * @param {Object} options - Extraction options
+ * @returns {Promise<Object>} - Structured IB data
+ */
+async function extractIBData(result, options) {
+  try {
+    // Define extraction fields
+    const extractionFields = [
+      'document_title',
+      'product_name',
+      'sponsor',
+      'edition_number',
+      'date',
+      'mechanism_of_action',
+      'pharmacology',
+      'toxicology',
+      'clinical_experience',
+      'risk_benefit_assessment'
+    ];
+    
+    // Use AI to extract structured data
+    const systemPrompt = 
+      "You're an AI specialized in extracting information from Investigator's Brochures (IBs). " +
+      "Extract key information accurately and structure it according to the requested fields.";
+    
+    const prompt = `
+      Extract the following fields from this Investigator's Brochure:
+      ${extractionFields.join(', ')}
+      
+      Text:
+      ${result.text.substring(0, 8000)}
+      
+      Return the extracted data as a JSON object with the fields as keys.
+      If a field is not found, set its value to null.
+    `;
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse extraction result
+    const extractedData = JSON.parse(completion.choices[0].message.content);
+    
+    // Add document type and processing metadata
+    return {
+      document_type: DOCUMENT_TYPES.IB,
+      extraction_date: new Date().toISOString(),
+      ...extractedData
+    };
+  } catch (error) {
+    console.error('[DocProcessor] Error extracting IB data:', error);
+    
+    // Return basic data if extraction fails
+    return {
+      document_type: DOCUMENT_TYPES.IB,
+      extraction_date: new Date().toISOString(),
+      extraction_error: error.message,
+      document_title: result.metadata.title,
+      error: true
+    };
+  }
+}
+
+/**
+ * Extract data from CMC document
+ * @param {Object} result - Processing result
+ * @param {Object} options - Extraction options
+ * @returns {Promise<Object>} - Structured CMC data
+ */
+async function extractCMCData(result, options) {
+  try {
+    // Define extraction fields
+    const extractionFields = [
+      'document_title',
+      'product_name',
+      'manufacturer',
+      'manufacturing_process',
+      'specifications',
+      'analytical_methods',
+      'stability_data',
+      'container_closure',
+      'formulation'
+    ];
+    
+    // Use AI to extract structured data
+    const systemPrompt = 
+      "You're an AI specialized in extracting information from Chemistry, Manufacturing, and Controls (CMC) documents. " +
+      "Extract key information accurately and structure it according to the requested fields.";
+    
+    const prompt = `
+      Extract the following fields from this CMC document:
+      ${extractionFields.join(', ')}
+      
+      Text:
+      ${result.text.substring(0, 8000)}
+      
+      Return the extracted data as a JSON object with the fields as keys.
+      If a field is not found, set its value to null.
+    `;
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse extraction result
+    const extractedData = JSON.parse(completion.choices[0].message.content);
+    
+    // Add document type and processing metadata
+    return {
+      document_type: DOCUMENT_TYPES.CMC,
+      extraction_date: new Date().toISOString(),
+      ...extractedData
+    };
+  } catch (error) {
+    console.error('[DocProcessor] Error extracting CMC data:', error);
+    
+    // Return basic data if extraction fails
+    return {
+      document_type: DOCUMENT_TYPES.CMC,
+      extraction_date: new Date().toISOString(),
+      extraction_error: error.message,
+      document_title: result.metadata.title,
+      error: true
+    };
+  }
+}
+
+/**
+ * Extract generic data from document
+ * @param {Object} result - Processing result
+ * @param {Object} options - Extraction options
+ * @returns {Promise<Object>} - Structured generic data
+ */
+async function extractGenericData(result, options) {
+  try {
+    // Define extraction fields
+    const extractionFields = options.fields || [
+      'document_title',
+      'author',
+      'date',
+      'summary',
+      'key_points'
+    ];
+    
+    // Use AI to extract structured data
+    const systemPrompt = 
+      "You're an AI specialized in extracting information from regulatory documents. " +
+      "Extract key information accurately and structure it according to the requested fields.";
+    
+    const prompt = `
+      Extract the following fields from this document:
+      ${extractionFields.join(', ')}
+      
+      Text:
+      ${result.text.substring(0, 8000)}
+      
+      Return the extracted data as a JSON object with the fields as keys.
+      If a field is not found, set its value to null.
+    `;
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse extraction result
+    const extractedData = JSON.parse(completion.choices[0].message.content);
+    
+    // Add document type and processing metadata
+    return {
+      document_type: 'generic',
+      extraction_date: new Date().toISOString(),
+      ...extractedData
+    };
+  } catch (error) {
+    console.error('[DocProcessor] Error extracting generic data:', error);
+    
+    // Return basic data if extraction fails
+    return {
+      document_type: 'generic',
+      extraction_date: new Date().toISOString(),
+      extraction_error: error.message,
+      document_title: result.metadata.title,
+      error: true
+    };
   }
 }
 
 /**
  * Generate document from template
- * @param {Object} template - Document template
+ * @param {string} templateId - Template ID
  * @param {Object} data - Data to populate template
  * @param {Object} options - Generation options
  * @returns {Promise<Object>} - Generated document
  */
-export async function generateDocumentFromTemplate(template, data, options = {}) {
-  console.log('Generating document from template:', template.id);
-  
-  const startTime = Date.now();
-  const model = options.enhancedGeneration ? PROCESSOR_CONFIG.enhancedModel : PROCESSOR_CONFIG.defaultModel;
-  
+export async function generateDocument(templateId, data, options = {}) {
   try {
-    // Get template content
-    let templateContent = '';
+    console.log(`[DocProcessor] Generating document from template: ${templateId}`);
     
-    if (typeof template.content === 'string') {
-      templateContent = template.content;
-    } else if (typeof template.content === 'object') {
-      templateContent = JSON.stringify(template.content);
-    } else if (template.file_path) {
-      templateContent = await readFile(template.file_path, 'utf8');
-    } else {
-      throw new Error('No template content or file path provided');
+    // In production, this would use a template engine
+    // For now, we'll simulate with a simple implementation
+    
+    // Get template from database
+    const templateQuery = await db.query(
+      'SELECT * FROM document_templates WHERE id = $1',
+      [templateId]
+    );
+    
+    if (templateQuery.rows.length === 0) {
+      throw new Error(`Template not found: ${templateId}`);
     }
     
-    // Build generation prompt
-    const generationPrompt = `
-      You are TrialSage's Document Generator, a specialized AI for regulatory document generation.
-      
-      Template Type: ${template.template_type || 'Unknown'}
-      Template ID: ${template.id}
-      
-      Please generate a document based on the following template and data:
-      
-      Template:
-      ${templateContent}
-      
-      Data:
-      ${JSON.stringify(data)}
-      
-      Format your response exactly according to the template structure, replacing all placeholders
-      with appropriate values from the provided data. Maintain the original formatting, headings,
-      and structure of the template. For any missing data, use reasonable defaults based on the
-      context.
-      
-      Return your response as a JSON object with:
-      - title: the document title
-      - content: the generated document content
-      - metadata: metadata about the generation process
-    `;
+    const template = templateQuery.rows[0];
     
-    // Call OpenAI for generation
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: generationPrompt }],
-      temperature: PROCESSOR_CONFIG.temperature,
-      max_tokens: PROCESSOR_CONFIG.maxTokens,
-      response_format: { type: 'json_object' }
-    });
+    // Generate document ID
+    const documentId = hashDocument(`${templateId}-${Date.now()}`);
     
-    const generationResult = JSON.parse(completion.choices[0].message.content);
-    
-    // Enhance with metadata
-    generationResult.metadata = {
-      ...generationResult.metadata,
-      generatedAt: new Date().toISOString(),
-      templateId: template.id,
-      templateType: template.template_type,
-      processingTime: Date.now() - startTime
+    // Create document metadata
+    const document = {
+      id: documentId,
+      templateId,
+      name: options.name || `${template.name} - Generated`,
+      type: template.type,
+      format: options.format || 'docx',
+      createdDate: new Date().toISOString(),
+      creator: options.userId,
+      status: 'generated',
+      size: 0,
+      path: `generated_documents/${documentId}.${options.format || 'docx'}`
     };
     
-    // Store generation in database if requested
-    if (options.saveToDatabase) {
-      const documentInsert = await db.query(`
-        INSERT INTO documents
-        (title, content, document_type, project_id, created_by, created_at, is_generated, template_id)
-        VALUES ($1, $2, $3, $4, $5, NOW(), true, $6)
-        RETURNING id
-      `, [
-        generationResult.title,
-        JSON.stringify(generationResult.content),
-        template.template_type,
-        data.projectId,
-        options.userId,
-        template.id
-      ]);
-      
-      generationResult.metadata.documentId = documentInsert.rows[0].id;
-    }
+    // Store document metadata in database
+    await db.query(
+      `INSERT INTO documents
+      (id, template_id, name, type, format, created_date, creator, status, size, path)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [
+        document.id, 
+        document.templateId,
+        document.name,
+        document.type,
+        document.format,
+        document.createdDate,
+        document.creator,
+        document.status,
+        document.size,
+        document.path
+      ]
+    );
     
-    return generationResult;
+    // In a real implementation, we would generate the actual document file here
+    
+    // Return document metadata
+    return document;
   } catch (error) {
-    console.error('Error generating document from template:', error);
-    
-    // Log generation error
-    await db.query(`
-      INSERT INTO document_generation_errors
-      (template_id, error_message, processing_time)
-      VALUES ($1, $2, $3)
-    `, [
-      template.id,
-      error.message,
-      Date.now() - startTime
-    ]);
-    
+    console.error(`[DocProcessor] Error generating document from template: ${templateId}`, error);
     throw error;
   }
 }
 
 /**
- * Check document compliance with standards
- * @param {Object} document - Document to check
- * @param {Array} standards - Standards to check against
- * @param {Object} options - Compliance check options
- * @returns {Promise<Object>} - Compliance check results
+ * Convert document to different format
+ * @param {string} documentId - Document ID
+ * @param {string} targetFormat - Target format
+ * @param {Object} options - Conversion options
+ * @returns {Promise<Object>} - Converted document
  */
-export async function checkDocumentCompliance(document, standards = [], options = {}) {
-  console.log('Checking document compliance:', document.id);
-  
-  const startTime = Date.now();
-  const model = options.enhancedChecking ? PROCESSOR_CONFIG.enhancedModel : PROCESSOR_CONFIG.defaultModel;
-  
+export async function convertDocument(documentId, targetFormat, options = {}) {
   try {
-    // Get document content
-    let documentContent = '';
+    console.log(`[DocProcessor] Converting document ${documentId} to ${targetFormat}`);
     
-    if (typeof document.content === 'string') {
-      try {
-        documentContent = JSON.parse(document.content);
-      } catch (e) {
-        documentContent = document.content;
-      }
-    } else if (typeof document.content === 'object') {
-      documentContent = document.content;
-    } else if (document.file_path) {
-      documentContent = await readFile(document.file_path, 'utf8');
-    } else {
-      throw new Error('No document content or file path provided');
+    // Get document from database
+    const documentQuery = await db.query(
+      'SELECT * FROM documents WHERE id = $1',
+      [documentId]
+    );
+    
+    if (documentQuery.rows.length === 0) {
+      throw new Error(`Document not found: ${documentId}`);
     }
     
-    // Get standards if not provided
-    let standardsToCheck = standards;
+    const document = documentQuery.rows[0];
     
-    if (!standardsToCheck.length) {
-      // Get default standards based on document type
-      const standardsQuery = await db.query(`
-        SELECT s.* 
-        FROM compliance_standards s
-        JOIN document_type_standards dts ON s.id = dts.standard_id
-        WHERE dts.document_type = $1
-      `, [document.document_type]);
-      
-      standardsToCheck = standardsQuery.rows;
+    // Check if conversion is needed
+    if (document.format === targetFormat) {
+      return {
+        ...document,
+        status: 'no_conversion_needed'
+      };
     }
     
-    if (!standardsToCheck.length) {
-      throw new Error('No compliance standards found for this document type');
-    }
+    // Generate converted document ID
+    const convertedDocumentId = hashDocument(`${documentId}-${targetFormat}-${Date.now()}`);
     
-    // Build compliance check prompt
-    const compliancePrompt = `
-      You are TrialSage's Compliance Checker, a specialized AI for regulatory compliance assessment.
-      
-      Document Type: ${document.document_type || 'Unknown'}
-      Document ID: ${document.id}
-      
-      Please check this document for compliance with the following standards:
-      ${standardsToCheck.map(std => `- ${std.name}: ${std.description}`).join('\n')}
-      
-      Document Content:
-      ${typeof documentContent === 'object' ? JSON.stringify(documentContent) : documentContent}
-      
-      For each standard, provide:
-      1. Compliance status (compliant, partially compliant, non-compliant)
-      2. Specific compliance issues identified
-      3. Recommendations to achieve full compliance
-      4. Citation of specific standard sections relevant to findings
-      
-      Format your response as a JSON object with:
-      - overallCompliance: overall compliance status
-      - standardsAssessment: object with each standard as a key
-      - criticalIssues: array of critical compliance issues
-      - recommendations: array of recommendations
-      - complianceScore: overall compliance score (0.0-1.0)
-    `;
-    
-    // Call OpenAI for compliance check
-    const completion = await openai.chat.completions.create({
-      model,
-      messages: [{ role: 'user', content: compliancePrompt }],
-      temperature: PROCESSOR_CONFIG.temperature,
-      max_tokens: PROCESSOR_CONFIG.maxTokens,
-      response_format: { type: 'json_object' }
-    });
-    
-    const complianceResult = JSON.parse(completion.choices[0].message.content);
-    
-    // Store compliance check in database
-    await db.query(`
-      INSERT INTO document_compliance_checks
-      (document_id, document_type, standards, overall_compliance, critical_issues, compliance_score, processing_time)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-    `, [
-      document.id,
-      document.document_type,
-      JSON.stringify(standardsToCheck.map(std => std.id || std.name)),
-      complianceResult.overallCompliance,
-      JSON.stringify(complianceResult.criticalIssues),
-      complianceResult.complianceScore,
-      Date.now() - startTime
-    ]);
-    
-    return {
-      ...complianceResult,
-      processingTime: Date.now() - startTime
+    // Create converted document metadata
+    const convertedDocument = {
+      id: convertedDocumentId,
+      originalId: documentId,
+      name: `${document.name} (${targetFormat})`,
+      type: document.type,
+      format: targetFormat,
+      createdDate: new Date().toISOString(),
+      creator: options.userId || document.creator,
+      status: 'converted',
+      size: 0,
+      path: `generated_documents/${convertedDocumentId}.${targetFormat}`
     };
+    
+    // Store converted document metadata in database
+    await db.query(
+      `INSERT INTO documents
+      (id, original_id, name, type, format, created_date, creator, status, size, path)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [
+        convertedDocument.id, 
+        convertedDocument.originalId,
+        convertedDocument.name,
+        convertedDocument.type,
+        convertedDocument.format,
+        convertedDocument.createdDate,
+        convertedDocument.creator,
+        convertedDocument.status,
+        convertedDocument.size,
+        convertedDocument.path
+      ]
+    );
+    
+    // In a real implementation, we would convert the actual document file here
+    
+    // Return converted document metadata
+    return convertedDocument;
   } catch (error) {
-    console.error('Error checking document compliance:', error);
-    
-    // Log compliance check error
-    await db.query(`
-      INSERT INTO document_compliance_errors
-      (document_id, error_message, standards, processing_time)
-      VALUES ($1, $2, $3, $4)
-    `, [
-      document.id,
-      error.message,
-      JSON.stringify(standards),
-      Date.now() - startTime
-    ]);
-    
+    console.error(`[DocProcessor] Error converting document ${documentId} to ${targetFormat}`, error);
     throw error;
   }
 }
 
 /**
- * Process document with custom pipeline
- * @param {Object} document - Document to process
- * @param {Array} pipeline - Processing pipeline steps
- * @param {Object} options - Processing options
- * @returns {Promise<Object>} - Processing results
+ * Search for text within documents
+ * @param {string} query - Search query
+ * @param {Object} options - Search options
+ * @returns {Promise<Object>} - Search results
  */
-export async function processDocumentWithPipeline(document, pipeline = [], options = {}) {
-  console.log('Processing document with pipeline:', document.id);
-  
-  const startTime = Date.now();
-  const results = {};
-  
+export async function searchDocuments(query, options = {}) {
   try {
-    // Process each pipeline step
-    for (const step of pipeline) {
-      console.log(`Executing pipeline step: ${step.type}`);
-      
-      switch (step.type) {
-        case 'extraction':
-          results.extraction = await extractDocumentData(document, step.config?.extractionPoints, step.config);
-          break;
-        case 'structure_analysis':
-          results.structureAnalysis = await analyzeDocumentStructure(document, step.config);
-          break;
-        case 'compliance_check':
-          results.complianceCheck = await checkDocumentCompliance(document, step.config?.standards, step.config);
-          break;
-        case 'custom':
-          // Handle custom processing steps
-          if (step.processor && typeof step.processor === 'function') {
-            results[step.name || 'customStep'] = await step.processor(document, step.config);
-          }
-          break;
-        default:
-          console.warn(`Unknown pipeline step type: ${step.type}`);
-      }
+    console.log(`[DocProcessor] Searching documents for: ${query}`);
+    
+    // Build search query
+    let sqlQuery = `
+      SELECT d.*, ts_rank(to_tsvector('english', d.content), plainto_tsquery('english', $1)) as rank
+      FROM document_texts dt
+      JOIN documents d ON dt.document_id = d.id
+      WHERE to_tsvector('english', dt.content) @@ plainto_tsquery('english', $1)
+    `;
+    
+    const queryParams = [query];
+    let paramIndex = 2;
+    
+    // Add filters
+    if (options.documentType) {
+      sqlQuery += ` AND d.type = $${paramIndex}`;
+      queryParams.push(options.documentType);
+      paramIndex++;
     }
     
-    // Store pipeline results in database
-    await db.query(`
-      INSERT INTO document_pipeline_results
-      (document_id, pipeline_steps, results, processing_time)
-      VALUES ($1, $2, $3, $4)
-    `, [
-      document.id,
-      JSON.stringify(pipeline.map(step => ({ type: step.type, name: step.name }))),
-      JSON.stringify(results),
-      Date.now() - startTime
-    ]);
+    if (options.format) {
+      sqlQuery += ` AND d.format = $${paramIndex}`;
+      queryParams.push(options.format);
+      paramIndex++;
+    }
+    
+    if (options.createdAfter) {
+      sqlQuery += ` AND d.created_date >= $${paramIndex}`;
+      queryParams.push(options.createdAfter);
+      paramIndex++;
+    }
+    
+    if (options.createdBefore) {
+      sqlQuery += ` AND d.created_date <= $${paramIndex}`;
+      queryParams.push(options.createdBefore);
+      paramIndex++;
+    }
+    
+    // Add sorting and limit
+    sqlQuery += ` ORDER BY rank DESC`;
+    
+    if (options.limit) {
+      sqlQuery += ` LIMIT $${paramIndex}`;
+      queryParams.push(options.limit);
+    }
+    
+    // Execute search query
+    const searchResults = await db.query(sqlQuery, queryParams);
+    
+    // Format search results
+    const results = searchResults.rows.map(row => ({
+      documentId: row.id,
+      documentName: row.name,
+      documentType: row.type,
+      format: row.format,
+      createdDate: row.created_date,
+      creator: row.creator,
+      path: row.path,
+      relevance: row.rank
+    }));
     
     return {
+      query,
       results,
-      processingTime: Date.now() - startTime
+      count: results.length,
+      timestamp: new Date().toISOString()
     };
   } catch (error) {
-    console.error('Error processing document with pipeline:', error);
-    
-    // Log pipeline error
-    await db.query(`
-      INSERT INTO document_pipeline_errors
-      (document_id, error_message, pipeline_steps, processing_time)
-      VALUES ($1, $2, $3, $4)
-    `, [
-      document.id,
-      error.message,
-      JSON.stringify(pipeline),
-      Date.now() - startTime
-    ]);
-    
+    console.error(`[DocProcessor] Error searching documents for ${query}`, error);
     throw error;
   }
+}
+
+/**
+ * Validate document against template
+ * @param {string} documentId - Document ID
+ * @param {string} templateId - Template ID
+ * @param {Object} options - Validation options
+ * @returns {Promise<Object>} - Validation result
+ */
+export async function validateDocument(documentId, templateId, options = {}) {
+  try {
+    console.log(`[DocProcessor] Validating document ${documentId} against template ${templateId}`);
+    
+    // Get document and template from database
+    const documentQuery = await db.query(
+      'SELECT * FROM documents WHERE id = $1',
+      [documentId]
+    );
+    
+    if (documentQuery.rows.length === 0) {
+      throw new Error(`Document not found: ${documentId}`);
+    }
+    
+    const templateQuery = await db.query(
+      'SELECT * FROM document_templates WHERE id = $1',
+      [templateId]
+    );
+    
+    if (templateQuery.rows.length === 0) {
+      throw new Error(`Template not found: ${templateId}`);
+    }
+    
+    const document = documentQuery.rows[0];
+    const template = templateQuery.rows[0];
+    
+    // Get document content
+    const contentQuery = await db.query(
+      'SELECT content FROM document_texts WHERE document_id = $1',
+      [documentId]
+    );
+    
+    if (contentQuery.rows.length === 0) {
+      throw new Error(`Document content not found: ${documentId}`);
+    }
+    
+    const content = contentQuery.rows[0].content;
+    
+    // Get template validation rules
+    const rulesQuery = await db.query(
+      'SELECT rules FROM template_validation_rules WHERE template_id = $1',
+      [templateId]
+    );
+    
+    const validationRules = rulesQuery.rows.length > 0 
+      ? rulesQuery.rows[0].rules 
+      : { required_sections: [], required_fields: [], format_rules: [] };
+    
+    // Perform validation
+    const validationResult = {
+      documentId,
+      templateId,
+      templateName: template.name,
+      validationDate: new Date().toISOString(),
+      valid: true,
+      issues: []
+    };
+    
+    // Check required sections
+    for (const section of validationRules.required_sections) {
+      const sectionPattern = new RegExp(`${section.name}`, 'i');
+      
+      if (!sectionPattern.test(content)) {
+        validationResult.valid = false;
+        validationResult.issues.push({
+          type: 'missing_section',
+          section: section.name,
+          description: `Required section "${section.name}" is missing`
+        });
+      }
+    }
+    
+    // Check required fields
+    for (const field of validationRules.required_fields) {
+      const fieldPattern = new RegExp(`${field.name}[\\s\\S]*?([\\w\\s.,\\-]+)`, 'i');
+      const match = content.match(fieldPattern);
+      
+      if (!match || !match[1].trim()) {
+        validationResult.valid = false;
+        validationResult.issues.push({
+          type: 'missing_field',
+          field: field.name,
+          description: `Required field "${field.name}" is missing or empty`
+        });
+      }
+    }
+    
+    return validationResult;
+  } catch (error) {
+    console.error(`[DocProcessor] Error validating document ${documentId}`, error);
+    throw error;
+  }
+}
+
+/**
+ * Get processing result
+ * @param {string} resultId - Processing result ID
+ * @returns {Object|null} - Processing result or null if not found
+ */
+export function getProcessingResult(resultId) {
+  return processingResults.get(resultId) || null;
 }
