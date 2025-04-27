@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
   });
+  const [, setLocation] = useLocation();
+
+  // Check if already authenticated, redirect if so
+  useEffect(() => {
+    if (localStorage.getItem('isAuthenticated') === 'true') {
+      setLocation('/portal');
+    }
+  }, [setLocation]);
 
   const handleChange = (e) => {
     setCredentials({
@@ -15,7 +24,7 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In a real app, this would verify credentials against a backend
+    // Verify credentials
     if (credentials.username === 'admin' && credentials.password === 'admin123') {
       // Set authentication in localStorage
       localStorage.setItem('isAuthenticated', 'true');
@@ -26,8 +35,8 @@ const Login = () => {
         organization: 'TrialSage'
       }));
       
-      // Redirect to client portal directly
-      window.location.href = '/client-portal.html';
+      // Redirect to client portal within the React app
+      setLocation('/portal');
     } else {
       alert('Invalid credentials. Use admin/admin123');
     }
@@ -73,9 +82,22 @@ const Login = () => {
             <a href="/" className="text-sm text-pink-600 hover:underline">
               Return to Home
             </a>
-            <a href="/client-portal.html" className="text-sm font-bold bg-pink-100 text-pink-800 px-2 py-1 rounded hover:bg-pink-200">
+            <button 
+              type="button"
+              onClick={() => {
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('user', JSON.stringify({
+                  username: 'admin',
+                  role: 'admin',
+                  name: 'Admin User',
+                  organization: 'TrialSage'
+                }));
+                setLocation('/portal');
+              }} 
+              className="text-sm font-bold bg-pink-100 text-pink-800 px-2 py-1 rounded hover:bg-pink-200"
+            >
               DIRECT PORTAL ACCESS
-            </a>
+            </button>
           </div>
         </form>
 
@@ -85,12 +107,22 @@ const Login = () => {
           <p className="text-xs text-gray-600">Password: <span className="font-mono bg-gray-100 px-1">admin123</span></p>
           
           <div className="mt-4 flex justify-center">
-            <a 
-              href="/client-portal.html" 
+            <button 
+              type="button"
+              onClick={() => {
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('user', JSON.stringify({
+                  username: 'admin',
+                  role: 'admin',
+                  name: 'Admin User',
+                  organization: 'TrialSage'
+                }));
+                setLocation('/portal');
+              }}
               className="text-white bg-green-600 hover:bg-green-700 px-4 py-2 text-sm font-bold rounded transition-colors"
             >
               ➤ ACCESS CLIENT PORTAL NOW ➤
-            </a>
+            </button>
           </div>
         </div>
       </div>
