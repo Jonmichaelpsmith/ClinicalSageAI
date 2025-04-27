@@ -1,8 +1,8 @@
 import express from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 import { fork } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
 
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,25 +44,48 @@ const startVaultServer = () => {
 // Start the Vault server when this module is loaded
 startVaultServer();
 
-// Create a proxy middleware for the Vault API
-const vaultProxy = createProxyMiddleware({
-  target: 'http://localhost:4001', // The internal Vault server port
-  changeOrigin: true,
-  pathRewrite: {
-    '^/api/vault': '/api/vault', // No path rewriting needed
-  },
-  onError: (err, req, res) => {
+// Simple proxy implementation without http-proxy-middleware
+router.use('/', (req, res) => {
+  const options = {
+    hostname: 'localhost',
+    port: 4001,
+    path: req.url,
+    method: req.method,
+    headers: {
+      ...req.headers,
+      host: 'localhost:4001',
+    },
+  };
+
+  const proxyReq = http.request(options, (proxyRes) => {
+    res.statusCode = proxyRes.statusCode;
+    
+    // Copy headers from proxy response
+    Object.keys(proxyRes.headers).forEach(key => {
+      res.setHeader(key, proxyRes.headers[key]);
+    });
+    
+    // Pipe the proxy response to the original response
+    proxyRes.pipe(res);
+  });
+  
+  // Handle proxy errors
+  proxyReq.on('error', (err) => {
     console.error('Vault proxy error:', err);
     res.status(503).json({
       message: 'Vault service unavailable',
       error: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
-  },
-  logLevel: 'silent',
+  });
+  
+  // If there's a request body, write it to the proxy request
+  if (req.body) {
+    proxyReq.write(JSON.stringify(req.body));
+  }
+  
+  // Pipe the original request to the proxy request
+  req.pipe(proxyReq, { end: true });
 });
-
-// Apply the proxy middleware to all /api/vault requests
-router.use('/', vaultProxy);
 
 // Health check endpoint to verify if the Vault server is running
 router.get('/health', (req, res) => {
