@@ -153,18 +153,36 @@ app.use((req, res, next) => {
 
 // Global error handler for uncaught exceptions
 process.on('uncaughtException', (error) => {
-  logger.error(`UNCAUGHT EXCEPTION: ${error.message}`);
-  console.error(error.stack);
-  // Don't exit the process, just log it
+  const errorDetails = {
+    message: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString(),
+    type: 'UncaughtException'
+  };
+
+  logger.error(`Uncaught Exception occurred: ${errorDetails.message}`);
+  console.error(`Uncaught Exception: ${error.message}\n${error.stack}`);
+  // Note: Consider whether process.exit(1) is needed based on your application's requirements
 });
 
 // Global error handler for unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error(`UNHANDLED PROMISE REJECTION: ${reason instanceof Error ? reason.message : String(reason)}`);
-  if (reason instanceof Error && reason.stack) {
-    console.error(reason.stack);
+  const errorDetails = {
+    message: reason instanceof Error ? reason.message : String(reason),
+    stack: reason instanceof Error ? reason.stack : undefined,
+    timestamp: new Date().toISOString(),
+    type: 'UnhandledRejection',
+    promise
+  };
+
+  logger.error(`Unhandled Promise Rejection: ${errorDetails.message}`);
+  
+  if (reason instanceof Error) {
+    console.error(`Unhandled Rejection: ${reason.message}\n${reason.stack}`);
+  } else {
+    console.error(`Unhandled Rejection: ${String(reason)}`);
   }
-  // Don't exit the process, just log it
+  // Note: Consider whether process.exit(1) is needed based on your application's requirements
 });
 
 // Application auto-recovery mechanism
@@ -195,8 +213,18 @@ setInterval(checkServerHealth, 5 * 60 * 1000);
     const requestId = (req as any).requestId || `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
     
     // Log detailed error information
+    const errorDetails = {
+      message,
+      status,
+      path: req.path,
+      method: req.method,
+      requestId,
+      stack: err.stack,
+      timestamp: new Date().toISOString()
+    };
+    
     logger.error(`Unhandled error in ${req.method} ${req.path} [${requestId}]: ${message}`);
-    console.error(err.stack);
+    console.error(`Error details: ${JSON.stringify(errorDetails, null, 2)}`);
     
     // Return structured error response
     res.status(status).json({
