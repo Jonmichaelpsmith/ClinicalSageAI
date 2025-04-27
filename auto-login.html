@@ -44,19 +44,44 @@
   </div>
 
   <script>
-    // Set authentication token in localStorage
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('user', JSON.stringify({
-      username: 'admin',
-      role: 'admin',
-      name: 'Admin User',
-      organization: 'TrialSage'
-    }));
+    // Server pre-warming function
+    async function prewarmServer() {
+      console.log('Pre-warming server...');
+      try {
+        const response = await fetch('/api/prewarm');
+        console.log('Server pre-warmed successfully:', response.status);
+        return response.ok;
+      } catch (error) {
+        console.warn('Server pre-warm failed:', error);
+        return false;
+      }
+    }
+    
+    // Auto-login with server pre-warming
+    async function autoLogin() {
+      // Pre-warm the server first
+      await prewarmServer();
+      
+      // Set authentication token in localStorage
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify({
+        id: 1,
+        username: 'admin',
+        email: 'admin@trialsage.ai',
+        role: 'admin',
+        name: 'Admin User',
+        subscribed: true
+      }));
 
-    // Redirect to client portal page after a short delay
-    setTimeout(function() {
-      window.location.href = '/client-portal-direct.html';
-    }, 1000);
+      // Redirect to React-based client portal dashboard after a short delay
+      setTimeout(function() {
+        // Use the React-based client portal dashboard instead of the static HTML page
+        window.location.href = '/src/pages/ClientPortalDashboard.jsx';
+      }, 1000);
+    }
+    
+    // Start the auto-login process
+    autoLogin();
   </script>
 </body>
 </html>

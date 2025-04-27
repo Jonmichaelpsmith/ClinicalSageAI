@@ -36,24 +36,63 @@
       }
     }
     
+    // Server pre-warming function
+    async function prewarmServer() {
+      console.log('Pre-warming server...');
+      try {
+        const response = await fetch('/api/prewarm');
+        console.log('Server pre-warmed successfully:', response.status);
+        return response.ok;
+      } catch (error) {
+        console.warn('Server pre-warm failed:', error);
+        return false;
+      }
+    }
+    
+    // Pre-warm on page load
+    (async function() {
+      await prewarmServer();
+      console.log('Initial pre-warm complete');
+    })();
+    
     // Login form submission
-    function handleLogin(event) {
+    async function handleLogin(event) {
       event.preventDefault();
+      
+      // Show loading state
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      const originalText = submitButton.innerText;
+      submitButton.innerText = 'Signing in...';
+      submitButton.disabled = true;
+      
+      // Pre-warm server before authentication attempt
+      await prewarmServer();
+      
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
       // Check credentials (hardcoded for demo)
       if (username === 'admin' && password === 'admin123') {
         // Set authentication and redirect
-        localStorage.setItem('authenticated', 'true');
-        localStorage.setItem('userEmail', 'admin@trialsage.com');
-        localStorage.setItem('userName', 'Admin User');
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('user', JSON.stringify({
+          id: 1,
+          username: 'admin',
+          email: 'admin@trialsage.ai',
+          role: 'admin',
+          name: 'Admin User',
+          subscribed: true
+        }));
         
         // Redirect to client portal
         window.location.href = '/client-portal.html';
       } else {
         // Show error message
         document.getElementById('error-message').classList.remove('hidden');
+        
+        // Restore button state
+        submitButton.innerText = originalText;
+        submitButton.disabled = false;
       }
     }
   </script>
