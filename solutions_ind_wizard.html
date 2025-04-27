@@ -1413,6 +1413,13 @@
             cursor: wait;
             transform: none;
             box-shadow: none;
+            min-width: 200px;
+        }
+        
+        .ind-generate-form-btn.loading::after {
+            content: "Preparing Document...";
+            display: inline-block;
+            margin-left: 0.5rem;
         }
         
         .ind-timeline {
