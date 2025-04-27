@@ -1,280 +1,193 @@
 /**
  * Module Integration Layer
  * 
- * This component provides a unified integration layer for all modules and services
- * in the TrialSage platform, serving as the central nervous system for data and services.
+ * This component provides a centralized context for sharing services and data
+ * between different modules in the TrialSage platform.
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-// Services
-import RegulatoryIntelligenceCore from '../../services/RegulatoryIntelligenceCore';
-import SecurityService from '../../services/SecurityService';
-import WorkflowService from '../../services/WorkflowService';
-import blockchainService from '../../services/blockchain';
-
-// Document sharing service (simulated)
-class DocuShareService {
-  constructor() {
-    this.isInitialized = false;
-    this.documents = [];
-  }
-  
-  async initialize() {
-    try {
-      console.log('Initializing DocuShare Service');
-      
-      // Simulate loading documents
-      this.documents = [
-        {
-          id: 'doc-001',
-          name: 'IND Application - XYZ-123',
-          type: 'IND',
-          status: 'Draft',
-          createdAt: '2025-04-10T09:00:00Z',
-          updatedAt: '2025-04-20T14:30:00Z',
-          owner: 'John Smith',
-          size: '4.2 MB',
-          path: '/documents/ind/xyz-123.pdf'
-        },
-        {
-          id: 'doc-002',
-          name: 'Clinical Study Report - ABC-456',
-          type: 'CSR',
-          status: 'Final',
-          createdAt: '2025-03-15T11:30:00Z',
-          updatedAt: '2025-03-28T16:45:00Z',
-          owner: 'Jane Doe',
-          size: '8.7 MB',
-          path: '/documents/csr/abc-456.pdf'
-        },
-        {
-          id: 'doc-003',
-          name: 'Statistical Analysis Plan - DEF-789',
-          type: 'SAP',
-          status: 'In Review',
-          createdAt: '2025-04-05T13:15:00Z',
-          updatedAt: '2025-04-18T10:00:00Z',
-          owner: 'Robert Chen',
-          size: '2.1 MB',
-          path: '/documents/sap/def-789.pdf'
-        }
-      ];
-      
-      this.isInitialized = true;
-      console.log('DocuShare Service initialized');
-      return true;
-    } catch (error) {
-      console.error('Error initializing DocuShare Service:', error);
-      throw error;
-    }
-  }
-  
-  getAllDocuments() {
-    if (!this.isInitialized) {
-      throw new Error('DocuShare Service not initialized');
-    }
-    
-    return this.documents;
-  }
-  
-  getDocument(documentId) {
-    if (!this.isInitialized) {
-      throw new Error('DocuShare Service not initialized');
-    }
-    
-    return this.documents.find(doc => doc.id === documentId);
-  }
-  
-  addDocument(document) {
-    if (!this.isInitialized) {
-      throw new Error('DocuShare Service not initialized');
-    }
-    
-    this.documents.push(document);
-    return document;
-  }
-  
-  updateDocument(documentId, updates) {
-    if (!this.isInitialized) {
-      throw new Error('DocuShare Service not initialized');
-    }
-    
-    const index = this.documents.findIndex(doc => doc.id === documentId);
-    
-    if (index === -1) {
-      throw new Error(`Document not found: ${documentId}`);
-    }
-    
-    this.documents[index] = { ...this.documents[index], ...updates };
-    return this.documents[index];
-  }
-  
-  deleteDocument(documentId) {
-    if (!this.isInitialized) {
-      throw new Error('DocuShare Service not initialized');
-    }
-    
-    const index = this.documents.findIndex(doc => doc.id === documentId);
-    
-    if (index === -1) {
-      throw new Error(`Document not found: ${documentId}`);
-    }
-    
-    this.documents.splice(index, 1);
-    return true;
-  }
-  
-  cleanup() {
-    this.isInitialized = false;
-    this.documents = [];
-    console.log('DocuShare Service cleaned up');
-  }
-}
-
-// Create context
+// Create integration context
 const IntegrationContext = createContext(null);
 
 /**
- * Integration Provider Component
- * 
- * This component provides access to all centralized services for the TrialSage platform.
+ * Service class for regulatory intelligence
  */
-export const IntegrationProvider = ({ children }) => {
-  const [initialized, setInitialized] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('Initializing services...');
-  const [error, setError] = useState(null);
+class RegulatoryIntelligenceService {
+  constructor() {
+    this.isConnected = false;
+    this.lastUpdate = null;
+    this.guidances = [];
+  }
   
-  // Service instances
-  const [services] = useState({
-    regulatoryIntelligenceCore: new RegulatoryIntelligenceCore(),
-    securityService: new SecurityService(),
-    workflowService: new WorkflowService(),
-    docuShareService: new DocuShareService(),
-    blockchainService: null // Will be initialized later
+  async connect() {
+    try {
+      // In a real app, this would connect to the backend service
+      this.isConnected = true;
+      this.lastUpdate = new Date();
+      console.log('Regulatory Intelligence Service connected');
+      return true;
+    } catch (error) {
+      console.error('Failed to connect to Regulatory Intelligence Service:', error);
+      return false;
+    }
+  }
+  
+  async getLatestGuidance(region = 'FDA') {
+    // In a real app, this would fetch data from the backend
+    return {
+      region,
+      updates: [
+        {
+          id: 'guid-001',
+          title: 'Updated Guidance on Adaptive Trial Designs',
+          date: '2025-04-15T10:30:00Z',
+          url: '#',
+          summary: 'New recommendations for implementing adaptive trial designs in Phase 2 and 3 studies.'
+        },
+        {
+          id: 'guid-002',
+          title: 'Safety Monitoring Requirements',
+          date: '2025-03-22T14:15:00Z',
+          url: '#',
+          summary: 'Updated safety monitoring and reporting requirements for interventional studies.'
+        }
+      ]
+    };
+  }
+}
+
+/**
+ * Service class for blockchain security
+ */
+class BlockchainSecurityService {
+  constructor() {
+    this.isConnected = false;
+    this.lastVerification = null;
+    this.verificationCount = 0;
+  }
+  
+  async connect() {
+    try {
+      // In a real app, this would connect to the blockchain network
+      this.isConnected = true;
+      this.lastVerification = new Date();
+      console.log('Blockchain Security Service connected');
+      return true;
+    } catch (error) {
+      console.error('Failed to connect to Blockchain Security Service:', error);
+      return false;
+    }
+  }
+  
+  async verifyDocument(documentHash) {
+    // In a real app, this would verify document against blockchain record
+    this.verificationCount++;
+    return {
+      verified: true,
+      timestamp: new Date(),
+      hash: documentHash,
+      blockNumber: 12345678,
+      transactionId: '0x7f392e5d8c4a3b2e1d9c8b7a6f5e4d3c2b1a'
+    };
+  }
+}
+
+/**
+ * Service class for AI capabilities
+ */
+class AIServiceCore {
+  constructor() {
+    this.isConnected = false;
+    this.model = 'gpt-4o';
+    this.lastUsage = null;
+    this.requestCount = 0;
+  }
+  
+  async connect() {
+    try {
+      // In a real app, this would connect to the AI service
+      this.isConnected = true;
+      this.lastUsage = new Date();
+      console.log('AI Service connected');
+      return true;
+    } catch (error) {
+      console.error('Failed to connect to AI Service:', error);
+      return false;
+    }
+  }
+  
+  async generateSuggestions(content, type = 'protocol') {
+    // In a real app, this would call the AI API
+    this.requestCount++;
+    return {
+      suggestions: [
+        {
+          id: 'sug-001',
+          section: 'inclusion-criteria',
+          currentText: 'Patients aged 18-65 years',
+          suggestedText: 'Patients aged 18-75 years',
+          rationale: 'Expanding the age range could improve enrollment rates while maintaining safety profile based on similar studies.',
+          confidence: 0.87
+        },
+        {
+          id: 'sug-002',
+          section: 'statistics',
+          currentText: 'Sample size of 100 patients per arm',
+          suggestedText: 'Sample size of 80 patients per arm',
+          rationale: 'Based on updated effect size calculations, a smaller sample size will maintain the same statistical power.',
+          confidence: 0.82
+        }
+      ]
+    };
+  }
+}
+
+/**
+ * Integration Provider component
+ */
+export const ModuleIntegrationProvider = ({ children }) => {
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [services, setServices] = useState({
+    regulatoryIntelligenceCore: null,
+    securityService: null,
+    aiService: null
   });
   
-  // Initialize all services on mount
+  // Initialize services
   useEffect(() => {
-    const initializeServices = async () => {
-      try {
-        // Initialize security service
-        setLoadingMessage('Initializing security services...');
-        await services.securityService.initialize();
-        
-        // Initialize regulatory intelligence core
-        setLoadingMessage('Initializing regulatory intelligence...');
-        await services.regulatoryIntelligenceCore.initialize();
-        
-        // Initialize workflow service
-        setLoadingMessage('Initializing workflow services...');
-        await services.workflowService.initialize();
-        
-        // Initialize document service
-        setLoadingMessage('Initializing document services...');
-        await services.docuShareService.initialize();
-        
-        // Initialize blockchain service
-        setLoadingMessage('Initializing blockchain verification...');
-        services.blockchainService = await blockchainService.initBlockchainService();
-        
-        // All services initialized
-        setInitialized(true);
-        setLoadingMessage(null);
-      } catch (error) {
-        console.error('Error initializing services:', error);
-        setError(error.message);
-      }
+    const initServices = async () => {
+      // Create service instances
+      const regulatoryIntelligenceCore = new RegulatoryIntelligenceService();
+      const securityService = new BlockchainSecurityService();
+      const aiService = new AIServiceCore();
+      
+      // Connect services
+      await Promise.all([
+        regulatoryIntelligenceCore.connect(),
+        securityService.connect(),
+        aiService.connect()
+      ]);
+      
+      // Update state
+      setServices({
+        regulatoryIntelligenceCore,
+        securityService,
+        aiService
+      });
+      
+      setIsInitialized(true);
     };
     
-    initializeServices();
-    
-    // Cleanup services on unmount
-    return () => {
-      services.regulatoryIntelligenceCore.cleanup();
-      services.securityService.cleanup();
-      services.workflowService.cleanup();
-      services.docuShareService.cleanup();
-    };
-  }, [services]);
+    initServices();
+  }, []);
   
-  // Check if user is authenticated
-  const isAuthenticated = () => {
-    return services.securityService.isAuthenticated();
-  };
-  
-  // Get current user
-  const getCurrentUser = () => {
-    return services.securityService.currentUser;
-  };
-  
-  // Login
-  const login = async (credentials) => {
-    return await services.securityService.login(credentials);
-  };
-  
-  // Logout
-  const logout = async () => {
-    return await services.securityService.logout();
-  };
-  
-  // Helper to query scientific guidance
-  const getScientificGuidance = async (query) => {
-    return await services.regulatoryIntelligenceCore.getScientificGuidance(query);
-  };
-  
-  // Value object with all services and utilities
+  // Context value
   const value = {
-    // Service objects
     ...services,
-    
-    // Status
-    initialized,
-    loadingMessage,
-    error,
-    
-    // Authentication utilities
-    isAuthenticated,
-    getCurrentUser,
-    login,
-    logout,
-    
-    // Helper utilities
-    getScientificGuidance
+    isInitialized
   };
   
-  // If not initialized, show loading screen
-  if (!initialized && !error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-gray-600">{loadingMessage}</p>
-      </div>
-    );
-  }
-  
-  // If there was an error initializing services
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
-        <div className="rounded-full bg-red-100 p-4 text-red-600">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <h1 className="mt-4 text-xl font-bold text-gray-900">Service Initialization Error</h1>
-        <p className="mt-2 text-gray-600">{error}</p>
-        <button 
-          className="mt-6 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-  
-  // Render children with services provided
   return (
     <IntegrationContext.Provider value={value}>
       {children}
@@ -283,16 +196,12 @@ export const IntegrationProvider = ({ children }) => {
 };
 
 /**
- * useIntegration Hook
- * 
- * Custom hook to access the integration layer and all services.
+ * Hook for accessing integration context
  */
 export const useIntegration = () => {
   const context = useContext(IntegrationContext);
-  
-  if (!context) {
-    throw new Error('useIntegration must be used within an IntegrationProvider');
+  if (context === null) {
+    throw new Error('useIntegration must be used within a ModuleIntegrationProvider');
   }
-  
   return context;
 };
