@@ -6,9 +6,9 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-// Import auth router and jwt for token generation
-const { router: authRouter } = require('./auth');
-const jwt = require('jsonwebtoken');
+// Import JSON Web Token for token generation
+import jsonwebtoken from 'jsonwebtoken';
+const jwt = jsonwebtoken;
 
 // Create Express app
 const app = express();
@@ -170,8 +170,55 @@ const authenticate = (req, res, next) => {
   }
 };
 
-// Mount auth routes
-app.use('/api/auth', authRouter);
+// Auth endpoints mounted directly
+// Direct login endpoint
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Username and password are required' 
+      });
+    }
+
+    // Hardcoded admin credentials for demo
+    if (username === 'admin' && password === 'admin123') {
+      const user = {
+        id: 'admin-1',
+        username: 'admin',
+        role: 'admin',
+        tenantId: 'default',
+        name: 'Administrator'
+      };
+      
+      if (!process.env.JWT_SECRET) {
+        return res.status(503).json({ error: 'Authentication service unavailable - JWT_SECRET not configured' });
+      }
+      
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '24h' });
+      
+      return res.json({ 
+        success: true,
+        message: 'Authentication successful',
+        token, 
+        user 
+      });
+    }
+
+    res.status(401).json({ 
+      success: false, 
+      message: 'Invalid username or password' 
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error during authentication' 
+    });
+  }
+});
 
 // Health check route
 app.get('/api/vault/health', (req, res) => {
