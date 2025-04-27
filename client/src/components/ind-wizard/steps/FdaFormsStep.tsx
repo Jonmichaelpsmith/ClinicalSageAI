@@ -78,6 +78,9 @@ import {
   listDocumentVersions
 } from '@/services/DocuShareService';
 
+// Import the FormsManager component (using `require` for compatibility with TypeScript)
+const FormsManager = require('../forms/FormsManager').default;
+
 export default function FdaFormsStep() {
   const { indData, updateIndData } = useWizard();
   const { toast } = useToast();
