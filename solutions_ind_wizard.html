@@ -982,9 +982,14 @@
                     <div class="ind-panel">
                         <div class="ind-panel-header">
                             <h3>IND Projects</h3>
-                            <button class="btn btn-primary ind-new-project-btn">
-                                <i class="fas fa-plus"></i> New Project
-                            </button>
+                            <div class="ind-header-actions">
+                                <button class="btn btn-outline-primary" id="create-demo-btn">
+                                    <i class="fas fa-magic"></i> Create Demo Project
+                                </button>
+                                <button class="btn btn-primary ind-new-project-btn">
+                                    <i class="fas fa-plus"></i> New Project
+                                </button>
+                            </div>
                         </div>
                         <div class="ind-panel-body">
                             <div class="ind-loading" id="projects-loading">
@@ -1205,6 +1210,11 @@
         .ind-panel-header h3 {
             margin: 0;
             font-size: 1.25rem;
+        }
+        
+        .ind-header-actions {
+            display: flex;
+            gap: 0.75rem;
         }
         
         .ind-panel-body {
@@ -1565,6 +1575,28 @@
             modalCancel.addEventListener('click', closeModal);
             
             // Projects API
+            // Demo Project Creation
+            const createDemoBtn = document.getElementById('create-demo-btn');
+            createDemoBtn.addEventListener('click', async () => {
+                try {
+                    showToast('Creating demo project...', 'info');
+                    const response = await fetch('/api/ind/demo/enzymax');
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to create demo project');
+                    }
+                    
+                    const data = await response.json();
+                    showToast('Demo project created successfully!', 'success');
+                    
+                    // Refresh the projects list
+                    loadProjects();
+                } catch (error) {
+                    console.error('Error creating demo project:', error);
+                    showToast('Error creating demo project', 'error');
+                }
+            });
+            
             function loadProjects() {
                 const projectsTable = document.getElementById('projects-table');
                 const projectsEmpty = document.getElementById('projects-empty');
