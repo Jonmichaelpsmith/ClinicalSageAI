@@ -506,5 +506,8 @@ export default function Form1571Generator({ projectId, onSuccess }) {
         </CardContent>
       </Card>
     </div>
+  </ErrorBoundary>
   );
 }
+
+export default Form1571Generator;
