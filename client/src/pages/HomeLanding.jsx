@@ -120,7 +120,7 @@ export default function HomeLanding() {
             Get Started <ArrowRight size={18}/>
           </Link>
           <Link to="/demo" className="px-6 py-3 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-slate-800">Request Live Demo</Link>
-          <a href="/login" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-block">Client Login</a>
+          <a href="/dashboard" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-block">Client Login</a>
         </div>
       </section>
 
@@ -204,9 +204,9 @@ export default function HomeLanding() {
                   Benchmark endpoint selection and statistical approaches
                 </li>
               </ul>
-              <Link to="/csr-intelligence" className="inline-block px-6 py-3 bg-white text-emerald-600 font-medium rounded shadow hover:bg-gray-50">
+              <a href="/dashboard" className="inline-block px-6 py-3 bg-white text-emerald-600 font-medium rounded shadow hover:bg-gray-50">
                 Explore CSR Library
-              </Link>
+              </a>
             </div>
             <div className="hidden md:block text-center">
               <div className="bg-white/20 backdrop-blur rounded-xl p-6 inline-block">
@@ -238,12 +238,12 @@ export default function HomeLanding() {
           Access interactive demos of our eCTD Builder, protocol automation engine, and CSR intelligence platform
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          <Link to="/builder" className="px-6 py-3 bg-emerald-600 text-white font-medium rounded shadow hover:bg-emerald-700">
+          <a href="/dashboard" className="px-6 py-3 bg-emerald-600 text-white font-medium rounded shadow hover:bg-emerald-700">
             Try eCTD Builder
-          </Link>
-          <Link to="/demo-portal" className="px-6 py-3 bg-white text-gray-900 font-medium rounded shadow hover:bg-gray-100">
+          </a>
+          <a href="/dashboard" className="px-6 py-3 bg-white text-gray-900 font-medium rounded shadow hover:bg-gray-100">
             View Demo Portal
-          </Link>
+          </a>
         </div>
       </section>
 
@@ -251,7 +251,7 @@ export default function HomeLanding() {
       <section className="bg-emerald-600 text-white py-14 text-center">
         <h2 className="text-2xl font-semibold">See how much time & budget you can reclaim</h2>
         <p className="mt-2 opacity-90">Our ROI calculator quantifies savings across CMC, medical writing & regulatory ops.</p>
-        <Link to="/roi" className="inline-block mt-6 bg-white text-emerald-600 font-medium px-6 py-3 rounded shadow hover:bg-gray-50">Calculate ROI</Link>
+        <a href="/dashboard" className="inline-block mt-6 bg-white text-emerald-600 font-medium px-6 py-3 rounded shadow hover:bg-gray-50">Calculate ROI</a>
       </section>
 
       {/* Footer */}
@@ -267,28 +267,28 @@ export default function HomeLanding() {
             <div>
               <h3 className="font-bold mb-4">Products</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/trialsage" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">TrialSage Platform</Link></li>
-                <li><Link to="/csr-intelligence" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">CSR Intelligence</Link></li>
-                <li><Link to="/ind-automation" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">IND Automation</Link></li>
-                <li><Link to="/protocol-designer" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Protocol Designer</Link></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">TrialSage Platform</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">CSR Intelligence</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">IND Automation</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Protocol Designer</a></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold mb-4">Regulatory Regions</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/fda" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">FDA (US)</Link></li>
-                <li><Link to="/ema" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">EMA (EU)</Link></li>
-                <li><Link to="/pmda" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">PMDA (Japan)</Link></li>
-                <li><Link to="/health-canada" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Health Canada</Link></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">FDA (US)</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">EMA (EU)</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">PMDA (Japan)</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Health Canada</a></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold mb-4">Company</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/about" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">About Us</Link></li>
-                <li><Link to="/contact" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Contact</Link></li>
-                <li><Link to="/careers" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Careers</Link></li>
-                <li><Link to="/legal" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Legal</Link></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">About Us</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Contact</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Careers</a></li>
+                <li><a href="/dashboard" className="text-gray-600 hover:text-emerald-600 dark:text-gray-400">Legal</a></li>
               </ul>
             </div>
           </div>
