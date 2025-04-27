@@ -1,425 +1,426 @@
-import React, { useState, useEffect } from 'react';
-import { Upload, Search, Filter, FileText, Shield, Clock, Plus, ArrowUpDown, FileCheck, Download } from 'lucide-react';
-import { useIntegration } from '../integration/ModuleIntegrationLayer';
+import React, { useState } from 'react';
+import { 
+  Search, 
+  Filter, 
+  Plus, 
+  FileText, 
+  Download, 
+  Share2, 
+  Star, 
+  StarOff,
+  FolderPlus,
+  Files,
+  SortAsc,
+  List,
+  Grid3X3
+} from 'lucide-react';
+import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 
 const TrialVaultModule = () => {
-  const { data, blockchainStatus, addAuditEntry, verifyDocumentBlockchain } = useIntegration();
-  const [documents, setDocuments] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [filters, setFilters] = useState({
-    category: '',
-    documentType: '',
-  });
-
-  // Mock document data
-  const mockDocuments = [
-    {
-      id: 'd1',
-      title: 'Phase 1 Clinical Study Report',
-      description: 'Final CSR for Phase 1 Study XYZ-001',
-      documentType: 'CSR',
-      category: 'Clinical',
-      fileName: 'XYZ001_Phase1_CSR_v1.0.pdf',
-      fileSize: 2540032,
-      uploadDate: '2025-03-15T10:30:00Z',
-      uploadedBy: 'admin',
-      verified: true,
-      verifiedDate: '2025-03-15T10:35:22Z',
-      tags: ['Phase 1', 'CSR', 'Final'],
+  const [viewMode, setViewMode] = useState('grid');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [filterVisible, setFilterVisible] = useState(false);
+  
+  const integration = useModuleIntegration();
+  
+  // Mock documents data
+  const documents = [
+    { 
+      id: 1, 
+      title: 'Clinical Study Report - XYZ-123', 
+      type: 'CSR',
+      sponsor: 'Concept2Cures',
+      date: '2025-03-15',
+      status: 'Final',
+      starred: true,
+      tags: ['Phase 2', 'Oncology', 'FDA']
     },
-    {
-      id: 'd2',
-      title: 'Investigator Brochure',
-      description: 'Updated IB for compound XYZ-123',
-      documentType: 'IB',
-      category: 'Regulatory',
-      fileName: 'XYZ123_IB_v2.1.pdf',
-      fileSize: 4891245,
-      uploadDate: '2025-03-10T14:22:33Z',
-      uploadedBy: 'admin',
-      verified: true,
-      verifiedDate: '2025-03-10T14:25:12Z',
-      tags: ['IB', 'Safety', 'Update'],
+    { 
+      id: 2, 
+      title: 'Protocol Amendment 2 - Study ABC-456', 
+      type: 'Protocol',
+      sponsor: 'BioPharma Solutions',
+      date: '2025-02-20',
+      status: 'Draft',
+      starred: false,
+      tags: ['Phase 3', 'Cardiology', 'FDA', 'EMA']
     },
-    {
-      id: 'd3',
-      title: 'Study Protocol',
-      description: 'Protocol for Phase 2 clinical trial',
-      documentType: 'Protocol',
-      category: 'Clinical',
-      fileName: 'XYZ002_Phase2_Protocol_v1.2.pdf',
-      fileSize: 1834522,
-      uploadDate: '2025-03-05T09:45:11Z',
-      uploadedBy: 'admin',
-      verified: true,
-      verifiedDate: '2025-03-05T09:48:50Z',
-      tags: ['Phase 2', 'Protocol', 'Amended'],
+    { 
+      id: 3, 
+      title: 'Statistical Analysis Plan v2.0', 
+      type: 'SAP',
+      sponsor: 'Concept2Cures',
+      date: '2025-01-10',
+      status: 'Final',
+      starred: true,
+      tags: ['Phase 2', 'Oncology', 'FDA']
     },
-    {
-      id: 'd4',
-      title: 'Quality Control Procedures',
-      description: 'SOP for quality control of clinical documents',
-      documentType: 'SOP',
-      category: 'Quality',
-      fileName: 'SOP_QC_Clinical_v3.0.pdf',
-      fileSize: 982541,
-      uploadDate: '2025-02-28T11:12:45Z',
-      uploadedBy: 'admin',
-      verified: true,
-      verifiedDate: '2025-02-28T11:15:32Z',
-      tags: ['SOP', 'QC', 'Clinical'],
+    { 
+      id: 4, 
+      title: 'Investigator Brochure - Compound XYZ', 
+      type: 'IB',
+      sponsor: 'NextGen Therapeutics',
+      date: '2024-12-05',
+      status: 'Final',
+      starred: false,
+      tags: ['Preclinical', 'Neurology', 'FDA', 'PMDA']
     },
-    {
-      id: 'd5',
-      title: 'FDA Meeting Minutes',
-      description: 'Minutes from Type B meeting with FDA',
-      documentType: 'Meeting Minutes',
-      category: 'Regulatory',
-      fileName: 'FDA_TypeB_Meeting_Minutes_2025-02-15.pdf',
-      fileSize: 754222,
-      uploadDate: '2025-02-20T16:30:18Z',
-      uploadedBy: 'admin',
-      verified: true,
-      verifiedDate: '2025-02-20T16:33:05Z',
-      tags: ['FDA', 'Meeting', 'Type B'],
+    { 
+      id: 5, 
+      title: 'Clinical Study Protocol v1.0 - Study DEF-789', 
+      type: 'Protocol',
+      sponsor: 'Concept2Cures',
+      date: '2024-11-18',
+      status: 'Final',
+      starred: false,
+      tags: ['Phase 1', 'Immunology', 'FDA', 'EMA', 'NMPA']
     },
-  ];
-
-  useEffect(() => {
-    // Simulating API call to fetch documents
-    const fetchDocuments = async () => {
-      try {
-        setIsLoading(true);
-        // In a real implementation, this would be an API call
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const filteredDocs = mockDocuments.filter(doc => {
-          if (filters.category && doc.category !== filters.category) return false;
-          if (filters.documentType && doc.documentType !== filters.documentType) return false;
-          return true;
-        });
-        
-        setDocuments(filteredDocs);
-        addAuditEntry('documents_loaded', { count: filteredDocs.length });
-      } catch (error) {
-        console.error('Error fetching documents:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDocuments();
-  }, [filters, addAuditEntry]);
-
-  const handleUpload = () => {
-    setShowUploadModal(true);
-  };
-
-  const handleVerify = async (documentId) => {
-    try {
-      const result = await verifyDocumentBlockchain(documentId);
-      const updatedDocs = documents.map(doc => 
-        doc.id === documentId 
-          ? { ...doc, verified: result, verifiedDate: new Date().toISOString() } 
-          : doc
-      );
-      setDocuments(updatedDocs);
-    } catch (error) {
-      console.error('Verification error:', error);
+    { 
+      id: 6, 
+      title: 'Module 2.5 Clinical Overview - NDA Submission', 
+      type: 'CTD',
+      sponsor: 'BioPharma Solutions',
+      date: '2024-10-30',
+      status: 'Draft',
+      starred: true,
+      tags: ['NDA', 'Cardiology', 'FDA']
     }
+  ];
+  
+  // Filter documents based on search term
+  const filteredDocuments = documents.filter(doc => 
+    doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.sponsor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+  
+  const toggleDocumentStar = (docId) => {
+    // In a real implementation, this would update the document in the database
+    console.log(`Toggling star for document ${docId}`);
   };
-
-  const closeUploadModal = () => {
-    setShowUploadModal(false);
+  
+  const handleDocumentClick = (doc) => {
+    setSelectedDocument(doc);
+    
+    // Update shared data in the integration layer
+    integration.updateSharedData('selectedDocument', doc);
+    integration.triggerEvent('document-selected', { documentId: doc.id });
   };
-
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
-  };
-
-  // Categories and document types for filtering
-  const categories = ['Clinical', 'Regulatory', 'Quality', 'Manufacturing', 'Safety'];
-  const documentTypes = ['CSR', 'Protocol', 'IB', 'SOP', 'Meeting Minutes', 'Form', 'Report'];
-
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    else return (bytes / 1048576).toFixed(1) + ' MB';
-  };
-
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+  
+  // File type to icon color mapping
+  const getTypeColor = (type) => {
+    const typeMap = {
+      'CSR': 'text-purple-500',
+      'Protocol': 'text-blue-500',
+      'SAP': 'text-green-500',
+      'IB': 'text-orange-500',
+      'CTD': 'text-pink-500'
+    };
+    
+    return typeMap[type] || 'text-gray-500';
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">TrialSage Vault™</h1>
-        <p className="text-gray-600">
-          Secure document storage with blockchain verification for regulatory submissions
-        </p>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">TrialSage Vault™</h1>
+        
+        <div className="flex space-x-2">
+          <button className="px-3 py-1.5 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors flex items-center">
+            <Plus size={16} className="mr-1" />
+            <span>Upload Document</span>
+          </button>
+          <button className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center">
+            <FolderPlus size={16} className="mr-1" />
+            <span>New Folder</span>
+          </button>
+        </div>
       </div>
-
-      {/* Main content */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left sidebar - Filters */}
-        <div className="w-full lg:w-64 flex-shrink-0">
-          <div className="bg-white p-4 rounded-lg border border-gray-200 mb-4">
-            <div className="flex items-center mb-4">
-              <Filter size={18} className="text-gray-500 mr-2" />
-              <h3 className="font-medium">Filters</h3>
+      
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        {/* Search and filters bar */}
+        <div className="border-b border-gray-200 p-4 flex flex-wrap md:flex-nowrap gap-3 justify-between">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={18} className="text-gray-400" />
             </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                value={filters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
-              >
-                <option value="">All Categories</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Document Type
-              </label>
-              <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                value={filters.documentType}
-                onChange={(e) => handleFilterChange('documentType', e.target.value)}
-              >
-                <option value="">All Types</option>
-                {documentTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </div>
+            <input
+              type="text"
+              placeholder="Search documents..."
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="flex items-center mb-4">
-              <Shield size={18} className="text-gray-500 mr-2" />
-              <h3 className="font-medium">Blockchain Status</h3>
-            </div>
-
-            <div className="flex items-center mb-2">
-              <div className={`w-3 h-3 rounded-full mr-2 ${blockchainStatus.verified ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-              <span className="text-sm">{blockchainStatus.verified ? 'Verified' : 'Verification Needed'}</span>
-            </div>
-
-            <div className="text-xs text-gray-500 flex items-center">
-              <Clock size={12} className="mr-1" />
-              <span>Last checked: {new Date(blockchainStatus.lastVerified).toLocaleTimeString()}</span>
+          
+          <div className="flex space-x-2">
+            <button 
+              onClick={() => setFilterVisible(!filterVisible)}
+              className={`px-3 py-2 border ${filterVisible ? 'border-pink-500 bg-pink-50 text-pink-600' : 'border-gray-300 text-gray-600'} rounded-md hover:bg-gray-50 transition-colors flex items-center`}
+            >
+              <Filter size={18} className="mr-1" />
+              <span>Filters</span>
+            </button>
+            
+            <button className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center">
+              <SortAsc size={18} className="mr-1" />
+              <span>Sort</span>
+            </button>
+            
+            <div className="flex rounded-md overflow-hidden border border-gray-300">
+              <button 
+                onClick={() => setViewMode('list')}
+                className={`px-2 py-2 ${viewMode === 'list' ? 'bg-gray-100' : 'bg-white'} hover:bg-gray-50 transition-colors`}
+                title="List view"
+              >
+                <List size={18} />
+              </button>
+              <button 
+                onClick={() => setViewMode('grid')}
+                className={`px-2 py-2 ${viewMode === 'grid' ? 'bg-gray-100' : 'bg-white'} hover:bg-gray-50 transition-colors`}
+                title="Grid view"
+              >
+                <Grid3X3 size={18} />
+              </button>
             </div>
           </div>
         </div>
-
-        {/* Main content area */}
-        <div className="flex-1">
-          <div className="bg-white p-4 rounded-lg border border-gray-200 mb-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-              <div className="relative w-full sm:w-64">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search size={16} className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search documents..."
-                  className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-md text-sm"
-                />
+        
+        {/* Filters panel - conditionally rendered */}
+        {filterVisible && (
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
+                <select className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500">
+                  <option value="">All Types</option>
+                  <option value="CSR">Clinical Study Report</option>
+                  <option value="Protocol">Protocol</option>
+                  <option value="SAP">Statistical Analysis Plan</option>
+                  <option value="IB">Investigator Brochure</option>
+                  <option value="CTD">CTD Module</option>
+                </select>
               </div>
               
-              <button 
-                className="hot-pink-btn flex items-center" 
-                onClick={handleUpload}
-              >
-                <Upload size={16} className="mr-2" />
-                Upload Document
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sponsor</label>
+                <select className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500">
+                  <option value="">All Sponsors</option>
+                  <option value="Concept2Cures">Concept2Cures</option>
+                  <option value="BioPharma Solutions">BioPharma Solutions</option>
+                  <option value="NextGen Therapeutics">NextGen Therapeutics</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500">
+                  <option value="">All Statuses</option>
+                  <option value="Draft">Draft</option>
+                  <option value="In Review">In Review</option>
+                  <option value="Final">Final</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="date" 
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
+                  />
+                  <span>to</span>
+                  <input 
+                    type="date" 
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500 focus:border-pink-500"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end mt-4 space-x-2">
+              <button className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors">
+                Clear Filters
+              </button>
+              <button className="px-3 py-1.5 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors">
+                Apply Filters
               </button>
             </div>
-
-            {isLoading ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-600"></div>
-              </div>
-            ) : documents.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                <FileText size={48} className="mb-4 text-gray-300" />
-                <h3 className="font-medium mb-1">No documents found</h3>
-                <p className="text-sm">Try adjusting your filters or upload a new document</p>
-                <button 
-                  className="hot-pink-btn flex items-center mt-4" 
-                  onClick={handleUpload}
-                >
-                  <Plus size={16} className="mr-2" />
-                  Add Document
-                </button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <th className="px-4 py-3">
-                        <div className="flex items-center">
-                          Document
-                          <ArrowUpDown size={14} className="ml-1" />
-                        </div>
-                      </th>
-                      <th className="px-4 py-3 hidden md:table-cell">
-                        <div className="flex items-center">
-                          Type
-                          <ArrowUpDown size={14} className="ml-1" />
-                        </div>
-                      </th>
-                      <th className="px-4 py-3 hidden md:table-cell">
-                        <div className="flex items-center">
-                          Size
-                          <ArrowUpDown size={14} className="ml-1" />
-                        </div>
-                      </th>
-                      <th className="px-4 py-3 hidden lg:table-cell">
-                        <div className="flex items-center">
-                          Uploaded
-                          <ArrowUpDown size={14} className="ml-1" />
-                        </div>
-                      </th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {documents.map((doc) => (
-                      <tr key={doc.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4">
-                          <div>
-                            <div className="font-medium text-gray-900">{doc.title}</div>
-                            <div className="text-sm text-gray-500">{doc.fileName}</div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 hidden md:table-cell">
-                          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {doc.documentType}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-500 hidden md:table-cell">
-                          {formatFileSize(doc.fileSize)}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-500 hidden lg:table-cell">
-                          {formatDate(doc.uploadDate)}
-                        </td>
-                        <td className="px-4 py-4">
-                          {doc.verified ? (
-                            <div className="inline-flex items-center text-green-800">
-                              <FileCheck size={16} className="mr-1 text-green-600" />
-                              <span className="text-xs">Verified</span>
-                            </div>
-                          ) : (
-                            <button 
-                              className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none"
-                              onClick={() => handleVerify(doc.id)}
-                            >
-                              <Shield size={12} className="mr-1" />
-                              Verify
-                            </button>
-                          )}
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex items-center space-x-2">
-                            <button className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none">
-                              <Download size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
-        </div>
+        )}
+        
+        {/* Document list/grid */}
+        {viewMode === 'grid' ? (
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredDocuments.map(doc => (
+              <div 
+                key={doc.id}
+                className={`border rounded-lg overflow-hidden hover:shadow-md transition-shadow ${
+                  selectedDocument?.id === doc.id ? 'border-pink-500 ring-1 ring-pink-500' : 'border-gray-200'
+                }`}
+                onClick={() => handleDocumentClick(doc)}
+              >
+                <div className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center">
+                      <FileText size={20} className={`${getTypeColor(doc.type)} mr-2`} />
+                      <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">{doc.type}</span>
+                    </div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); toggleDocumentStar(doc.id); }}
+                      className="text-gray-400 hover:text-yellow-400"
+                    >
+                      {doc.starred ? <Star size={18} className="fill-yellow-400 text-yellow-400" /> : <StarOff size={18} />}
+                    </button>
+                  </div>
+                  
+                  <h3 className="font-medium mt-2 text-sm line-clamp-2">{doc.title}</h3>
+                  
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {doc.tags.slice(0, 3).map((tag, index) => (
+                      <span key={index} className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">{tag}</span>
+                    ))}
+                    {doc.tags.length > 3 && (
+                      <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">+{doc.tags.length - 3} more</span>
+                    )}
+                  </div>
+                  
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+                    <div className="text-xs text-gray-500">{doc.date}</div>
+                    <div className="flex space-x-1">
+                      <button className="p-1 text-gray-400 hover:text-gray-600" title="Download">
+                        <Download size={16} />
+                      </button>
+                      <button className="p-1 text-gray-400 hover:text-gray-600" title="Share">
+                        <Share2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {filteredDocuments.map(doc => (
+              <div 
+                key={doc.id}
+                className={`p-4 hover:bg-gray-50 transition-colors flex items-center ${
+                  selectedDocument?.id === doc.id ? 'bg-pink-50' : ''
+                }`}
+                onClick={() => handleDocumentClick(doc)}
+              >
+                <div className="mr-4">
+                  <FileText size={24} className={getTypeColor(doc.type)} />
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center">
+                    <h3 className="font-medium text-sm truncate mr-2">{doc.title}</h3>
+                    <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">{doc.type}</span>
+                    {doc.status === 'Draft' && (
+                      <span className="ml-2 text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full">Draft</span>
+                    )}
+                  </div>
+                  
+                  <div className="mt-1 flex items-center text-xs text-gray-500">
+                    <span>{doc.sponsor}</span>
+                    <span className="mx-2">•</span>
+                    <span>{doc.date}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 ml-4">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); toggleDocumentStar(doc.id); }}
+                    className="p-1 text-gray-400 hover:text-yellow-400"
+                  >
+                    {doc.starred ? <Star size={18} className="fill-yellow-400 text-yellow-400" /> : <StarOff size={18} />}
+                  </button>
+                  
+                  <button className="p-1 text-gray-400 hover:text-gray-600" title="Download">
+                    <Download size={18} />
+                  </button>
+                  
+                  <button className="p-1 text-gray-400 hover:text-gray-600" title="Share">
+                    <Share2 size={18} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Empty state */}
+        {filteredDocuments.length === 0 && (
+          <div className="p-8 text-center">
+            <Files size={48} className="mx-auto text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900">No documents found</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Try adjusting your search or filter criteria
+            </p>
+            <button className="mt-4 px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors inline-flex items-center">
+              <Plus size={16} className="mr-1" />
+              <span>Upload New Document</span>
+            </button>
+          </div>
+        )}
       </div>
-
-      {/* Upload Modal */}
-      {showUploadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Upload Document</h3>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Document Title
-              </label>
-              <input
-                type="text"
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-                placeholder="Enter document title"
-              />
+      
+      {/* Selected document details panel - would be shown when a document is selected */}
+      {selectedDocument && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center">
+              <FileText size={24} className={`${getTypeColor(selectedDocument.type)} mr-2`} />
+              <h2 className="text-xl font-medium">{selectedDocument.title}</h2>
             </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Document Type
-              </label>
-              <select className="w-full border border-gray-300 rounded-md px-3 py-2">
-                <option value="">Select type</option>
-                {documentTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+            <div className="flex space-x-2">
+              <button className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center">
+                <Download size={16} className="mr-1" />
+                <span>Download</span>
+              </button>
+              <button className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center">
+                <Share2 size={16} className="mr-1" />
+                <span>Share</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Document Type</h3>
+              <p>{selectedDocument.type}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Sponsor</h3>
+              <p>{selectedDocument.sponsor}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Date</h3>
+              <p>{selectedDocument.date}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Status</h3>
+              <p>{selectedDocument.status}</p>
+            </div>
+            <div className="md:col-span-2">
+              <h3 className="text-sm font-medium text-gray-500">Tags</h3>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {selectedDocument.tags.map((tag, index) => (
+                  <span key={index} className="text-xs px-2 py-1 bg-gray-100 rounded-full">{tag}</span>
                 ))}
-              </select>
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
-              </label>
-              <select className="w-full border border-gray-300 rounded-md px-3 py-2">
-                <option value="">Select category</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                File
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center">
-                <Upload size={24} className="text-gray-400 mb-2" />
-                <p className="text-sm text-gray-500 text-center mb-2">
-                  Drag and drop a file here, or click to select a file
-                </p>
-                <button className="bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm font-medium">
-                  Browse Files
-                </button>
-                <input type="file" className="hidden" />
               </div>
             </div>
-            
-            <div className="flex justify-end space-x-3">
-              <button 
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                onClick={closeUploadModal}
-              >
-                Cancel
-              </button>
-              <button className="hot-pink-btn">
-                Upload
-              </button>
+          </div>
+          
+          {/* Document preview would go here */}
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Document Preview</h3>
+            <div className="bg-gray-100 rounded-md p-6 text-center">
+              <p className="text-gray-500">Document preview would appear here...</p>
             </div>
           </div>
         </div>
