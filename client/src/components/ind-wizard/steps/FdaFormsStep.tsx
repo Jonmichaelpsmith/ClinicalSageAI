@@ -20,7 +20,8 @@ import {
   ChevronRight,
   RotateCw,
   Clock,
-  ClipboardEdit
+  ClipboardEdit,
+  RefreshCw
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useWizard } from '../IndWizardLayout';
@@ -69,29 +70,13 @@ const FDA_FORMS = [
   }
 ];
 
-// Mock DocuShare integration functions - in production, these would connect to the actual system
-const mockDocuShareIntegration = {
-  searchDocument: async (formId: string, projectId: string) => {
-    // In production, this would search DocuShare for existing documents
-    return null; // Simulate no existing documents found
-  },
-  
-  uploadDocument: async (formId: string, projectId: string, file: File) => {
-    // In production, this would upload to DocuShare
-    return {
-      id: `doc-${Math.random().toString(36).substring(2, 11)}`,
-      fileName: file.name,
-      uploadDate: new Date().toISOString(),
-      status: 'draft',
-      version: '1.0'
-    };
-  },
-  
-  getDocumentHistory: async (formId: string, projectId: string) => {
-    // In production, this would fetch document history from DocuShare
-    return [];
-  }
-};
+// Import DocuShare service functions
+import { 
+  uploadDocument, 
+  downloadDocument, 
+  searchDocuments, 
+  listDocumentVersions
+} from '@/services/DocuShareService';
 
 export default function FdaFormsStep() {
   const { indData, updateIndData } = useWizard();
@@ -192,7 +177,7 @@ export default function FdaFormsStep() {
       toast({
         title: 'Form Generated Successfully',
         description: `Form FDA ${selectedFormId} has been generated and downloaded.`,
-        variant: 'success',
+        variant: 'default',
       });
       refetchFormStatus();
     },
@@ -204,6 +189,46 @@ export default function FdaFormsStep() {
       });
     }
   });
+
+  // Use TanStack Query to fetch document history for the selected form
+  const { data: documentHistory, isLoading: isLoadingHistory, refetch: refetchHistory } = 
+    useQuery({
+      queryKey: ['documentHistory', projectId, selectedFormId],
+      queryFn: async () => {
+        try {
+          // Use existing DocuShare service to search for documents with form metadata
+          const searchParams = {
+            metadata: {
+              formId: selectedFormId,
+              projectId: projectId,
+              documentType: 'FDA_FORM'
+            },
+            limit: 10
+          };
+          
+          const documents = await searchDocuments(searchParams);
+          
+          if (documents && documents.length > 0) {
+            // For each document, get its version history
+            const documentsWithVersions = await Promise.all(documents.map(async (doc: any) => {
+              const versions = await listDocumentVersions(doc.objectId);
+              return {
+                ...doc,
+                versions: versions || []
+              };
+            }));
+            
+            return documentsWithVersions;
+          }
+          
+          return [];
+        } catch (error) {
+          console.error('Error fetching document history:', error);
+          return [];
+        }
+      },
+      enabled: formView === 'history' && !!projectId && !!selectedFormId
+    });
 
   // File upload handler
   const handleFileUpload = async () => {
@@ -219,25 +244,34 @@ export default function FdaFormsStep() {
     setIsSubmittingFile(true);
     
     try {
-      // In production, this would call the actual API to upload to DocuShare
-      const uploadResult = await mockDocuShareIntegration.uploadDocument(
-        selectedFormId, 
-        projectId, 
-        uploadFile
-      );
+      // Create folder path for IND forms organization
+      const folderPath = `/IND/${projectId}/Forms/${selectedFormId}`;
+      
+      // Use existing DocuShare service to upload the document
+      const uploadResult = await uploadDocument(uploadFile, folderPath, {
+        formId: selectedFormId, 
+        projectId: projectId,
+        formName: `Form FDA ${selectedFormId}`,
+        documentType: 'FDA_FORM',
+        uploadDate: new Date().toISOString()
+      });
       
       toast({
         title: 'File Uploaded Successfully',
         description: `${uploadFile.name} has been uploaded to TrialSage Vault.`,
-        variant: 'success',
+        variant: 'default',
       });
       
       setUploadFile(null);
       refetchFormStatus();
+      if (formView === 'history') {
+        refetchHistory();
+      }
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: 'Upload Failed',
-        description: 'Unable to upload the file. Please try again.',
+        description: 'Unable to upload the file to TrialSage Vault. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -289,13 +323,13 @@ export default function FdaFormsStep() {
                 </div>
                 <div>
                   {formStatus?.status === 'completed' && (
-                    <Badge variant="success" className="ml-auto">
+                    <Badge variant="secondary" className="ml-auto bg-green-100 text-green-800 hover:bg-green-100">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Completed
                     </Badge>
                   )}
                   {formStatus?.status === 'in_progress' && (
-                    <Badge variant="warning" className="ml-auto">
+                    <Badge variant="secondary" className="ml-auto bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
                       <Clock className="h-3 w-3 mr-1" />
                       In Progress
                     </Badge>
@@ -446,24 +480,84 @@ export default function FdaFormsStep() {
 
                 <TabsContent value="history" className="py-4">
                   <div className="space-y-4">
-                    <div className="flex items-center">
-                      <History className="h-5 w-5 mr-2" />
-                      <h3 className="text-lg font-medium">Form History</h3>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <History className="h-5 w-5 mr-2" />
+                        <h3 className="text-lg font-medium">Form History</h3>
+                      </div>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => refetchHistory()}
+                        disabled={isLoadingHistory}
+                      >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingHistory ? 'animate-spin' : ''}`} />
+                        Refresh
+                      </Button>
                     </div>
                     
                     <p className="text-sm text-muted-foreground">
-                      View the history of this form, including all versions and changes.
+                      View the history of this form, including all versions and changes stored in TrialSage Vault.
                     </p>
                     
-                    <div className="rounded-md border bg-card text-card-foreground">
-                      <div className="p-4 text-center text-muted-foreground">
-                        <History className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                        <p>No form history available yet.</p>
-                        <p className="text-sm mt-1">
-                          History will appear here after you generate or upload the form.
-                        </p>
+                    {isLoadingHistory ? (
+                      <div className="flex justify-center p-8">
+                        <RotateCw className="h-8 w-8 animate-spin text-primary" />
                       </div>
-                    </div>
+                    ) : !documentHistory || documentHistory.length === 0 ? (
+                      <div className="rounded-md border bg-card text-card-foreground">
+                        <div className="p-8 text-center text-muted-foreground">
+                          <History className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                          <p>No form history available yet.</p>
+                          <p className="text-sm mt-1">
+                            History will appear here after you generate or upload the form to TrialSage Vault.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-md border overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-muted/50">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-medium">Filename</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium">Date</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium">Version</th>
+                              <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {documentHistory.map((doc, index) => (
+                              <tr key={doc.objectId} className={index % 2 === 0 ? 'bg-white' : 'bg-muted/10'}>
+                                <td className="px-4 py-3 text-sm">{doc.displayName}</td>
+                                <td className="px-4 py-3 text-sm">
+                                  {new Date(doc.modifiedDate || doc.createdDate).toLocaleString()}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {doc.version || '1.0'}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  <div className="flex space-x-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => downloadDocument(doc.objectId)}
+                                    >
+                                      <Download className="h-4 w-4" />
+                                    </Button>
+                                    {doc.versions && doc.versions.length > 0 && (
+                                      <Button variant="outline" size="sm">
+                                        <History className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
 
