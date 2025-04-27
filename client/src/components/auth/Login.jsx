@@ -13,21 +13,22 @@ const Login = () => {
     });
   };
 
+  const handleLogin = () => {
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('user', JSON.stringify({
+      username: 'admin',
+      role: 'admin',
+      name: 'Admin User',
+      organization: 'TrialSage'
+    }));
+    window.location.href = '/client-portal.html';
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Verify credentials
     if (credentials.username === 'admin' && credentials.password === 'admin123') {
-      // Set authentication in localStorage
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify({
-        username: credentials.username,
-        role: 'admin',
-        name: 'Admin User',
-        organization: 'TrialSage'
-      }));
-      
-      // Redirect directly to the standalone HTML page
-      window.location.href = '/client-portal.html.bak';
+      handleLogin();
     } else {
       alert('Invalid credentials. Use admin/admin123');
     }
@@ -75,16 +76,7 @@ const Login = () => {
             </a>
             <button 
               type="button"
-              onClick={() => {
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('user', JSON.stringify({
-                  username: 'admin',
-                  role: 'admin',
-                  name: 'Admin User',
-                  organization: 'TrialSage'
-                }));
-                window.location.href = '/client-portal.html.bak';
-              }} 
+              onClick={handleLogin}
               className="text-sm font-bold bg-pink-100 text-pink-800 px-2 py-1 rounded hover:bg-pink-200"
             >
               DIRECT PORTAL ACCESS
@@ -100,16 +92,7 @@ const Login = () => {
           <div className="mt-4 flex justify-center">
             <button 
               type="button"
-              onClick={() => {
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('user', JSON.stringify({
-                  username: 'admin',
-                  role: 'admin',
-                  name: 'Admin User',
-                  organization: 'TrialSage'
-                }));
-                window.location.href = '/client-portal.html.bak';
-              }}
+              onClick={handleLogin}
               className="text-white bg-green-600 hover:bg-green-700 px-4 py-2 text-sm font-bold rounded transition-colors"
             >
               ➤ ACCESS CLIENT PORTAL NOW ➤
