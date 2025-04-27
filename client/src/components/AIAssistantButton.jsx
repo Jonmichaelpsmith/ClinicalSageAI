@@ -1,157 +1,167 @@
 import React, { useState } from 'react';
-import { Bot, X, Send, ArrowDown } from 'lucide-react';
+import { Bot, X, Send, Loader2 } from 'lucide-react';
 import { useModuleIntegration } from './integration/ModuleIntegrationLayer';
 
 const AIAssistantButton = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hello! I\'m your TrialSage AI assistant. How can I help you with your regulatory or clinical document needs today?' }
+  const [message, setMessage] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [conversation, setConversation] = useState([
+    {
+      role: 'assistant',
+      content: 'Hello! I\'m your TrialSage AI Assistant. How can I help you with your regulatory and clinical documentation today?'
+    }
   ]);
-  const [isLoading, setIsLoading] = useState(false);
-  const integration = useModuleIntegration();
 
-  const toggleAssistant = () => {
+  const { addAuditEntry } = useModuleIntegration();
+
+  const toggleOpen = () => {
     setIsOpen(!isOpen);
-    
-    // Trigger event for other components to respond to AI assistant state
-    integration.triggerEvent('ai-assistant-toggle', { isOpen: !isOpen });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!query.trim()) return;
-    
-    // Add user message to chat
-    const userMessage = { role: 'user', content: query };
-    setMessages(prev => [...prev, userMessage]);
-    
-    // Clear input field
-    setQuery('');
-    
-    // Set loading state
-    setIsLoading(true);
-    
-    try {
-      // In a real implementation, this would call the OpenAI API
-      // For now, we'll simulate a response after a short delay
-      setTimeout(() => {
-        // Get context from the integration layer to provide to the AI
-        const contextData = integration.getSharedData();
-        
-        // Simulate AI response with context awareness
-        let responseText = `I'd be happy to help with your question about "${query}".`;
-        
-        // Add some contextual awareness based on the query
-        if (query.toLowerCase().includes('ind')) {
-          responseText += ' For IND applications, the TrialSage platform can help you organize all required forms and documents according to FDA guidelines.';
-        } else if (query.toLowerCase().includes('trial') || query.toLowerCase().includes('study')) {
-          responseText += ' The Study Architect module can help you design and optimize your clinical trial protocol.';
-        } else if (query.toLowerCase().includes('csr') || query.toLowerCase().includes('report')) {
-          responseText += ' Our CSR Intelligence module can assist with structured extraction and analysis of clinical study reports.';
-        }
-        
-        // Add the AI response to the chat
-        setMessages(prev => [...prev, { role: 'assistant', content: responseText }]);
-        setIsLoading(false);
-      }, 1000);
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'I apologize, but I encountered an error processing your request. Please try again later.' 
-      }]);
-      setIsLoading(false);
+    if (!isOpen) {
+      addAuditEntry('ai_assistant_opened', { timestamp: new Date().toISOString() });
     }
   };
 
-  // Scroll to bottom of messages when new ones arrive
-  const scrollToBottom = (container) => {
-    if (container) {
-      container.scrollTop = container.scrollHeight;
+  const handleInputChange = (e) => {
+    setMessage(e.target.value);
+  };
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+
+    // Add user message to conversation
+    const userMessage = {
+      role: 'user',
+      content: message
+    };
+
+    setConversation(prev => [...prev, userMessage]);
+    setMessage('');
+    setIsProcessing(true);
+
+    try {
+      // In a real implementation, we would send a request to the AI API
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate AI response
+      const aiResponse = {
+        role: 'assistant',
+        content: getAiResponse(message)
+      };
+      
+      setConversation(prev => [...prev, aiResponse]);
+      addAuditEntry('ai_assistant_interaction', { 
+        user_message: message,
+        ai_responded: true
+      });
+    } catch (error) {
+      console.error('AI Assistant error:', error);
+      setConversation(prev => [
+        ...prev, 
+        {
+          role: 'assistant',
+          content: 'Sorry, I encountered an error processing your request. Please try again.'
+        }
+      ]);
+      addAuditEntry('ai_assistant_error', { error: error.message });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Simple response generation for demonstration
+  const getAiResponse = (userMessage) => {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+      return 'Hello there! How can I assist you with your regulatory documentation today?';
+    } else if (lowerMessage.includes('help')) {
+      return 'I can help you with document analysis, regulatory guidance, and clinical trial documentation. What specific area do you need assistance with?';
+    } else if (lowerMessage.includes('vault') || lowerMessage.includes('document')) {
+      return 'TrialSage Vault provides secure document storage with blockchain verification. You can upload, categorize, and analyze your regulatory documents. Would you like me to guide you through using this feature?';
+    } else if (lowerMessage.includes('csr') || lowerMessage.includes('clinical study report')) {
+      return 'CSR Intelligence can help you generate and analyze Clinical Study Reports. It uses AI to extract insights, ensure compliance, and streamline your workflow. What specific aspect of CSR preparation do you need help with?';
+    } else if (lowerMessage.includes('study') || lowerMessage.includes('protocol')) {
+      return 'Study Architect provides tools for designing clinical trials, creating protocols, and managing site documentation. It includes templates based on FDA and ICH guidelines. What kind of study are you designing?';
+    } else {
+      return 'I understand you\'re asking about ' + userMessage.slice(0, 30) + '... To better assist you, could you provide more details about your specific needs in regulatory documentation or clinical trial management?';
     }
   };
 
   return (
     <>
-      {/* Floating button in corner */}
-      <button 
-        onClick={toggleAssistant}
-        className={`fixed bottom-4 right-4 z-40 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-colors ${
-          isOpen ? 'bg-pink-100 text-pink-600' : 'bg-pink-600 text-white'
-        }`}
-      >
-        {isOpen ? <X size={24} /> : <Bot size={24} />}
+      <button onClick={toggleOpen} className="ai-assistant-button">
+        <Bot size={24} />
       </button>
       
-      {/* Chat panel */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 w-96 h-96 bg-white rounded-lg shadow-xl z-30 flex flex-col border border-gray-200 overflow-hidden">
-          {/* Header */}
-          <div className="bg-pink-600 text-white p-3 flex items-center justify-between">
+        <div className="fixed bottom-0 right-0 mb-20 mr-6 w-80 sm:w-96 bg-white rounded-md shadow-xl border border-gray-200 z-50 flex flex-col" style={{ height: '440px' }}>
+          <div className="flex items-center justify-between p-3 border-b border-gray-200">
             <div className="flex items-center">
-              <Bot size={20} className="mr-2" />
-              <h3 className="font-medium">TrialSage Assistant</h3>
+              <div className="w-8 h-8 rounded-full bg-pink-600 flex items-center justify-center">
+                <Bot size={18} className="text-white" />
+              </div>
+              <h3 className="ml-2 font-medium">TrialSage AI Assistant</h3>
             </div>
-            <button onClick={toggleAssistant} className="text-white hover:text-pink-200">
+            <button onClick={toggleOpen} className="text-gray-500 hover:text-gray-700">
               <X size={18} />
             </button>
           </div>
           
-          {/* Messages container */}
-          <div 
-            className="flex-1 overflow-y-auto p-4 space-y-4"
-            ref={scrollToBottom}
-          >
-            {messages.map((message, index) => (
-              <div 
-                key={index} 
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          <div className="flex-1 p-3 overflow-y-auto space-y-4">
+            {conversation.map((msg, index) => (
+              <div
+                key={index}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div 
-                  className={`max-w-[80%] rounded-lg p-3 ${
-                    message.role === 'user' 
-                      ? 'bg-pink-100 text-gray-800' 
-                      : 'bg-gray-100 text-gray-800'
+                <div
+                  className={`max-w-xs sm:max-w-sm rounded-lg p-3 ${
+                    msg.role === 'user'
+                      ? 'bg-pink-600 text-white rounded-br-none'
+                      : 'bg-gray-100 text-gray-800 rounded-bl-none'
                   }`}
                 >
-                  {message.content}
+                  {msg.content}
                 </div>
               </div>
             ))}
-            
-            {isLoading && (
+            {isProcessing && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-lg p-3 bg-gray-100">
-                  <div className="flex space-x-2 items-center">
-                    <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                  </div>
+                <div className="bg-gray-100 text-gray-800 rounded-lg rounded-bl-none p-3 flex items-center">
+                  <Loader2 size={18} className="text-pink-600 animate-spin mr-2" />
+                  Thinking...
                 </div>
               </div>
             )}
           </div>
           
-          {/* Input form */}
-          <form onSubmit={handleSubmit} className="border-t border-gray-200 p-3 flex items-center">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask a question..."
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-1 focus:ring-pink-500"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              className="px-3 py-2 bg-pink-600 text-white rounded-r-md hover:bg-pink-700 focus:outline-none focus:ring-1 focus:ring-pink-500"
-              disabled={isLoading || !query.trim()}
-            >
-              {isLoading ? <ArrowDown size={18} className="animate-bounce" /> : <Send size={18} />}
-            </button>
-          </form>
+          <div className="p-3 border-t border-gray-200">
+            <div className="relative">
+              <textarea
+                className="w-full border border-gray-300 rounded-md py-2 pl-3 pr-10 focus:ring-2 focus:ring-pink-300 focus:border-pink-300 resize-none"
+                placeholder="Type your message..."
+                rows={2}
+                value={message}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                disabled={isProcessing}
+              />
+              <button
+                className="absolute right-2 bottom-2 p-1 rounded-full bg-pink-600 text-white disabled:bg-pink-300"
+                onClick={handleSendMessage}
+                disabled={!message.trim() || isProcessing}
+              >
+                <Send size={18} />
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

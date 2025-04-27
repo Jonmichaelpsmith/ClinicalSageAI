@@ -1,155 +1,213 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { 
-  Database, 
-  FileText, 
-  Layers, 
-  Flask, 
-  ShieldCheck,
-  BookOpenText,
-  BarChart3,
-  ExternalLink
-} from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { Database, FileText, FlaskConical, BarChartBig, ShieldCheck, BookText } from 'lucide-react';
 import { useModuleIntegration } from './integration/ModuleIntegrationLayer';
 
-const ModuleCard = ({ title, description, icon: Icon, path, color }) => {
-  return (
-    <Link href={path}>
-      <a className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 flex flex-col h-full border border-gray-100">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${color}`}>
-          <Icon size={24} className="text-white" />
-        </div>
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-gray-600 text-sm flex-grow">{description}</p>
-        <div className="mt-4 flex items-center text-pink-600 text-sm font-medium">
-          <span>Open Module</span>
-          <ExternalLink size={16} className="ml-1" />
-        </div>
-      </a>
-    </Link>
-  );
-};
-
 const UnifiedPlatform = () => {
-  const { user } = useAuth();
-  const integration = useModuleIntegration();
+  const { addAuditEntry } = useModuleIntegration();
 
-  const modules = [
-    {
-      id: 'vault',
-      title: 'TrialSage Vault™',
-      description: 'Secure storage and management for all your clinical trial documents with advanced metadata tagging.',
-      icon: Database,
-      path: '/vault',
-      color: 'bg-blue-600'
-    },
-    {
-      id: 'csr',
-      title: 'CSR Intelligence™',
-      description: 'AI-powered analysis and extraction of insights from Clinical Study Reports.',
-      icon: FileText,
-      path: '/csr-intelligence',
-      color: 'bg-purple-600'
-    },
-    {
-      id: 'architect',
-      title: 'Study Architect™',
-      description: 'Design and optimize clinical study protocols with intelligent assistance.',
-      icon: Layers,
-      path: '/study-architect',
-      color: 'bg-green-600'
-    },
-    {
-      id: 'ind',
-      title: 'IND Wizard™',
-      description: 'Streamlined creation and submission of Investigational New Drug applications.',
-      icon: Flask,
-      path: '/ind-wizard',
-      color: 'bg-pink-600'
-    },
-    {
-      id: 'ich',
-      title: 'ICH Wiz™',
-      description: 'Digital compliance coach for ICH guidelines across global regulatory submissions.',
-      icon: ShieldCheck,
-      path: '/compliance',
-      color: 'bg-orange-600'
-    },
-    {
-      id: 'cmdr',
-      title: 'Clinical Metadata Repository',
-      description: 'Centralized management of study metadata for consistency across submissions.',
-      icon: BookOpenText,
-      path: '/cmdr',
-      color: 'bg-teal-600'
-    },
-    {
-      id: 'analytics',
-      title: 'Analytics Module',
-      description: 'Comprehensive insights across your regulatory and clinical operations.',
-      icon: BarChart3,
-      path: '/analytics',
-      color: 'bg-indigo-600'
-    }
-  ];
+  const handleModuleClick = (moduleName) => {
+    addAuditEntry('module_selected', { module: moduleName });
+  };
 
   return (
-    <div className="container mx-auto py-8">
-      <section className="mb-10">
-        <div className="bg-black text-white rounded-lg p-8 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-pink-400 to-purple-600"></div>
-          <div className="relative z-10">
-            <h1 className="text-3xl font-bold mb-2">Welcome to TrialSage™, {user?.name || 'User'}</h1>
-            <p className="text-xl text-gray-300 mb-6">
-              AI-powered regulatory writing and document management platform
-            </p>
-            <div className="max-w-3xl">
-              <p className="text-gray-300 mb-4">
-                The integrated suite of tools for managing global regulatory submissions across FDA, EMA, PMDA, and NMPA markets.
-                Our platform leverages AI to streamline document creation, management, and submission.
-              </p>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/dashboard">
-                <a className="px-5 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors">
-                  Go to Dashboard
-                </a>
-              </Link>
-              <a 
-                href="#modules" 
-                className="px-5 py-2 bg-transparent border border-white text-white rounded-md hover:bg-white hover:text-black transition-colors"
-              >
-                Explore Modules
-              </a>
-            </div>
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="hero-section mb-12">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Welcome to TrialSage™
+          </h1>
+          <p className="text-xl mb-8 max-w-3xl mx-auto">
+            The comprehensive AI-powered platform for regulatory and clinical documentation across the drug development lifecycle
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <button className="hot-pink-btn">
+              Get Started
+            </button>
+            <button className="bg-white text-gray-900 py-2.5 px-5 rounded-md hover:bg-gray-100 font-medium">
+              Book a Demo
+            </button>
           </div>
         </div>
       </section>
 
-      <section id="modules" className="mb-10">
-        <h2 className="text-2xl font-bold mb-6">Platform Modules</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {modules.map((module) => (
-            <ModuleCard
-              key={module.id}
-              title={module.title}
-              description={module.description}
-              icon={module.icon}
-              path={module.path}
-              color={module.color}
-            />
-          ))}
+      {/* Modules Section */}
+      <section className="mb-12 container mx-auto px-4">
+        <h2 className="text-2xl font-bold mb-8 text-center">
+          Integrated Modules
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          {/* TrialSage Vault */}
+          <Link href="/vault">
+            <a 
+              className="module-card"
+              onClick={() => handleModuleClick('vault')}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                  <Database size={20} className="text-pink-600" />
+                </div>
+                <h3 className="text-lg font-semibold">TrialSage Vault</h3>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Secure document storage with blockchain verification for regulatory submissions
+              </p>
+              <div className="flex flex-wrap gap-1">
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Document Management</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Blockchain</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Audit Trail</span>
+              </div>
+            </a>
+          </Link>
+
+          {/* CSR Intelligence */}
+          <Link href="/csr-intelligence">
+            <a 
+              className="module-card"
+              onClick={() => handleModuleClick('csr-intelligence')}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                  <FileText size={20} className="text-pink-600" />
+                </div>
+                <h3 className="text-lg font-semibold">CSR Intelligence</h3>
+              </div>
+              <p className="text-gray-600 mb-4">
+                AI-powered creation and analysis of clinical study reports for global submissions
+              </p>
+              <div className="flex flex-wrap gap-1">
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">AI Analysis</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Templates</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Compliance</span>
+              </div>
+            </a>
+          </Link>
+
+          {/* Study Architect */}
+          <Link href="/study-architect">
+            <a 
+              className="module-card"
+              onClick={() => handleModuleClick('study-architect')}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                  <FlaskConical size={20} className="text-pink-600" />
+                </div>
+                <h3 className="text-lg font-semibold">Study Architect</h3>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Design clinical trials and create protocols with intelligent templates
+              </p>
+              <div className="flex flex-wrap gap-1">
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Protocol Design</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Workflow</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Templates</span>
+              </div>
+            </a>
+          </Link>
+
+          {/* Analytics */}
+          <Link href="/analytics">
+            <a 
+              className="module-card"
+              onClick={() => handleModuleClick('analytics')}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                  <BarChartBig size={20} className="text-pink-600" />
+                </div>
+                <h3 className="text-lg font-semibold">Analytics Module</h3>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Comprehensive data visualization and insights across your regulatory portfolio
+              </p>
+              <div className="flex flex-wrap gap-1">
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Dashboards</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Reporting</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Metrics</span>
+              </div>
+            </a>
+          </Link>
+
+          {/* ICH Wiz */}
+          <Link href="/regulatory-intelligence">
+            <a 
+              className="module-card"
+              onClick={() => handleModuleClick('regulatory-intelligence')}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                  <BookText size={20} className="text-pink-600" />
+                </div>
+                <h3 className="text-lg font-semibold">ICH Wiz™</h3>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Digital compliance coach for ICH guidelines and global regulatory standards
+              </p>
+              <div className="flex flex-wrap gap-1">
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Guidance</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Regulations</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">AI Assistant</span>
+              </div>
+            </a>
+          </Link>
+
+          {/* IND Wizard */}
+          <Link href="/ind-wizard">
+            <a 
+              className="module-card"
+              onClick={() => handleModuleClick('ind-wizard')}
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                  <ShieldCheck size={20} className="text-pink-600" />
+                </div>
+                <h3 className="text-lg font-semibold">IND Wizard™</h3>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Streamlined creation and management of Investigational New Drug applications
+              </p>
+              <div className="flex flex-wrap gap-1">
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">FDA Submissions</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Forms</span>
+                <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Validation</span>
+              </div>
+            </a>
+          </Link>
         </div>
       </section>
 
-      <section className="mb-10">
-        <div className="bg-gradient-to-r from-white to-pink-50 rounded-lg p-6 border border-pink-100">
-          <h2 className="text-xl font-bold mb-4">Enhanced Security Features</h2>
-          <p className="text-gray-700">
-            Our platform utilizes blockchain technology for document verification and secure audit trails, 
-            ensuring that all your regulatory documents maintain integrity throughout their lifecycle.
-          </p>
+      {/* Platform Benefits */}
+      <section className="bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold mb-8 text-center">
+            Platform Benefits
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 bg-white rounded-lg shadow-sm">
+              <h3 className="text-lg font-semibold mb-3">AI-Powered Intelligence</h3>
+              <p className="text-gray-600">
+                Leverage the latest generative AI technology to automate document creation, extract insights, and ensure compliance.
+              </p>
+            </div>
+            
+            <div className="p-6 bg-white rounded-lg shadow-sm">
+              <h3 className="text-lg font-semibold mb-3">Blockchain Security</h3>
+              <p className="text-gray-600">
+                Enhanced security with blockchain verification providing tamper-proof audit trails for all regulatory documents.
+              </p>
+            </div>
+            
+            <div className="p-6 bg-white rounded-lg shadow-sm">
+              <h3 className="text-lg font-semibold mb-3">Multi-Tenant Architecture</h3>
+              <p className="text-gray-600">
+                Secure CRO master accounts managing multiple biotech clients with hierarchical permissions structure.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
     </div>

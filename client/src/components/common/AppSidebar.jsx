@@ -1,141 +1,223 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { 
-  LayoutDashboard, 
-  Database, 
-  FileText, 
-  Layers, 
-  Flask, 
+import {
+  LayoutDashboard,
+  Database,
+  FileText,
+  FlaskConical,
+  BookOpen,
   ShieldCheck,
-  BookOpenText,
-  BarChart3,
+  PieChart,
+  Users,
+  Settings,
+  Bookmark,
+  HelpCircle,
   FileQuestion,
-  Users
+  Activity,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  ChevronLeft
 } from 'lucide-react';
+import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 
 const AppSidebar = () => {
   const [location] = useLocation();
-  
-  const menuItems = [
-    { 
-      path: '/dashboard', 
-      label: 'Dashboard', 
-      icon: LayoutDashboard 
-    },
-    { 
-      path: '/vault', 
-      label: 'Vault', 
-      icon: Database,
-      tooltip: 'TrialSage Vault™'
-    },
-    { 
-      path: '/csr-intelligence', 
-      label: 'CSR Intelligence', 
-      icon: FileText,
-      tooltip: 'CSR Intelligence™'
-    },
-    { 
-      path: '/study-architect', 
-      label: 'Study Architect', 
-      icon: Layers,
-      tooltip: 'Study Architect™'
-    },
-    { 
-      path: '/ind-wizard', 
-      label: 'IND Wizard', 
-      icon: Flask,
-      tooltip: 'IND Wizard™'
-    },
-    { 
-      path: '/compliance', 
-      label: 'ICH Compliance', 
-      icon: ShieldCheck,
-      tooltip: 'ICH Wiz™' 
-    },
-    { 
-      path: '/cmdr', 
-      label: 'Metadata Repository', 
-      icon: BookOpenText,
-      tooltip: 'Clinical Metadata Repository'
-    },
-    { 
-      path: '/analytics', 
-      label: 'Analytics', 
-      icon: BarChart3 
-    },
-  ];
-  
-  const adminItems = [
-    {
-      path: '/admin/users',
-      label: 'User Management',
-      icon: Users
-    },
-    {
-      path: '/admin/help',
-      label: 'Help Center',
-      icon: FileQuestion
-    }
-  ];
+  const { data } = useModuleIntegration();
+  const [collapsed, setCollapsed] = useState(false);
+  const [expandedSection, setExpandedSection] = useState(null);
 
-  const MenuItem = ({ item }) => {
-    const isActive = location === item.path || location.startsWith(`${item.path}/`);
+  // Don't show sidebar on landing page
+  if (location === '/') {
+    return null;
+  }
+
+  const toggleCollapse = () => {
+    setCollapsed(!collapsed);
+    // When expanding, reset expanded sections
+    if (collapsed) {
+      setExpandedSection(null);
+    }
+  };
+
+  const toggleSection = (section) => {
+    if (expandedSection === section) {
+      setExpandedSection(null);
+    } else {
+      setExpandedSection(section);
+    }
+  };
+
+  const isActive = (path) => {
+    if (path === '/dashboard') {
+      return location === '/dashboard';
+    }
+    // Match subpaths, e.g. /vault should match /vault/documents
+    return location.startsWith(path);
+  };
+
+  // Link style based on active state
+  const getLinkClass = (path) => {
+    const baseClass = 'flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap';
+    const activeClass = 'bg-pink-50 text-pink-600';
+    const inactiveClass = 'text-gray-700 hover:bg-gray-100';
     
-    return (
-      <Link href={item.path}>
-        <a 
-          className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-            isActive 
-              ? 'text-pink-600 bg-pink-50' 
-              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-          }`}
-          title={item.tooltip || item.label}
-        >
-          <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-pink-500' : 'text-gray-400'}`} />
-          <span className="truncate">{item.label}</span>
-        </a>
-      </Link>
-    );
+    return `${baseClass} ${isActive(path) ? activeClass : inactiveClass}`;
   };
 
   return (
-    <div className="hidden md:flex h-screen bg-white border-r border-gray-200 flex-col w-60 fixed inset-y-0 pt-16">
-      <div className="mt-6 flex-1 flex flex-col overflow-y-auto">
-        <nav className="flex-1 px-2 space-y-1">
-          {menuItems.map((item) => (
-            <MenuItem key={item.path} item={item} />
-          ))}
-        </nav>
-        
-        {/* Admin section */}
-        <div className="px-3 mt-6 mb-3">
-          <h3 className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Administration
-          </h3>
-          <div className="mt-2 space-y-1">
-            {adminItems.map((item) => (
-              <MenuItem key={item.path} item={item} />
-            ))}
+    <aside className={`bg-white border-r border-gray-200 flex flex-col ${collapsed ? 'w-16' : 'w-64'}`}>
+      <div className="h-0 flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+        <div className="flex-1 flex flex-col px-3 space-y-1">
+          {/* Dashboard */}
+          <Link href="/dashboard">
+            <a className={getLinkClass('/dashboard')}>
+              <LayoutDashboard className="mr-3 flex-shrink-0 h-5 w-5" />
+              {!collapsed && <span>Dashboard</span>}
+            </a>
+          </Link>
+
+          {/* Major Modules Section */}
+          <div className="pt-4">
+            <div className={`mb-2 ${collapsed ? 'px-3' : 'px-3 flex justify-between items-center'}`}>
+              {!collapsed && <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Core Modules</h3>}
+              {collapsed && <div className="h-px bg-gray-200 w-full my-2"></div>}
+            </div>
+
+            {/* Vault */}
+            <Link href="/vault">
+              <a className={getLinkClass('/vault')}>
+                <Database className="mr-3 flex-shrink-0 h-5 w-5" />
+                {!collapsed && <span>TrialSage Vault</span>}
+              </a>
+            </Link>
+
+            {/* CSR Intelligence */}
+            <Link href="/csr-intelligence">
+              <a className={getLinkClass('/csr-intelligence')}>
+                <FileText className="mr-3 flex-shrink-0 h-5 w-5" />
+                {!collapsed && <span>CSR Intelligence</span>}
+              </a>
+            </Link>
+            
+            {/* Study Architect */}
+            <Link href="/study-architect">
+              <a className={getLinkClass('/study-architect')}>
+                <FlaskConical className="mr-3 flex-shrink-0 h-5 w-5" />
+                {!collapsed && <span>Study Architect</span>}
+              </a>
+            </Link>
+
+            {/* ICH Wiz - Collapsible Section */}
+            <div>
+              <button 
+                onClick={() => toggleSection('regulatory')}
+                className={`w-full text-left ${getLinkClass('/regulatory-intelligence')}`}
+              >
+                <BookOpen className="mr-3 flex-shrink-0 h-5 w-5" />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1">ICH Wiz</span>
+                    {expandedSection === 'regulatory' ? 
+                      <ChevronUp className="h-4 w-4" /> : 
+                      <ChevronDown className="h-4 w-4" />
+                    }
+                  </>
+                )}
+              </button>
+              
+              {!collapsed && expandedSection === 'regulatory' && (
+                <div className="ml-8 space-y-1 mt-1">
+                  <Link href="/regulatory-intelligence/guidance">
+                    <a className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                      location === '/regulatory-intelligence/guidance' ? 'text-pink-600' : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      <span>Guidance Library</span>
+                    </a>
+                  </Link>
+                  <Link href="/regulatory-intelligence/compliance">
+                    <a className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                      location === '/regulatory-intelligence/compliance' ? 'text-pink-600' : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      <span>Compliance Check</span>
+                    </a>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* IND Wizard */}
+            <Link href="/ind-wizard">
+              <a className={getLinkClass('/ind-wizard')}>
+                <FileQuestion className="mr-3 flex-shrink-0 h-5 w-5" />
+                {!collapsed && <span>IND Wizard</span>}
+              </a>
+            </Link>
+
+            {/* Analytics */}
+            <Link href="/analytics">
+              <a className={getLinkClass('/analytics')}>
+                <PieChart className="mr-3 flex-shrink-0 h-5 w-5" />
+                {!collapsed && <span>Analytics</span>}
+              </a>
+            </Link>
           </div>
+
+          {/* Secondary Links Section */}
+          {!collapsed && (
+            <div className="pt-4 mt-4 border-t border-gray-200">
+              <div className="mb-2 px-3 flex justify-between items-center">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Administration</h3>
+              </div>
+
+              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
+                <Users className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
+                <span>Team Management</span>
+              </a>
+              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
+                <Settings className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
+                <span>Settings</span>
+              </a>
+              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
+                <Activity className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
+                <span>Audit Logs</span>
+              </a>
+            </div>
+          )}
+
+          {/* Help Section */}
+          {!collapsed && (
+            <div className="pt-4 mt-4 border-t border-gray-200">
+              <div className="mb-2 px-3 flex justify-between items-center">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Help & Resources</h3>
+              </div>
+
+              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
+                <HelpCircle className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
+                <span>Documentation</span>
+              </a>
+              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">
+                <Bookmark className="mr-3 flex-shrink-0 h-5 w-5 text-gray-500" />
+                <span>Resources</span>
+              </a>
+            </div>
+          )}
         </div>
       </div>
       
-      {/* Environment label - could indicate dev/staging/prod */}
-      <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-        <div className="flex-shrink-0 w-full group block">
-          <div className="flex items-center">
-            <div>
-              <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">
-                Environment: <span className="font-bold text-green-600">Production</span>
-              </p>
-              <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">
-                Version: 2.5.0
-              </p>
-            </div>
-          </div>
-        </div>
+      {/* Collapse/Expand Button */}
+      <div className="border-t border-gray-200 p-3">
+        <button
+          onClick={toggleCollapse}
+          className="flex items-center justify-center w-full p-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-100"
+        >
+          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          {!collapsed && <span className="ml-2">Collapse Sidebar</span>}
+        </button>
       </div>
-    </div>
+    </aside>
   );
 };
 
