@@ -39,8 +39,10 @@ import { apiRequest } from '@/lib/queryClient';
 import FdaFormsStep from './steps/FdaFormsStep';
 import RegulatoryIntelligenceStep from './steps/RegulatoryIntelligenceStep';
 import ProtocolBuilderStep from './steps/ProtocolBuilderStep';
+import CmcStep from './steps/CmcStep';
 import { useDatabaseStatus } from '@/components/providers/database-status-provider';
 import ErrorBoundary from '@/components/ui/error-boundary';
+import { LumenAssistantButton, LumenAssistant } from '@/components/assistant';
 
 // IND Wizard Steps
 const IND_WIZARD_STEPS = [
@@ -601,6 +603,16 @@ export default function INDWizardContainer({ projectId = '12345' }) {
             projectData={projectData}
           />
           
+          {/* Add Lumen AI Assistant */}
+          <div className="fixed bottom-4 right-4 z-50">
+            <LumenAssistantButton 
+              variant="primary" 
+              size="lg"
+              tooltip="Ask Lumen AI Assistant"
+            />
+          </div>
+          <LumenAssistant />
+          
           <main className="flex-1 overflow-auto p-6">
             <ErrorBoundary>
               <Switch>
@@ -621,6 +633,14 @@ export default function INDWizardContainer({ projectId = '12345' }) {
                     projectId={projectId} 
                     onComplete={() => setLocation('/ind-wizard/cmc')}
                     onPrevious={() => setLocation('/ind-wizard/regulatory-intelligence')}
+                  />
+                </Route>
+                
+                <Route path="/ind-wizard/cmc">
+                  <CmcStep 
+                    projectId={projectId} 
+                    onComplete={() => setLocation('/ind-wizard/nonclinical')}
+                    onPrevious={() => setLocation('/ind-wizard/protocol')}
                   />
                 </Route>
                 
