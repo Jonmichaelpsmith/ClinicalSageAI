@@ -199,12 +199,23 @@ const ClientPortalDashboard = () => {
   const navigateToModule = (module) => {
     setActiveModule(module);
     
-    // For demonstration purposes, navigate to the specific module
+    // Navigate to the specific module using the solutions HTML files
     if (module === "ind") {
-      window.location.href = "/ind-wizard.html";
+      window.location.href = "/solutions_ind_wizard.html";
     } else if (module === "vault") {
-      window.location.href = "/client-portal.html";
+      window.location.href = "/solutions_vault.html";
     } else if (module === "csr") {
+      window.location.href = "/solutions_csr_intelligence.html";
+    } else if (module === "study") {
+      window.location.href = "/solutions_study_architect.html";
+    } else if (module === "cmc") {
+      // Fallback to client portal for now
+      window.location.href = "/client-portal.html";
+    } else if (module === "timeline") {
+      // Fallback to client portal for now
+      window.location.href = "/client-portal.html";
+    } else {
+      // Default to client portal
       window.location.href = "/client-portal.html";
     }
   };
@@ -424,7 +435,7 @@ const ClientPortalDashboard = () => {
                             className={project.name === "ENZYMAX FORTE" ? "bg-pink-600 hover:bg-pink-700" : ""}
                             onClick={() => {
                               if (project.name === "ENZYMAX FORTE") {
-                                window.location.href = "/ind-wizard.html";
+                                window.location.href = "/solutions_ind_wizard.html";
                               }
                             }}
                           >

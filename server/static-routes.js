@@ -18,6 +18,30 @@ export function setupStaticRoutes(app) {
       res.status(404).send('Landing page not found');
     }
   });
+  
+  // Serve the client portal page
+  app.get('/client-portal', (req, res) => {
+    console.log('[StaticRoutes] Serving client portal page');
+    const clientPortalPath = path.join(process.cwd(), 'client-portal.html');
+    if (fs.existsSync(clientPortalPath)) {
+      res.sendFile(clientPortalPath);
+    } else {
+      res.status(404).send('Client portal page not found');
+    }
+  });
+  
+  // Serve solutions HTML files directly
+  app.get('/solutions_*', (req, res) => {
+    const requestedFile = req.path.substring(1); // Remove leading slash
+    console.log(`[StaticRoutes] Serving solutions file: ${requestedFile}`);
+    const filePath = path.join(process.cwd(), requestedFile);
+    
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).send(`Module file ${requestedFile} not found`);
+    }
+  });
 
   // Define routes that should get static fallback pages
   const staticRoutes = [
