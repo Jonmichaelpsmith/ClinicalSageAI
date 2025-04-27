@@ -32,6 +32,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import MashableAPIKeyForm from './MashableAPIKeyForm';
 
 export function MashableBIWrapper({
   dashboardId,
@@ -134,6 +135,51 @@ export function MashableBIWrapper({
     setIsExpanded(!isExpanded);
   };
 
+  // Check if MashableBI is configured
+  const [isConfigured, setIsConfigured] = useState(true);
+  const [showConfigForm, setShowConfigForm] = useState(false);
+  
+  // Fetch configuration status
+  useEffect(() => {
+    const checkConfiguration = async () => {
+      try {
+        const response = await fetch('/api/mashable-bi/status');
+        const data = await response.json();
+        
+        setIsConfigured(data.configured);
+        
+        if (!data.configured) {
+          setError('MashableBI API key is not configured');
+        } else if (data.connectionStatus === 'error') {
+          setError(`Connection error: ${data.connectionError}`);
+        }
+      } catch (error) {
+        console.error('Error checking MashableBI configuration:', error);
+        setError('Unable to check MashableBI configuration status');
+      }
+    };
+    
+    checkConfiguration();
+  }, []);
+  
+  // Handle API key configuration
+  const handleApiKeyConfigured = () => {
+    setIsConfigured(true);
+    setShowConfigForm(false);
+    setError(null);
+    setIsLoading(true);
+    
+    // Reload the iframe
+    if (iframeRef.current) {
+      iframeRef.current.src = getMashableBIUrl(activeDashboard);
+    }
+    
+    toast({
+      title: 'MashableBI Configured',
+      description: 'Your dashboard is being loaded with real data',
+    });
+  };
+  
   // Format the MashableBI URL with filters
   const getMashableBIUrl = (dashboardId) => {
     // Base MashableBI embed URL
