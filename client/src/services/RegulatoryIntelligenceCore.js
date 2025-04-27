@@ -1,611 +1,559 @@
 /**
  * Regulatory Intelligence Core
  * 
- * This service provides the central "nervous system" for regulatory and scientific intelligence
- * across the TrialSage platform, with blockchain-based security and verification.
+ * This service provides the central AI-powered "regulatory and scientific central nervous system"
+ * for the TrialSage platform. It manages regulatory updates, guidance, and AI-powered assistance
+ * across all modules with blockchain integration for enhanced security.
  */
 
-import { apiRequest } from '../lib/queryClient';
-import securityService from './SecurityService';
+import { BlockchainService } from './blockchain';
 
-// Regulatory authority codes
-export const REGULATORY_AUTHORITIES = {
-  FDA: 'fda',          // US Food and Drug Administration
-  EMA: 'ema',          // European Medicines Agency
-  PMDA: 'pmda',        // Japan Pharmaceuticals and Medical Devices Agency
-  HEALTH_CANADA: 'hc', // Health Canada
-  NMPA: 'nmpa'         // China National Medical Products Administration
-};
-
-// Intelligence domains
-export const INTELLIGENCE_DOMAINS = {
-  REGULATORY: 'regulatory',
-  SCIENTIFIC: 'scientific',
-  CLINICAL: 'clinical',
-  SAFETY: 'safety',
-  CMC: 'cmc'           // Chemistry, Manufacturing and Controls
-};
-
-class RegulatoryIntelligenceCore {
+// Singleton pattern for RegulatoryIntelligenceCore
+export class RegulatoryIntelligenceCore {
+  static instance = null;
+  
+  // Sources for regulatory intelligence
+  static REGULATORY_SOURCES = {
+    FDA: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
+    EMA: 'https://www.ema.europa.eu/en/news-events/whats-new',
+    PMDA: 'https://www.pmda.go.jp/english/news/0001.html',
+    HEALTH_CANADA: 'https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements.html',
+    NMPA: 'https://www.nmpa.gov.cn/xxgk/zhengcwj/index.html'
+  };
+  
+  // Private constructor for singleton pattern
   constructor() {
-    this.initialized = false;
-    this.enabledAuthorities = new Set();
-    this.blockchainEnabled = false;
-    this.intelligenceCache = new Map();
+    this.subscribers = [];
     this.regulatoryUpdates = [];
-    this.guidanceDocuments = [];
-    this.scientificInsights = [];
+    this.webSocketConnection = null;
+    this.blockchainService = new BlockchainService();
+    this.regulatoryUpdateInterval = null;
+    this.guidanceModel = null;
+    this.connectedModules = new Set();
+    
+    // Initialize the core system
+    this.initialize();
   }
-
-  /**
-   * Initialize the regulatory intelligence core
-   * @param {Object} options - Initialization options
-   * @returns {Promise<boolean>} Success status
-   */
-  async initialize(options = {}) {
+  
+  // Get the singleton instance
+  static getInstance() {
+    if (!RegulatoryIntelligenceCore.instance) {
+      RegulatoryIntelligenceCore.instance = new RegulatoryIntelligenceCore();
+    }
+    
+    return RegulatoryIntelligenceCore.instance;
+  }
+  
+  // Initialize the core system
+  async initialize() {
     try {
-      // Extract options
-      this.blockchainEnabled = options.enableBlockchain || false;
+      console.log('[RegIntel] Initializing Regulatory Intelligence Core...');
       
-      // Enable all authorities by default
-      this.enabledAuthorities = new Set(Object.values(REGULATORY_AUTHORITIES));
+      // Initialize blockchain service
+      await this.blockchainService.initialize();
       
-      // In a real implementation, would initialize connections and data sources
-      // For now, initialize with demo data
-      await this._initializeDemoData();
+      // Connect to WebSocket for real-time updates
+      this.connectWebSocket();
       
-      // Schedule regulatory updates (in a real implementation)
-      this._scheduleRegulatoryUpdates();
+      // Load guidance model
+      await this.loadGuidanceModel();
       
-      this.initialized = true;
+      // Start polling for regulatory updates
+      this.startRegulatoryUpdatePolling();
+      
+      console.log('[RegIntel] Regulatory Intelligence Core initialized successfully');
+      
       return true;
     } catch (error) {
-      console.error('Regulatory Intelligence Core initialization error:', error);
+      console.error('[RegIntel] Initialization error:', error);
       return false;
     }
   }
-
-  /**
-   * Get regulatory insights for a context
-   * @param {string} contextType - Context type
-   * @param {string} contextId - Context ID
-   * @param {Object} options - Query options
-   * @returns {Promise<Object>} Regulatory insights
-   */
-  async getRegulatoryInsights(contextType, contextId, options = {}) {
-    if (!this.initialized) {
-      throw new Error('Regulatory Intelligence Core not initialized');
+  
+  // Connect to WebSocket for real-time updates
+  connectWebSocket() {
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws-guidance`;
+      
+      // Create WebSocket connection
+      this.webSocketConnection = new WebSocket(wsUrl);
+      
+      // Set up event handlers
+      this.webSocketConnection.onopen = () => {
+        console.log('[RegIntel] WebSocket connection established');
+      };
+      
+      this.webSocketConnection.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          
+          if (message.type === 'regulatory_update') {
+            this.handleRegulatoryUpdate(message.data);
+          } else if (message.type === 'guidance') {
+            this.handleGuidanceMessage(message.data);
+          }
+        } catch (error) {
+          console.error('[RegIntel] Error processing WebSocket message:', error);
+        }
+      };
+      
+      this.webSocketConnection.onerror = (error) => {
+        console.error('[RegIntel] WebSocket error:', error);
+      };
+      
+      this.webSocketConnection.onclose = () => {
+        console.log('[RegIntel] WebSocket connection closed');
+        
+        // Attempt to reconnect after a delay
+        setTimeout(() => {
+          if (this.webSocketConnection.readyState === WebSocket.CLOSED) {
+            console.log('[RegIntel] Attempting to reconnect WebSocket...');
+            this.connectWebSocket();
+          }
+        }, 5000);
+      };
+    } catch (error) {
+      console.error('[RegIntel] Error connecting to WebSocket:', error);
     }
-    
-    const cacheKey = `${contextType}:${contextId}`;
-    
-    // Check cache first
-    if (this.intelligenceCache.has(cacheKey)) {
-      return this.intelligenceCache.get(cacheKey);
-    }
-    
-    // In a real implementation, would call AI/ML services and regulatory databases
-    // For now, generate demo insights
-    const insights = this._generateDemoInsights(contextType, contextId, options);
-    
-    // Cache insights
-    this.intelligenceCache.set(cacheKey, insights);
-    
-    return insights;
   }
-
-  /**
-   * Get regulatory updates
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} Regulatory updates
-   */
-  async getRegulatoryUpdates(options = {}) {
-    if (!this.initialized) {
-      throw new Error('Regulatory Intelligence Core not initialized');
+  
+  // Load the guidance model
+  async loadGuidanceModel() {
+    try {
+      console.log('[RegIntel] Loading regulatory guidance model...');
+      
+      // In a real implementation, this would load an AI model for providing guidance
+      // For now, simulated with a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      this.guidanceModel = {
+        initialized: true,
+        version: '1.0.0',
+        capabilities: ['regulatory_updates', 'document_analysis', 'compliance_check']
+      };
+      
+      console.log('[RegIntel] Regulatory guidance model loaded successfully');
+      
+      return true;
+    } catch (error) {
+      console.error('[RegIntel] Error loading guidance model:', error);
+      return false;
     }
+  }
+  
+  // Start polling for regulatory updates
+  startRegulatoryUpdatePolling() {
+    // Check for updates immediately
+    this.fetchRegulatoryUpdates();
     
-    // Filter updates by authority if specified
-    if (options.authority) {
-      return this.regulatoryUpdates.filter(update => 
-        update.authority === options.authority);
+    // Set up interval for checking updates (every 6 hours)
+    this.regulatoryUpdateInterval = setInterval(() => {
+      this.fetchRegulatoryUpdates();
+    }, 6 * 60 * 60 * 1000);
+  }
+  
+  // Stop polling for regulatory updates
+  stopRegulatoryUpdatePolling() {
+    if (this.regulatoryUpdateInterval) {
+      clearInterval(this.regulatoryUpdateInterval);
+      this.regulatoryUpdateInterval = null;
     }
-    
-    // Filter updates by date range if specified
-    if (options.startDate && options.endDate) {
-      return this.regulatoryUpdates.filter(update => {
-        const updateDate = new Date(update.publishedAt);
-        return updateDate >= new Date(options.startDate) && 
-               updateDate <= new Date(options.endDate);
+  }
+  
+  // Fetch regulatory updates from sources
+  async fetchRegulatoryUpdates() {
+    try {
+      console.log('[RegIntel] Fetching regulatory updates...');
+      
+      const updates = [];
+      
+      // In a real implementation, fetch updates from regulatory sources
+      // For now, use a simulated response
+      
+      // FDA update
+      updates.push({
+        source: 'FDA',
+        title: 'Updated Guidance for Industry: Clinical Trial Endpoints',
+        url: RegulatoryIntelligenceCore.REGULATORY_SOURCES.FDA,
+        publishedDate: new Date().toISOString(),
+        summary: 'The FDA has released updated guidance for industry regarding clinical trial endpoints for drug and biological product development.',
+        verified: await this.blockchainService.verifyDocument({
+          source: 'FDA',
+          documentId: 'GUID-123456',
+          timestamp: new Date().toISOString()
+        })
       });
-    }
-    
-    return this.regulatoryUpdates;
-  }
-
-  /**
-   * Get guidance documents
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} Guidance documents
-   */
-  async getGuidanceDocuments(options = {}) {
-    if (!this.initialized) {
-      throw new Error('Regulatory Intelligence Core not initialized');
-    }
-    
-    // Filter guidance by authority if specified
-    if (options.authority) {
-      return this.guidanceDocuments.filter(guidance => 
-        guidance.authority === options.authority);
-    }
-    
-    // Filter guidance by topic if specified
-    if (options.topic) {
-      return this.guidanceDocuments.filter(guidance => 
-        guidance.topics.includes(options.topic.toLowerCase()));
-    }
-    
-    return this.guidanceDocuments;
-  }
-
-  /**
-   * Get scientific insights
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} Scientific insights
-   */
-  async getScientificInsights(options = {}) {
-    if (!this.initialized) {
-      throw new Error('Regulatory Intelligence Core not initialized');
-    }
-    
-    // Filter insights by domain if specified
-    if (options.domain) {
-      return this.scientificInsights.filter(insight => 
-        insight.domain === options.domain);
-    }
-    
-    return this.scientificInsights;
-  }
-
-  /**
-   * Get chat response from the regulatory intelligence AI
-   * @param {string} message - User message
-   * @param {Object} context - Conversation context
-   * @returns {Promise<string>} AI response
-   */
-  async getChatResponse(message, context = {}) {
-    if (!this.initialized) {
-      throw new Error('Regulatory Intelligence Core not initialized');
-    }
-    
-    // In a real implementation, would call AI service with the message and context
-    // For now, generate a demo response
-    
-    // Wait for a realistic delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Extract context info
-    const module = context.activeModule || 'general';
-    const previousMessages = context.previousMessages || [];
-    
-    // Generate a response based on the message and context
-    let response = '';
-    
-    if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
-      response = `Hello! I'm the TrialSage AI Assistant. I'm here to help with regulatory and scientific questions related to your clinical trials and submissions.`;
-    } else if (message.toLowerCase().includes('help')) {
-      response = `I can help you with:
       
-1. Regulatory guidance from FDA, EMA, PMDA, Health Canada, and NMPA
-2. Scientific insights for your clinical programs
-3. Assistance with document preparation and review
-4. Interpretation of regulatory requirements
-5. Best practices for submissions
-
-What specific area do you need help with today?`;
-    } else if (message.toLowerCase().includes('regulatory') || message.toLowerCase().includes('guidance')) {
-      response = `Here are some recent regulatory guidances that might be relevant:
-
-1. FDA: Guidance for Industry on Electronic Submissions
-2. EMA: Guideline on Quality Documentation for Biological Products
-3. Health Canada: Updated Requirements for Clinical Trial Applications
-
-Would you like me to provide more details on any of these?`;
-    } else if (message.toLowerCase().includes('protocol') || message.toLowerCase().includes('study design')) {
-      response = `For protocol development and study design, I recommend:
-
-1. Start with a clear primary endpoint that directly addresses your research question
-2. Ensure your inclusion/exclusion criteria are aligned with your study objectives
-3. Consider adaptive design elements for more efficient development
-4. Design with your target indication and eventual label claims in mind
-
-Would you like me to analyze a specific aspect of your protocol?`;
-    } else if (module === 'ind-wizard' && message.toLowerCase().includes('ind')) {
-      response = `For your IND preparation, here are key considerations:
-
-1. Ensure your CMC section is complete and follows current FDA expectations
-2. Provide robust pre-clinical data to support your proposed clinical trial
-3. Develop a clear clinical development plan beyond the initial study
-4. Address potential safety concerns proactively in your submission
-
-The FDA's current review time for INDs is approximately 30 days. Would you like help with a specific section of your IND?`;
-    } else if (module === 'csr-intelligence' && message.toLowerCase().includes('csr')) {
-      response = `For Clinical Study Report development, I recommend:
-
-1. Follow the ICH E3 structure closely for organization
-2. Ensure your primary and secondary endpoint analyses are clearly presented
-3. Include comprehensive safety summaries with detailed narratives for serious events
-4. Make sure your conclusions are directly supported by the study data presented
-
-Would you like help with a specific section of your CSR?`;
-    } else if (module === 'trial-vault') {
-      response = `I see you're working in Trial Vault. Here are some document management best practices:
-
-1. Maintain consistent document naming conventions across your organization
-2. Establish clear version control workflows, especially for regulatory submissions
-3. Implement appropriate access controls to protect sensitive information
-4. Set up automated archiving processes that comply with 21 CFR Part 11
-
-Is there a specific document management challenge I can help with?`;
-    } else {
-      response = `Thank you for your question. Based on my analysis, here are some insights that might be helpful:
-
-1. Consider recent regulatory trends that emphasize patient-centric approaches to clinical development
-2. Evaluate whether your program aligns with current scientific understanding in this therapeutic area
-3. Review similar development programs for precedents that might inform your strategy
-4. Ensure your documentation follows the latest regulatory expectations
-
-Would you like me to elaborate on any of these points?`;
+      // EMA update
+      updates.push({
+        source: 'EMA',
+        title: 'New Requirements for Pediatric Investigation Plans',
+        url: RegulatoryIntelligenceCore.REGULATORY_SOURCES.EMA,
+        publishedDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+        summary: 'The European Medicines Agency has announced new requirements for pediatric investigation plans for medicinal products.',
+        verified: await this.blockchainService.verifyDocument({
+          source: 'EMA',
+          documentId: 'GUID-654321',
+          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        })
+      });
+      
+      // Add updates to the list
+      this.regulatoryUpdates = [...updates, ...this.regulatoryUpdates].slice(0, 50); // Keep the most recent 50 updates
+      
+      // Notify subscribers of new updates
+      this.notifySubscribers();
+      
+      console.log(`[RegIntel] Fetched ${updates.length} regulatory updates`);
+      
+      return updates;
+    } catch (error) {
+      console.error('[RegIntel] Error fetching regulatory updates:', error);
+      return [];
     }
-    
-    // Add blockchain verification if enabled
-    if (this.blockchainEnabled) {
-      response += `\n\n[Blockchain verified response: 0x${Math.random().toString(16).substring(2, 10)}]`;
-    }
-    
-    return response;
   }
-
-  /**
-   * Schedule regulatory updates (simulated)
-   * @private
-   */
-  _scheduleRegulatoryUpdates() {
-    // In a real implementation, would set up polling or webhooks
-    // For now, just log that it would be scheduled
-    console.log('[RegIntel] Scheduled regulatory guidance pulls for every 6 hours');
-    
-    // For demo purposes, also log a simulated pull
-    console.log('[RegIntel] Starting regulatory guidance pull');
-    console.log('[RegIntel] Using axios fallback due to dependency issue');
-    console.log('[RegIntel] Using cheerio fallback due to dependency issue');
-    console.log('[RegIntel] Using cron fallback due to dependency issue');
-    console.log('[RegIntel] Processing feed URL: https://www.fda.gov/regulatory-information/search-fda-guidance-documents');
-    console.log('[RegIntel] Would fetch URL: https://www.fda.gov/regulatory-information/search-fda-guidance-documents');
-    console.log('[RegIntel] Would parse HTML (length: 310)');
-    console.log('[RegIntel] Extracted title: "Regulatory Update"');
-    console.log('[RegIntel] Extracted content length: 310 chars');
-    console.log('[RegIntel] Generated summary: "AI summarization not available. Please check the source for details...."');
-    console.log('[RegIntel] WebSocket not available for guidance emission');
-    console.log('[RegIntel] Processing feed URL: https://www.ema.europa.eu/en/news-events/whats-new');
-    console.log('[RegIntel] Would fetch URL: https://www.ema.europa.eu/en/news-events/whats-new');
-    console.log('[RegIntel] Would parse HTML (length: 310)');
-    console.log('[RegIntel] Extracted title: "Regulatory Update"');
-    console.log('[RegIntel] Extracted content length: 310 chars');
-    console.log('[RegIntel] Generated summary: "AI summarization not available. Please check the source for details...."');
-    console.log('[RegIntel] WebSocket not available for guidance emission');
-    console.log('[RegIntel] Processing feed URL: https://www.pmda.go.jp/english/news/0001.html');
-    console.log('[RegIntel] Would fetch URL: https://www.pmda.go.jp/english/news/0001.html');
-    console.log('[RegIntel] Would parse HTML (length: 310)');
-    console.log('[RegIntel] Extracted title: "Regulatory Update"');
-    console.log('[RegIntel] Extracted content length: 310 chars');
-    console.log('[RegIntel] Generated summary: "AI summarization not available. Please check the source for details...."');
-    console.log('[RegIntel] WebSocket not available for guidance emission');
-    console.log('[RegIntel] Processing feed URL: https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements.html');
-    console.log('[RegIntel] Would fetch URL: https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements.html');
-    console.log('[RegIntel] Would parse HTML (length: 310)');
-    console.log('[RegIntel] Extracted title: "Regulatory Update"');
-    console.log('[RegIntel] Extracted content length: 310 chars');
-    console.log('[RegIntel] Generated summary: "AI summarization not available. Please check the source for details...."');
-    console.log('[RegIntel] WebSocket not available for guidance emission');
-    console.log('[RegIntel] Completed regulatory guidance pull');
+  
+  // Handle incoming regulatory update from WebSocket
+  handleRegulatoryUpdate(update) {
+    // Verify update via blockchain
+    this.blockchainService.verifyDocument({
+      source: update.source,
+      documentId: update.id,
+      timestamp: update.publishedDate
+    }).then(verified => {
+      // Add verified status to the update
+      const verifiedUpdate = {
+        ...update,
+        verified
+      };
+      
+      // Add to the list of updates
+      this.regulatoryUpdates = [verifiedUpdate, ...this.regulatoryUpdates].slice(0, 50);
+      
+      // Notify subscribers
+      this.notifySubscribers();
+    }).catch(error => {
+      console.error('[RegIntel] Error verifying regulatory update:', error);
+    });
   }
-
-  /**
-   * Initialize with demo data
-   * @private
-   */
-  async _initializeDemoData() {
-    const now = new Date();
-    const oneDay = 24 * 60 * 60 * 1000;
-    const oneWeek = 7 * oneDay;
+  
+  // Handle guidance message from WebSocket
+  handleGuidanceMessage(guidance) {
+    // Process guidance and notify relevant modules
+    console.log('[RegIntel] Received guidance message:', guidance);
     
-    // Initialize regulatory updates
-    this.regulatoryUpdates = [
-      {
-        id: 'update-1',
-        title: 'FDA Announces New Guidance for Adaptive Trial Designs',
-        summary: 'New FDA guidance on innovative adaptive trial designs for drug development',
-        content: 'The FDA has released new guidance on adaptive trial designs, emphasizing the importance of pre-specified adaptation rules and statistical methodologies.',
-        authority: REGULATORY_AUTHORITIES.FDA,
-        url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
-        publishedAt: new Date(now.getTime() - 2 * oneDay).toISOString(),
-        categories: ['clinical trials', 'study design', 'statistics'],
-        impactLevel: 'high'
-      },
-      {
-        id: 'update-2',
-        title: 'EMA Updates on Electronic Submission Requirements',
-        summary: 'New EMA requirements for electronic submission of regulatory documents',
-        content: 'The European Medicines Agency has updated its requirements for electronic submission of regulatory documents, with new validation criteria effective January 2025.',
-        authority: REGULATORY_AUTHORITIES.EMA,
-        url: 'https://www.ema.europa.eu/en/news-events/whats-new',
-        publishedAt: new Date(now.getTime() - 5 * oneDay).toISOString(),
-        categories: ['submissions', 'electronic documents', 'validation'],
-        impactLevel: 'medium'
-      },
-      {
-        id: 'update-3',
-        title: 'Health Canada Revises Clinical Trial Application Process',
-        summary: 'New streamlined process for clinical trial applications in Canada',
-        content: 'Health Canada has announced a revised, streamlined process for clinical trial applications, with new templates and reduced review timelines.',
-        authority: REGULATORY_AUTHORITIES.HEALTH_CANADA,
-        url: 'https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements.html',
-        publishedAt: new Date(now.getTime() - oneWeek).toISOString(),
-        categories: ['clinical trials', 'applications', 'process'],
-        impactLevel: 'high'
-      },
-      {
-        id: 'update-4',
-        title: 'PMDA Guidance on Real-World Evidence for Regulatory Decision-Making',
-        summary: 'New PMDA guidance on using real-world data in regulatory submissions',
-        content: 'The PMDA has released guidance on the use of real-world evidence in regulatory decision-making, outlining data quality requirements and methodological considerations.',
-        authority: REGULATORY_AUTHORITIES.PMDA,
-        url: 'https://www.pmda.go.jp/english/news/0001.html',
-        publishedAt: new Date(now.getTime() - 3 * oneDay).toISOString(),
-        categories: ['real-world evidence', 'data', 'methodology'],
-        impactLevel: 'medium'
+    // Notify modules that have registered for guidance
+    this.notifyModulesOfGuidance(guidance);
+  }
+  
+  // Notify subscribers of updates
+  notifySubscribers() {
+    this.subscribers.forEach(subscriber => {
+      try {
+        subscriber.callback(this.regulatoryUpdates);
+      } catch (error) {
+        console.error('[RegIntel] Error notifying subscriber:', error);
       }
-    ];
-    
-    // Initialize guidance documents
-    this.guidanceDocuments = [
-      {
-        id: 'guidance-1',
-        title: 'Guidance for Industry: Clinical Trial Endpoints for the Approval of Cancer Drugs and Biologics',
-        authority: REGULATORY_AUTHORITIES.FDA,
-        url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
-        publishedAt: new Date(now.getTime() - 3 * oneWeek).toISOString(),
-        topics: ['oncology', 'endpoints', 'clinical trials', 'approval'],
-        documentType: 'guidance',
-        status: 'final'
-      },
-      {
-        id: 'guidance-2',
-        title: 'E6(R3) Good Clinical Practice',
-        authority: 'ich', // International Council for Harmonisation
-        url: 'https://ich.org/page/efficacy-guidelines',
-        publishedAt: new Date(now.getTime() - 2 * oneWeek).toISOString(),
-        topics: ['gcp', 'clinical trials', 'ethics', 'quality'],
-        documentType: 'guideline',
-        status: 'draft'
-      },
-      {
-        id: 'guidance-3',
-        title: 'Guideline on strategies to identify and mitigate risks for first-in-human and early clinical trials with investigational medicinal products',
-        authority: REGULATORY_AUTHORITIES.EMA,
-        url: 'https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-strategies-identify-mitigate-risks-first-human-early-clinical-trials-investigational_en.pdf',
-        publishedAt: new Date(now.getTime() - 5 * oneWeek).toISOString(),
-        topics: ['first-in-human', 'clinical trials', 'risk management', 'safety'],
-        documentType: 'guideline',
-        status: 'final'
-      },
-      {
-        id: 'guidance-4',
-        title: 'Technical Document for Preparing the Common Technical Document for the Registration of Pharmaceuticals for Human Use - Quality',
-        authority: REGULATORY_AUTHORITIES.PMDA,
-        url: 'https://www.pmda.go.jp/english/review-services/regulatory-info/0000208284.html',
-        publishedAt: new Date(now.getTime() - 4 * oneWeek).toISOString(),
-        topics: ['ctd', 'quality', 'registration', 'pharmaceuticals'],
-        documentType: 'technical document',
-        status: 'final'
-      }
-    ];
-    
-    // Initialize scientific insights
-    this.scientificInsights = [
-      {
-        id: 'insight-1',
-        title: 'Trends in Immuno-Oncology Clinical Development',
-        summary: 'Analysis of recent trends in immuno-oncology clinical trial design and endpoints',
-        domain: INTELLIGENCE_DOMAINS.CLINICAL,
-        generatedAt: new Date(now.getTime() - oneDay).toISOString(),
-        keywords: ['immuno-oncology', 'clinical trials', 'endpoints', 'biomarkers'],
-        confidence: 0.92,
-        sources: [
-          'Recent FDA approvals in immuno-oncology',
-          'Published literature on immunotherapy trial designs',
-          'Conference presentations from ASCO and ESMO'
-        ]
-      },
-      {
-        id: 'insight-2',
-        title: 'Regulatory Acceptance of Digital Endpoints',
-        summary: 'Analysis of regulatory decisions involving digital health technologies and endpoints',
-        domain: INTELLIGENCE_DOMAINS.REGULATORY,
-        generatedAt: new Date(now.getTime() - 3 * oneDay).toISOString(),
-        keywords: ['digital health', 'endpoints', 'regulatory', 'wearables'],
-        confidence: 0.87,
-        sources: [
-          'FDA guidance on digital health technologies',
-          'EMA reflections on the use of novel methodologies',
-          'Case studies of approved products using digital endpoints'
-        ]
-      },
-      {
-        id: 'insight-3',
-        title: 'Safety Biomarkers in Drug-Induced Liver Injury',
-        summary: 'Analysis of emerging biomarkers for early detection of DILI in clinical trials',
-        domain: INTELLIGENCE_DOMAINS.SAFETY,
-        generatedAt: new Date(now.getTime() - 2 * oneDay).toISOString(),
-        keywords: ['dili', 'biomarkers', 'safety', 'hepatotoxicity'],
-        confidence: 0.90,
-        sources: [
-          'FDA letter of support for DILI biomarkers',
-          'Publications from the DILI-sim initiative',
-          'Recent clinical trials using novel liver safety biomarkers'
-        ]
-      },
-      {
-        id: 'insight-4',
-        title: 'Control Strategy Approaches for Biologics Manufacturing',
-        summary: 'Analysis of successful control strategies in biologics CMC submissions',
-        domain: INTELLIGENCE_DOMAINS.CMC,
-        generatedAt: new Date(now.getTime() - oneWeek).toISOString(),
-        keywords: ['biologics', 'manufacturing', 'control strategy', 'quality'],
-        confidence: 0.85,
-        sources: [
-          'FDA and EMA guidance on quality by design',
-          'Case studies from approved biologics',
-          'Industry best practices from PDA and ISPE publications'
-        ]
-      }
-    ];
+    });
   }
-
-  /**
-   * Generate demo insights for a given context
-   * @param {string} contextType - Context type
-   * @param {string} contextId - Context ID
-   * @param {Object} options - Query options
-   * @returns {Object} Demo insights
-   * @private
-   */
-  _generateDemoInsights(contextType, contextId, options) {
-    // Current timestamp
-    const now = new Date().toISOString();
-    
-    // Generate insights based on context type
-    switch (contextType) {
-      case 'document':
-        return {
-          id: `insight-document-${Date.now()}`,
-          contextType,
-          contextId,
-          generatedAt: now,
-          insights: [
-            {
-              type: 'regulatory_analysis',
-              content: 'This document appears to be aligned with current regulatory expectations. Key regulatory references have been appropriately cited.',
-              confidence: 0.85,
-              authorities: [REGULATORY_AUTHORITIES.FDA, REGULATORY_AUTHORITIES.EMA]
-            },
-            {
-              type: 'compliance_check',
-              content: 'Several sections may require additional details to fully comply with ICH guidelines, particularly in the risk assessment area.',
-              confidence: 0.92,
-              authorities: ['ich'] // International Council for Harmonisation
-            },
-            {
-              type: 'improvement_suggestion',
-              content: 'Consider strengthening the rationale for dose selection with additional clinical pharmacology references.',
-              confidence: 0.78
-            }
-          ],
-          relatedGuidance: [
-            this.guidanceDocuments[0], // Endpoints guidance
-            this.guidanceDocuments[1]  // GCP guidance
-          ],
-          blockchainVerified: this.blockchainEnabled,
-          blockchainHash: this.blockchainEnabled ? `0x${Math.random().toString(16).substring(2, 10)}` : null
-        };
-      
-      case 'study':
-        return {
-          id: `insight-study-${Date.now()}`,
-          contextType,
-          contextId,
-          generatedAt: now,
-          insights: [
-            {
-              type: 'design_analysis',
-              content: 'The study design is appropriate for the stated objectives. The control arm selection is well-justified based on current standard of care.',
-              confidence: 0.89
-            },
-            {
-              type: 'endpoint_analysis',
-              content: 'The primary endpoint is clinically meaningful and has regulatory precedent. Consider adding a key secondary endpoint focused on patient-reported outcomes.',
-              confidence: 0.87,
-              authorities: [REGULATORY_AUTHORITIES.FDA]
-            },
-            {
-              type: 'statistical_analysis',
-              content: 'The sample size calculation appears adequate based on the effect size assumptions. Consider pre-specifying sensitivity analyses for the primary endpoint.',
-              confidence: 0.92
-            }
-          ],
-          relatedInsights: [
-            this.scientificInsights[0], // Immuno-oncology trends
-            this.scientificInsights[1]  // Digital endpoints
-          ],
-          blockchainVerified: this.blockchainEnabled,
-          blockchainHash: this.blockchainEnabled ? `0x${Math.random().toString(16).substring(2, 10)}` : null
-        };
-      
-      case 'submission':
-        return {
-          id: `insight-submission-${Date.now()}`,
-          contextType,
-          contextId,
-          generatedAt: now,
-          insights: [
-            {
-              type: 'completeness_check',
-              content: 'The submission package appears to be complete with all required modules. Module 3 (Quality) is particularly comprehensive.',
-              confidence: 0.94
-            },
-            {
-              type: 'consistency_check',
-              content: 'There are potential inconsistencies between clinical study reports and the integrated summaries of efficacy. Recommend harmonizing the analyses across documents.',
-              confidence: 0.86
-            },
-            {
-              type: 'precedent_analysis',
-              content: 'Recent approvals in this therapeutic area suggest that additional long-term safety data may be requested during review.',
-              confidence: 0.81,
-              authorities: [REGULATORY_AUTHORITIES.FDA, REGULATORY_AUTHORITIES.EMA]
-            }
-          ],
-          relatedUpdates: [
-            this.regulatoryUpdates[0], // FDA adaptive trials
-            this.regulatoryUpdates[1]  // EMA electronic submissions
-          ],
-          blockchainVerified: this.blockchainEnabled,
-          blockchainHash: this.blockchainEnabled ? `0x${Math.random().toString(16).substring(2, 10)}` : null
-        };
-      
-      default:
-        return {
-          id: `insight-general-${Date.now()}`,
-          contextType,
-          contextId,
-          generatedAt: now,
-          insights: [
-            {
-              type: 'general_analysis',
-              content: 'Regulatory expectations continue to evolve in this area, with increasing emphasis on real-world evidence and patient-centered outcomes.',
-              confidence: 0.85
-            }
-          ],
-          relatedGuidance: [
-            this.guidanceDocuments[2], // First-in-human trials
-            this.guidanceDocuments[3]  // CTD quality
-          ],
-          blockchainVerified: this.blockchainEnabled,
-          blockchainHash: this.blockchainEnabled ? `0x${Math.random().toString(16).substring(2, 10)}` : null
-        };
+  
+  // Notify modules of guidance
+  notifyModulesOfGuidance(guidance) {
+    // Send guidance to connected modules
+    this.connectedModules.forEach(module => {
+      if (module.onGuidance && typeof module.onGuidance === 'function') {
+        try {
+          module.onGuidance(guidance);
+        } catch (error) {
+          console.error(`[RegIntel] Error sending guidance to module ${module.name}:`, error);
+        }
+      }
+    });
+  }
+  
+  // Subscribe to regulatory updates
+  subscribeToUpdates(callback) {
+    if (typeof callback !== 'function') {
+      throw new Error('[RegIntel] Callback must be a function');
     }
+    
+    const subscriberId = Date.now().toString();
+    
+    this.subscribers.push({
+      id: subscriberId,
+      callback
+    });
+    
+    // Return subscription object with unsubscribe method
+    return {
+      id: subscriberId,
+      unsubscribe: () => {
+        this.subscribers = this.subscribers.filter(sub => sub.id !== subscriberId);
+      }
+    };
+  }
+  
+  // Register a module for integrating with the Regulatory Intelligence Core
+  registerModule(module) {
+    if (!module || !module.name) {
+      throw new Error('[RegIntel] Module must have a name property');
+    }
+    
+    this.connectedModules.add(module);
+    console.log(`[RegIntel] Module "${module.name}" registered`);
+    
+    return {
+      unregister: () => {
+        this.connectedModules.delete(module);
+        console.log(`[RegIntel] Module "${module.name}" unregistered`);
+      }
+    };
+  }
+  
+  // Analyze document for regulatory compliance
+  async analyzeDocumentCompliance(document, documentType, regulatoryFrameworks = ['FDA']) {
+    try {
+      console.log(`[RegIntel] Analyzing ${documentType} document for compliance...`);
+      
+      if (!this.guidanceModel || !this.guidanceModel.initialized) {
+        throw new Error('Guidance model not initialized');
+      }
+      
+      // In a real implementation, use AI model to analyze document
+      // For now, return simulated result
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Record analysis in blockchain for audit trail
+      const analysisRecord = {
+        documentId: document.id,
+        documentType,
+        regulatoryFrameworks,
+        timestamp: new Date().toISOString(),
+        userId: document.userId || 'unknown',
+        organizationId: document.organizationId || 'unknown'
+      };
+      
+      await this.blockchainService.recordDocumentAnalysis(analysisRecord);
+      
+      // Return simulated analysis results
+      return {
+        compliant: Math.random() > 0.3, // 70% chance of compliance
+        score: Math.round(Math.random() * 100),
+        findings: [
+          {
+            section: 'Introduction',
+            compliance: Math.random() > 0.2,
+            recommendations: 'Ensure clear statement of purpose and background.'
+          },
+          {
+            section: 'Methods',
+            compliance: Math.random() > 0.2,
+            recommendations: 'Include detailed methodology and justification.'
+          },
+          {
+            section: 'Results',
+            compliance: Math.random() > 0.2,
+            recommendations: 'Present all primary and secondary outcomes.'
+          },
+          {
+            section: 'Discussion',
+            compliance: Math.random() > 0.2,
+            recommendations: 'Address limitations and implications of findings.'
+          }
+        ],
+        regulatoryFrameworks: regulatoryFrameworks.map(framework => ({
+          name: framework,
+          compliance: Math.random() > 0.3,
+          relevantGuidance: `${framework} Guidance for ${documentType} Documents`
+        })),
+        verificationHash: await this.blockchainService.getDocumentHash(analysisRecord)
+      };
+    } catch (error) {
+      console.error('[RegIntel] Error analyzing document compliance:', error);
+      throw error;
+    }
+  }
+  
+  // Generate regulatory-compliant content suggestions
+  async generateCompliantContent(context, contentType, regulatoryFrameworks = ['FDA']) {
+    try {
+      console.log(`[RegIntel] Generating compliant ${contentType} content...`);
+      
+      if (!this.guidanceModel || !this.guidanceModel.initialized) {
+        throw new Error('Guidance model not initialized');
+      }
+      
+      // In a real implementation, use AI model to generate content
+      // For now, return simulated result
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Generate placeholder content based on contentType
+      let generatedContent = '';
+      
+      switch (contentType) {
+        case 'protocol_section':
+          generatedContent = 'This protocol section covers the study design, including inclusion/exclusion criteria, dosing schedule, and primary endpoints as required by current regulatory standards.';
+          break;
+        case 'csr_section':
+          generatedContent = 'This clinical study report section summarizes the study results, including efficacy and safety outcomes, in accordance with ICH E3 guidelines.';
+          break;
+        case 'ind_section':
+          generatedContent = 'This IND application section provides comprehensive information on the investigational product, including chemistry, manufacturing, and controls (CMC) data.';
+          break;
+        default:
+          generatedContent = 'Generated content based on regulatory requirements for the specified document type.';
+      }
+      
+      // Record generation in blockchain for audit trail
+      const generationRecord = {
+        contentType,
+        regulatoryFrameworks,
+        contextHash: await this.blockchainService.hashData(JSON.stringify(context)),
+        timestamp: new Date().toISOString(),
+        userId: context.userId || 'unknown',
+        organizationId: context.organizationId || 'unknown'
+      };
+      
+      await this.blockchainService.recordContentGeneration(generationRecord);
+      
+      return {
+        content: generatedContent,
+        compliance: {
+          score: Math.round(Math.random() * 100),
+          regulatoryFrameworks: regulatoryFrameworks.map(framework => ({
+            name: framework,
+            compliance: Math.random() > 0.2,
+            relevantGuidance: `${framework} Guidance for ${contentType}`
+          }))
+        },
+        citations: [
+          {
+            source: 'Regulatory Guidance',
+            title: `${regulatoryFrameworks[0]} Guidelines on ${contentType.replace('_', ' ')}`,
+            url: `https://example.com/${regulatoryFrameworks[0]}/guidance`
+          }
+        ],
+        verificationHash: await this.blockchainService.getDocumentHash(generationRecord)
+      };
+    } catch (error) {
+      console.error('[RegIntel] Error generating compliant content:', error);
+      throw error;
+    }
+  }
+  
+  // Check document structure and content against regulatory requirements
+  async validateRegulatoryDocument(document, documentType, regulatoryFrameworks = ['FDA']) {
+    try {
+      console.log(`[RegIntel] Validating ${documentType} against regulatory requirements...`);
+      
+      if (!this.guidanceModel || !this.guidanceModel.initialized) {
+        throw new Error('Guidance model not initialized');
+      }
+      
+      // In a real implementation, use AI model to validate document
+      // For now, return simulated result
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // Record validation in blockchain for audit trail
+      const validationRecord = {
+        documentId: document.id,
+        documentType,
+        regulatoryFrameworks,
+        timestamp: new Date().toISOString(),
+        userId: document.userId || 'unknown',
+        organizationId: document.organizationId || 'unknown'
+      };
+      
+      await this.blockchainService.recordDocumentValidation(validationRecord);
+      
+      // Return simulated validation results
+      return {
+        valid: Math.random() > 0.2, // 80% chance of validity
+        score: Math.round(Math.random() * 100),
+        findings: [
+          {
+            section: 'Document Structure',
+            valid: Math.random() > 0.2,
+            issues: Math.random() > 0.7 ? ['Missing required section: Adverse Events'] : []
+          },
+          {
+            section: 'Content Completeness',
+            valid: Math.random() > 0.2,
+            issues: Math.random() > 0.7 ? ['Incomplete information in Methods section'] : []
+          },
+          {
+            section: 'Terminology',
+            valid: Math.random() > 0.2,
+            issues: Math.random() > 0.7 ? ['Non-standard terminology used in Results section'] : []
+          },
+          {
+            section: 'Data Presentation',
+            valid: Math.random() > 0.2,
+            issues: Math.random() > 0.7 ? ['Tables do not follow regulatory format requirements'] : []
+          }
+        ],
+        regulatoryFrameworks: regulatoryFrameworks.map(framework => ({
+          name: framework,
+          valid: Math.random() > 0.2,
+          relevantGuidance: `${framework} Guidance for ${documentType} Documents`
+        })),
+        verificationHash: await this.blockchainService.getDocumentHash(validationRecord)
+      };
+    } catch (error) {
+      console.error('[RegIntel] Error validating regulatory document:', error);
+      throw error;
+    }
+  }
+  
+  // Get current regulatory status for a product
+  async getProductRegulatoryStatus(productId, regions = ['US', 'EU', 'Japan', 'Canada', 'China']) {
+    try {
+      console.log(`[RegIntel] Getting regulatory status for product ${productId}...`);
+      
+      // In a real implementation, fetch actual regulatory status from database or API
+      // For now, return simulated result
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      return {
+        productId,
+        lastUpdated: new Date().toISOString(),
+        regions: regions.map(region => ({
+          name: region,
+          status: ['approved', 'pending', 'rejected', 'not_submitted'][Math.floor(Math.random() * 4)],
+          submissionDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+          nextMilestone: {
+            name: ['PDUFA Date', 'Advisory Committee', 'Response to Questions', 'Final Decision'][Math.floor(Math.random() * 4)],
+            date: new Date(Date.now() + Math.random() * 180 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        }))
+      };
+    } catch (error) {
+      console.error('[RegIntel] Error getting product regulatory status:', error);
+      throw error;
+    }
+  }
+  
+  // Cleanup and dispose resources
+  dispose() {
+    // Stop regulatory update polling
+    this.stopRegulatoryUpdatePolling();
+    
+    // Close WebSocket connection
+    if (this.webSocketConnection) {
+      this.webSocketConnection.close();
+      this.webSocketConnection = null;
+    }
+    
+    // Clear subscribers
+    this.subscribers = [];
+    
+    // Clear connected modules
+    this.connectedModules.clear();
+    
+    // Dispose blockchain service
+    this.blockchainService.dispose();
+    
+    console.log('[RegIntel] Regulatory Intelligence Core disposed');
   }
 }
-
-const regulatoryIntelligenceCore = new RegulatoryIntelligenceCore();
-export default regulatoryIntelligenceCore;
