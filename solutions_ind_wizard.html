@@ -1062,7 +1062,7 @@
                                     <h4>Form FDA 3674</h4>
                                     <p>Certification of Compliance</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="3674">
-                                        <i class="fas fa-download"></i> Generate
+                                        <i class="fas fa-file-download"></i> Download Form
                                     </button>
                                 </div>
                                 <div class="ind-form-card" data-form="3454">
@@ -1072,7 +1072,7 @@
                                     <h4>Form FDA 3454</h4>
                                     <p>Certification: Financial Interests</p>
                                     <button class="btn btn-primary ind-generate-form-btn" data-form="3454">
-                                        <i class="fas fa-download"></i> Generate
+                                        <i class="fas fa-file-download"></i> Download Form
                                     </button>
                                 </div>
                             </div>
@@ -1332,6 +1332,13 @@
             margin-bottom: 1.5rem;
             color: var(--gray-600);
             font-size: 0.875rem;
+        }
+        
+        /* Button states */
+        .ind-generate-form-btn.loading {
+            position: relative;
+            background-color: var(--primary-dark);
+            cursor: wait;
         }
         
         .ind-timeline {
@@ -1892,7 +1899,8 @@
                 const button = document.querySelector(`.ind-generate-form-btn[data-form="${formType}"]`);
                 const originalText = button.innerHTML;
                 button.disabled = true;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                button.classList.add('loading');
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Document...';
                 
                 try {
                     // First, check if the backend service is available
@@ -1919,7 +1927,7 @@
                         }, 500);
                         
                         // Show success message
-                        showToast(`Form FDA ${formType} generated successfully!`, 'success');
+                        showToast(`Form FDA ${formType} downloaded successfully!`, 'success');
                     } else {
                         // Generate a mock form for demo purposes if backend is unavailable
                         const mockFormContent = generateMockFormContent(formType, projectId);
@@ -1944,7 +1952,7 @@
                         }, 500);
                         
                         // Show demo mode message
-                        showToast(`Form FDA ${formType} generated in Demo Mode`, 'info');
+                        showToast(`Form FDA ${formType} downloaded in Demo Mode`, 'info');
                     }
                     
                     // Refresh history for this project
@@ -1955,6 +1963,7 @@
                 } finally {
                     // Reset button state
                     button.disabled = false;
+                    button.classList.remove('loading');
                     button.innerHTML = originalText;
                 }
             }
