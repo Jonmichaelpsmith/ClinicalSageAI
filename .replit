@@ -60,7 +60,7 @@ localPort = 8083
 externalPort = 3003
 
 [workflows]
-runButton = "Run TrialSage"
+runButton = "Start application"
 
 [[workflows.workflow]]
 name = "Run App"
