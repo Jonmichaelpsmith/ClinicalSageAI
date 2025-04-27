@@ -3,7 +3,6 @@ import { Route, Switch, useLocation } from 'wouter';
 import NotFound from './components/common/NotFound';
 import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
 import UnifiedPlatform from './components/UnifiedPlatform';
-import LoginPage from './components/auth/LoginPage';
 
 function App() {
   // Get location for navigation
@@ -30,10 +29,6 @@ function App() {
           </Route>
           <Route path="/ind-wizard">
             <UnifiedPlatform />
-          </Route>
-          
-          <Route path="/login">
-            <LoginPage />
           </Route>
           
           {/* 404 Route */}
