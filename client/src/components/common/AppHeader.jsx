@@ -1,19 +1,20 @@
 /**
- * App Header Component
+ * Application Header Component
  * 
- * This component provides the main application header with user controls,
- * notifications, and global actions.
+ * This component provides the main application header/navigation bar for TrialSage.
  */
 
 import React, { useState } from 'react';
 import { 
   Bell, 
   User, 
-  Search, 
-  HelpCircle, 
   LogOut, 
-  Settings,
+  Settings, 
+  HelpCircle, 
   ChevronDown,
+  Search,
+  Menu,
+  X,
   MessageSquare
 } from 'lucide-react';
 import { useIntegration } from '../integration/ModuleIntegrationLayer';
@@ -21,232 +22,251 @@ import { useIntegration } from '../integration/ModuleIntegrationLayer';
 const AppHeader = ({ onToggleAIAssistant }) => {
   const { securityService } = useIntegration();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   
   const currentUser = securityService.currentUser;
+  
+  // Toggle user dropdown menu
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu);
+    if (showNotifications) setShowNotifications(false);
+  };
+  
+  // Toggle notifications panel
+  const toggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+    if (showUserMenu) setShowUserMenu(false);
+  };
   
   // Handle logout
   const handleLogout = async () => {
     try {
       await securityService.logout();
-      // Would typically redirect to login page
+      // In a production app, redirect to login page
       window.location.href = '/auth';
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error('Logout error:', error);
     }
   };
   
-  // Mock notifications (would come from a real service)
-  const notifications = [
-    {
-      id: 'notif-001',
-      title: 'IND Form Update',
-      message: 'FDA Form 1571 has been updated to v2.0',
-      timestamp: '2024-03-20T15:30:00Z',
-      read: false,
-      type: 'update'
-    },
-    {
-      id: 'notif-002',
-      title: 'Document Verified',
-      message: 'Protocol v1.2 has been verified on blockchain',
-      timestamp: '2024-03-18T09:45:00Z',
-      read: true,
-      type: 'security'
-    },
-    {
-      id: 'notif-003',
-      title: 'Task Assigned',
-      message: 'Michael has assigned you "Prepare CMC Documentation"',
-      timestamp: '2024-03-15T11:20:00Z',
-      read: true,
-      type: 'task'
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (currentUser && currentUser.firstName && currentUser.lastName) {
+      return `${currentUser.firstName[0]}${currentUser.lastName[0]}`;
     }
-  ];
-  
-  // Format notification timestamp
-  const formatNotificationTime = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return 'Today, ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffDays === 1) {
-      return 'Yesterday, ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffDays < 7) {
-      return date.toLocaleDateString(undefined, { weekday: 'long' }) + ', ' + 
-        date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else {
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ', ' + 
-        date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
+    return currentUser?.username?.[0]?.toUpperCase() || 'U';
   };
   
   return (
-    <header className="bg-white border-b px-6 py-3 flex items-center justify-between">
-      {/* Left section - Logo and search */}
-      <div className="flex items-center">
-        <div className="text-xl font-bold text-pink-600 mr-8">TrialSage™</div>
+    <header className="bg-white shadow-sm border-b">
+      <div className="flex justify-between items-center px-4 py-3">
+        {/* Logo and brand */}
+        <div className="flex items-center">
+          <div className="md:hidden mr-2">
+            <button 
+              className="p-1 rounded-md text-gray-500 hover:text-gray-700 focus:outline-none" 
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+          
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold text-primary">TrialSage™</h1>
+            <span className="text-xs bg-primary-light text-primary px-2 py-0.5 rounded ml-2">
+              Enterprise
+            </span>
+          </div>
+        </div>
         
-        <div className="relative hidden md:block w-64">
+        {/* Search bar (hidden on mobile) */}
+        <div className="hidden md:flex flex-1 max-w-2xl mx-6">
+          <div className="relative w-full">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={16} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full bg-gray-100 border-transparent pl-10 pr-3 py-2 rounded-md focus:bg-white focus:border-gray-300 focus:ring-0 text-sm"
+              placeholder="Search documents, trials, or regulatory guidance..."
+            />
+          </div>
+        </div>
+        
+        {/* Header actions */}
+        <div className="flex items-center space-x-1 md:space-x-3">
+          {/* AI Assistant button */}
+          <button 
+            className="p-2 md:px-3 md:py-1.5 rounded-md bg-primary-light text-primary hover:bg-primary hover:text-white transition-colors flex items-center"
+            onClick={onToggleAIAssistant}
+          >
+            <MessageSquare size={16} className="md:mr-1.5" />
+            <span className="hidden md:inline text-sm">AI Assistant</span>
+          </button>
+          
+          {/* Notifications */}
+          <div className="relative">
+            <button 
+              className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 relative"
+              onClick={toggleNotifications}
+            >
+              <Bell size={20} />
+              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            
+            {/* Notifications dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg py-1 z-10 border">
+                <div className="px-4 py-2 border-b">
+                  <h3 className="font-medium">Notifications</h3>
+                </div>
+                
+                <div className="max-h-96 overflow-y-auto">
+                  <div className="px-4 py-3 hover:bg-gray-50 border-b">
+                    <div className="flex">
+                      <div className="bg-blue-100 text-blue-500 p-2 rounded-full mr-3">
+                        <User size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">IND Submission Updated</p>
+                        <p className="text-xs text-gray-500">John Smith added a comment to your IND submission.</p>
+                        <p className="text-xs text-gray-400 mt-1">10 minutes ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="px-4 py-3 hover:bg-gray-50 border-b">
+                    <div className="flex">
+                      <div className="bg-green-100 text-green-500 p-2 rounded-full mr-3">
+                        <Bell size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">CSR Document Approved</p>
+                        <p className="text-xs text-gray-500">Your CSR for XYZ-123 has been approved.</p>
+                        <p className="text-xs text-gray-400 mt-1">1 hour ago</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="px-4 py-3 hover:bg-gray-50">
+                    <div className="flex">
+                      <div className="bg-purple-100 text-purple-500 p-2 rounded-full mr-3">
+                        <HelpCircle size={16} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">FDA Form Update Needed</p>
+                        <p className="text-xs text-gray-500">The FDA Form 1571 requires updates before submission.</p>
+                        <p className="text-xs text-gray-400 mt-1">2 days ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="px-4 py-2 border-t text-center">
+                  <button className="text-sm text-primary hover:text-primary-dark">
+                    View All Notifications
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* User profile */}
+          <div className="relative">
+            <button 
+              className="flex items-center text-gray-700 hover:text-gray-900"
+              onClick={toggleUserMenu}
+            >
+              <div className="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center text-sm font-medium">
+                {getUserInitials()}
+              </div>
+              <ChevronDown size={16} className="ml-1 hidden md:block" />
+            </button>
+            
+            {/* User dropdown menu */}
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border">
+                <div className="px-4 py-2 border-b">
+                  <p className="font-medium text-sm">{currentUser?.firstName} {currentUser?.lastName}</p>
+                  <p className="text-xs text-gray-500">{currentUser?.email}</p>
+                </div>
+                
+                <a href="#profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <User size={16} className="mr-2 text-gray-400" />
+                  Your Profile
+                </a>
+                
+                <a href="#settings" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Settings size={16} className="mr-2 text-gray-400" />
+                  Settings
+                </a>
+                
+                <a href="#help" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <HelpCircle size={16} className="mr-2 text-gray-400" />
+                  Help Center
+                </a>
+                
+                <div className="border-t my-1"></div>
+                
+                <button 
+                  className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Mobile search bar (visible only on mobile) */}
+      <div className="md:hidden px-4 pb-3">
+        <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search size={16} className="text-gray-400" />
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+            className="block w-full bg-gray-100 border-transparent pl-10 pr-3 py-2 rounded-md focus:bg-white focus:border-gray-300 focus:ring-0 text-sm"
             placeholder="Search..."
           />
         </div>
       </div>
       
-      {/* Right section - User controls */}
-      <div className="flex items-center space-x-4">
-        {/* AI Assistant */}
-        <button 
-          className="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
-          onClick={onToggleAIAssistant}
-          title="AI Assistant"
-        >
-          <MessageSquare size={20} />
-        </button>
-        
-        {/* Help */}
-        <button 
-          className="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
-          title="Help"
-        >
-          <HelpCircle size={20} />
-        </button>
-        
-        {/* Notifications */}
-        <div className="relative">
-          <button 
-            className="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
-            onClick={() => setShowNotifications(!showNotifications)}
-            title="Notifications"
-          >
-            <Bell size={20} />
-            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-              1
-            </span>
-          </button>
-          
-          {/* Notifications dropdown */}
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border overflow-hidden z-10">
-              <div className="px-4 py-3 border-b flex items-center justify-between">
-                <h3 className="font-semibold">Notifications</h3>
-                <button className="text-sm text-primary hover:underline">
-                  Mark all as read
-                </button>
-              </div>
-              
-              <div className="max-h-80 overflow-y-auto">
-                {notifications.length > 0 ? (
-                  <div className="divide-y">
-                    {notifications.map((notification) => (
-                      <div 
-                        key={notification.id}
-                        className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${
-                          !notification.read ? 'bg-blue-50' : ''
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <h4 className={`font-medium ${!notification.read ? 'text-blue-600' : ''}`}>
-                            {notification.title}
-                          </h4>
-                          <span className="text-xs text-gray-500">
-                            {formatNotificationTime(notification.timestamp)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {notification.message}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-6 text-center text-gray-500">
-                    No notifications
-                  </div>
-                )}
-              </div>
-              
-              <div className="px-4 py-2 bg-gray-50 text-center">
-                <button className="text-sm text-primary hover:underline">
-                  View all notifications
-                </button>
-              </div>
-            </div>
-          )}
+      {/* Mobile menu */}
+      {showMobileMenu && (
+        <div className="md:hidden bg-white border-t">
+          <nav className="px-2 pt-2 pb-4">
+            <a href="#profile" className="flex items-center px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+              <User size={16} className="mr-3 text-gray-400" />
+              Your Profile
+            </a>
+            
+            <a href="#settings" className="flex items-center px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+              <Settings size={16} className="mr-3 text-gray-400" />
+              Settings
+            </a>
+            
+            <a href="#help" className="flex items-center px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100">
+              <HelpCircle size={16} className="mr-3 text-gray-400" />
+              Help Center
+            </a>
+            
+            <div className="border-t my-2"></div>
+            
+            <button 
+              className="flex items-center w-full text-left px-3 py-2 rounded-md text-red-600 hover:bg-gray-100"
+              onClick={handleLogout}
+            >
+              <LogOut size={16} className="mr-3" />
+              Sign Out
+            </button>
+          </nav>
         </div>
-        
-        {/* User account */}
-        <div className="relative">
-          <button 
-            className="flex items-center space-x-2 hover:bg-gray-100 rounded-full transition-colors p-1"
-            onClick={() => setShowUserMenu(!showUserMenu)}
-          >
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600">
-              <User size={16} />
-            </div>
-            <div className="hidden md:block text-left">
-              <div className="text-sm font-medium">
-                {currentUser?.firstName} {currentUser?.lastName}
-              </div>
-              <div className="text-xs text-gray-500">
-                {currentUser?.role.charAt(0).toUpperCase() + currentUser?.role.slice(1)}
-              </div>
-            </div>
-            <ChevronDown size={14} className="hidden md:block text-gray-400" />
-          </button>
-          
-          {/* User menu dropdown */}
-          {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border overflow-hidden z-10">
-              <div className="border-b px-4 py-3">
-                <div className="font-medium">
-                  {currentUser?.firstName} {currentUser?.lastName}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {currentUser?.email}
-                </div>
-              </div>
-              
-              <div className="py-1">
-                <button
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center"
-                  onClick={() => {}}
-                >
-                  <User size={16} className="mr-3 text-gray-500" />
-                  My Profile
-                </button>
-                
-                <button
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center"
-                  onClick={() => {}}
-                >
-                  <Settings size={16} className="mr-3 text-gray-500" />
-                  Account Settings
-                </button>
-              </div>
-              
-              <div className="py-1 border-t">
-                <button
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center"
-                  onClick={handleLogout}
-                >
-                  <LogOut size={16} className="mr-3 text-gray-500" />
-                  Sign out
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </header>
   );
 };

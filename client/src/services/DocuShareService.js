@@ -1,33 +1,36 @@
 /**
  * DocuShare Service
  * 
- * This service handles document management functionality across all TrialSage modules,
- * including storage, retrieval, versioning, and secure sharing.
+ * This service handles document management across the TrialSage platform,
+ * including versioning, metadata, and sharing.
  */
 
 class DocuShareService {
   constructor() {
     this.isInitialized = false;
     this.documents = new Map();
-    this.categories = new Set(['Protocol', 'CSR', 'IND', 'Regulatory', 'Clinical']);
-    this.versionHistory = new Map();
-    this.sharedDocuments = new Map();
+    this.documentVersions = new Map();
+    this.documentSharing = new Map();
+    this.categories = ['IND', 'CSR', 'Protocol', 'SAP', 'Regulatory', 'Other'];
   }
   
   /**
-   * Initialize the document management service
+   * Initialize the document service
    */
   async initialize() {
     try {
       console.log('Initializing DocuShare Service');
       
       // Load document metadata
-      await this.loadDocumentMetadata();
+      console.log('Loading document metadata');
+      await this.loadDocuments();
       
       // Initialize version tracking
-      this.initializeVersioning();
+      console.log('Initializing version tracking');
+      await this.initVersionTracking();
       
       // Load shared document status
+      console.log('Loading shared document status');
       await this.loadSharedDocumentStatus();
       
       this.isInitialized = true;
@@ -39,68 +42,67 @@ class DocuShareService {
   }
   
   /**
-   * Load document metadata from backend
+   * Load document metadata
    */
-  async loadDocumentMetadata() {
+  async loadDocuments() {
     try {
-      // In production, this would make an API call to the backend
-      console.log('Loading document metadata');
+      // In production, this would load from an API or database
+      // For development, we'll simulate some documents
       
-      // Simulate loading time
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // IND Documents
+      const indDoc1 = {
+        id: 'doc-001',
+        title: 'IND Application - Project XYZ',
+        category: 'IND',
+        status: 'Draft',
+        createdAt: '2025-04-01T10:00:00Z',
+        updatedAt: '2025-04-15T14:30:00Z',
+        createdBy: 'John Smith',
+        size: 2423000, // bytes
+        version: 1.2,
+        tags: ['IND', 'FDA', 'Submission'],
+        verified: false
+      };
       
-      // Simulate loaded documents
-      const mockDocuments = [
-        {
-          id: 'doc-001',
-          title: 'Study Protocol v1.0',
-          category: 'Protocol',
-          createdBy: 'John Smith',
-          createdAt: '2024-02-15T14:30:00Z',
-          updatedAt: '2024-02-15T14:30:00Z',
-          status: 'Draft',
-          tags: ['Phase 1', 'Oncology'],
-          verified: false,
-          size: 2450000, // bytes
-          contentType: 'application/pdf'
-        },
-        {
-          id: 'doc-002',
-          title: 'Clinical Study Report - Study XYZ-123',
-          category: 'CSR',
-          createdBy: 'Jane Doe',
-          createdAt: '2024-01-20T10:15:00Z',
-          updatedAt: '2024-03-05T16:45:00Z',
-          status: 'Final',
-          tags: ['Phase 2', 'Cardiology', 'Completed'],
-          verified: true,
-          size: 5120000, // bytes
-          contentType: 'application/pdf'
-        },
-        {
-          id: 'doc-003',
-          title: 'FDA Form 1571',
-          category: 'IND',
-          createdBy: 'Alex Johnson',
-          createdAt: '2024-03-01T09:00:00Z',
-          updatedAt: '2024-03-10T11:20:00Z',
-          status: 'Submitted',
-          tags: ['FDA', 'IND Application'],
-          verified: true,
-          size: 750000, // bytes
-          contentType: 'application/pdf'
-        }
-      ];
+      // CSR Documents
+      const csrDoc1 = {
+        id: 'doc-002',
+        title: 'Clinical Study Report - Study XYZ-123',
+        category: 'CSR',
+        status: 'Review',
+        createdAt: '2025-03-15T09:00:00Z',
+        updatedAt: '2025-04-10T11:15:00Z',
+        createdBy: 'Jane Doe',
+        size: 4532000, // bytes
+        version: 2.0,
+        tags: ['CSR', 'Phase II', 'Completed'],
+        verified: true
+      };
+      
+      // Regulatory Documents
+      const regDoc1 = {
+        id: 'doc-003',
+        title: 'FDA Form 1571',
+        category: 'Regulatory',
+        status: 'Final',
+        createdAt: '2025-03-01T08:30:00Z',
+        updatedAt: '2025-03-05T16:00:00Z',
+        createdBy: 'Robert Chen',
+        size: 520000, // bytes
+        version: 1.0,
+        tags: ['Form', 'FDA', 'IND'],
+        verified: true
+      };
       
       // Store documents
-      mockDocuments.forEach(doc => {
-        this.documents.set(doc.id, doc);
-      });
+      this.documents.set(indDoc1.id, indDoc1);
+      this.documents.set(csrDoc1.id, csrDoc1);
+      this.documents.set(regDoc1.id, regDoc1);
       
-      console.log(`Loaded ${mockDocuments.length} documents`);
+      console.log(`Loaded ${this.documents.size} documents`);
       return true;
     } catch (error) {
-      console.error('Error loading document metadata:', error);
+      console.error('Error loading documents:', error);
       throw error;
     }
   }
@@ -108,61 +110,83 @@ class DocuShareService {
   /**
    * Initialize version tracking
    */
-  initializeVersioning() {
+  async initVersionTracking() {
     try {
-      console.log('Initializing version tracking');
+      // In production, this would initialize document versioning
+      // For development, we'll simulate version history
       
-      // Simulate version history for documents
-      this.versionHistory.set('doc-001', [
+      // Set up versions for IND document
+      const indVersions = [
         {
-          version: 'v1.0',
-          updatedAt: '2024-02-15T14:30:00Z',
-          updatedBy: 'John Smith',
-          changeDescription: 'Initial draft',
-          id: 'doc-001-v1'
-        }
-      ]);
-      
-      this.versionHistory.set('doc-002', [
-        {
-          version: 'v1.0',
-          updatedAt: '2024-01-20T10:15:00Z',
-          updatedBy: 'Jane Doe',
-          changeDescription: 'Initial draft',
-          id: 'doc-002-v1'
+          id: 'ver-001',
+          documentId: 'doc-001',
+          version: 1.0,
+          createdAt: '2025-04-01T10:00:00Z',
+          createdBy: 'John Smith',
+          changes: 'Initial draft'
         },
         {
-          version: 'v1.1',
-          updatedAt: '2024-02-10T13:45:00Z',
-          updatedBy: 'Jane Doe',
-          changeDescription: 'Incorporated statistical analysis',
-          id: 'doc-002-v2'
+          id: 'ver-002',
+          documentId: 'doc-001',
+          version: 1.1,
+          createdAt: '2025-04-10T13:45:00Z',
+          createdBy: 'John Smith',
+          changes: 'Updated CMC section'
         },
         {
-          version: 'v2.0',
-          updatedAt: '2024-03-05T16:45:00Z',
-          updatedBy: 'Robert Chen',
-          changeDescription: 'Finalized for submission',
-          id: 'doc-002-v3'
+          id: 'ver-003',
+          documentId: 'doc-001',
+          version: 1.2,
+          createdAt: '2025-04-15T14:30:00Z',
+          createdBy: 'Jane Doe',
+          changes: 'Added safety data'
         }
-      ]);
+      ];
       
-      this.versionHistory.set('doc-003', [
+      // Set up versions for CSR document
+      const csrVersions = [
         {
-          version: 'v1.0',
-          updatedAt: '2024-03-01T09:00:00Z',
-          updatedBy: 'Alex Johnson',
-          changeDescription: 'Created Form 1571',
-          id: 'doc-003-v1'
+          id: 'ver-004',
+          documentId: 'doc-002',
+          version: 1.0,
+          createdAt: '2025-03-15T09:00:00Z',
+          createdBy: 'Jane Doe',
+          changes: 'Initial draft'
         },
         {
-          version: 'v1.1',
-          updatedAt: '2024-03-10T11:20:00Z',
-          updatedBy: 'Alex Johnson',
-          changeDescription: 'Updated investigator information',
-          id: 'doc-003-v2'
+          id: 'ver-005',
+          documentId: 'doc-002',
+          version: 1.5,
+          createdAt: '2025-03-28T11:30:00Z',
+          createdBy: 'Jane Doe',
+          changes: 'Updated statistical analysis'
+        },
+        {
+          id: 'ver-006',
+          documentId: 'doc-002',
+          version: 2.0,
+          createdAt: '2025-04-10T11:15:00Z',
+          createdBy: 'Robert Chen',
+          changes: 'Added final results and conclusions'
         }
-      ]);
+      ];
+      
+      // Set up versions for Regulatory document
+      const regVersions = [
+        {
+          id: 'ver-007',
+          documentId: 'doc-003',
+          version: 1.0,
+          createdAt: '2025-03-01T08:30:00Z',
+          createdBy: 'Robert Chen',
+          changes: 'Completed form'
+        }
+      ];
+      
+      // Store versions
+      this.documentVersions.set('doc-001', indVersions);
+      this.documentVersions.set('doc-002', csrVersions);
+      this.documentVersions.set('doc-003', regVersions);
       
       console.log('Version tracking initialized');
       return true;
@@ -177,37 +201,40 @@ class DocuShareService {
    */
   async loadSharedDocumentStatus() {
     try {
-      console.log('Loading shared document status');
+      // In production, this would load document sharing info
+      // For development, we'll simulate sharing data
       
-      // Simulate loading time
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Simulate shared documents
-      this.sharedDocuments.set('doc-002', [
+      // CSR document sharing
+      const csrSharing = [
         {
           id: 'share-001',
           documentId: 'doc-002',
+          sharedWith: 'BioPharma Inc.',
           sharedBy: 'Jane Doe',
-          sharedWith: 'FDA Reviewer',
-          sharedAt: '2024-03-07T10:00:00Z',
-          accessType: 'Read',
-          expiresAt: '2024-06-07T10:00:00Z',
+          sharedAt: '2025-04-12T09:30:00Z',
+          expiresAt: '2025-07-12T09:30:00Z',
+          accessType: 'View Only',
           status: 'Active'
         }
-      ]);
+      ];
       
-      this.sharedDocuments.set('doc-003', [
+      // Regulatory document sharing
+      const regSharing = [
         {
           id: 'share-002',
           documentId: 'doc-003',
-          sharedBy: 'Alex Johnson',
-          sharedWith: 'Regulatory Affairs Department',
-          sharedAt: '2024-03-12T14:30:00Z',
-          accessType: 'Read',
+          sharedWith: 'FDA',
+          sharedBy: 'Robert Chen',
+          sharedAt: '2025-03-06T14:00:00Z',
           expiresAt: null, // No expiration
+          accessType: 'View Only',
           status: 'Active'
         }
-      ]);
+      ];
+      
+      // Store sharing info
+      this.documentSharing.set('doc-002', csrSharing);
+      this.documentSharing.set('doc-003', regSharing);
       
       console.log('Shared document status loaded');
       return true;
@@ -231,12 +258,12 @@ class DocuShareService {
   /**
    * Get document by ID
    */
-  getDocumentById(id) {
+  getDocument(documentId) {
     if (!this.isInitialized) {
       throw new Error('DocuShare Service not initialized');
     }
     
-    return this.documents.get(id);
+    return this.documents.get(documentId);
   }
   
   /**
@@ -251,14 +278,14 @@ class DocuShareService {
   }
   
   /**
-   * Get document version history
+   * Get document versions
    */
-  getDocumentVersionHistory(documentId) {
+  getDocumentVersions(documentId) {
     if (!this.isInitialized) {
       throw new Error('DocuShare Service not initialized');
     }
     
-    return this.versionHistory.get(documentId) || [];
+    return this.documentVersions.get(documentId) || [];
   }
   
   /**
@@ -269,121 +296,95 @@ class DocuShareService {
       throw new Error('DocuShare Service not initialized');
     }
     
-    return this.sharedDocuments.get(documentId) || [];
+    return this.documentSharing.get(documentId) || [];
   }
   
   /**
-   * Upload a new document
+   * Get supported document categories
    */
-  async uploadDocument(documentData, file) {
+  getSupportedCategories() {
+    return this.categories;
+  }
+  
+  /**
+   * Create a new document
+   */
+  async createDocument(documentData) {
     if (!this.isInitialized) {
       throw new Error('DocuShare Service not initialized');
     }
     
     try {
-      console.log('Uploading document:', documentData.title);
+      // Generate document ID
+      const documentId = `doc-${Date.now()}`;
       
-      // Simulate upload time
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Create new document record
-      const newDocument = {
-        id: `doc-${Date.now()}`,
+      // Create document
+      const document = {
+        id: documentId,
         title: documentData.title,
         category: documentData.category,
-        createdBy: documentData.createdBy,
+        status: 'Draft',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        status: 'Draft',
+        createdBy: documentData.createdBy,
+        size: documentData.size || 0,
+        version: 1.0,
         tags: documentData.tags || [],
-        verified: false,
-        size: file.size,
-        contentType: file.type
+        verified: false
       };
       
-      // Add to documents map
-      this.documents.set(newDocument.id, newDocument);
+      // Store document
+      this.documents.set(documentId, document);
       
-      // Create initial version history
-      this.versionHistory.set(newDocument.id, [
-        {
-          version: 'v1.0',
-          updatedAt: new Date().toISOString(),
-          updatedBy: documentData.createdBy,
-          changeDescription: 'Initial upload',
-          id: `${newDocument.id}-v1`
-        }
-      ]);
+      // Create initial version
+      const versionId = `ver-${Date.now()}`;
+      const version = {
+        id: versionId,
+        documentId,
+        version: 1.0,
+        createdAt: new Date().toISOString(),
+        createdBy: documentData.createdBy,
+        changes: 'Initial draft'
+      };
       
-      console.log('Document uploaded successfully:', newDocument.id);
-      return newDocument;
+      // Store version
+      this.documentVersions.set(documentId, [version]);
+      
+      console.log('Document created:', documentId);
+      return document;
     } catch (error) {
-      console.error('Error uploading document:', error);
+      console.error('Error creating document:', error);
       throw error;
     }
   }
   
   /**
-   * Update an existing document
+   * Update a document
    */
-  async updateDocument(documentId, updateData, file = null) {
+  async updateDocument(documentId, updateData) {
     if (!this.isInitialized) {
       throw new Error('DocuShare Service not initialized');
     }
     
     try {
-      console.log('Updating document:', documentId);
+      // Get existing document
+      const document = this.documents.get(documentId);
       
-      const existingDocument = this.documents.get(documentId);
-      
-      if (!existingDocument) {
+      if (!document) {
         throw new Error(`Document not found: ${documentId}`);
       }
       
-      // Simulate update time
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Get existing version history
-      const versions = this.versionHistory.get(documentId) || [];
-      const latestVersion = versions[versions.length - 1];
-      
-      // Parse version number and increment
-      const versionMatch = latestVersion.version.match(/v(\d+)\.(\d+)/);
-      let major = parseInt(versionMatch[1]);
-      let minor = parseInt(versionMatch[2]);
-      
-      if (updateData.isMinorUpdate) {
-        minor += 1;
-      } else {
-        major += 1;
-        minor = 0;
-      }
-      
-      const newVersion = `v${major}.${minor}`;
-      
       // Update document
       const updatedDocument = {
-        ...existingDocument,
+        ...document,
         ...updateData,
-        updatedAt: new Date().toISOString(),
-        size: file ? file.size : existingDocument.size,
-        contentType: file ? file.type : existingDocument.contentType
+        updatedAt: new Date().toISOString()
       };
       
+      // Store updated document
       this.documents.set(documentId, updatedDocument);
       
-      // Add new version to history
-      versions.push({
-        version: newVersion,
-        updatedAt: new Date().toISOString(),
-        updatedBy: updateData.updatedBy,
-        changeDescription: updateData.changeDescription || 'Updated document',
-        id: `${documentId}-v${versions.length + 1}`
-      });
-      
-      this.versionHistory.set(documentId, versions);
-      
-      console.log('Document updated successfully:', documentId);
+      console.log('Document updated:', documentId);
       return updatedDocument;
     } catch (error) {
       console.error('Error updating document:', error);
@@ -392,44 +393,96 @@ class DocuShareService {
   }
   
   /**
-   * Share a document
+   * Create a new document version
    */
-  async shareDocument(documentId, shareData) {
+  async createDocumentVersion(documentId, versionData) {
     if (!this.isInitialized) {
       throw new Error('DocuShare Service not initialized');
     }
     
     try {
-      console.log('Sharing document:', documentId);
+      // Get existing document
+      const document = this.documents.get(documentId);
       
-      const existingDocument = this.documents.get(documentId);
-      
-      if (!existingDocument) {
+      if (!document) {
         throw new Error(`Document not found: ${documentId}`);
       }
       
-      // Simulate share process
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Get existing versions
+      const versions = this.documentVersions.get(documentId) || [];
       
-      // Create share record
-      const shareRecord = {
-        id: `share-${Date.now()}`,
+      // Create new version number (increment by 0.1)
+      const newVersionNumber = document.version + 0.1;
+      
+      // Create version
+      const versionId = `ver-${Date.now()}`;
+      const version = {
+        id: versionId,
         documentId,
-        sharedBy: shareData.sharedBy,
-        sharedWith: shareData.sharedWith,
+        version: newVersionNumber,
+        createdAt: new Date().toISOString(),
+        createdBy: versionData.createdBy,
+        changes: versionData.changes || 'Updated document'
+      };
+      
+      // Store version
+      this.documentVersions.set(documentId, [...versions, version]);
+      
+      // Update document version
+      const updatedDocument = {
+        ...document,
+        version: newVersionNumber,
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Store updated document
+      this.documents.set(documentId, updatedDocument);
+      
+      console.log('Document version created:', versionId);
+      return { document: updatedDocument, version };
+    } catch (error) {
+      console.error('Error creating document version:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Share a document
+   */
+  async shareDocument(documentId, sharingData) {
+    if (!this.isInitialized) {
+      throw new Error('DocuShare Service not initialized');
+    }
+    
+    try {
+      // Get existing document
+      const document = this.documents.get(documentId);
+      
+      if (!document) {
+        throw new Error(`Document not found: ${documentId}`);
+      }
+      
+      // Get existing sharing info
+      const sharingInfo = this.documentSharing.get(documentId) || [];
+      
+      // Create sharing
+      const sharingId = `share-${Date.now()}`;
+      const sharing = {
+        id: sharingId,
+        documentId,
+        sharedWith: sharingData.sharedWith,
+        sharedBy: sharingData.sharedBy,
         sharedAt: new Date().toISOString(),
-        accessType: shareData.accessType || 'Read',
-        expiresAt: shareData.expiresAt || null,
+        expiresAt: sharingData.expiresAt,
+        accessType: sharingData.accessType || 'View Only',
         status: 'Active'
       };
       
-      // Update shared documents
-      const existingShares = this.sharedDocuments.get(documentId) || [];
-      existingShares.push(shareRecord);
-      this.sharedDocuments.set(documentId, existingShares);
+      // Store sharing info
+      this.documentSharing.set(documentId, [...sharingInfo, sharing]);
       
-      console.log('Document shared successfully:', documentId);
-      return shareRecord;
+      console.log('Document shared:', sharingId);
+      return sharing;
     } catch (error) {
       console.error('Error sharing document:', error);
       throw error;
@@ -437,7 +490,7 @@ class DocuShareService {
   }
   
   /**
-   * Verify document with blockchain
+   * Verify document on blockchain
    */
   async verifyDocument(documentId, verificationData) {
     if (!this.isInitialized) {
@@ -445,94 +498,31 @@ class DocuShareService {
     }
     
     try {
-      console.log('Verifying document on blockchain:', documentId);
+      // Get existing document
+      const document = this.documents.get(documentId);
       
-      const existingDocument = this.documents.get(documentId);
-      
-      if (!existingDocument) {
+      if (!document) {
         throw new Error(`Document not found: ${documentId}`);
       }
       
-      // Simulate blockchain verification
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Update document verification status
+      // Update document with verification data
       const updatedDocument = {
-        ...existingDocument,
+        ...document,
         verified: true,
-        verificationHash: verificationData.hash || `hash-${Date.now()}`,
         verifiedAt: new Date().toISOString(),
-        verifiedBy: verificationData.verifiedBy
+        verifiedBy: verificationData.verifiedBy,
+        verificationHash: verificationData.hash
       };
       
+      // Store updated document
       this.documents.set(documentId, updatedDocument);
       
-      console.log('Document verified successfully:', documentId);
+      console.log('Document verified:', documentId);
       return updatedDocument;
     } catch (error) {
       console.error('Error verifying document:', error);
       throw error;
     }
-  }
-  
-  /**
-   * Search documents
-   */
-  searchDocuments(query, filters = {}) {
-    if (!this.isInitialized) {
-      throw new Error('DocuShare Service not initialized');
-    }
-    
-    let results = this.getAllDocuments();
-    
-    // Apply search query
-    if (query) {
-      const lcQuery = query.toLowerCase();
-      results = results.filter(doc => 
-        doc.title.toLowerCase().includes(lcQuery) ||
-        doc.category.toLowerCase().includes(lcQuery) ||
-        doc.tags.some(tag => tag.toLowerCase().includes(lcQuery))
-      );
-    }
-    
-    // Apply category filter
-    if (filters.category) {
-      results = results.filter(doc => doc.category === filters.category);
-    }
-    
-    // Apply status filter
-    if (filters.status) {
-      results = results.filter(doc => doc.status === filters.status);
-    }
-    
-    // Apply verification status filter
-    if (filters.verified !== undefined) {
-      results = results.filter(doc => doc.verified === filters.verified);
-    }
-    
-    // Apply date range filter
-    if (filters.dateFrom) {
-      const fromDate = new Date(filters.dateFrom);
-      results = results.filter(doc => new Date(doc.createdAt) >= fromDate);
-    }
-    
-    if (filters.dateTo) {
-      const toDate = new Date(filters.dateTo);
-      results = results.filter(doc => new Date(doc.createdAt) <= toDate);
-    }
-    
-    return results;
-  }
-  
-  /**
-   * Get supported document categories
-   */
-  getSupportedCategories() {
-    if (!this.isInitialized) {
-      throw new Error('DocuShare Service not initialized');
-    }
-    
-    return Array.from(this.categories);
   }
   
   /**

@@ -1,940 +1,1014 @@
 /**
  * CSR Intelligence Module
  * 
- * This component provides the main interface for the CSR Intelligence module,
- * which helps users prepare and manage Clinical Study Reports (CSRs).
+ * This component provides the CSR Intelligence™ module for the TrialSage platform,
+ * helping users manage and create Clinical Study Reports.
  */
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { 
   FileText, 
-  CheckCircle, 
-  AlignLeft, 
-  Settings, 
-  Download, 
-  Upload, 
-  Edit,
-  Plus,
-  Book,
-  Search,
-  List,
-  Copy,
-  ExternalLink,
-  Sparkles,
-  FileCheck
+  FilePlus, 
+  Search, 
+  BookOpen, 
+  BarChart2, 
+  ArrowRight,
+  CheckCircle,
+  Clock,
+  Calendar,
+  Layers,
+  AlertCircle,
+  BookOpen as Report,
+  FileSearch,
+  BarChart,
+  Shuffle,
+  PieChart,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Lightbulb
 } from 'lucide-react';
 import { useIntegration } from '../integration/ModuleIntegrationLayer';
 
 const CSRIntelligenceModule = () => {
-  const { registerModule, regulatoryCore } = useIntegration();
-  const [section, setSection] = useState('dashboard');
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [regulatoryGuidance, setRegulatoryGuidance] = useState([]);
+  const { docuShareService, regulatoryCore } = useIntegration();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [csrDocuments, setCSRDocuments] = useState([]);
+  const [insightsPanelOpen, setInsightsPanelOpen] = useState(true);
+  const [loading, setLoading] = useState(true);
   
-  // Register this module with the integration layer
+  // Load module data
   useEffect(() => {
-    registerModule('csr-intelligence', { 
-      name: 'CSR Intelligence™',
-      version: '1.0.0',
-      capabilities: ['csr-generation', 'ich-compliance', 'ai-writing-assistance']
-    });
-    
-    // Load regulatory guidance
-    const loadGuidance = async () => {
+    const loadModuleData = async () => {
       try {
-        setIsLoading(true);
+        setLoading(true);
         
-        // Get CSR guidance from regulatory core
-        if (regulatoryCore) {
-          const guidance = await regulatoryCore.getRegulatoryGuidance('CSR', 'ICH');
-          setRegulatoryGuidance(guidance.guidance || []);
-        }
+        // Get CSR documents
+        const documents = docuShareService.getDocumentsByCategory('CSR');
+        setCSRDocuments(documents);
         
-        setIsLoading(false);
+        setLoading(false);
       } catch (error) {
-        console.error('Error loading CSR guidance:', error);
-        setIsLoading(false);
+        console.error('Error loading CSR Intelligence data:', error);
+        setLoading(false);
       }
     };
     
-    loadGuidance();
-  }, [registerModule, regulatoryCore]);
+    loadModuleData();
+  }, [docuShareService]);
   
-  // Animation variants for page transitions
-  const pageVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 }
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
   
-  // Render different sections based on state
-  const renderSection = () => {
-    switch (section) {
+  // Toggle insights panel
+  const toggleInsightsPanel = () => {
+    setInsightsPanelOpen(!insightsPanelOpen);
+  };
+  
+  // Mock examples of CSR insights
+  const csrInsights = [
+    {
+      id: 'insight-1',
+      type: 'compliance',
+      title: 'ICH E3 Compliance',
+      description: 'CSR structure follows ICH E3 guidelines. All required sections are present.',
+      score: 95,
+      recommendation: 'Consider adding more detail to the study objectives section for improved clarity.'
+    },
+    {
+      id: 'insight-2',
+      type: 'structure',
+      title: 'Structural Consistency',
+      description: 'Section headings and numbering format are consistent throughout the document.',
+      score: 90,
+      recommendation: 'Standardize table and figure numbering formats for better consistency.'
+    },
+    {
+      id: 'insight-3',
+      type: 'content',
+      title: 'Statistical Analysis',
+      description: 'Statistical methods are well-documented with appropriate references.',
+      score: 85,
+      recommendation: 'Include more detailed explanation of outlier handling methodology.'
+    }
+  ];
+  
+  // Render tab content
+  const renderTabContent = () => {
+    switch (activeTab) {
       case 'dashboard':
-        return <CSRDashboard />;
+        return (
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            {/* Main content area */}
+            <div className="xl:col-span-3 space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">CSR Intelligence™ Dashboard</h2>
+                
+                <button className="flex items-center bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark">
+                  <FilePlus size={16} className="mr-2" />
+                  Create New CSR
+                </button>
+              </div>
+              
+              {/* Recent CSRs */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-primary-light px-4 py-3 border-b">
+                  <h3 className="font-semibold text-primary">Recent Clinical Study Reports</h3>
+                </div>
+                
+                <div className="p-4">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-32">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                  ) : csrDocuments.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Name
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Study ID
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Compliance
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Last Updated
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {csrDocuments.map((document) => (
+                            <tr key={document.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="flex-shrink-0 text-gray-400">
+                                    <FileText size={18} />
+                                  </div>
+                                  <div className="ml-3">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {document.title}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      Author: {document.createdBy}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                XYZ-123
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                  document.status === 'Final' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : document.status === 'Draft'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {document.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                    <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '95%' }}></div>
+                                  </div>
+                                  <span className="text-xs text-gray-600">95%</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {formatDate(document.updatedAt)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <button className="text-primary hover:text-primary-dark flex items-center">
+                                  <span>Open</span>
+                                  <ArrowRight size={14} className="ml-1" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <FileText size={40} className="mx-auto mb-2 text-gray-400" />
+                      <p>No CSR documents found</p>
+                      <button className="mt-2 text-primary hover:text-primary-dark text-sm">
+                        Create your first CSR
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Statistics Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <div className="p-2 bg-blue-100 rounded-md text-blue-600 mr-3">
+                      <BookOpen size={20} />
+                    </div>
+                    <h3 className="font-semibold">CSR Metrics</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-500">Total CSRs</span>
+                        <span className="font-medium">{csrDocuments.length}</span>
+                      </div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-500">Completed</span>
+                        <span className="font-medium">{csrDocuments.filter(d => d.status === 'Final').length}</span>
+                      </div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-500">In Progress</span>
+                        <span className="font-medium">{csrDocuments.filter(d => d.status !== 'Final').length}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${csrDocuments.filter(d => d.status === 'Final').length / Math.max(csrDocuments.length, 1) * 100}%` }}></div>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 text-right">
+                        {Math.round(csrDocuments.filter(d => d.status === 'Final').length / Math.max(csrDocuments.length, 1) * 100)}% Completion Rate
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <div className="p-2 bg-green-100 rounded-md text-green-600 mr-3">
+                      <CheckCircle size={20} />
+                    </div>
+                    <h3 className="font-semibold">Compliance</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">ICH E3 Compliance</span>
+                      <span className="text-sm font-medium">95%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '95%' }}></div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm text-gray-500">Structural Integrity</span>
+                      <span className="text-sm font-medium">92%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '92%' }}></div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm text-gray-500">Content Completeness</span>
+                      <span className="text-sm font-medium">88%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '88%' }}></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center mb-3">
+                    <div className="p-2 bg-purple-100 rounded-md text-purple-600 mr-3">
+                      <Clock size={20} />
+                    </div>
+                    <h3 className="font-semibold">Timelines</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-500">Avg. Completion Time</span>
+                        <span className="font-medium">45 days</span>
+                      </div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-500">Fastest Completion</span>
+                        <span className="font-medium">28 days</span>
+                      </div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-500">Currently In Progress</span>
+                        <span className="font-medium">3 CSRs</span>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2">
+                      <div className="text-xs text-gray-500 flex items-center">
+                        <Calendar size={14} className="mr-1" />
+                        <span>Next due: May 15, 2025</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Recent Activity */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="bg-primary-light px-4 py-3 border-b">
+                  <h3 className="font-semibold text-primary">Recent Activity</h3>
+                </div>
+                
+                <div className="p-4">
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <div className="p-2 bg-blue-100 rounded-full text-blue-600 mr-3">
+                        <FileText size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium">CSR XYZ-123 Updated</h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Robert Chen updated Statistical Analysis section
+                        </p>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Today at 10:30 AM
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start">
+                      <div className="p-2 bg-green-100 rounded-full text-green-600 mr-3">
+                        <CheckCircle size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium">CSR ABC-456 Completed</h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Final version approved by Jane Doe
+                        </p>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Yesterday at 3:45 PM
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start">
+                      <div className="p-2 bg-purple-100 rounded-full text-purple-600 mr-3">
+                        <AlertCircle size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium">Compliance Alert</h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Missing safety information in CSR DEF-789
+                        </p>
+                        <div className="text-xs text-gray-400 mt-1">
+                          April 24, 2025 at 9:20 AM
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Insights panel */}
+            <div className="xl:col-span-1 bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-primary-light px-4 py-3 border-b flex items-center justify-between">
+                <h3 className="font-semibold text-primary flex items-center">
+                  <Lightbulb size={16} className="mr-2" />
+                  CSR Insights
+                </h3>
+                <button 
+                  className="text-gray-500 hover:text-gray-700" 
+                  onClick={toggleInsightsPanel}
+                >
+                  {insightsPanelOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              </div>
+              
+              {insightsPanelOpen && (
+                <div className="p-4">
+                  <div className="space-y-4">
+                    {csrInsights.map((insight) => (
+                      <div key={insight.id} className="border rounded-md p-3">
+                        <div className="flex items-center mb-2">
+                          <div className={`p-1.5 rounded-full mr-2 ${
+                            insight.type === 'compliance' 
+                              ? 'bg-blue-100 text-blue-600' 
+                              : insight.type === 'structure'
+                                ? 'bg-purple-100 text-purple-600'
+                                : 'bg-green-100 text-green-600'
+                          }`}>
+                            {insight.type === 'compliance' 
+                              ? <BookOpen size={14} /> 
+                              : insight.type === 'structure'
+                                ? <Layers size={14} />
+                                : <BarChart size={14} />
+                            }
+                          </div>
+                          <h4 className="text-sm font-medium">{insight.title}</h4>
+                        </div>
+                        
+                        <p className="text-xs text-gray-600 mb-2">
+                          {insight.description}
+                        </p>
+                        
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-gray-500">Score</span>
+                          <span className="text-xs font-medium">{insight.score}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+                          <div 
+                            className={`h-1.5 rounded-full ${
+                              insight.score >= 90 
+                                ? 'bg-green-500' 
+                                : insight.score >= 80 
+                                  ? 'bg-yellow-500' 
+                                  : 'bg-red-500'
+                            }`} 
+                            style={{ width: `${insight.score}%` }}
+                          ></div>
+                        </div>
+                        
+                        <div className="text-xs bg-gray-50 p-2 rounded border border-gray-100">
+                          <div className="font-medium text-gray-700 mb-1 flex items-center">
+                            <Zap size={12} className="text-primary mr-1" />
+                            Recommendation
+                          </div>
+                          <div className="text-gray-600">
+                            {insight.recommendation}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <button className="mt-4 w-full text-center text-xs text-primary hover:text-primary-dark font-medium py-2 border border-primary border-dashed rounded-md">
+                    View All Insights
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+        
       case 'templates':
-        return <CSRTemplates 
-          selectedTemplate={selectedTemplate}
-          setSelectedTemplate={setSelectedTemplate}
-        />;
-      case 'editor':
-        return <CSREditor />;
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">CSR Templates</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Template 1 */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="h-2 bg-blue-500"></div>
+                <div className="p-5">
+                  <h3 className="font-semibold text-lg mb-2">ICH E3 Standard Template</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Complete CSR template following ICH E3 guidelines. Includes all required sections and appendices.
+                  </p>
+                  <div className="flex items-center text-xs text-gray-500 mb-4">
+                    <Clock size={14} className="mr-1" />
+                    <span>Updated April 2025</span>
+                  </div>
+                  <button className="w-full bg-blue-50 text-blue-600 font-medium py-2 rounded hover:bg-blue-100 transition-colors">
+                    Use Template
+                  </button>
+                </div>
+              </div>
+              
+              {/* Template 2 */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="h-2 bg-purple-500"></div>
+                <div className="p-5">
+                  <h3 className="font-semibold text-lg mb-2">Abbreviated CSR Template</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Streamlined CSR template for abbreviated reports. Focuses on essential elements for faster completion.
+                  </p>
+                  <div className="flex items-center text-xs text-gray-500 mb-4">
+                    <Clock size={14} className="mr-1" />
+                    <span>Updated March 2025</span>
+                  </div>
+                  <button className="w-full bg-purple-50 text-purple-600 font-medium py-2 rounded hover:bg-purple-100 transition-colors">
+                    Use Template
+                  </button>
+                </div>
+              </div>
+              
+              {/* Template 3 */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="h-2 bg-green-500"></div>
+                <div className="p-5">
+                  <h3 className="font-semibold text-lg mb-2">Pediatric Study Template</h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Specialized CSR template for pediatric clinical trials. Includes sections specific to pediatric studies.
+                  </p>
+                  <div className="flex items-center text-xs text-gray-500 mb-4">
+                    <Clock size={14} className="mr-1" />
+                    <span>Updated February 2025</span>
+                  </div>
+                  <button className="w-full bg-green-50 text-green-600 font-medium py-2 rounded hover:bg-green-100 transition-colors">
+                    Use Template
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold mb-4">Section Templates</h3>
+              
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Template Name
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Last Updated
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">Statistical Analysis Section</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500">Comprehensive statistical analysis template with standard tables and figures</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        April 5, 2025
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button className="text-primary hover:text-primary-dark">Use Template</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">Safety Assessment Section</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500">Detailed safety and pharmacovigilance reporting template</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        March 22, 2025
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button className="text-primary hover:text-primary-dark">Use Template</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">Study Design Section</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-500">Detailed study design section with diagrams and schedules</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        February 18, 2025
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button className="text-primary hover:text-primary-dark">Use Template</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+        
+      case 'analytics':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">CSR Analytics</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+              <div className="bg-white rounded-lg shadow p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-gray-500 text-sm">Total CSRs</div>
+                  <div className="p-1.5 bg-blue-100 rounded-md text-blue-500">
+                    <FileText size={16} />
+                  </div>
+                </div>
+                <div className="text-2xl font-bold">24</div>
+                <div className="text-xs text-green-500 flex items-center mt-1">
+                  <span>↑ 12% from last quarter</span>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-gray-500 text-sm">Avg. Completion Time</div>
+                  <div className="p-1.5 bg-purple-100 rounded-md text-purple-500">
+                    <Clock size={16} />
+                  </div>
+                </div>
+                <div className="text-2xl font-bold">45 days</div>
+                <div className="text-xs text-green-500 flex items-center mt-1">
+                  <span>↓ 5 days improvement</span>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-gray-500 text-sm">Compliance Score</div>
+                  <div className="p-1.5 bg-green-100 rounded-md text-green-500">
+                    <CheckCircle size={16} />
+                  </div>
+                </div>
+                <div className="text-2xl font-bold">92%</div>
+                <div className="text-xs text-green-500 flex items-center mt-1">
+                  <span>↑ 3% improvement</span>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-gray-500 text-sm">AI-Assisted Edits</div>
+                  <div className="p-1.5 bg-yellow-100 rounded-md text-yellow-500">
+                    <Zap size={16} />
+                  </div>
+                </div>
+                <div className="text-2xl font-bold">358</div>
+                <div className="text-xs text-green-500 flex items-center mt-1">
+                  <span>Saved ~120 hours</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="font-semibold text-lg mb-4 flex items-center">
+                  <BarChart2 size={18} className="text-primary mr-2" />
+                  CSR Completion Statistics
+                </h3>
+                
+                <div className="h-64 flex items-center justify-center border rounded">
+                  <div className="text-center text-gray-500">
+                    <BarChart size={32} className="mx-auto mb-2 text-gray-400" />
+                    <p>Bar chart visualization would appear here</p>
+                    <p className="text-xs mt-1">Showing monthly CSR completions</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="font-semibold text-lg mb-4 flex items-center">
+                  <PieChart size={18} className="text-primary mr-2" />
+                  CSR Status Distribution
+                </h3>
+                
+                <div className="h-64 flex items-center justify-center border rounded">
+                  <div className="text-center text-gray-500">
+                    <PieChart size={32} className="mx-auto mb-2 text-gray-400" />
+                    <p>Pie chart visualization would appear here</p>
+                    <p className="text-xs mt-1">Showing status distribution of CSRs</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow p-6 lg:col-span-2">
+                <h3 className="font-semibold text-lg mb-4 flex items-center">
+                  <Shuffle size={18} className="text-primary mr-2" />
+                  CSR Compliance Trends
+                </h3>
+                
+                <div className="h-64 flex items-center justify-center border rounded">
+                  <div className="text-center text-gray-500">
+                    <BarChart size={32} className="mx-auto mb-2 text-gray-400" />
+                    <p>Line chart visualization would appear here</p>
+                    <p className="text-xs mt-1">Showing compliance score trends over time</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+        
       case 'guidance':
-        return <CSRGuidance guidance={regulatoryGuidance} isLoading={isLoading} />;
-      case 'settings':
-        return <CSRSettings />;
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-6">Regulatory Guidance</h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                  <div className="bg-primary-light px-4 py-3 border-b">
+                    <h3 className="font-semibold text-primary">ICH E3 Guidance</h3>
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="prose max-w-none">
+                      <p>
+                        The ICH E3 guideline provides guidance on the structure and content of clinical study reports (CSRs).
+                        Below are key elements that should be included in compliant CSRs:
+                      </p>
+                      
+                      <h4 className="text-lg font-medium mt-4 mb-2">Synopsis</h4>
+                      <p>
+                        A brief overview of the study and its results, typically limited to 3-5 pages.
+                        Should include study objectives, methodology, results, and conclusions.
+                      </p>
+                      
+                      <h4 className="text-lg font-medium mt-4 mb-2">Ethics</h4>
+                      <p>
+                        Description of ethical considerations, including IRB/EC approval and informed consent procedures.
+                      </p>
+                      
+                      <h4 className="text-lg font-medium mt-4 mb-2">Investigators and Study Administration</h4>
+                      <p>
+                        Information on study investigators, administrative structure, and investigator responsibilities.
+                      </p>
+                      
+                      <h4 className="text-lg font-medium mt-4 mb-2">Study Objectives</h4>
+                      <p>
+                        Clear statement of the primary and secondary objectives of the study.
+                      </p>
+                      
+                      <h4 className="text-lg font-medium mt-4 mb-2">Investigational Plan</h4>
+                      <p>
+                        Detailed description of study design, treatments, selection of study population, 
+                        and methods of observation and analysis.
+                      </p>
+                      
+                      <h4 className="text-lg font-medium mt-4 mb-2">Study Patients</h4>
+                      <p>
+                        Description of patient disposition, protocol deviations, and demographic and baseline characteristics.
+                      </p>
+                      
+                      <h4 className="text-lg font-medium mt-4 mb-2">Efficacy and Safety Evaluations</h4>
+                      <p>
+                        Comprehensive analysis of efficacy and safety data, including statistical analyses and individual responses.
+                      </p>
+                      
+                      <h4 className="text-lg font-medium mt-4 mb-2">References</h4>
+                      <p>
+                        List of publications and unpublished reports referenced in the CSR.
+                      </p>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t">
+                      <a href="#" className="text-primary hover:text-primary-dark font-medium">
+                        Download Full ICH E3 Guidelines
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="bg-primary-light px-4 py-3 border-b">
+                    <h3 className="font-semibold text-primary">CSR Checklist</h3>
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" checked readOnly />
+                        <label className="ml-2 text-sm text-gray-700">Title page includes protocol title, dates, sponsor name, and appropriate signatures</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" checked readOnly />
+                        <label className="ml-2 text-sm text-gray-700">Synopsis provides concise summary of study methods and results</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" checked readOnly />
+                        <label className="ml-2 text-sm text-gray-700">Table of contents lists all sections, tables, figures, and appendices</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" checked readOnly />
+                        <label className="ml-2 text-sm text-gray-700">Ethics section describes IRB/EC approval and informed consent</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" checked readOnly />
+                        <label className="ml-2 text-sm text-gray-700">Study objectives clearly stated and aligned with protocol</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" checked readOnly />
+                        <label className="ml-2 text-sm text-gray-700">Investigational plan details study design, treatments, and methods</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" />
+                        <label className="ml-2 text-sm text-gray-700">Statistical methods described and appropriate</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" />
+                        <label className="ml-2 text-sm text-gray-700">Efficacy results include all primary and secondary endpoints</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" />
+                        <label className="ml-2 text-sm text-gray-700">Safety results include all adverse events and appropriate analyses</label>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" />
+                        <label className="ml-2 text-sm text-gray-700">Discussion and conclusions accurately reflect study results</label>
+                      </div>
+                    </div>
+                    
+                    <button className="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded text-sm">
+                      Download Printable Checklist
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                  <div className="bg-primary-light px-4 py-3 border-b">
+                    <h3 className="font-semibold text-primary">Recent Regulatory Updates</h3>
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="space-y-4">
+                      <div className="border-b pb-3">
+                        <h4 className="font-medium text-sm">FDA's Modern Approach to CSRs</h4>
+                        <p className="text-xs text-gray-600 my-1">
+                          FDA has updated guidelines for electronic submission of CSRs with new technical specifications.
+                        </p>
+                        <div className="flex items-center text-xs text-gray-500">
+                          <Calendar size={12} className="mr-1" />
+                          <span>April 15, 2025</span>
+                        </div>
+                      </div>
+                      
+                      <div className="border-b pb-3">
+                        <h4 className="font-medium text-sm">EMA's Transparency Initiative</h4>
+                        <p className="text-xs text-gray-600 my-1">
+                          EMA has expanded requirements for transparency in clinical trial reporting and CSR publications.
+                        </p>
+                        <div className="flex items-center text-xs text-gray-500">
+                          <Calendar size={12} className="mr-1" />
+                          <span>March 22, 2025</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-sm">ICH E3(R1) Draft Published</h4>
+                        <p className="text-xs text-gray-600 my-1">
+                          ICH has released a draft revision to the E3 guideline, open for public comment until June 2025.
+                        </p>
+                        <div className="flex items-center text-xs text-gray-500">
+                          <Calendar size={12} className="mr-1" />
+                          <span>February 28, 2025</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="bg-primary-light px-4 py-3 border-b">
+                    <h3 className="font-semibold text-primary">Resources</h3>
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="space-y-3">
+                      <a href="#" className="flex items-center p-2 hover:bg-gray-50 rounded">
+                        <div className="p-1.5 bg-red-100 rounded-md text-red-600 mr-3">
+                          <FileText size={16} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">ICH E3 Guidelines (PDF)</div>
+                          <div className="text-xs text-gray-500">Official ICH document</div>
+                        </div>
+                      </a>
+                      
+                      <a href="#" className="flex items-center p-2 hover:bg-gray-50 rounded">
+                        <div className="p-1.5 bg-blue-100 rounded-md text-blue-600 mr-3">
+                          <FileText size={16} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">FDA CSR Guidance</div>
+                          <div className="text-xs text-gray-500">FDA-specific guidelines</div>
+                        </div>
+                      </a>
+                      
+                      <a href="#" className="flex items-center p-2 hover:bg-gray-50 rounded">
+                        <div className="p-1.5 bg-purple-100 rounded-md text-purple-600 mr-3">
+                          <BookOpen size={16} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">CSR Writing Best Practices</div>
+                          <div className="text-xs text-gray-500">Industry best practices guide</div>
+                        </div>
+                      </a>
+                      
+                      <a href="#" className="flex items-center p-2 hover:bg-gray-50 rounded">
+                        <div className="p-1.5 bg-green-100 rounded-md text-green-600 mr-3">
+                          <FileSearch size={16} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">Common Deficiencies in CSRs</div>
+                          <div className="text-xs text-gray-500">Review by regulatory authorities</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      
       default:
-        return <CSRDashboard />;
+        return (
+          <div className="p-6 text-center text-gray-500">
+            <p>Tab content not found.</p>
+          </div>
+        );
     }
   };
   
   return (
     <div className="flex flex-col h-full">
-      {/* Module header */}
-      <header className="bg-white border-b px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">CSR Intelligence™</h1>
-          
-          <div className="flex items-center space-x-4">
-            <button
-              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors flex items-center"
-              onClick={() => setSection('templates')}
-            >
-              <Plus size={16} className="mr-2" />
-              New CSR
-            </button>
-            
-            <button
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex items-center"
-              onClick={() => setSection('guidance')}
-            >
-              <Book size={16} className="mr-2" />
-              ICH Guidance
-            </button>
-          </div>
-        </div>
-        
-        {/* Module navigation */}
-        <nav className="flex mt-4 space-x-1">
-          <button
-            className={`px-4 py-2 text-sm font-medium rounded-md ${
-              section === 'dashboard' 
-                ? 'bg-gray-100 text-gray-900' 
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => setSection('dashboard')}
-          >
-            Dashboard
-          </button>
-          
-          <button
-            className={`px-4 py-2 text-sm font-medium rounded-md ${
-              section === 'templates' 
-                ? 'bg-gray-100 text-gray-900' 
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => setSection('templates')}
-          >
-            Templates
-          </button>
-          
-          <button
-            className={`px-4 py-2 text-sm font-medium rounded-md ${
-              section === 'editor' 
-                ? 'bg-gray-100 text-gray-900' 
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => setSection('editor')}
-          >
-            Editor
-          </button>
-          
-          <button
-            className={`px-4 py-2 text-sm font-medium rounded-md ${
-              section === 'guidance' 
-                ? 'bg-gray-100 text-gray-900' 
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => setSection('guidance')}
-          >
-            ICH Guidance
-          </button>
-          
-          <button
-            className={`px-4 py-2 text-sm font-medium rounded-md ${
-              section === 'settings' 
-                ? 'bg-gray-100 text-gray-900' 
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-            onClick={() => setSection('settings')}
-          >
-            Settings
-          </button>
-        </nav>
-      </header>
-      
-      {/* Module content with animation */}
-      <motion.div 
-        className="flex-1 overflow-auto bg-gray-50 p-6"
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        variants={pageVariants}
-        transition={{ duration: 0.3 }}
-      >
-        {renderSection()}
-      </motion.div>
-    </div>
-  );
-};
-
-// Dashboard component
-const CSRDashboard = () => {
-  // Mock data for dashboard
-  const recentCSRs = [
-    { id: 'CSR-2023-001', title: 'Phase 2 Oncology Study CSR', status: 'Draft', progress: 65, updated: '2024-03-15' },
-    { id: 'CSR-2023-002', title: 'Phase 3 Cardiology Study CSR', status: 'In Review', progress: 90, updated: '2024-02-28' },
-    { id: 'CSR-2023-003', title: 'Phase 1 Neurology Study CSR', status: 'Completed', progress: 100, updated: '2024-01-20' },
-  ];
-  
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <DashboardCard
-          title="Active CSRs"
-          value="6"
-          icon={<FileText className="h-6 w-6" />}
-          color="blue"
-        />
-        
-        <DashboardCard
-          title="Completed"
-          value="12"
-          icon={<CheckCircle className="h-6 w-6" />}
-          color="green"
-        />
-        
-        <DashboardCard
-          title="ICH Templates"
-          value="8"
-          icon={<Copy className="h-6 w-6" />}
-          color="purple"
-        />
-        
-        <DashboardCard
-          title="AI Assists"
-          value="43"
-          icon={<Sparkles className="h-6 w-6" />}
-          color="pink"
-        />
-      </div>
-      
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-medium">Recent CSRs</h2>
-        </div>
-        
-        <div className="divide-y">
-          {recentCSRs.map((csr) => (
-            <div key={csr.id} className="px-6 py-4">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <div className="font-medium">{csr.title}</div>
-                  <div className="text-sm text-gray-500">{csr.id} • Updated {csr.updated}</div>
-                </div>
-                
-                <div className="flex items-center">
-                  <StatusBadge status={csr.status} />
-                  <button className="ml-4 text-gray-400 hover:text-gray-500">
-                    <Edit className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div 
-                  className="bg-primary h-2.5 rounded-full" 
-                  style={{ width: `${csr.progress}%` }}
-                ></div>
-              </div>
-              <div className="text-xs text-gray-500 mt-1 text-right">
-                {csr.progress}% Complete
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="px-6 py-4 bg-gray-50 text-center">
-          <button className="text-primary hover:text-primary-dark font-medium">
-            View All CSRs
-          </button>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-medium">Quick Actions</h2>
-        </div>
-        
-        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <ActionButton 
-            icon={<Plus />} 
-            text="Create New CSR"
-            onClick={() => console.log('Create new CSR')}
-          />
-          
-          <ActionButton 
-            icon={<Upload />} 
-            text="Import Data"
-            onClick={() => console.log('Import data')}
-          />
-          
-          <ActionButton 
-            icon={<AlignLeft />} 
-            text="Template Library"
-            onClick={() => console.log('Template library')}
-          />
-          
-          <ActionButton 
-            icon={<FileCheck />} 
-            text="Quality Check"
-            onClick={() => console.log('Quality check')}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Templates component
-const CSRTemplates = ({ selectedTemplate, setSelectedTemplate }) => {
-  // Mock template data
-  const templates = [
-    { 
-      id: 'template-001', 
-      title: 'ICH E3 Standard CSR', 
-      category: 'phase-3',
-      description: 'Standard Clinical Study Report template following ICH E3 guidelines. Suitable for Phase 3 studies.'
-    },
-    { 
-      id: 'template-002', 
-      title: 'ICH E3 Phase 1 CSR', 
-      category: 'phase-1',
-      description: 'Streamlined Clinical Study Report template for Phase 1 studies following ICH E3 guidelines.'
-    },
-    { 
-      id: 'template-003', 
-      title: 'ICH E3 Phase 2 CSR', 
-      category: 'phase-2',
-      description: 'Clinical Study Report template for Phase 2 studies following ICH E3 guidelines.'
-    },
-    { 
-      id: 'template-004', 
-      title: 'Non-Interventional Study CSR', 
-      category: 'non-interventional',
-      description: 'CSR template adapted for non-interventional/observational studies.'
-    },
-    { 
-      id: 'template-005', 
-      title: 'Medical Device Clinical Investigation Report', 
-      category: 'device',
-      description: 'Template adapted for medical device clinical investigations.'
-    },
-    { 
-      id: 'template-006', 
-      title: 'Custom CSR Template', 
-      category: 'custom',
-      description: 'Customizable CSR template that can be adapted to specific study needs.'
-    }
-  ];
-  
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-2">CSR Templates</h2>
-        <p className="text-gray-500 mb-6">
-          Select a template to create a new Clinical Study Report. All templates are compliant with ICH E3 guidelines
-          and can be customized to meet your specific needs.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template) => (
-            <div 
-              key={template.id}
-              className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                selectedTemplate === template.id 
-                  ? 'border-primary ring-1 ring-primary'
-                  : 'hover:border-gray-300 hover:shadow'
-              }`}
-              onClick={() => setSelectedTemplate(template.id)}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-medium">{template.title}</h3>
-                {selectedTemplate === template.id && (
-                  <div className="bg-primary text-white p-1 rounded-full">
-                    <CheckCircle size={16} />
-                  </div>
-                )}
-              </div>
-              <p className="text-sm text-gray-500 mb-3">
-                {template.description}
-              </p>
-              <div className="text-xs bg-gray-100 text-gray-600 rounded px-2 py-1 inline-block">
-                {template.category}
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {selectedTemplate && (
-          <div className="mt-6 pt-6 border-t flex justify-between items-center">
-            <div>
-              <span className="font-medium">
-                Selected: {templates.find(t => t.id === selectedTemplate)?.title}
-              </span>
-            </div>
-            <div className="flex space-x-3">
-              <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                Preview Template
-              </button>
-              <button className="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors">
-                Create CSR with this Template
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-      
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-2">Import CSR Structure</h2>
-        <p className="text-gray-500 mb-4">
-          Already have a CSR structure? Import it to create a new CSR based on your existing work.
-        </p>
-        
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-          <div className="mb-4">
-            <Upload className="h-10 w-10 text-gray-400 mx-auto" />
-          </div>
-          <p className="text-sm text-gray-500 mb-4">
-            Drag and drop your existing CSR file here, or click to browse
-          </p>
-          <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
-            Select File
-          </button>
-          <p className="text-xs text-gray-400 mt-3">
-            Supported file types: DOCX, PDF, XML
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Editor component
-const CSREditor = () => {
-  return (
-    <div className="bg-white rounded-lg shadow flex flex-col h-full min-h-[60vh]">
-      <div className="px-6 py-4 border-b flex items-center justify-between">
-        <div className="flex items-center">
-          <h2 className="text-lg font-medium">CSR Editor</h2>
-          <span className="ml-3 text-sm text-gray-500">Phase 2 Oncology Study CSR</span>
-        </div>
-        
-        <div className="flex items-center space-x-3">
-          <button className="px-4 py-1.5 border border-gray-300 text-sm rounded hover:bg-gray-50 flex items-center">
-            <Download size={14} className="mr-1.5" />
-            Export
-          </button>
-          <button className="px-4 py-1.5 bg-primary text-white text-sm rounded hover:bg-opacity-90 flex items-center">
-            <Sparkles size={14} className="mr-1.5" />
-            AI Assist
-          </button>
-        </div>
-      </div>
-      
-      <div className="flex flex-1 overflow-hidden">
-        {/* Document navigator */}
-        <div className="w-64 border-r overflow-y-auto p-3">
-          <div className="mb-3">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                <Search size={14} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                className="block w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="Find section..."
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-0.5">
-            <SectionItem 
-              title="1. Title Page" 
-              isCompleted={true} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="2. Synopsis" 
-              isCompleted={true} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="3. Table of Contents" 
-              isCompleted={true} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="4. List of Abbreviations" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="5. Ethics" 
-              isCompleted={false} 
-              isActive={true}
-            />
-            <SectionItem 
-              title="6. Investigators" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="7. Study Objectives" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="8. Investigational Plan" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="9. Study Patients" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="10. Efficacy Evaluation" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="11. Safety Evaluation" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="12. Discussion" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="13. Conclusion" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="14. References" 
-              isCompleted={false} 
-              isActive={false}
-            />
-            <SectionItem 
-              title="15. Appendices" 
-              isCompleted={false} 
-              isActive={false}
-            />
-          </div>
-        </div>
-        
-        {/* Editor area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6">
-            <h1 className="text-2xl font-bold mb-4">5. Ethics</h1>
-            
-            <div className="prose prose-sm max-w-none">
-              <h2>5.1 Independent Ethics Committee (IEC) or Institutional Review Board (IRB)</h2>
-              <p>
-                The study protocol, informed consent form, and other relevant study documents were reviewed and approved by the Independent Ethics Committee (IEC) or Institutional Review Board (IRB) at each participating center prior to study initiation. The study was conducted in accordance with the ethical principles that have their origin in the Declaration of Helsinki, Good Clinical Practice (GCP) guidelines, and applicable regulatory requirements.
-              </p>
-              <p>
-                A list of all IECs/IRBs that approved the study, along with the name of the committee chair and the date of approval, is provided in Appendix 16.1.3.
-              </p>
-              
-              <h2>5.2 Ethical Conduct of the Study</h2>
-              <p>
-                The study was conducted in compliance with the protocol, GCP, and applicable regulatory requirements. Compliance was ensured through regular monitoring visits, training of study personnel, and review of study documentation.
-              </p>
-              <p>
-                No significant deviations from GCP were identified during the conduct of the study. Minor protocol deviations are summarized in Section 10.2 and detailed in Appendix 16.2.2.
-              </p>
-              
-              <h2>5.3 Patient Information and Consent</h2>
-              <p>
-                Prior to any study-related procedures, written informed consent was obtained from each patient using an IEC/IRB-approved informed consent form. The process of obtaining informed consent was documented in each patient's source records.
-              </p>
-              <p>
-                The informed consent form explained the nature, purpose, possible risks and benefits of the study in language understandable to the patients. Patients were given adequate time to read the information, ask questions, and decide whether to participate. A copy of the signed informed consent form was provided to each patient.
-              </p>
-              <p>
-                <span className="text-primary">[ Draft - Revise with study-specific details ]</span>
-              </p>
-            </div>
-          </div>
-          
-          <div className="border-t p-3 flex items-center justify-between bg-gray-50">
-            <div className="flex space-x-3">
-              <button className="px-3 py-1.5 border border-gray-300 text-sm rounded hover:bg-gray-100 flex items-center">
-                <List size={14} className="mr-1.5" />
-                Comments
-              </button>
-              <button className="px-3 py-1.5 border border-gray-300 text-sm rounded hover:bg-gray-100 flex items-center">
-                <FileCheck size={14} className="mr-1.5" />
-                Quality Check
-              </button>
-            </div>
-            
-            <div>
-              <button className="px-4 py-1.5 bg-primary text-white text-sm rounded hover:bg-opacity-90">
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Guidance component
-const CSRGuidance = ({ guidance, isLoading }) => {
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center mb-4">
-          <Book size={24} className="text-primary mr-3" />
-          <h2 className="text-xl font-semibold">ICH E3 Guidance</h2>
-        </div>
-        
-        <p className="text-gray-500 mb-6">
-          The International Council for Harmonisation (ICH) E3 guideline provides guidance on the structure and content
-          of Clinical Study Reports (CSRs). Below are key resources to help ensure compliance with ICH E3 requirements.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="border rounded-lg p-4 hover:shadow-sm">
-            <h3 className="font-medium mb-2">ICH E3 Structure and Content of Clinical Study Reports</h3>
-            <p className="text-sm text-gray-500 mb-3">
-              Official ICH E3 guideline defining the standard structure and content requirements for CSRs.
-            </p>
-            <a 
-              href="https://ich.org/page/efficacy-guidelines" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline text-sm flex items-center"
-            >
-              <ExternalLink size={14} className="mr-1" />
-              View Official Guideline
-            </a>
-          </div>
-          
-          <div className="border rounded-lg p-4 hover:shadow-sm">
-            <h3 className="font-medium mb-2">ICH E3 Q&A Document (R1)</h3>
-            <p className="text-sm text-gray-500 mb-3">
-              Questions and answers that clarify key aspects of the ICH E3 guideline implementation.
-            </p>
-            <a 
-              href="https://ich.org/page/efficacy-guidelines" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline text-sm flex items-center"
-            >
-              <ExternalLink size={14} className="mr-1" />
-              View Q&A Document
-            </a>
-          </div>
-        </div>
-        
-        <h3 className="font-medium mb-3">ICH E3 Section Guidelines</h3>
-        
-        {isLoading ? (
-          <div className="flex justify-center p-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        ) : guidance.length > 0 ? (
-          <div className="space-y-4">
-            {guidance.map((item, index) => (
-              <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
-                <h4 className="font-medium text-primary">{item.title}</h4>
-                <p className="text-sm text-gray-500 mt-1">{item.description}</p>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-xs text-gray-400">Last updated: {item.lastUpdated}</span>
-                  <a 
-                    href={item.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline"
-                  >
-                    View Document
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="border rounded-lg p-6 text-center text-gray-500">
-            No guidance documents available
-          </div>
-        )}
-      </div>
-      
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">AI-Powered Guidance</h2>
-        <p className="text-gray-500 mb-6">
-          Get instant guidance on specific CSR sections using our AI-assisted regulatory intelligence system.
-        </p>
-        
-        <div className="flex items-center mb-4">
-          <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search size={16} className="text-gray-400" />
-            </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-              placeholder="Ask about a specific CSR section or requirement..."
-            />
-          </div>
-          <button className="ml-3 px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors flex items-center">
-            <Sparkles size={16} className="mr-2" />
-            Get AI Guidance
-          </button>
-        </div>
-        
-        <div className="text-sm text-gray-500 flex items-center">
-          <Sparkles size={14} className="text-primary mr-2" />
-          Example: "What should be included in the Safety Evaluation section?" or "ICH E3 synopsis requirements"
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Settings component
-const CSRSettings = () => {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold mb-4">CSR Intelligence Settings</h2>
-      <p className="text-gray-500 mb-6">
-        Configure your CSR Intelligence settings, templates, and AI capabilities.
-      </p>
-      
-      <div className="space-y-6">
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-medium mb-3">Template Settings</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Default Template</div>
-                <div className="text-sm text-gray-500">Set the default template used when creating new CSRs</div>
-              </div>
-              <select className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
-                <option value="ich-e3-standard">ICH E3 Standard CSR</option>
-                <option value="ich-e3-phase1">ICH E3 Phase 1 CSR</option>
-                <option value="ich-e3-phase2">ICH E3 Phase 2 CSR</option>
-                <option value="nis">Non-Interventional Study CSR</option>
-                <option value="medical-device">Medical Device Clinical Investigation Report</option>
-                <option value="custom">Custom CSR Template</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Custom Headers & Footers</div>
-                <div className="text-sm text-gray-500">Enable custom headers and footers for CSR documents</div>
-              </div>
-              <div className="flex items-center">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                </label>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Section Numbering Style</div>
-                <div className="text-sm text-gray-500">Configure the section numbering style for CSRs</div>
-              </div>
-              <select className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
-                <option value="numeric">Numeric (1, 1.1, 1.1.1)</option>
-                <option value="alphanumeric">Alphanumeric (A, A.1, A.1.1)</option>
-                <option value="outline">Outline (I, I.A, I.A.1)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-medium mb-3">AI Writing Assistant</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">AI Writing Assistant</div>
-                <div className="text-sm text-gray-500">Enable AI suggestions for CSR content generation</div>
-              </div>
-              <div className="flex items-center">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                </label>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Content Enhancement Level</div>
-                <div className="text-sm text-gray-500">Set the level of AI assistance for content enhancement</div>
-              </div>
-              <select className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
-                <option value="minimal">Minimal (Grammar & Typos Only)</option>
-                <option value="moderate">Moderate (Style & Structure)</option>
-                <option value="substantial">Substantial (Content Generation)</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Regulatory Compliance Check</div>
-                <div className="text-sm text-gray-500">Automatically check content against ICH guidelines</div>
-              </div>
-              <div className="flex items-center">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-medium mb-3">Export Settings</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Default Export Format</div>
-                <div className="text-sm text-gray-500">Set the default format for CSR exports</div>
-              </div>
-              <select className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
-                <option value="docx">Microsoft Word (DOCX)</option>
-                <option value="pdf">PDF</option>
-                <option value="html">HTML</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Include Change Tracking</div>
-                <div className="text-sm text-gray-500">Include change tracking information in exports</div>
-              </div>
-              <div className="flex items-center">
-                <label className="inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" />
-                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="border-t mt-8 pt-6 flex justify-end space-x-3">
-        <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-          Cancel
+      {/* Module navigation tabs */}
+      <div className="bg-white border-b px-6 flex space-x-6 overflow-x-auto">
+        <button
+          className={`py-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            activeTab === 'dashboard'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('dashboard')}
+        >
+          Dashboard
         </button>
-        <button className="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors">
-          Save Settings
+        
+        <button
+          className={`py-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            activeTab === 'templates'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('templates')}
+        >
+          Templates
+        </button>
+        
+        <button
+          className={`py-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            activeTab === 'analytics'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('analytics')}
+        >
+          Analytics
+        </button>
+        
+        <button
+          className={`py-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            activeTab === 'guidance'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('guidance')}
+        >
+          Regulatory Guidance
+        </button>
+        
+        <button
+          className={`py-4 border-b-2 font-medium text-sm whitespace-nowrap ${
+            activeTab === 'editor'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={() => setActiveTab('editor')}
+        >
+          CSR Editor
         </button>
       </div>
-    </div>
-  );
-};
-
-// Helper components
-const DashboardCard = ({ title, value, icon, color }) => {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
-    pink: 'bg-pink-50 text-pink-600',
-  };
-  
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm font-medium text-gray-500">{title}</div>
-          <div className="mt-1 text-3xl font-semibold">{value}</div>
-        </div>
-        <div className={`p-3 rounded-full ${colorClasses[color]}`}>
-          {icon}
-        </div>
+      
+      {/* Tab content */}
+      <div className="flex-1 overflow-auto bg-gray-50 px-6 py-6">
+        {renderTabContent()}
       </div>
-    </div>
-  );
-};
-
-const StatusBadge = ({ status }) => {
-  const statusClasses = {
-    Draft: 'bg-gray-100 text-gray-800',
-    'In Review': 'bg-yellow-100 text-yellow-800',
-    Completed: 'bg-green-100 text-green-800',
-  };
-  
-  return (
-    <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusClasses[status]}`}>
-      {status}
-    </span>
-  );
-};
-
-const ActionButton = ({ icon, text, onClick }) => {
-  return (
-    <button
-      className="flex flex-col items-center justify-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-      onClick={onClick}
-    >
-      <div className="p-2 bg-primary bg-opacity-10 rounded-full text-primary">
-        {icon}
-      </div>
-      <span className="mt-2 text-sm font-medium">{text}</span>
-    </button>
-  );
-};
-
-const SectionItem = ({ title, isCompleted, isActive }) => {
-  return (
-    <div 
-      className={`flex items-center p-2 rounded text-sm cursor-pointer ${
-        isActive ? 'bg-primary text-white' : 'hover:bg-gray-100'
-      }`}
-    >
-      <div className="w-5 h-5 mr-2 flex-shrink-0">
-        {isCompleted ? (
-          <div className={`rounded-full flex items-center justify-center ${isActive ? 'bg-white text-primary' : 'bg-green-100 text-green-600'}`}>
-            <CheckCircle size={16} />
-          </div>
-        ) : (
-          <div className={`rounded-full border ${isActive ? 'border-white' : 'border-gray-300'}`}></div>
-        )}
-      </div>
-      <span className="truncate">{title}</span>
     </div>
   );
 };
