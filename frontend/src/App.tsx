@@ -4,6 +4,7 @@ import ProgramDashboard from './pages/ProgramDashboard';
 import StudyWorkspace from './pages/StudyWorkspace';
 import VaultView from './pages/VaultView';
 import IndWizard from './pages/IndWizard';
+import AdminOrgUsers from './pages/AdminOrgUsers';
 import Login from './pages/Login';
 import PortalShell from './layouts/PortalShell';
 import { PortalProvider } from './context/PortalContext';
@@ -21,6 +22,9 @@ export default function App() {
           <Route path="/studies/:studyId" element={<StudyWorkspace />} />
           <Route path="/studies/:studyId/vault" element={<VaultView />} />
           <Route path="/studies/:studyId/ind" element={<IndWizard />} />
+          
+          {/* Admin routes */}
+          <Route path="/admin/org-users" element={<AdminOrgUsers />} />
         </Route>
         
         <Route path="*" element={<Navigate to="/dashboard" />} />

@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { PortalContext } from '../context/PortalContext';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from '@fluentui/react';
+import { useNavigate } from 'react-router-dom';
 
 interface Organization {
   id: string;
@@ -18,12 +19,20 @@ interface Study {
   name: string;
 }
 
+interface UserRole {
+  orgId: string;
+  roleId: number;
+  roleName: string;
+}
+
 export default function SideNav() {
-  const { token } = useContext(AuthContext)!;
+  const { token, user } = useContext(AuthContext)!;
   const ctx = useContext(PortalContext);
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [studies, setStudies] = useState<Study[]>([]);
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
+  const navigate = useNavigate();
 
   // Load organizations for CRO user or current user's org
   useEffect(() => { 
@@ -82,6 +91,29 @@ export default function SideNav() {
       }
     })(); 
   }, [ctx.programId, token]);
+
+  // Load user roles for all organizations
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    (async () => {
+      try {
+        // This would be a real API endpoint in production
+        // For now, we'll simulate admin role for testing
+        setUserRoles([
+          { orgId: orgs[0]?.id, roleId: 1, roleName: 'Admin' }
+        ]);
+      } catch (error) {
+        console.error('Error loading user roles:', error);
+      }
+    })();
+  }, [user?.id, orgs]);
+
+  // Check if user is admin for the selected org
+  const isAdminForCurrentOrg = () => {
+    if (!ctx.orgId) return false;
+    return userRoles.some(r => r.orgId === ctx.orgId && r.roleId === 1);
+  };
 
   return (
     <div style={{
@@ -164,6 +196,25 @@ export default function SideNav() {
             </div>
           ))}
         </>
+      )}
+      
+      {/* Administration section (only visible to admins) */}
+      {isAdminForCurrentOrg() && (
+        <div style={{ marginTop: 32 }}>
+          <h4 style={{ 
+            margin: '0 0 8px 0', 
+            borderTop: '1px solid #ddd',
+            paddingTop: 16
+          }}>
+            Administration
+          </h4>
+          
+          <div style={{ padding: '4px 0' }}>
+            <Link onClick={() => navigate('/admin/org-users')}>
+              Organization Users
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );

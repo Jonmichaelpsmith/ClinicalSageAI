@@ -6,6 +6,7 @@ import programsRouter from './routes/programs.js';
 import docsRouter from './routes/documents.js';
 import searchRouter from './routes/search.js';
 import lockRouter from './routes/lock.js';
+import adminRouter from './routes/admin.js';
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,8 @@ app.use('/api', docsRouter);
 app.use('/api', searchRouter);
 // lock routes
 app.use('/api', lockRouter);
+// admin routes
+app.use('/api', adminRouter);
 
 // Serve frontend in production (after running npm run build)
 if (process.env.NODE_ENV === 'production') {
