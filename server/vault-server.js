@@ -557,7 +557,20 @@ app.post('/api/vault/auth/token', async (req, res) => {
         return res.status(503).json({ error: 'Authentication service unavailable - JWT_SECRET not configured' });
       }
       
-      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '24h' });
+      // Create a simple token using crypto instead of JWT
+      const payload = JSON.stringify(user);
+      const header = JSON.stringify({ alg: 'HS256', typ: 'JWT' });
+      
+      // Base64 encode parts
+      const encodedHeader = Buffer.from(header).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      const encodedPayload = Buffer.from(payload).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      
+      // Create signature
+      const signatureInput = encodedHeader + '.' + encodedPayload;
+      const signature = crypto.createHmac('sha256', process.env.JWT_SECRET).update(signatureInput).digest('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      
+      // Combine to create token
+      const token = `${encodedHeader}.${encodedPayload}.${signature}`;
       
       // Record audit event
       await recordAuditEvent(user.id, 'user_login', {
@@ -593,7 +606,20 @@ app.post('/api/vault/auth/token', async (req, res) => {
         name: data.name
       };
       
-      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '24h' });
+      // Create a simple token using crypto instead of JWT
+      const payload = JSON.stringify(user);
+      const header = JSON.stringify({ alg: 'HS256', typ: 'JWT' });
+      
+      // Base64 encode parts
+      const encodedHeader = Buffer.from(header).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      const encodedPayload = Buffer.from(payload).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      
+      // Create signature
+      const signatureInput = encodedHeader + '.' + encodedPayload;
+      const signature = crypto.createHmac('sha256', process.env.JWT_SECRET).update(signatureInput).digest('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      
+      // Combine to create token
+      const token = `${encodedHeader}.${encodedPayload}.${signature}`;
       
       // Record audit event
       await recordAuditEvent(user.id, 'user_login', {
