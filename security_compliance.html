@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ Security & Compliance - Enterprise-grade Protection for Regulatory Data</title>
+    <meta name="description" content="Learn about TrialSage's comprehensive security and compliance features, including blockchain verification, 21 CFR Part 11 compliance, and enterprise-grade data protection.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #333;
+            --secondary: #666;
+            --yprime-pink: #FF1493;
+            --yprime-pink-light: #FFB6C1;
+            --yprime-pink-10: rgba(255, 20, 147, 0.1);
+            --yprime-pink-20: rgba(255, 20, 147, 0.2);
+            --text-dark: #333;
+            --text-medium: #555;
+            --text-light: #777;
+            --section-bg: #ffffff;
+            --section-bg-alt: #f9f9f9;
+            --card-bg: #ffffff;
+            --card-bg-secondary: #f9f9f9;
+            --border-light: #eaeaea;
+            --success: #21A67A;
+            --warning: #FF9800;
+            --info: #5D87FF;
+            --error: #F44336;
+            --gradient-start: #f9f9f9;
+            --gradient-end: #f2f2f2;
+            --security-blue: #2C3E50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            color: var(--text-dark);
+            background-color: var(--section-bg);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--text-dark);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--yprime-pink);
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-medium);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--yprime-pink);
+        }
+
+        .cta-button {
+            background-color: var(--yprime-pink);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            margin-left: 30px;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background-color: #e00e84;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--security-blue), #192a56);
+            color: white;
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-medium);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .security-feature-card {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .security-feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--yprime-pink-10);
+            color: var(--yprime-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .feature-icon.blue {
+            background-color: rgba(44, 62, 80, 0.1);
+            color: var(--security-blue);
+        }
+
+        .feature-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .feature-description {
+            color: var(--text-medium);
+            margin-bottom: 20px;
+        }
+
+        .compliance-section {
+            padding: 80px 0;
+            background-color: var(--section-bg-alt);
+        }
+
+        .compliance-card {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .compliance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .compliance-content {
+            padding: 25px;
+        }
+
+        .compliance-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .compliance-description {
+            color: var(--text-medium);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .security-module {
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .security-module-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .security-module-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-right: 15px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .security-module-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .security-features-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .security-feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .security-feature-item i {
+            color: var(--yprime-pink);
+            margin-right: 12px;
+            margin-top: 3px;
+        }
+
+        .comparison-section {
+            padding: 80px 0;
+            background-color: var(--section-bg);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .comparison-table th {
+            background-color: var(--security-blue);
+            color: white;
+            text-align: left;
+            padding: 15px 20px;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: var(--section-bg-alt);
+        }
+
+        .comparison-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .comparison-table i.fa-check {
+            color: var(--success);
+        }
+
+        .comparison-table i.fa-times {
+            color: var(--error);
+        }
+
+        .footer {
+            background-color: #222;
+            color: #fff;
+            padding: 60px 0 30px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--yprime-pink);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .cta-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--security-blue), #192a56);
+            color: white;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .cta-description {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button-white {
+            background-color: white;
+            color: var(--security-blue);
+            padding: 12px 30px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button-white:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .certificate-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            margin-right: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+        }
+
+        .certificate-badge img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .certificate-badge span {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .blockchain-diagram {
+            width: 100%;
+            max-width: 750px;
+            margin: 40px auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .security-stat {
+            text-align: center;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .security-stat-value {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--security-blue);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .security-stat-label {
+            color: var(--text-medium);
+            font-size: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .badge-blue {
+            background-color: rgba(44, 62, 80, 0.1);
+            color: var(--security-blue);
+        }
+
+        .badge-success {
+            background-color: rgba(33, 166, 122, 0.1);
+            color: var(--success);
+        }
+
+        .badge-info {
+            background-color: rgba(93, 135, 255, 0.1);
+            color: var(--info);
+        }
+
+        .content-section {
+            padding: 80px 0;
+        }
+
+        .content-section:nth-of-type(even) {
+            background-color: var(--section-bg-alt);
+        }
+
+        @media (max-width: 991px) {
+            .hero-title {
+                font-size: 36px;
+            }
+            
+            .section-title {
+                font-size: 28px;
+            }
+            
+            .cta-title {
+                font-size: 28px;
+            }
+            
+            .nav-links {
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .navbar {
+                display: none;
+            }
+            
+            .header-inner {
+                justify-content: center;
+            }
+            
+            .hero-title {
+                font-size: 30px;
+            }
+            
+            .hero-description {
+                font-size: 16px;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+            
+            .section-subtitle {
+                font-size: 16px;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="/" class="logo">
+                    Trial<span>Sage</span><sup style="font-size: 12px; font-weight: 600;">™</sup>
+                </a>
+                <nav class="navbar">
+                    <ul class="nav-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/client-portal.html">Client Portal</a></li>
+                        <li><a href="#blockchain">Blockchain</a></li>
+                        <li><a href="#compliance">Compliance</a></li>
+                        <li><a href="#data-protection">Data Protection</a></li>
+                    </ul>
+                    <a href="#contact" class="cta-button">Request Demo</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Enterprise-Grade Security & Compliance</h1>
+                <p class="hero-description">TrialSage™ provides industry-leading security features and robust compliance capabilities, including blockchain verification, to protect your most valuable regulatory assets.</p>
+                <a href="#key-features" class="cta-button-white">Explore Security Features</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section id="key-features" class="content-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Comprehensive Security Framework</h2>
+                <p class="section-subtitle">Our multi-layered security approach provides defense-in-depth protection for your sensitive regulatory documentation</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- Feature 1 -->
+                <div class="security-feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3 class="feature-title">Enterprise-Grade Access Control</h3>
+                    <p class="feature-description">Granular role-based access control (RBAC) system with multi-factor authentication ensures only authorized personnel can access sensitive documents.</p>
+                    <div>
+                        <span class="badge badge-blue">RBAC</span>
+                        <span class="badge badge-blue">MFA</span>
+                        <span class="badge badge-success">Audit Trails</span>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="security-feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">End-to-End Encryption</h3>
+                    <p class="feature-description">All data is protected with AES-256 encryption at rest and TLS 1.3 in transit, with secure key management and regular key rotation practices.</p>
+                    <div>
+                        <span class="badge badge-blue">AES-256</span>
+                        <span class="badge badge-blue">TLS 1.3</span>
+                        <span class="badge badge-info">Key Rotation</span>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="security-feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-eye-slash"></i>
+                    </div>
+                    <h3 class="feature-title">Privacy by Design</h3>
+                    <p class="feature-description">Built from the ground up with privacy-preserving architecture, including data minimization principles and configurable data retention policies.</p>
+                    <div>
+                        <span class="badge badge-blue">GDPR Compliant</span>
+                        <span class="badge badge-blue">HIPAA Compliant</span>
+                        <span class="badge badge-success">Data Minimization</span>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="security-feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3 class="feature-title">Secure Operations</h3>
+                    <p class="feature-description">Regular penetration testing, static code analysis, and continuous security monitoring ensure your data is protected against the latest threats.</p>
+                    <div>
+                        <span class="badge badge-blue">SOC 2 Type II</span>
+                        <span class="badge badge-blue">ISO 27001</span>
+                        <span class="badge badge-info">Vulnerability Management</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blockchain Section -->
+    <section id="blockchain" class="content-section" style="background-color: var(--section-bg-alt);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Blockchain-Secured Document Integrity</h2>
+                <p class="section-subtitle">Our revolutionary blockchain implementation provides immutable audit trails and tamper-proof document verification</p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 50px;">
+                <img src="https://via.placeholder.com/800x400?text=Blockchain+Document+Verification+Diagram" alt="Blockchain Document Verification Diagram" class="blockchain-diagram">
+            </div>
+
+            <div class="grid-container">
+                <!-- Blockchain Feature 1 -->
+                <div class="security-module">
+                    <div class="security-module-header">
+                        <div class="security-module-icon" style="background-color: var(--security-blue);">
+                            <i class="fas fa-fingerprint"></i>
+                        </div>
+                        <h3 class="security-module-title">Immutable Audit Trail</h3>
+                    </div>
+                    <p>Every document action—creation, modification, approval, or deletion—is cryptographically recorded on our private blockchain, creating a tamper-proof audit trail that meets and exceeds regulatory requirements.</p>
+                    
+                    <ul class="security-features-list">
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Cryptographic Proof</strong>: Each transaction is secured with advanced cryptography, providing mathematically verifiable proof of document history.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Decentralized Verification</strong>: Consensus mechanisms ensure no single point of failure or vulnerability in the audit trail.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Regulatory Acceptance</strong>: Our blockchain implementation is designed specifically to meet FDA, EMA, and other regulatory requirements for electronic records.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Blockchain Feature 2 -->
+                <div class="security-module">
+                    <div class="security-module-header">
+                        <div class="security-module-icon" style="background-color: var(--security-blue);">
+                            <i class="fas fa-file-signature"></i>
+                        </div>
+                        <h3 class="security-module-title">Digital Signature Integration</h3>
+                    </div>
+                    <p>Our blockchain-based digital signature system provides legally binding, non-repudiable document signing that exceeds traditional electronic signature solutions in security and compliance.</p>
+                    
+                    <ul class="security-features-list">
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>21 CFR Part 11 Compliant</strong>: Fully compliant with FDA's electronic signature requirements, including signer authentication and intent verification.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Blockchain Verification</strong>: Each signature is recorded on the blockchain with a timestamp, signers' identity, and document hash for permanent verification.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Multi-party Signatures</strong>: Support for complex approval workflows with sequential or parallel signature requirements.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 50px; padding: 30px; background-color: rgba(44, 62, 80, 0.05); border-radius: 8px;">
+                <h3 style="font-size: 24px; margin-bottom: 20px; color: var(--security-blue);">Blockchain Technology in Regulatory Documentation</h3>
+                <p style="margin-bottom: 20px; line-height: 1.6;">TrialSage™ integrates a permissioned blockchain architecture specifically designed for regulatory documentation. Our implementation provides:</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px;">
+                    <div style="display: flex; align-items: flex-start;">
+                        <i class="fas fa-check-circle" style="color: var(--security-blue); margin-right: 15px; margin-top: 3px;"></i>
+                        <div>
+                            <h4 style="margin-bottom: 8px;">Document Provenance</h4>
+                            <p style="color: var(--text-medium); font-size: 15px;">Complete, verifiable history of document creation and changes</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start;">
+                        <i class="fas fa-check-circle" style="color: var(--security-blue); margin-right: 15px; margin-top: 3px;"></i>
+                        <div>
+                            <h4 style="margin-bottom: 8px;">Regulatory Compliance</h4>
+                            <p style="color: var(--text-medium); font-size: 15px;">Meets and exceeds FDA and EMA requirements for electronic records</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start;">
+                        <i class="fas fa-check-circle" style="color: var(--security-blue); margin-right: 15px; margin-top: 3px;"></i>
+                        <div>
+                            <h4 style="margin-bottom: 8px;">Data Integrity</h4>
+                            <p style="color: var(--text-medium); font-size: 15px;">Cryptographic guarantees against tampering or unauthorized changes</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start;">
+                        <i class="fas fa-check-circle" style="color: var(--security-blue); margin-right: 15px; margin-top: 3px;"></i>
+                        <div>
+                            <h4 style="margin-bottom: 8px;">Secure Collaboration</h4>
+                            <p style="color: var(--text-medium); font-size: 15px;">Verifiable multi-party review and approval processes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Compliance Section -->
+    <section id="compliance" class="content-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Comprehensive Regulatory Compliance</h2>
+                <p class="section-subtitle">TrialSage™ is designed to meet the most stringent global regulatory requirements for document management and data integrity</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- Compliance Feature 1 -->
+                <div class="security-module">
+                    <div class="security-module-header">
+                        <div class="security-module-icon" style="background-color: var(--security-blue);">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <h3 class="security-module-title">21 CFR Part 11 Compliance</h3>
+                    </div>
+                    <p>TrialSage™ provides comprehensive support for all FDA 21 CFR Part 11 requirements for electronic records and electronic signatures in regulatory submissions.</p>
+                    
+                    <ul class="security-features-list">
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Electronic Signatures</strong>: Compliant signature implementation with identity verification, signing reason, and non-repudiation.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Audit Trails</strong>: Secure, computer-generated, time-stamped audit trails that record all document activities.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Access Controls</strong>: System access limited to authorized individuals with comprehensive user authentication.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>System Validation</strong>: Documented evidence of system validation and testing for document processing.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Compliance Feature 2 -->
+                <div class="security-module">
+                    <div class="security-module-header">
+                        <div class="security-module-icon" style="background-color: var(--security-blue);">
+                            <i class="fas fa-globe-europe"></i>
+                        </div>
+                        <h3 class="security-module-title">Global Regulatory Support</h3>
+                    </div>
+                    <p>Our compliance framework supports regulatory requirements across multiple global jurisdictions, enabling seamless submissions to different regulatory authorities.</p>
+                    
+                    <ul class="security-features-list">
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>EMA Annex 11</strong>: Full compliance with European regulatory requirements for computerized systems.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>MHRA Data Integrity</strong>: Adherence to UK MHRA guidance on GxP data integrity.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>PMDA (Japan)</strong>: Compliance with Japanese regulatory requirements for electronic documentation.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>NMPA (China)</strong>: Support for Chinese regulatory electronic submissions standards.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 60px;">
+                <h3 style="font-size: 24px; margin-bottom: 30px; text-align: center; color: var(--text-dark);">Certification & Compliance Standards</h3>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 40px;">
+                    <div class="certificate-badge">
+                        <img src="https://via.placeholder.com/30x30" alt="SOC 2 Type II">
+                        <span>SOC 2 Type II</span>
+                    </div>
+                    <div class="certificate-badge">
+                        <img src="https://via.placeholder.com/30x30" alt="ISO 27001">
+                        <span>ISO 27001</span>
+                    </div>
+                    <div class="certificate-badge">
+                        <img src="https://via.placeholder.com/30x30" alt="HIPAA">
+                        <span>HIPAA</span>
+                    </div>
+                    <div class="certificate-badge">
+                        <img src="https://via.placeholder.com/30x30" alt="GDPR">
+                        <span>GDPR</span>
+                    </div>
+                    <div class="certificate-badge">
+                        <img src="https://via.placeholder.com/30x30" alt="21 CFR Part 11">
+                        <span>21 CFR Part 11</span>
+                    </div>
+                    <div class="certificate-badge">
+                        <img src="https://via.placeholder.com/30x30" alt="GxP">
+                        <span>GxP</span>
+                    </div>
+                </div>
+
+                <div class="grid-container">
+                    <div class="security-stat">
+                        <span class="security-stat-value">100%</span>
+                        <span class="security-stat-label">21 CFR Part 11 Compliance</span>
+                    </div>
+                    <div class="security-stat">
+                        <span class="security-stat-value">ISO 27001</span>
+                        <span class="security-stat-label">Certified Information Security</span>
+                    </div>
+                    <div class="security-stat">
+                        <span class="security-stat-value">GDPR</span>
+                        <span class="security-stat-label">Data Protection Compliant</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Protection Section -->
+    <section id="data-protection" class="content-section" style="background-color: var(--section-bg-alt);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Enterprise Data Protection</h2>
+                <p class="section-subtitle">Our multi-layered data protection strategy ensures your sensitive regulatory information remains secure</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- Data Protection Feature 1 -->
+                <div class="security-feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3 class="feature-title">Secure Multi-tenant Architecture</h3>
+                    <p class="feature-description">Our platform uses advanced isolation techniques to ensure complete separation between customer environments, providing enterprise-grade security for CROs managing multiple biotech clients.</p>
+                    <div>
+                        <span class="badge badge-blue">Tenant Isolation</span>
+                        <span class="badge badge-blue">Data Segregation</span>
+                        <span class="badge badge-success">Enterprise-ready</span>
+                    </div>
+                </div>
+
+                <!-- Data Protection Feature 2 -->
+                <div class="security-feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Automated Backup & Recovery</h3>
+                    <p class="feature-description">Continuous backup with point-in-time recovery options ensures your regulatory documentation is always available and protected against data loss.</p>
+                    <div>
+                        <span class="badge badge-blue">99.99% Uptime</span>
+                        <span class="badge badge-blue">Geo-Redundancy</span>
+                        <span class="badge badge-success">Disaster Recovery</span>
+                    </div>
+                </div>
+
+                <!-- Data Protection Feature 3 -->
+                <div class="security-feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-shield-virus"></i>
+                    </div>
+                    <h3 class="feature-title">Advanced Threat Protection</h3>
+                    <p class="feature-description">Comprehensive security monitoring with AI-powered threat detection to identify and prevent unauthorized access attempts and potential data breaches.</p>
+                    <div>
+                        <span class="badge badge-blue">AI Monitoring</span>
+                        <span class="badge badge-blue">Intrusion Detection</span>
+                        <span class="badge badge-success">24/7 SOC</span>
+                    </div>
+                </div>
+
+                <!-- Data Protection Feature 4 -->
+                <div class="security-feature-card">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h3 class="feature-title">Customer-Managed Encryption</h3>
+                    <p class="feature-description">Optional customer-managed encryption keys give you complete control over data access, ensuring only your organization can decrypt sensitive regulatory information.</p>
+                    <div>
+                        <span class="badge badge-blue">BYOK</span>
+                        <span class="badge badge-blue">Key Rotation</span>
+                        <span class="badge badge-success">Full Control</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HEOR Security Section -->
+    <section class="content-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Dedicated HEOR Security Solutions</h2>
+                <p class="section-subtitle">Specialized security and compliance features for Health Economics and Outcomes Research</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- HEOR Feature 1 -->
+                <div class="security-module">
+                    <div class="security-module-header">
+                        <div class="security-module-icon" style="background-color: var(--yprime-pink);">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="security-module-title">Secure Analytics Environment</h3>
+                    </div>
+                    <p>Our HEOR module provides a secure, isolated environment for sensitive health economics data analysis with comprehensive audit trails and access controls.</p>
+                    
+                    <ul class="security-features-list">
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Protected Analytics Workspace</strong>: Isolated computation environment for sensitive patient-level analysis.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Data Anonymization</strong>: Automated de-identification tools that maintain analytical utility while protecting privacy.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Secure Output Controls</strong>: Review and approval workflows for HEOR results prior to export.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- HEOR Feature 2 -->
+                <div class="security-module">
+                    <div class="security-module-header">
+                        <div class="security-module-icon" style="background-color: var(--yprime-pink);">
+                            <i class="fas fa-hospital-user"></i>
+                        </div>
+                        <h3 class="security-module-title">Patient Data Protection</h3>
+                    </div>
+                    <p>Comprehensive security measures specifically designed for the protection of patient-level data used in health economics and outcomes research.</p>
+                    
+                    <ul class="security-features-list">
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>HIPAA & GDPR Compliance</strong>: Full regulatory compliance for protected health information.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Differential Privacy</strong>: Advanced mathematical techniques to prevent re-identification.
+                            </div>
+                        </li>
+                        <li class="security-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Secure Data Sharing</strong>: Controlled access to HEOR datasets with comprehensive permission management.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/heor_security.html" class="cta-button" style="background-color: var(--yprime-pink);">
+                    Explore Dedicated HEOR Security Solutions
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison-section" style="background-color: var(--section-bg-alt);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">TrialSage™ vs. Legacy Systems</h2>
+                <p class="section-subtitle">See how our security and compliance capabilities compare to traditional document management solutions</p>
+            </div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Security & Compliance Feature</th>
+                        <th>Legacy Systems</th>
+                        <th>TrialSage™</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Blockchain Document Verification</td>
+                        <td><i class="fas fa-times"></i> Not available</td>
+                        <td><i class="fas fa-check"></i> Comprehensive</td>
+                    </tr>
+                    <tr>
+                        <td>21 CFR Part 11 Compliance</td>
+                        <td><i class="fas fa-check"></i> Basic compliance</td>
+                        <td><i class="fas fa-check"></i> Full compliance with automated validation</td>
+                    </tr>
+                    <tr>
+                        <td>Multi-factor Authentication</td>
+                        <td><i class="fas fa-check"></i> Limited options</td>
+                        <td><i class="fas fa-check"></i> Multiple MFA methods with risk-based authentication</td>
+                    </tr>
+                    <tr>
+                        <td>Tamper-proof Audit Trails</td>
+                        <td><i class="fas fa-times"></i> Standard logs only</td>
+                        <td><i class="fas fa-check"></i> Cryptographically secured on blockchain</td>
+                    </tr>
+                    <tr>
+                        <td>Data Encryption</td>
+                        <td><i class="fas fa-check"></i> Basic encryption</td>
+                        <td><i class="fas fa-check"></i> End-to-end with customer-managed keys</td>
+                    </tr>
+                    <tr>
+                        <td>Global Regulatory Support</td>
+                        <td><i class="fas fa-check"></i> Limited to major markets</td>
+                        <td><i class="fas fa-check"></i> Comprehensive global support</td>
+                    </tr>
+                    <tr>
+                        <td>Secure Multi-tenant Architecture</td>
+                        <td><i class="fas fa-times"></i> Limited isolation</td>
+                        <td><i class="fas fa-check"></i> Complete tenant isolation with hierarchical access</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Experience Enterprise-Grade Security</h2>
+            <p class="cta-description">Request a personalized security assessment to see how TrialSage™ can protect your regulatory documentation and ensure compliance.</p>
+            <a href="#contact" class="cta-button-white">Schedule Security Assessment</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-title">TrialSage™</h3>
+                    <p style="color: #ccc; line-height: 1.6; margin-bottom: 20px;">
+                        Advanced AI-powered regulatory documentation platform with enterprise-grade security and compliance features.
+                    </p>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="#" style="color: #ccc;"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" style="color: #ccc;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: #ccc;"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Solutions</h3>
+                    <ul class="footer-links">
+                        <li><a href="/solutions_csr_intelligence.html">CSR Intelligence™</a></li>
+                        <li><a href="/solutions_ind_wizard.html">IND Wizard™</a></li>
+                        <li><a href="/clinical_trial_modules.html">ICH Wiz™</a></li>
+                        <li><a href="/solutions_vault.html">TrialSage Vault™ (TSV)</a></li>
+                        <li><a href="/solutions_study_architect.html">Study Architect™</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Webinars</a></li>
+                        <li><a href="#">White Papers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Contact</h3>
+                    <ul class="footer-links" style="color: #ccc;">
+                        <li style="margin-bottom: 10px;"><i class="fas fa-envelope" style="margin-right: 10px;"></i> info@concept2cures.com</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-phone" style="margin-right: 10px;"></i> +1 (555) 123-4567</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-map-marker-alt" style="margin-right: 10px;"></i> 123 Innovation Way, Boston, MA 02210</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 TrialSage™ by Concept2Cures. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple smooth scrolling for anchor links
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#' || targetId === '#contact') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

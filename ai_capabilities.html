@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ AI Capabilities - Advanced AI for Regulatory Excellence</title>
+    <meta name="description" content="Explore how TrialSage™ leverages advanced AI technologies to transform regulatory documentation, reduce risk, and accelerate compliance.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #333;
+            --secondary: #666;
+            --yprime-pink: #FF1493;
+            --yprime-pink-light: #FFB6C1;
+            --yprime-pink-10: rgba(255, 20, 147, 0.1);
+            --yprime-pink-20: rgba(255, 20, 147, 0.2);
+            --text-dark: #333;
+            --text-medium: #555;
+            --text-light: #777;
+            --section-bg: #ffffff;
+            --section-bg-alt: #f9f9f9;
+            --card-bg: #ffffff;
+            --card-bg-secondary: #f9f9f9;
+            --border-light: #eaeaea;
+            --success: #21A67A;
+            --warning: #FF9800;
+            --info: #5D87FF;
+            --error: #F44336;
+            --gradient-start: #f9f9f9;
+            --gradient-end: #f2f2f2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            color: var(--text-dark);
+            background-color: var(--section-bg);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--text-dark);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--yprime-pink);
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-medium);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--yprime-pink);
+        }
+
+        .cta-button {
+            background-color: var(--yprime-pink);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            margin-left: 30px;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background-color: #e00e84;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--yprime-pink), #9966CC);
+            color: white;
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-medium);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .ai-feature-card {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .ai-feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--yprime-pink-10);
+            color: var(--yprime-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .feature-description {
+            color: var(--text-medium);
+            margin-bottom: 20px;
+        }
+
+        .use-case-section {
+            padding: 80px 0;
+            background-color: var(--section-bg-alt);
+        }
+
+        .use-case-card {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .use-case-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .use-case-content {
+            padding: 25px;
+        }
+
+        .use-case-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .use-case-description {
+            color: var(--text-medium);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .ai-module {
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-module-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .ai-module-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-right: 15px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .ai-module-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .ai-features-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .ai-feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .ai-feature-item i {
+            color: var(--yprime-pink);
+            margin-right: 12px;
+            margin-top: 3px;
+        }
+
+        .comparison-section {
+            padding: 80px 0;
+            background-color: var(--section-bg);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .comparison-table th {
+            background-color: var(--yprime-pink);
+            color: white;
+            text-align: left;
+            padding: 15px 20px;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: var(--section-bg-alt);
+        }
+
+        .comparison-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .comparison-table i.fa-check {
+            color: var(--success);
+        }
+
+        .comparison-table i.fa-times {
+            color: var(--error);
+        }
+
+        .footer {
+            background-color: #222;
+            color: #fff;
+            padding: 60px 0 30px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--yprime-pink);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .testimonial-section {
+            padding: 80px 0;
+            background-color: var(--section-bg-alt);
+        }
+
+        .testimonial-card {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            padding: 30px;
+            position: relative;
+            margin-top: 40px;
+        }
+
+        .testimonial-card:before {
+            content: '"';
+            font-size: 80px;
+            color: var(--yprime-pink-10);
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            font-family: Georgia, serif;
+        }
+
+        .testimonial-content {
+            font-size: 16px;
+            color: var(--text-medium);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+
+        .author-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 15px;
+        }
+
+        .author-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .author-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .author-title {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .cta-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--yprime-pink), #9966CC);
+            color: white;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .cta-description {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button-white {
+            background-color: white;
+            color: var(--yprime-pink);
+            padding: 12px 30px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button-white:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 991px) {
+            .hero-title {
+                font-size: 36px;
+            }
+            
+            .section-title {
+                font-size: 28px;
+            }
+            
+            .cta-title {
+                font-size: 28px;
+            }
+            
+            .nav-links {
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .navbar {
+                display: none;
+            }
+            
+            .header-inner {
+                justify-content: center;
+            }
+            
+            .hero-title {
+                font-size: 30px;
+            }
+            
+            .hero-description {
+                font-size: 16px;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+            
+            .section-subtitle {
+                font-size: 16px;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+        }
+
+        /* Additional Animations & Effects */
+        .animated-gradient {
+            background: linear-gradient(270deg, #FF1493, #9966CC, #5D87FF);
+            background-size: 600% 600%;
+            animation: gradientShift 8s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .badge-primary {
+            background-color: var(--yprime-pink-10);
+            color: var(--yprime-pink);
+        }
+
+        .badge-success {
+            background-color: rgba(33, 166, 122, 0.1);
+            color: var(--success);
+        }
+
+        .badge-info {
+            background-color: rgba(93, 135, 255, 0.1);
+            color: var(--info);
+        }
+
+        .content-section {
+            padding: 80px 0;
+        }
+
+        .content-section:nth-of-type(even) {
+            background-color: var(--section-bg-alt);
+        }
+
+        .ai-benefit {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .ai-benefit-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--yprime-pink-10);
+            color: var(--yprime-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-right: 20px;
+            flex-shrink: 0;
+            font-size: 24px;
+        }
+
+        .ai-benefit-content {
+            flex: 1;
+        }
+
+        .ai-benefit-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .ai-benefit-description {
+            color: var(--text-medium);
+            line-height: 1.6;
+        }
+
+        .ai-stat {
+            text-align: center;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .ai-stat-value {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--yprime-pink);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .ai-stat-label {
+            color: var(--text-medium);
+            font-size: 16px;
+        }
+
+        .tech-pill {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--section-bg-alt);
+            border-radius: 20px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-medium);
+        }
+
+        .tech-pill i {
+            margin-right: 5px;
+            color: var(--yprime-pink);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="/" class="logo">
+                    Trial<span>Sage</span><sup style="font-size: 12px; font-weight: 600;">™</sup>
+                </a>
+                <nav class="navbar">
+                    <ul class="nav-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/client-portal.html">Client Portal</a></li>
+                        <li><a href="#ai-modules">AI Modules</a></li>
+                        <li><a href="#use-cases">Use Cases</a></li>
+                        <li><a href="#benefits">Benefits</a></li>
+                    </ul>
+                    <a href="#contact" class="cta-button">Request Demo</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section animated-gradient">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Transforming Regulatory Documentation with Advanced AI</h1>
+                <p class="hero-description">TrialSage™ leverages cutting-edge artificial intelligence to dramatically reduce risk, eliminate errors, and accelerate regulatory document creation and review processes.</p>
+                <a href="#key-features" class="cta-button-white">Explore AI Capabilities</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section id="key-features" class="content-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">AI-Powered Risk Reduction</h2>
+                <p class="section-subtitle">Our advanced AI capabilities help pharmaceutical and biotech companies minimize regulatory risks, prevent errors, and ensure compliance</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- Feature 1 -->
+                <div class="ai-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Anti-Hallucination Guardrails</h3>
+                    <p class="feature-description">TrialSage™ employs sophisticated guardrail systems to prevent AI hallucinations, ensuring all generated content is factually accurate and fully reliable for regulatory submissions.</p>
+                    <div>
+                        <span class="badge badge-primary">GPT-4o</span>
+                        <span class="badge badge-primary">RAG</span>
+                        <span class="badge badge-success">Fact-checking</span>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="ai-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3 class="feature-title">Automated Consistency Validation</h3>
+                    <p class="feature-description">Our AI automatically checks for inconsistencies across regulatory documents, identifying discrepancies in data, terminology, and claims that could lead to submission delays.</p>
+                    <div>
+                        <span class="badge badge-primary">Data Validation</span>
+                        <span class="badge badge-success">Cross-reference</span>
+                        <span class="badge badge-info">Error Prevention</span>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="ai-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">Regulatory Intelligence</h3>
+                    <p class="feature-description">TrialSage™ continuously monitors global regulatory changes, automatically updating document templates and validation rules to ensure compliance with the latest requirements.</p>
+                    <div>
+                        <span class="badge badge-primary">Real-time Updates</span>
+                        <span class="badge badge-success">Compliance</span>
+                        <span class="badge badge-info">FDA/EMA/PMDA</span>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="ai-feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3 class="feature-title">Smart Project Management</h3>
+                    <p class="feature-description">AI-powered timeline predictions and resource optimization identify potential bottlenecks before they occur, keeping regulatory submissions on track and ensuring deadlines are met.</p>
+                    <div>
+                        <span class="badge badge-primary">Predictive Analytics</span>
+                        <span class="badge badge-success">Timeline Optimization</span>
+                        <span class="badge badge-info">Resource Planning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Modules Section -->
+    <section id="ai-modules" class="content-section" style="background-color: var(--section-bg-alt);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">AI-Powered Modules</h2>
+                <p class="section-subtitle">Each TrialSage™ module is enhanced with specialized AI capabilities tailored to specific regulatory documentation challenges</p>
+            </div>
+
+            <!-- IND Wizard AI -->
+            <div class="ai-module">
+                <div class="ai-module-header">
+                    <div class="ai-module-icon" style="background-color: #4A7AFF;">
+                        <i class="fas fa-file-medical"></i>
+                    </div>
+                    <h3 class="ai-module-title">IND Wizard™ AI</h3>
+                </div>
+                <p>The IND Wizard™ module incorporates advanced document intelligence to streamline IND preparation and submission. It automatically identifies required documentation based on product type and therapeutic area, and validates content against FDA expectations.</p>
+                
+                <ul class="ai-features-list">
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Intelligent Gap Analysis</strong>: AI scans existing documentation to identify missing elements needed for IND submission, prioritizing them by importance.
+                        </div>
+                    </li>
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Automated Content Generation</strong>: Generates draft content for standard IND sections with factual accuracy guardrails and citations for all sources.
+                        </div>
+                    </li>
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Pre-submission Validation</strong>: Checks for regulatory inconsistencies, formatting issues, and missing references before FDA submission.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- CSR Intelligence AI -->
+            <div class="ai-module">
+                <div class="ai-module-header">
+                    <div class="ai-module-icon" style="background-color: #9966CC;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="ai-module-title">CSR Intelligence™ AI</h3>
+                </div>
+                <p>CSR Intelligence™ employs advanced natural language processing to extract meaningful insights from clinical study reports, enabling pattern recognition across studies and accelerating the review process.</p>
+                
+                <ul class="ai-features-list">
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Semantic Search</strong>: Natural language querying across all CSR content without requiring exact keyword matches.
+                        </div>
+                    </li>
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Adverse Event Pattern Detection</strong>: Automatically identifies and flags potential safety signals across multiple studies.
+                        </div>
+                    </li>
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Consistency Verification</strong>: Ensures alignment between protocols, statistical analysis plans, and final reports.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Study Architect AI -->
+            <div class="ai-module">
+                <div class="ai-module-header">
+                    <div class="ai-module-icon" style="background-color: #2CC389;">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3 class="ai-module-title">Study Architect™ AI</h3>
+                </div>
+                <p>Study Architect™ provides AI-powered protocol design assistance, helping clinical teams create more efficient and scientifically rigorous study designs while preventing common protocol issues.</p>
+                
+                <ul class="ai-features-list">
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Powering Optimization</strong>: AI-based sample size calculations and simulations based on historical trial data.
+                        </div>
+                    </li>
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Protocol Error Prevention</strong>: Identifies potential protocol design flaws, ambiguities, and operational challenges.
+                        </div>
+                    </li>
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Scientific Literature Integration</strong>: Automatically suggests relevant citations and scientific backing for protocol elements.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Vault AI -->
+            <div class="ai-module">
+                <div class="ai-module-header">
+                    <div class="ai-module-icon" style="background-color: var(--yprime-pink);">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3 class="ai-module-title">TrialSage Vault™ AI</h3>
+                </div>
+                <p>TrialSage Vault™ leverages document intelligence to transform static documents into searchable knowledge, automatically organizing and categorizing content while maintaining regulatory compliance.</p>
+                
+                <ul class="ai-features-list">
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Intelligent Document Categorization</strong>: Automatically classifies uploaded documents based on content analysis.
+                        </div>
+                    </li>
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Contextual Search</strong>: Understanding of regulatory terminology enables searching by concept rather than just keywords.
+                        </div>
+                    </li>
+                    <li class="ai-feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <strong>Automated Metadata Extraction</strong>: Identifies key information (study IDs, dates, product names) without manual tagging.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section id="use-cases" class="use-case-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Real-World AI Applications</h2>
+                <p class="section-subtitle">See how pharmaceutical and biotech companies are using TrialSage™ AI to transform their regulatory processes</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- Use Case 1 -->
+                <div class="use-case-card">
+                    <div class="use-case-content">
+                        <h3 class="use-case-title">IND Preparation Time Reduced by 45%</h3>
+                        <p class="use-case-description">A mid-sized biotech company used IND Wizard™ to accelerate their submission timeline, cutting preparation time nearly in half. The AI-powered gap analysis identified required documentation early in the process, while automated content generation provided compliant first drafts that only needed review rather than creation from scratch.</p>
+                        <p class="use-case-description" style="margin-top: 15px; font-weight: 600; color: var(--yprime-pink);">Result: FDA acceptance on first submission with zero information requests.</p>
+                    </div>
+                </div>
+
+                <!-- Use Case 2 -->
+                <div class="use-case-card">
+                    <div class="use-case-content">
+                        <h3 class="use-case-title">Protocol Design Optimization</h3>
+                        <p class="use-case-description">A clinical-stage pharmaceutical company utilized Study Architect™ AI to design a complex Phase 2b dose-finding study. The AI analyzed historical trial data in the same indication to recommend optimal sample sizes and endpoint measurements, while detecting potential operational challenges in the initial protocol draft.</p>
+                        <p class="use-case-description" style="margin-top: 15px; font-weight: 600; color: var(--yprime-pink);">Result: 22% reduction in patient enrollment needs while maintaining statistical power.</p>
+                    </div>
+                </div>
+
+                <!-- Use Case 3 -->
+                <div class="use-case-card">
+                    <div class="use-case-content">
+                        <h3 class="use-case-title">Cross-Study Safety Signal Detection</h3>
+                        <p class="use-case-description">A large pharmaceutical company with multiple compounds in the same therapeutic area used CSR Intelligence™ to analyze adverse event patterns across 14 completed clinical studies. The AI identified a previously undetected correlation between a specific patient subpopulation and a mild safety signal that required monitoring.</p>
+                        <p class="use-case-description" style="margin-top: 15px; font-weight: 600; color: var(--yprime-pink);">Result: Enhanced safety monitoring protocols implemented proactively before Phase 3 trials.</p>
+                    </div>
+                </div>
+
+                <!-- Use Case 4 -->
+                <div class="use-case-card">
+                    <div class="use-case-content">
+                        <h3 class="use-case-title">Streamlined Regulatory Knowledge Management</h3>
+                        <p class="use-case-description">A CRO supporting multiple biotech clients implemented TrialSage Vault™ to manage thousands of regulatory documents across various programs. The AI-powered document intelligence automatically categorized and cross-referenced content, creating a searchable knowledge base that preserved institutional knowledge.</p>
+                        <p class="use-case-description" style="margin-top: 15px; font-weight: 600; color: var(--yprime-pink);">Result: 78% reduction in time spent searching for regulatory precedents and information.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section id="benefits" class="content-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Transformative Benefits of AI in Regulatory Documentation</h2>
+                <p class="section-subtitle">TrialSage™ delivers measurable improvements to quality, efficiency, and compliance across the entire regulatory documentation lifecycle</p>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <!-- Benefit 1 -->
+                <div class="ai-benefit">
+                    <div class="ai-benefit-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="ai-benefit-content">
+                        <h3 class="ai-benefit-title">Accelerated Documentation Timelines</h3>
+                        <p class="ai-benefit-description">AI-powered automation reduces the time required to create, review, and finalize regulatory documentation by 30-50%, allowing teams to meet submission deadlines with less stress and overtime.</p>
+                    </div>
+                </div>
+
+                <!-- Benefit 2 -->
+                <div class="ai-benefit">
+                    <div class="ai-benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="ai-benefit-content">
+                        <h3 class="ai-benefit-title">Dramatically Reduced Compliance Risk</h3>
+                        <p class="ai-benefit-description">By preventing hallucinations, ensuring factual accuracy, and automatically validating against current regulatory requirements, TrialSage™ substantially reduces the risk of submission rejection or regulatory findings.</p>
+                    </div>
+                </div>
+
+                <!-- Benefit 3 -->
+                <div class="ai-benefit">
+                    <div class="ai-benefit-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="ai-benefit-content">
+                        <h3 class="ai-benefit-title">Enhanced Knowledge Utilization</h3>
+                        <p class="ai-benefit-description">Semantic search and contextual understanding of regulatory content enables teams to leverage institutional knowledge more effectively, avoiding reinvention and building on past successes.</p>
+                    </div>
+                </div>
+
+                <!-- Benefit 4 -->
+                <div class="ai-benefit">
+                    <div class="ai-benefit-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="ai-benefit-content">
+                        <h3 class="ai-benefit-title">Improved Document Quality</h3>
+                        <p class="ai-benefit-description">AI-assisted authoring ensures consistency in terminology, formatting, and content quality across all documents, resulting in more professional and compliant regulatory submissions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid-container" style="margin-top: 60px;">
+                <div class="ai-stat">
+                    <span class="ai-stat-value">40%</span>
+                    <span class="ai-stat-label">Average reduction in document preparation time</span>
+                </div>
+                <div class="ai-stat">
+                    <span class="ai-stat-value">65%</span>
+                    <span class="ai-stat-label">Decrease in document inconsistencies</span>
+                </div>
+                <div class="ai-stat">
+                    <span class="ai-stat-value">85%</span>
+                    <span class="ai-stat-label">First-cycle acceptance rate for submissions</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section class="content-section" style="background-color: var(--section-bg-alt);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Our AI Technology Stack</h2>
+                <p class="section-subtitle">TrialSage™ leverages the most advanced AI technologies available, customized specifically for regulatory documentation challenges</p>
+            </div>
+
+            <div style="margin-top: 40px; text-align: center;">
+                <div style="margin-bottom: 30px;">
+                    <h3 style="font-size: 20px; margin-bottom: 15px;">Core AI Technologies</h3>
+                    <div>
+                        <span class="tech-pill"><i class="fas fa-brain"></i> GPT-4o</span>
+                        <span class="tech-pill"><i class="fas fa-database"></i> Vector Databases</span>
+                        <span class="tech-pill"><i class="fas fa-search"></i> RAG (Retrieval Augmented Generation)</span>
+                        <span class="tech-pill"><i class="fas fa-shield-alt"></i> Hallucination Prevention</span>
+                        <span class="tech-pill"><i class="fas fa-file-alt"></i> Document Understanding</span>
+                        <span class="tech-pill"><i class="fas fa-project-diagram"></i> Knowledge Graphs</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="font-size: 20px; margin-bottom: 15px;">Regulatory-Specific AI Enhancements</h3>
+                    <div>
+                        <span class="tech-pill"><i class="fas fa-check-circle"></i> Regulatory Validation Models</span>
+                        <span class="tech-pill"><i class="fas fa-file-medical"></i> Protocol Design Intelligence</span>
+                        <span class="tech-pill"><i class="fas fa-tasks"></i> Compliance Verification</span>
+                        <span class="tech-pill"><i class="fas fa-clipboard-check"></i> Quality Control AI</span>
+                        <span class="tech-pill"><i class="fas fa-chart-line"></i> Predictive Analytics</span>
+                        <span class="tech-pill"><i class="fas fa-book-medical"></i> Medical Literature Integration</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Anti-Hallucination Section -->
+    <section class="content-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Anti-Hallucination Technology</h2>
+                <p class="section-subtitle">Our proprietary guardrail system ensures AI-generated content is factually accurate and reliable for regulatory submissions</p>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; align-items: center; margin-top: 40px; gap: 40px;">
+                <div style="flex: 1; min-width: 300px;">
+                    <img src="https://via.placeholder.com/500x400?text=Anti-Hallucination+Diagram" alt="Anti-Hallucination Technology Diagram" style="width: 100%; height: auto; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="ai-feature-item" style="margin-bottom: 20px;">
+                        <i class="fas fa-check-circle" style="color: var(--yprime-pink); margin-right: 15px; margin-top: 5px;"></i>
+                        <div>
+                            <h4 style="margin-bottom: 8px; font-size: 18px;">Regulatory Knowledge Base Integration</h4>
+                            <p style="color: var(--text-medium); line-height: 1.6;">All AI-generated content is cross-referenced against our curated database of regulatory guidelines, precedents, and scientific literature.</p>
+                        </div>
+                    </div>
+                    <div class="ai-feature-item" style="margin-bottom: 20px;">
+                        <i class="fas fa-check-circle" style="color: var(--yprime-pink); margin-right: 15px; margin-top: 5px;"></i>
+                        <div>
+                            <h4 style="margin-bottom: 8px; font-size: 18px;">Confidence Scoring</h4>
+                            <p style="color: var(--text-medium); line-height: 1.6;">Our system assigns confidence scores to AI-generated content, flagging low-confidence statements for human review and verification.</p>
+                        </div>
+                    </div>
+                    <div class="ai-feature-item" style="margin-bottom: 20px;">
+                        <i class="fas fa-check-circle" style="color: var(--yprime-pink); margin-right: 15px; margin-top: 5px;"></i>
+                        <div>
+                            <h4 style="margin-bottom: 8px; font-size: 18px;">Source Attribution</h4>
+                            <p style="color: var(--text-medium); line-height: 1.6;">All content generated by the AI includes traceable source attribution, ensuring transparency and verification of factual statements.</p>
+                        </div>
+                    </div>
+                    <div class="ai-feature-item">
+                        <i class="fas fa-check-circle" style="color: var(--yprime-pink); margin-right: 15px; margin-top: 5px;"></i>
+                        <div>
+                            <h4 style="margin-bottom: 8px; font-size: 18px;">Multi-Layer Verification</h4>
+                            <p style="color: var(--text-medium); line-height: 1.6;">Our system employs a three-stage verification process to ensure factual accuracy before content is presented to users.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">AI-Enhanced vs. Traditional Regulatory Documentation</h2>
+                <p class="section-subtitle">See how TrialSage™ AI transforms the regulatory documentation process compared to traditional approaches</p>
+            </div>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Traditional Approach</th>
+                        <th>With TrialSage™ AI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Document Creation Time</td>
+                        <td>Weeks to months of manual drafting</td>
+                        <td>40-60% faster with AI-assisted drafting</td>
+                    </tr>
+                    <tr>
+                        <td>Quality Control</td>
+                        <td>Manual review cycles prone to human error</td>
+                        <td>Automated consistency checks with >95% accuracy</td>
+                    </tr>
+                    <tr>
+                        <td>Regulatory Updates</td>
+                        <td>Manual tracking and implementation</td>
+                        <td>Automatic monitoring and template updates</td>
+                    </tr>
+                    <tr>
+                        <td>Cross-Document Consistency</td>
+                        <td>Difficult to maintain across large submissions</td>
+                        <td>AI ensures terminology and data consistency</td>
+                    </tr>
+                    <tr>
+                        <td>Knowledge Utilization</td>
+                        <td>Depends on individual team memory</td>
+                        <td>Institutional knowledge preserved and accessible</td>
+                    </tr>
+                    <tr>
+                        <td>Project Management</td>
+                        <td>Reactive, often addressing issues after they arise</td>
+                        <td>Predictive, identifying potential issues before they occur</td>
+                    </tr>
+                    <tr>
+                        <td>First-Cycle Acceptance Rate</td>
+                        <td>60-70% industry average</td>
+                        <td>>85% with TrialSage™ AI validation</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section animated-gradient">
+        <div class="container">
+            <h2 class="cta-title">Transform Your Regulatory Documentation with AI</h2>
+            <p class="cta-description">Schedule a personalized demo to see how TrialSage™ can reduce risk, accelerate timelines, and improve quality for your regulatory team.</p>
+            <a href="#contact" class="cta-button-white">Request Demo</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-title">TrialSage™</h3>
+                    <p style="color: #ccc; line-height: 1.6; margin-bottom: 20px;">
+                        Advanced AI-powered regulatory documentation platform for pharmaceutical and biotech companies.
+                    </p>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="#" style="color: #ccc;"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" style="color: #ccc;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: #ccc;"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Solutions</h3>
+                    <ul class="footer-links">
+                        <li><a href="/solutions_csr_intelligence.html">CSR Intelligence™</a></li>
+                        <li><a href="/solutions_ind_wizard.html">IND Wizard™</a></li>
+                        <li><a href="/clinical_trial_modules.html">ICH Wiz™</a></li>
+                        <li><a href="/solutions_vault.html">TrialSage Vault™ (TSV)</a></li>
+                        <li><a href="/solutions_study_architect.html">Study Architect™</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Webinars</a></li>
+                        <li><a href="#">White Papers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Contact</h3>
+                    <ul class="footer-links" style="color: #ccc;">
+                        <li style="margin-bottom: 10px;"><i class="fas fa-envelope" style="margin-right: 10px;"></i> info@concept2cures.com</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-phone" style="margin-right: 10px;"></i> +1 (555) 123-4567</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-map-marker-alt" style="margin-right: 10px;"></i> 123 Innovation Way, Boston, MA 02210</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 TrialSage™ by Concept2Cures. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple smooth scrolling for anchor links
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#' || targetId === '#contact') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
