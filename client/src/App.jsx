@@ -1,44 +1,46 @@
 import React from 'react';
-import { Switch, Route, Router } from 'wouter';
-import { AuthProvider } from './contexts/AuthContext';
-import { Toaster } from './components/ui/toaster';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import NotFoundPage from './pages/NotFoundPage';
-import ClientPortalPage from './pages/ClientPortalPage';
-import VaultPage from './pages/VaultPage';
-import INDWizardPage from './pages/INDWizardPage';
-import CSRPage from './pages/CSRPage';
-import LandingPage from './pages/LandingPage';
+import { Route, Switch } from 'wouter';
+import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
+import AppHeader from './components/common/AppHeader';
+import AppSidebar from './components/common/AppSidebar';
+import ClientContextBar from './components/common/ClientContextBar';
+import DashboardModule from './components/dashboard/DashboardModule';
+import TrialVaultModule from './components/trial-vault/TrialVaultModule';
+import CSRIntelligenceModule from './components/csr-intelligence/CSRIntelligenceModule';
+import StudyArchitectModule from './components/study-architect/StudyArchitectModule';
+import UnifiedPlatform from './components/UnifiedPlatform';
+import NotFound from './components/common/NotFound';
+import AIAssistantButton from './components/AIAssistantButton';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen flex flex-col">
-          <div className="flex-1">
+    <ModuleIntegrationProvider>
+      <div className="flex flex-col min-h-screen">
+        {/* Header is consistent across all pages */}
+        <AppHeader />
+        <ClientContextBar />
+
+        <div className="flex flex-1">
+          {/* Sidebar for navigation between modules */}
+          <AppSidebar />
+
+          {/* Main content area */}
+          <main className="flex-1 p-6 overflow-auto">
             <Switch>
-              {/* Public routes */}
-              <Route path="/" component={LandingPage} />
-              <Route path="/login" component={LoginPage} />
-              <Route path="/auth" component={LoginPage} />
-              
-              {/* Protected routes */}
-              <ProtectedRoute path="/dashboard" component={DashboardPage} />
-              <ProtectedRoute path="/client-portal" component={ClientPortalPage} />
-              <ProtectedRoute path="/vault" component={VaultPage} />
-              <ProtectedRoute path="/ind-wizard" component={INDWizardPage} />
-              <ProtectedRoute path="/csr" component={CSRPage} />
-              
-              {/* 404 page */}
-              <Route component={NotFoundPage} />
+              <Route path="/" component={UnifiedPlatform} />
+              <Route path="/dashboard" component={DashboardModule} />
+              <Route path="/vault" component={TrialVaultModule} />
+              <Route path="/csr-intelligence" component={CSRIntelligenceModule} />
+              <Route path="/study-architect" component={StudyArchitectModule} />
+              <Route component={NotFound} />
             </Switch>
-          </div>
+          </main>
         </div>
-      </Router>
-      <Toaster />
-    </AuthProvider>
+
+        {/* AI Assistant button */}
+        <AIAssistantButton />
+      </div>
+    </ModuleIntegrationProvider>
   );
 }
 

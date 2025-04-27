@@ -1,129 +1,196 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Create a context for the integration layer
+// Create the context for module integration
 const ModuleIntegrationContext = createContext();
 
-/**
- * The ModuleIntegrationLayer serves as the central nervous system for 
- * the TrialSage platform, allowing modules to share data and communicate.
- */
+// Custom hook for accessing the context
+export const useModuleIntegration = () => {
+  const context = useContext(ModuleIntegrationContext);
+  if (!context) {
+    throw new Error('useModuleIntegration must be used within a ModuleIntegrationProvider');
+  }
+  return context;
+};
+
+// Alias for backward compatibility
+export const useIntegration = useModuleIntegration;
+
 export const ModuleIntegrationProvider = ({ children }) => {
-  // Shared state accessible to all modules
+  // Shared state between modules
   const [sharedData, setSharedData] = useState({
-    trialData: null,
     selectedTrial: null,
-    activeStudy: null,
-    documentMetadata: {},
-    regulatoryContext: {
-      region: 'US', // Default to US FDA
-      framework: 'ICH',
-      applicationTypes: ['IND', 'NDA', 'BLA']
-    }
+    selectedDocument: null,
+    userRole: 'admin',
+    tenantId: 'default',
+    clientId: null,
+    auditTrail: [],
   });
 
-  // Event system for cross-module communication
-  const [eventListeners, setEventListeners] = useState({});
+  // Blockchain verification status
+  const [blockchainStatus, setBlockchainStatus] = useState({
+    enabled: true,
+    lastVerified: new Date().toISOString(),
+    verified: true,
+  });
 
-  // Method to update shared data
-  const updateSharedData = useCallback((path, data) => {
-    setSharedData(prev => {
-      const newData = { ...prev };
-      
-      // Handle nested paths like 'trialData.demographics'
-      if (path.includes('.')) {
-        const keys = path.split('.');
-        let current = newData;
-        
-        // Navigate to the correct nesting level
-        for (let i = 0; i < keys.length - 1; i++) {
-          if (!current[keys[i]]) {
-            current[keys[i]] = {};
-          }
-          current = current[keys[i]];
-        }
-        
-        // Set the value at the final key
-        current[keys[keys.length - 1]] = data;
-      } else {
-        // Direct update for top-level keys
-        newData[path] = data;
-      }
-      
-      return newData;
-    });
-  }, []);
+  // AI processing state
+  const [aiProcessing, setAiProcessing] = useState({
+    status: 'idle', // 'idle', 'processing', 'complete', 'error'
+    progress: 0,
+    message: '',
+  });
 
-  // Method to get data from shared state
-  const getSharedData = useCallback((path) => {
-    if (!path) return sharedData;
-    
-    // Handle nested paths
-    if (path.includes('.')) {
-      const keys = path.split('.');
-      let current = sharedData;
-      
-      for (const key of keys) {
-        if (!current || !current[key]) {
-          return null;
-        }
-        current = current[key];
-      }
-      
-      return current;
-    }
-    
-    // Direct retrieval for top-level keys
-    return sharedData[path];
-  }, [sharedData]);
-
-  // Event system methods
-  const addEventListener = useCallback((eventName, callback) => {
-    setEventListeners(prev => {
-      const listeners = prev[eventName] || [];
-      return {
-        ...prev,
-        [eventName]: [...listeners, callback]
-      };
-    });
-    
-    // Return a function to remove this specific listener
-    return () => {
-      setEventListeners(prev => {
-        const listeners = prev[eventName] || [];
-        return {
-          ...prev,
-          [eventName]: listeners.filter(cb => cb !== callback)
-        };
-      });
-    };
-  }, []);
-
-  const triggerEvent = useCallback((eventName, data) => {
-    const listeners = eventListeners[eventName] || [];
-    listeners.forEach(callback => callback(data));
-  }, [eventListeners]);
-
-  // For backward compatibility with older hook naming
-  const useIntegration = (moduleId) => {
-    // Additional module-specific functionality could be added here
-    return {
-      moduleId,
-      sharedData,
-      updateSharedData,
-      getSharedData,
-      addEventListener,
-      triggerEvent
-    };
+  // Methods to update shared data
+  const updateSharedData = (newData) => {
+    setSharedData(prev => ({ ...prev, ...newData }));
   };
 
-  // Expose the integration context value
+  // Method to set the selected trial
+  const selectTrial = (trialId) => {
+    // In a real implementation, we would fetch the trial data from the API
+    console.log(`Selecting trial: ${trialId}`);
+    updateSharedData({ 
+      selectedTrial: { 
+        id: trialId, 
+        title: `Trial ${trialId}`, 
+        status: 'active' 
+      } 
+    });
+  };
+
+  // Method to set the selected document
+  const selectDocument = (docId) => {
+    // In a real implementation, we would fetch the document data from the API
+    console.log(`Selecting document: ${docId}`);
+    updateSharedData({ 
+      selectedDocument: { 
+        id: docId, 
+        title: `Document ${docId}`, 
+        status: 'verified' 
+      } 
+    });
+  };
+
+  // Method to set the client context
+  const setClientContext = (clientId) => {
+    console.log(`Setting client context: ${clientId}`);
+    updateSharedData({ clientId });
+  };
+
+  // Method to add audit trail entry
+  const addAuditEntry = (action, details) => {
+    const entry = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      action,
+      details,
+      user: sharedData.userRole,
+    };
+    
+    setSharedData(prev => ({
+      ...prev,
+      auditTrail: [entry, ...prev.auditTrail].slice(0, 100), // Keep last 100 entries
+    }));
+
+    // In a real implementation, we would send this to the server
+    console.log('Audit trail entry:', entry);
+  };
+
+  // Method to run AI analysis
+  const runAiAnalysis = async (data, type) => {
+    try {
+      setAiProcessing({
+        status: 'processing',
+        progress: 0,
+        message: 'Initializing AI analysis...',
+      });
+
+      // Simulate AI processing steps
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setAiProcessing(prev => ({ ...prev, progress: 20, message: 'Analyzing content...' }));
+      
+      await new Promise(resolve => setTimeout(resolve, 700));
+      setAiProcessing(prev => ({ ...prev, progress: 50, message: 'Extracting insights...' }));
+      
+      await new Promise(resolve => setTimeout(resolve, 600));
+      setAiProcessing(prev => ({ ...prev, progress: 80, message: 'Generating recommendations...' }));
+      
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // In a real implementation, we would call the appropriate AI service
+      const result = {
+        insights: ['Sample insight 1', 'Sample insight 2'],
+        recommendations: ['Sample recommendation 1', 'Sample recommendation 2'],
+        timestamp: new Date().toISOString(),
+      };
+
+      setAiProcessing({
+        status: 'complete',
+        progress: 100,
+        message: 'Analysis complete',
+      });
+
+      addAuditEntry('ai_analysis', { type, result });
+      
+      return result;
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      setAiProcessing({
+        status: 'error',
+        progress: 0,
+        message: error.message || 'An error occurred during AI analysis',
+      });
+      throw error;
+    }
+  };
+
+  // Method to verify document using blockchain
+  const verifyDocumentBlockchain = async (documentId) => {
+    try {
+      // In a real implementation, we would call the blockchain verification service
+      console.log(`Verifying document on blockchain: ${documentId}`);
+      
+      // Simulate verification
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const verified = Math.random() > 0.1; // 90% chance of success for demo purposes
+      
+      setBlockchainStatus({
+        enabled: true,
+        lastVerified: new Date().toISOString(),
+        verified,
+      });
+
+      addAuditEntry('blockchain_verification', { 
+        documentId, 
+        verified, 
+        timestamp: new Date().toISOString() 
+      });
+
+      return verified;
+    } catch (error) {
+      console.error('Blockchain verification error:', error);
+      setBlockchainStatus({
+        ...blockchainStatus,
+        enabled: true,
+        verified: false,
+      });
+      throw error;
+    }
+  };
+
+  // Make all these methods and state available through the context
   const value = {
-    sharedData,
+    data: sharedData,
+    blockchainStatus,
+    aiProcessing,
     updateSharedData,
-    getSharedData,
-    addEventListener,
-    triggerEvent,
-    useIntegration // For backward compatibility
+    selectTrial,
+    selectDocument,
+    setClientContext,
+    addAuditEntry,
+    runAiAnalysis,
+    verifyDocumentBlockchain,
   };
 
   return (
@@ -131,13 +198,4 @@ export const ModuleIntegrationProvider = ({ children }) => {
       {children}
     </ModuleIntegrationContext.Provider>
   );
-};
-
-// Custom hook to access the integration layer
-export const useModuleIntegration = () => {
-  const context = useContext(ModuleIntegrationContext);
-  if (!context) {
-    throw new Error('useModuleIntegration must be used within a ModuleIntegrationProvider');
-  }
-  return context;
 };
