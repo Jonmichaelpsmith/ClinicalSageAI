@@ -56,16 +56,7 @@ const keyframesStyle = `
   }
 `;
 
-// Add the animation to the document head
-React.useEffect(() => {
-  const styleElement = document.createElement('style');
-  styleElement.innerHTML = keyframesStyle;
-  document.head.appendChild(styleElement);
-  
-  return () => {
-    document.head.removeChild(styleElement);
-  };
-}, []);
+// We'll move the useEffect inside the component function instead
 
 const IconComponents = {
   FolderTree: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📁</span>,
@@ -97,6 +88,17 @@ export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  
+  // Add the animation to the document head
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = keyframesStyle;
+    document.head.appendChild(styleElement);
+    
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   // Fetch document types
   const typesQuery = useQuery({
