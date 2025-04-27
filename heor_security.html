@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ HEOR Security Solutions - Specialized Protection for Health Economics Data</title>
+    <meta name="description" content="Explore TrialSage's dedicated security and compliance solutions for Health Economics and Outcomes Research (HEOR), ensuring data integrity and regulatory compliance.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #333;
+            --secondary: #666;
+            --yprime-pink: #FF1493;
+            --yprime-pink-light: #FFB6C1;
+            --yprime-pink-10: rgba(255, 20, 147, 0.1);
+            --yprime-pink-20: rgba(255, 20, 147, 0.2);
+            --text-dark: #333;
+            --text-medium: #555;
+            --text-light: #777;
+            --section-bg: #ffffff;
+            --section-bg-alt: #f9f9f9;
+            --card-bg: #ffffff;
+            --card-bg-secondary: #f9f9f9;
+            --border-light: #eaeaea;
+            --success: #21A67A;
+            --warning: #FF9800;
+            --info: #5D87FF;
+            --error: #F44336;
+            --gradient-start: #f9f9f9;
+            --gradient-end: #f2f2f2;
+            --heor-purple: #9966CC;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            color: var(--text-dark);
+            background-color: var(--section-bg);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--text-dark);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--yprime-pink);
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-medium);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--yprime-pink);
+        }
+
+        .cta-button {
+            background-color: var(--yprime-pink);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            margin-left: 30px;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background-color: #e00e84;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--heor-purple), var(--yprime-pink));
+            color: white;
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-medium);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .heor-feature-card {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .heor-feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--yprime-pink-10);
+            color: var(--yprime-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .feature-icon.purple {
+            background-color: rgba(153, 102, 204, 0.1);
+            color: var(--heor-purple);
+        }
+
+        .feature-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .feature-description {
+            color: var(--text-medium);
+            margin-bottom: 20px;
+        }
+
+        .use-case-section {
+            padding: 80px 0;
+            background-color: var(--section-bg-alt);
+        }
+
+        .use-case-card {
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .use-case-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .use-case-content {
+            padding: 25px;
+        }
+
+        .use-case-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .use-case-description {
+            color: var(--text-medium);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .heor-module {
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .heor-module-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .heor-module-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-right: 15px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .heor-module-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .heor-features-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .heor-feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .heor-feature-item i {
+            color: var(--yprime-pink);
+            margin-right: 12px;
+            margin-top: 3px;
+        }
+
+        .workflow-section {
+            padding: 80px 0;
+            background-color: var(--section-bg);
+        }
+
+        .workflow-diagram {
+            width: 100%;
+            max-width: 800px;
+            margin: 40px auto;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .heor-stat {
+            text-align: center;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .heor-stat-value {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--heor-purple);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .heor-stat-label {
+            color: var(--text-medium);
+            font-size: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .badge-purple {
+            background-color: rgba(153, 102, 204, 0.1);
+            color: var(--heor-purple);
+        }
+
+        .badge-pink {
+            background-color: var(--yprime-pink-10);
+            color: var(--yprime-pink);
+        }
+
+        .badge-success {
+            background-color: rgba(33, 166, 122, 0.1);
+            color: var(--success);
+        }
+
+        .badge-info {
+            background-color: rgba(93, 135, 255, 0.1);
+            color: var(--info);
+        }
+
+        .content-section {
+            padding: 80px 0;
+        }
+
+        .content-section:nth-of-type(even) {
+            background-color: var(--section-bg-alt);
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .tech-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 120px;
+        }
+
+        .tech-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--yprime-pink-10);
+            color: var(--yprime-pink);
+            border-radius: 50%;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .tech-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .footer {
+            background-color: #222;
+            color: #fff;
+            padding: 60px 0 30px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--yprime-pink);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .cta-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--heor-purple), var(--yprime-pink));
+            color: white;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .cta-description {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button-white {
+            background-color: white;
+            color: var(--heor-purple);
+            padding: 12px 30px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button-white:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        @media (max-width: 991px) {
+            .hero-title {
+                font-size: 36px;
+            }
+            
+            .section-title {
+                font-size: 28px;
+            }
+            
+            .cta-title {
+                font-size: 28px;
+            }
+            
+            .nav-links {
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .navbar {
+                display: none;
+            }
+            
+            .header-inner {
+                justify-content: center;
+            }
+            
+            .hero-title {
+                font-size: 30px;
+            }
+            
+            .hero-description {
+                font-size: 16px;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+            
+            .section-subtitle {
+                font-size: 16px;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="/" class="logo">
+                    Trial<span>Sage</span><sup style="font-size: 12px; font-weight: 600;">™</sup>
+                </a>
+                <nav class="navbar">
+                    <ul class="nav-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/client-portal.html">Client Portal</a></li>
+                        <li><a href="/security_compliance.html">Security & Compliance</a></li>
+                        <li><a href="#data-protection">HEOR Protection</a></li>
+                        <li><a href="#pharma-case-study">Case Studies</a></li>
+                    </ul>
+                    <a href="#contact" class="cta-button">Request Demo</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">HEOR Security Solutions</h1>
+                <p class="hero-description">Specialized security and compliance solutions for Health Economics and Outcomes Research data, ensuring the highest level of protection for sensitive patient-level analyses.</p>
+                <a href="#key-features" class="cta-button-white">Explore HEOR Security</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section id="key-features" class="content-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Specialized HEOR Security Features</h2>
+                <p class="section-subtitle">Our dedicated HEOR security solutions address the unique challenges of protecting sensitive health economics and outcomes research data</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- Feature 1 -->
+                <div class="heor-feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Patient Data Protection</h3>
+                    <p class="feature-description">Advanced anonymization and de-identification technologies ensure that sensitive patient data used in health economics research remains protected while maintaining analytical value.</p>
+                    <div>
+                        <span class="badge badge-purple">HIPAA Compliant</span>
+                        <span class="badge badge-purple">Data Masking</span>
+                        <span class="badge badge-success">De-identification</span>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="heor-feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">Secure Analytics Environment</h3>
+                    <p class="feature-description">Isolated computational environment for sensitive health economics analysis with comprehensive audit trails and granular access controls for researchers.</p>
+                    <div>
+                        <span class="badge badge-purple">Isolated Computing</span>
+                        <span class="badge badge-purple">Audit Trails</span>
+                        <span class="badge badge-success">Access Controls</span>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="heor-feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h3 class="feature-title">Differential Privacy</h3>
+                    <p class="feature-description">Mathematical techniques that add carefully calibrated noise to dataset outputs, preventing re-identification while preserving the statistical utility of the data for HEOR analyses.</p>
+                    <div>
+                        <span class="badge badge-purple">Privacy Guarantees</span>
+                        <span class="badge badge-purple">Statistical Utility</span>
+                        <span class="badge badge-success">Re-identification Prevention</span>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="heor-feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3 class="feature-title">Regulatory Compliance Framework</h3>
+                    <p class="feature-description">Comprehensive compliance with global health data regulations including HIPAA, GDPR, and country-specific health data protection laws for international HEOR studies.</p>
+                    <div>
+                        <span class="badge badge-purple">Global Compliance</span>
+                        <span class="badge badge-purple">Audit Ready</span>
+                        <span class="badge badge-success">Documentation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HEOR Security Workflow Section -->
+    <section class="workflow-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Secure HEOR Data Workflow</h2>
+                <p class="section-subtitle">Our end-to-end secure workflow for health economics and outcomes research data</p>
+            </div>
+
+            <img src="https://via.placeholder.com/800x400?text=HEOR+Secure+Data+Workflow" alt="HEOR Secure Data Workflow" class="workflow-diagram">
+
+            <div class="grid-container" style="margin-top: 50px;">
+                <!-- Step 1 -->
+                <div class="heor-module">
+                    <div class="heor-module-header">
+                        <div class="heor-module-icon" style="background-color: var(--heor-purple);">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3 class="heor-module-title">Secure Data Ingestion</h3>
+                    </div>
+                    <p>Patient-level data is securely imported through encrypted channels with immediate anonymization and validation against security policies.</p>
+                    
+                    <ul class="heor-features-list">
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Automated De-identification</strong>: Direct and indirect identifiers are removed or transformed according to privacy regulations.
+                            </div>
+                        </li>
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Data Validation</strong>: Security checks confirm data meets privacy thresholds before entering the system.
+                            </div>
+                        </li>
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Secure Transfer</strong>: TLS 1.3 encryption with client certificates ensures data integrity during transit.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="heor-module">
+                    <div class="heor-module-header">
+                        <div class="heor-module-icon" style="background-color: var(--heor-purple);">
+                            <i class="fas fa-microscope"></i>
+                        </div>
+                        <h3 class="heor-module-title">Protected Analysis</h3>
+                    </div>
+                    <p>HEOR analyses are conducted in a secure, isolated environment with comprehensive access controls and monitoring to prevent data exposure.</p>
+                    
+                    <ul class="heor-features-list">
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Isolated Computing Environment</strong>: Analysis occurs in a containerized workspace with no external network access.
+                            </div>
+                        </li>
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Differential Privacy Controls</strong>: Mathematical noise is added to outputs to prevent re-identification.
+                            </div>
+                        </li>
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Comprehensive Audit Trail</strong>: Blockchain-secured record of all analysis activities and data access.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="heor-module">
+                    <div class="heor-module-header">
+                        <div class="heor-module-icon" style="background-color: var(--heor-purple);">
+                            <i class="fas fa-file-export"></i>
+                        </div>
+                        <h3 class="heor-module-title">Secure Output Management</h3>
+                    </div>
+                    <p>Results from HEOR analyses undergo security review before being released, ensuring no sensitive data is inadvertently exposed in reports or visualizations.</p>
+                    
+                    <ul class="heor-features-list">
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Output Review Workflow</strong>: Multi-level approval process before results can leave the secure environment.
+                            </div>
+                        </li>
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Privacy Threshold Verification</strong>: Automated checks ensure outputs meet minimum group size requirements.
+                            </div>
+                        </li>
+                        <li class="heor-feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>Secure Collaboration</strong>: Protected sharing of approved results with blockchain-verified access records.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Implementation Section -->
+    <section id="data-protection" class="content-section" style="background-color: var(--section-bg-alt);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Advanced Technical Safeguards</h2>
+                <p class="section-subtitle">The technology stack powering our HEOR security solutions</p>
+            </div>
+
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <span class="tech-name">Secure Multi-Party Computation</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-random"></i>
+                    </div>
+                    <span class="tech-name">Homomorphic Encryption</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <span class="tech-name">Differential Privacy</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                    <span class="tech-name">Blockchain Verification</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <span class="tech-name">Role-Based Access</span>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <span class="tech-name">AES-256 Encryption</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 60px;">
+                <div class="grid-container">
+                    <!-- Technical Feature 1 -->
+                    <div class="heor-feature-card">
+                        <div class="feature-icon purple">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </div>
+                        <h3 class="feature-title">Secure Multi-Party Computation</h3>
+                        <p class="feature-description">Enables multiple parties to jointly compute analyses on combined datasets without revealing their individual inputs, ideal for collaborative HEOR studies across organizations.</p>
+                    </div>
+
+                    <!-- Technical Feature 2 -->
+                    <div class="heor-feature-card">
+                        <div class="feature-icon purple">
+                            <i class="fas fa-random"></i>
+                        </div>
+                        <h3 class="feature-title">Homomorphic Encryption</h3>
+                        <p class="feature-description">Allows computations to be performed on encrypted data without decryption, ensuring patient-level data remains protected even during analysis.</p>
+                    </div>
+
+                    <!-- Technical Feature 3 -->
+                    <div class="heor-feature-card">
+                        <div class="feature-icon purple">
+                            <i class="fas fa-cubes"></i>
+                        </div>
+                        <h3 class="feature-title">Blockchain Audit Controls</h3>
+                        <p class="feature-description">Immutable, cryptographically secure record of all data access and analysis activities, providing tamper-proof evidence for regulatory compliance.</p>
+                    </div>
+
+                    <!-- Technical Feature 4 -->
+                    <div class="heor-feature-card">
+                        <div class="feature-icon purple">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3 class="feature-title">Global Privacy Compliance</h3>
+                        <p class="feature-description">Dynamic compliance engine that adjusts data protection measures based on the specific regulatory requirements of each jurisdiction involved in a study.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Case Studies Section -->
+    <section id="pharma-case-study" class="content-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">HEOR Security Case Studies</h2>
+                <p class="section-subtitle">See how pharmaceutical and biotech companies are using TrialSage™ HEOR security solutions</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- Case Study 1 -->
+                <div class="use-case-card">
+                    <div class="use-case-content">
+                        <h3 class="use-case-title">Global Pharmaceutical Company: Secure Patient Data Analysis</h3>
+                        <p class="use-case-description">A top-10 pharmaceutical company needed to analyze patient-level data across multiple clinical trials while ensuring regulatory compliance and patient privacy. TrialSage™ HEOR security provided a secure environment for pooled analysis with differential privacy controls.</p>
+                        <p class="use-case-description" style="margin-top: 15px; font-weight: 600; color: var(--heor-purple);">Result: Successfully analyzed 500,000+ patient records across 23 trials with zero privacy violations.</p>
+                    </div>
+                </div>
+
+                <!-- Case Study 2 -->
+                <div class="use-case-card">
+                    <div class="use-case-content">
+                        <h3 class="use-case-title">Multi-Party Collaboration for Rare Disease Research</h3>
+                        <p class="use-case-description">Three biotech companies and a patient advocacy group needed to combine sensitive datasets for a rare disease HEOR study without exposing proprietary information. Our secure multi-party computation solution enabled privacy-preserving analysis of the combined data.</p>
+                        <p class="use-case-description" style="margin-top: 15px; font-weight: 600; color: var(--heor-purple);">Result: Published groundbreaking health economics research while preserving data sovereignty for all parties.</p>
+                    </div>
+                </div>
+
+                <!-- Case Study 3 -->
+                <div class="use-case-card">
+                    <div class="use-case-content">
+                        <h3 class="use-case-title">Health Technology Assessment Submission</h3>
+                        <p class="use-case-description">A mid-sized pharmaceutical company needed to prepare sensitive patient-level data for health technology assessment submissions across multiple European markets, each with different privacy regulations. TrialSage™ enabled compliant data preparation and submission packages.</p>
+                        <p class="use-case-description" style="margin-top: 15px; font-weight: 600; color: var(--heor-purple);">Result: Successful submissions to 7 HTA bodies with 100% acceptance of privacy measures.</p>
+                    </div>
+                </div>
+
+                <!-- Case Study 4 -->
+                <div class="use-case-card">
+                    <div class="use-case-content">
+                        <h3 class="use-case-title">Real-World Evidence Analysis for Payer Negotiations</h3>
+                        <p class="use-case-description">A specialty pharmaceutical company needed to securely analyze sensitive healthcare claims data for value-based contracting negotiations. TrialSage™ provided a secure workspace with comprehensive audit trails and output controls.</p>
+                        <p class="use-case-description" style="margin-top: 15px; font-weight: 600; color: var(--heor-purple);">Result: Secured favorable reimbursement terms based on robust, compliant HEOR analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="content-section" style="background-color: var(--section-bg-alt);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">HEOR Security Benefits</h2>
+                <p class="section-subtitle">How our specialized security approach enhances health economics and outcomes research</p>
+            </div>
+
+            <div class="grid-container">
+                <!-- Benefit 1 -->
+                <div class="heor-feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3 class="feature-title">Simplified Regulatory Compliance</h3>
+                    <p class="feature-description">Automated compliance with global health data regulations reduces the administrative burden and risk of non-compliance for HEOR teams.</p>
+                    <div>
+                        <span class="badge badge-purple">Automated Compliance</span>
+                        <span class="badge badge-success">Risk Reduction</span>
+                    </div>
+                </div>
+
+                <!-- Benefit 2 -->
+                <div class="heor-feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h3 class="feature-title">Enhanced Collaboration</h3>
+                    <p class="feature-description">Secure data sharing capabilities enable broader collaboration with academic researchers, payers, and other stakeholders while maintaining data protection.</p>
+                    <div>
+                        <span class="badge badge-purple">Multi-party Research</span>
+                        <span class="badge badge-success">Data Sovereignty</span>
+                    </div>
+                </div>
+
+                <!-- Benefit 3 -->
+                <div class="heor-feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3 class="feature-title">More Comprehensive Analyses</h3>
+                    <p class="feature-description">Secure access to larger, more diverse datasets enables more statistically powerful and representative health economics analyses.</p>
+                    <div>
+                        <span class="badge badge-purple">Enhanced Statistics</span>
+                        <span class="badge badge-success">Better Insights</span>
+                    </div>
+                </div>
+
+                <!-- Benefit 4 -->
+                <div class="heor-feature-card">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <h3 class="feature-title">Audit-Ready Documentation</h3>
+                    <p class="feature-description">Blockchain-verified audit trails provide irrefutable evidence of data handling practices for regulatory inspections and submissions.</p>
+                    <div>
+                        <span class="badge badge-purple">Verification</span>
+                        <span class="badge badge-success">Regulatory Defense</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid-container" style="margin-top: 60px;">
+                <div class="heor-stat">
+                    <span class="heor-stat-value">82%</span>
+                    <span class="heor-stat-label">Reduction in compliance documentation time</span>
+                </div>
+                <div class="heor-stat">
+                    <span class="heor-stat-value">100%</span>
+                    <span class="heor-stat-label">Regulatory submission acceptance rate</span>
+                </div>
+                <div class="heor-stat">
+                    <span class="heor-stat-value">3x</span>
+                    <span class="heor-stat-label">Increase in collaborative HEOR studies</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Transform Your HEOR Security Approach</h2>
+            <p class="cta-description">Request a personalized HEOR security assessment to see how TrialSage™ can enhance your health economics research while ensuring privacy and compliance.</p>
+            <a href="#contact" class="cta-button-white">Schedule HEOR Security Assessment</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3 class="footer-title">TrialSage™</h3>
+                    <p style="color: #ccc; line-height: 1.6; margin-bottom: 20px;">
+                        Advanced AI-powered regulatory documentation platform with specialized HEOR security solutions.
+                    </p>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="#" style="color: #ccc;"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" style="color: #ccc;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: #ccc;"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Solutions</h3>
+                    <ul class="footer-links">
+                        <li><a href="/solutions_csr_intelligence.html">CSR Intelligence™</a></li>
+                        <li><a href="/solutions_ind_wizard.html">IND Wizard™</a></li>
+                        <li><a href="/clinical_trial_modules.html">ICH Wiz™</a></li>
+                        <li><a href="/solutions_vault.html">TrialSage Vault™ (TSV)</a></li>
+                        <li><a href="/solutions_study_architect.html">Study Architect™</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Webinars</a></li>
+                        <li><a href="#">White Papers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="footer-title">Contact</h3>
+                    <ul class="footer-links" style="color: #ccc;">
+                        <li style="margin-bottom: 10px;"><i class="fas fa-envelope" style="margin-right: 10px;"></i> info@concept2cures.com</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-phone" style="margin-right: 10px;"></i> +1 (555) 123-4567</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-map-marker-alt" style="margin-right: 10px;"></i> 123 Innovation Way, Boston, MA 02210</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 TrialSage™ by Concept2Cures. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple smooth scrolling for anchor links
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#' || targetId === '#contact') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
