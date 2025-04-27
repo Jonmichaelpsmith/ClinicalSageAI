@@ -1,467 +1,200 @@
-import React, { useState } from 'react';
-import { BarChart3, BookOpen, Calendar, CheckCircle, ClipboardList, FileText, FileWarning, Layers, SlidersHorizontal, Users, FileCheck, ArrowRight, Clock, ListTodo, BookText, Database, Shield, PieChart, ArrowUpRight, FlaskConical, BarChart, Bell } from 'lucide-react';
-import { useIntegration } from '../integration/ModuleIntegrationLayer';
+import React from 'react';
 import { Link } from 'wouter';
+import { 
+  Clock, 
+  BarChart3, 
+  FileText, 
+  Database, 
+  Layers, 
+  Bell, 
+  CheckCircle, 
+  AlertTriangle,
+  PlusCircle
+} from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+
+const DashboardCard = ({ title, children, className = '' }) => (
+  <div className={`bg-white rounded-lg p-5 shadow-sm border border-gray-100 ${className}`}>
+    <h3 className="text-lg font-semibold mb-4">{title}</h3>
+    {children}
+  </div>
+);
 
 const DashboardModule = () => {
-  const { data, blockchainStatus, addAuditEntry } = useIntegration();
-  const [dateRange, setDateRange] = useState('month');
-
-  const handleDateRangeChange = (range) => {
-    setDateRange(range);
-    addAuditEntry('dashboard_date_range_changed', { range });
-  };
-
-  // Dashboard stats
-  const stats = [
-    { name: 'Active Studies', value: '14', icon: <FlaskConical size={24} className="text-blue-500" />, trend: '+2 this month' },
-    { name: 'Documents Stored', value: '3,842', icon: <Database size={24} className="text-purple-500" />, trend: '+210 this month' },
-    { name: 'CSRs Generated', value: '26', icon: <FileText size={24} className="text-pink-500" />, trend: '+5 this month' },
-    { name: 'Verified Documents', value: '3,651', icon: <Shield size={24} className="text-green-500" />, trend: '95% of total' },
+  const { user } = useAuth();
+  
+  // Mock recent activity data
+  const recentActivity = [
+    { id: 1, description: 'CSR uploaded for Study XYZ-123', time: '2 hours ago', module: 'Vault', icon: FileText },
+    { id: 2, description: 'IND application draft completed', time: '5 hours ago', module: 'IND Wizard', icon: CheckCircle },
+    { id: 3, description: 'Protocol amendment submitted', time: '1 day ago', module: 'Study Architect', icon: Layers },
+    { id: 4, description: 'New trial data imported', time: '2 days ago', module: 'Vault', icon: Database }
+  ];
+  
+  // Mock tasks data
+  const tasks = [
+    { id: 1, title: 'Review CSR draft for Study ABC-789', dueDate: 'Today', priority: 'high' },
+    { id: 2, title: 'Update regulatory contacts in CMDR', dueDate: 'Tomorrow', priority: 'medium' },
+    { id: 3, title: 'Complete ICH Q10 compliance check', dueDate: 'Oct 30, 2025', priority: 'medium' },
+    { id: 4, title: 'Review protocol amendments', dueDate: 'Nov 5, 2025', priority: 'low' }
   ];
 
-  // Recent activities
-  const recentActivities = [
-    {
-      id: 'act1',
-      user: 'John Smith',
-      action: 'uploaded',
-      item: 'Phase 2 Protocol Amendment',
-      timestamp: '2025-03-15T13:45:22Z',
-      module: 'Vault'
-    },
-    {
-      id: 'act2',
-      user: 'Sarah Johnson',
-      action: 'generated',
-      item: 'Final CSR for XYZ-123 Study',
-      timestamp: '2025-03-15T10:20:15Z',
-      module: 'CSR Intelligence'
-    },
-    {
-      id: 'act3',
-      user: 'Michael Chen',
-      action: 'created',
-      item: 'New Phase 1 Protocol',
-      timestamp: '2025-03-14T16:30:05Z',
-      module: 'Study Architect'
-    },
-    {
-      id: 'act4',
-      user: 'Lisa Rodriguez',
-      action: 'edited',
-      item: 'Site Feasibility Questionnaire',
-      timestamp: '2025-03-14T15:15:33Z',
-      module: 'Study Architect'
-    },
-    {
-      id: 'act5',
-      user: 'AI Assistant',
-      action: 'analyzed',
-      item: 'Phase 3 Protocol Compliance',
-      timestamp: '2025-03-14T11:05:47Z',
-      module: 'Study Architect'
-    }
+  // Mock notifications
+  const notifications = [
+    { id: 1, message: 'CSR review requested by John Smith', time: '1 hour ago', type: 'request' },
+    { id: 2, message: 'IND submission deadline approaching', time: '3 hours ago', type: 'warning' },
+    { id: 3, message: 'New ICH guidance published', time: '1 day ago', type: 'info' }
   ];
-
-  // Upcoming tasks
-  const upcomingTasks = [
-    {
-      id: 'task1',
-      title: 'Review Phase 2 CSR Draft',
-      dueDate: '2025-03-18T00:00:00Z',
-      priority: 'High',
-      assignedTo: 'John Smith'
-    },
-    {
-      id: 'task2',
-      title: 'Submit FDA Form 1572 for Study XYZ-123',
-      dueDate: '2025-03-20T00:00:00Z',
-      priority: 'Medium',
-      assignedTo: 'Sarah Johnson'
-    },
-    {
-      id: 'task3',
-      title: 'Finalize Protocol for ABC-456 Study',
-      dueDate: '2025-03-25T00:00:00Z',
-      priority: 'High',
-      assignedTo: 'Michael Chen'
-    }
-  ];
-
-  // Recent regulatory guidance updates
-  const regulatoryUpdates = [
-    {
-      id: 'reg1',
-      title: 'FDA Guidance for COVID-19 Trial Conduct',
-      agency: 'FDA',
-      date: '2025-03-10T00:00:00Z',
-      type: 'Draft Guidance'
-    },
-    {
-      id: 'reg2',
-      title: 'EMA Update on Real-World Evidence Requirements',
-      agency: 'EMA',
-      date: '2025-03-07T00:00:00Z',
-      type: 'Final Guidance'
-    },
-    {
-      id: 'reg3',
-      title: 'ICH E6(R3) Good Clinical Practice Update',
-      agency: 'ICH',
-      date: '2025-03-05T00:00:00Z',
-      type: 'Draft Revision'
-    }
-  ];
-
-  // Study status
-  const studyStatusData = [
-    { name: 'Planning', count: 3 },
-    { name: 'Startup', count: 2 },
-    { name: 'Enrolling', count: 5 },
-    { name: 'Ongoing', count: 4 },
-    { name: 'Reporting', count: 3 },
-    { name: 'Closed', count: 7 },
-  ];
-
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
-  const formatDateTime = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
-  const getRelativeTime = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) {
-      return 'Just now';
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 2592000) {
-      const days = Math.floor(diffInSeconds / 86400);
-      return `${days} day${days > 1 ? 's' : ''} ago`;
-    } else {
-      return formatDate(dateString);
-    }
-  };
-
-  const getModuleColor = (module) => {
-    switch (module) {
-      case 'Vault':
-        return 'bg-purple-100 text-purple-800';
-      case 'CSR Intelligence':
-        return 'bg-pink-100 text-pink-800';
-      case 'Study Architect':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'High':
-        return 'bg-red-100 text-red-800';
-      case 'Medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Dashboard</h1>
-        <p className="text-gray-600">
-          Overview of your TrialSage platform activity and regulatory operations
-        </p>
-      </div>
-
-      {/* Filters and date range selector */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
-        <div>
-          <div className="inline-flex rounded-md shadow-sm" role="group">
-            <button
-              type="button"
-              className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
-                dateRange === 'week' 
-                  ? 'bg-pink-600 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              } border border-gray-200`}
-              onClick={() => handleDateRangeChange('week')}
-            >
-              Week
-            </button>
-            <button
-              type="button"
-              className={`px-4 py-2 text-sm font-medium ${
-                dateRange === 'month' 
-                  ? 'bg-pink-600 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              } border-t border-b border-gray-200`}
-              onClick={() => handleDateRangeChange('month')}
-            >
-              Month
-            </button>
-            <button
-              type="button"
-              className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
-                dateRange === 'quarter' 
-                  ? 'bg-pink-600 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              } border border-gray-200`}
-              onClick={() => handleDateRangeChange('quarter')}
-            >
-              Quarter
-            </button>
-          </div>
-        </div>
-        
-        <button className="text-sm flex items-center text-gray-700 hover:text-gray-900">
-          <SlidersHorizontal size={16} className="mr-1" />
-          Customize Dashboard
-        </button>
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white p-5 rounded-lg border border-gray-200">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-500">{stat.name}</p>
-                <p className="text-2xl font-semibold mt-1">{stat.value}</p>
-                <p className="text-xs text-gray-500 mt-1">{stat.trend}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-gray-50">
-                {stat.icon}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Main dashboard content - 2 columns on large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Recent Activity */}
-          <div className="bg-white p-5 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium">Recent Activity</h2>
-              <Link href="#" className="text-sm text-pink-600 hover:underline flex items-center">
-                View All <ArrowRight size={14} className="ml-1" />
-              </Link>
-            </div>
-            
-            <div className="space-y-4">
-              {recentActivities.map(activity => (
-                <div key={activity.id} className="flex items-start gap-4">
-                  <div className="rounded-full h-9 w-9 flex items-center justify-center bg-gray-100 shrink-0 mt-1">
-                    {activity.action === 'uploaded' && <FileCheck size={18} className="text-gray-600" />}
-                    {activity.action === 'generated' && <FileText size={18} className="text-gray-600" />}
-                    {activity.action === 'created' && <PlusCircle size={18} className="text-gray-600" />}
-                    {activity.action === 'edited' && <Pen size={18} className="text-gray-600" />}
-                    {activity.action === 'analyzed' && <Brain size={18} className="text-gray-600" />}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
-                      <p className="text-sm">
-                        <span className="font-medium">{activity.user}</span>
-                        <span className="text-gray-500"> {activity.action} </span>
-                        <span className="font-medium">{activity.item}</span>
-                      </p>
-                      <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {getRelativeTime(activity.timestamp)}
-                      </span>
-                    </div>
-                    <div className="mt-1">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getModuleColor(activity.module)}`}>
-                        {activity.module}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Study Status Chart */}
-          <div className="bg-white p-5 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium">Study Status Overview</h2>
-              <div className="flex gap-2">
-                <button className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded">
-                  By Phase
-                </button>
-                <button className="text-xs bg-pink-100 text-pink-700 px-2 py-1 rounded">
-                  By Status
-                </button>
-              </div>
-            </div>
-            
-            <div className="h-64 flex items-center justify-center">
-              {/* This would be a real chart in the actual implementation */}
-              <div className="w-full flex items-end justify-between h-48 px-4">
-                {studyStatusData.map((item, index) => (
-                  <div key={index} className="flex flex-col items-center">
-                    <div 
-                      className="w-12 bg-pink-500 rounded-t-md transition-all duration-500 ease-in-out hover:bg-pink-600"
-                      style={{ height: `${item.count * 20}px` }}
-                    ></div>
-                    <div className="mt-2 text-xs text-gray-600">{item.name}</div>
-                    <div className="text-sm font-medium">{item.count}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Right column */}
-        <div className="space-y-6">
-          {/* Upcoming Tasks */}
-          <div className="bg-white p-5 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium">Upcoming Tasks</h2>
-              <button className="text-sm text-pink-600 hover:underline flex items-center">
-                <ListTodo size={14} className="mr-1" />
-                Task Manager
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {upcomingTasks.map(task => (
-                <div key={task.id} className="border border-gray-200 rounded-md p-3">
-                  <div className="flex items-start justify-between">
-                    <h3 className="font-medium text-sm">{task.title}</h3>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                      {task.priority}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex justify-between items-center text-xs text-gray-500">
-                    <div className="flex items-center">
-                      <Clock size={12} className="mr-1" />
-                      Due: {formatDate(task.dueDate)}
-                    </div>
-                    <div>
-                      Assigned to: {task.assignedTo}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <button className="w-full mt-3 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 py-2 rounded-md text-sm font-medium flex items-center justify-center">
-              <Plus size={14} className="mr-1" />
-              Add New Task
-            </button>
-          </div>
-          
-          {/* Regulatory Updates */}
-          <div className="bg-white p-5 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium">Regulatory Updates</h2>
-              <button className="text-sm text-pink-600 hover:underline flex items-center">
-                <BookText size={14} className="mr-1" />
-                ICH Wiz
-              </button>
-            </div>
-            
-            <div className="space-y-3">
-              {regulatoryUpdates.map(update => (
-                <div key={update.id} className="p-3 border-l-2 border-blue-500 bg-blue-50">
-                  <h3 className="font-medium text-sm">{update.title}</h3>
-                  <div className="mt-1 flex justify-between items-center text-xs">
-                    <span className="text-blue-700">{update.agency}</span>
-                    <span className="text-gray-500">{formatDate(update.date)}</span>
-                  </div>
-                  <div className="mt-1 text-xs text-gray-600">{update.type}</div>
-                </div>
-              ))}
-            </div>
-            
-            <button className="w-full mt-3 text-blue-600 hover:bg-blue-50 border border-blue-200 py-2 rounded-md text-sm font-medium flex items-center justify-center">
-              View All Updates
-            </button>
-          </div>
-          
-          {/* Blockchain Status */}
-          <div className="bg-white p-5 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-medium">Blockchain Status</h2>
-              <span 
-                className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                  blockchainStatus.verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                }`}
-              >
-                {blockchainStatus.verified ? 'Operational' : 'Verification Needed'}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md mb-3">
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <DashboardCard title="Quick Stats" className="col-span-full md:col-span-1">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-md">
               <div className="flex items-center">
-                <Shield size={16} className="text-green-600 mr-2" />
-                <span className="text-sm font-medium">Document Integrity</span>
+                <Database className="w-5 h-5 text-blue-600 mr-2" />
+                <span className="text-sm">Documents in Vault</span>
               </div>
-              <span className="text-sm">95% Verified</span>
+              <span className="font-semibold">458</span>
             </div>
             
-            <div className="text-xs text-gray-500 flex items-center">
-              <Clock size={12} className="mr-1" />
-              <span>Last verified: {new Date(blockchainStatus.lastVerified).toLocaleTimeString()}</span>
+            <div className="flex items-center justify-between p-3 bg-pink-50 rounded-md">
+              <div className="flex items-center">
+                <FileText className="w-5 h-5 text-pink-600 mr-2" />
+                <span className="text-sm">CSRs Analyzed</span>
+              </div>
+              <span className="font-semibold">32</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-md">
+              <div className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                <span className="text-sm">Submissions Complete</span>
+              </div>
+              <span className="font-semibold">15</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-md">
+              <div className="flex items-center">
+                <Clock className="w-5 h-5 text-yellow-600 mr-2" />
+                <span className="text-sm">Pending Tasks</span>
+              </div>
+              <span className="font-semibold">8</span>
             </div>
           </div>
-        </div>
+        </DashboardCard>
+        
+        <DashboardCard title="Recent Activity" className="col-span-full md:col-span-2">
+          <div className="space-y-3">
+            {recentActivity.map(activity => (
+              <div key={activity.id} className="flex items-start p-3 hover:bg-gray-50 rounded-md transition-colors">
+                <div className="rounded-full bg-gray-100 p-2 mr-3">
+                  <activity.icon className="w-5 h-5 text-gray-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm">{activity.description}</p>
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs text-gray-500 mr-2">{activity.time}</span>
+                    <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">{activity.module}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <Link href="/activity">
+              <a className="text-sm text-pink-600 hover:text-pink-800 font-medium flex items-center">
+                <span>View all activity</span>
+                <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </Link>
+          </div>
+        </DashboardCard>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <DashboardCard title="Upcoming Tasks" className="col-span-full md:col-span-2">
+          <div className="space-y-3">
+            {tasks.map(task => (
+              <div key={task.id} className="p-3 border rounded-md border-gray-200 hover:border-gray-300 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-3">
+                    <input 
+                      type="checkbox" 
+                      className="mt-1 h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                    />
+                    <div>
+                      <p className="text-sm font-medium">{task.title}</p>
+                      <div className="flex items-center mt-1">
+                        <Clock className="w-3 h-3 text-gray-500 mr-1" />
+                        <span className="text-xs text-gray-500">Due: {task.dueDate}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span 
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      task.priority === 'high' 
+                        ? 'bg-red-100 text-red-800' 
+                        : task.priority === 'medium'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <button className="mt-4 w-full border border-dashed border-gray-300 p-3 rounded-md flex items-center justify-center text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+            <PlusCircle className="w-4 h-4 mr-2" />
+            <span>Add New Task</span>
+          </button>
+        </DashboardCard>
+        
+        <DashboardCard title="Notifications" className="col-span-full md:col-span-1">
+          <div className="space-y-3">
+            {notifications.map(notification => (
+              <div key={notification.id} className="p-3 border-b border-gray-100 last:border-0">
+                <div className="flex items-start space-x-3">
+                  <div className={`rounded-full p-2 ${
+                    notification.type === 'warning' 
+                      ? 'bg-yellow-100 text-yellow-600' 
+                      : notification.type === 'info'
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'bg-pink-100 text-pink-600'
+                  }`}>
+                    {notification.type === 'warning' && <AlertTriangle className="w-4 h-4" />}
+                    {notification.type === 'info' && <Bell className="w-4 h-4" />}
+                    {notification.type === 'request' && <FileText className="w-4 h-4" />}
+                  </div>
+                  <div>
+                    <p className="text-sm">{notification.message}</p>
+                    <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 pt-3 border-t border-gray-100">
+            <Link href="/notifications">
+              <a className="text-sm text-pink-600 hover:text-pink-800 font-medium flex items-center justify-center">
+                <span>View all notifications</span>
+              </a>
+            </Link>
+          </div>
+        </DashboardCard>
       </div>
     </div>
   );
 };
-
-// Components needed for the activities list
-const PlusCircle = ({ size, className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="16" />
-    <line x1="8" y1="12" x2="16" y2="12" />
-  </svg>
-);
-
-const Pen = ({ size, className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-    <path d="m15 5 4 4" />
-  </svg>
-);
-
-const Brain = ({ size, className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M9.5 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
-    <path d="M14.5 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
-    <path d="M3 11v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-1a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3" />
-    <path d="M7 9h10" />
-    <path d="M8 11v6a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-6" />
-  </svg>
-);
 
 export default DashboardModule;
