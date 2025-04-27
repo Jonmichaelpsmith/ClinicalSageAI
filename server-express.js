@@ -90,7 +90,7 @@ app.get('/api/ind/wizard/sections', (req, res) => {
     { id: 3, name: 'Table of Contents', required: true },
     { id: 4, name: 'Introductory Statement', required: true },
     { id: 5, name: 'General Investigational Plan', required: true },
-    { id: 6, name: 'Investigator's Brochure', required: true },
+    { id: 6, name: 'Investigator Brochure', required: true },
     { id: 7, name: 'Clinical Protocol', required: true },
     { id: 8, name: 'Chemistry, Manufacturing, and Control Information', required: true },
     { id: 9, name: 'Pharmacology and Toxicology Information', required: true },

@@ -1,0 +1,107 @@
+Fixed and Improved Version:
+Here's an updated version of the uncaughtException handler, addressing these concerns and ensuring clean, non-redundant logging:
+
+javascript
+
+Copy
+// Global error handler for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  const errorDetails = {
+    type: 'UncaughtException',
+    message: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString(),
+    name: error.name // Added for more context
+  };
+
+  // Single, structured log to logger
+  logger.error('Uncaught Exception occurred', errorDetails);
+
+  // Structured console output for debugging
+  console.error(
+    `Uncaught Exception [${errorDetails.timestamp}]:\n` +
+    `Name: ${error.name}\n` +
+    `Message: ${error.message}\n` +
+    `Stack: ${error.stack}`
+  );
+
+  // Optional: Exit process for critical errors (uncomment if needed)
+  // process.exit(1);
+});
+Changes Made:
+Removed Duplicate Logging:
+Eliminated any redundant logger.error calls (e.g., removed the second logger.error from your original code).
+Ensured only one logger.error call with all relevant details in errorDetails.
+Enhanced Error Details:
+Added name property to errorDetails to capture the error type (e.g., TypeError, ReferenceError).
+Reordered errorDetails properties for consistency (type first).
+Structured Console Output:
+Improved console.error output to be more readable, with clear labels for Name, Message, and Stack.
+Included timestamp for alignment with errorDetails.
+Process Exit Handling:
+Kept process.exit(1) commented out, as uncaught exceptions are often critical, but exiting isn't always desired (e.g., in a server context, you might want to keep the process running).
+Added a clear comment to guide future decisions.
+Diff Notation Interpretation:
+The -1 likely refers to removing the redundant logger.error(Uncaught Exception occurred: ${errorDetails.message}) from your original code.
+The +1 likely refers to keeping or adding the structured errorDetails object logging.
+This version ensures no redundant logging while maintaining all necessary details.
+Integration with Express Server:
+If you're using this with the Express server code from your second query, ensure the logger is properly defined (e.g., using Winston or another logging library). You can add this handler at the top of the Express server file:
+
+javascript
+
+Copy
+const logger = require('./logger'); // Replace with your actual logger implementation
+
+// Global error handler for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  const errorDetails = {
+    type: 'UncaughtException',
+    message: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString(),
+    name: error.name
+  };
+
+  logger.error('Uncaught Exception occurred', errorDetails);
+  console.error(
+    `Uncaught Exception [${errorDetails.timestamp}]:\n` +
+    `Name: ${error.name}\n` +
+    `Message: ${error.message}\n` +
+    `Stack: ${error.stack}`
+  );
+  // process.exit(1); // Uncomment if you want to terminate on uncaught exceptions
+});
+
+// Rest of your Express server code...
+Notes:
+Logger Dependency: The code assumes a logger object with an error method. If you don't have one, you can use console.error as a fallback or install a library like Winston:
+bash
+
+Copy
+npm install winston
+Example logger setup:
+javascript
+
+Copy
+const winston = require('winston');
+const logger = winston.createLogger({
+  level: 'error',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'error.log' }),
+    new winston.transports.Console()
+  ]
+});
+Process Exit: Decide whether to include process.exit(1) based on your application. For an Express server, you might want to avoid exiting to keep the server running, but log the error for debugging. If the error is critical (e.g., corrupts application state), exiting might be necessary.
+Unhandled Rejections: You didn't include the unhandledRejection handler in this query, but if you want a similar fix for it, let me know, and I can provide an updated version to match this style.
+Testing: Test the error handler by intentionally throwing an uncaught exception:
+javascript
+
+Copy
+throw new Error('Test uncaught exception');
+Verify that the logs appear as expected in both the logger output and console.
+If you meant something specific by the -1, +1 notation or have additional issues with this code, please clarify, and I'll tailor the response further!
