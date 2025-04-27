@@ -1,304 +1,234 @@
 /**
  * Module Integration Layer
  * 
- * This component provides a context provider for module integration,
- * allowing modules to communicate and share data throughout the platform.
+ * This component provides a centralized integration layer for all TrialSage modules.
+ * It manages shared services, state, and cross-module communication.
  */
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { RegulatoryIntelligenceCore } from '../../services/RegulatoryIntelligenceCore';
-import { BlockchainService } from '../../services/blockchain';
-import DocuShareService from '../../services/DocuShareService';
-import WorkflowService from '../../services/WorkflowService';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import securityService from '../../services/SecurityService';
+import docuShareService from '../../services/DocuShareService';
+import workflowService from '../../services/WorkflowService';
+import blockchainService from '../../services/blockchain';
+import { RegulatoryIntelligenceCore } from '../../services/RegulatoryIntelligenceCore';
 
 // Create integration context
-export const IntegrationContext = createContext({
-  // Module data sharing
-  sharedData: {},
-  setSharedData: () => {},
-  
-  // Module communication
-  notifyModule: () => {},
-  registerModuleListener: () => {},
-  
-  // Cross-module document handling
-  documentCache: {},
-  cacheDocument: () => {},
-  retrieveDocument: () => {},
-  
-  // Workflow coordination
-  triggerWorkflow: () => {},
-  
-  // Security context
-  currentUser: null,
-  currentOrganization: null,
-  
-  // Services access
-  regulatoryCore: null,
-  blockchainService: null,
-  docuShareService: null,
-  workflowService: null,
-  
-  // Module registry
-  registeredModules: [],
-  registerModule: () => {},
-  
-  // Global platform state
-  platformReady: false,
-  platformState: 'initializing',
-});
+const IntegrationContext = createContext(null);
 
-// Hook for using integration context
-export const useIntegration = () => useContext(IntegrationContext);
-
-// Integration Layer Component
-const ModuleIntegrationLayer = ({ children }) => {
-  // Shared data storage between modules
+/**
+ * Module Integration Provider
+ * 
+ * Provides integration services to all TrialSage modules
+ */
+export const ModuleIntegrationProvider = ({ children }) => {
+  // Initialize regulatory core
+  const [regulatoryCore] = useState(() => new RegulatoryIntelligenceCore());
+  
+  // Track registered modules
+  const [registeredModules, setRegisteredModules] = useState({});
+  
+  // Track shared data between modules
   const [sharedData, setSharedData] = useState({});
   
   // Module event listeners
-  const [moduleListeners, setModuleListeners] = useState({});
+  const [eventListeners, setEventListeners] = useState({});
   
-  // Document cache for sharing documents between modules
-  const [documentCache, setDocumentCache] = useState({});
-  
-  // Registered modules for cross-module communication
-  const [registeredModules, setRegisteredModules] = useState([]);
-  
-  // Global platform state
-  const [platformState, setPlatformState] = useState('initializing');
-  const [platformReady, setPlatformReady] = useState(false);
-  
-  // Services initialization
-  const [services, setServices] = useState({
-    regulatoryCore: null,
-    blockchainService: null,
-    docuShareService: null,
-    workflowService: null
-  });
-  
-  // Initialize services when component mounts
+  // Initialize services
   useEffect(() => {
     const initializeServices = async () => {
       try {
-        // Initialize regulatory intelligence core
-        const regulatoryCore = RegulatoryIntelligenceCore.getInstance();
+        // Initialize regulatory core
         await regulatoryCore.initialize();
-        
-        // Initialize blockchain service
-        const blockchainService = new BlockchainService();
-        await blockchainService.initialize();
-        
-        // Initialize document sharing service
-        const docuShareService = new DocuShareService();
-        await docuShareService.initialize();
-        
-        // Initialize workflow service
-        const workflowService = new WorkflowService();
-        await workflowService.initialize();
-        
-        setServices({
-          regulatoryCore,
-          blockchainService,
-          docuShareService,
-          workflowService
-        });
-        
-        setPlatformState('ready');
-        setPlatformReady(true);
+        console.log('[Integration] Regulatory Intelligence Core initialized');
       } catch (error) {
-        console.error('Error initializing integration layer services:', error);
-        setPlatformState('error');
+        console.error('[Integration] Error initializing services:', error);
       }
     };
     
     initializeServices();
+  }, [regulatoryCore]);
+  
+  /**
+   * Register a module with the integration layer
+   * @param {string} moduleId - Module identifier
+   * @param {object} metadata - Module metadata
+   */
+  const registerModule = useCallback((moduleId, metadata) => {
+    console.log(`[Integration] Registering module: ${moduleId}`, metadata);
     
-    // Cleanup function
-    return () => {
-      console.log('Cleaning up integration layer...');
-      
-      // Cleanup would include service disposal if needed
-      if (services.blockchainService) {
-        services.blockchainService.dispose();
+    setRegisteredModules(prevModules => ({
+      ...prevModules,
+      [moduleId]: {
+        id: moduleId,
+        ...metadata,
+        registeredAt: new Date().toISOString()
       }
-    };
+    }));
   }, []);
   
-  // Update shared data with new data (merging with existing)
-  const updateSharedData = (newData) => {
-    setSharedData(prev => ({ ...prev, ...newData }));
-  };
-  
-  // Notify a specific module or all modules with an event
-  const notifyModule = (moduleId, eventType, eventData) => {
-    console.log(`[IntegrationLayer] Notifying module: ${moduleId}, event: ${eventType}`);
+  /**
+   * Share data between modules
+   * @param {string} key - Data key
+   * @param {any} data - Data to share
+   * @param {string} sourceModuleId - Source module ID
+   */
+  const shareData = useCallback((key, data, sourceModuleId) => {
+    console.log(`[Integration] Sharing data: ${key} from ${sourceModuleId}`);
     
-    // If moduleId is "all", notify all modules
-    if (moduleId === 'all') {
-      Object.keys(moduleListeners).forEach(id => {
-        moduleListeners[id].forEach(listener => {
-          if (listener.eventType === eventType || listener.eventType === 'all') {
-            listener.callback(eventData);
-          }
-        });
-      });
-      return;
-    }
-    
-    // Notify specific module
-    if (moduleListeners[moduleId]) {
-      moduleListeners[moduleId].forEach(listener => {
-        if (listener.eventType === eventType || listener.eventType === 'all') {
-          listener.callback(eventData);
-        }
-      });
-    }
-  };
-  
-  // Register a module to listen for events
-  const registerModuleListener = (moduleId, eventType, callback) => {
-    console.log(`[IntegrationLayer] Registering listener for module: ${moduleId}, event: ${eventType}`);
-    
-    setModuleListeners(prev => {
-      const moduleEvents = prev[moduleId] || [];
-      return {
-        ...prev,
-        [moduleId]: [
-          ...moduleEvents,
-          { eventType, callback, id: Date.now() }
-        ]
-      };
-    });
-    
-    // Return unsubscribe function
-    return () => {
-      setModuleListeners(prev => {
-        const moduleEvents = prev[moduleId] || [];
-        return {
-          ...prev,
-          [moduleId]: moduleEvents.filter(listener => 
-            !(listener.eventType === eventType && listener.callback === callback)
-          )
-        };
-      });
-    };
-  };
-  
-  // Cache a document for sharing between modules
-  const cacheDocument = (documentId, document) => {
-    setDocumentCache(prev => ({
-      ...prev,
-      [documentId]: {
-        document,
+    setSharedData(prevData => ({
+      ...prevData,
+      [key]: {
+        data,
+        sourceModuleId,
         timestamp: new Date().toISOString()
       }
     }));
-  };
-  
-  // Retrieve a document from cache
-  const retrieveDocument = (documentId) => {
-    return documentCache[documentId]?.document;
-  };
-  
-  // Trigger a workflow across modules
-  const triggerWorkflow = async (workflowId, workflowData) => {
-    if (!services.workflowService) {
-      console.error('[IntegrationLayer] Workflow service not initialized');
-      return false;
-    }
     
-    try {
-      // Start the workflow
-      const workflowResult = await services.workflowService.startWorkflow(
-        workflowId, 
-        workflowData
-      );
-      
-      // Notify all modules about the workflow
-      notifyModule('all', 'workflow_started', {
-        workflowId,
-        workflowData,
-        workflowResult
+    // Trigger any event listeners for this key
+    if (eventListeners[key]) {
+      eventListeners[key].forEach(listener => {
+        if (listener.sourceModuleId !== sourceModuleId || listener.includeSource) {
+          try {
+            listener.callback(data, sourceModuleId);
+          } catch (error) {
+            console.error(`[Integration] Error in event listener for ${key}:`, error);
+          }
+        }
       });
-      
-      return workflowResult;
-    } catch (error) {
-      console.error('[IntegrationLayer] Error triggering workflow:', error);
-      return false;
     }
-  };
+  }, [eventListeners]);
   
-  // Register a module with the integration layer
-  const registerModule = (moduleId, moduleMeta) => {
-    console.log(`[IntegrationLayer] Registering module: ${moduleId}`);
+  /**
+   * Get shared data
+   * @param {string} key - Data key
+   * @returns {any} Shared data
+   */
+  const getSharedData = useCallback((key) => {
+    return sharedData[key]?.data;
+  }, [sharedData]);
+  
+  /**
+   * Register event listener
+   * @param {string} key - Event key
+   * @param {Function} callback - Event callback
+   * @param {string} moduleId - Module ID
+   * @param {boolean} includeSource - Whether to include events from the source module
+   * @returns {Function} Unregister function
+   */
+  const registerEventListener = useCallback((key, callback, moduleId, includeSource = false) => {
+    console.log(`[Integration] Registering event listener for ${key} from ${moduleId}`);
     
-    // Check if module is already registered
-    if (registeredModules.some(m => m.id === moduleId)) {
-      console.warn(`[IntegrationLayer] Module ${moduleId} already registered`);
-      return;
-    }
+    const listenerId = `${moduleId}-${Date.now()}`;
     
-    // Add module to registry
-    setRegisteredModules(prev => [
-      ...prev,
-      {
-        id: moduleId,
-        meta: moduleMeta,
-        registeredAt: new Date().toISOString()
+    setEventListeners(prevListeners => ({
+      ...prevListeners,
+      [key]: [
+        ...(prevListeners[key] || []),
+        {
+          id: listenerId,
+          callback,
+          sourceModuleId: moduleId,
+          includeSource
+        }
+      ]
+    }));
+    
+    // Return unregister function
+    return () => {
+      setEventListeners(prevListeners => ({
+        ...prevListeners,
+        [key]: (prevListeners[key] || []).filter(
+          listener => listener.id !== listenerId
+        )
+      }));
+    };
+  }, []);
+  
+  /**
+   * Trigger event across modules
+   * @param {string} key - Event key
+   * @param {any} data - Event data
+   * @param {string} sourceModuleId - Source module ID
+   */
+  const triggerEvent = useCallback((key, data, sourceModuleId) => {
+    console.log(`[Integration] Triggering event: ${key} from ${sourceModuleId}`);
+    
+    // Store in shared data
+    setSharedData(prevData => ({
+      ...prevData,
+      [`event:${key}`]: {
+        data,
+        sourceModuleId,
+        timestamp: new Date().toISOString()
       }
-    ]);
+    }));
     
-    // Notify other modules about the new module
-    notifyModule('all', 'module_registered', {
-      moduleId,
-      moduleMeta
-    });
-  };
+    // Trigger any event listeners for this key
+    if (eventListeners[key]) {
+      eventListeners[key].forEach(listener => {
+        if (listener.sourceModuleId !== sourceModuleId || listener.includeSource) {
+          try {
+            listener.callback(data, sourceModuleId);
+          } catch (error) {
+            console.error(`[Integration] Error in event listener for ${key}:`, error);
+          }
+        }
+      });
+    }
+  }, [eventListeners]);
   
-  // Define context value
-  const contextValue = {
-    // Module data sharing
-    sharedData,
-    setSharedData: updateSharedData,
+  /**
+   * Check if current user has access to a module
+   * @param {string} moduleId - Module ID
+   * @returns {boolean} Whether user has access
+   */
+  const hasModuleAccess = useCallback((moduleId) => {
+    return securityService.hasModuleAccess(moduleId);
+  }, []);
+  
+  // Expose integration context
+  const integrationContext = {
+    // Services
+    securityService,
+    docuShareService,
+    workflowService,
+    regulatoryCore,
+    blockchainService,
     
-    // Module communication
-    notifyModule,
-    registerModuleListener,
-    
-    // Cross-module document handling
-    documentCache,
-    cacheDocument,
-    retrieveDocument,
-    
-    // Workflow coordination
-    triggerWorkflow,
-    
-    // Security context
-    currentUser: securityService.currentUser,
-    currentOrganization: securityService.currentOrganization,
-    
-    // Services access
-    regulatoryCore: services.regulatoryCore,
-    blockchainService: services.blockchainService,
-    docuShareService: services.docuShareService,
-    workflowService: services.workflowService,
-    
-    // Module registry
-    registeredModules,
+    // Module registration
     registerModule,
+    registeredModules,
     
-    // Global platform state
-    platformReady,
-    platformState,
+    // Data sharing
+    shareData,
+    getSharedData,
+    sharedData,
+    
+    // Event system
+    registerEventListener,
+    triggerEvent,
+    
+    // Access control
+    hasModuleAccess
   };
   
   return (
-    <IntegrationContext.Provider value={contextValue}>
+    <IntegrationContext.Provider value={integrationContext}>
       {children}
     </IntegrationContext.Provider>
   );
 };
 
-export default ModuleIntegrationLayer;
+/**
+ * Hook to use integration context
+ * @returns {object} Integration context
+ */
+export const useIntegration = () => {
+  const context = useContext(IntegrationContext);
+  
+  if (!context) {
+    throw new Error('useIntegration must be used within a ModuleIntegrationProvider');
+  }
+  
+  return context;
+};

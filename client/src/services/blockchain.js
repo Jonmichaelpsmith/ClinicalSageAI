@@ -1,311 +1,217 @@
 /**
  * Blockchain Service
  * 
- * This service provides blockchain functionality for the TrialSage platform,
- * including document verification, audit trails, and secure hash generation.
+ * This service provides blockchain integration for document verification
+ * and enhanced security across the TrialSage platform.
+ * 
+ * It handles document hashing, blockchain transaction creation,
+ * and verification of document integrity.
  */
 
-// Simple hash function since we can't use crypto-browserify
-const simpleHash = (data) => {
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    const char = data.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash).toString(16).padStart(8, '0');
-};
-
-export class BlockchainService {
+class BlockchainService {
   constructor() {
-    this.initialized = false;
-    this.networkStatus = 'disconnected';
-    this.transactions = [];
-    this.documentHashes = new Map();
-  }
-  
-  // Initialize blockchain service
-  async initialize() {
-    try {
-      console.log('[Blockchain] Initializing blockchain service...');
-      
-      // In a real implementation, this would connect to a blockchain network
-      // For now, simulated with a delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      this.initialized = true;
-      this.networkStatus = 'connected';
-      
-      console.log('[Blockchain] Blockchain service initialized successfully');
-      
-      return true;
-    } catch (error) {
-      console.error('[Blockchain] Initialization error:', error);
-      this.networkStatus = 'error';
-      return false;
-    }
-  }
-  
-  // Verify document authenticity using blockchain
-  async verifyDocument(documentInfo) {
-    if (!this.initialized) {
-      throw new Error('Blockchain service not initialized');
-    }
+    // Network connection status
+    this.networkStatus = {
+      connected: true,
+      lastUpdated: new Date().toISOString(),
+      networkType: 'ethereum',
+      networkId: '1',
+      nodeUrl: 'https://mainnet.infura.io/v3/your-api-key'
+    };
     
-    try {
-      console.log(`[Blockchain] Verifying document: ${documentInfo.documentId}...`);
-      
-      // In a real implementation, this would check the document hash on the blockchain
-      // For now, simulated with a delay and random result
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // For demo purposes, most documents are verified (90% chance)
-      const verified = Math.random() > 0.1;
-      
-      if (verified) {
-        // If verified, store the document hash for future reference
-        const documentHash = await this.hashData(JSON.stringify(documentInfo));
-        this.documentHashes.set(documentInfo.documentId, {
-          hash: documentHash,
-          timestamp: new Date().toISOString(),
-          verifiedAt: new Date().toISOString()
-        });
-        
-        // Record the verification transaction
-        this.recordTransaction({
-          type: 'document_verification',
-          status: 'success',
-          documentId: documentInfo.documentId,
-          source: documentInfo.source,
-          timestamp: new Date().toISOString()
-        });
-      } else {
-        // Record the failed verification transaction
-        this.recordTransaction({
-          type: 'document_verification',
-          status: 'failed',
-          documentId: documentInfo.documentId,
-          source: documentInfo.source,
-          timestamp: new Date().toISOString()
-        });
+    // Transaction history
+    this.transactions = [
+      {
+        id: 'tx-001',
+        documentId: 'doc-001',
+        hash: '0x7e9f8d2a3b5c6f7e8d9c0b1a2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1a2d3',
+        timestamp: '2024-03-21T14:32:00Z',
+        status: 'confirmed',
+        blockNumber: 12345678,
+        confirmations: 42
+      },
+      {
+        id: 'tx-002',
+        documentId: 'doc-002',
+        hash: '0x3c5a9b8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9',
+        timestamp: '2024-03-13T09:17:00Z',
+        status: 'confirmed',
+        blockNumber: 12345000,
+        confirmations: 720
+      },
+      {
+        id: 'tx-003',
+        documentId: 'doc-004',
+        hash: '0x9d2b8a7c6e5f4d3c2b1a0e9f8d7c6b5a4e3f2d1c0b9a8e7f6d5c4b3a2d1e0f9c8',
+        timestamp: '2024-03-06T11:45:00Z',
+        status: 'confirmed',
+        blockNumber: 12344500,
+        confirmations: 1320
       }
-      
-      console.log(`[Blockchain] Document verification result: ${verified ? 'Verified' : 'Not verified'}`);
-      
-      return verified;
-    } catch (error) {
-      console.error('[Blockchain] Error verifying document:', error);
-      return false;
-    }
-  }
-  
-  // Record document analysis in blockchain
-  async recordDocumentAnalysis(analysisRecord) {
-    if (!this.initialized) {
-      throw new Error('Blockchain service not initialized');
-    }
+    ];
     
-    try {
-      console.log(`[Blockchain] Recording document analysis for document: ${analysisRecord.documentId}...`);
-      
-      // Generate a hash for the analysis record
-      const analysisHash = await this.hashData(JSON.stringify(analysisRecord));
-      
-      // In a real implementation, this would record the analysis hash on the blockchain
-      // For now, simulated with a delay
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // Store the analysis hash
-      this.documentHashes.set(`analysis_${analysisRecord.documentId}`, {
-        hash: analysisHash,
-        timestamp: analysisRecord.timestamp,
-        type: 'document_analysis'
-      });
-      
-      // Record the transaction
-      this.recordTransaction({
-        type: 'document_analysis',
-        status: 'success',
-        documentId: analysisRecord.documentId,
-        documentType: analysisRecord.documentType,
-        hash: analysisHash,
-        timestamp: new Date().toISOString()
-      });
-      
-      console.log(`[Blockchain] Document analysis recorded successfully with hash: ${analysisHash.substring(0, 10)}...`);
-      
-      return analysisHash;
-    } catch (error) {
-      console.error('[Blockchain] Error recording document analysis:', error);
-      throw error;
-    }
-  }
-  
-  // Record content generation in blockchain
-  async recordContentGeneration(generationRecord) {
-    if (!this.initialized) {
-      throw new Error('Blockchain service not initialized');
-    }
-    
-    try {
-      console.log(`[Blockchain] Recording content generation for content type: ${generationRecord.contentType}...`);
-      
-      // Generate a hash for the generation record
-      const generationHash = await this.hashData(JSON.stringify(generationRecord));
-      
-      // In a real implementation, this would record the generation hash on the blockchain
-      // For now, simulated with a delay
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // Store the generation hash
-      const recordId = `generation_${generationRecord.contentType}_${Date.now()}`;
-      this.documentHashes.set(recordId, {
-        hash: generationHash,
-        timestamp: generationRecord.timestamp,
-        type: 'content_generation'
-      });
-      
-      // Record the transaction
-      this.recordTransaction({
-        type: 'content_generation',
-        status: 'success',
-        contentType: generationRecord.contentType,
-        regulatoryFrameworks: generationRecord.regulatoryFrameworks,
-        hash: generationHash,
-        timestamp: new Date().toISOString()
-      });
-      
-      console.log(`[Blockchain] Content generation recorded successfully with hash: ${generationHash.substring(0, 10)}...`);
-      
-      return generationHash;
-    } catch (error) {
-      console.error('[Blockchain] Error recording content generation:', error);
-      throw error;
-    }
-  }
-  
-  // Record document validation in blockchain
-  async recordDocumentValidation(validationRecord) {
-    if (!this.initialized) {
-      throw new Error('Blockchain service not initialized');
-    }
-    
-    try {
-      console.log(`[Blockchain] Recording document validation for document: ${validationRecord.documentId}...`);
-      
-      // Generate a hash for the validation record
-      const validationHash = await this.hashData(JSON.stringify(validationRecord));
-      
-      // In a real implementation, this would record the validation hash on the blockchain
-      // For now, simulated with a delay
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // Store the validation hash
-      this.documentHashes.set(`validation_${validationRecord.documentId}`, {
-        hash: validationHash,
-        timestamp: validationRecord.timestamp,
-        type: 'document_validation'
-      });
-      
-      // Record the transaction
-      this.recordTransaction({
-        type: 'document_validation',
-        status: 'success',
-        documentId: validationRecord.documentId,
-        documentType: validationRecord.documentType,
-        hash: validationHash,
-        timestamp: new Date().toISOString()
-      });
-      
-      console.log(`[Blockchain] Document validation recorded successfully with hash: ${validationHash.substring(0, 10)}...`);
-      
-      return validationHash;
-    } catch (error) {
-      console.error('[Blockchain] Error recording document validation:', error);
-      throw error;
-    }
-  }
-  
-  // Get document hash from blockchain
-  async getDocumentHash(documentInfo) {
-    if (!this.initialized) {
-      throw new Error('Blockchain service not initialized');
-    }
-    
-    try {
-      const documentId = documentInfo.documentId || documentInfo.id;
-      
-      // Check if document hash exists
-      if (this.documentHashes.has(documentId)) {
-        return this.documentHashes.get(documentId).hash;
+    // Document verification status
+    this.documentStatus = {
+      'doc-001': {
+        verified: true,
+        transactionId: 'tx-001',
+        verifiedAt: '2024-03-21T14:35:00Z',
+        documentHash: '7e9f8d2a3b5c6f7e8d9c0b1a2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1',
+        blockchainHash: '7e9f8d2a3b5c6f7e8d9c0b1a2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1'
+      },
+      'doc-002': {
+        verified: true,
+        transactionId: 'tx-002',
+        verifiedAt: '2024-03-13T09:22:00Z',
+        documentHash: '3c5a9b8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0',
+        blockchainHash: '3c5a9b8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0'
+      },
+      'doc-004': {
+        verified: true,
+        transactionId: 'tx-003',
+        verifiedAt: '2024-03-06T11:50:00Z',
+        documentHash: '9d2b8a7c6e5f4d3c2b1a0e9f8d7c6b5a4e3f2d1c0b9a8e7f6d5c4b3a2d1e0f9',
+        blockchainHash: '9d2b8a7c6e5f4d3c2b1a0e9f8d7c6b5a4e3f2d1c0b9a8e7f6d5c4b3a2d1e0f9'
       }
-      
-      // If not, generate a new hash and record it
-      const documentHash = await this.hashData(JSON.stringify(documentInfo));
-      
-      this.documentHashes.set(documentId, {
-        hash: documentHash,
-        timestamp: new Date().toISOString(),
-        recordedAt: new Date().toISOString()
-      });
-      
-      return documentHash;
-    } catch (error) {
-      console.error('[Blockchain] Error getting document hash:', error);
-      
-      // Fallback to generating a hash without storing it
-      return this.hashData(JSON.stringify(documentInfo));
-    }
-  }
-  
-  // Generate secure hash for data
-  async hashData(data) {
-    return simpleHash(data);
-  }
-  
-  // Record a transaction in the blockchain
-  recordTransaction(transaction) {
-    if (!transaction.timestamp) {
-      transaction.timestamp = new Date().toISOString();
-    }
-    
-    this.transactions.push(transaction);
-    
-    // Limit the number of stored transactions to prevent memory issues
-    if (this.transactions.length > 1000) {
-      this.transactions = this.transactions.slice(-1000);
-    }
-  }
-  
-  // Get network status
-  getNetworkStatus() {
-    return {
-      connected: this.initialized && this.networkStatus === 'connected',
-      status: this.networkStatus,
-      lastUpdated: new Date().toISOString()
     };
   }
   
-  // Get transaction history
-  getTransactionHistory(limit = 100, types = null) {
-    let filteredTransactions = this.transactions;
+  /**
+   * Get blockchain network status
+   * @returns {object} Network status
+   */
+  getNetworkStatus() {
+    console.log('[Blockchain] Getting network status');
     
-    // Filter by type if specified
-    if (types && Array.isArray(types) && types.length > 0) {
-      filteredTransactions = filteredTransactions.filter(tx => types.includes(tx.type));
-    }
-    
-    // Sort by timestamp descending
-    filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-    // Return limited results
-    return filteredTransactions.slice(0, limit);
+    return this.networkStatus;
   }
   
-  // Cleanup and dispose resources
-  dispose() {
-    this.initialized = false;
-    this.networkStatus = 'disconnected';
-    console.log('[Blockchain] Blockchain service disposed');
+  /**
+   * Verify a document on the blockchain
+   * @param {string} documentId - Document ID
+   * @param {object} documentData - Document data
+   * @returns {Promise<object>} Verification result
+   */
+  async verifyDocument(documentId, documentData) {
+    console.log(`[Blockchain] Verifying document ${documentId}`);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Generate document hash
+    const documentHash = this.generateHash(documentData);
+    
+    // Create transaction
+    const transaction = {
+      id: `tx-${Date.now()}`,
+      documentId,
+      hash: `0x${documentHash}${documentHash.substring(0, 8)}`,
+      timestamp: new Date().toISOString(),
+      status: 'pending',
+      blockNumber: null,
+      confirmations: 0
+    };
+    
+    // Add to transactions
+    this.transactions.push(transaction);
+    
+    // Simulate blockchain confirmation delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Update transaction status
+    transaction.status = 'confirmed';
+    transaction.blockNumber = 12345678 + Math.floor(Math.random() * 1000);
+    transaction.confirmations = 1;
+    
+    // Record document verification status
+    this.documentStatus[documentId] = {
+      verified: true,
+      transactionId: transaction.id,
+      verifiedAt: new Date().toISOString(),
+      documentHash,
+      blockchainHash: documentHash
+    };
+    
+    return {
+      success: true,
+      verified: true,
+      transaction,
+      documentStatus: this.documentStatus[documentId]
+    };
+  }
+  
+  /**
+   * Get verification status for a document
+   * @param {string} documentId - Document ID
+   * @returns {Promise<object>} Verification status
+   */
+  async getDocumentVerification(documentId) {
+    console.log(`[Blockchain] Getting verification for document ${documentId}`);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Get document status
+    const status = this.documentStatus[documentId];
+    
+    if (!status) {
+      return {
+        verified: false,
+        message: 'Document not verified on blockchain'
+      };
+    }
+    
+    // Get transaction details
+    const transaction = this.transactions.find(tx => tx.id === status.transactionId);
+    
+    return {
+      ...status,
+      transaction
+    };
+  }
+  
+  /**
+   * Get recent blockchain transactions
+   * @param {number} limit - Number of transactions to return
+   * @returns {Promise<Array>} Recent transactions
+   */
+  async getRecentTransactions(limit = 10) {
+    console.log(`[Blockchain] Getting recent transactions (limit: ${limit})`);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Sort transactions by timestamp (newest first)
+    const sortedTransactions = [...this.transactions].sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    
+    return sortedTransactions.slice(0, limit);
+  }
+  
+  /**
+   * Generate a hash for document data
+   * @param {object} data - Document data
+   * @returns {string} Document hash
+   */
+  generateHash(data) {
+    // In a real implementation, this would use a cryptographic hash function
+    
+    // For demonstration, use a simple hash function
+    const stringData = typeof data === 'string' ? data : JSON.stringify(data);
+    let hash = 0;
+    
+    for (let i = 0; i < stringData.length; i++) {
+      const char = stringData.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    // Convert to hexadecimal and ensure positive value
+    return Math.abs(hash).toString(16).padStart(40, '0');
   }
 }
+
+// Export a singleton instance
+const blockchainService = new BlockchainService();
+export default blockchainService;

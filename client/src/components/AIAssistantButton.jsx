@@ -1,275 +1,266 @@
 /**
- * AI Assistant Button
+ * AI Assistant Button Component
  * 
- * This component provides a floating button to access the AI assistant.
+ * This component provides the AI assistant interface that can be toggled
+ * in the platform. It provides context-aware AI assistance.
  */
 
-import React, { useState } from 'react';
-import { MessageSquare, ArrowUp, X, Sparkles, Volume2, Mic } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RegulatoryIntelligenceCore } from '../services/RegulatoryIntelligenceCore';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Send, Sparkles, Maximize2, Minimize2, Copy, Check } from 'lucide-react';
+import { useIntegration } from './integration/ModuleIntegrationLayer';
 
-const AIAssistantButton = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
+const AIAssistantButton = ({ onClose, context }) => {
+  const { regulatoryCore } = useIntegration();
+  const [messages, setMessages] = useState([
+    {
+      id: 'welcome',
+      type: 'assistant',
+      content: 'Hello! I\'m your TrialSage AI Assistant. How can I help you today?',
+      timestamp: new Date().toISOString()
+    }
+  ]);
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isVoiceModeActive, setIsVoiceModeActive] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   
-  // Toggle assistant panel
-  const toggleAssistant = () => {
-    setIsOpen(!isOpen);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+  
+  // Focus input on mount
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+  
+  // Get module-specific context
+  const getContextMessage = () => {
+    const moduleId = context?.activeModule;
+    
+    switch (moduleId) {
+      case 'ind-wizard':
+        return 'I see you\'re working in the IND Wizard™ module. I can help with IND applications, FDA forms, and regulatory requirements.';
+      case 'trial-vault':
+        return 'I see you\'re working in the Trial Vault™ module. I can help with document management, blockchain verification, and secure sharing.';
+      case 'csr-intelligence':
+        return 'I see you\'re working in the CSR Intelligence™ module. I can help with clinical study reports, ICH E3 compliance, and scientific writing.';
+      case 'study-architect':
+        return 'I see you\'re working in the Study Architect™ module. I can help with protocol design, study planning, and statistical considerations.';
+      case 'analytics':
+        return 'I see you\'re working in the Analytics module. I can help with data visualization, trend analysis, and reporting.';
+      default:
+        return null;
+    }
   };
   
-  // Handle message input change
-  const handleInputChange = (e) => {
-    setMessage(e.target.value);
-  };
+  // Add context message if one exists and hasn't been added yet
+  useEffect(() => {
+    const contextMessage = getContextMessage();
+    
+    if (contextMessage && messages.length === 1) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: 'context',
+          type: 'assistant',
+          content: contextMessage,
+          timestamp: new Date().toISOString()
+        }
+      ]);
+    }
+  }, [context, messages.length]);
   
-  // Handle message submit
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
+  // Handle sending a message
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
     
-    if (!message.trim()) return;
-    
-    // Add user message to the conversation
     const userMessage = {
-      id: Date.now(),
-      text: message,
-      sender: 'user',
+      id: `user-${Date.now()}`,
+      type: 'user',
+      content: input,
       timestamp: new Date().toISOString()
     };
     
     setMessages(prev => [...prev, userMessage]);
-    setMessage('');
+    setInput('');
     setIsLoading(true);
     
     try {
-      // Get AI response using RegulatoryIntelligenceCore
-      const regulatoryCore = RegulatoryIntelligenceCore.getInstance();
+      // In a real implementation, this would use the AI service
+      // Here we simulate a response using the regulatory core
+      let response;
       
-      // Simulate AI response with a delay
-      setTimeout(() => {
-        const aiMessage = {
-          id: Date.now() + 1,
-          text: generateAIResponse(message),
-          sender: 'ai',
-          timestamp: new Date().toISOString()
+      if (regulatoryCore) {
+        response = await regulatoryCore.getScientificGuidance(input);
+      } else {
+        // Fallback response if regulatory core is not available
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        response = {
+          response: `I understand you're asking about "${input}". This would be answered by our AI response system in the production environment. Is there something specific about regulatory documents or clinical trials that I can help explain?`
         };
-        
-        setMessages(prev => [...prev, aiMessage]);
-        setIsLoading(false);
-      }, 1000);
+      }
+      
+      const assistantMessage = {
+        id: `assistant-${Date.now()}`,
+        type: 'assistant',
+        content: response.response,
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error getting AI response:', error);
       
-      // Add error message to conversation
       const errorMessage = {
-        id: Date.now() + 1,
-        text: 'Sorry, I encountered an error. Please try again.',
-        sender: 'ai',
-        timestamp: new Date().toISOString(),
-        isError: true
+        id: `error-${Date.now()}`,
+        type: 'error',
+        content: 'Sorry, I encountered an error while processing your request. Please try again.',
+        timestamp: new Date().toISOString()
       };
       
       setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
     }
   };
   
-  // Generate AI response (in a real implementation, this would use the AI service)
-  const generateAIResponse = (userMessage) => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes('ind') || lowerMessage.includes('submission')) {
-      return "I can help with your IND submission. The IND Wizard module provides tools for preparing your Investigational New Drug application. Would you like me to guide you through the process or provide specific information about FDA requirements?";
-    } else if (lowerMessage.includes('document') || lowerMessage.includes('vault')) {
-      return "The Trial Vault module provides secure document management with blockchain verification. You can store, organize, and share all your clinical and regulatory documents. Would you like me to help you upload a document or find specific files?";
-    } else if (lowerMessage.includes('csr') || lowerMessage.includes('report')) {
-      return "Our CSR Intelligence module uses AI to assist with Clinical Study Report generation. It provides templates, content generation, and quality checks following ICH E3 guidelines. Would you like help starting a new CSR or reviewing an existing one?";
-    } else if (lowerMessage.includes('study') || lowerMessage.includes('protocol')) {
-      return "Study Architect can help with protocol development and study planning. Our AI provides guidance on study design, endpoints, and statistical considerations. Would you like to create a new protocol or get advice on study design optimization?";
-    } else if (lowerMessage.includes('regulatory') || lowerMessage.includes('guidance')) {
-      return "I'm connected to our regulatory intelligence system which tracks updates from FDA, EMA, PMDA, and other authorities. The latest guidance update is from the FDA regarding clinical trial endpoints for drug development. Would you like more details on specific regulatory requirements?";
-    } else {
-      return "I'm your AI assistant for the TrialSage platform. I can help with IND submissions, document management, CSR preparation, study design, and regulatory guidance. How can I assist you with your regulatory and clinical documentation needs today?";
+  // Handle input key press (Enter to send)
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
   
-  // Toggle voice mode
-  const toggleVoiceMode = () => {
-    setIsVoiceModeActive(!isVoiceModeActive);
+  // Format timestamp
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+  
+  // Copy message to clipboard
+  const copyToClipboard = (content) => {
+    navigator.clipboard.writeText(content);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
   };
   
   return (
-    <>
-      {/* Floating button */}
-      <button
-        className="fixed bottom-6 right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-black text-white shadow-lg hover:shadow-xl focus:outline-none"
-        onClick={toggleAssistant}
-        aria-label={isOpen ? "Close AI assistant" : "Open AI assistant"}
-      >
-        {isOpen ? <X size={24} /> : <Sparkles size={24} />}
-      </button>
+    <div 
+      className={`fixed bottom-4 right-4 bg-white rounded-lg shadow-xl border overflow-hidden flex flex-col z-50 transition-all ${
+        expanded ? 'w-96 h-[32rem]' : 'w-80 h-96'
+      }`}
+    >
+      {/* Header */}
+      <div className="px-4 py-3 bg-primary text-white flex items-center justify-between">
+        <div className="flex items-center">
+          <Sparkles size={18} className="mr-2" />
+          <h3 className="font-semibold">AI Assistant</h3>
+        </div>
+        
+        <div className="flex items-center space-x-1">
+          <button 
+            className="p-1 hover:bg-white hover:bg-opacity-20 rounded"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
+          
+          <button 
+            className="p-1 hover:bg-white hover:bg-opacity-20 rounded"
+            onClick={onClose}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
       
-      {/* Assistant panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-30 bg-black opacity-50"
-              onClick={() => setIsOpen(false)}
-            />
-            
-            {/* Panel */}
-            <motion.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 right-0 z-40 w-full sm:w-96 h-[70vh] bg-white shadow-xl border-t sm:border-l flex flex-col rounded-t-lg sm:rounded-t-none"
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message) => (
+          <div 
+            key={message.id}
+            className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div 
+              className={`max-w-[80%] relative group ${
+                message.type === 'user' 
+                  ? 'bg-primary text-white rounded-t-lg rounded-bl-lg' 
+                  : message.type === 'error'
+                    ? 'bg-red-100 text-red-800 rounded-t-lg rounded-br-lg'
+                    : 'bg-gray-100 text-gray-800 rounded-t-lg rounded-br-lg'
+              } px-4 py-3`}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b">
-                <div className="flex items-center">
-                  <Sparkles className="text-primary mr-2" size={20} />
-                  <h2 className="font-semibold">AI Regulatory Assistant</h2>
-                </div>
-                <button
-                  className="p-1 text-gray-500 hover:text-gray-700"
-                  onClick={() => setIsOpen(false)}
-                  aria-label="Close AI assistant"
-                >
-                  <X size={20} />
-                </button>
-              </div>
+              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
               
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {/* Welcome message */}
-                {messages.length === 0 && (
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-                        <Sparkles size={16} />
-                      </div>
-                    </div>
-                    <div className="bg-gray-100 rounded-lg p-3 max-w-[80%]">
-                      <p className="text-sm">
-                        Hello! I'm your AI Regulatory Assistant powered by the TrialSage Regulatory Intelligence Core. How can I help you with regulatory documentation and guidance today?
-                      </p>
-                    </div>
-                  </div>
-                )}
+              <div className="mt-1 flex justify-between items-center">
+                <span className="text-xs opacity-70">
+                  {formatTimestamp(message.timestamp)}
+                </span>
                 
-                {/* Conversation messages */}
-                {messages.map(msg => (
-                  <div 
-                    key={msg.id} 
-                    className={`flex items-start ${msg.sender === 'user' ? 'justify-end' : ''}`}
+                {message.type !== 'user' && (
+                  <button
+                    className="opacity-0 group-hover:opacity-70 transition-opacity p-1 hover:bg-black hover:bg-opacity-10 rounded"
+                    onClick={() => copyToClipboard(message.content)}
+                    title="Copy to clipboard"
                   >
-                    {msg.sender === 'ai' && (
-                      <div className="flex-shrink-0 mr-3">
-                        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-                          <Sparkles size={16} />
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div 
-                      className={`rounded-lg p-3 max-w-[80%] ${
-                        msg.sender === 'user' 
-                          ? 'bg-primary text-white' 
-                          : msg.isError 
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      <p className="text-sm">{msg.text}</p>
-                    </div>
-                    
-                    {msg.sender === 'user' && (
-                      <div className="flex-shrink-0 ml-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
-                          <MessageSquare size={16} />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                
-                {/* Loading indicator */}
-                {isLoading && (
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-                        <Sparkles size={16} />
-                      </div>
-                    </div>
-                    <div className="bg-gray-100 rounded-lg p-3">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                      </div>
-                    </div>
-                  </div>
+                    {copySuccess ? <Check size={12} /> : <Copy size={12} />}
+                  </button>
                 )}
               </div>
-              
-              {/* Input */}
-              <form onSubmit={handleSubmit} className="p-4 border-t">
-                <div className="flex items-center space-x-2">
-                  {/* Voice mode toggle */}
-                  <button
-                    type="button"
-                    className={`p-2 rounded-full ${
-                      isVoiceModeActive 
-                        ? 'bg-primary text-white' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                    onClick={toggleVoiceMode}
-                    aria-label={isVoiceModeActive ? "Disable voice mode" : "Enable voice mode"}
-                  >
-                    {isVoiceModeActive ? <Mic size={20} /> : <Volume2 size={20} />}
-                  </button>
-                  
-                  {/* Text input */}
-                  <input
-                    type="text"
-                    className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
-                    placeholder={isVoiceModeActive ? "Listening..." : "Type your message..."}
-                    value={message}
-                    onChange={handleInputChange}
-                    disabled={isVoiceModeActive}
-                  />
-                  
-                  {/* Submit button */}
-                  <button
-                    type="submit"
-                    className="p-2 bg-primary text-white rounded-full hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!message.trim() && !isVoiceModeActive}
-                  >
-                    <ArrowUp size={20} />
-                  </button>
-                </div>
-                
-                {/* Voice mode indicator */}
-                {isVoiceModeActive && (
-                  <div className="mt-2 text-xs text-center text-gray-500">
-                    Voice mode active. Click the microphone icon again to stop.
-                  </div>
-                )}
-              </form>
-            </motion.div>
-          </>
+            </div>
+          </div>
+        ))}
+        
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-100 text-gray-800 rounded-lg px-4 py-3">
+              <div className="flex space-x-2">
+                <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
-    </>
+        
+        <div ref={messagesEndRef} />
+      </div>
+      
+      {/* Input */}
+      <div className="p-3 border-t">
+        <div className="flex items-end space-x-2">
+          <textarea
+            ref={inputRef}
+            className="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+            placeholder="Type your message..."
+            rows="2"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+          />
+          
+          <button
+            className={`p-2 rounded-full bg-primary text-white ${
+              !input.trim() || isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-opacity-90'
+            }`}
+            onClick={handleSendMessage}
+            disabled={!input.trim() || isLoading}
+          >
+            <Send size={18} />
+          </button>
+        </div>
+        
+        <div className="mt-2 text-xs text-gray-500 flex justify-center">
+          <Sparkles size={12} className="mr-1" />
+          <span>Powered by TrialSage AI</span>
+        </div>
+      </div>
+    </div>
   );
 };
 

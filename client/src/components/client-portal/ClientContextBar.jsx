@@ -1,94 +1,112 @@
 /**
  * Client Context Bar
  * 
- * This component provides a context bar for CRO users to select and manage client organizations.
+ * This component displays current client context and allows for organization switching.
+ * It's used in the unified platform to indicate which client/organization is currently active.
  */
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Building } from 'lucide-react';
-import securityService from '../../services/SecurityService';
-import { OrganizationSwitcher } from './OrganizationSwitcher';
+import { ChevronDown, Building, Users, Clock } from 'lucide-react';
+import { useIntegration } from '../integration/ModuleIntegrationLayer';
+import OrganizationSwitcher from './OrganizationSwitcher';
 
-export const ClientContextBar = () => {
-  const [organizations, setOrganizations] = useState([]);
-  const [currentOrganization, setCurrentOrganization] = useState(null);
-  const [showSwitcher, setShowSwitcher] = useState(false);
+const ClientContextBar = () => {
+  const { securityService } = useIntegration();
+  const [currentOrg, setCurrentOrg] = useState(null);
+  const [showOrgSwitcher, setShowOrgSwitcher] = useState(false);
+  const [lastActivity, setLastActivity] = useState(new Date());
   
-  // Get current organization and accessible organizations
+  // Get current organization on mount
   useEffect(() => {
-    const loadOrganizations = async () => {
-      try {
-        // Get current organization
-        setCurrentOrganization(securityService.currentOrganization);
-        
-        // Get accessible organizations
-        const accessibleOrgs = await securityService.getAccessibleOrganizations();
-        setOrganizations(accessibleOrgs);
-      } catch (error) {
-        console.error('Error loading organizations:', error);
-      }
-    };
+    setCurrentOrg(securityService.currentOrganization);
     
-    loadOrganizations();
-  }, []);
+    // Update last activity every minute
+    const timer = setInterval(() => {
+      setLastActivity(new Date());
+    }, 60000);
+    
+    return () => clearInterval(timer);
+  }, [securityService]);
   
-  // Handle organization switch
-  const handleOrganizationSwitch = async (organization) => {
-    try {
-      const result = await securityService.switchOrganization(organization.id);
-      
-      if (result.success) {
-        setCurrentOrganization(result.organization);
-        setShowSwitcher(false);
-      }
-    } catch (error) {
-      console.error('Error switching organization:', error);
+  // Format time ago
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'just now';
+    if (diffMins === 1) return '1 minute ago';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours === 1) return '1 hour ago';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return '1 day ago';
+    return `${diffDays} days ago`;
+  };
+  
+  // Get organization type label
+  const getOrgTypeLabel = (type) => {
+    switch (type) {
+      case 'cro':
+        return 'CRO';
+      case 'biotech':
+        return 'Biotech';
+      case 'pharma':
+        return 'Pharma';
+      default:
+        return type.charAt(0).toUpperCase() + type.slice(1);
     }
   };
   
-  // Toggle organization switcher
-  const toggleSwitcher = () => {
-    setShowSwitcher(!showSwitcher);
-  };
-  
-  // If current user is not from CRO, don't render
-  if (currentOrganization?.type !== 'cro') {
-    return null;
-  }
-  
   return (
-    <div className="bg-gray-100 border-b">
-      <div className="container mx-auto px-4 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Building size={16} className="text-gray-500" />
-            <span className="text-sm text-gray-700">Client Context:</span>
+    <div className="bg-gray-800 text-white px-4 py-2 flex items-center justify-between text-sm">
+      <div className="flex items-center">
+        {currentOrg && (
+          <>
+            <button 
+              className="flex items-center space-x-2 hover:bg-gray-700 px-3 py-1 rounded-md"
+              onClick={() => setShowOrgSwitcher(true)}
+            >
+              <Building size={16} />
+              <span className="font-medium">{currentOrg.name}</span>
+              <span className="bg-gray-600 text-xs px-2 py-0.5 rounded">
+                {getOrgTypeLabel(currentOrg.type)}
+              </span>
+              <ChevronDown size={14} />
+            </button>
             
-            <div className="relative">
-              <button
-                className="flex items-center space-x-1 px-2 py-1 text-sm rounded hover:bg-gray-200"
-                onClick={toggleSwitcher}
-              >
-                <span className="font-medium">{currentOrganization?.name || 'Select Client'}</span>
-                <ChevronDown size={14} />
-              </button>
-              
-              {showSwitcher && (
-                <OrganizationSwitcher
-                  organizations={organizations.filter(org => org.id !== currentOrganization?.id)}
-                  onSelect={handleOrganizationSwitch}
-                  onClose={() => setShowSwitcher(false)}
-                  position="bottom-start"
-                />
-              )}
+            <div className="mx-4 h-4 border-l border-gray-600"></div>
+            
+            <div className="flex items-center space-x-2">
+              <Users size={16} className="text-gray-400" />
+              <span>Viewing as <span className="font-medium">Administrator</span></span>
             </div>
-          </div>
-          
-          <div className="text-xs text-gray-500">
-            Managing <span className="font-medium">{organizations.length - 1}</span> client organizations
-          </div>
-        </div>
+          </>
+        )}
       </div>
+      
+      <div className="flex items-center text-gray-400">
+        <Clock size={14} className="mr-1" />
+        <span>Last Activity: {formatTimeAgo(lastActivity)}</span>
+      </div>
+      
+      {/* Organization Switcher Modal */}
+      {showOrgSwitcher && (
+        <OrganizationSwitcher 
+          onClose={() => setShowOrgSwitcher(false)}
+          onSwitchOrg={(orgId) => {
+            securityService.switchOrganization(orgId).then(() => {
+              setCurrentOrg(securityService.currentOrganization);
+              setShowOrgSwitcher(false);
+            });
+          }}
+        />
+      )}
     </div>
   );
 };
+
+export default ClientContextBar;

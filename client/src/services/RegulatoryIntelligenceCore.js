@@ -615,7 +615,6 @@ Study limitations include the relatively short duration of treatment and the hom
   generateMockSafetyNarrative(parameters) {
     return "Mock Patient Safety Narrative for " + (parameters.patientId || "Patient");
   }
-  }
   
   // Simple hash function for document caching
   simpleHash(data) {
