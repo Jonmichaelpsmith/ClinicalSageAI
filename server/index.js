@@ -89,6 +89,10 @@ app.get('/client-portal', (req, res) => {
   res.sendFile(path.resolve('./client-portal.html'));
 });
 
+app.get('/client-portal-direct', (req, res) => {
+  res.sendFile(path.resolve('./client-portal-direct.html'));
+});
+
 // Initialize services
 initAnalytics();
 
