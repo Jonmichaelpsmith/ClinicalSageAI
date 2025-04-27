@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { Database, FileText, FlaskConical, BarChartBig, ShieldCheck, BookText } from 'lucide-react';
 import { useModuleIntegration } from './integration/ModuleIntegrationLayer';
 
 const UnifiedPlatform = () => {
   const { addAuditEntry } = useModuleIntegration();
+  const [_, navigate] = useLocation();
 
   const handleModuleClick = (moduleName) => {
     addAuditEntry('module_selected', { module: moduleName });

@@ -5,10 +5,8 @@ import multer from 'multer';
 // OpenAI client will be initialized dynamically if the API key is available
 import path from 'path';
 import fs from 'fs';
+// Use crypto for simple token generation since jsonwebtoken is not available
 import crypto from 'crypto';
-// Import JSON Web Token for token generation
-import jsonwebtoken from 'jsonwebtoken';
-const jwt = jsonwebtoken;
 
 // Create Express app
 const app = express();
@@ -197,7 +195,20 @@ app.post('/api/auth/login', async (req, res) => {
         return res.status(503).json({ error: 'Authentication service unavailable - JWT_SECRET not configured' });
       }
       
-      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '24h' });
+      // Create a simple token using crypto instead of JWT
+      const payload = JSON.stringify(user);
+      const header = JSON.stringify({ alg: 'HS256', typ: 'JWT' });
+      
+      // Base64 encode parts
+      const encodedHeader = Buffer.from(header).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      const encodedPayload = Buffer.from(payload).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      
+      // Create signature
+      const signatureInput = encodedHeader + '.' + encodedPayload;
+      const signature = crypto.createHmac('sha256', process.env.JWT_SECRET).update(signatureInput).digest('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      
+      // Combine to create token
+      const token = `${encodedHeader}.${encodedPayload}.${signature}`;
       
       return res.json({ 
         success: true,
