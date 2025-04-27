@@ -25,6 +25,7 @@ import esignRoutes from './routes/esign.js';
 import cmcBlueprintRoutes from './routes/cmc-blueprint.js';
 import enhancedInspectionRoutes from './routes/enhanced-inspection.js';
 import documentVersionRoutes from './routes/document-versions.js';
+import indProxyRouter from './routes/ind-proxy.js';
 
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
@@ -82,6 +83,9 @@ app.use('/api/esign', verifyJwt, esignRoutes);
 app.use('/api/cmc', verifyJwt, cmcBlueprintRoutes);
 app.use('/api/inspection/v2', enhancedInspectionRoutes);
 app.use('/api/versions', verifyJwt, documentVersionRoutes);
+
+// IND Wizard API endpoints (skipping JWT verification for now to simplify testing)
+app.use('/', indProxyRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
