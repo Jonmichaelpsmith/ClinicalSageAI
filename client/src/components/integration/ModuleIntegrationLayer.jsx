@@ -1,234 +1,110 @@
 /**
  * Module Integration Layer
  * 
- * This component provides a centralized integration layer for all TrialSage modules.
- * It manages shared services, state, and cross-module communication.
+ * This component provides the integration layer for all TrialSage modules.
+ * It initializes and provides access to shared services like document management,
+ * workflow, security, and the regulatory intelligence core.
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import securityService from '../../services/SecurityService';
-import docuShareService from '../../services/DocuShareService';
-import workflowService from '../../services/WorkflowService';
-import blockchainService from '../../services/blockchain';
-import { RegulatoryIntelligenceCore } from '../../services/RegulatoryIntelligenceCore';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import RegulatoryIntelligenceCore from '../../services/RegulatoryIntelligenceCore';
+import DocuShareService from '../../services/DocuShareService';
+import WorkflowService from '../../services/WorkflowService';
+import SecurityService from '../../services/SecurityService';
+import { initBlockchainService } from '../../services/blockchain';
 
-// Create integration context
+// Create context
 const IntegrationContext = createContext(null);
 
-/**
- * Module Integration Provider
- * 
- * Provides integration services to all TrialSage modules
- */
 export const ModuleIntegrationProvider = ({ children }) => {
-  // Initialize regulatory core
-  const [regulatoryCore] = useState(() => new RegulatoryIntelligenceCore());
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [services, setServices] = useState({
+    regulatoryCore: null,
+    docuShareService: null,
+    workflowService: null,
+    securityService: null,
+    blockchainService: null
+  });
   
-  // Track registered modules
-  const [registeredModules, setRegisteredModules] = useState({});
-  
-  // Track shared data between modules
-  const [sharedData, setSharedData] = useState({});
-  
-  // Module event listeners
-  const [eventListeners, setEventListeners] = useState({});
-  
-  // Initialize services
+  // Initialize all services
   useEffect(() => {
     const initializeServices = async () => {
       try {
-        // Initialize regulatory core
+        console.log('Initializing TrialSage integration services...');
+        
+        // Initialize Regulatory Intelligence Core
+        const regulatoryCore = new RegulatoryIntelligenceCore();
         await regulatoryCore.initialize();
-        console.log('[Integration] Regulatory Intelligence Core initialized');
+        console.log('Regulatory Intelligence Core initialized');
+        
+        // Initialize DocuShare Service
+        const docuShareService = new DocuShareService();
+        await docuShareService.initialize();
+        console.log('DocuShare Service initialized');
+        
+        // Initialize Workflow Service
+        const workflowService = new WorkflowService();
+        await workflowService.initialize();
+        console.log('Workflow Service initialized');
+        
+        // Initialize Security Service
+        const securityService = new SecurityService();
+        await securityService.initialize();
+        console.log('Security Service initialized');
+        
+        // Initialize Blockchain Service
+        const blockchainService = await initBlockchainService();
+        console.log('Blockchain Service initialized');
+        
+        // Set all services in state
+        setServices({
+          regulatoryCore,
+          docuShareService,
+          workflowService,
+          securityService,
+          blockchainService
+        });
+        
+        setIsInitialized(true);
+        console.log('All TrialSage integration services initialized successfully');
       } catch (error) {
-        console.error('[Integration] Error initializing services:', error);
+        console.error('Error initializing TrialSage integration services:', error);
       }
     };
     
     initializeServices();
-  }, [regulatoryCore]);
-  
-  /**
-   * Register a module with the integration layer
-   * @param {string} moduleId - Module identifier
-   * @param {object} metadata - Module metadata
-   */
-  const registerModule = useCallback((moduleId, metadata) => {
-    console.log(`[Integration] Registering module: ${moduleId}`, metadata);
     
-    setRegisteredModules(prevModules => ({
-      ...prevModules,
-      [moduleId]: {
-        id: moduleId,
-        ...metadata,
-        registeredAt: new Date().toISOString()
-      }
-    }));
-  }, []);
-  
-  /**
-   * Share data between modules
-   * @param {string} key - Data key
-   * @param {any} data - Data to share
-   * @param {string} sourceModuleId - Source module ID
-   */
-  const shareData = useCallback((key, data, sourceModuleId) => {
-    console.log(`[Integration] Sharing data: ${key} from ${sourceModuleId}`);
-    
-    setSharedData(prevData => ({
-      ...prevData,
-      [key]: {
-        data,
-        sourceModuleId,
-        timestamp: new Date().toISOString()
-      }
-    }));
-    
-    // Trigger any event listeners for this key
-    if (eventListeners[key]) {
-      eventListeners[key].forEach(listener => {
-        if (listener.sourceModuleId !== sourceModuleId || listener.includeSource) {
-          try {
-            listener.callback(data, sourceModuleId);
-          } catch (error) {
-            console.error(`[Integration] Error in event listener for ${key}:`, error);
-          }
-        }
-      });
-    }
-  }, [eventListeners]);
-  
-  /**
-   * Get shared data
-   * @param {string} key - Data key
-   * @returns {any} Shared data
-   */
-  const getSharedData = useCallback((key) => {
-    return sharedData[key]?.data;
-  }, [sharedData]);
-  
-  /**
-   * Register event listener
-   * @param {string} key - Event key
-   * @param {Function} callback - Event callback
-   * @param {string} moduleId - Module ID
-   * @param {boolean} includeSource - Whether to include events from the source module
-   * @returns {Function} Unregister function
-   */
-  const registerEventListener = useCallback((key, callback, moduleId, includeSource = false) => {
-    console.log(`[Integration] Registering event listener for ${key} from ${moduleId}`);
-    
-    const listenerId = `${moduleId}-${Date.now()}`;
-    
-    setEventListeners(prevListeners => ({
-      ...prevListeners,
-      [key]: [
-        ...(prevListeners[key] || []),
-        {
-          id: listenerId,
-          callback,
-          sourceModuleId: moduleId,
-          includeSource
-        }
-      ]
-    }));
-    
-    // Return unregister function
+    // Cleanup function
     return () => {
-      setEventListeners(prevListeners => ({
-        ...prevListeners,
-        [key]: (prevListeners[key] || []).filter(
-          listener => listener.id !== listenerId
-        )
-      }));
+      console.log('Cleaning up TrialSage integration services...');
+      // Cleanup code for each service if needed
     };
   }, []);
   
-  /**
-   * Trigger event across modules
-   * @param {string} key - Event key
-   * @param {any} data - Event data
-   * @param {string} sourceModuleId - Source module ID
-   */
-  const triggerEvent = useCallback((key, data, sourceModuleId) => {
-    console.log(`[Integration] Triggering event: ${key} from ${sourceModuleId}`);
-    
-    // Store in shared data
-    setSharedData(prevData => ({
-      ...prevData,
-      [`event:${key}`]: {
-        data,
-        sourceModuleId,
-        timestamp: new Date().toISOString()
-      }
-    }));
-    
-    // Trigger any event listeners for this key
-    if (eventListeners[key]) {
-      eventListeners[key].forEach(listener => {
-        if (listener.sourceModuleId !== sourceModuleId || listener.includeSource) {
-          try {
-            listener.callback(data, sourceModuleId);
-          } catch (error) {
-            console.error(`[Integration] Error in event listener for ${key}:`, error);
-          }
-        }
-      });
-    }
-  }, [eventListeners]);
-  
-  /**
-   * Check if current user has access to a module
-   * @param {string} moduleId - Module ID
-   * @returns {boolean} Whether user has access
-   */
-  const hasModuleAccess = useCallback((moduleId) => {
-    return securityService.hasModuleAccess(moduleId);
-  }, []);
-  
-  // Expose integration context
-  const integrationContext = {
-    // Services
-    securityService,
-    docuShareService,
-    workflowService,
-    regulatoryCore,
-    blockchainService,
-    
-    // Module registration
-    registerModule,
-    registeredModules,
-    
-    // Data sharing
-    shareData,
-    getSharedData,
-    sharedData,
-    
-    // Event system
-    registerEventListener,
-    triggerEvent,
-    
-    // Access control
-    hasModuleAccess
-  };
+  // If not initialized yet, show loading
+  if (!isInitialized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+          <p className="text-lg text-gray-700">Initializing TrialSage™ Platform...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
-    <IntegrationContext.Provider value={integrationContext}>
+    <IntegrationContext.Provider value={services}>
       {children}
     </IntegrationContext.Provider>
   );
 };
 
-/**
- * Hook to use integration context
- * @returns {object} Integration context
- */
+// Custom hook to use the integration context
 export const useIntegration = () => {
   const context = useContext(IntegrationContext);
-  
   if (!context) {
     throw new Error('useIntegration must be used within a ModuleIntegrationProvider');
   }
-  
   return context;
 };

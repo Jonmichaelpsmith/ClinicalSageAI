@@ -1,111 +1,89 @@
 /**
- * Client Context Bar
+ * Client Context Bar Component
  * 
- * This component displays current client context and allows for organization switching.
- * It's used in the unified platform to indicate which client/organization is currently active.
+ * This component provides a persistent bar showing the current organization context
+ * and allows switching between accessible organizations.
  */
 
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, Building, Users, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Building, ChevronDown, Globe } from 'lucide-react';
 import { useIntegration } from '../integration/ModuleIntegrationLayer';
 import OrganizationSwitcher from './OrganizationSwitcher';
 
 const ClientContextBar = () => {
   const { securityService } = useIntegration();
-  const [currentOrg, setCurrentOrg] = useState(null);
   const [showOrgSwitcher, setShowOrgSwitcher] = useState(false);
-  const [lastActivity, setLastActivity] = useState(new Date());
   
-  // Get current organization on mount
-  useEffect(() => {
-    setCurrentOrg(securityService.currentOrganization);
-    
-    // Update last activity every minute
-    const timer = setInterval(() => {
-      setLastActivity(new Date());
-    }, 60000);
-    
-    return () => clearInterval(timer);
-  }, [securityService]);
+  const currentOrg = securityService.currentOrganization;
   
-  // Format time ago
-  const formatTimeAgo = (date) => {
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
+  // Function to handle organization switching
+  const handleSwitchOrg = async (orgId) => {
+    if (orgId === currentOrg?.id) {
+      setShowOrgSwitcher(false);
+      return;
+    }
     
-    if (diffMins < 1) return 'just now';
-    if (diffMins === 1) return '1 minute ago';
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours === 1) return '1 hour ago';
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 1) return '1 day ago';
-    return `${diffDays} days ago`;
+    try {
+      const result = await securityService.switchOrganization(orgId);
+      
+      if (result.success) {
+        setShowOrgSwitcher(false);
+        // In a production app, we might reload certain data based on the new organization context
+      } else {
+        console.error('Failed to switch organization:', result.error);
+      }
+    } catch (error) {
+      console.error('Error switching organization:', error);
+    }
   };
   
-  // Get organization type label
-  const getOrgTypeLabel = (type) => {
+  // If we don't have an organization context, don't render the bar
+  if (!currentOrg) {
+    return null;
+  }
+  
+  // Get organization type icon
+  const getOrgIcon = (type) => {
     switch (type) {
       case 'cro':
-        return 'CRO';
-      case 'biotech':
-        return 'Biotech';
-      case 'pharma':
-        return 'Pharma';
+        return <Globe size={16} className="text-blue-500" />;
       default:
-        return type.charAt(0).toUpperCase() + type.slice(1);
+        return <Building size={16} className="text-gray-500" />;
     }
   };
   
   return (
-    <div className="bg-gray-800 text-white px-4 py-2 flex items-center justify-between text-sm">
-      <div className="flex items-center">
-        {currentOrg && (
-          <>
-            <button 
-              className="flex items-center space-x-2 hover:bg-gray-700 px-3 py-1 rounded-md"
-              onClick={() => setShowOrgSwitcher(true)}
-            >
-              <Building size={16} />
-              <span className="font-medium">{currentOrg.name}</span>
-              <span className="bg-gray-600 text-xs px-2 py-0.5 rounded">
-                {getOrgTypeLabel(currentOrg.type)}
-              </span>
-              <ChevronDown size={14} />
-            </button>
-            
-            <div className="mx-4 h-4 border-l border-gray-600"></div>
-            
-            <div className="flex items-center space-x-2">
-              <Users size={16} className="text-gray-400" />
-              <span>Viewing as <span className="font-medium">Administrator</span></span>
+    <>
+      <div className="bg-gray-100 px-4 py-2 flex items-center justify-between border-b">
+        <div className="flex items-center">
+          <span className="text-sm text-gray-500 mr-2">Organization:</span>
+          
+          <button
+            className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-gray-200 transition-colors"
+            onClick={() => setShowOrgSwitcher(true)}
+          >
+            <div className="flex items-center mr-1">
+              {getOrgIcon(currentOrg.type)}
             </div>
-          </>
-        )}
+            
+            <span className="font-medium text-gray-800">{currentOrg.name}</span>
+            
+            <ChevronDown size={14} className="text-gray-500 ml-1" />
+          </button>
+        </div>
+        
+        <div className="text-xs text-gray-500">
+          {currentOrg.type.toUpperCase()} • Role: {currentOrg.role.charAt(0).toUpperCase() + currentOrg.role.slice(1)}
+        </div>
       </div>
       
-      <div className="flex items-center text-gray-400">
-        <Clock size={14} className="mr-1" />
-        <span>Last Activity: {formatTimeAgo(lastActivity)}</span>
-      </div>
-      
-      {/* Organization Switcher Modal */}
       {showOrgSwitcher && (
-        <OrganizationSwitcher 
+        <OrganizationSwitcher
           onClose={() => setShowOrgSwitcher(false)}
-          onSwitchOrg={(orgId) => {
-            securityService.switchOrganization(orgId).then(() => {
-              setCurrentOrg(securityService.currentOrganization);
-              setShowOrgSwitcher(false);
-            });
-          }}
+          onSwitchOrg={handleSwitchOrg}
         />
       )}
-    </div>
+    </>
   );
 };
 
