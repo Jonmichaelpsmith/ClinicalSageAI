@@ -1,58 +1,80 @@
-import React from 'react';
-import { X } from 'lucide-react';
-import { useToast } from '../../hooks/use-toast';
+import React from "react";
 
-/**
- * Toast component that displays a single notification
- */
-const Toast = ({ toast, onDismiss }) => {
-  const { id, title, description, variant } = toast;
-  
-  const variantStyles = {
-    default: 'bg-white border-gray-200 text-gray-800',
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error: 'bg-red-50 border-red-200 text-red-800',
-    destructive: 'bg-red-50 border-red-200 text-red-800',
-    warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+// Basic toast component
+export function Toast({ title, description, variant = "default", onClose }) {
+  const variantClasses = {
+    default: "bg-white border-gray-200",
+    destructive: "bg-red-50 border-red-200 text-red-700",
+    success: "bg-green-50 border-green-200 text-green-700",
   };
-  
-  const baseStyles = 'rounded-lg shadow-md border p-4 flex justify-between items-start transition-all';
-  const combinedStyles = `${baseStyles} ${variantStyles[variant] || variantStyles.default}`;
-  
+
   return (
-    <div className={combinedStyles} role="alert">
-      <div className="flex-1 mr-2">
-        {title && <h3 className="font-semibold text-sm">{title}</h3>}
-        {description && <div className="text-sm mt-1">{description}</div>}
-      </div>
-      <button 
-        onClick={() => onDismiss(id)} 
-        className="text-gray-400 hover:text-gray-600"
-        aria-label="Close"
+    <div
+      className={`${variantClasses[variant]} border rounded-lg shadow-lg p-4 max-w-md w-full flex flex-col gap-2`}
+    >
+      {title && <div className="font-semibold">{title}</div>}
+      {description && <div className="text-sm">{description}</div>}
+      <button
+        onClick={onClose}
+        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
       >
-        <X size={16} />
+        ✕
       </button>
     </div>
   );
-};
+}
 
-/**
- * Toaster component that manages and displays notifications
- */
-export const Toaster = () => {
-  const { toasts, dismiss } = useToast();
-  
-  if (toasts.length === 0) return null;
-  
+// Toast context
+const ToastContext = React.createContext({
+  toast: () => {},
+});
+
+// Toast provider
+export function ToastProvider({ children }) {
+  const [toasts, setToasts] = React.useState([]);
+
+  const addToast = React.useCallback((props) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id, ...props }]);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, 5000);
+    
+    return id;
+  }, []);
+
+  const removeToast = React.useCallback((id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 w-full max-w-sm pointer-events-auto">
-      {toasts.map(toast => (
-        <Toast 
-          key={toast.id} 
-          toast={toast} 
-          onDismiss={dismiss} 
-        />
-      ))}
-    </div>
+    <ToastContext.Provider value={{ toast: addToast, remove: removeToast }}>
+      {children}
+      <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-50">
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            {...toast}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
+    </ToastContext.Provider>
   );
-};
+}
+
+// Hook for using toast
+export function useToast() {
+  const context = React.useContext(ToastContext);
+  if (context === undefined) {
+    throw new Error("useToast must be used within a ToastProvider");
+  }
+  return context;
+}
+
+// Toaster component that just renders the ToastProvider
+export function Toaster() {
+  return null;
+}

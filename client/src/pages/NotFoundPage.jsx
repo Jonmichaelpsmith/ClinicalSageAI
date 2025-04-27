@@ -1,30 +1,17 @@
-/**
- * Not Found Page Component
- * 
- * This component is displayed when a user navigates to a route that doesn't exist.
- */
-
 import React from 'react';
 import { Link } from 'wouter';
-import { Home, AlertCircle } from 'lucide-react';
 
 const NotFoundPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center max-w-lg p-8">
-        <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-          <AlertCircle className="h-8 w-8 text-red-600" />
-        </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
-        <h2 className="text-2xl font-medium text-gray-700 mb-6">Page Not Found</h2>
-        <p className="text-gray-500 mb-8">
-          The page you are looking for doesn't exist or has been moved.
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-pink-50 p-4">
+      <div className="text-center">
+        <h1 className="text-6xl font-bold text-pink-600 mb-4">404</h1>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">Page Not Found</h2>
+        <p className="text-gray-600 max-w-md mx-auto mb-8">
+          The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
         </p>
-        <Link href="/">
-          <a className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
-            <Home className="mr-2 h-5 w-5" />
-            Return to Home
-          </a>
+        <Link href="/" className="px-6 py-3 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors">
+          Return to Dashboard
         </Link>
       </div>
     </div>

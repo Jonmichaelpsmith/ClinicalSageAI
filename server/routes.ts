@@ -449,7 +449,7 @@ export function setupRoutes(expressApp) {
   }
   
   // Return a server instance that can be used by index.ts
-  const { createServer } = require('http');
+  // We already imported createServer at the top of the file
   return createServer(expressApp || app);
 }
 
