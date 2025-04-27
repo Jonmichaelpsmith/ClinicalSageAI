@@ -1867,9 +1867,56 @@
                 const form = document.getElementById('new-project-form');
                 const createBtn = document.getElementById('create-project-btn');
                 
-                // Basic validation
-                if (!form.checkValidity()) {
-                    form.reportValidity();
+                // Enhanced validation
+                const drugName = document.getElementById('project-drug-name');
+                const sponsor = document.getElementById('project-sponsor');
+                const protocol = document.getElementById('project-protocol');
+                const piName = document.getElementById('project-pi-name');
+                
+                let isValid = true;
+                let focusField = null;
+                
+                // Reset previous error states
+                [drugName, sponsor, protocol, piName].forEach(field => {
+                    field.classList.remove('error-highlight');
+                });
+                
+                // Check each required field
+                if (!drugName.value.trim()) {
+                    drugName.classList.add('error-highlight');
+                    isValid = false;
+                    focusField = drugName;
+                }
+                
+                if (!sponsor.value.trim()) {
+                    sponsor.classList.add('error-highlight');
+                    isValid = false;
+                    if (!focusField) focusField = sponsor;
+                }
+                
+                if (!protocol.value.trim()) {
+                    protocol.classList.add('error-highlight');
+                    isValid = false;
+                    if (!focusField) focusField = protocol;
+                }
+                
+                if (!piName.value.trim()) {
+                    piName.classList.add('error-highlight');
+                    isValid = false;
+                    if (!focusField) focusField = piName;
+                }
+                
+                if (!isValid) {
+                    // Basic validation
+                    if (focusField) {
+                        focusField.focus();
+                        focusField.classList.add('shake-animation');
+                        setTimeout(() => {
+                            focusField.classList.remove('shake-animation');
+                        }, 500);
+                    }
+                    
+                    showToast('Please fill in all required fields', 'warning');
                     return;
                 }
                 
@@ -1903,12 +1950,26 @@
                         closeModal();
                         loadProjects();
                         
-                        // Show success message
-                        alert(`Project ${project.project_id} created successfully!`);
+                        // Show success message with toast
+                        showToast(`Project ${project.project_id} created successfully!`, 'success');
+                        
+                        // Auto-switch to forms tab after project creation
+                        setTimeout(() => {
+                            document.querySelector('.ind-tab[data-tab="forms"]').click();
+                            
+                            // Select the newly created project
+                            const formProjectSelect = document.getElementById('form-project-select');
+                            if (formProjectSelect) {
+                                formProjectSelect.value = project.project_id;
+                                // Trigger change event
+                                const event = new Event('change');
+                                formProjectSelect.dispatchEvent(event);
+                            }
+                        }, 1000);
                     })
                     .catch(error => {
                         console.error('Error creating project:', error);
-                        alert('Failed to create project. Please try again.');
+                        showToast('Failed to create project. Please try again.', 'error');
                     })
                     .finally(() => {
                         createBtn.disabled = false;
@@ -1933,7 +1994,7 @@
                         return response.json();
                     })
                     .then(data => {
-                        alert(`Sequence ${data.serial_number} generated successfully!`);
+                        showToast(`Sequence ${data.serial_number} generated successfully!`, 'success');
                         // Reload projects to show updated sequence number
                         loadProjects();
                         // Load history for this project
@@ -1941,7 +2002,7 @@
                     })
                     .catch(error => {
                         console.error('Error generating sequence:', error);
-                        alert('Failed to generate sequence. Please try again.');
+                        showToast('Failed to generate sequence. Please try again.', 'error');
                     });
             }
             
@@ -1961,12 +2022,30 @@
                 timelineEl.innerHTML = '';
                 
                 fetch(`/api/ind/${projectId}/history`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to load history: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(history => {
                         historyLoading.style.display = 'none';
                         
                         if (!history || history.length === 0) {
                             historyEmpty.style.display = 'flex';
+                            historyEmpty.innerHTML = `
+                                <i class="fas fa-history"></i>
+                                <p>No submission history found for this project yet.</p>
+                                <button id="create-history-btn" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Generate First Sequence
+                                </button>
+                            `;
+                            
+                            // Add event listener to the create history button
+                            document.getElementById('create-history-btn')?.addEventListener('click', () => {
+                                generateSequence(projectId);
+                            });
+                            
                             return;
                         }
                         
@@ -2017,7 +2096,7 @@
             
             function generateForm(projectId, formType) {
                 if (!projectId || !formType) {
-                    alert('Please select a project first.');
+                    showToast('Please select a project first.', 'warning');
                     return;
                 }
                 
@@ -2065,7 +2144,17 @@
                 const originalText = button.innerHTML;
                 button.disabled = true;
                 button.classList.add('loading');
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Form FDA ' + formType + '...';
+                
+                // Form-specific loading messages for better user feedback
+                const loadingMessages = {
+                    '1571': 'Preparing Form FDA 1571 (IND Application)...',
+                    '1572': 'Preparing Form FDA 1572 (Statement of Investigator)...',
+                    '3674': 'Preparing Form FDA 3674 (Certification of Compliance)...',
+                    '3454': 'Preparing Form FDA 3454 (Financial Disclosure)...'
+                };
+                
+                const loadingMessage = loadingMessages[formType] || `Preparing Form FDA ${formType}...`;
+                button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingMessage}`;
                 
                 try {
                     // First, check if the backend service is available
