@@ -1,6 +1,6 @@
 // Database connection setup
-const { Pool } = require('pg');
-require('dotenv').config();
+import { Pool } from 'pg';
+import 'dotenv/config';
 
 // Create a new database pool with the connection string from environment variables
 const pool = new Pool({
@@ -98,27 +98,31 @@ testConnection().catch(err => {
   console.error('[database] Initial connection test failed:', err.message);
 });
 
-module.exports = {
-  pool,
-  getClientWithContext,
-  testConnection,
-  query: (text, params, tenantContext, options = {}) => {
-    const { retries = 3, retryDelay = 1000 } = options;
-    
-    if (tenantContext) {
-      return retryOperation(async () => {
-        const client = await getClientWithContext(tenantContext);
-        try {
-          const result = await client.query(text, params);
-          return result;
-        } finally {
-          client.release();
-        }
-      }, retries, retryDelay);
-    } else {
-      return retryOperation(async () => {
-        return await pool.query(text, params);
-      }, retries, retryDelay);
-    }
+// Create query function that includes retry logic
+const query = (text, params, tenantContext, options = {}) => {
+  const { retries = 3, retryDelay = 1000 } = options;
+  
+  if (tenantContext) {
+    return retryOperation(async () => {
+      const client = await getClientWithContext(tenantContext);
+      try {
+        const result = await client.query(text, params);
+        return result;
+      } finally {
+        client.release();
+      }
+    }, retries, retryDelay);
+  } else {
+    return retryOperation(async () => {
+      return await pool.query(text, params);
+    }, retries, retryDelay);
   }
+};
+
+// Export database functions
+export { 
+  pool, 
+  getClientWithContext, 
+  testConnection, 
+  query 
 };
