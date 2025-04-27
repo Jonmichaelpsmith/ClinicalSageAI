@@ -1,28 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Route, Switch } from 'wouter';
+import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
 import AppHeader from './components/common/AppHeader';
 import AppSidebar from './components/common/AppSidebar';
 import ClientContextBar from './components/common/ClientContextBar';
-import UnifiedPlatform from './components/UnifiedPlatform';
-import AIAssistantButton from './components/AIAssistantButton';
 import DashboardModule from './components/dashboard/DashboardModule';
 import TrialVaultModule from './components/trial-vault/TrialVaultModule';
 import CSRIntelligenceModule from './components/csr-intelligence/CSRIntelligenceModule';
 import StudyArchitectModule from './components/study-architect/StudyArchitectModule';
+import UnifiedPlatform from './components/UnifiedPlatform';
 import NotFound from './components/common/NotFound';
-import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
+import AIAssistantButton from './components/AIAssistantButton';
 
 function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
     <ModuleIntegrationProvider>
       <div className="flex flex-col min-h-screen">
+        {/* Header is consistent across all pages */}
+        <AppHeader />
         <ClientContextBar />
-        <AppHeader toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+
         <div className="flex flex-1">
-          <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-          <main className="flex-1 p-4 md:p-6">
+          {/* Sidebar for navigation between modules */}
+          <AppSidebar />
+
+          {/* Main content area */}
+          <main className="flex-1 p-6 overflow-auto">
             <Switch>
               <Route path="/" component={UnifiedPlatform} />
               <Route path="/dashboard" component={DashboardModule} />
@@ -33,6 +36,8 @@ function App() {
             </Switch>
           </main>
         </div>
+
+        {/* AI Assistant button */}
         <AIAssistantButton />
       </div>
     </ModuleIntegrationProvider>
