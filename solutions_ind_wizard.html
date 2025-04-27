@@ -1345,14 +1345,32 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
             border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
         }
         
         .ind-form-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
             box-shadow: var(--shadow-lg);
             border-color: var(--primary-light);
+        }
+        
+        .ind-form-card:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.7), transparent);
+            animation: slide-right 1.5s infinite;
+        }
+        
+        @keyframes slide-right {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
         
         .ind-form-icon {
@@ -1412,14 +1430,29 @@
             background-color: var(--primary-dark);
             cursor: wait;
             transform: none;
-            box-shadow: none;
+            box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7);
             min-width: 200px;
+            animation: pulse-download 2s infinite;
+        }
+        
+        @keyframes pulse-download {
+            0% {
+                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(236, 72, 153, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
+            }
         }
         
         .ind-generate-form-btn.loading::after {
-            content: "Preparing Document...";
+            /* This content is now dynamically set via JavaScript */
             display: inline-block;
             margin-left: 0.5rem;
+            font-weight: 500;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
         }
         
         .ind-timeline {
@@ -1560,6 +1593,22 @@
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+        }
+        
+        /* Error styles and animations */
+        .error-highlight {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .shake-animation {
+            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }
     </style>
     
@@ -1983,6 +2032,21 @@
             // Form generation
             async function generateForm(projectId, formType) {
                 if (!projectId) {
+                    // Visual highlight for project selector to draw attention
+                    const projectSelect = document.getElementById('form-project-select');
+                    projectSelect.classList.add('error-highlight');
+                    
+                    // Shake effect to draw attention
+                    projectSelect.classList.add('shake-animation');
+                    
+                    // Remove animation classes after it completes
+                    setTimeout(() => {
+                        projectSelect.classList.remove('shake-animation');
+                        setTimeout(() => {
+                            projectSelect.classList.remove('error-highlight');
+                        }, 2000);
+                    }, 500);
+                    
                     showToast('Please select a project before downloading forms', 'warning');
                     return;
                 }
@@ -1996,7 +2060,7 @@
                 const originalText = button.innerHTML;
                 button.disabled = true;
                 button.classList.add('loading');
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Document...';
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Form FDA ' + formType + '...';
                 
                 try {
                     // First, check if the backend service is available
