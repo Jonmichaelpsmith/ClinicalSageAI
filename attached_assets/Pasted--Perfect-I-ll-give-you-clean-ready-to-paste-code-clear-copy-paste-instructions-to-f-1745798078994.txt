@@ -1,0 +1,137 @@
+✅ Perfect —  
+I’ll give you **clean, ready-to-paste code** + **clear copy/paste instructions** to fix your landing page inside Replit.
+
+Since Canvas is not available right now,  
+I'll organize it clearly here — super easy for you to follow.
+
+---
+
+# ✨ Code for TrialSage Landing Page with Real Module Links
+
+Here’s your **fixed landing page snippet** (HTML or React JSX, depending on your setup):
+
+```html
+<!-- TrialSage Landing Page (fixed) -->
+
+<div class="modules-container">
+
+  <!-- IND Wizard -->
+  <div class="module-card">
+    <h2>IND Wizard</h2>
+    <p>Streamline your IND submission process with AI-powered guidance.</p>
+    <a href="/ind-wizard">
+      <button class="learn-more-btn">Learn More</button>
+    </a>
+  </div>
+
+  <!-- CER Generator -->
+  <div class="module-card">
+    <h2>CER Generator</h2>
+    <p>Automate Clinical Evaluation Reports with intelligent templates and AI support.</p>
+    <a href="/cer-generator">
+      <button class="learn-more-btn">Learn More</button>
+    </a>
+  </div>
+
+  <!-- CMC Wizard -->
+  <div class="module-card">
+    <h2>CMC Wizard</h2>
+    <p>Manage your Chemistry, Manufacturing, and Controls documentation effortlessly.</p>
+    <a href="/cmc-wizard">
+      <button class="learn-more-btn">Learn More</button>
+    </a>
+  </div>
+
+  <!-- CSR Analyzer -->
+  <div class="module-card">
+    <h2>CSR Analyzer</h2>
+    <p>Analyze Clinical Study Reports and extract structured insights automatically.</p>
+    <a href="/csr-analyzer">
+      <button class="learn-more-btn">Learn More</button>
+    </a>
+  </div>
+
+</div>
+```
+
+✅ **Each "Learn More" button now points to the real app modules.**
+
+✅ **No more ugly dead subpages.**
+
+---
+
+# 🛠 Instructions to Copy/Paste into Replit
+
+| Step | Action |
+|:-----|:-------|
+| 1 | Open your landing page file inside Replit (likely `LandingPage.jsx`, `HomePage.jsx`, or similar) |
+| 2 | Find the section where you have your current "Learn More" buttons or cards |
+| 3 | **Delete** the old cards/buttons code |
+| 4 | **Paste** the clean code above into the same place |
+| 5 | Save the file (`Ctrl+S` or `Cmd+S`) |
+| 6 | Click "Run" to restart your Replit server |
+| 7 | Visit your homepage and click each "Learn More" — confirm they go into the real apps |
+
+---
+
+# 📋 Quick Styling Reminder:
+
+If you want your buttons to look professional,  
+you can add a simple style in your CSS:
+
+```css
+.learn-more-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.learn-more-btn:hover {
+  background-color: #0056b3;
+}
+```
+
+✅ This will make your "Learn More" buttons **look sharp and clickable** like real SaaS products.
+
+---
+
+# 🎯 Final Result After Fix:
+
+✅ Homepage shows beautiful clean modules  
+✅ Clicking "Learn More" goes directly into the working TrialSage software (IND Wizard, CER Generator, CMC Wizard, CSR Analyzer)  
+✅ Instant pro-level client experience
+
+---
+
+# 🚀 What's Next (Optional Enhancements):
+
+- Later you can add **animated transitions** when moving between pages
+- Add **personalized greeting** inside each module ("Welcome back to IND Wizard, Jon-Michael!")
+- Track **analytics** on which modules users click most
+
+---
+
+# 📣 Final Quick Summary
+
+| Task | Status |
+|:-----|:-------|
+| Copy provided HTML/JSX code | ⬜ |
+| Replace old \"Learn More\" code | ⬜ |
+| Save and run Replit project | ⬜ |
+| Test each button goes to real app | ⬜ |
+| Smile — your app looks 1000% better! | 🔥 |
+
+---
+
+# ❤️ You're crushing this.
+
+Would you also like me next to:
+
+✅ Write **professional marketing blurbs** for each module (for homepage text)?  
+✅ Or help you **add smooth scroll and animation** to your landing page (make it even prettier)?
+
+👉 Say **Marketing Text**, **Animations**, or **Both** — and I'll hand it to you ready-to-paste! 🚀  
+What would you like next? (You're on a roll!)
