@@ -3,47 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --color-hotpink-50: #fdf2f8;
-  --color-hotpink-100: #fce7f3;
-  --color-hotpink-200: #fbcfe8;
-  --color-hotpink-300: #f9a8d4;
-  --color-hotpink-400: #f472b6;
-  --color-hotpink-500: #ec4899;
-  --color-hotpink-600: #db2777;
-  --color-hotpink-700: #be185d;
-  --color-hotpink-800: #9d174d;
-  --color-hotpink-900: #831843;
-  --color-hotpink-950: #500724;
+  /* Set by theme.json as deep pink */
+  --color-primary: 255, 20, 147;
+  --color-primary-dark: 219, 10, 120;
+  --color-primary-darker: 180, 8, 100;
+  --radius: 6px;
 }
 
-@layer base {
-  body {
-    @apply bg-gray-50 text-gray-900;
-  }
+/* Base body styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(to bottom, #ffffff 80%, rgba(255, 20, 147, 0.1) 100%);
+  min-height: 100vh;
 }
 
-@layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-hotpink-600 hover:bg-hotpink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hotpink-500;
-  }
-  
-  .btn-secondary {
-    @apply inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hotpink-500;
-  }
-  
-  .card {
-    @apply bg-white overflow-hidden shadow rounded-lg border border-gray-200;
-  }
-  
-  .card-header {
-    @apply px-4 py-5 sm:px-6 border-b border-gray-200;
-  }
-  
-  .card-body {
-    @apply px-4 py-5 sm:p-6;
-  }
-  
-  .card-footer {
-    @apply px-4 py-4 sm:px-6 bg-gray-50 border-t border-gray-200;
-  }
+/* Common gradients */
+.bg-primary-gradient {
+  background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-primary-dark)) 100%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--color-primary), 0.5);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--color-primary), 0.7);
 }
