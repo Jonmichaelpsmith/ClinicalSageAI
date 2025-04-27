@@ -1883,7 +1883,7 @@
             document.getElementById('create-project-btn').addEventListener('click', createProject);
             
             // Form generation
-            function generateForm(projectId, formType) {
+            async function generateForm(projectId, formType) {
                 if (!projectId || !formType) {
                     showToast('Please select a project first', 'error');
                     return;
@@ -1894,31 +1894,278 @@
                 button.disabled = true;
                 button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
                 
-                // Create a direct download link to the FastAPI endpoint
-                const downloadUrl = `/api/ind/${projectId}/forms/${formType}`;
-                
-                // Create a hidden link element to trigger the download
-                const downloadLink = document.createElement('a');
-                downloadLink.href = downloadUrl;
-                downloadLink.download = `Form_FDA_${formType}_${projectId}.txt`;
-                downloadLink.style.display = 'none';
-                document.body.appendChild(downloadLink);
-                
-                // Trigger the download
-                downloadLink.click();
-                
-                // Clean up
-                setTimeout(() => {
-                    document.body.removeChild(downloadLink);
-                    button.disabled = false;
-                    button.innerHTML = originalText;
+                try {
+                    // First, check if the backend service is available
+                    const checkResponse = await fetch(`${apiBaseUrl}/api/health`).catch(() => null);
+                    const backendAvailable = checkResponse && checkResponse.ok;
                     
-                    // Show toast notification
-                    showToast(`Form FDA ${formType} generated successfully!`, 'success');
+                    if (backendAvailable) {
+                        // Create a direct download link to the FastAPI endpoint
+                        const downloadUrl = `/api/ind/${projectId}/forms/${formType}`;
+                        
+                        // Create a hidden link element to trigger the download
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = downloadUrl;
+                        downloadLink.download = `Form_FDA_${formType}_${projectId}.txt`;
+                        downloadLink.style.display = 'none';
+                        document.body.appendChild(downloadLink);
+                        
+                        // Trigger the download
+                        downloadLink.click();
+                        
+                        // Clean up the download link
+                        setTimeout(() => {
+                            document.body.removeChild(downloadLink);
+                        }, 500);
+                        
+                        // Show success message
+                        showToast(`Form FDA ${formType} generated successfully!`, 'success');
+                    } else {
+                        // Generate a mock form for demo purposes if backend is unavailable
+                        const mockFormContent = generateMockFormContent(formType, projectId);
+                        
+                        // Create a blob and download it
+                        const blob = new Blob([mockFormContent], { type: 'text/plain' });
+                        const blobUrl = URL.createObjectURL(blob);
+                        
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = blobUrl;
+                        downloadLink.download = `Form_FDA_${formType}_${projectId}.txt`;
+                        downloadLink.style.display = 'none';
+                        document.body.appendChild(downloadLink);
+                        
+                        // Trigger the download
+                        downloadLink.click();
+                        
+                        // Clean up the download link and blob URL
+                        setTimeout(() => {
+                            document.body.removeChild(downloadLink);
+                            URL.revokeObjectURL(blobUrl);
+                        }, 500);
+                        
+                        // Show demo mode message
+                        showToast(`Form FDA ${formType} generated in Demo Mode`, 'info');
+                    }
                     
                     // Refresh history for this project
                     loadProjectHistory(projectId);
-                }, 1500);
+                } catch (error) {
+                    console.error('Error generating form:', error);
+                    showToast(`Error generating form: ${error.message}`, 'error');
+                } finally {
+                    // Reset button state
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            }
+            
+            // Generate mock form content for demo purposes
+            function generateMockFormContent(formType, projectId) {
+                const project = projectList.find(p => p.project_id === projectId) || {
+                    drug_name: 'ENZYMAX FORTE',
+                    sponsor: 'TrialSage Pharmaceuticals',
+                    protocol: 'TS-ENZ-2025',
+                    pi_name: 'Dr. Jane Smith',
+                    pi_address: '123 Medical Center, San Francisco, CA 94158'
+                };
+                
+                const currentDate = new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                let content = '';
+                
+                switch (formType) {
+                    case '1571':
+                        content = `
+DEPARTMENT OF HEALTH AND HUMAN SERVICES
+FOOD AND DRUG ADMINISTRATION
+INVESTIGATIONAL NEW DRUG APPLICATION (IND)
+FORM FDA 1571
+
+1. NAME OF SPONSOR:
+   ${project.sponsor}
+
+2. DATE OF SUBMISSION:
+   ${currentDate}
+
+3. NAME OF INVESTIGATIONAL DRUG:
+   ${project.drug_name}
+
+4. PHASE(S) OF CLINICAL INVESTIGATION TO BE CONDUCTED:
+   ☒ Phase 1    ☒ Phase 2    ☐ Phase 3    ☐ Phase 4
+
+5. IDENTIFICATION NUMBER(S) PREVIOUSLY ASSIGNED TO THIS IND:
+   First submission
+
+6. IND SUBMISSION TYPE:
+   ☒ Initial    ☐ Amendment    ☐ Safety Report    ☐ Annual Report
+
+7. SERIAL NUMBER:
+   001
+
+8. THIS SUBMISSION CONTAINS THE FOLLOWING:
+   ☒ Protocol          ☒ Information Amendment          ☐ Chemistry/Microbiology
+   ☒ Safety Report     ☒ Annual Report                  ☐ Pharmacy
+   ☒ Clinical         ☒ Response to FDA Request         ☐ Other
+
+9. NAME AND TITLE OF THE PERSON RESPONSIBLE:
+   ${project.pi_name}
+   Principal Investigator
+
+10. ADDRESS:
+    ${project.pi_address}
+
+11. TELEPHONE NUMBER:
+    555-123-4567
+
+12. SUBMISSION CERTIFICATION:
+    I agree not to begin clinical investigations until 30 days after FDA's receipt of the IND unless I receive earlier notification by FDA that the studies may begin. I also agree not to begin or continue clinical investigations covered by the IND if those studies are placed on clinical hold.
+
+    ${project.pi_name}
+    Principal Investigator
+    ${currentDate}
+`;
+                        break;
+                    case '1572':
+                        content = `
+DEPARTMENT OF HEALTH AND HUMAN SERVICES
+FOOD AND DRUG ADMINISTRATION
+STATEMENT OF INVESTIGATOR
+FORM FDA 1572
+
+1. NAME AND ADDRESS OF INVESTIGATOR:
+   ${project.pi_name}
+   ${project.pi_address}
+
+2. EDUCATION, TRAINING, AND EXPERIENCE THAT QUALIFIES THE INVESTIGATOR:
+   M.D., PhD in Pharmaceutical Sciences
+   Board Certification in Internal Medicine
+   15+ years of clinical research experience
+
+3. NAME AND ADDRESS OF ANY MEDICAL SCHOOL, HOSPITAL, OR RESEARCH FACILITY:
+   University Medical Center
+   456 Research Avenue
+   San Francisco, CA 94158
+
+4. NAME AND ADDRESS OF CLINICAL LABORATORY FACILITIES:
+   Central Clinical Testing Labs
+   789 Diagnostic Drive
+   San Francisco, CA 94158
+
+5. NAME AND ADDRESS OF THE INSTITUTIONAL REVIEW BOARD (IRB):
+   University Medical Center IRB
+   456 Research Avenue, Suite 300
+   San Francisco, CA 94158
+
+6. NAMES OF SUBINVESTIGATORS:
+   Dr. Robert Johnson, MD
+   Dr. Sarah Chen, PhD
+
+7. NAME AND CODE NUMBER OF PROTOCOL(S) IN THE IND:
+   ${project.protocol}
+
+8. COMMITMENT:
+   I agree to conduct the study(ies) in accordance with the relevant, current protocol(s) and will only make changes after notifying the sponsor.
+   I agree to personally conduct or supervise the study(ies).
+   I agree to inform any patients or any persons used as controls that the drugs are being used for investigational purposes.
+   I agree to report to the sponsor adverse experiences that occur in the course of the investigation(s).
+   I agree to ensure that all associates, colleagues, and employees assisting in the conduct of the study(ies) are informed about their obligations.
+   I agree to maintain adequate and accurate records in accordance with 21 CFR 312.62 and to make those records available for inspection.
+   I will ensure that an IRB that complies with the requirements of 21 CFR Part 56 will be responsible for the initial and continuing review and approval of the clinical investigation.
+   I agree to promptly report to the IRB all changes in the research activity and all unanticipated problems.
+   I will not make any changes in the research without IRB approval, except where necessary to eliminate apparent immediate hazards to human subjects.
+   I agree to comply with all other requirements regarding the obligations of clinical investigators and all other pertinent requirements in 21 CFR Part 312.
+
+   ${project.pi_name}
+   Principal Investigator
+   ${currentDate}
+`;
+                        break;
+                    case '3674':
+                        content = `
+DEPARTMENT OF HEALTH AND HUMAN SERVICES
+FOOD AND DRUG ADMINISTRATION
+CERTIFICATION OF COMPLIANCE WITH CLINICALTRIALS.GOV REQUIREMENTS
+FORM FDA 3674
+
+1. NAME OF SPONSOR:
+   ${project.sponsor}
+
+2. INVESTIGATIONAL DRUG NAME:
+   ${project.drug_name}
+
+3. PROTOCOL NUMBER:
+   ${project.protocol}
+
+4. APPLICATION NUMBER/TYPE:
+   IND Application
+
+5. CERTIFICATION STATEMENT:
+   I certify that the requirements of 42 U.S.C. § 282(j), Section 402(j) of the Public Health Service Act, enacted by Title VIII of Public Law 110-85, have been met for the referenced trial.
+
+6. APPLICABLE CLINICAL TRIALS:
+   ☒ This submission does not refer to a clinical trial.
+   ☐ This submission refers to a clinical trial that is not an applicable clinical trial.
+   ☐ This submission refers to one or more applicable clinical trials.
+
+7. CERTIFICATION (Check one):
+   ☐ The requirements have been met by providing the clinical trial information to the clinical trial registry databank.
+   ☐ The requirements do not apply to any referenced clinical trials.
+   ☒ The submission refers to one or more applicable clinical trials that have not been registered.
+
+CERTIFICATION OF COMPLIANCE:
+Under 21 CFR 54.4, I certify that all clinical investigators who will participate in this study have provided financial information to the sponsor.
+   
+   ${project.pi_name}
+   Principal Investigator
+   ${currentDate}
+`;
+                        break;
+                    case '3454':
+                        content = `
+DEPARTMENT OF HEALTH AND HUMAN SERVICES
+FOOD AND DRUG ADMINISTRATION
+CERTIFICATION: FINANCIAL INTERESTS AND ARRANGEMENTS OF CLINICAL INVESTIGATORS
+FORM FDA 3454
+
+1. APPLICATION/SUBMISSION NUMBER:
+   IND for ${project.drug_name}
+
+2. PROTOCOL NUMBER:
+   ${project.protocol}
+
+3. NAME OF CLINICAL INVESTIGATOR:
+   ${project.pi_name}
+
+4. CERTIFICATION:
+   I hereby certify that I have not entered into any financial arrangement with the clinical investigator(s) conducting the study whereby the value of compensation to the investigator could be affected by the outcome of the study.
+
+5. FINANCIAL INTERESTS/ARRANGEMENTS DISCLOSURE:
+   ☒ I hereby certify that no clinical investigator has disclosed any proprietary interest in this product or significant equity in the sponsor.
+   ☐ I hereby certify that the following financial arrangements exist:
+      (None specified)
+
+6. STEPS TAKEN TO MINIMIZE BIAS:
+   The clinical study has been designed with appropriate blinding procedures and objective endpoints to minimize potential bias.
+
+7. INVESTIGATOR CERTIFICATIONS:
+   ☒ I certify that all investigators have completed financial disclosure forms.
+   ☒ I certify that all disclosed arrangements have been reviewed to determine potential bias.
+   ☒ I certify that this product development was conducted with appropriate ethical oversight.
+
+   ${project.sponsor}
+   Sponsor Representative
+   ${currentDate}
+`;
+                        break;
+                    default:
+                        content = `Demo Form FDA ${formType} for ${project.drug_name}\nGenerated on ${currentDate}\n\nThis is a placeholder form for demonstration purposes only.`;
+                }
+                
+                return content;
             }
             
             // Form generation buttons
@@ -2257,6 +2504,108 @@
     </script>
     
     <style>
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            display: flex;
+            align-items: center;
+            min-width: 300px;
+            max-width: 450px;
+            padding: 12px 15px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .toast-success {
+            border-left-color: var(--success);
+        }
+        
+        .toast-error {
+            border-left-color: var(--danger);
+        }
+        
+        .toast-warning {
+            border-left-color: #f59e0b;
+        }
+        
+        .toast-icon {
+            flex-shrink: 0;
+            margin-right: 12px;
+            font-size: 1.25rem;
+        }
+        
+        .toast-success .toast-icon {
+            color: var(--success);
+        }
+        
+        .toast-error .toast-icon {
+            color: var(--danger);
+        }
+        
+        .toast-warning .toast-icon {
+            color: #f59e0b;
+        }
+        
+        .toast-content {
+            flex-grow: 1;
+            font-size: 0.95rem;
+            color: var(--gray-800);
+        }
+        
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: var(--gray-500);
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.875rem;
+            margin-left: 8px;
+        }
+        
+        .toast-close:hover {
+            color: var(--gray-800);
+        }
+        
+        .toast-hiding {
+            animation: slideOut 0.3s ease forwards;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
         /* Additional styles for the IND Wizard application */
         .bg-light-blue {
             background-color: #f0f7ff;
