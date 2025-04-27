@@ -6,7 +6,16 @@
 
 import express from 'express';
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 const router = express.Router();
+
+// Get the directory path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const envPath = path.resolve(__dirname, '../../.env');
 
 // Mashable API base URL and credentials
 const MASHABLE_BI_BASE_URL = process.env.MASHABLE_BI_BASE_URL || 'https://api.mashable-bi.com/v1';
@@ -208,6 +217,126 @@ router.post('/refresh', async (req, res) => {
   } catch (error) {
     console.error('Error refreshing analytics data:', error);
     res.status(500).json({ error: error.message || 'Failed to refresh data' });
+  }
+});
+
+/**
+ * Helper function to update the API key in the .env file
+ */
+async function updateApiKey(apiKey) {
+  try {
+    // Read the current .env file
+    let envContent = '';
+    
+    try {
+      envContent = fs.readFileSync(envPath, 'utf8');
+    } catch (error) {
+      console.error('Error reading .env file:', error);
+      // If file doesn't exist, create with empty content
+      envContent = '';
+    }
+    
+    // Parse the env content
+    const envConfig = dotenv.parse(envContent);
+    
+    // Update the API key
+    envConfig.MASHABLE_BI_API_KEY = apiKey;
+    
+    // Convert back to .env format
+    const newEnvContent = Object.entries(envConfig)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n');
+    
+    // Write back to .env file
+    fs.writeFileSync(envPath, newEnvContent);
+    
+    // Update the environment variable in memory
+    process.env.MASHABLE_BI_API_KEY = apiKey;
+    
+    return true;
+  } catch (error) {
+    console.error('Error updating API key in .env file:', error);
+    throw error;
+  }
+}
+
+/**
+ * Route to configure the MashableBI API key
+ */
+router.post('/configure', async (req, res) => {
+  try {
+    const { apiKey } = req.body;
+    
+    if (!apiKey) {
+      return res.status(400).json({ error: 'API key is required' });
+    }
+    
+    // Update the API key in the .env file
+    await updateApiKey(apiKey);
+    
+    // Verify the API key by making a simple request to MashableBI
+    try {
+      await axios.get(
+        `${MASHABLE_BI_BASE_URL}/status`,
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    } catch (error) {
+      console.warn('MashableBI status check failed, but API key was saved', error.message);
+      // We'll save the key anyway, even if the test request fails
+    }
+    
+    res.json({
+      success: true,
+      message: 'MashableBI API key configured successfully'
+    });
+  } catch (error) {
+    console.error('Error configuring MashableBI API key:', error);
+    res.status(500).json({ 
+      error: 'Failed to configure MashableBI API key',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * Route to check MashableBI configuration status
+ */
+router.get('/status', async (req, res) => {
+  try {
+    const status = {
+      configured: !!process.env.MASHABLE_BI_API_KEY,
+      baseUrl: MASHABLE_BI_BASE_URL,
+      tenantId: MASHABLE_BI_TENANT_ID
+    };
+    
+    if (status.configured) {
+      try {
+        await axios.get(
+          `${MASHABLE_BI_BASE_URL}/status`,
+          {
+            headers: {
+              'Authorization': `Bearer ${MASHABLE_BI_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 3000 // Short timeout for quick checking
+          }
+        );
+        status.connectionStatus = 'ok';
+      } catch (error) {
+        status.connectionStatus = 'error';
+        status.connectionError = error.message;
+      }
+    }
+    
+    res.json(status);
+  } catch (error) {
+    console.error('Error checking MashableBI status:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
