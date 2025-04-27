@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { BarChart3, BookOpen, Calendar, CheckCircle, ClipboardList, FileText, FileWarning, Layers, SlidersHorizontal, Users, FileCheck, ArrowRight, Clock, ListTodo, BookText, Database, Shield, PieChart, ArrowUpRight, FlaskConical, BarChart, Bell } from 'lucide-react';
+import { 
+  BarChart3, BookOpen, Calendar, CheckCircle, ClipboardList, FileText, 
+  FileWarning, Layers, SlidersHorizontal, Users, FileCheck, ArrowRight, 
+  Clock, ListTodo, BookText, Database, Shield, PieChart, ArrowUpRight, 
+  FlaskConical, BarChart, Bell, Plus, Pen, Brain
+} from 'lucide-react';
 import { useIntegration } from '../integration/ModuleIntegrationLayer';
 import { Link } from 'wouter';
 
@@ -437,31 +442,5 @@ const DashboardModule = () => {
     </div>
   );
 };
-
-// Components needed for the activities list
-const PlusCircle = ({ size, className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="16" />
-    <line x1="8" y1="12" x2="16" y2="12" />
-  </svg>
-);
-
-const Pen = ({ size, className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-    <path d="m15 5 4 4" />
-  </svg>
-);
-
-const Brain = ({ size, className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M9.5 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
-    <path d="M14.5 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
-    <path d="M3 11v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-1a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3" />
-    <path d="M7 9h10" />
-    <path d="M8 11v6a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-6" />
-  </svg>
-);
 
 export default DashboardModule;

@@ -1,99 +1,25 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --primary-color: #FF1493; /* Hot Pink */
-  --primary-light: #FFB6C1; /* Light Pink */
-  --dark-text: #333333;
-  --light-text: #FFFFFF;
-  --gradient-start: #FFFFFF;
-  --gradient-end: #FFE6F2;
-  --hero-bg: #000000;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-html, body {
+body {
   margin: 0;
-  padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
-    'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(to bottom, var(--gradient-start) 80%, var(--gradient-end) 100%);
+  min-width: 320px;
   min-height: 100vh;
-  color: var(--dark-text);
+  background: linear-gradient(to bottom, white 80%, #ff69b4 20%);
 }
 
-.hero-section {
-  background-color: var(--hero-bg);
-  color: var(--light-text);
-  padding: 4rem 2rem;
-  text-align: center;
-}
-
-.hot-pink-btn {
-  background-color: var(--primary-color);
-  color: var(--light-text);
-  border: none;
-  border-radius: 0.375rem;
-  padding: 0.625rem 1.25rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.hot-pink-btn:hover {
-  background-color: #D70075;
-}
-
-.module-card {
-  border-radius: 0.5rem;
-  border: 1px solid #E5E7EB;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 1.5rem;
-  background-color: white;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.module-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.client-context-bar {
-  background-color: #F3F4F6;
-  border-bottom: 1px solid #E5E7EB;
-  padding: 0.5rem 1rem;
-}
-
-.blockchain-badge {
-  background-color: #333333;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.5rem;
-  border-radius: 1rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.ai-assistant-button {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  z-index: 50;
-}
-
-.ai-assistant-button:hover {
-  transform: scale(1.1);
+#root {
+  width: 100%;
+  min-height: 100vh;
 }
