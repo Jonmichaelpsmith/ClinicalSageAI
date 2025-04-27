@@ -62,6 +62,15 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Serve static files
 app.use(express.static('./'));
 
+// Health check endpoint for server pre-warming
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // Serve client portal pages
 app.get('/', (req, res) => {
   res.redirect('/login');
