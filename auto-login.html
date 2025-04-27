@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Login Redirect</title>
+  <script>
+    // Set authentication in localStorage
+    localStorage.setItem('authenticated', 'true');
+    localStorage.setItem('userEmail', 'admin@trialsage.com');
+    localStorage.setItem('userName', 'Admin User');
+    
+    // Redirect to client portal
+    window.location.href = '/client-portal.html';
+  </script>
+</head>
+<body>
+  <p>Logging in automatically and redirecting to client portal...</p>
+</body>
+</html>

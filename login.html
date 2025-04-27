@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrialSage™ - Log In</title>
-  <meta name="description" content="Log in to TrialSage Client Portal - Access your regulatory management tools and documents">
+  <title>TrialSage™ - Login</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -37,279 +35,87 @@
         }
       }
     }
-  </script>
-  <style>
-    /* Custom styles */
-    .gradient-bg {
-      background: linear-gradient(to bottom, white 80%, #FFF0F6 100%);
-    }
     
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #FF1493;
-      border-radius: 4px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #C71585;
-    }
-  </style>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script>
-    // Simplified login for demo purposes
+    // Login form submission
     function handleLogin(event) {
       event.preventDefault();
-      
-      const email = document.getElementById('email').value;
+      const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
-      if (isCreateAccountMode) {
-        // Account creation logic
-        const name = document.getElementById('name').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        
-        if (!name) {
-          alert('Please enter your name.');
-          return;
-        }
-        
-        if (password !== confirmPassword) {
-          alert('Passwords do not match.');
-          return;
-        }
-        
-        // Show loading indicator during "account creation"
-        document.getElementById('googleLoginIndicator').style.display = 'flex';
-        document.getElementById('googleLoginIndicator').querySelector('p').innerText = 'Creating your account...';
-        
-        // Simulate API delay
-        setTimeout(() => {
-          // Store authentication data
-          localStorage.setItem('authenticated', 'true');
-          localStorage.setItem('userEmail', email);
-          localStorage.setItem('userName', name);
-          
-          // Once account is created, redirect to client portal
-          window.location.href = 'client-portal.html';
-        }, 1500);
-      } else {
-        // Login logic
-        // Simple check that something was entered
-        if (email && password) {
-          // Store authentication data
-          localStorage.setItem('authenticated', 'true');
-          localStorage.setItem('userEmail', email);
-          
-          // Successful login - redirect to client portal or saved destination
-          const redirectTo = localStorage.getItem('redirectAfterLogin') || '/client-portal';
-          localStorage.removeItem('redirectAfterLogin'); // Clear the saved redirect
-          window.location.href = redirectTo;
-        } else {
-          // Alert if fields are empty
-          alert('Please enter both email and password.');
-        }
-      }
-    }
-
-    // Toggle between sign in and create account forms
-    let isCreateAccountMode = false;
-    
-    function toggleCreateAccount() {
-      isCreateAccountMode = !isCreateAccountMode;
-      
-      const titleElement = document.getElementById('formTitle');
-      const submitButton = document.getElementById('submitButton');
-      const nameField = document.getElementById('nameField');
-      const confirmPasswordField = document.getElementById('confirmPasswordField');
-      const createAccountLink = document.getElementById('createAccountLink');
-      
-      if (isCreateAccountMode) {
-        titleElement.innerText = 'Create a new account';
-        submitButton.innerText = 'Create Account';
-        nameField.style.display = 'block';
-        confirmPasswordField.style.display = 'block';
-        createAccountLink.innerHTML = 'Already have an account? <a href="#" class="text-trialsage-600 hover:text-trialsage-500 font-medium">Sign in</a>';
-      } else {
-        titleElement.innerText = 'Sign in to your account';
-        submitButton.innerText = 'Sign in';
-        nameField.style.display = 'none';
-        confirmPasswordField.style.display = 'none';
-        createAccountLink.innerHTML = 'or <a href="#" class="text-trialsage-600 hover:text-trialsage-500 font-medium">create an account</a>';
-      }
-      
-      return false;
-    }
-    
-    // Google login function
-    function loginWithGoogle() {
-      // For demo purposes, simulate a successful Google login
-      console.log("Google login clicked");
-      
-      // Show a loading indicator
-      document.getElementById('googleLoginIndicator').style.display = 'flex';
-      
-      // Simulate API delay
-      setTimeout(() => {
-        // Store authentication data for Google login
+      // Check credentials (hardcoded for demo)
+      if (username === 'admin' && password === 'admin123') {
+        // Set authentication and redirect
         localStorage.setItem('authenticated', 'true');
-        localStorage.setItem('userEmail', 'googleuser@gmail.com');
-        localStorage.setItem('userName', 'Google User');
+        localStorage.setItem('userEmail', 'admin@trialsage.com');
+        localStorage.setItem('userName', 'Admin User');
         
-        // Redirect to client portal or saved destination
-        const redirectTo = localStorage.getItem('redirectAfterLogin') || '/client-portal';
-        localStorage.removeItem('redirectAfterLogin'); // Clear the saved redirect
-        window.location.href = redirectTo;
-      }, 1500);
+        // Redirect to client portal
+        window.location.href = '/client-portal.html';
+      } else {
+        // Show error message
+        document.getElementById('error-message').classList.remove('hidden');
+      }
     }
   </script>
-  
-  <!-- Loading indicator for Google login -->
-  <div id="googleLoginIndicator" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.8); z-index: 9999; align-items: center; justify-content: center; flex-direction: column;">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-trialsage-500 mb-4"></div>
-    <p class="text-gray-700">Authenticating with Google...</p>
-  </div>
 </head>
-<body class="font-sans text-gray-900 gradient-bg min-h-screen">
-  <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="flex justify-center">
-        <div class="flex items-center">
-          <span class="text-3xl font-bold text-trialsage-pink">TrialSage</span>
-          <span class="text-xs align-top font-medium text-gray-500">™</span>
-        </div>
-      </div>
-      <h2 id="formTitle" class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-        Sign in to your account
-      </h2>
-      <p class="mt-2 text-center text-sm text-gray-600">
-        Access the TrialSage Client Portal
-        <span id="createAccountLink" class="ml-1">or <a href="#" onclick="toggleCreateAccount()" class="text-trialsage-600 hover:text-trialsage-500 font-medium">create an account</a></span>
-      </p>
+<body class="font-sans bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="bg-trialsage-500 px-6 py-8 text-white">
+      <h1 class="text-2xl font-bold text-center">TrialSage™</h1>
+      <p class="text-center text-white/80 mt-2">Client Portal Login</p>
     </div>
-
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-        <form class="space-y-6" action="#" method="POST" onsubmit="handleLogin(event)">
-          <div id="nameField" style="display: none;">
-            <label for="name" class="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
-            <div class="mt-1">
-              <input id="name" name="name" type="text" autocomplete="name" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-trialsage-500 focus:border-trialsage-500 sm:text-sm">
-            </div>
-          </div>
-          
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">
-              Email address
-            </label>
-            <div class="mt-1">
-              <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-trialsage-500 focus:border-trialsage-500 sm:text-sm">
-            </div>
-          </div>
-
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <div class="mt-1">
-              <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-trialsage-500 focus:border-trialsage-500 sm:text-sm">
-            </div>
-          </div>
-          
-          <div id="confirmPasswordField" style="display: none;">
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
-              Confirm Password
-            </label>
-            <div class="mt-1">
-              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-trialsage-500 focus:border-trialsage-500 sm:text-sm">
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-trialsage-600 focus:ring-trialsage-500 border-gray-300 rounded">
-              <label for="remember-me" class="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
-            </div>
-
-            <div class="text-sm">
-              <a href="#" class="font-medium text-trialsage-600 hover:text-trialsage-500">
-                Forgot your password?
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <button id="submitButton" type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-trialsage-pink hover:bg-trialsage-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-trialsage-500">
-              Sign in
-            </button>
-          </div>
-        </form>
-
-        <div class="mt-6">
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-white text-gray-500">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div class="mt-6 grid grid-cols-3 gap-3">
-            <div>
-              <a href="#" onclick="loginWithGoogle()" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                <span class="sr-only">Sign in with Google</span>
-                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"></path>
-                </svg>
-                <span class="ml-2">Google</span>
-              </a>
-            </div>
-
-            <div>
-              <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                <span class="sr-only">Sign in with SSO</span>
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" clip-rule="evenodd" />
-                </svg>
-                <span class="ml-2">SSO</span>
-              </a>
-            </div>
-
-            <div>
-              <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                <span class="sr-only">Sign in with Microsoft</span>
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                  <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm3.84 4.3H10v3.55h3.84V6.3zm0 3.84H10v3.55h3.84v-3.55zM6.16 6.3H10v3.55H6.16V6.3zm0 3.84H10v3.55H6.16v-3.55z" />
-                </svg>
-                <span class="ml-2">Microsoft</span>
-              </a>
-            </div>
-          </div>
+    
+    <div class="p-6">
+      <div id="error-message" class="bg-red-50 text-red-600 p-3 rounded-md mb-4 hidden">
+        Invalid credentials. Please try again.
+      </div>
+      
+      <form onsubmit="handleLogin(event)">
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-trialsage-500 focus:border-transparent"
+            placeholder="admin"
+            required
+          >
         </div>
+        
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-trialsage-500 focus:border-transparent"
+            placeholder="admin123"
+            required
+          >
+        </div>
+        
+        <button 
+          type="submit"
+          class="w-full bg-trialsage-500 text-white py-2 px-4 rounded-md hover:bg-trialsage-600 focus:outline-none focus:ring-2 focus:ring-trialsage-500 focus:ring-offset-2 transition-colors"
+        >
+          Sign In
+        </button>
+      </form>
+      
+      <div class="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200">
+        <h2 class="text-sm font-semibold text-gray-700 mb-2">Demo Credentials</h2>
+        <p class="text-xs text-gray-600">Username: <span class="font-mono bg-gray-100 px-1 py-0.5 rounded">admin</span></p>
+        <p class="text-xs text-gray-600">Password: <span class="font-mono bg-gray-100 px-1 py-0.5 rounded">admin123</span></p>
+      </div>
+      
+      <div class="mt-4 text-center">
+        <a href="/auto-login.html" class="text-xs text-trialsage-500 hover:underline">
+          Quick Access (Skip Login)
+        </a>
       </div>
     </div>
     
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md text-center text-sm text-gray-500">
-      <p>
-        &copy; 2025 Concept2Cures Inc. All rights reserved.
-        <a href="/privacy" class="text-trialsage-600 hover:text-trialsage-500 ml-1">Privacy Policy</a>
-        <a href="/terms" class="text-trialsage-600 hover:text-trialsage-500 ml-1">Terms of Service</a>
-      </p>
+    <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 text-center">
+      <p class="text-xs text-gray-500">&copy; 2025 Concept2Cures Inc. All rights reserved.</p>
     </div>
   </div>
 </body>

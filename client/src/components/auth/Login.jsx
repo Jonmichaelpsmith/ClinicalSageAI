@@ -17,8 +17,17 @@ const Login = () => {
     e.preventDefault();
     // In a real app, this would verify credentials against a backend
     if (credentials.username === 'admin' && credentials.password === 'admin123') {
-      // Redirect to dashboard directly using window.location for reliability
-      window.location.href = '/dashboard';
+      // Set authentication in localStorage
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify({
+        username: credentials.username,
+        role: 'admin',
+        name: 'Admin User',
+        organization: 'TrialSage'
+      }));
+      
+      // Redirect to client portal directly
+      window.location.href = '/portal';
     } else {
       alert('Invalid credentials. Use admin/admin123');
     }

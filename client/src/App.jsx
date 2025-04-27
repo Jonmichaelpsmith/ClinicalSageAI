@@ -8,51 +8,56 @@ function App() {
   // Get location for navigation
   const [location, setLocation] = useLocation();
   
-  // Automatically redirect to dashboard/client portal
+  // Check if user is authenticated
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Check for authentication on mount
   useEffect(() => {
-    if (location === "/" || location === "/login" || location.startsWith("/portal")) {
-      window.location.href = "/dashboard";
-    }
-  }, [location]);
+    // In a real app, this would check localStorage, session or cookies
+    // For demo purposes, we're defaulting to not authenticated
+    setIsAuthenticated(false);
+  }, []);
 
   return (
     <ModuleIntegrationProvider>
       <div className="min-h-screen flex flex-col">
         <Switch>
-          {/* All routes point to the UnifiedPlatform (client portal) */}
-          <Route path="/" exact>
-            <UnifiedPlatform />
+          {/* Login route */}
+          <Route path="/login">
+            <Login />
           </Route>
+          
+          {/* Authenticated routes */}
           <Route path="/dashboard">
-            <UnifiedPlatform />
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           <Route path="/vault">
-            <UnifiedPlatform />
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           <Route path="/csr-intelligence">
-            <UnifiedPlatform />
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           <Route path="/study-architect">
-            <UnifiedPlatform />
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           <Route path="/ind-wizard">
-            <UnifiedPlatform />
-          </Route>
-          
-          {/* These routes will be caught by the redirect in useEffect */}
-          <Route path="/login">
-            <UnifiedPlatform />
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           <Route path="/portal">
-            <UnifiedPlatform />
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           <Route path="/portal/ind">
-            <UnifiedPlatform />
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           
-          {/* Catch all routes and redirect to dashboard */}
+          {/* Default route */}
+          <Route path="/" exact>
+            <Redirect to="/login" />
+          </Route>
+          
+          {/* Catch all routes and redirect to login */}
           <Route path="/:rest*">
-            <UnifiedPlatform />
+            <Redirect to="/login" />
           </Route>
         </Switch>
       </div>
