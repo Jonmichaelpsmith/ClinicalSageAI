@@ -8,6 +8,7 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import path from 'path';
 import { createServer } from 'http';
 import { Server as WebSocketServer } from 'socket.io';
 import * as Sentry from '@sentry/node';
