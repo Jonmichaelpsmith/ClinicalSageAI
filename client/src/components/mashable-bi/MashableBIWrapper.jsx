@@ -52,6 +52,36 @@ export function MashableBIWrapper({
   const [isExpanded, setIsExpanded] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
   
+  // API configuration states
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [showConfigForm, setShowConfigForm] = useState(false);
+  
+  // Check if MashableBI is configured
+  useEffect(() => {
+    const checkConfiguration = async () => {
+      try {
+        const response = await fetch('/api/mashable-bi/status');
+        if (!response.ok) {
+          throw new Error('Failed to check configuration status');
+        }
+        
+        const status = await response.json();
+        setIsConfigured(status.configured);
+        
+        // Show configuration form if not configured
+        if (!status.configured) {
+          setShowConfigForm(true);
+        }
+      } catch (error) {
+        console.error('Error checking MashableBI configuration:', error);
+        setIsConfigured(false);
+        setError('Could not verify MashableBI configuration status');
+      }
+    };
+    
+    checkConfiguration();
+  }, []);
+  
   // Available dashboards for IND workflow
   const dashboards = {
     'ind-overview': {
@@ -135,32 +165,7 @@ export function MashableBIWrapper({
     setIsExpanded(!isExpanded);
   };
 
-  // Check if MashableBI is configured
-  const [isConfigured, setIsConfigured] = useState(true);
-  const [showConfigForm, setShowConfigForm] = useState(false);
-  
-  // Fetch configuration status
-  useEffect(() => {
-    const checkConfiguration = async () => {
-      try {
-        const response = await fetch('/api/mashable-bi/status');
-        const data = await response.json();
-        
-        setIsConfigured(data.configured);
-        
-        if (!data.configured) {
-          setError('MashableBI API key is not configured');
-        } else if (data.connectionStatus === 'error') {
-          setError(`Connection error: ${data.connectionError}`);
-        }
-      } catch (error) {
-        console.error('Error checking MashableBI configuration:', error);
-        setError('Unable to check MashableBI configuration status');
-      }
-    };
-    
-    checkConfiguration();
-  }, []);
+  // Configuration status was already checked in the first useEffect
   
   // Handle API key configuration
   const handleApiKeyConfigured = () => {
