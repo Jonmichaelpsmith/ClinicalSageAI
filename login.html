@@ -37,23 +37,29 @@
       }
     }
     
-    // Server pre-warming function
-    async function prewarmServer() {
-      console.log('Pre-warming server...');
+    // Initialize resilience service
+    let resilience;
+    document.addEventListener('DOMContentLoaded', function() {
+      resilience = new ResilienceService({
+        prewarmEndpoint: '/api/prewarm',
+        prewarmInterval: 4 * 60 * 1000,
+        authRedirectDelay: 1500,
+        autoLoginEnabled: false // Don't auto-login on login page
+      });
+      
+      // Start just the prewarming (not auto-login)
+      resilience.startPrewarming();
+    });
+    
+    // Pre-warm on page load immediately
+    (async function() {
+      console.log('Pre-warming server before login page setup...');
       try {
         const response = await fetch('/api/prewarm');
-        console.log('Server pre-warmed successfully:', response.status);
-        return response.ok;
+        console.log('Server warm-up response:', response.status);
       } catch (error) {
-        console.warn('Server pre-warm failed:', error);
-        return false;
+        console.error('Initial server warm-up error:', error);
       }
-    }
-    
-    // Pre-warm on page load
-    (async function() {
-      await prewarmServer();
-      console.log('Initial pre-warm complete');
     })();
     
     // Login form submission
@@ -67,14 +73,19 @@
       submitButton.disabled = true;
       
       // Pre-warm server before authentication attempt
-      await prewarmServer();
+      try {
+        const response = await fetch('/api/prewarm');
+        console.log('Pre-login server warm-up response:', response.status);
+      } catch (error) {
+        console.error('Pre-login server warm-up error:', error);
+      }
       
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
       // Check credentials (hardcoded for demo)
       if (username === 'admin' && password === 'admin123') {
-        // Set authentication and redirect
+        // Store user info using our resilience service pattern
         localStorage.setItem('isAuthenticated', 'true');
         localStorage.setItem('user', JSON.stringify({
           id: 1,
@@ -85,8 +96,15 @@
           subscribed: true
         }));
         
-        // Redirect to client portal
-        window.location.href = '/client-portal.html';
+        // Success message
+        submitButton.innerText = 'Success! Redirecting...';
+        submitButton.classList.add('bg-green-500');
+        
+        // Use delay before redirect to give server time to respond
+        setTimeout(() => {
+          // Redirect to direct client portal (more reliable than standard portal)
+          window.location.href = '/client-portal-direct';
+        }, 1500);
       } else {
         // Show error message
         document.getElementById('error-message').classList.remove('hidden');
