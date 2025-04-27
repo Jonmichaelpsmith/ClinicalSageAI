@@ -26,6 +26,7 @@ import cmcBlueprintRoutes from './routes/cmc-blueprint.js';
 import enhancedInspectionRoutes from './routes/enhanced-inspection.js';
 import documentVersionRoutes from './routes/document-versions.js';
 import indProxyRouter from './routes/ind-proxy.js';
+import healthRoutes from './routes/health.js';
 
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
@@ -87,10 +88,8 @@ app.use('/api/versions', verifyJwt, documentVersionRoutes);
 // IND Wizard API endpoints (skipping JWT verification for now to simplify testing)
 app.use('/', indProxyRouter);
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date() });
-});
+// Health check endpoints
+app.use('/api/health', healthRoutes);
 
 // Ledger API
 app.get('/api/ledger/:submissionId', verifyJwt, async (req, res) => {
