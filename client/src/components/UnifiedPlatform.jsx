@@ -23,8 +23,11 @@ const UnifiedPlatform = () => {
             The comprehensive AI-powered platform for regulatory and clinical documentation across the drug development lifecycle
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <button className="hot-pink-btn">
-              Get Started
+            <button 
+              className="hot-pink-btn"
+              onClick={() => navigate('/login')}
+            >
+              Log In
             </button>
             <button className="bg-white text-gray-900 py-2.5 px-5 rounded-md hover:bg-gray-100 font-medium">
               Book a Demo

@@ -161,7 +161,7 @@ const LoginPage = () => {
                     <div className="mt-2">
                       <p>Demo Credentials:</p>
                       <p className="font-medium">Username: admin</p>
-                      <p className="font-medium">Password: password123</p>
+                      <p className="font-medium">Password: admin123</p>
                     </div>
                   </div>
                 </form>
