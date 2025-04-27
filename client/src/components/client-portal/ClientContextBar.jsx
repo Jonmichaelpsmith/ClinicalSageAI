@@ -1,256 +1,150 @@
 /**
  * Client Context Bar
  * 
- * This component displays the current client context when a CRO user is working on behalf of a specific client.
- * It provides a way to quickly switch between different clients and clearly indicates which client's data is being accessed.
+ * This component provides a context bar for CRO users to switch between biotech client contexts
+ * in a multi-tenant environment.
  */
 
-import React, { useState } from 'react';
-import { Link } from 'wouter';
-import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
+import React, { useState, useEffect } from 'react';
+import { X, ChevronDown, Building, Users, Check, Search } from 'lucide-react';
+import securityService from '../../services/SecurityService';
 
-// UI components
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-  SheetFooter
-} from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { 
-  ChevronDown, 
-  Search, 
-  UserPlus, 
-  ArrowLeftRight, 
-  Users,
-  Clock
-} from 'lucide-react';
-
-/**
- * Client Context Bar Component
- */
-export const ClientContextBar = ({ context }) => {
-  const [clientSelectorOpen, setClientSelectorOpen] = useState(false);
+const ClientContextBar = ({ organization, onClose }) => {
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [recentClients, setRecentClients] = useState([]);
-  const [allClients, setAllClients] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   
-  // Integration hooks
-  const { services, switchClient } = useModuleIntegration();
+  // Load child organizations on mount
+  useEffect(() => {
+    const loadClients = async () => {
+      try {
+        if (!organization) {
+          setLoading(false);
+          return;
+        }
+        
+        const childOrgs = await securityService.getChildOrganizations();
+        setClients(childOrgs);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading client organizations:', error);
+        setLoading(false);
+      }
+    };
+    
+    loadClients();
+  }, [organization]);
   
   // Handle client switch
-  const handleClientSwitch = async (clientId) => {
+  const handleClientSwitch = async (clientOrg) => {
     try {
-      setIsLoading(true);
-      await switchClient(clientId);
-      setClientSelectorOpen(false);
-      setIsLoading(false);
+      await securityService.switchOrganization(clientOrg.id);
+      window.location.reload(); // In a real app, would use more elegant approach
     } catch (error) {
-      console.error('Error switching client context:', error);
-      setIsLoading(false);
+      console.error(`Error switching to client ${clientOrg.id}:`, error);
     }
-  };
-  
-  // Load clients if we don't have them yet
-  const handleOpenClientSelector = async () => {
-    if (!allClients.length) {
-      try {
-        setIsLoading(true);
-        const clients = await services.security.getClientOrganizations();
-        setAllClients(clients);
-        
-        // Set recent clients (would normally come from user preferences or history)
-        setRecentClients(clients.slice(0, 4));
-        
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching client organizations:', error);
-        setIsLoading(false);
-      }
-    }
-    
-    setClientSelectorOpen(true);
   };
   
   // Filter clients based on search query
-  const filteredClients = searchQuery.trim() === '' 
-    ? allClients 
-    : allClients.filter(client => 
-        client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.industry?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  const filteredClients = clients.filter(client => 
+    client.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  if (!organization) {
+    return null;
+  }
+  
+  // If this organization has no child organizations, don't show the bar
+  if (clients.length === 0 && !loading) {
+    return null;
+  }
   
   return (
-    <div className="border-b bg-muted px-4 py-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <span className="text-sm font-medium mr-2">Client:</span>
-          <div className="flex items-center gap-2 bg-background px-3 py-1 rounded-md border">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={context.avatarUrl} alt={context.name} />
-              <AvatarFallback>{context.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <span className="font-medium">{context.name}</span>
-            <Badge variant="outline" className="ml-1 text-xs">
-              {context.type || 'Biotech'}
-            </Badge>
+    <div className="bg-white border-b shadow-sm">
+      <div className="container mx-auto px-4 py-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Building className="text-primary" size={20} />
+            <span className="font-medium">
+              {organization.name}
+            </span>
+            {organization.type === 'cro' && (
+              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
+                CRO
+              </span>
+            )}
           </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Sheet open={clientSelectorOpen} onOpenChange={setClientSelectorOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm" onClick={handleOpenClientSelector} className="flex items-center">
-                <ArrowLeftRight className="h-4 w-4 mr-2" />
-                Switch Client
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-[400px] sm:w-[540px]">
-              <SheetHeader>
-                <SheetTitle>Switch Client</SheetTitle>
-                <SheetDescription>
-                  Select a client organization to work with
-                </SheetDescription>
-              </SheetHeader>
-              
-              <div className="py-6">
-                <div className="relative mb-6">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Search clients..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
+          
+          <div className="flex items-center">
+            {loading ? (
+              <div className="text-sm text-gray-500">Loading clients...</div>
+            ) : clients.length > 0 ? (
+              <div className="relative">
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="flex items-center space-x-1 text-sm bg-gray-50 hover:bg-gray-100 py-1 px-3 rounded border"
+                >
+                  <Users size={16} />
+                  <span>{clients.length} Client{clients.length !== 1 ? 's' : ''}</span>
+                  <ChevronDown size={16} className={expanded ? 'transform rotate-180' : ''} />
+                </button>
                 
-                {!searchQuery && recentClients.length > 0 && (
-                  <div className="mb-6">
-                    <div className="flex items-center mb-2">
-                      <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                      <span className="text-sm font-medium">Recent Clients</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {recentClients.map(client => (
-                        <ClientSelectButton 
-                          key={client.id}
-                          client={client}
-                          active={client.id === context.id}
-                          onClick={() => handleClientSwitch(client.id)}
+                {expanded && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white border rounded-lg shadow-lg z-10">
+                    <div className="p-3 border-b">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search clients..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-8 pr-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                         />
-                      ))}
+                        <Search size={14} className="absolute top-2.5 left-2.5 text-gray-400" />
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {filteredClients.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500 text-sm">
+                          No clients found
+                        </div>
+                      ) : (
+                        filteredClients.map(client => (
+                          <button
+                            key={client.id}
+                            onClick={() => handleClientSwitch(client)}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between"
+                          >
+                            <div>
+                              <div className="font-medium">{client.name}</div>
+                              <div className="text-xs text-gray-500">
+                                {client.type === 'biotech' ? 'Biotech Client' : client.type}
+                              </div>
+                            </div>
+                            {client.id === organization.id && (
+                              <Check size={16} className="text-primary" />
+                            )}
+                          </button>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
-                
-                <div>
-                  <div className="flex items-center mb-2">
-                    <Users className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm font-medium">
-                      {searchQuery ? 'Search Results' : 'All Clients'}
-                    </span>
-                  </div>
-                  
-                  {isLoading ? (
-                    <div className="flex justify-center py-4">
-                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  ) : filteredClients.length > 0 ? (
-                    <ScrollArea className="h-[300px]">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {filteredClients.map(client => (
-                          <ClientSelectButton 
-                            key={client.id}
-                            client={client}
-                            active={client.id === context.id}
-                            onClick={() => handleClientSwitch(client.id)}
-                          />
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  ) : (
-                    <div className="text-center py-4 text-muted-foreground">
-                      No clients found matching your search
-                    </div>
-                  )}
-                </div>
               </div>
-              
-              <SheetFooter>
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    setClientSelectorOpen(false);
-                    // Navigate to client creation form
-                  }}
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Add New Client
-                </Button>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
-          
-          <Link href="/client-portal">
-            <Button variant="ghost" size="sm">
-              Client Portal
-            </Button>
-          </Link>
+            ) : null}
+            
+            <button
+              onClick={onClose}
+              className="ml-4 p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
+              aria-label="Close client context bar"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  );
-};
-
-/**
- * Client Select Button Component
- */
-const ClientSelectButton = ({ client, active, onClick }) => {
-  return (
-    <button
-      className={`flex items-center gap-2 p-2 rounded-md border w-full text-left ${
-        active 
-          ? 'bg-primary text-primary-foreground border-primary' 
-          : 'hover:bg-accent'
-      }`}
-      onClick={onClick}
-      disabled={active}
-    >
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={client.avatarUrl} alt={client.name} />
-        <AvatarFallback>{client.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-      </Avatar>
-      <div className="flex-1 overflow-hidden">
-        <div className="font-medium truncate">{client.name}</div>
-        <div className="text-xs truncate text-muted-foreground">
-          {client.industry || 'Biotechnology'}
-        </div>
-      </div>
-      {active && (
-        <Badge variant="outline" className="ml-auto">
-          Current
-        </Badge>
-      )}
-    </button>
   );
 };
 
