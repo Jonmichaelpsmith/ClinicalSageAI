@@ -89,7 +89,7 @@ app.use('/api/versions', verifyJwt, documentVersionRoutes);
 
 // IND Wizard API endpoints (skipping JWT verification for now to simplify testing)
 app.use('/', indProxyRouter);
-app.use('/', indFormsRouter);
+app.use('/api/ind', indFormsRouter);
 
 // Health check endpoints
 app.use('/api/health', healthRoutes);
