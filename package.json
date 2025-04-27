@@ -1,12 +1,19 @@
 {
   "name": "trialsage",
   "version": "1.0.0",
-  "scripts": {
-    "start": "node server-simple.js",
-    "dev": "node server-simple.js"
-  },
+  "description": "TrialSage is an advanced AI-powered document management system specialized in clinical research FDA form management",
+  "main": "index.js",
   "type": "module",
-  "dependencies": {
-    "express": "^4.18.2"
-  }
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "document-management",
+    "clinical-research",
+    "ind",
+    "fda"
+  ],
+  "author": "",
+  "license": "ISC"
 }

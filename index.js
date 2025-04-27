@@ -1,69 +1,20 @@
-import express from 'express';
-import path from 'path';
+// Simple server with built-in modules
+import http from 'http';
 import fs from 'fs';
+import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Get directory name for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Sample user database
 const users = [
   { id: 1, username: 'admin', password: 'admin123', name: 'Administrator' }
 ];
 
-// Authentication middleware
-const authenticate = (req, res, next) => {
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-  
-  if (user) {
-    req.user = user;
-    next();
-  } else {
-    res.status(401).json({ error: 'Invalid credentials' });
-  }
-};
-
-// Login route
-app.post('/api/login', authenticate, (req, res) => {
-  res.json({ 
-    id: req.user.id, 
-    username: req.user.username, 
-    name: req.user.name 
-  });
-});
-
-// Logout route
-app.post('/api/logout', (req, res) => {
-  res.status(200).json({ message: 'Logged out successfully' });
-});
-
-// Protected route example
-app.get('/api/dashboard-data', (req, res) => {
-  // In a real application, this would check authentication
-  res.json({
-    trialCount: 245,
-    csrCompleted: 42,
-    activeTasks: 18
-  });
-});
-
-// Ensure the public directory exists
-const publicDir = path.join(__dirname, 'public');
-if (!fs.existsSync(publicDir)) {
-  fs.mkdirSync(publicDir);
-}
-
-// Create index.html in public folder
-const indexHtmlPath = path.join(publicDir, 'index.html');
-const indexHtml = `
+// Create the HTML content
+const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -410,15 +361,15 @@ const indexHtml = `
           
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-value" id="trialCount">0</div>
+              <div class="stat-value" id="trialCount">245</div>
               <div class="stat-label">Total Trials</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value" id="csrCount">0</div>
+              <div class="stat-value" id="csrCount">42</div>
               <div class="stat-label">CSRs Completed</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value" id="taskCount">0</div>
+              <div class="stat-value" id="taskCount">18</div>
               <div class="stat-label">Active Tasks</div>
             </div>
           </div>
@@ -460,9 +411,6 @@ const indexHtml = `
     const loginError = document.getElementById('loginError');
     const userName = document.getElementById('userName');
     const logoutButton = document.getElementById('logoutButton');
-    const trialCount = document.getElementById('trialCount');
-    const csrCount = document.getElementById('csrCount');
-    const taskCount = document.getElementById('taskCount');
     
     // Navigation
     loginButton.addEventListener('click', () => {
@@ -476,86 +424,159 @@ const indexHtml = `
       landingPage.classList.remove('hidden');
     });
     
-    // Login functionality
-    loginForm.addEventListener('submit', async (e) => {
+    // Demo login (client-side only for simplicity)
+    loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       
-      try {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-          // Login successful
-          loginError.classList.add('hidden');
-          loginPage.classList.add('hidden');
-          dashboardPage.classList.remove('hidden');
-          
-          // Set username
-          userName.textContent = data.name;
-          
-          // Load dashboard data
-          loadDashboardData();
-        } else {
-          // Login failed
-          loginError.textContent = data.error || 'Invalid username or password';
-          loginError.classList.remove('hidden');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        loginError.textContent = 'An error occurred while logging in';
+      // Demo credentials
+      if (username === 'admin' && password === 'admin123') {
+        loginError.classList.add('hidden');
+        loginPage.classList.add('hidden');
+        dashboardPage.classList.remove('hidden');
+        userName.textContent = 'Administrator';
+      } else {
+        loginError.textContent = 'Invalid username or password';
         loginError.classList.remove('hidden');
       }
     });
     
     // Logout functionality
-    logoutButton.addEventListener('click', async () => {
-      try {
-        await fetch('/api/logout', {
-          method: 'POST'
-        });
-        
-        // Redirect to landing page
-        dashboardPage.classList.add('hidden');
-        landingPage.classList.remove('hidden');
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
+    logoutButton.addEventListener('click', () => {
+      dashboardPage.classList.add('hidden');
+      landingPage.classList.remove('hidden');
     });
-    
-    // Load dashboard data
-    async function loadDashboardData() {
-      try {
-        const response = await fetch('/api/dashboard-data');
-        const data = await response.json();
-        
-        trialCount.textContent = data.trialCount;
-        csrCount.textContent = data.csrCompleted;
-        taskCount.textContent = data.activeTasks;
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-      }
-    }
   </script>
 </body>
 </html>
 `;
 
-if (!fs.existsSync(indexHtmlPath)) {
-  fs.writeFileSync(indexHtmlPath, indexHtml);
-  console.log('Created index.html');
+// Ensure public directory exists
+const publicDir = path.join(__dirname, 'public');
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
 }
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+// Write HTML to file
+const htmlPath = path.join(publicDir, 'index.html');
+fs.writeFileSync(htmlPath, htmlContent);
+
+// Create the HTTP server
+const server = http.createServer((req, res) => {
+  // Log incoming request
+  console.log(`${req.method} ${req.url}`);
+  
+  // Handle API requests
+  if (req.url === '/api/login' && req.method === 'POST') {
+    // Handle login
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        const { username, password } = JSON.parse(body);
+        const user = users.find(u => u.username === username && u.password === password);
+        
+        if (user) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ 
+            id: user.id, 
+            username: user.username, 
+            name: user.name 
+          }));
+        } else {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid credentials' }));
+        }
+      } catch (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid request data' }));
+      }
+    });
+    return;
+  }
+  
+  if (req.url === '/api/logout' && req.method === 'POST') {
+    // Handle logout (no session management in this simple example)
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: 'Logged out successfully' }));
+    return;
+  }
+  
+  if (req.url === '/api/dashboard-data' && req.method === 'GET') {
+    // Return dashboard data
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      trialCount: 245,
+      csrCompleted: 42,
+      activeTasks: 18
+    }));
+    return;
+  }
+  
+  // Handle static file requests
+  let filePath = '';
+  if (req.url === '/' || req.url === '') {
+    filePath = path.join(publicDir, 'index.html');
+  } else {
+    filePath = path.join(publicDir, req.url);
+  }
+  
+  // Get the file extension
+  const extname = path.extname(filePath);
+  let contentType = 'text/html';
+  
+  // Set correct content type based on file extension
+  switch (extname) {
+    case '.js':
+      contentType = 'text/javascript';
+      break;
+    case '.css':
+      contentType = 'text/css';
+      break;
+    case '.json':
+      contentType = 'application/json';
+      break;
+    case '.png':
+      contentType = 'image/png';
+      break;
+    case '.jpg':
+      contentType = 'image/jpg';
+      break;
+  }
+  
+  // Read the file
+  fs.readFile(filePath, (error, content) => {
+    if (error) {
+      if (error.code === 'ENOENT') {
+        // File not found - serve index.html
+        fs.readFile(path.join(publicDir, 'index.html'), (err, content) => {
+          if (err) {
+            res.writeHead(500);
+            res.end('Error loading the application');
+          } else {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(content, 'utf-8');
+          }
+        });
+      } else {
+        // Server error
+        res.writeHead(500);
+        res.end(`Server Error: ${error.code}`);
+      }
+    } else {
+      // Successfully read file
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(content, 'utf-8');
+    }
+  });
+});
+
+// Start server on port 5000
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`TrialSage server running on http://0.0.0.0:${PORT}`);
 });
