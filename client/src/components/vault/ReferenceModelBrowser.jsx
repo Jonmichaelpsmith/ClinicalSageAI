@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import {
   Accordion,
   AccordionContent,
@@ -76,8 +78,6 @@ const IconComponents = {
   BookOpen: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📖</span>,
   FileCheck: (props) => <span style={iconStyles} className={`icon ${props.className || ''}`}>📋</span>,
 };
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 
 export function ReferenceModelBrowser({ onSelectDocument, selectedDocument }) {
   const [searchTerm, setSearchTerm] = useState('');
