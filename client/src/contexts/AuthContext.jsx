@@ -1,119 +1,90 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from '../hooks/use-toast';
-import { apiRequest } from '../lib/queryClient';
 
-// Predefined demo users
-const DEMO_USERS = {
-  admin: {
-    id: 1,
-    username: 'admin',
-    email: 'admin@trialsage.com',
-    firstName: 'Admin',
-    lastName: 'User',
-    role: 'admin',
-    createdAt: new Date().toISOString()
-  },
-  client: {
-    id: 2,
-    username: 'client',
-    email: 'client@example.com',
-    firstName: 'Client',
-    lastName: 'User',
-    role: 'client',
-    createdAt: new Date().toISOString()
-  }
-};
+// Create auth context
+const AuthContext = createContext();
 
-// Create the Auth Context
-const AuthContext = createContext(null);
-
-export const AuthProvider = ({ children }) => {
+// AuthProvider component
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(false); // Changed to false for immediate UI access
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { toast } = useToast();
-  
-  // Generate a mock token
-  const generateMockToken = (userData) => {
-    // This isn't a real JWT, just a placeholder
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const payload = btoa(JSON.stringify({
-      id: userData.id,
-      username: userData.username,
-      role: userData.role,
-      exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
-    }));
-    const signature = btoa('mocksignature');
-    
-    return `${header}.${payload}.${signature}`;
-  };
-  
-  // Direct access function - bypasses API calls completely
-  const directAccess = (role = 'admin') => {
-    setLoading(true);
-    
-    try {
-      const userData = DEMO_USERS[role] || DEMO_USERS.admin;
-      const mockToken = generateMockToken(userData);
-      
-      // Save to localStorage and state
-      localStorage.setItem('token', mockToken);
-      setToken(mockToken);
-      setUser(userData);
-      
-      toast({
-        title: 'Access Granted',
-        description: `Welcome, ${userData.firstName}! You now have full access to TrialSage.`,
-        variant: 'success'
-      });
-      
-      return userData;
-    } catch (err) {
-      console.error('Error in direct access:', err);
-      setError('Unable to grant access');
-      
-      toast({
-        title: 'Access Error',
-        description: 'Unable to grant platform access',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // Login immediately with the stored token
+  // Check if user is already logged in on mount
   useEffect(() => {
-    if (token) {
-      // For demo purposes, we'll create a fake user from the token
-      // In production, this would verify with the backend
+    const checkAuth = async () => {
       try {
-        // If there's a token, let's auto-login with admin privileges
-        directAccess('admin');
-      } catch (error) {
-        console.error('Auto-login failed:', error);
-        localStorage.removeItem('token');
-        setToken(null);
+        setLoading(true);
+        const storedToken = localStorage.getItem('token');
+        if (!storedToken) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch('/api/user', {
+          headers: {
+            'Authorization': `Bearer ${storedToken}`
+          }
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          // If token is invalid, clear it
+          localStorage.removeItem('token');
+        }
+      } catch (err) {
+        console.error('Authentication error:', err);
+        setError('Failed to authenticate');
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    checkAuth();
   }, []);
 
-  // Login function - will bypass API calls and use direct access
+  // Login function
   const login = async (username, password) => {
-    setLoading(true);
-    setError(null);
-
     try {
-      // For demo, we accept any credentials and grant admin access
-      const role = username.toLowerCase().includes('admin') ? 'admin' : 'client';
-      return directAccess(role);
-    } catch (err) {
-      setError(err.message || 'Login failed');
+      setLoading(true);
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+
+      const data = await response.json();
+      
+      // Store token in localStorage
+      localStorage.setItem('token', data.token);
+      
+      // Set user data in state
+      setUser(data.user);
+      
       toast({
-        title: 'Login failed',
-        description: err.message || 'An error occurred during login',
-        variant: 'destructive'
+        title: "Login successful",
+        description: `Welcome back, ${data.user.username}!`,
+        variant: "default",
+      });
+      
+      return data.user;
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message);
+      toast({
+        title: "Login failed",
+        description: err.message,
+        variant: "destructive",
       });
       throw err;
     } finally {
@@ -121,79 +92,85 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Mock login mutations for compatibility with existing code
-  const loginMutation = {
-    mutate: async (credentials) => {
-      return await login(credentials.username, credentials.password);
-    },
-    isPending: loading
-  };
-
-  // Mock register mutations for compatibility with existing code
-  const registerMutation = {
-    mutate: async (userData) => {
+  // Register function
+  const register = async (userData) => {
+    try {
       setLoading(true);
-      try {
-        // Always succeed and give admin access
-        return directAccess('admin');
-      } finally {
-        setLoading(false);
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
       }
-    },
-    isPending: loading
+
+      const data = await response.json();
+      
+      // Store token in localStorage
+      localStorage.setItem('token', data.token);
+      
+      // Set user data in state
+      setUser(data.user);
+      
+      toast({
+        title: "Registration successful",
+        description: `Welcome, ${data.user.username}!`,
+        variant: "default",
+      });
+      
+      return data.user;
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError(err.message);
+      toast({
+        title: "Registration failed",
+        description: err.message,
+        variant: "destructive",
+      });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Logout function
   const logout = () => {
     localStorage.removeItem('token');
-    setToken(null);
     setUser(null);
-    
     toast({
-      title: 'Logged out',
-      description: 'You have been logged out successfully',
-      variant: 'default'
+      title: "Logged out",
+      description: "You have been successfully logged out",
     });
   };
 
-  // Direct access methods for different roles
-  const loginAsMock = (role = 'admin') => {
-    return directAccess(role);
-  };
-  
-  // Specific method for client portal access
-  const loginAsClient = () => {
-    return directAccess('client');
-  };
-
-  // Value to be provided to consumers
-  const value = {
+  // Create the context value
+  const contextValue = {
     user,
-    token,
     loading,
     error,
     login,
-    loginMutation,
-    registerMutation,
+    register,
     logout,
-    loginAsMock,
-    loginAsClient,
-    directAccess,
     isAuthenticated: !!user
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
 // Custom hook to use the auth context
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
