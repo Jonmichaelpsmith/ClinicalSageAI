@@ -4,8 +4,8 @@
  * This module provides API endpoints for integrating with the MashableBI analytics platform.
  */
 
-const express = require('express');
-const axios = require('axios');
+import express from 'express';
+import axios from 'axios';
 const router = express.Router();
 
 // Mashable API base URL and credentials
