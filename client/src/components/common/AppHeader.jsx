@@ -1,83 +1,79 @@
-/**
- * App Header Component
- * 
- * This component provides the main navigation header for the TrialSage platform.
- */
-
 import React from 'react';
-import { Link } from 'wouter';
-import { 
-  Bell, 
-  Search, 
-  MessageSquare, 
-  HelpCircle,
-  Settings,
-  User
-} from 'lucide-react';
+import { Link, useLocation } from 'wouter';
+import { Menu, Bell, Settings, Search, User } from 'lucide-react';
+import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 
-const AppHeader = ({ onToggleAIAssistant }) => {
+const AppHeader = ({ toggleSidebar }) => {
+  const [location] = useLocation();
+  const { data, blockchainStatus } = useModuleIntegration();
+
+  const getPageTitle = () => {
+    switch (location) {
+      case '/':
+        return 'TrialSage Platform';
+      case '/dashboard':
+        return 'Dashboard';
+      case '/vault':
+        return 'TrialSage Vault';
+      case '/csr-intelligence':
+        return 'CSR Intelligence';
+      case '/study-architect':
+        return 'Study Architect';
+      default:
+        return 'TrialSage';
+    }
+  };
+
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+    <header className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Link href="/">
-              <a className="flex items-center">
-                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-dark">
-                  TrialSage™
-                </span>
-              </a>
-            </Link>
-          </div>
-          
-          {/* Search */}
-          <div className="flex-1 max-w-xl mx-4 lg:mx-8">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                className="block w-full bg-gray-50 border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:outline-none focus:text-gray-900 focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
-                placeholder="Search across platform..."
-              />
+            <button
+              onClick={toggleSidebar}
+              className="p-2 rounded-md text-gray-600 hover:text-gray-900 focus:outline-none"
+            >
+              <Menu size={24} />
+            </button>
+            
+            <div className="ml-4 flex items-center">
+              <h1 className="text-xl font-semibold text-gray-900">{getPageTitle()}</h1>
+              
+              {blockchainStatus.enabled && (
+                <div className="ml-4 blockchain-badge">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
+                  Blockchain Verified
+                </div>
+              )}
             </div>
           </div>
           
-          {/* Actions */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={16} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              className="block w-56 pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-pink-300 focus:border-pink-300"
+            />
+          </div>
+          
           <div className="flex items-center space-x-4">
-            <button className="text-gray-400 hover:text-gray-500 relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 transform -translate-y-1/3 translate-x-1/3"></span>
+            <button className="p-2 rounded-md text-gray-600 hover:text-gray-900 focus:outline-none relative">
+              <Bell size={20} />
+              <span className="absolute top-1 right-1 block w-2 h-2 rounded-full bg-red-500"></span>
             </button>
             
-            <button 
-              className="text-gray-400 hover:text-gray-500"
-              onClick={onToggleAIAssistant}
-            >
-              <MessageSquare className="h-5 w-5" />
+            <button className="p-2 rounded-md text-gray-600 hover:text-gray-900 focus:outline-none">
+              <Settings size={20} />
             </button>
             
-            <button className="text-gray-400 hover:text-gray-500">
-              <HelpCircle className="h-5 w-5" />
-            </button>
-            
-            <button className="text-gray-400 hover:text-gray-500">
-              <Settings className="h-5 w-5" />
-            </button>
-            
-            <div className="border-l border-gray-200 h-6 mx-1"></div>
-            
-            <div className="relative">
-              <button className="flex items-center space-x-2">
-                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
-                  <User className="h-4 w-4" />
-                </div>
-                <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                  Administrator
-                </span>
-              </button>
+            <div className="flex items-center">
+              <span className="text-sm font-medium text-gray-700 mr-2">{data.userRole}</span>
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <User size={16} className="text-gray-600" />
+              </div>
             </div>
           </div>
         </div>

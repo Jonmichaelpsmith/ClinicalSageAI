@@ -1,105 +1,90 @@
-/**
- * Client Context Bar Component
- * 
- * This component provides context for the current client and organization
- * across the platform, allowing quick switching between organizations.
- */
-
 import React, { useState } from 'react';
-import { ChevronDown, Building } from 'lucide-react';
-import { useIntegration } from '../integration/ModuleIntegrationLayer';
+import { ChevronDown, Building2, Users } from 'lucide-react';
+import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 
 const ClientContextBar = () => {
-  const { securityService } = useIntegration();
-  const [showOrgDropdown, setShowOrgDropdown] = useState(false);
-  
-  // Sample organizations (in a real app, would come from the API)
-  const organizations = [
-    { id: 'org-001', name: 'Acme Pharmaceuticals', role: 'Administrator' },
-    { id: 'org-002', name: 'Biotech Solutions', role: 'Editor' },
-    { id: 'org-003', name: 'ClinMed CRO', role: 'Viewer' }
+  const { data, setClientContext } = useModuleIntegration();
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Mock client list data
+  const clients = [
+    { id: 'c1', name: 'BioTech Innovations', type: 'Client' },
+    { id: 'c2', name: 'PharmaGen Solutions', type: 'Client' },
+    { id: 'c3', name: 'Nova Therapeutics', type: 'Client' },
+    { id: 'c4', name: 'CelluCure', type: 'Client' },
+    { id: 'c5', name: 'MediCore Systems', type: 'Client' },
   ];
-  
-  // Get the current organization
-  const currentOrg = organizations[0];
-  
-  // Toggle organization dropdown
-  const toggleOrgDropdown = () => {
-    setShowOrgDropdown(!showOrgDropdown);
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
   };
-  
-  // Close dropdown when clicking outside
-  const handleClickOutside = (e) => {
-    if (!e.target.closest('#org-selector')) {
-      setShowOrgDropdown(false);
-    }
+
+  const selectClient = (clientId) => {
+    setClientContext(clientId);
+    setShowDropdown(false);
   };
-  
-  // Add click outside listener
-  React.useEffect(() => {
-    if (showOrgDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showOrgDropdown]);
-  
-  // Handle organization selection
-  const selectOrganization = (org) => {
-    // In a real app, this would update the current organization in context
-    console.log('Selected organization:', org);
-    setShowOrgDropdown(false);
+
+  const getCurrentClient = () => {
+    if (!data.clientId) return 'All Clients';
+    const client = clients.find(c => c.id === data.clientId);
+    return client ? client.name : 'All Clients';
   };
-  
+
   return (
-    <div className="bg-gray-100 border-b border-gray-200 py-2 px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between">
-        <div className="relative" id="org-selector">
+    <div className="client-context-bar flex items-center justify-between">
+      <div className="relative flex items-center">
+        <Building2 size={18} className="text-gray-600 mr-2" />
+        <span className="text-sm font-medium text-gray-800 mr-2">CRO Master Account</span>
+        <span className="text-sm text-gray-400 mx-2">→</span>
+        
+        <div className="relative">
           <button
-            onClick={toggleOrgDropdown}
-            className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none"
+            className="flex items-center text-sm font-medium text-gray-800 hover:text-gray-900"
+            onClick={toggleDropdown}
           >
-            <Building className="h-4 w-4 text-gray-500" />
-            <span className="font-medium text-sm">{currentOrg.name}</span>
-            <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${showOrgDropdown ? 'transform rotate-180' : ''}`} />
+            <Users size={18} className="text-gray-600 mr-2" />
+            <span>{getCurrentClient()}</span>
+            <ChevronDown size={16} className="ml-1 text-gray-500" />
           </button>
           
-          {/* Organization dropdown */}
-          {showOrgDropdown && (
-            <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-40">
-              <div className="p-3 border-b border-gray-100">
-                <h3 className="font-medium text-sm text-gray-700">Switch Organization</h3>
-              </div>
-              <div className="max-h-64 overflow-y-auto">
-                {organizations.map((org) => (
-                  <button
-                    key={org.id}
-                    onClick={() => selectOrganization(org)}
-                    className={`w-full text-left px-4 py-3 flex items-center space-x-3 hover:bg-gray-50 ${
-                      org.id === currentOrg.id ? 'bg-blue-50' : ''
-                    }`}
+          {showDropdown && (
+            <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+              <div className="p-2">
+                <div className="mb-2 px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase">
+                  Biotech Clients
+                </div>
+                
+                <ul>
+                  <li 
+                    className="px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded cursor-pointer flex items-center"
+                    onClick={() => selectClient(null)}
                   >
-                    <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-medium">
-                      {org.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="font-medium text-sm text-gray-900">{org.name}</div>
-                      <div className="text-xs text-gray-500">Role: {org.role}</div>
-                    </div>
-                  </button>
-                ))}
+                    <span className="w-2 h-2 rounded-full bg-gray-400 mr-2"></span>
+                    All Clients
+                  </li>
+                  
+                  {clients.map(client => (
+                    <li
+                      key={client.id}
+                      className={`px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer flex items-center ${
+                        data.clientId === client.id ? 'text-pink-600 font-medium' : 'text-gray-700'
+                      }`}
+                      onClick={() => selectClient(client.id)}
+                    >
+                      <span className={`w-2 h-2 rounded-full mr-2 ${data.clientId === client.id ? 'bg-pink-600' : 'bg-green-500'}`}></span>
+                      {client.name}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           )}
         </div>
-        
-        <div className="flex items-center space-x-4">
-          <span className="text-xs text-gray-500">Status: <span className="text-green-600 font-medium">Connected</span></span>
-          <span className="text-xs text-gray-500">Version: 2.5.1</span>
+      </div>
+      
+      <div className="flex items-center">
+        <div className="text-xs text-gray-500">
+          <span className="font-medium">Tenant ID:</span> {data.tenantId || 'default'}
         </div>
       </div>
     </div>
