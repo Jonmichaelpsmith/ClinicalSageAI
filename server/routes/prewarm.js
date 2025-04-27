@@ -5,6 +5,7 @@
  */
 
 import express from 'express';
+import { handlePrewarm } from '../controllers/prewarm.js';
 
 const router = express.Router();
 
@@ -12,15 +13,6 @@ const router = express.Router();
  * Pre-warm endpoint
  * Simple endpoint to wake up the server when called from the client
  */
-router.get('/', (req, res) => {
-  console.log('[PREWARM] Server pre-warmed successfully at', new Date().toISOString());
-  
-  // Return a simple success response
-  res.json({
-    success: true,
-    timestamp: Date.now(),
-    message: 'Server pre-warmed successfully'
-  });
-});
+router.get('/', handlePrewarm);
 
 export default router;

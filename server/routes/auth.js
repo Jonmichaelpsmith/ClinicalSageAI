@@ -1,19 +1,40 @@
-import { Router } from 'express';
-import jwt from 'jsonwebtoken';
-import { supabase } from '../lib/supabaseClient.js';
+/**
+ * Authentication Routes
+ * 
+ * This module defines authentication routes for the TrialSage platform.
+ */
 
-const router = Router();
+import express from 'express';
+import { handleLogin, handleLogout, checkAuth } from '../controllers/auth.js';
 
-// Email/password login
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return res.status(401).json({ message: error.message });
-  const { user } = data;
-  const token = jwt.sign({ id: user.id, role: 'user', tenantId: user.user_metadata.tenant_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  res.json({ token });
+const router = express.Router();
+
+// Login route
+router.post('/login', handleLogin);
+
+// Logout route
+router.get('/logout', handleLogout);
+
+// Authenticated routes example
+router.get('/profile', checkAuth, (req, res) => {
+  // Extract user from cookie
+  const userCookie = req.cookies?.user;
+  let user = null;
+  
+  try {
+    if (userCookie) {
+      user = JSON.parse(userCookie);
+    }
+  } catch (err) {
+    console.error('Error parsing user cookie:', err);
+  }
+  
+  if (!user) {
+    return res.status(401).json({ message: 'User not found' });
+  }
+  
+  // Return user profile data
+  res.json({ user });
 });
-
-// Google OAuth callback handled client-side → Exchange for JWT here if needed
 
 export default router;
