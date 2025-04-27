@@ -318,6 +318,25 @@
   </footer>
 
   <script>
+    // Pre-warm server function
+    async function prewarmServer() {
+      console.log('Pre-warming server...');
+      try {
+        const response = await fetch('/api/prewarm');
+        console.log('Server pre-warmed successfully:', response.status);
+        return response.ok;
+      } catch (error) {
+        console.warn('Server pre-warm failed:', error);
+        return false;
+      }
+    }
+
+    // Initialize with pre-warming
+    (async function() {
+      // Try to pre-warm the server before anything else
+      await prewarmServer();
+    })();
+
     document.addEventListener('DOMContentLoaded', function() {
       // Authentication check
       const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
