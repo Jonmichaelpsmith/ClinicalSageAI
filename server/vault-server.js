@@ -6,6 +6,9 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+// Import auth router and jwt for token generation
+const { router: authRouter } = require('./auth');
+const jwt = require('jsonwebtoken');
 
 // Create Express app
 const app = express();
@@ -166,6 +169,9 @@ const authenticate = (req, res, next) => {
     next();
   }
 };
+
+// Mount auth routes
+app.use('/api/auth', authRouter);
 
 // Health check route
 app.get('/api/vault/health', (req, res) => {
