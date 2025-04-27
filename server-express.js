@@ -22,17 +22,22 @@ app.get('/health', (req, res) => {
 
 // Route for main application
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'trialsage.html'));
+  res.sendFile(path.join(__dirname, 'enhanced_landing_page.html'));
 });
 
 // Client portal route
 app.get('/client-portal', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client-portal.html'));
+  res.sendFile(path.join(__dirname, 'enhanced_study_modules.html'));
 });
 
 // Admin portal route
 app.get('/admin-portal', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin-portal.html'));
+});
+
+// Drug development lifecycle route
+app.get('/drug-development', (req, res) => {
+  res.sendFile(path.join(__dirname, 'drug_development_lifecycle_enhanced.html'));
 });
 
 // Login API
