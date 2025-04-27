@@ -1,11 +1,195 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiRequest, queryClient } from '../lib/queryClient';
 import { useToast } from '../hooks/use-toast';
+import { apiRequest } from '../lib/queryClient';
 
-// Create auth context
-const AuthContext = createContext();
+// Predefined demo users
+const DEMO_USERS = {
+  admin: {
+    id: 1,
+    username: 'admin',
+    email: 'admin@trialsage.com',
+    firstName: 'Admin',
+    lastName: 'User',
+    role: 'admin',
+    createdAt: new Date().toISOString()
+  },
+  client: {
+    id: 2,
+    username: 'client',
+    email: 'client@example.com',
+    firstName: 'Client',
+    lastName: 'User',
+    role: 'client',
+    createdAt: new Date().toISOString()
+  }
+};
 
-// Custom hook to access auth context
+// Create the Auth Context
+const AuthContext = createContext(null);
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(false); // Changed to false for immediate UI access
+  const [error, setError] = useState(null);
+  const { toast } = useToast();
+  
+  // Generate a mock token
+  const generateMockToken = (userData) => {
+    // This isn't a real JWT, just a placeholder
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({
+      id: userData.id,
+      username: userData.username,
+      role: userData.role,
+      exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
+    }));
+    const signature = btoa('mocksignature');
+    
+    return `${header}.${payload}.${signature}`;
+  };
+  
+  // Direct access function - bypasses API calls completely
+  const directAccess = (role = 'admin') => {
+    setLoading(true);
+    
+    try {
+      const userData = DEMO_USERS[role] || DEMO_USERS.admin;
+      const mockToken = generateMockToken(userData);
+      
+      // Save to localStorage and state
+      localStorage.setItem('token', mockToken);
+      setToken(mockToken);
+      setUser(userData);
+      
+      toast({
+        title: 'Access Granted',
+        description: `Welcome, ${userData.firstName}! You now have full access to TrialSage.`,
+        variant: 'success'
+      });
+      
+      return userData;
+    } catch (err) {
+      console.error('Error in direct access:', err);
+      setError('Unable to grant access');
+      
+      toast({
+        title: 'Access Error',
+        description: 'Unable to grant platform access',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Login immediately with the stored token
+  useEffect(() => {
+    if (token) {
+      // For demo purposes, we'll create a fake user from the token
+      // In production, this would verify with the backend
+      try {
+        // If there's a token, let's auto-login with admin privileges
+        directAccess('admin');
+      } catch (error) {
+        console.error('Auto-login failed:', error);
+        localStorage.removeItem('token');
+        setToken(null);
+      }
+    }
+  }, []);
+
+  // Login function - will bypass API calls and use direct access
+  const login = async (username, password) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // For demo, we accept any credentials and grant admin access
+      const role = username.toLowerCase().includes('admin') ? 'admin' : 'client';
+      return directAccess(role);
+    } catch (err) {
+      setError(err.message || 'Login failed');
+      toast({
+        title: 'Login failed',
+        description: err.message || 'An error occurred during login',
+        variant: 'destructive'
+      });
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock login mutations for compatibility with existing code
+  const loginMutation = {
+    mutate: async (credentials) => {
+      return await login(credentials.username, credentials.password);
+    },
+    isPending: loading
+  };
+
+  // Mock register mutations for compatibility with existing code
+  const registerMutation = {
+    mutate: async (userData) => {
+      setLoading(true);
+      try {
+        // Always succeed and give admin access
+        return directAccess('admin');
+      } finally {
+        setLoading(false);
+      }
+    },
+    isPending: loading
+  };
+
+  // Logout function
+  const logout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+    
+    toast({
+      title: 'Logged out',
+      description: 'You have been logged out successfully',
+      variant: 'default'
+    });
+  };
+
+  // Direct access methods for different roles
+  const loginAsMock = (role = 'admin') => {
+    return directAccess(role);
+  };
+  
+  // Specific method for client portal access
+  const loginAsClient = () => {
+    return directAccess('client');
+  };
+
+  // Value to be provided to consumers
+  const value = {
+    user,
+    token,
+    loading,
+    error,
+    login,
+    loginMutation,
+    registerMutation,
+    logout,
+    loginAsMock,
+    loginAsClient,
+    directAccess,
+    isAuthenticated: !!user
+  };
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Custom hook to use the auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -13,176 +197,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { toast } = useToast();
-
-  // Load user data on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const res = await apiRequest('GET', '/api/user');
-        const userData = await res.json();
-        setUser(userData);
-        setError(null);
-      } catch (err) {
-        setUser(null);
-        if (err.message !== 'Unauthorized') {
-          setError(err);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUser();
-  }, []);
-
-  // Login mutation
-  const loginMutation = {
-    mutate: async (credentials) => {
-      setLoading(true);
-      try {
-        const res = await apiRequest('POST', '/api/login', credentials);
-        const userData = await res.json();
-        setUser(userData);
-        queryClient.setQueryData(['/api/user'], userData);
-        toast({
-          title: 'Login successful',
-          description: `Welcome back, ${userData.name || 'User'}!`,
-        });
-        return userData;
-      } catch (err) {
-        setError(err);
-        toast({
-          title: 'Login failed',
-          description: err.message || 'Invalid credentials',
-          variant: 'destructive',
-        });
-        throw err;
-      } finally {
-        setLoading(false);
-      }
-    },
-    isPending: loading,
-    error,
-  };
-
-  // Register mutation
-  const registerMutation = {
-    mutate: async (userData) => {
-      setLoading(true);
-      try {
-        const res = await apiRequest('POST', '/api/register', userData);
-        const newUser = await res.json();
-        setUser(newUser);
-        queryClient.setQueryData(['/api/user'], newUser);
-        toast({
-          title: 'Registration successful',
-          description: `Welcome, ${newUser.name || 'User'}!`,
-        });
-        return newUser;
-      } catch (err) {
-        setError(err);
-        toast({
-          title: 'Registration failed',
-          description: err.message || 'Could not create account',
-          variant: 'destructive',
-        });
-        throw err;
-      } finally {
-        setLoading(false);
-      }
-    },
-    isPending: loading,
-    error,
-  };
-
-  // Logout mutation
-  const logoutMutation = {
-    mutate: async () => {
-      try {
-        await apiRequest('POST', '/api/logout');
-        setUser(null);
-        queryClient.setQueryData(['/api/user'], null);
-        toast({
-          title: 'Logged out',
-          description: 'You have been successfully logged out',
-        });
-      } catch (err) {
-        setError(err);
-        toast({
-          title: 'Logout failed',
-          description: err.message,
-          variant: 'destructive',
-        });
-        throw err;
-      }
-    },
-    isPending: loading,
-    error,
-  };
-
-  // Update user mutation
-  const updateUserMutation = {
-    mutate: async (userData) => {
-      try {
-        const res = await apiRequest('PATCH', '/api/user', userData);
-        const updatedUser = await res.json();
-        setUser(updatedUser);
-        queryClient.setQueryData(['/api/user'], updatedUser);
-        toast({
-          title: 'Profile updated',
-          description: 'Your profile has been successfully updated',
-        });
-        return updatedUser;
-      } catch (err) {
-        setError(err);
-        toast({
-          title: 'Update failed',
-          description: err.message,
-          variant: 'destructive',
-        });
-        throw err;
-      }
-    },
-    isPending: loading,
-    error,
-  };
-
-  // For testing/demo purposes - mock user
-  // Would be removed in production
-  const loginAsMock = (role = 'user') => {
-    const mockUser = {
-      id: '123',
-      name: 'Demo User',
-      email: 'demo@example.com',
-      role: role,
-    };
-    setUser(mockUser);
-    queryClient.setQueryData(['/api/user'], mockUser);
-    toast({
-      title: 'Demo Mode',
-      description: `Logged in as demo ${role}`,
-    });
-  };
-
-  const contextValue = {
-    user,
-    isAuthenticated: !!user,
-    loading,
-    error,
-    loginMutation,
-    registerMutation,
-    logoutMutation,
-    updateUserMutation,
-    loginAsMock, // Remove in production
-  };
-
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
-};
-
-export default AuthContext;

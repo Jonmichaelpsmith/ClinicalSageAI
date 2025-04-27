@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrialSage™ - Standalone Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Gradient background */
+    body {
+      background: linear-gradient(to bottom, white, #fcf1f6);
+      min-height: 100vh;
+    }
+    
+    /* TrialSage brand color */
+    .text-brand {
+      color: #db2777; /* pink-600 */
+    }
+    .bg-brand {
+      background-color: #db2777;
+    }
+    .border-brand {
+      border-color: #db2777;
+    }
+    .hover\:bg-brand-dark:hover {
+      background-color: #be185d; /* pink-700 */
+    }
+  </style>
+</head>
+<body>
+  <div class="container mx-auto px-4 py-12">
+    <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+      <div class="p-6">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">TrialSage™</h1>
+          <p class="text-gray-600">AI-powered regulatory writing platform</p>
+        </div>
+        
+        <div class="text-center mb-8">
+          <div class="w-24 h-24 bg-brand rounded-full mx-auto flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+        </div>
+        
+        <p class="text-gray-600 mb-6 text-center">
+          This is a standalone demo version of TrialSage. The full application requires a server connection.
+        </p>
+        
+        <div class="flex flex-col space-y-4">
+          <a href="/client/dist/index.html" class="bg-brand text-white py-3 px-4 rounded-md hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 text-center font-medium">
+            Launch Client App
+          </a>
+          
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-white text-gray-500">or</span>
+            </div>
+          </div>
+          
+          <div class="flex space-x-4">
+            <a href="/client/src/pages/StandaloneLoginPage.jsx" class="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 text-center text-sm">
+              View Login Code
+            </a>
+            <a href="/client/src/pages/StandaloneClientPortalPage.jsx" class="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 text-center text-sm">
+              View Portal Code
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <p class="text-xs text-center text-gray-500">
+          © 2025 Concept2Cures, Inc. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
