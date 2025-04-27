@@ -185,7 +185,18 @@ io.on('connection', (socket) => {
   });
 });
 
+// Import the keep-alive service 
+const ServerKeepAlive = require('./keep-alive.js');
+
 // Start server
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // Start the keep-alive service to prevent Replit hibernation
+  const keepAlive = new ServerKeepAlive({
+    interval: 4 * 60 * 1000, // Ping every 4 minutes (Replit hibernates after 5)
+    silent: false // Log pings for debugging
+  });
+  keepAlive.start();
+  console.log('Server keep-alive service activated to prevent hibernation');
 });

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ResilienceService from '../../services/ResilienceService';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -13,15 +14,28 @@ const Login = () => {
     });
   };
 
-  const handleLogin = () => {
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('user', JSON.stringify({
-      username: 'admin',
-      role: 'admin',
-      name: 'Admin User',
-      organization: 'TrialSage'
-    }));
-    window.location.href = '/client-portal-direct.html';
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState(null);
+
+  const handleLogin = async () => {
+    setIsLoading(true);
+    setLoginError(null);
+    
+    try {
+      // Use the resilient login flow
+      await ResilienceService.resilientLogin({
+        username: 'admin',
+        password: 'admin123'
+      });
+      
+      // Redirect to client portal with preloaded auth
+      window.location.href = '/portal.html';
+    } catch (error) {
+      console.error('Login failed:', error);
+      setLoginError(error.message || 'Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = (e) => {
