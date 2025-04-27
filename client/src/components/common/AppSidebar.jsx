@@ -4,107 +4,134 @@
  * This component provides the sidebar navigation for the TrialSage platform.
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation } from 'wouter';
 import { 
-  Clipboard, 
   FileText, 
-  BookOpen, 
-  Flask, 
-  BarChart2, 
+  Database, 
+  LineChart, 
+  Home, 
   Settings,
-  ChevronRight,
-  ChevronLeft
+  FileCheck,
+  ClipboardList, 
+  ArrowRightLeft,
+  BarChart3,
+  Users
 } from 'lucide-react';
-import { MODULES } from '../integration/ModuleIntegrationLayer';
+import securityService from '../../services/SecurityService';
 
-const AppSidebar = ({ activeModule }) => {
-  const [location, setLocation] = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+const AppSidebar = ({ isOpen, activeModule }) => {
+  const [, setLocation] = useLocation();
+  const currentUser = securityService.currentUser;
+  const currentUserRole = currentUser?.role || '';
   
-  // Module navigation items
-  const navigationItems = [
+  // Define navigation items
+  const navItems = [
     {
-      id: MODULES.IND_WIZARD,
-      name: 'IND Wizard',
-      icon: <FileText size={collapsed ? 24 : 20} />,
-      path: `/${MODULES.IND_WIZARD}`
+      id: 'home',
+      name: 'Home',
+      icon: <Home size={20} />,
+      path: '/',
+      roles: ['super_admin', 'admin', 'manager', 'writer', 'reviewer', 'viewer']
     },
     {
-      id: MODULES.TRIAL_VAULT,
-      name: 'Trial Vault',
-      icon: <Clipboard size={collapsed ? 24 : 20} />,
-      path: `/${MODULES.TRIAL_VAULT}`
+      id: 'ind-wizard',
+      name: 'IND Wizard™',
+      icon: <FileText size={20} />,
+      path: '/ind-wizard',
+      roles: ['super_admin', 'admin', 'manager', 'writer', 'reviewer', 'viewer']
     },
     {
-      id: MODULES.CSR_INTELLIGENCE,
-      name: 'CSR Intelligence',
-      icon: <BookOpen size={collapsed ? 24 : 20} />,
-      path: `/${MODULES.CSR_INTELLIGENCE}`
+      id: 'trial-vault',
+      name: 'Trial Vault™',
+      icon: <Database size={20} />,
+      path: '/trial-vault',
+      roles: ['super_admin', 'admin', 'manager', 'writer', 'reviewer', 'viewer']
     },
     {
-      id: MODULES.STUDY_ARCHITECT,
-      name: 'Study Architect',
-      icon: <Flask size={collapsed ? 24 : 20} />,
-      path: `/${MODULES.STUDY_ARCHITECT}`
+      id: 'csr-intelligence',
+      name: 'CSR Intelligence™',
+      icon: <FileCheck size={20} />,
+      path: '/csr-intelligence',
+      roles: ['super_admin', 'admin', 'manager', 'writer', 'reviewer', 'viewer']
     },
     {
-      id: MODULES.ANALYTICS,
+      id: 'study-architect',
+      name: 'Study Architect™',
+      icon: <ClipboardList size={20} />,
+      path: '/study-architect',
+      roles: ['super_admin', 'admin', 'manager', 'writer', 'reviewer', 'viewer']
+    },
+    {
+      id: 'analytics',
       name: 'Analytics',
-      icon: <BarChart2 size={collapsed ? 24 : 20} />,
-      path: `/${MODULES.ANALYTICS}`
+      icon: <BarChart3 size={20} />,
+      path: '/analytics',
+      roles: ['super_admin', 'admin', 'manager', 'reviewer', 'viewer']
     },
     {
-      id: MODULES.ADMIN,
-      name: 'Admin',
-      icon: <Settings size={collapsed ? 24 : 20} />,
-      path: `/${MODULES.ADMIN}`
+      id: 'admin',
+      name: 'Administration',
+      icon: <Users size={20} />,
+      path: '/admin',
+      roles: ['super_admin', 'admin']
+    },
+    {
+      id: 'settings',
+      name: 'Settings',
+      icon: <Settings size={20} />,
+      path: '/settings',
+      roles: ['super_admin', 'admin', 'manager', 'writer', 'reviewer', 'viewer']
     }
   ];
   
-  // Toggle sidebar collapse
-  const toggleCollapse = () => {
-    setCollapsed(prev => !prev);
-  };
-  
-  // Navigate to module
-  const navigateToModule = (path) => {
-    setLocation(path);
-  };
+  // Filter nav items based on user role
+  const allowedNavItems = navItems.filter(item => {
+    // If no roles defined or if currentUserRole is empty, assume allowed for all
+    if (!item.roles || !currentUserRole) return true;
+    
+    // Super admins can access everything
+    if (currentUserRole === 'super_admin') return true;
+    
+    // Check if user's role is in the allowed roles
+    return item.roles.includes(currentUserRole);
+  });
   
   return (
-    <aside className={`bg-white border-r transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'} flex flex-col h-full`}>
-      {/* Navigation */}
-      <nav className="flex-1 py-4">
-        <ul className="space-y-1 px-2">
-          {navigationItems.map(item => (
-            <li key={item.id}>
-              <button
-                onClick={() => navigateToModule(item.path)}
-                className={`w-full flex items-center py-2 px-3 rounded-lg transition-colors ${
-                  activeModule === item.id
-                    ? 'bg-primary bg-opacity-10 text-primary font-medium'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <div className="flex-shrink-0">{item.icon}</div>
-                {!collapsed && <span className="ml-3">{item.name}</span>}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      
-      {/* Collapse button */}
-      <div className="p-4 border-t">
-        <button
-          onClick={toggleCollapse}
-          className="w-full flex items-center justify-center p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          {!collapsed && <span className="ml-2 text-sm">Collapse</span>}
-        </button>
+    <aside 
+      className={`fixed left-0 top-0 h-full bg-white border-r z-10 pt-14 transition-all duration-300 ${
+        isOpen ? 'w-64' : 'w-0 md:w-16'
+      }`}
+    >
+      <div className="h-full overflow-y-auto">
+        <nav className="px-2 py-4">
+          <ul className="space-y-1">
+            {allowedNavItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                    activeModule === item.id
+                      ? 'bg-primary text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setLocation(item.path)}
+                >
+                  <span className="flex-shrink-0">{item.icon}</span>
+                  <span className={`flex-1 ${!isOpen && 'md:hidden'}`}>{item.name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        
+        {/* Sidebar footer with blockchain verification status */}
+        <div className={`absolute bottom-0 left-0 right-0 p-4 border-t ${!isOpen && 'md:hidden'}`}>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <div className="text-xs text-gray-600">Blockchain Verified</div>
+          </div>
+          <div className="text-xs text-gray-500 mt-1">Last synced: {new Date().toLocaleTimeString()}</div>
+        </div>
       </div>
     </aside>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Switch, Link, useLocation } from 'wouter';
+import { Route, Switch, useLocation } from 'wouter';
 import VaultMarketingPage from './pages/VaultMarketingPage.jsx';
 import VaultUploadTest from './pages/VaultUploadTest.jsx';
 import ClientPortalDashboard from './pages/ClientPortalDashboard.jsx';
@@ -8,16 +8,29 @@ import ReferenceModelPage from './pages/ReferenceModelPage.jsx';
 import INDWizardContainer from './components/ind-wizard/INDWizardContainer.jsx';
 import MainNavigation from './components/MainNavigation.jsx';
 import { LumenAssistantProvider } from './components/assistant';
+import UnifiedPlatform from './components/UnifiedPlatform';
+import securityService from './services/SecurityService';
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("authenticated") === "true");
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("authenticated") === "true" || securityService.authenticated);
   const [location] = useLocation();
+  const [useUnifiedPlatform, setUseUnifiedPlatform] = useState(true);
   
   useEffect(() => {
     // Check authentication state when location changes
-    setIsLoggedIn(localStorage.getItem("authenticated") === "true");
+    setIsLoggedIn(localStorage.getItem("authenticated") === "true" || securityService.authenticated);
+    
+    // For demo purposes, we'll always use the unified platform
+    // In a real app, this would be based on some condition
+    setUseUnifiedPlatform(true);
   }, [location]);
   
+  // If using the unified platform, render it
+  if (useUnifiedPlatform) {
+    return <UnifiedPlatform />;
+  }
+  
+  // Legacy routing below (kept for backward compatibility)
   // Determine if we should show the nav bar (hide it on client portal)
   const showNavBar = !location.startsWith('/client-portal');
   
@@ -30,35 +43,13 @@ export default function App() {
         {useMainNav && <MainNavigation />}
         
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Show original navbar when not using MainNavigation */}
+          {/* Legacy navbar (no longer used with unified platform) */}
           {showNavBar && !useMainNav && (
             <nav className="bg-gray-800 text-white p-4">
               <div className="max-w-7xl mx-auto flex justify-between">
                 <div className="text-xl font-bold">TrialSage™</div>
                 <div className="space-x-4">
-                  <Link href="/" className="hover:text-gray-300">Home</Link>
-                  <Link href="/security-compliance" className="hover:text-gray-300">Security & Compliance</Link>
-                  <Link href="/vault-test" className="hover:text-gray-300">Vault Test</Link>
-                  {isLoggedIn ? (
-                    <>
-                      <Link href="/client-portal" className="hover:text-gray-300">Client Portal</Link>
-                      <Link href="/cmc" className="hover:text-gray-300">CMC Blueprint</Link>
-                      <Link href="/reference-model" className="hover:text-gray-300">Reference Model</Link>
-                      <Link href="/ind-wizard" className="hover:text-gray-300">IND Wizard</Link>
-                      <button 
-                        className="hover:text-gray-300"
-                        onClick={() => {
-                          localStorage.removeItem("authenticated");
-                          setIsLoggedIn(false);
-                          window.location.href = "/";
-                        }}
-                      >
-                        Logout
-                      </button>
-                    </>
-                  ) : (
-                    <Link href="/vault-test" className="hover:text-gray-300">Login</Link>
-                  )}
+                  {/* Legacy navigation links */}
                 </div>
               </div>
             </nav>

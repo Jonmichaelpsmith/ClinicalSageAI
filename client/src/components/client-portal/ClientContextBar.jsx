@@ -1,151 +1,94 @@
 /**
  * Client Context Bar
  * 
- * This component provides a context bar for CRO users to switch between biotech client contexts
- * in a multi-tenant environment.
+ * This component provides a context bar for CRO users to select and manage client organizations.
  */
 
 import React, { useState, useEffect } from 'react';
-import { X, ChevronDown, Building, Users, Check, Search } from 'lucide-react';
+import { ChevronDown, Building } from 'lucide-react';
 import securityService from '../../services/SecurityService';
+import { OrganizationSwitcher } from './OrganizationSwitcher';
 
-const ClientContextBar = ({ organization, onClose }) => {
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [expanded, setExpanded] = useState(false);
+export const ClientContextBar = () => {
+  const [organizations, setOrganizations] = useState([]);
+  const [currentOrganization, setCurrentOrganization] = useState(null);
+  const [showSwitcher, setShowSwitcher] = useState(false);
   
-  // Load child organizations on mount
+  // Get current organization and accessible organizations
   useEffect(() => {
-    const loadClients = async () => {
+    const loadOrganizations = async () => {
       try {
-        if (!organization) {
-          setLoading(false);
-          return;
-        }
+        // Get current organization
+        setCurrentOrganization(securityService.currentOrganization);
         
-        const childOrgs = await securityService.getChildOrganizations();
-        setClients(childOrgs);
-        setLoading(false);
+        // Get accessible organizations
+        const accessibleOrgs = await securityService.getAccessibleOrganizations();
+        setOrganizations(accessibleOrgs);
       } catch (error) {
-        console.error('Error loading client organizations:', error);
-        setLoading(false);
+        console.error('Error loading organizations:', error);
       }
     };
     
-    loadClients();
-  }, [organization]);
+    loadOrganizations();
+  }, []);
   
-  // Handle client switch
-  const handleClientSwitch = async (clientOrg) => {
+  // Handle organization switch
+  const handleOrganizationSwitch = async (organization) => {
     try {
-      await securityService.switchOrganization(clientOrg.id);
-      window.location.reload(); // In a real app, would use more elegant approach
+      const result = await securityService.switchOrganization(organization.id);
+      
+      if (result.success) {
+        setCurrentOrganization(result.organization);
+        setShowSwitcher(false);
+      }
     } catch (error) {
-      console.error(`Error switching to client ${clientOrg.id}:`, error);
+      console.error('Error switching organization:', error);
     }
   };
   
-  // Filter clients based on search query
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Toggle organization switcher
+  const toggleSwitcher = () => {
+    setShowSwitcher(!showSwitcher);
+  };
   
-  if (!organization) {
-    return null;
-  }
-  
-  // If this organization has no child organizations, don't show the bar
-  if (clients.length === 0 && !loading) {
+  // If current user is not from CRO, don't render
+  if (currentOrganization?.type !== 'cro') {
     return null;
   }
   
   return (
-    <div className="bg-white border-b shadow-sm">
+    <div className="bg-gray-100 border-b">
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Building className="text-primary" size={20} />
-            <span className="font-medium">
-              {organization.name}
-            </span>
-            {organization.type === 'cro' && (
-              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
-                CRO
-              </span>
-            )}
+            <Building size={16} className="text-gray-500" />
+            <span className="text-sm text-gray-700">Client Context:</span>
+            
+            <div className="relative">
+              <button
+                className="flex items-center space-x-1 px-2 py-1 text-sm rounded hover:bg-gray-200"
+                onClick={toggleSwitcher}
+              >
+                <span className="font-medium">{currentOrganization?.name || 'Select Client'}</span>
+                <ChevronDown size={14} />
+              </button>
+              
+              {showSwitcher && (
+                <OrganizationSwitcher
+                  organizations={organizations.filter(org => org.id !== currentOrganization?.id)}
+                  onSelect={handleOrganizationSwitch}
+                  onClose={() => setShowSwitcher(false)}
+                  position="bottom-start"
+                />
+              )}
+            </div>
           </div>
           
-          <div className="flex items-center">
-            {loading ? (
-              <div className="text-sm text-gray-500">Loading clients...</div>
-            ) : clients.length > 0 ? (
-              <div className="relative">
-                <button
-                  onClick={() => setExpanded(!expanded)}
-                  className="flex items-center space-x-1 text-sm bg-gray-50 hover:bg-gray-100 py-1 px-3 rounded border"
-                >
-                  <Users size={16} />
-                  <span>{clients.length} Client{clients.length !== 1 ? 's' : ''}</span>
-                  <ChevronDown size={16} className={expanded ? 'transform rotate-180' : ''} />
-                </button>
-                
-                {expanded && (
-                  <div className="absolute right-0 mt-2 w-72 bg-white border rounded-lg shadow-lg z-10">
-                    <div className="p-3 border-b">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Search clients..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-8 pr-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-                        />
-                        <Search size={14} className="absolute top-2.5 left-2.5 text-gray-400" />
-                      </div>
-                    </div>
-                    <div className="max-h-64 overflow-y-auto">
-                      {filteredClients.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500 text-sm">
-                          No clients found
-                        </div>
-                      ) : (
-                        filteredClients.map(client => (
-                          <button
-                            key={client.id}
-                            onClick={() => handleClientSwitch(client)}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between"
-                          >
-                            <div>
-                              <div className="font-medium">{client.name}</div>
-                              <div className="text-xs text-gray-500">
-                                {client.type === 'biotech' ? 'Biotech Client' : client.type}
-                              </div>
-                            </div>
-                            {client.id === organization.id && (
-                              <Check size={16} className="text-primary" />
-                            )}
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : null}
-            
-            <button
-              onClick={onClose}
-              className="ml-4 p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-              aria-label="Close client context bar"
-            >
-              <X size={18} />
-            </button>
+          <div className="text-xs text-gray-500">
+            Managing <span className="font-medium">{organizations.length - 1}</span> client organizations
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-export default ClientContextBar;
