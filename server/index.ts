@@ -19,27 +19,12 @@ import('./fastapi_bridge.js').then(module => {
 });
 
 // Initialize WebSocket services with graceful degradation
-let initWs: (server: any) => any;
-
-// Set default no-op function for WebSocket initialization
-initWs = (server) => {
-  console.warn("Using fallback WebSocket initialization (no-op)");
+// Temporarily using a no-op function to improve startup time
+console.log("WebSocket initialization simplified for faster startup");
+const initWs = (server: any) => {
+  console.log("WebSocket initialization skipped for performance optimization");
   return null;
 };
-
-// Try to dynamically load WebSocket module
-try {
-  import('./ws.js').then(module => {
-    if (module && typeof module.initWs === 'function') {
-      initWs = module.initWs;
-      console.log("WebSocket module loaded successfully via dynamic import");
-    }
-  }).catch(err => {
-    console.warn(`WebSocket module could not be loaded: ${err}`);
-  });
-} catch (error) {
-  console.warn(`WebSocket module could not be loaded: ${error instanceof Error ? error.message : String(error)}`);
-}
 
 // Import v11.1 services - handle import errors gracefully
 // Using optional services with default no-ops
@@ -48,22 +33,14 @@ let voiceCopilotService: any = {
 };
 let regIntelService: any = null;
 
-// Try dynamic imports for v11 services
-Promise.all([
-  import('./services/voiceCopilot.js').catch(() => null),
-  import('./services/regIntel.js').catch(() => null)
-]).then(([voiceModule, regIntelModule]) => {
-  if (voiceModule) {
-    voiceCopilotService = voiceModule;
-    console.log("Voice Copilot service loaded successfully");
-  }
-  if (regIntelModule) {
-    regIntelService = regIntelModule;
-    console.log("RegIntel service loaded successfully");
-  }
-}).catch(error => {
-  console.warn("Error loading v11 services:", error);
-});
+// Temporarily disable dynamic imports for v11 services to improve startup performance
+console.log("Service imports disabled for faster startup");
+// Define empty service objects for compatibility
+voiceCopilotService = { initVoiceServer: null };
+regIntelService = { 
+  startRegGuidancePull: () => console.log("RegIntel service disabled"), 
+  scheduleRegGuidancePulls: () => console.log("RegIntel scheduling disabled") 
+};
 
 // Import AI backfill functionality for nightly scheduled re-embedding
 // Temporarily commented out due to dependency issues
@@ -176,20 +153,17 @@ app.use((req, res, next) => {
 
 // Global error handler for uncaught exceptions
 process.on('uncaughtException', (error) => {
-  logger.error(`UNCAUGHT EXCEPTION: ${error.message}`, {
-    stack: error.stack,
-    timestamp: new Date().toISOString()
-  });
+  logger.error(`UNCAUGHT EXCEPTION: ${error.message}`);
+  console.error(error.stack);
   // Don't exit the process, just log it
 });
 
 // Global error handler for unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error(`UNHANDLED PROMISE REJECTION:`, {
-    reason: reason instanceof Error ? reason.message : String(reason),
-    stack: reason instanceof Error ? reason.stack : undefined,
-    timestamp: new Date().toISOString()
-  });
+  logger.error(`UNHANDLED PROMISE REJECTION: ${reason instanceof Error ? reason.message : String(reason)}`);
+  if (reason instanceof Error && reason.stack) {
+    console.error(reason.stack);
+  }
   // Don't exit the process, just log it
 });
 
@@ -221,11 +195,8 @@ setInterval(checkServerHealth, 5 * 60 * 1000);
     const requestId = (req as any).requestId || `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
     
     // Log detailed error information
-    logger.error(`Unhandled error in ${req.method} ${req.path} [${requestId}]: ${message}`, {
-      status,
-      stack: err.stack,
-      timestamp: new Date().toISOString()
-    });
+    logger.error(`Unhandled error in ${req.method} ${req.path} [${requestId}]: ${message}`);
+    console.error(err.stack);
     
     // Return structured error response
     res.status(status).json({
@@ -291,29 +262,20 @@ setInterval(checkServerHealth, 5 * 60 * 1000);
       const apiPort = process.env.PORT || '8000';
       log(`Connected to FastAPI server running on PORT=${apiPort}`);
       
-      // Start the clinical trial data updater
-      const dataUpdateTimer = scheduleDataUpdates(12); // Update every 12 hours
+      // Data update initialization temporarily disabled to improve startup performance
+      log('Data updater disabled for performance optimization');
+      const dataUpdateTimer = null;
       
-      // Check if we have any data already
-      const latestJsonFile = findLatestDataFile('json');
-      if (latestJsonFile) {
-        log(`Found existing data file: ${latestJsonFile}, importing...`);
-        importTrialsFromJson(latestJsonFile)
-          .then(result => {
-            log(`Data import result: ${result.message}`);
-          })
-          .catch(error => {
-            log(`Error importing data: ${error.message}`);
-          });
-      }
+      // Data import temporarily disabled for faster startup
+      log('Data import disabled for performance optimization');
       
       // Handle server shutdown
       // Temporarily disabled nightly document re-embedding
       // Will be re-enabled after dependency issues are resolved
 
       process.on('SIGTERM', () => {
-        log('SIGTERM signal received: closing data updater');
-        clearInterval(dataUpdateTimer);
+        log('SIGTERM signal received: closing HTTP server');
+        // No timer to clear since we disabled it
         server.close(() => {
           log('HTTP server closed');
         });

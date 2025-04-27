@@ -1,153 +1,144 @@
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
-import session from "express-session";
-import { storage, comparePasswords } from "./storage";
-import { User } from "@shared/schema";
-import { Request, Response, NextFunction } from "express";
+import { storage } from './storage';
+import { User, InsertUser } from '@shared/schema';
+import { scrypt, randomBytes, timingSafeEqual, createHmac } from 'crypto';
+import { promisify } from 'util';
 
-// Extend Express Request type to include user
-declare global {
-  namespace Express {
-    interface User extends User {}
+const scryptAsync = promisify(scrypt);
+
+// Make sure JWT_SECRET is available
+const JWT_SECRET = process.env.JWT_SECRET || 'default-development-secret-do-not-use-in-production';
+
+/**
+ * Hash a password for storage
+ */
+export async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString('hex');
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString('hex')}.${salt}`;
+}
+
+/**
+ * Compare a supplied password with a stored hashed password
+ */
+export async function comparePasswords(supplied: string, stored: string): Promise<boolean> {
+  const [hashed, salt] = stored.split('.');
+  const hashedBuf = Buffer.from(hashed, 'hex');
+  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  return timingSafeEqual(hashedBuf, suppliedBuf);
+}
+
+/**
+ * Generate a simple token for a user
+ * Note: This is a simplified implementation for development purposes only
+ */
+export function generateToken(user: User): string {
+  const payload = {
+    id: user.id,
+    username: user.username,
+    role: user.role,
+    exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
+  };
+  
+  // Convert payload to base64
+  const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64');
+  
+  // Create a signature using HMAC
+  const signature = createHmac('sha256', JWT_SECRET)
+    .update(payloadBase64)
+    .digest('base64');
+  
+  return `${payloadBase64}.${signature}`;
+}
+
+/**
+ * Verify a token and extract the user ID
+ * Note: This is a simplified implementation for development purposes only
+ */
+export function verifyToken(token: string): { userId: number } | null {
+  try {
+    // Split the token into payload and signature
+    const [payloadBase64, receivedSignature] = token.split('.');
+    
+    // Verify the signature
+    const expectedSignature = createHmac('sha256', JWT_SECRET)
+      .update(payloadBase64)
+      .digest('base64');
+    
+    if (receivedSignature !== expectedSignature) {
+      return null;
+    }
+    
+    // Decode the payload
+    const payload = JSON.parse(Buffer.from(payloadBase64, 'base64').toString());
+    
+    // Check if token is expired
+    if (payload.exp < Math.floor(Date.now() / 1000)) {
+      return null;
+    }
+    
+    return { userId: payload.id };
+  } catch (err) {
+    console.error('Token verification error:', err);
+    return null;
   }
 }
 
 /**
- * Configures authentication for the Express application
+ * Register a new user
  */
-export function setupAuth(app: Express) {
-  if (!process.env.SESSION_SECRET) {
-    console.warn("WARNING: SESSION_SECRET environment variable not set. Using a default value, but this is NOT secure for production.");
+export async function registerUser(userData: InsertUser): Promise<{ user: User; token: string }> {
+  // Check if username already exists
+  const existingUser = await storage.getUserByUsername(userData.username);
+  if (existingUser) {
+    throw new Error('Username already exists');
   }
   
-  const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "trialsage-secret-key-change-in-production",
-    resave: false,
-    saveUninitialized: false,
-    store: storage.sessionStore,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
-  };
-
-  // Configure session middleware
-  app.set("trust proxy", 1);
-  app.use(session(sessionSettings));
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  // Configure Passport local strategy
-  passport.use(
-    new LocalStrategy(async (username, password, done) => {
-      try {
-        const user = await storage.getUserByUsername(username);
-        if (!user) {
-          return done(null, false, { message: "Incorrect username" });
-        }
-        
-        if (!(await comparePasswords(password, user.password))) {
-          return done(null, false, { message: "Incorrect password" });
-        }
-        
-        return done(null, user);
-      } catch (err) {
-        return done(err);
-      }
-    })
-  );
-
-  // Serialize and deserialize user for session
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
+  // Hash the password
+  const hashedPassword = await hashPassword(userData.password);
+  
+  // Create the user with hashed password
+  const user = await storage.createUser({
+    ...userData,
+    password: hashedPassword
   });
-
-  passport.deserializeUser(async (id: number, done) => {
-    try {
-      const user = await storage.getUser(id);
-      done(null, user);
-    } catch (err) {
-      done(err);
-    }
-  });
-
-  // Authentication routes
-  app.post("/api/register", async (req, res, next) => {
-    try {
-      // Check if username already exists
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).json({ error: "Username already exists" });
-      }
-
-      // Check if email already exists
-      const existingEmail = await storage.getUserByEmail(req.body.email);
-      if (existingEmail) {
-        return res.status(400).json({ error: "Email already in use" });
-      }
-
-      // Create user
-      const user = await storage.createUser(req.body);
-
-      // Log in user automatically after registration
-      req.login(user, (err) => {
-        if (err) return next(err);
-        // Return user without password
-        const { password, ...userWithoutPassword } = user;
-        res.status(201).json(userWithoutPassword);
-      });
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
-      if (err) return next(err);
-      if (!user) {
-        return res.status(401).json({ error: info?.message || "Authentication failed" });
-      }
-      
-      req.login(user, (err) => {
-        if (err) return next(err);
-        // Return user without password
-        const { password, ...userWithoutPassword } = user;
-        res.status(200).json(userWithoutPassword);
-      });
-    })(req, res, next);
-  });
-
-  app.post("/api/logout", (req, res, next) => {
-    req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
-    });
-  });
-
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-    
-    // Return user without password
-    const { password, ...userWithoutPassword } = req.user as User;
-    res.json(userWithoutPassword);
-  });
+  
+  // Generate a token
+  const token = generateToken(user);
+  
+  return { user, token };
 }
 
-// Middleware to ensure user is authenticated
-export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated()) {
-    return next();
+/**
+ * Login a user
+ */
+export async function loginUser(username: string, password: string): Promise<{ user: User; token: string }> {
+  // Find the user by username
+  const user = await storage.getUserByUsername(username);
+  if (!user) {
+    throw new Error('Invalid username or password');
   }
-  res.status(401).json({ error: "Authentication required" });
+  
+  // Compare passwords
+  const isPasswordValid = await comparePasswords(password, user.password);
+  if (!isPasswordValid) {
+    throw new Error('Invalid username or password');
+  }
+  
+  // Generate a token
+  const token = generateToken(user);
+  
+  return { user, token };
 }
 
-// Middleware to ensure user is an admin
-export function isAdmin(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated() && req.user.role === "admin") {
-    return next();
+/**
+ * Get user from token
+ */
+export async function getUserFromToken(token: string): Promise<User | null> {
+  const payload = verifyToken(token);
+  if (!payload) {
+    return null;
   }
-  res.status(403).json({ error: "Admin access required" });
+  
+  const user = await storage.getUser(payload.userId);
+  return user || null;
 }

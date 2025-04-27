@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
-const LoginPage = () => {
+/**
+ * Standalone Login Page
+ * This is a simplified version that doesn't rely on the server for authentication
+ */
+const StandaloneLoginPage = () => {
   const [activeTab, setActiveTab] = useState('login');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -14,130 +17,173 @@ const LoginPage = () => {
     login: {},
     register: {}
   });
-  
-  const { loginMutation, registerMutation, isAuthenticated } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
   const [location, setLocation] = useLocation();
   
-  // Get returnTo from URL query params
-  const searchParams = new URLSearchParams(location.split('?')[1] || '');
-  const returnTo = searchParams.get('returnTo') || '/dashboard';
-  
-  // Redirect if already authenticated
+  // Check if user is already logged in
   useEffect(() => {
-    if (isAuthenticated) {
-      // Direct to client portal as primary destination
-      const destination = returnTo === '/dashboard' ? '/client-portal' : returnTo;
-      setLocation(destination);
+    const savedUser = localStorage.getItem('mock_user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error('Error parsing saved user:', e);
+      }
     }
-  }, [isAuthenticated, setLocation, returnTo]);
+  }, []);
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      setLocation('/client-portal');
+    }
+  }, [user, setLocation]);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const formType = activeTab; // 'login' or 'register'
+    
     setFormData({
       ...formData,
-      [activeTab]: {
-        ...formData[activeTab],
+      [formType]: {
+        ...formData[formType],
         [name]: value
       }
     });
     
-    // Clear error when typing
-    if (formErrors[activeTab][name]) {
+    // Clear error for the field
+    if (formErrors[formType][name]) {
       setFormErrors({
         ...formErrors,
-        [activeTab]: {
-          ...formErrors[activeTab],
+        [formType]: {
+          ...formErrors[formType],
           [name]: ''
         }
       });
     }
   };
   
-  const validateLogin = () => {
-    const errors = {};
+  const validateLoginForm = () => {
     const { username, password } = formData.login;
+    const errors = {};
     
-    if (!username.trim()) errors.username = 'Username is required';
+    if (!username) errors.username = 'Username is required';
     if (!password) errors.password = 'Password is required';
     
-    return errors;
+    setFormErrors({
+      ...formErrors,
+      login: errors
+    });
+    
+    return Object.keys(errors).length === 0;
   };
   
-  const validateRegister = () => {
-    const errors = {};
+  const validateRegisterForm = () => {
     const { name, email, username, password, confirmPassword } = formData.register;
+    const errors = {};
     
-    if (!name.trim()) errors.name = 'Name is required';
-    if (!email.trim()) errors.email = 'Email is required';
+    if (!name) errors.name = 'Name is required';
+    if (!email) errors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(email)) errors.email = 'Email is invalid';
     
-    if (!username.trim()) errors.username = 'Username is required';
-    else if (username.length < 3) errors.username = 'Username must be at least 3 characters';
-    
+    if (!username) errors.username = 'Username is required';
     if (!password) errors.password = 'Password is required';
     else if (password.length < 6) errors.password = 'Password must be at least 6 characters';
     
-    if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
+    if (!confirmPassword) errors.confirmPassword = 'Please confirm your password';
+    else if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
     
-    return errors;
+    setFormErrors({
+      ...formErrors,
+      register: errors
+    });
+    
+    return Object.keys(errors).length === 0;
   };
   
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     
-    const errors = validateLogin();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors({
-        ...formErrors,
-        login: errors
-      });
-      return;
-    }
+    if (!validateLoginForm()) return;
     
-    try {
-      await loginMutation.mutate(formData.login);
-      // Redirect is handled by the useEffect hook
-    } catch (error) {
-      // Error is handled by the login mutation
-    }
+    setLoading(true);
+    
+    // Simulate server request
+    setTimeout(() => {
+      const mockUser = {
+        id: 1,
+        username: formData.login.username,
+        email: `${formData.login.username}@example.com`,
+        firstName: formData.login.username,
+        lastName: 'User',
+        role: 'client'
+      };
+      
+      // Save to localStorage
+      localStorage.setItem('mock_user', JSON.stringify(mockUser));
+      setUser(mockUser);
+      
+      // Redirect to portal
+      setLocation('/client-portal');
+      
+      setLoading(false);
+    }, 1000);
   };
   
-  const handleRegister = async (e) => {
+  const handleRegister = (e) => {
     e.preventDefault();
     
-    const errors = validateRegister();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors({
-        ...formErrors,
-        register: errors
-      });
-      return;
-    }
+    if (!validateRegisterForm()) return;
     
-    // Remove confirmPassword from the data sent to the server
-    const { confirmPassword, ...registrationData } = formData.register;
+    setLoading(true);
     
-    try {
-      await registerMutation.mutate(registrationData);
-      // Redirect is handled by the useEffect hook
-    } catch (error) {
-      // Error is handled by the register mutation
-    }
+    // Simulate server request
+    setTimeout(() => {
+      const mockUser = {
+        id: 2,
+        username: formData.register.username,
+        email: formData.register.email,
+        firstName: formData.register.name.split(' ')[0],
+        lastName: formData.register.name.split(' ').slice(1).join(' '),
+        role: 'client'
+      };
+      
+      // Save to localStorage
+      localStorage.setItem('mock_user', JSON.stringify(mockUser));
+      setUser(mockUser);
+      
+      // Redirect to portal
+      setLocation('/client-portal');
+      
+      setLoading(false);
+    }, 1000);
   };
   
   // Dedicated function for Client Portal access with proper credentials
   const handleClientPortalLogin = (e) => {
     e.preventDefault();
     
-    const { loginAsMock } = useAuth();
+    setLoading(true);
     
-    // Use the existing login method
-    loginAsMock('client');
+    // Create a mock client user
+    const mockClientUser = {
+      id: 3,
+      username: 'client',
+      email: 'client@example.com',
+      firstName: 'Client',
+      lastName: 'User',
+      role: 'client'
+    };
     
-    // Redirect specifically to client portal
+    // Save to localStorage
+    localStorage.setItem('mock_user', JSON.stringify(mockClientUser));
+    setUser(mockClientUser);
+    
+    // Redirect specifically to client portal after short delay
     setTimeout(() => {
       setLocation('/client-portal');
-    }, 100);
+    }, 500);
   };
   
   // Render error message if it exists
@@ -238,9 +284,9 @@ const LoginPage = () => {
               <button
                 type="submit"
                 className="w-full bg-pink-600 text-white py-2 px-4 rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 flex items-center justify-center"
-                disabled={loginMutation.isPending}
+                disabled={loading}
               >
-                {loginMutation.isPending ? (
+                {loading ? (
                   <>
                     <Loader2 size={18} className="animate-spin mr-2" />
                     Logging in...
@@ -366,9 +412,9 @@ const LoginPage = () => {
               <button
                 type="submit"
                 className="w-full bg-pink-600 text-white py-2 px-4 rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 flex items-center justify-center"
-                disabled={registerMutation.isPending}
+                disabled={loading}
               >
-                {registerMutation.isPending ? (
+                {loading ? (
                   <>
                     <Loader2 size={18} className="animate-spin mr-2" />
                     Creating Account...
@@ -407,38 +453,50 @@ const LoginPage = () => {
           
           <div className="space-y-6">
             <div className="flex items-start">
-              <div className="flex-shrink-0 h-10 w-10 rounded-md bg-pink-600 flex items-center justify-center">
-                <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <div className="flex-shrink-0 h-6 w-6 bg-pink-600 rounded-full flex items-center justify-center mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium">Enhanced AI Analysis</h3>
-                <p className="mt-1 text-gray-300">Intelligent extraction and analysis of clinical study reports.</p>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium mb-1">IND Wizard™</h3>
+                <p className="text-gray-400">Guided IND preparation with automatic formatting that meets global regulatory requirements.</p>
               </div>
             </div>
             
             <div className="flex items-start">
-              <div className="flex-shrink-0 h-10 w-10 rounded-md bg-pink-600 flex items-center justify-center">
-                <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+              <div className="flex-shrink-0 h-6 w-6 bg-pink-600 rounded-full flex items-center justify-center mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium">Regulatory Compliance</h3>
-                <p className="mt-1 text-gray-300">Stay compliant with FDA, EMA, PMDA, and NMPA guidelines.</p>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium mb-1">CSR Intelligence™</h3>
+                <p className="text-gray-400">Extract insights from clinical study reports and generate high-quality documentation.</p>
               </div>
             </div>
             
             <div className="flex items-start">
-              <div className="flex-shrink-0 h-10 w-10 rounded-md bg-pink-600 flex items-center justify-center">
-                <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              <div className="flex-shrink-0 h-6 w-6 bg-pink-600 rounded-full flex items-center justify-center mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <h3 className="text-lg font-medium">Enhanced Security</h3>
-                <p className="mt-1 text-gray-300">Blockchain-verified document integrity and audit trails.</p>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium mb-1">AI Regulatory Assistant</h3>
+                <p className="text-gray-400">Get expert guidance on regulatory requirements and compliance issues in real-time.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="flex-shrink-0 h-6 w-6 bg-pink-600 rounded-full flex items-center justify-center mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium mb-1">TrialSage Vault™</h3>
+                <p className="text-gray-400">Secure document storage with version control and collaborative workflow support.</p>
               </div>
             </div>
           </div>
@@ -448,4 +506,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default StandaloneLoginPage;

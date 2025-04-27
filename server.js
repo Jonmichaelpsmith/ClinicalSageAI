@@ -1,52 +1,84 @@
-import express from 'express';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+// Simple Express server to handle TrialSage app
+const express = require('express');
+const path = require('path');
+const { createServer } = require('http');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
+// Create Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware for JSON parsing
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('./'));
 
-// Add specific routes
-app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'clean_landing_page.html'));
+// Basic logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
 });
 
-app.get('/login', (req, res) => {
-  res.sendFile(join(__dirname, 'login.html'));
+// API routes
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/client-portal', (req, res) => {
-  res.sendFile(join(__dirname, 'client-portal.html'));
-});
-
-// Mock login endpoint
+// Mock authentication endpoints
 app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-  
-  // This is a mock authentication - in a real app, validate credentials against a database
-  if (email && password) {
-    // Successful login
-    res.status(200).json({ success: true, message: 'Login successful' });
-  } else {
-    // Failed login
-    res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
+  const { username, password } = req.body;
+  // Mock authentication - accept any credentials
+  res.status(200).json({
+    id: 1,
+    username: username || 'demo',
+    email: `${username || 'demo'}@example.com`,
+    firstName: username || 'Demo',
+    lastName: 'User',
+    role: 'client'
+  });
 });
 
-// Handle 404s
-app.use((req, res) => {
-  res.status(404).send('Page not found');
+app.post('/api/logout', (req, res) => {
+  res.status(200).send('Logged out successfully');
 });
 
-app.listen(PORT, () => {
+app.get('/api/user', (req, res) => {
+  // Mock authenticated user
+  res.status(200).json({
+    id: 1,
+    username: 'client',
+    email: 'client@example.com',
+    firstName: 'Client',
+    lastName: 'User',
+    role: 'client'
+  });
+});
+
+// Serve static files from client/dist in production
+// or let Vite handle it in development
+const isProduction = process.env.NODE_ENV === 'production';
+if (isProduction) {
+  app.use(express.static(path.join(__dirname, 'client/dist')));
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(__dirname, 'client/dist/index.html'));
+    } else {
+      res.status(404).json({ error: 'API endpoint not found' });
+    }
+  });
+} else {
+  // In development, forward to Vite dev server
+  console.log('Development mode - client requests will be handled by Vite');
+}
+
+// Create and start HTTP server
+const PORT = process.env.PORT || 5000;
+const server = createServer(app);
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Client Portal available at: http://localhost:${PORT}/client-portal`);
-  console.log(`Login page available at: http://localhost:${PORT}/login`);
+});
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
 });
