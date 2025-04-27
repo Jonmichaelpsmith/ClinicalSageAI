@@ -58,6 +58,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Serve static files - prioritize public folder for React app
 app.use(express.static('public'));
 
+// Serve frontend assets
+app.use('/app/assets', express.static('frontend/public'));
+
 // Serve legacy static files for backwards compatibility
 app.use(express.static('./'));
 
@@ -92,6 +95,15 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/client-portal', (req, res) => {
+  res.sendFile(path.resolve('./client-portal.html'));
+});
+
+// React app entry point
+app.get('/app', (req, res) => {
+  res.sendFile(path.resolve('./public/index.html'));
+});
+
+app.get('/app/*', (req, res) => {
   res.sendFile(path.resolve('./public/index.html'));
 });
 
