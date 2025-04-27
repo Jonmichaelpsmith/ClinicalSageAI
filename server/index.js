@@ -85,11 +85,31 @@ app.get('/login', (req, res) => {
   res.sendFile(path.resolve('./login.html'));
 });
 
+// Simple authentication middleware to check for tokens
+function checkAuth(req, res, next) {
+  // Check for token in cookie or authorization header
+  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+  
+  // If no token, also check if there's a user cookie (our simplified auth)
+  const userCookie = req.cookies?.user;
+  
+  if (!token && !userCookie) {
+    console.log('Auth check failed - redirecting to login');
+    return res.redirect('/login');
+  }
+  
+  // If we have a token, we could validate it here
+  // For now, we just proceed
+  next();
+}
+
+// Public client portal (no auth check)
 app.get('/client-portal', (req, res) => {
   res.sendFile(path.resolve('./client-portal.html'));
 });
 
-app.get('/client-portal-direct', (req, res) => {
+// Secure client portal (with auth check)
+app.get('/client-portal-direct', checkAuth, (req, res) => {
   res.sendFile(path.resolve('./client-portal-direct.html'));
 });
 
