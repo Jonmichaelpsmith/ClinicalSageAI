@@ -1,187 +1,311 @@
 /**
- * Study Architect Module
+ * Study Architect Module Component
  * 
- * Main component for the Study Architect module of the TrialSage platform.
+ * This component provides the Study Architect interface for the TrialSage platform,
+ * allowing users to design and manage clinical trial study protocols.
  */
 
-import React from 'react';
-import { Compass, FileText, Users, BarChart2, ClipboardList, Clock } from 'lucide-react';
-import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
+import React, { useState } from 'react';
+import { 
+  FileSymlink, 
+  Plus,
+  Search,
+  Filter,
+  CheckCircle,
+  Clock,
+  Download,
+  Copy,
+  Edit,
+  Trash2
+} from 'lucide-react';
+import { useIntegration } from '../integration/ModuleIntegrationLayer';
 
 const StudyArchitectModule = () => {
-  const { getSharedContext } = useModuleIntegration();
+  const { docuShareService } = useIntegration();
+  const [activeTab, setActiveTab] = useState('protocols');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Mock protocols data
+  const protocols = [
+    {
+      id: 'protocol-001',
+      title: 'Phase II Study of XYZ-123 in Advanced Solid Tumors',
+      status: 'Draft',
+      version: '1.2',
+      updatedAt: '2025-04-20T14:30:00Z',
+      updatedBy: 'John Smith',
+      studyPhase: 'Phase II',
+      indication: 'Oncology'
+    },
+    {
+      id: 'protocol-002',
+      title: 'Phase III Study of ABC-456 in Type 2 Diabetes',
+      status: 'Final',
+      version: '2.0',
+      updatedAt: '2025-04-15T10:15:00Z',
+      updatedBy: 'Jane Doe',
+      studyPhase: 'Phase III',
+      indication: 'Diabetes'
+    },
+    {
+      id: 'protocol-003',
+      title: 'Phase I Study of DEF-789 in Healthy Volunteers',
+      status: 'In Review',
+      version: '0.9',
+      updatedAt: '2025-04-22T09:45:00Z',
+      updatedBy: 'Robert Chen',
+      studyPhase: 'Phase I',
+      indication: 'Healthy Volunteers'
+    }
+  ];
+  
+  // Tabs configuration
+  const tabs = [
+    { id: 'protocols', label: 'Study Protocols' },
+    { id: 'templates', label: 'Protocol Templates' },
+    { id: 'endpoints', label: 'Endpoint Library' },
+    { id: 'statistics', label: 'Statistical Analysis' }
+  ];
+  
+  // Handle tab change
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+  };
+  
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  
+  // Filter protocols based on search query
+  const filteredProtocols = protocols.filter(protocol => 
+    protocol.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    protocol.indication.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    protocol.studyPhase.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  // Get status badge class
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'Draft':
+        return 'bg-blue-100 text-blue-800';
+      case 'In Review':
+        return 'bg-amber-100 text-amber-800';
+      case 'Final':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+  
+  // Render tab content based on active tab
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'protocols':
+        return renderProtocols();
+      case 'templates':
+        return renderTemplates();
+      case 'endpoints':
+        return renderEndpoints();
+      case 'statistics':
+        return renderStatistics();
+      default:
+        return renderProtocols();
+    }
+  };
+  
+  // Protocols tab content
+  const renderProtocols = () => {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow border">
+          <div className="px-6 py-4 border-b flex justify-between items-center">
+            <h3 className="font-medium">Study Protocols</h3>
+            <button className="py-2 px-4 bg-primary text-white rounded-md hover:bg-primary-dark flex items-center text-sm">
+              <Plus className="h-4 w-4 mr-1" />
+              New Protocol
+            </button>
+          </div>
+          
+          <div className="p-6">
+            <div className="flex justify-between mb-4">
+              <div className="relative max-w-xs">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                  placeholder="Search protocols..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                />
+              </div>
+              
+              <button className="flex items-center text-sm text-gray-600">
+                <Filter className="h-4 w-4 mr-1" />
+                Filter
+              </button>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Protocol Title
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Phase
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Version
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Last Updated
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredProtocols.map((protocol) => (
+                    <tr key={protocol.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center">
+                          <FileSymlink className="h-5 w-5 text-primary mr-3" />
+                          <div>
+                            <div className="font-medium text-gray-900">{protocol.title}</div>
+                            <div className="text-xs text-gray-500">{protocol.indication}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(protocol.status)}`}>
+                          {protocol.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {protocol.studyPhase}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        v{protocol.version}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {new Date(protocol.updatedAt).toLocaleDateString()}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          by {protocol.updatedBy}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2">
+                          <button className="text-gray-500 hover:text-gray-700">
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button className="text-gray-500 hover:text-gray-700">
+                            <Copy className="h-4 w-4" />
+                          </button>
+                          <button className="text-gray-500 hover:text-gray-700">
+                            <Download className="h-4 w-4" />
+                          </button>
+                          <button className="text-red-500 hover:text-red-700">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {filteredProtocols.length === 0 && (
+              <div className="text-center py-8">
+                <div className="bg-gray-100 rounded-full p-3 w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                  <FileSymlink className="h-6 w-6 text-gray-500" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-1">No protocols found</h3>
+                <p className="text-gray-500 mb-4">Try adjusting your search or create a new protocol</p>
+                <button className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+                  Create Protocol
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Templates tab content
+  const renderTemplates = () => {
+    return (
+      <div className="bg-white rounded-lg shadow border p-6">
+        <h3 className="text-lg font-medium mb-4">Protocol Templates</h3>
+        <p className="text-gray-500">This tab will contain protocol templates for different therapeutic areas and study phases.</p>
+      </div>
+    );
+  };
+  
+  // Endpoints tab content
+  const renderEndpoints = () => {
+    return (
+      <div className="bg-white rounded-lg shadow border p-6">
+        <h3 className="text-lg font-medium mb-4">Endpoint Library</h3>
+        <p className="text-gray-500">This tab will contain a library of standard endpoints for different therapeutic areas.</p>
+      </div>
+    );
+  };
+  
+  // Statistics tab content
+  const renderStatistics = () => {
+    return (
+      <div className="bg-white rounded-lg shadow border p-6">
+        <h3 className="text-lg font-medium mb-4">Statistical Analysis</h3>
+        <p className="text-gray-500">This tab will provide statistical analysis plan templates and guidance.</p>
+      </div>
+    );
+  };
   
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Study Architect</h1>
-        <p className="text-gray-600">Comprehensive clinical study design and planning</p>
+        <h1 className="text-2xl font-bold text-gray-900">Study Architect™</h1>
+        <p className="text-gray-500 mt-1">
+          Design and manage clinical trial protocols with ease
+        </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Feature tiles */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center text-primary mr-3">
-              <Compass size={20} />
-            </div>
-            <h2 className="text-lg font-semibold">Study Design</h2>
-          </div>
-          <p className="text-gray-600">Design optimal clinical trials with AI-powered recommendations.</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
-              <FileText size={20} />
-            </div>
-            <h2 className="text-lg font-semibold">Protocol Builder</h2>
-          </div>
-          <p className="text-gray-600">Create and manage study protocols with intelligent templates.</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-3">
-              <Users size={20} />
-            </div>
-            <h2 className="text-lg font-semibold">Site Management</h2>
-          </div>
-          <p className="text-gray-600">Manage clinical sites and investigator communications.</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 mr-3">
-              <BarChart2 size={20} />
-            </div>
-            <h2 className="text-lg font-semibold">Statistical Planning</h2>
-          </div>
-          <p className="text-gray-600">Design statistical analysis plans and sample size calculations.</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 mr-3">
-              <ClipboardList size={20} />
-            </div>
-            <h2 className="text-lg font-semibold">CRF Designer</h2>
-          </div>
-          <p className="text-gray-600">Design and manage case report forms and data collection.</p>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center mb-4">
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 mr-3">
-              <Clock size={20} />
-            </div>
-            <h2 className="text-lg font-semibold">Timeline Planning</h2>
-          </div>
-          <p className="text-gray-600">Plan and track study timelines and milestones.</p>
+      {/* Tabs */}
+      <div className="mb-6">
+        <div className="border-b">
+          <nav className="-mb-px flex space-x-8">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab.id
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+                onClick={() => handleTabChange(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
         </div>
       </div>
       
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Active Studies */}
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold">Active Studies</h2>
-          </div>
-          
-          <div className="divide-y">
-            <div className="p-6 hover:bg-gray-50">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
-                <h3 className="font-semibold">BTX-331-001</h3>
-                <span className="ml-3 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Phase I</span>
-              </div>
-              <p className="text-sm text-gray-600 mt-1">First-in-human study of BTX-331 in healthy volunteers</p>
-              <div className="flex items-center justify-between mt-3">
-                <div className="text-xs text-gray-500">10 sites • 45 subjects</div>
-                <button className="text-primary text-sm">View Details</button>
-              </div>
-            </div>
-            
-            <div className="p-6 hover:bg-gray-50">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
-                <h3 className="font-semibold">BX-107-002</h3>
-                <span className="ml-3 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase II</span>
-              </div>
-              <p className="text-sm text-gray-600 mt-1">Efficacy study of BX-107 in patients with rheumatoid arthritis</p>
-              <div className="flex items-center justify-between mt-3">
-                <div className="text-xs text-gray-500">23 sites • 120 subjects</div>
-                <button className="text-primary text-sm">View Details</button>
-              </div>
-            </div>
-            
-            <div className="p-6 hover:bg-gray-50">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-yellow-500 mr-3"></div>
-                <h3 className="font-semibold">NRX-405-003</h3>
-                <span className="ml-3 text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded">Planning</span>
-              </div>
-              <p className="text-sm text-gray-600 mt-1">Long-term follow-up study of NRX-405 in pediatric patients</p>
-              <div className="flex items-center justify-between mt-3">
-                <div className="text-xs text-gray-500">Protocol in development</div>
-                <button className="text-primary text-sm">View Details</button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="p-4 bg-gray-50 border-t text-center">
-            <button className="text-primary text-sm">Create New Study</button>
-          </div>
-        </div>
-        
-        {/* Protocol Templates */}
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold">Protocol Templates</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-6">
-            <div className="border rounded-lg p-4 hover:shadow-sm">
-              <div className="flex items-center mb-2">
-                <FileText className="text-primary mr-2" size={18} />
-                <h3 className="font-medium">Phase I Template</h3>
-              </div>
-              <p className="text-sm text-gray-600">First-in-human and safety studies</p>
-              <button className="mt-3 text-xs text-primary">Use Template</button>
-            </div>
-            
-            <div className="border rounded-lg p-4 hover:shadow-sm">
-              <div className="flex items-center mb-2">
-                <FileText className="text-primary mr-2" size={18} />
-                <h3 className="font-medium">Phase II Template</h3>
-              </div>
-              <p className="text-sm text-gray-600">Efficacy and dose-finding studies</p>
-              <button className="mt-3 text-xs text-primary">Use Template</button>
-            </div>
-            
-            <div className="border rounded-lg p-4 hover:shadow-sm">
-              <div className="flex items-center mb-2">
-                <FileText className="text-primary mr-2" size={18} />
-                <h3 className="font-medium">Phase III Template</h3>
-              </div>
-              <p className="text-sm text-gray-600">Confirmatory and pivotal studies</p>
-              <button className="mt-3 text-xs text-primary">Use Template</button>
-            </div>
-            
-            <div className="border rounded-lg p-4 hover:shadow-sm">
-              <div className="flex items-center mb-2">
-                <FileText className="text-primary mr-2" size={18} />
-                <h3 className="font-medium">Pediatric Template</h3>
-              </div>
-              <p className="text-sm text-gray-600">Studies in pediatric populations</p>
-              <button className="mt-3 text-xs text-primary">Use Template</button>
-            </div>
-          </div>
-          
-          <div className="p-4 bg-gray-50 border-t text-center">
-            <button className="text-primary text-sm">View All Templates</button>
-          </div>
-        </div>
+      {/* Tab content */}
+      <div>
+        {renderTabContent()}
       </div>
     </div>
   );
