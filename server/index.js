@@ -26,6 +26,7 @@ import cmcBlueprintRoutes from './routes/cmc-blueprint.js';
 import enhancedInspectionRoutes from './routes/enhanced-inspection.js';
 import documentVersionRoutes from './routes/document-versions.js';
 import indProxyRouter from './routes/ind-proxy.js';
+import indFormsRouter from './routes/ind-forms.js';
 import healthRoutes from './routes/health.js';
 import mashableBiRoutes from './routes/mashable-bi.js';
 
