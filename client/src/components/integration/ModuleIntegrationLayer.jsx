@@ -1,726 +1,502 @@
 /**
  * Module Integration Layer
  * 
- * This component provides a comprehensive integration layer for connecting all TrialSage modules,
- * enabling seamless data flow, cross-module workflows, shared context, and unified user experience.
- * 
- * It serves as the central nervous system for the platform, connecting the AI-powered intelligence core
- * with all frontend modules and shared services.
+ * This component provides seamless integration between different modules of the TrialSage platform.
+ * It serves as a bridge that coordinates data flow, context sharing, and workflow transitions
+ * between modules, ensuring a cohesive user experience.
  */
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useLocation, useRoute } from 'wouter';
-import { useToast } from "@/hooks/use-toast";
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import regulatoryIntelligenceCore from '../../services/RegulatoryIntelligenceCore';
+import docuShareService from '../../services/DocuShareService';
+import workflowService from '../../services/WorkflowService';
+import securityService from '../../services/SecurityService';
 
-// Core services
-import regulatoryIntelligenceCore from '@/services/RegulatoryIntelligenceCore';
-import docuShareService from '@/services/DocuShareService';
-import mashableService from '@/services/MashableService';
-import workflowService from '@/services/WorkflowService';
-import securityService from '@/services/SecurityService';
-
-// Notification components
-import { Toaster } from "@/components/ui/toaster";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
-// Context type
-export const ModuleIntegrationContext = createContext({
-  // Active module
-  activeModule: null,
-  setActiveModule: () => {},
-  
-  // Cross-module context
-  crossModuleContext: {},
-  updateCrossModuleContext: () => {},
-  
-  // Resource sharing
-  shareResource: () => {},
-  getSharedResource: () => {},
-  
-  // Workflow integration
-  startCrossModuleWorkflow: () => {},
-  getCrossModuleTasksCount: () => 0,
-  
-  // Intelligence integration
-  getIntelligenceInsights: () => {},
-  
-  // Security integration
-  hasPermission: () => false,
-  
-  // Module navigation
-  navigateToModule: () => {},
-  
-  // Data synchronization
-  syncModuleData: () => {},
-  
-  // Service instances
-  services: {
-    intelligence: null,
-    docuShare: null,
-    mashable: null,
-    workflow: null,
-    security: null
-  },
-  
-  // Integration status
-  isInitialized: false,
-  modulesStatus: {},
-  
-  // Client context (for CRO users)
-  clientContext: null,
-  switchClient: () => {}
-});
+// Module integration context
+export const ModuleIntegrationContext = createContext(null);
 
 // Available modules
 export const MODULES = {
   IND_WIZARD: 'ind-wizard',
-  CSR_INTELLIGENCE: 'csr-intelligence',
   TRIAL_VAULT: 'trial-vault',
+  CSR_INTELLIGENCE: 'csr-intelligence',
   STUDY_ARCHITECT: 'study-architect',
-  ICH_WIZ: 'ich-wiz',
-  CLINICAL_METADATA: 'clinical-metadata',
   ANALYTICS: 'analytics',
-  ADMIN: 'admin',
-  CLIENT_PORTAL: 'client-portal'
+  ADMIN: 'admin'
 };
 
-// Module routes
-const MODULE_ROUTES = {
-  [MODULES.IND_WIZARD]: '/ind-wizard',
-  [MODULES.CSR_INTELLIGENCE]: '/csr-intelligence',
-  [MODULES.TRIAL_VAULT]: '/vault',
-  [MODULES.STUDY_ARCHITECT]: '/study-architect',
-  [MODULES.ICH_WIZ]: '/ich-wiz',
-  [MODULES.CLINICAL_METADATA]: '/clinical-metadata',
-  [MODULES.ANALYTICS]: '/analytics',
-  [MODULES.ADMIN]: '/admin',
-  [MODULES.CLIENT_PORTAL]: '/client-portal'
+// Context types for cross-module sharing
+export const CONTEXT_TYPES = {
+  DOCUMENT: 'document',
+  COLLECTION: 'collection',
+  WORKFLOW: 'workflow',
+  STUDY: 'study',
+  SUBMISSION: 'submission',
+  PRODUCT: 'product',
+  SPONSOR: 'sponsor'
 };
 
-// Module display names
-export const MODULE_NAMES = {
-  [MODULES.IND_WIZARD]: 'IND Wizard™',
-  [MODULES.CSR_INTELLIGENCE]: 'CSR Intelligence™',
-  [MODULES.TRIAL_VAULT]: 'TrialSage Vault™',
-  [MODULES.STUDY_ARCHITECT]: 'Study Architect™',
-  [MODULES.ICH_WIZ]: 'ICH Wiz',
-  [MODULES.CLINICAL_METADATA]: 'Clinical Metadata Repository',
-  [MODULES.ANALYTICS]: 'Analytics',
-  [MODULES.ADMIN]: 'Administration',
-  [MODULES.CLIENT_PORTAL]: 'Client Portal'
-};
-
-/**
- * Module Integration Layer Component
- * 
- * Provides a context provider for all TrialSage modules to interact with each other.
- */
-export const ModuleIntegrationLayer = ({ children }) => {
-  // State management
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeModule, setActiveModule] = useState(null);
-  const [crossModuleContext, setCrossModuleContext] = useState({});
-  const [modulesStatus, setModulesStatus] = useState({});
-  const [sharedResources, setSharedResources] = useState({});
-  const [clientContext, setClientContext] = useState(null);
-  const [alertDialog, setAlertDialog] = useState({ open: false, data: {} });
+// Module integration provider
+export const ModuleIntegrationProvider = ({ children }) => {
+  // Service initialization state
+  const [initialized, setInitialized] = useState(false);
   
-  // Hook integrations
-  const { toast } = useToast();
-  const [location, setLocation] = useLocation();
+  // Active module state
+  const [activeModule, setActiveModule] = useState(null);
+  
+  // Shared context between modules
+  const [sharedContext, setSharedContext] = useState({});
+  
+  // Cross-module workflows
+  const [activeWorkflows, setActiveWorkflows] = useState([]);
+  
+  // Recent documents shared between modules
+  const [recentDocuments, setRecentDocuments] = useState([]);
+  
+  // Pending tasks across modules
+  const [pendingTasks, setPendingTasks] = useState([]);
+  
+  // Module capabilities and availability
+  const [moduleCapabilities, setModuleCapabilities] = useState({});
+  
+  // Error state
+  const [error, setError] = useState(null);
   
   // Initialize services
   useEffect(() => {
-    const initializeServices = async () => {
+    const initServices = async () => {
       try {
-        setIsLoading(true);
-        
         // Initialize security service first
         await securityService.initialize();
         
-        // Initialize other services in parallel
-        await Promise.all([
-          regulatoryIntelligenceCore.initialize(),
-          docuShareService.initialize(),
-          mashableService.initialize(),
-          workflowService.initialize()
-        ]);
-        
-        // Get client context if available
-        if (securityService.clientContext) {
-          setClientContext(securityService.clientContext);
-        }
-        
-        // Determine active module from route
-        const module = determineActiveModuleFromRoute();
-        setActiveModule(module);
-        
-        // Check module statuses
-        await checkModulesStatus();
-        
-        setIsInitialized(true);
-        setIsLoading(false);
-        
-        console.log('ModuleIntegrationLayer initialized successfully');
-      } catch (error) {
-        console.error('Failed to initialize ModuleIntegrationLayer:', error);
-        
-        toast({
-          title: "Integration Layer Error",
-          description: "Failed to initialize platform integration services. Some features may be unavailable.",
-          variant: "destructive"
+        // Initialize regulatory intelligence core
+        await regulatoryIntelligenceCore.initialize({
+          enableBlockchain: true
         });
         
-        setIsLoading(false);
+        // Initialize DocuShare service
+        await docuShareService.initialize({
+          blockchainIntegration: true
+        });
+        
+        // Initialize workflow service
+        await workflowService.initialize();
+        
+        // After all services are initialized, populate module capabilities
+        const availableModules = securityService.getAvailableModules();
+        
+        const capabilities = {};
+        
+        availableModules.forEach(module => {
+          capabilities[module] = {
+            available: true,
+            canAccess: true,
+            features: getModuleFeatures(module)
+          };
+        });
+        
+        setModuleCapabilities(capabilities);
+        setInitialized(true);
+      } catch (initError) {
+        console.error('Failed to initialize module integration:', initError);
+        setError(initError.message);
       }
     };
     
-    initializeServices();
+    initServices();
+    
+    // Cleanup on unmount
+    return () => {
+      // Clean up any subscriptions
+    };
   }, []);
   
-  // Update active module when route changes
+  // Load user tasks when services are initialized
   useEffect(() => {
-    if (isInitialized) {
-      const module = determineActiveModuleFromRoute();
-      setActiveModule(module);
+    if (initialized) {
+      refreshUserTasks();
+      refreshRecentDocuments();
+      refreshActiveWorkflows();
     }
-  }, [location, isInitialized]);
+  }, [initialized]);
   
-  // Set up event listeners for cross-module communication
-  useEffect(() => {
-    if (!isInitialized) return;
-    
-    // Listen for workflow assignments
-    window.addEventListener('task-assigned', handleTaskAssigned);
-    window.addEventListener('workflow-completed', handleWorkflowCompleted);
-    
-    // Listen for security events
-    window.addEventListener('security-alert', handleSecurityAlert);
-    
-    // Listen for module data updates
-    window.addEventListener('module-data-updated', handleModuleDataUpdated);
-    
-    // Listen for client context changes (CRO switching clients)
-    window.addEventListener('client-context-changed', handleClientContextChanged);
-    
-    return () => {
-      window.removeEventListener('task-assigned', handleTaskAssigned);
-      window.removeEventListener('workflow-completed', handleWorkflowCompleted);
-      window.removeEventListener('security-alert', handleSecurityAlert);
-      window.removeEventListener('module-data-updated', handleModuleDataUpdated);
-      window.removeEventListener('client-context-changed', handleClientContextChanged);
-    };
-  }, [isInitialized]);
-  
-  /**
-   * Determine the active module from the current route
-   * @returns {string|null} - Active module code
-   */
-  const determineActiveModuleFromRoute = () => {
-    const path = location.split('/')[1] || '';
-    
-    // Map path to module
-    for (const [moduleCode, modulePath] of Object.entries(MODULE_ROUTES)) {
-      const routePath = modulePath.replace('/', '');
-      if (path === routePath) {
-        return moduleCode;
-      }
-    }
-    
-    // Handle root path or unknown paths
-    if (path === '') {
-      return null; // Landing page
-    }
-    
-    return null;
-  };
-  
-  /**
-   * Check the status of all modules
-   */
-  const checkModulesStatus = async () => {
-    try {
-      // This would ideally call an API to check module health
-      // For now, we'll simulate with a mock status
-      const status = {
-        [MODULES.IND_WIZARD]: { available: true, initialized: true },
-        [MODULES.CSR_INTELLIGENCE]: { available: true, initialized: true },
-        [MODULES.TRIAL_VAULT]: { available: true, initialized: true },
-        [MODULES.STUDY_ARCHITECT]: { available: true, initialized: true },
-        [MODULES.ICH_WIZ]: { available: true, initialized: true },
-        [MODULES.CLINICAL_METADATA]: { available: true, initialized: true },
-        [MODULES.ANALYTICS]: { available: true, initialized: true },
-        [MODULES.ADMIN]: { available: true, initialized: true },
-        [MODULES.CLIENT_PORTAL]: { available: true, initialized: true }
-      };
+  // Get module features based on module name
+  const getModuleFeatures = (module) => {
+    switch (module) {
+      case MODULES.IND_WIZARD:
+        return ['ind-preparation', 'form-templates', 'cmc-builder', 'submission-tracking'];
       
-      setModulesStatus(status);
+      case MODULES.TRIAL_VAULT:
+        return ['document-management', 'version-control', 'search', 'audit-trail'];
+      
+      case MODULES.CSR_INTELLIGENCE:
+        return ['csr-templates', 'auto-generation', 'data-integration', 'quality-checks'];
+      
+      case MODULES.STUDY_ARCHITECT:
+        return ['protocol-builder', 'site-management', 'crf-designer', 'study-planning'];
+      
+      case MODULES.ANALYTICS:
+        return ['dashboards', 'reports', 'metrics', 'predictions'];
+      
+      case MODULES.ADMIN:
+        return ['user-management', 'organization-management', 'system-settings', 'audit-logs'];
+      
+      default:
+        return [];
+    }
+  };
+  
+  // Refresh user tasks across modules
+  const refreshUserTasks = async () => {
+    try {
+      const tasks = await workflowService.refreshUserTasks();
+      setPendingTasks(tasks);
     } catch (error) {
-      console.error('Failed to check modules status:', error);
+      console.error('Error refreshing tasks:', error);
+    }
+  };
+  
+  // Refresh recent documents across modules
+  const refreshRecentDocuments = async () => {
+    try {
+      const collections = await docuShareService.getCollections();
+      
+      if (collections.length === 0) {
+        setRecentDocuments([]);
+        return;
+      }
+      
+      const documents = [];
+      
+      // Get documents from first 2 collections
+      for (let i = 0; i < Math.min(2, collections.length); i++) {
+        try {
+          const collectionDocs = await docuShareService.getSharedDocuments(collections[i].id, {
+            sort: 'sharedAt:desc',
+            limit: 5
+          });
+          
+          documents.push(...collectionDocs);
+        } catch (error) {
+          console.warn(`Error getting documents from collection ${collections[i].id}:`, error);
+        }
+      }
+      
+      // Sort by shared date and limit to 10
+      documents.sort((a, b) => new Date(b.sharedAt) - new Date(a.sharedAt));
+      setRecentDocuments(documents.slice(0, 10));
+    } catch (error) {
+      console.error('Error refreshing recent documents:', error);
+    }
+  };
+  
+  // Refresh active workflows across modules
+  const refreshActiveWorkflows = async () => {
+    try {
+      // In a real implementation, would fetch from API
+      // For now, use cached workflows
+      const workflowArray = Array.from(workflowService.workflows.values())
+        .filter(w => w.status === 'in_progress')
+        .sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+      
+      setActiveWorkflows(workflowArray);
+    } catch (error) {
+      console.error('Error refreshing active workflows:', error);
     }
   };
   
   /**
-   * Update the cross-module context
-   * @param {Object} updates - Context updates 
+   * Set the active module
+   * @param {string} module - Module name
+   * @param {Object} options - Module options
    */
-  const updateCrossModuleContext = (updates) => {
-    setCrossModuleContext(prevContext => ({
+  const switchActiveModule = (module, options = {}) => {
+    if (!moduleCapabilities[module]?.available) {
+      setError(`Module ${module} is not available`);
+      return false;
+    }
+    
+    // Update active module
+    setActiveModule(module);
+    
+    // Update shared context with module-specific information
+    setSharedContext(prevContext => ({
       ...prevContext,
-      ...updates
+      activeModule: module,
+      lastModuleSwitch: new Date().toISOString(),
+      switchOptions: options
     }));
+    
+    return true;
   };
   
   /**
-   * Share a resource across modules
-   * @param {string} resourceType - Resource type
-   * @param {string} resourceId - Resource ID
-   * @param {Object} resourceData - Resource data
-   * @param {Array} targetModules - Target modules (optional)
+   * Share context between modules
+   * @param {string} contextType - Context type
+   * @param {string} contextId - Context ID
+   * @param {Object} contextData - Context data
+   * @param {Object} options - Sharing options
    */
-  const shareResource = (resourceType, resourceId, resourceData, targetModules = []) => {
-    const resource = {
-      type: resourceType,
-      id: resourceId,
-      data: resourceData,
-      sourceModule: activeModule,
-      timestamp: new Date().toISOString()
-    };
+  const shareContext = (contextType, contextId, contextData, options = {}) => {
+    if (!contextType || !contextId) {
+      console.warn('Invalid context parameters:', { contextType, contextId });
+      return false;
+    }
     
-    setSharedResources(prevResources => ({
-      ...prevResources,
-      [resourceType]: {
-        ...prevResources[resourceType],
-        [resourceId]: resource
+    // Update shared context
+    setSharedContext(prevContext => ({
+      ...prevContext,
+      [contextType]: {
+        ...prevContext[contextType],
+        [contextId]: {
+          ...contextData,
+          updatedAt: new Date().toISOString(),
+          sourceModule: activeModule || options.sourceModule
+        }
       }
     }));
     
-    // Notify target modules if specified
-    if (targetModules.length > 0) {
-      // This would typically use a messaging system or event bus
-      // For now, we'll dispatch a custom event
-      window.dispatchEvent(new CustomEvent('resource-shared', {
-        detail: {
-          resource,
-          targetModules
-        }
-      }));
-    }
+    return true;
   };
   
   /**
-   * Get a shared resource
-   * @param {string} resourceType - Resource type
-   * @param {string} resourceId - Resource ID 
-   * @returns {Object|null} - Shared resource or null if not found
+   * Get shared context
+   * @param {string} contextType - Context type
+   * @param {string} contextId - Context ID
+   * @returns {Object|null} - Context data or null if not found
    */
-  const getSharedResource = (resourceType, resourceId) => {
-    return sharedResources[resourceType]?.[resourceId] || null;
+  const getSharedContext = (contextType, contextId) => {
+    if (!contextType) {
+      return sharedContext;
+    }
+    
+    if (!contextId) {
+      return sharedContext[contextType] || null;
+    }
+    
+    return sharedContext[contextType]?.[contextId] || null;
   };
   
   /**
-   * Start a cross-module workflow
-   * @param {string} workflowType - Workflow type
+   * Clear shared context
+   * @param {string} contextType - Context type (optional, clears all if not provided)
+   * @param {string} contextId - Context ID (optional, clears entire type if not provided)
+   */
+  const clearContext = (contextType, contextId) => {
+    if (!contextType) {
+      // Clear all context
+      setSharedContext({
+        activeModule
+      });
+      return;
+    }
+    
+    if (!contextId) {
+      // Clear entire context type
+      setSharedContext(prevContext => {
+        const newContext = { ...prevContext };
+        delete newContext[contextType];
+        return newContext;
+      });
+      return;
+    }
+    
+    // Clear specific context ID
+    setSharedContext(prevContext => {
+      if (!prevContext[contextType] || !prevContext[contextType][contextId]) {
+        return prevContext;
+      }
+      
+      const newTypeContext = { ...prevContext[contextType] };
+      delete newTypeContext[contextId];
+      
+      return {
+        ...prevContext,
+        [contextType]: newTypeContext
+      };
+    });
+  };
+  
+  /**
+   * Start cross-module workflow
+   * @param {string} templateId - Workflow template ID
    * @param {Object} context - Workflow context
    * @param {Object} options - Workflow options
    * @returns {Promise<Object>} - Started workflow
    */
-  const startCrossModuleWorkflow = async (workflowType, context, options = {}) => {
+  const startCrossModuleWorkflow = async (templateId, context = {}, options = {}) => {
     try {
-      // Add current module as source in context
-      const enhancedContext = {
+      // Start workflow
+      const workflow = await workflowService.startWorkflow(templateId, {
         ...context,
-        sourceModule: activeModule
-      };
+        sourceModule: activeModule || options.sourceModule
+      }, options);
       
-      // Start workflow using workflow service
-      const workflow = await workflowService.startWorkflow(
-        workflowType,
-        enhancedContext,
-        options
-      );
-      
-      // Update cross-module context with workflow ID
-      updateCrossModuleContext({
-        lastWorkflow: {
-          id: workflow.id,
-          type: workflowType,
-          startedAt: new Date().toISOString()
-        }
-      });
+      // Refresh workflows and tasks
+      refreshActiveWorkflows();
+      refreshUserTasks();
       
       return workflow;
     } catch (error) {
-      console.error(`Failed to start cross-module workflow ${workflowType}:`, error);
-      
-      toast({
-        title: "Workflow Error",
-        description: `Failed to start workflow: ${error.message}`,
-        variant: "destructive"
-      });
-      
+      console.error(`Error starting workflow ${templateId}:`, error);
+      setError(error.message);
       throw error;
     }
   };
   
   /**
-   * Get the count of cross-module tasks for the current user
-   * @returns {number} - Task count
-   */
-  const getCrossModuleTasksCount = () => {
-    return workflowService.userTasks.length;
-  };
-  
-  /**
-   * Get insights from the regulatory intelligence core
+   * Get regulatory insights for a context
    * @param {string} contextType - Context type
    * @param {string} contextId - Context ID
-   * @param {string} insightType - Insight type (regulatory or scientific)
-   * @param {Object} options - Options
-   * @returns {Promise<Object>} - Intelligence insights
+   * @param {Object} options - Query options
+   * @returns {Promise<Object>} - Regulatory insights
    */
-  const getIntelligenceInsights = async (contextType, contextId, insightType = 'regulatory', options = {}) => {
+  const getRegulatoryInsights = async (contextType, contextId, options = {}) => {
     try {
-      if (insightType === 'scientific') {
-        return await regulatoryIntelligenceCore.getScientificInsights(contextType, contextId, options);
-      } else {
-        return await regulatoryIntelligenceCore.getRegulatoryInsights(contextType, contextId, options);
-      }
+      return await regulatoryIntelligenceCore.getRegulatoryInsights(contextType, contextId, options);
     } catch (error) {
-      console.error(`Failed to get ${insightType} insights:`, error);
+      console.error(`Error getting regulatory insights for ${contextType}:${contextId}:`, error);
+      setError(error.message);
       throw error;
     }
   };
   
   /**
-   * Check if user has permission for a resource
-   * @param {string} resourceType - Resource type
-   * @param {string} permission - Permission to check
-   * @param {string} resourceId - Specific resource ID (optional)
-   * @returns {boolean} - Whether user has the permission
-   */
-  const hasPermission = (resourceType, permission, resourceId = null) => {
-    return securityService.hasPermission(resourceType, permission, resourceId);
-  };
-  
-  /**
-   * Navigate to a specific module
-   * @param {string} moduleCode - Module code
-   * @param {string} path - Specific path within the module (optional)
-   * @param {Object} params - Navigation parameters (optional)
-   */
-  const navigateToModule = (moduleCode, path = '', params = {}) => {
-    if (!moduleCode || !MODULE_ROUTES[moduleCode]) {
-      console.error(`Invalid module code: ${moduleCode}`);
-      return;
-    }
-    
-    // Check if module is available
-    if (!modulesStatus[moduleCode]?.available) {
-      toast({
-        title: "Module Unavailable",
-        description: `The ${MODULE_NAMES[moduleCode]} module is currently unavailable.`,
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Build route
-    let route = MODULE_ROUTES[moduleCode];
-    if (path) {
-      route = `${route}/${path}`.replace('//', '/');
-    }
-    
-    // Add query parameters if provided
-    if (Object.keys(params).length > 0) {
-      const queryParams = new URLSearchParams();
-      for (const [key, value] of Object.entries(params)) {
-        queryParams.append(key, value);
-      }
-      route = `${route}?${queryParams.toString()}`;
-    }
-    
-    // Navigate to the route
-    setLocation(route);
-  };
-  
-  /**
-   * Synchronize data between modules
-   * @param {string} sourceModule - Source module
+   * Share document between modules
+   * @param {Object} document - Document to share
    * @param {string} targetModule - Target module
-   * @param {string} dataType - Data type
-   * @param {Object} data - Data to synchronize
-   * @returns {Promise<Object>} - Synchronization result
+   * @param {Object} options - Sharing options
+   * @returns {Promise<Object>} - Shared document
    */
-  const syncModuleData = async (sourceModule, targetModule, dataType, data) => {
+  const shareDocument = async (document, targetModule, options = {}) => {
     try {
-      // In a real implementation, this would call an API to sync data
-      // For now, we'll just update the cross-module context
-      updateCrossModuleContext({
-        [`${sourceModule}_${targetModule}_sync`]: {
-          dataType,
-          timestamp: new Date().toISOString(),
-          status: 'completed'
-        }
+      // Get or create collection for target module
+      let collection;
+      
+      const collections = await docuShareService.getCollections({
+        module: targetModule
       });
       
-      // Trigger module data updated event
-      window.dispatchEvent(new CustomEvent('module-data-updated', {
-        detail: {
-          sourceModule,
-          targetModule,
-          dataType,
-          timestamp: new Date().toISOString()
-        }
-      }));
+      if (collections.length > 0) {
+        // Use existing collection
+        collection = collections[0];
+      } else {
+        // Create new collection
+        collection = await docuShareService.createCollection(
+          `${targetModule.toUpperCase()} Documents`,
+          targetModule
+        );
+      }
       
-      return { success: true };
+      // Share document to collection
+      const sharedDocument = await docuShareService.shareDocument(document, collection.id, {
+        sourceModule: activeModule || options.sourceModule
+      });
+      
+      // Refresh documents
+      refreshRecentDocuments();
+      
+      return sharedDocument;
     } catch (error) {
-      console.error(`Failed to sync data between ${sourceModule} and ${targetModule}:`, error);
+      console.error(`Error sharing document to ${targetModule}:`, error);
+      setError(error.message);
       throw error;
     }
   };
   
   /**
-   * Switch to a different client context (for CRO users)
-   * @param {string} clientId - Client organization ID
-   * @returns {Promise<Object>} - Updated client context
+   * Handle transition completion (e.g., after a module finishes a task)
+   * @param {string} transitionType - Transition type
+   * @param {Object} data - Transition data
    */
-  const switchClient = async (clientId) => {
-    try {
-      // Switch client context in security service
-      const context = await securityService.switchToClientContext(clientId);
+  const completeTransition = (transitionType, data) => {
+    // This would handle actions to take when a workflow/task stage is completed
+    // For example, sending data to another module or triggering a new workflow
+    console.log(`Transition completed: ${transitionType}`, data);
+    
+    // Refresh data
+    refreshUserTasks();
+    refreshRecentDocuments();
+    refreshActiveWorkflows();
+  };
+  
+  /**
+   * Process cross-module action
+   * @param {string} action - Action name
+   * @param {Object} data - Action data
+   */
+  const processAction = (action, data) => {
+    switch (action) {
+      case 'switch_module':
+        return switchActiveModule(data.module, data.options);
       
-      // Update local client context
-      setClientContext(context.clientContext);
+      case 'share_context':
+        return shareContext(data.contextType, data.contextId, data.contextData, data.options);
       
-      // Update cross-module context
-      updateCrossModuleContext({
-        clientContext: context.clientContext
-      });
+      case 'start_workflow':
+        return startCrossModuleWorkflow(data.templateId, data.context, data.options);
       
-      // Trigger client context changed event
-      window.dispatchEvent(new CustomEvent('client-context-changed', {
-        detail: context.clientContext
-      }));
+      case 'share_document':
+        return shareDocument(data.document, data.targetModule, data.options);
       
-      return context.clientContext;
-    } catch (error) {
-      console.error(`Failed to switch to client ${clientId}:`, error);
+      case 'complete_transition':
+        return completeTransition(data.transitionType, data.data);
       
-      toast({
-        title: "Client Switch Error",
-        description: `Failed to switch client context: ${error.message}`,
-        variant: "destructive"
-      });
-      
-      throw error;
+      default:
+        console.warn(`Unknown action: ${action}`);
+        return false;
     }
   };
   
-  /**
-   * Handle task assigned event
-   * @param {CustomEvent} event - Task assigned event
-   */
-  const handleTaskAssigned = (event) => {
-    const task = event.detail;
-    
-    toast({
-      title: "New Task Assigned",
-      description: task.name,
-      action: (
-        <button 
-          className="bg-primary text-white px-3 py-1 rounded hover:bg-primary/90"
-          onClick={() => navigateToModule(MODULES.TRIAL_VAULT, `tasks/${task.id}`)}
-        >
-          View
-        </button>
-      )
-    });
-  };
-  
-  /**
-   * Handle workflow completed event
-   * @param {CustomEvent} event - Workflow completed event 
-   */
-  const handleWorkflowCompleted = (event) => {
-    const workflow = event.detail;
-    
-    toast({
-      title: "Workflow Completed",
-      description: `Workflow "${workflow.name}" has been completed`,
-      variant: "default"
-    });
-  };
-  
-  /**
-   * Handle security alert event
-   * @param {CustomEvent} event - Security alert event
-   */
-  const handleSecurityAlert = (event) => {
-    const alert = event.detail;
-    
-    // Show alert dialog for critical security alerts
-    if (alert.severity === 'critical') {
-      setAlertDialog({
-        open: true,
-        data: {
-          title: "Security Alert",
-          description: alert.message,
-          action: alert.action
-        }
-      });
-    } else {
-      // Show toast for non-critical alerts
-      toast({
-        title: "Security Alert",
-        description: alert.message,
-        variant: "destructive"
-      });
-    }
-  };
-  
-  /**
-   * Handle module data updated event
-   * @param {CustomEvent} event - Module data updated event
-   */
-  const handleModuleDataUpdated = (event) => {
-    const update = event.detail;
-    
-    // Only notify if the current module is the target
-    if (update.targetModule === activeModule) {
-      toast({
-        title: "Data Update",
-        description: `New data available from ${MODULE_NAMES[update.sourceModule]}`,
-        variant: "default"
-      });
-    }
-  };
-  
-  /**
-   * Handle client context changed event
-   * @param {CustomEvent} event - Client context changed event
-   */
-  const handleClientContextChanged = (event) => {
-    const context = event.detail;
-    
-    toast({
-      title: "Client Context Changed",
-      description: `Now working with client: ${context.name}`,
-      variant: "default"
-    });
-  };
-  
-  // Context value
+  // Create context value
   const contextValue = {
-    // Active module
     activeModule,
-    setActiveModule,
-    
-    // Cross-module context
-    crossModuleContext,
-    updateCrossModuleContext,
-    
-    // Resource sharing
-    shareResource,
-    getSharedResource,
-    
-    // Workflow integration
+    sharedContext,
+    switchActiveModule,
+    shareContext,
+    getSharedContext,
+    clearContext,
     startCrossModuleWorkflow,
-    getCrossModuleTasksCount,
-    
-    // Intelligence integration
-    getIntelligenceInsights,
-    
-    // Security integration
-    hasPermission,
-    
-    // Module navigation
-    navigateToModule,
-    
-    // Data synchronization
-    syncModuleData,
-    
-    // Service instances
-    services: {
-      intelligence: regulatoryIntelligenceCore,
-      docuShare: docuShareService,
-      mashable: mashableService,
-      workflow: workflowService,
-      security: securityService
-    },
-    
-    // Integration status
-    isInitialized,
-    isLoading,
-    modulesStatus,
-    
-    // Client context (for CRO users)
-    clientContext,
-    switchClient
+    getRegulatoryInsights,
+    shareDocument,
+    completeTransition,
+    processAction,
+    recentDocuments,
+    pendingTasks,
+    activeWorkflows,
+    moduleCapabilities,
+    refreshTasks: refreshUserTasks,
+    refreshDocuments: refreshRecentDocuments,
+    refreshWorkflows: refreshActiveWorkflows,
+    initialized,
+    error
   };
-  
-  // If still loading, show minimal loading state
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
-        <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm text-muted-foreground">Initializing platform integration...</p>
-        </div>
-      </div>
-    );
-  }
   
   return (
     <ModuleIntegrationContext.Provider value={contextValue}>
       {children}
-      
-      <Toaster />
-      
-      {/* Alert Dialog for Critical Security Alerts */}
-      <AlertDialog open={alertDialog.open} onOpenChange={(open) => setAlertDialog(prev => ({ ...prev, open }))}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{alertDialog.data.title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {alertDialog.data.description}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            {alertDialog.data.action && (
-              <AlertDialogAction onClick={alertDialog.data.action.onClick}>
-                {alertDialog.data.action.label || 'Continue'}
-              </AlertDialogAction>
-            )}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </ModuleIntegrationContext.Provider>
   );
 };
 
-/**
- * Custom hook to use the module integration context
- * @returns {Object} - Module integration context
- */
+// Custom hook for using the module integration context
 export const useModuleIntegration = () => {
   const context = useContext(ModuleIntegrationContext);
   
-  if (context === undefined) {
-    throw new Error('useModuleIntegration must be used within a ModuleIntegrationLayer');
+  if (!context) {
+    throw new Error('useModuleIntegration must be used within a ModuleIntegrationProvider');
   }
   
   return context;
 };
+
+// Module integration layer component
+const ModuleIntegrationLayer = ({ children }) => {
+  return (
+    <ModuleIntegrationProvider>
+      {children}
+    </ModuleIntegrationProvider>
+  );
+};
+
+export default ModuleIntegrationLayer;

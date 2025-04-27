@@ -1,91 +1,40 @@
 /**
  * AI Assistant Button
  * 
- * This component provides a floating action button to access the AI assistant.
- * It adapts to the current module context to provide contextual help and recommendations.
+ * This component provides a floating button to access the AI assistant.
+ * It appears in the bottom-right corner of the application.
  */
 
-import React, { useState, useEffect } from 'react';
-import { useModuleIntegration, MODULE_NAMES } from './integration/ModuleIntegrationLayer';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bot, X } from 'lucide-react';
 
-// UI components
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Sparkles, 
-  Lightbulb 
-} from 'lucide-react';
-
-/**
- * AI Assistant Button Component
- */
-export const AIAssistantButton = ({ open, onClick, activeModule }) => {
-  // State
-  const [hasInsights, setHasInsights] = useState(false);
-  const [insightCount, setInsightCount] = useState(0);
-  
-  // Integration hooks
-  const { services } = useModuleIntegration();
-  
-  // Check for new insights periodically
-  useEffect(() => {
-    const checkForInsights = async () => {
-      try {
-        // In a real implementation, this would call something like:
-        // const insights = await services.intelligence.getNewInsights();
-        // setHasInsights(insights.length > 0);
-        // setInsightCount(insights.length);
-        
-        // For now, simulate with random insights
-        const hasNewInsights = Math.random() > 0.5;
-        setHasInsights(hasNewInsights);
-        
-        if (hasNewInsights) {
-          setInsightCount(Math.floor(Math.random() * 3) + 1);
-        }
-      } catch (error) {
-        console.error('Error checking for insights:', error);
-      }
-    };
-    
-    // Initial check
-    checkForInsights();
-    
-    // Check every minute
-    const interval = setInterval(checkForInsights, 60000);
-    
-    return () => clearInterval(interval);
-  }, []);
-  
+const AIAssistantButton = ({ isOpen, onClick }) => {
   return (
-    <Button
-      className="relative"
-      size="lg"
-      onClick={onClick}
-      variant={open ? "secondary" : "default"}
-    >
-      {open ? (
-        <Sparkles className="h-5 w-5 mr-2" />
-      ) : (
-        <Lightbulb className="h-5 w-5 mr-2" />
-      )}
-      
-      <span>AI Assistant</span>
-      
-      {/* Contextual label if in module */}
-      {activeModule && !open && (
-        <span className="ml-1 text-xs">
-          ({MODULE_NAMES[activeModule]})
-        </span>
-      )}
-      
-      {/* Insight indicator */}
-      {hasInsights && !open && (
-        <Badge className="absolute -top-2 -right-2 h-5 min-w-[20px] bg-primary text-primary-foreground">
-          {insightCount}
-        </Badge>
-      )}
-    </Button>
+    <AnimatePresence mode="wait">
+      <motion.button
+        key={isOpen ? 'close' : 'open'}
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-primary text-white shadow-lg hover:shadow-xl focus:outline-none"
+        onClick={onClick}
+        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+      >
+        {isOpen ? (
+          <X size={24} />
+        ) : (
+          <>
+            <Bot size={24} />
+            <span className="absolute top-0 right-0 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            </span>
+          </>
+        )}
+      </motion.button>
+    </AnimatePresence>
   );
 };
 

@@ -1,130 +1,74 @@
 /**
  * Security Service
  * 
- * This service provides enterprise-grade security capabilities for the TrialSage platform,
- * including multi-tenant access control, authentication, authorization, audit logging,
- * encryption, and compliance management. It enables secure operation of the platform
- * for CROs managing multiple biotech clients.
- * 
- * Features:
- * - Multi-tenant security model with CRO master accounts
- * - Role-based access control (RBAC)
- * - Attribute-based access control (ABAC)
- * - Audit logging and compliance reporting
- * - Data encryption and protection
- * - Two-factor authentication
- * - Single sign-on (SSO) integration
- * - Security policy management
+ * This service provides user authentication, access control, and security features
+ * for the TrialSage platform, supporting a multi-tenant model where CRO master
+ * accounts can manage multiple biotech client accounts.
  */
 
-import regulatoryIntelligenceCore from './RegulatoryIntelligenceCore';
+import { jwtDecode } from 'jwt-decode';
 
 const API_BASE = '/api/security';
 
-/**
- * User roles
- */
+// User roles
 export const USER_ROLES = {
-  // System-level roles
-  SYSTEM_ADMIN: 'system_admin',        // Full platform administration
-  SECURITY_ADMIN: 'security_admin',    // Security administration
-  SUPPORT: 'support',                  // Technical support access
-  
-  // Organization-level roles
-  CRO_ADMIN: 'cro_admin',              // CRO administrator
-  CRO_MANAGER: 'cro_manager',          // CRO manager
-  CLIENT_ADMIN: 'client_admin',        // Biotech client administrator
-  CLIENT_MANAGER: 'client_manager',    // Biotech client manager
-  
-  // Function-specific roles
+  ADMIN: 'admin',
+  CRO_ADMIN: 'cro_admin',
+  CRO_USER: 'cro_user',
+  CLIENT_ADMIN: 'client_admin',
+  CLIENT_USER: 'client_user',
   REGULATORY_SPECIALIST: 'regulatory_specialist',
   MEDICAL_WRITER: 'medical_writer',
-  QUALITY_SPECIALIST: 'quality_specialist',
-  DATA_MANAGER: 'data_manager',
   CLINICAL_RESEARCHER: 'clinical_researcher',
+  DATA_MANAGER: 'data_manager',
   STATISTICIAN: 'statistician',
-  
-  // Access-level roles
-  CONTRIBUTOR: 'contributor',          // Can contribute content
-  REVIEWER: 'reviewer',                // Can review content
-  APPROVER: 'approver',                // Can approve content
-  VIEWER: 'viewer'                     // Read-only access
+  APPROVER: 'approver',
+  AUDITOR: 'auditor'
 };
 
-/**
- * Access levels
- */
-export const ACCESS_LEVELS = {
-  NONE: 'none',                        // No access
-  VIEW: 'view',                        // View-only access
-  CONTRIBUTE: 'contribute',            // Can add/edit content
-  MANAGE: 'manage',                    // Can manage resources
-  ADMINISTER: 'administer'             // Full administrative access
+// Resource types for access control
+export const RESOURCE_TYPES = {
+  MODULE: 'module',
+  DOCUMENT: 'document',
+  COLLECTION: 'collection',
+  WORKFLOW: 'workflow',
+  TASK: 'task',
+  REPORT: 'report',
+  SUBMISSION: 'submission',
+  ORGANIZATION: 'organization'
 };
 
-/**
- * Security event types
- */
-export const SECURITY_EVENTS = {
-  LOGIN: 'login',
-  LOGOUT: 'logout',
-  FAILED_LOGIN: 'failed_login',
-  PASSWORD_CHANGE: 'password_change',
-  ROLE_CHANGE: 'role_change',
-  PERMISSION_CHANGE: 'permission_change',
-  ACCOUNT_LOCK: 'account_lock',
-  ACCOUNT_UNLOCK: 'account_unlock',
-  USER_CREATION: 'user_creation',
-  USER_DELETION: 'user_deletion',
-  TFA_ENABLE: 'tfa_enable',
-  TFA_DISABLE: 'tfa_disable',
-  POLICY_CHANGE: 'policy_change',
-  SENSITIVE_DATA_ACCESS: 'sensitive_data_access',
-  API_KEY_GENERATION: 'api_key_generation',
-  API_KEY_DELETION: 'api_key_deletion'
-};
-
-/**
- * Authentication methods
- */
-export const AUTH_METHODS = {
-  PASSWORD: 'password',
-  SSO: 'sso',
-  SAML: 'saml',
-  OAUTH: 'oauth',
-  LDAP: 'ldap',
-  CERTIFICATE: 'certificate',
-  BIOMETRIC: 'biometric'
-};
-
-/**
- * Organization types
- */
-export const ORGANIZATION_TYPES = {
-  CRO: 'cro',                          // Contract Research Organization
-  BIOTECH: 'biotech',                  // Biotech client
-  PHARMA: 'pharma',                    // Pharmaceutical company
-  ACADEMIC: 'academic',                // Academic institution
-  HOSPITAL: 'hospital',                // Hospital/Medical center
-  REGULATORY: 'regulatory',            // Regulatory authority
-  SERVICE_PROVIDER: 'service_provider' // Service provider
+// Permission types
+export const PERMISSIONS = {
+  VIEW: 'view',
+  EDIT: 'edit',
+  CREATE: 'create',
+  DELETE: 'delete',
+  APPROVE: 'approve',
+  ASSIGN: 'assign',
+  ADMIN: 'admin'
 };
 
 class SecurityService {
   constructor() {
+    this.isInitialized = false;
+    this.config = {
+      multiTenant: true,
+      blockchainVerification: false,
+      passwordPolicyStrength: 'high',
+      sessionTimeout: 60 * 60 * 1000, // 1 hour
+      refreshTokenEnabled: true
+    };
     this.currentUser = null;
     this.currentOrganization = null;
-    this.currentRoles = [];
-    this.currentPermissions = {};
-    this.clientContext = null;
-    this.isAuthenticated = false;
-    this.lastAuthCheck = null;
-    this.sessionExpiry = null;
-    this.tfaEnabled = false;
-    this.securityContext = {};
-    this.policyCache = new Map();
-    this.auditEventBuffer = [];
-    this.blockchainEnabled = false;
+    this.authToken = null;
+    this.refreshToken = null;
+    this.tokenExpiry = null;
+    this.organizations = new Map();
+    this.users = new Map();
+    this.permissions = new Map();
+    this.accessControlCache = new Map();
+    this.sessionExpiryTimer = null;
   }
 
   /**
@@ -133,1099 +77,899 @@ class SecurityService {
    * @returns {Promise<Object>} - Initialization status
    */
   async initialize(options = {}) {
-    try {
-      const response = await fetch(`${API_BASE}/initialize`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(options)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to initialize Security service: ${response.statusText}`);
-      }
-
-      const initStatus = await response.json();
-      
-      this.isAuthenticated = initStatus.isAuthenticated;
-      this.currentUser = initStatus.currentUser;
-      this.currentOrganization = initStatus.organization;
-      this.currentRoles = initStatus.roles || [];
-      this.currentPermissions = initStatus.permissions || {};
-      this.sessionExpiry = initStatus.sessionExpiry;
-      this.tfaEnabled = initStatus.tfaEnabled;
-      this.securityContext = initStatus.securityContext || {};
-      this.blockchainEnabled = initStatus.blockchainEnabled;
-      
-      // Initialize client context if user is from a CRO and acting on behalf of a client
-      if (initStatus.clientContext) {
-        this.clientContext = initStatus.clientContext;
-      }
-      
-      // Set up session expiry check
-      if (typeof window !== 'undefined' && this.sessionExpiry) {
-        this._setupSessionCheck();
-      }
-      
-      // Initialize blockchain if enabled
-      if (this.blockchainEnabled) {
-        await regulatoryIntelligenceCore.initialize({ enableBlockchain: true });
-      }
-      
-      // Set up security event listener
-      this._setupSecurityEventListeners();
-      
-      return initStatus;
-    } catch (error) {
-      console.error('Error initializing Security service:', error);
-      this.isAuthenticated = false;
-      throw error;
+    if (this.isInitialized) {
+      console.log('SecurityService already initialized');
+      return { status: 'already_initialized', config: this.config };
     }
-  }
-
-  /**
-   * Set up session expiry check
-   * @private
-   */
-  _setupSessionCheck() {
-    // Check every minute
-    setInterval(() => {
-      const now = new Date();
-      const expiry = new Date(this.sessionExpiry);
+    
+    console.log('Initializing SecurityService...');
+    
+    try {
+      // Update configuration
+      this.config = {
+        ...this.config,
+        ...options
+      };
       
-      // If session expiry is less than 5 minutes away, refresh token
-      if ((expiry - now) < 5 * 60 * 1000) {
-        this.refreshSession()
-          .catch(error => {
-            console.error('Failed to refresh session:', error);
-            // Redirect to login if refresh fails
-            if (typeof window !== 'undefined') {
-              window.location.href = '/auth/login';
+      // Check for existing session
+      const storedToken = localStorage.getItem('auth_token');
+      const storedRefreshToken = localStorage.getItem('refresh_token');
+      
+      if (storedToken) {
+        try {
+          // Validate token
+          const decoded = jwtDecode(storedToken);
+          
+          if (decoded.exp * 1000 > Date.now()) {
+            // Token is still valid
+            this.authToken = storedToken;
+            this.refreshToken = storedRefreshToken;
+            this.tokenExpiry = new Date(decoded.exp * 1000);
+            
+            // Set current user
+            this.currentUser = {
+              id: decoded.sub,
+              username: decoded.username,
+              email: decoded.email,
+              roles: decoded.roles || [],
+              organizationId: decoded.organizationId,
+              permissions: decoded.permissions || []
+            };
+            
+            // Start session expiry timer
+            this.startSessionExpiryTimer();
+            
+            // Load current organization
+            if (this.currentUser.organizationId) {
+              await this.loadOrganization(this.currentUser.organizationId);
             }
-          });
+          } else {
+            // Token expired, try to refresh
+            if (storedRefreshToken && this.config.refreshTokenEnabled) {
+              await this.refreshAuthToken(storedRefreshToken);
+            }
+          }
+        } catch (tokenError) {
+          console.warn('Invalid token:', tokenError);
+          // Clear invalid tokens
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+        }
       }
-    }, 60000);
-  }
-
-  /**
-   * Set up security event listeners
-   * @private
-   */
-  _setupSecurityEventListeners() {
-    if (typeof window === 'undefined') return;
-    
-    // Listen for security-related events
-    window.addEventListener('visibilitychange', () => {
-      // Check session when tab becomes visible again
-      if (document.visibilityState === 'visible' && this.isAuthenticated) {
-        this.verifySession().catch(console.error);
-      }
-    });
-    
-    // Buffer audit events and flush periodically
-    setInterval(() => {
-      this._flushAuditEventBuffer();
-    }, 10000); // Flush every 10 seconds
+      
+      this.isInitialized = true;
+      console.log('SecurityService initialized successfully');
+      
+      return {
+        status: 'success',
+        config: this.config,
+        authenticated: !!this.currentUser,
+        user: this.currentUser
+      };
+    } catch (error) {
+      console.error('Failed to initialize SecurityService:', error);
+      
+      return {
+        status: 'error',
+        error: error.message
+      };
+    }
   }
   
   /**
-   * Flush audit event buffer
-   * @private
+   * Login user
+   * @param {string} username - Username
+   * @param {string} password - Password
+   * @param {Object} options - Login options
+   * @returns {Promise<Object>} - Login result
    */
-  async _flushAuditEventBuffer() {
-    if (this.auditEventBuffer.length === 0) return;
-    
-    const events = [...this.auditEventBuffer];
-    this.auditEventBuffer = [];
-    
+  async login(username, password, options = {}) {
     try {
-      await fetch(`${API_BASE}/audit/batch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      // In production, would call API
+      // const response = await fetch(`${API_BASE}/login`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({ username, password })
+      // });
+      
+      // if (!response.ok) {
+      //   const error = await response.json();
+      //   throw new Error(error.message || 'Login failed');
+      // }
+      
+      // const data = await response.json();
+      
+      // For now, simulate login
+      // In production, this would be handled by the server
+      const mockUsers = [
+        {
+          id: 'user-1',
+          username: 'admin',
+          password: 'password',
+          email: 'admin@trialsage.com',
+          roles: [USER_ROLES.ADMIN],
+          organizationId: 'org-1',
+          permissions: [
+            { resource: '*', type: '*', permission: '*' }
+          ]
         },
-        body: JSON.stringify({ events })
-      });
-    } catch (error) {
-      console.error('Failed to flush audit events:', error);
-      // Push events back to buffer
-      this.auditEventBuffer.push(...events);
-    }
-  }
-
-  /**
-   * Authenticate user
-   * @param {Object} credentials - Authentication credentials
-   * @param {Object} options - Authentication options
-   * @returns {Promise<Object>} - Authentication result
-   */
-  async authenticate(credentials, options = {}) {
-    try {
-      const response = await fetch(`${API_BASE}/authenticate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+        {
+          id: 'user-2',
+          username: 'cro_admin',
+          password: 'password',
+          email: 'cro_admin@trialsage.com',
+          roles: [USER_ROLES.CRO_ADMIN],
+          organizationId: 'org-2',
+          permissions: [
+            { resource: 'organization:org-2', type: RESOURCE_TYPES.ORGANIZATION, permission: PERMISSIONS.ADMIN },
+            { resource: 'module:*', type: RESOURCE_TYPES.MODULE, permission: PERMISSIONS.VIEW }
+          ]
         },
-        body: JSON.stringify({
-          credentials,
-          options
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Authentication failed: ${response.statusText}`);
+        {
+          id: 'user-3',
+          username: 'regulatory',
+          password: 'password',
+          email: 'regulatory@trialsage.com',
+          roles: [USER_ROLES.REGULATORY_SPECIALIST, USER_ROLES.CRO_USER],
+          organizationId: 'org-2',
+          permissions: [
+            { resource: 'module:ind-wizard', type: RESOURCE_TYPES.MODULE, permission: PERMISSIONS.EDIT },
+            { resource: 'module:trial-vault', type: RESOURCE_TYPES.MODULE, permission: PERMISSIONS.VIEW }
+          ]
+        },
+        {
+          id: 'user-4',
+          username: 'client_admin',
+          password: 'password',
+          email: 'client_admin@biotech.com',
+          roles: [USER_ROLES.CLIENT_ADMIN],
+          organizationId: 'org-3',
+          parentOrgId: 'org-2',
+          permissions: [
+            { resource: 'organization:org-3', type: RESOURCE_TYPES.ORGANIZATION, permission: PERMISSIONS.ADMIN },
+            { resource: 'module:*', type: RESOURCE_TYPES.MODULE, permission: PERMISSIONS.VIEW }
+          ]
+        }
+      ];
+      
+      // Find user
+      const user = mockUsers.find(u => u.username === username);
+      
+      if (!user || user.password !== password) {
+        throw new Error('Invalid username or password');
       }
-
-      const authResult = await response.json();
       
-      // Update service state
-      this.isAuthenticated = true;
-      this.currentUser = authResult.user;
-      this.currentOrganization = authResult.organization;
-      this.currentRoles = authResult.roles || [];
-      this.currentPermissions = authResult.permissions || {};
-      this.sessionExpiry = authResult.sessionExpiry;
-      this.tfaEnabled = authResult.tfaEnabled;
+      // Generate token
+      const now = Math.floor(Date.now() / 1000);
+      const expiryTime = now + 3600; // 1 hour
       
-      if (authResult.clientContext) {
-        this.clientContext = authResult.clientContext;
+      const tokenPayload = {
+        sub: user.id,
+        username: user.username,
+        email: user.email,
+        roles: user.roles,
+        organizationId: user.organizationId,
+        permissions: user.permissions,
+        iat: now,
+        exp: expiryTime
+      };
+      
+      // In production, this would be signed with a server-side secret
+      const mockToken = btoa(JSON.stringify(tokenPayload));
+      const mockRefreshToken = `refresh_${mockToken}`;
+      
+      // Set tokens and user
+      this.authToken = mockToken;
+      this.refreshToken = mockRefreshToken;
+      this.tokenExpiry = new Date(expiryTime * 1000);
+      
+      this.currentUser = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        roles: user.roles,
+        organizationId: user.organizationId,
+        permissions: user.permissions
+      };
+      
+      // Store tokens
+      localStorage.setItem('auth_token', mockToken);
+      
+      if (this.config.refreshTokenEnabled) {
+        localStorage.setItem('refresh_token', mockRefreshToken);
       }
       
-      // Set up session expiry check
-      if (typeof window !== 'undefined') {
-        this._setupSessionCheck();
+      // Start session expiry timer
+      this.startSessionExpiryTimer();
+      
+      // Load organization
+      if (user.organizationId) {
+        await this.loadOrganization(user.organizationId);
       }
       
-      // Log authentication event
-      this.logSecurityEvent(SECURITY_EVENTS.LOGIN, {
-        userId: authResult.user.id,
-        method: options.method || AUTH_METHODS.PASSWORD
-      });
+      // Cache user
+      this.users.set(user.id, this.currentUser);
       
-      return authResult;
+      return {
+        success: true,
+        user: this.currentUser,
+        organization: this.currentOrganization
+      };
     } catch (error) {
-      console.error('Authentication error:', error);
-      
-      // Log failed authentication
-      if (credentials.username) {
-        this.logSecurityEvent(SECURITY_EVENTS.FAILED_LOGIN, {
-          username: credentials.username,
-          method: options.method || AUTH_METHODS.PASSWORD,
-          reason: error.message
-        });
-      }
-      
+      console.error('Login error:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Complete two-factor authentication
-   * @param {string} code - Two-factor authentication code
-   * @returns {Promise<Object>} - Authentication result
-   */
-  async completeTwoFactorAuth(code) {
-    try {
-      const response = await fetch(`${API_BASE}/authenticate/tfa`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ code })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Two-factor authentication failed: ${response.statusText}`);
-      }
-
-      const authResult = await response.json();
-      
-      // Update service state
-      this.isAuthenticated = true;
-      this.sessionExpiry = authResult.sessionExpiry;
-      
-      return authResult;
-    } catch (error) {
-      console.error('Two-factor authentication error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Verify current session
-   * @returns {Promise<boolean>} - Session validity
-   */
-  async verifySession() {
-    try {
-      const response = await fetch(`${API_BASE}/session`);
-      
-      if (!response.ok) {
-        this.isAuthenticated = false;
-        return false;
-      }
-      
-      const sessionInfo = await response.json();
-      
-      // Update expiry time
-      this.sessionExpiry = sessionInfo.expiry;
-      this.lastAuthCheck = new Date().toISOString();
-      
-      return sessionInfo.valid;
-    } catch (error) {
-      console.error('Session verification error:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Refresh authentication session
-   * @returns {Promise<Object>} - Refreshed session info
-   */
-  async refreshSession() {
-    try {
-      const response = await fetch(`${API_BASE}/session/refresh`, {
-        method: 'POST'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Session refresh failed: ${response.statusText}`);
-      }
-
-      const sessionInfo = await response.json();
-      
-      // Update session expiry
-      this.sessionExpiry = sessionInfo.expiry;
-      this.lastAuthCheck = new Date().toISOString();
-      
-      return sessionInfo;
-    } catch (error) {
-      console.error('Session refresh error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Log out current user
+   * Logout current user
    * @returns {Promise<Object>} - Logout result
    */
   async logout() {
     try {
-      const response = await fetch(`${API_BASE}/logout`, {
-        method: 'POST'
-      });
-
-      // Log security event before resetting state
-      this.logSecurityEvent(SECURITY_EVENTS.LOGOUT, {
-        userId: this.currentUser?.id
-      });
+      // In production, would call API
+      // await fetch(`${API_BASE}/logout`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${this.authToken}`
+      //   }
+      // });
       
-      // Reset service state
-      this.isAuthenticated = false;
+      // Clear tokens and user
+      this.authToken = null;
+      this.refreshToken = null;
+      this.tokenExpiry = null;
       this.currentUser = null;
       this.currentOrganization = null;
-      this.currentRoles = [];
-      this.currentPermissions = {};
-      this.clientContext = null;
-      this.sessionExpiry = null;
       
-      if (!response.ok) {
-        throw new Error(`Logout failed: ${response.statusText}`);
+      // Clear session expiry timer
+      if (this.sessionExpiryTimer) {
+        clearTimeout(this.sessionExpiryTimer);
+        this.sessionExpiryTimer = null;
       }
-
-      return await response.json();
+      
+      // Clear stored tokens
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      
+      return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Check if user has specific role
-   * @param {string|Array} roles - Role(s) to check
-   * @returns {boolean} - Whether user has the role(s)
+   * Refresh authentication token
+   * @param {string} refreshToken - Refresh token (optional, uses stored token if not provided)
+   * @returns {Promise<Object>} - Refresh result
    */
-  hasRole(roles) {
-    if (!this.isAuthenticated || !this.currentRoles.length) {
-      return false;
-    }
-    
-    if (Array.isArray(roles)) {
-      return roles.some(role => this.currentRoles.includes(role));
-    }
-    
-    return this.currentRoles.includes(roles);
-  }
-
-  /**
-   * Check if user has permission for a resource
-   * @param {string} resourceType - Resource type
-   * @param {string} permission - Permission to check
-   * @param {string} resourceId - Specific resource ID (optional)
-   * @returns {boolean} - Whether user has the permission
-   */
-  hasPermission(resourceType, permission, resourceId = null) {
-    if (!this.isAuthenticated) {
-      return false;
-    }
-    
-    // Check if user has system admin role
-    if (this.hasRole(USER_ROLES.SYSTEM_ADMIN)) {
-      return true;
-    }
-    
-    // Check resource type permissions
-    const resourcePermissions = this.currentPermissions[resourceType];
-    if (!resourcePermissions) {
-      return false;
-    }
-    
-    // Check specific resource if ID provided
-    if (resourceId) {
-      const specificPermissions = resourcePermissions.resources?.[resourceId];
-      
-      if (specificPermissions) {
-        if (specificPermissions.includes(permission) || specificPermissions.includes('*')) {
-          return true;
-        }
-      }
-    }
-    
-    // Check global permissions for resource type
-    return resourcePermissions.global?.includes(permission) || resourcePermissions.global?.includes('*');
-  }
-
-  /**
-   * Check if current user can access client data
-   * @param {string} clientId - Client organization ID
-   * @returns {boolean} - Whether user has client access
-   */
-  canAccessClient(clientId) {
-    // If user is from the client organization, they can access
-    if (this.currentOrganization?.id === clientId) {
-      return true;
-    }
-    
-    // If user is system admin, they have access
-    if (this.hasRole(USER_ROLES.SYSTEM_ADMIN)) {
-      return true;
-    }
-    
-    // If user is from a CRO
-    if (this.currentOrganization?.type === ORGANIZATION_TYPES.CRO) {
-      // Check if they are authorized for this client
-      const clientAuth = this.currentPermissions.clients?.resources?.[clientId];
-      
-      return !!clientAuth;
-    }
-    
-    return false;
-  }
-
-  /**
-   * Switch to client context
-   * @param {string} clientId - Client organization ID
-   * @returns {Promise<Object>} - Updated security context
-   */
-  async switchToClientContext(clientId) {
-    if (!this.canAccessClient(clientId)) {
-      throw new Error('You do not have permission to access this client');
+  async refreshAuthToken(refreshToken = null) {
+    if (!this.config.refreshTokenEnabled) {
+      throw new Error('Token refresh is not enabled');
     }
     
     try {
-      const response = await fetch(`${API_BASE}/context/client/${clientId}`, {
-        method: 'POST'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to switch context: ${response.statusText}`);
-      }
-
-      const contextResult = await response.json();
+      const tokenToUse = refreshToken || this.refreshToken;
       
-      // Update client context
-      this.clientContext = contextResult.clientContext;
-      
-      // Log context switch
-      this.logSecurityEvent('client_context_switch', {
-        userId: this.currentUser?.id,
-        clientId: clientId
-      });
-      
-      return contextResult;
-    } catch (error) {
-      console.error('Context switch error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Clear client context
-   * @returns {Promise<Object>} - Updated security context
-   */
-  async clearClientContext() {
-    try {
-      const response = await fetch(`${API_BASE}/context/clear`, {
-        method: 'POST'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to clear context: ${response.statusText}`);
-      }
-
-      const contextResult = await response.json();
-      
-      // Clear client context
-      this.clientContext = null;
-      
-      return contextResult;
-    } catch (error) {
-      console.error('Context clear error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get security policy
-   * @param {string} policyType - Policy type
-   * @returns {Promise<Object>} - Security policy
-   */
-  async getSecurityPolicy(policyType) {
-    try {
-      // Check cache first
-      if (this.policyCache.has(policyType)) {
-        return Promise.resolve(this.policyCache.get(policyType));
+      if (!tokenToUse) {
+        throw new Error('No refresh token available');
       }
       
-      const response = await fetch(`${API_BASE}/policies/${policyType}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get security policy: ${response.statusText}`);
+      // In production, would call API
+      // const response = await fetch(`${API_BASE}/refresh-token`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({ refreshToken: tokenToUse })
+      // });
+      
+      // if (!response.ok) {
+      //   const error = await response.json();
+      //   throw new Error(error.message || 'Token refresh failed');
+      // }
+      
+      // const data = await response.json();
+      
+      // For now, simulate token refresh
+      // In production, this would be handled by the server
+      if (!tokenToUse.startsWith('refresh_')) {
+        throw new Error('Invalid refresh token');
       }
       
-      const policy = await response.json();
+      // Extract user info from token
+      const encodedToken = tokenToUse.substring(8); // Remove 'refresh_' prefix
+      const tokenData = JSON.parse(atob(encodedToken));
       
-      // Cache policy
-      this.policyCache.set(policyType, policy);
+      // Generate new tokens
+      const now = Math.floor(Date.now() / 1000);
+      const expiryTime = now + 3600; // 1 hour
       
-      return policy;
-    } catch (error) {
-      console.error(`Error getting security policy ${policyType}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update security policy
-   * @param {string} policyType - Policy type
-   * @param {Object} updates - Policy updates
-   * @returns {Promise<Object>} - Updated policy
-   */
-  async updateSecurityPolicy(policyType, updates) {
-    try {
-      const response = await fetch(`${API_BASE}/policies/${policyType}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updates)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update security policy: ${response.statusText}`);
-      }
-
-      const updatedPolicy = await response.json();
-      
-      // Update cache
-      this.policyCache.set(policyType, updatedPolicy);
-      
-      // Log policy change
-      this.logSecurityEvent(SECURITY_EVENTS.POLICY_CHANGE, {
-        policyType,
-        changedBy: this.currentUser?.id
-      });
-      
-      return updatedPolicy;
-    } catch (error) {
-      console.error(`Error updating security policy ${policyType}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get user security profile
-   * @param {string} userId - User ID
-   * @returns {Promise<Object>} - User security profile
-   */
-  async getUserSecurityProfile(userId) {
-    try {
-      const response = await fetch(`${API_BASE}/users/${userId}/security-profile`);
-      if (!response.ok) {
-        throw new Error(`Failed to get user security profile: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error getting security profile for user ${userId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update user roles
-   * @param {string} userId - User ID
-   * @param {Array} roles - New roles
-   * @returns {Promise<Object>} - Updated user
-   */
-  async updateUserRoles(userId, roles) {
-    try {
-      const response = await fetch(`${API_BASE}/users/${userId}/roles`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ roles })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update user roles: ${response.statusText}`);
-      }
-
-      const updatedUser = await response.json();
-      
-      // Log role change
-      this.logSecurityEvent(SECURITY_EVENTS.ROLE_CHANGE, {
-        userId,
-        updatedBy: this.currentUser?.id,
-        roles
-      });
-      
-      return updatedUser;
-    } catch (error) {
-      console.error(`Error updating roles for user ${userId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update user permissions
-   * @param {string} userId - User ID
-   * @param {Object} permissions - New permissions
-   * @returns {Promise<Object>} - Updated user
-   */
-  async updateUserPermissions(userId, permissions) {
-    try {
-      const response = await fetch(`${API_BASE}/users/${userId}/permissions`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ permissions })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update user permissions: ${response.statusText}`);
-      }
-
-      const updatedUser = await response.json();
-      
-      // Log permission change
-      this.logSecurityEvent(SECURITY_EVENTS.PERMISSION_CHANGE, {
-        userId,
-        updatedBy: this.currentUser?.id
-      });
-      
-      return updatedUser;
-    } catch (error) {
-      console.error(`Error updating permissions for user ${userId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Lock user account
-   * @param {string} userId - User ID
-   * @param {string} reason - Lock reason
-   * @returns {Promise<Object>} - Lock result
-   */
-  async lockUserAccount(userId, reason) {
-    try {
-      const response = await fetch(`${API_BASE}/users/${userId}/lock`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ reason })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to lock user account: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Log account lock
-      this.logSecurityEvent(SECURITY_EVENTS.ACCOUNT_LOCK, {
-        userId,
-        lockedBy: this.currentUser?.id,
-        reason
-      });
-      
-      return result;
-    } catch (error) {
-      console.error(`Error locking account for user ${userId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Unlock user account
-   * @param {string} userId - User ID
-   * @param {string} reason - Unlock reason
-   * @returns {Promise<Object>} - Unlock result
-   */
-  async unlockUserAccount(userId, reason) {
-    try {
-      const response = await fetch(`${API_BASE}/users/${userId}/unlock`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ reason })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to unlock user account: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Log account unlock
-      this.logSecurityEvent(SECURITY_EVENTS.ACCOUNT_UNLOCK, {
-        userId,
-        unlockedBy: this.currentUser?.id,
-        reason
-      });
-      
-      return result;
-    } catch (error) {
-      console.error(`Error unlocking account for user ${userId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Set up two-factor authentication
-   * @param {string} method - TFA method
-   * @returns {Promise<Object>} - TFA setup data
-   */
-  async setupTwoFactorAuth(method) {
-    try {
-      const response = await fetch(`${API_BASE}/tfa/setup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ method })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to set up two-factor authentication: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Two-factor authentication setup error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Enable two-factor authentication
-   * @param {string} code - Verification code
-   * @param {string} method - TFA method
-   * @returns {Promise<Object>} - TFA enable result
-   */
-  async enableTwoFactorAuth(code, method) {
-    try {
-      const response = await fetch(`${API_BASE}/tfa/enable`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ code, method })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to enable two-factor authentication: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Update TFA status
-      this.tfaEnabled = true;
-      
-      // Log TFA enable
-      this.logSecurityEvent(SECURITY_EVENTS.TFA_ENABLE, {
-        userId: this.currentUser?.id,
-        method
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('Two-factor authentication enable error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Disable two-factor authentication
-   * @param {string} code - Verification code
-   * @returns {Promise<Object>} - TFA disable result
-   */
-  async disableTwoFactorAuth(code) {
-    try {
-      const response = await fetch(`${API_BASE}/tfa/disable`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ code })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to disable two-factor authentication: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Update TFA status
-      this.tfaEnabled = false;
-      
-      // Log TFA disable
-      this.logSecurityEvent(SECURITY_EVENTS.TFA_DISABLE, {
-        userId: this.currentUser?.id
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('Two-factor authentication disable error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate API key
-   * @param {Object} options - API key options
-   * @returns {Promise<Object>} - Generated API key
-   */
-  async generateApiKey(options) {
-    try {
-      const response = await fetch(`${API_BASE}/api-keys`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(options)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to generate API key: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Log API key generation
-      this.logSecurityEvent(SECURITY_EVENTS.API_KEY_GENERATION, {
-        userId: this.currentUser?.id,
-        keyId: result.id,
-        expires: options.expiresAt
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('API key generation error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Revoke API key
-   * @param {string} keyId - API key ID
-   * @returns {Promise<Object>} - Revocation result
-   */
-  async revokeApiKey(keyId) {
-    try {
-      const response = await fetch(`${API_BASE}/api-keys/${keyId}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to revoke API key: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Log API key deletion
-      this.logSecurityEvent(SECURITY_EVENTS.API_KEY_DELETION, {
-        userId: this.currentUser?.id,
-        keyId
-      });
-      
-      return result;
-    } catch (error) {
-      console.error(`Error revoking API key ${keyId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Configure SSO for an organization
-   * @param {string} organizationId - Organization ID
-   * @param {Object} ssoConfig - SSO configuration
-   * @returns {Promise<Object>} - Configuration result
-   */
-  async configureSso(organizationId, ssoConfig) {
-    try {
-      const response = await fetch(`${API_BASE}/organizations/${organizationId}/sso`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(ssoConfig)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to configure SSO: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Error configuring SSO for organization ${organizationId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get security audit logs
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} - Audit log entries
-   */
-  async getAuditLogs(options = {}) {
-    try {
-      const queryParams = new URLSearchParams({
-        ...options
-      }).toString();
-
-      const response = await fetch(`${API_BASE}/audit?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get audit logs: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting audit logs:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Log security event
-   * @param {string} eventType - Event type
-   * @param {Object} eventData - Event data
-   * @returns {Promise<void>}
-   */
-  async logSecurityEvent(eventType, eventData = {}) {
-    try {
-      const event = {
-        type: eventType,
-        timestamp: new Date().toISOString(),
-        userId: this.currentUser?.id,
-        organizationId: this.currentOrganization?.id,
-        clientId: this.clientContext?.id,
-        ipAddress: eventData.ipAddress || '0.0.0.0',
-        userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
-        data: eventData
+      const tokenPayload = {
+        ...tokenData,
+        iat: now,
+        exp: expiryTime
       };
       
-      // Add to buffer for batch processing
-      this.auditEventBuffer.push(event);
+      // In production, this would be signed with a server-side secret
+      const mockToken = btoa(JSON.stringify(tokenPayload));
+      const mockRefreshToken = `refresh_${mockToken}`;
       
-      // If buffer is getting large, flush immediately
-      if (this.auditEventBuffer.length >= 10) {
-        this._flushAuditEventBuffer();
-      }
+      // Set new tokens
+      this.authToken = mockToken;
+      this.refreshToken = mockRefreshToken;
+      this.tokenExpiry = new Date(expiryTime * 1000);
       
-      // If using blockchain for critical events
-      if (this.blockchainEnabled && this._isCriticalEvent(eventType)) {
-        // Create blockchain verification
-        try {
-          await regulatoryIntelligenceCore.createBlockchainAuditTrail(
-            'security',
-            `security-${Date.now()}`,
-            {
-              action: eventType,
-              ...eventData,
-              timestamp: event.timestamp
-            }
-          );
-        } catch (blockchainError) {
-          console.error('Error creating blockchain audit trail:', blockchainError);
-        }
-      }
+      // Update current user from token
+      this.currentUser = {
+        id: tokenPayload.sub,
+        username: tokenPayload.username,
+        email: tokenPayload.email,
+        roles: tokenPayload.roles,
+        organizationId: tokenPayload.organizationId,
+        permissions: tokenPayload.permissions
+      };
+      
+      // Store new tokens
+      localStorage.setItem('auth_token', mockToken);
+      localStorage.setItem('refresh_token', mockRefreshToken);
+      
+      // Restart session expiry timer
+      this.startSessionExpiryTimer();
+      
+      return {
+        success: true,
+        user: this.currentUser
+      };
     } catch (error) {
-      console.error('Error logging security event:', error);
+      console.error('Token refresh error:', error);
+      
+      // Clear tokens and user on refresh failure
+      this.authToken = null;
+      this.refreshToken = null;
+      this.tokenExpiry = null;
+      this.currentUser = null;
+      this.currentOrganization = null;
+      
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      
+      throw error;
     }
   }
   
   /**
-   * Check if event is critical (should be recorded on blockchain)
-   * @param {string} eventType - Event type
-   * @returns {boolean} - Whether event is critical
-   * @private
+   * Start session expiry timer
    */
-  _isCriticalEvent(eventType) {
-    const criticalEvents = [
-      SECURITY_EVENTS.ROLE_CHANGE,
-      SECURITY_EVENTS.PERMISSION_CHANGE,
-      SECURITY_EVENTS.ACCOUNT_LOCK,
-      SECURITY_EVENTS.ACCOUNT_UNLOCK,
-      SECURITY_EVENTS.USER_CREATION,
-      SECURITY_EVENTS.USER_DELETION,
-      SECURITY_EVENTS.POLICY_CHANGE,
-      SECURITY_EVENTS.SENSITIVE_DATA_ACCESS,
-      SECURITY_EVENTS.API_KEY_GENERATION
-    ];
-    
-    return criticalEvents.includes(eventType);
-  }
-
-  /**
-   * Get client organizations for current CRO
-   * @returns {Promise<Array>} - Client organizations
-   */
-  async getClientOrganizations() {
-    if (this.currentOrganization?.type !== ORGANIZATION_TYPES.CRO) {
-      throw new Error('This operation is only available for CRO organizations');
+  startSessionExpiryTimer() {
+    // Clear existing timer
+    if (this.sessionExpiryTimer) {
+      clearTimeout(this.sessionExpiryTimer);
+      this.sessionExpiryTimer = null;
     }
     
+    if (!this.tokenExpiry) {
+      return;
+    }
+    
+    const timeUntilExpiry = this.tokenExpiry.getTime() - Date.now();
+    const refreshThreshold = 5 * 60 * 1000; // 5 minutes before expiry
+    
+    if (timeUntilExpiry <= 0) {
+      // Token already expired
+      this.logout();
+      return;
+    }
+    
+    if (timeUntilExpiry <= refreshThreshold && this.config.refreshTokenEnabled) {
+      // Token is close to expiring, refresh it now
+      this.refreshAuthToken().catch(() => {
+        // If refresh fails, log out
+        this.logout();
+      });
+      return;
+    }
+    
+    // Set timer to refresh token before expiry
+    const refreshTime = timeUntilExpiry - refreshThreshold;
+    
+    this.sessionExpiryTimer = setTimeout(() => {
+      if (this.config.refreshTokenEnabled && this.refreshToken) {
+        this.refreshAuthToken().catch(() => {
+          // If refresh fails, log out
+          this.logout();
+        });
+      } else {
+        // No refresh token, just log out
+        this.logout();
+      }
+    }, refreshTime);
+  }
+  
+  /**
+   * Load organization data
+   * @param {string} organizationId - Organization ID
+   * @returns {Promise<Object>} - Organization data
+   */
+  async loadOrganization(organizationId) {
     try {
-      const response = await fetch(`${API_BASE}/organizations/clients`);
-      if (!response.ok) {
-        throw new Error(`Failed to get client organizations: ${response.statusText}`);
+      // Check cache
+      if (this.organizations.has(organizationId)) {
+        this.currentOrganization = this.organizations.get(organizationId);
+        return this.currentOrganization;
       }
       
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting client organizations:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Add client organization to CRO
-   * @param {Object} clientData - Client organization data
-   * @returns {Promise<Object>} - Created client organization
-   */
-  async addClientOrganization(clientData) {
-    if (this.currentOrganization?.type !== ORGANIZATION_TYPES.CRO) {
-      throw new Error('This operation is only available for CRO organizations');
-    }
-    
-    try {
-      const response = await fetch(`${API_BASE}/organizations/clients`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      // In production, would call API
+      // const response = await fetch(`${API_BASE}/organizations/${organizationId}`, {
+      //   headers: {
+      //     'Authorization': `Bearer ${this.authToken}`
+      //   }
+      // });
+      
+      // if (!response.ok) {
+      //   const error = await response.json();
+      //   throw new Error(error.message || 'Failed to load organization');
+      // }
+      
+      // const organization = await response.json();
+      
+      // For now, simulate organization data
+      const mockOrganizations = [
+        {
+          id: 'org-1',
+          name: 'TrialSage Inc.',
+          type: 'platform_admin',
+          features: ['all'],
+          modules: ['all'],
+          parentId: null,
+          childOrganizations: ['org-2']
         },
-        body: JSON.stringify(clientData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to add client organization: ${response.statusText}`);
+        {
+          id: 'org-2',
+          name: 'CRO Master Account',
+          type: 'cro',
+          features: ['ind-wizard', 'trial-vault', 'csr-intelligence', 'study-architect'],
+          modules: ['ind-wizard', 'trial-vault', 'csr-intelligence', 'study-architect'],
+          parentId: 'org-1',
+          childOrganizations: ['org-3', 'org-4']
+        },
+        {
+          id: 'org-3',
+          name: 'Biotech Client A',
+          type: 'biotech',
+          features: ['trial-vault', 'csr-intelligence'],
+          modules: ['trial-vault', 'csr-intelligence'],
+          parentId: 'org-2',
+          childOrganizations: []
+        },
+        {
+          id: 'org-4',
+          name: 'Biotech Client B',
+          type: 'biotech',
+          features: ['ind-wizard', 'trial-vault'],
+          modules: ['ind-wizard', 'trial-vault'],
+          parentId: 'org-2',
+          childOrganizations: []
+        }
+      ];
+      
+      const organization = mockOrganizations.find(org => org.id === organizationId);
+      
+      if (!organization) {
+        throw new Error(`Organization not found: ${organizationId}`);
       }
-
-      return await response.json();
+      
+      // Cache organization
+      this.organizations.set(organizationId, organization);
+      
+      // Set current organization
+      this.currentOrganization = organization;
+      
+      return organization;
     } catch (error) {
-      console.error('Error adding client organization:', error);
+      console.error(`Error loading organization ${organizationId}:`, error);
       throw error;
     }
   }
-
+  
   /**
-   * Create user for client organization
-   * @param {string} clientId - Client organization ID
-   * @param {Object} userData - User data
-   * @returns {Promise<Object>} - Created user
+   * Get child organizations (for multi-tenant CRO accounts)
+   * @returns {Promise<Array>} - Child organizations
    */
-  async createClientUser(clientId, userData) {
-    if (!this.canAccessClient(clientId)) {
-      throw new Error('You do not have permission to manage this client');
+  async getChildOrganizations() {
+    if (!this.currentUser || !this.currentOrganization) {
+      throw new Error('User not authenticated');
     }
     
     try {
-      const response = await fetch(`${API_BASE}/organizations/${clientId}/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to create client user: ${response.statusText}`);
+      // In production, would call API
+      // const response = await fetch(`${API_BASE}/organizations/${this.currentOrganization.id}/children`, {
+      //   headers: {
+      //     'Authorization': `Bearer ${this.authToken}`
+      //   }
+      // });
+      
+      // if (!response.ok) {
+      //   const error = await response.json();
+      //   throw new Error(error.message || 'Failed to load child organizations');
+      // }
+      
+      // const children = await response.json();
+      
+      // For now, use cached organization data
+      if (!this.currentOrganization.childOrganizations || this.currentOrganization.childOrganizations.length === 0) {
+        return [];
       }
-
-      const createdUser = await response.json();
       
-      // Log user creation
-      this.logSecurityEvent(SECURITY_EVENTS.USER_CREATION, {
-        userId: createdUser.id,
-        createdBy: this.currentUser?.id,
-        organizationId: clientId
-      });
+      const childOrgs = [];
       
-      return createdUser;
+      for (const childId of this.currentOrganization.childOrganizations) {
+        if (this.organizations.has(childId)) {
+          childOrgs.push(this.organizations.get(childId));
+        } else {
+          // Load organization if not cached
+          try {
+            const org = await this.loadOrganization(childId);
+            childOrgs.push(org);
+          } catch (orgError) {
+            console.warn(`Failed to load child organization ${childId}:`, orgError);
+          }
+        }
+      }
+      
+      return childOrgs;
     } catch (error) {
-      console.error(`Error creating user for client ${clientId}:`, error);
+      console.error('Error getting child organizations:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Get compliance status
-   * @param {string} complianceType - Compliance type
-   * @returns {Promise<Object>} - Compliance status
+   * Switch active organization (for CRO users managing multiple clients)
+   * @param {string} organizationId - Organization ID to switch to
+   * @returns {Promise<Object>} - Switch result
    */
-  async getComplianceStatus(complianceType) {
+  async switchOrganization(organizationId) {
+    if (!this.currentUser) {
+      throw new Error('User not authenticated');
+    }
+    
     try {
-      const response = await fetch(`${API_BASE}/compliance/${complianceType}`);
-      if (!response.ok) {
-        throw new Error(`Failed to get compliance status: ${response.statusText}`);
+      // Check if organization is accessible
+      const currentOrgId = this.currentOrganization?.id;
+      
+      if (currentOrgId === organizationId) {
+        return { success: true, organization: this.currentOrganization };
       }
       
-      return await response.json();
+      // Check if target org is a child of current org
+      if (this.currentOrganization && this.currentOrganization.childOrganizations) {
+        if (!this.currentOrganization.childOrganizations.includes(organizationId)) {
+          throw new Error('Organization not accessible');
+        }
+      } else {
+        // Admin can access any organization
+        if (!this.hasRole(USER_ROLES.ADMIN)) {
+          throw new Error('Organization not accessible');
+        }
+      }
+      
+      // Load organization
+      const organization = await this.loadOrganization(organizationId);
+      
+      // In production, would update session context on server
+      // const response = await fetch(`${API_BASE}/switch-context`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${this.authToken}`,
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({ organizationId })
+      // });
+      
+      // Update current organization
+      this.currentOrganization = organization;
+      
+      // Clear access control cache
+      this.accessControlCache.clear();
+      
+      return {
+        success: true,
+        organization
+      };
     } catch (error) {
-      console.error(`Error getting compliance status for ${complianceType}:`, error);
+      console.error(`Error switching to organization ${organizationId}:`, error);
       throw error;
     }
   }
-
+  
   /**
-   * Verify if data was tampered using blockchain
-   * @param {string} resourceType - Resource type
-   * @param {string} resourceId - Resource ID
+   * Check if current user has role
+   * @param {string} role - Role to check
+   * @returns {boolean} - Whether user has role
+   */
+  hasRole(role) {
+    if (!this.currentUser || !this.currentUser.roles) {
+      return false;
+    }
+    
+    return this.currentUser.roles.includes(role) || this.currentUser.roles.includes(USER_ROLES.ADMIN);
+  }
+  
+  /**
+   * Check if current user has permission for resource
+   * @param {string} resource - Resource identifier
+   * @param {string} permission - Permission type
+   * @returns {boolean} - Whether user has permission
+   */
+  hasPermission(resource, permission) {
+    if (!this.currentUser) {
+      return false;
+    }
+    
+    // Admin has all permissions
+    if (this.hasRole(USER_ROLES.ADMIN)) {
+      return true;
+    }
+    
+    // Check permission cache
+    const cacheKey = `${resource}:${permission}`;
+    if (this.accessControlCache.has(cacheKey)) {
+      return this.accessControlCache.get(cacheKey);
+    }
+    
+    let hasPermission = false;
+    
+    // Check user permissions
+    if (this.currentUser.permissions) {
+      // Check for direct permission
+      const directPermission = this.currentUser.permissions.find(p => 
+        (p.resource === resource || p.resource === '*') &&
+        (p.permission === permission || p.permission === '*')
+      );
+      
+      if (directPermission) {
+        hasPermission = true;
+      } else {
+        // Check for wildcard resource permissions (e.g., module:* for all modules)
+        const resourceType = resource.split(':')[0];
+        const wildcardPermission = this.currentUser.permissions.find(p => 
+          p.resource === `${resourceType}:*` &&
+          (p.permission === permission || p.permission === '*')
+        );
+        
+        if (wildcardPermission) {
+          hasPermission = true;
+        }
+      }
+    }
+    
+    // Cache result
+    this.accessControlCache.set(cacheKey, hasPermission);
+    
+    return hasPermission;
+  }
+  
+  /**
+   * Get available modules for current user/organization
+   * @returns {Array} - Available modules
+   */
+  getAvailableModules() {
+    if (!this.currentUser || !this.currentOrganization) {
+      return [];
+    }
+    
+    // Admin can access all modules
+    if (this.hasRole(USER_ROLES.ADMIN)) {
+      return [
+        'ind-wizard',
+        'trial-vault',
+        'csr-intelligence',
+        'study-architect',
+        'analytics',
+        'admin'
+      ];
+    }
+    
+    // Use organization's available modules
+    if (this.currentOrganization.modules) {
+      if (this.currentOrganization.modules.includes('all')) {
+        return [
+          'ind-wizard',
+          'trial-vault',
+          'csr-intelligence',
+          'study-architect',
+          'analytics'
+        ];
+      }
+      
+      return this.currentOrganization.modules;
+    }
+    
+    return [];
+  }
+  
+  /**
+   * Reset password
+   * @param {string} email - User email
+   * @returns {Promise<Object>} - Reset result
+   */
+  async resetPassword(email) {
+    try {
+      // In production, would call API
+      // const response = await fetch(`${API_BASE}/reset-password`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({ email })
+      // });
+      
+      // if (!response.ok) {
+      //   const error = await response.json();
+      //   throw new Error(error.message || 'Password reset failed');
+      // }
+      
+      // Simulate password reset
+      console.log(`Would send password reset email to: ${email}`);
+      
+      return {
+        success: true,
+        message: 'Password reset email sent'
+      };
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Update current user's password
+   * @param {string} currentPassword - Current password
+   * @param {string} newPassword - New password
+   * @returns {Promise<Object>} - Update result
+   */
+  async updatePassword(currentPassword, newPassword) {
+    if (!this.currentUser) {
+      throw new Error('User not authenticated');
+    }
+    
+    try {
+      // In production, would call API
+      // const response = await fetch(`${API_BASE}/update-password`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${this.authToken}`,
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({ currentPassword, newPassword })
+      // });
+      
+      // if (!response.ok) {
+      //   const error = await response.json();
+      //   throw new Error(error.message || 'Password update failed');
+      // }
+      
+      // Simulate password update
+      console.log(`Would update password for user: ${this.currentUser.username}`);
+      
+      return {
+        success: true,
+        message: 'Password updated successfully'
+      };
+    } catch (error) {
+      console.error('Password update error:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Verify if a document has been blockchain-verified
+   * @param {string} documentId - Document ID
    * @returns {Promise<Object>} - Verification result
    */
-  async verifyWithBlockchain(resourceType, resourceId) {
-    if (!this.blockchainEnabled) {
-      throw new Error('Blockchain verification is not enabled');
+  async verifyDocumentAuthenticity(documentId) {
+    if (!this.config.blockchainVerification) {
+      return {
+        verified: false,
+        message: 'Blockchain verification not enabled'
+      };
     }
     
     try {
-      return await regulatoryIntelligenceCore.verifyDocumentWithBlockchain(resourceId);
+      // In production, would call API
+      // const response = await fetch(`${API_BASE}/verify-document/${documentId}`, {
+      //   headers: {
+      //     'Authorization': `Bearer ${this.authToken}`
+      //   }
+      // });
+      
+      // if (!response.ok) {
+      //   const error = await response.json();
+      //   throw new Error(error.message || 'Document verification failed');
+      // }
+      
+      // const result = await response.json();
+      
+      // Simulate verification
+      const verified = documentId.length > 5; // Mock verification
+      
+      return {
+        verified,
+        timestamp: new Date().toISOString(),
+        hash: `hash_${documentId}`,
+        message: verified ? 'Document verified' : 'Document not verified'
+      };
     } catch (error) {
-      console.error(`Error verifying ${resourceType}:${resourceId} with blockchain:`, error);
+      console.error(`Error verifying document ${documentId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Request audit trail for resource
+   * @param {string} resourceType - Resource type (document, collection, etc.)
+   * @param {string} resourceId - Resource ID
+   * @returns {Promise<Array>} - Audit trail events
+   */
+  async getAuditTrail(resourceType, resourceId) {
+    if (!this.currentUser) {
+      throw new Error('User not authenticated');
+    }
+    
+    try {
+      // In production, would call API
+      // const response = await fetch(`${API_BASE}/audit-trail/${resourceType}/${resourceId}`, {
+      //   headers: {
+      //     'Authorization': `Bearer ${this.authToken}`
+      //   }
+      // });
+      
+      // if (!response.ok) {
+      //   const error = await response.json();
+      //   throw new Error(error.message || 'Failed to retrieve audit trail');
+      // }
+      
+      // const trail = await response.json();
+      
+      // Simulate audit trail
+      const now = new Date();
+      const trail = [
+        {
+          timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+          user: 'user-1',
+          username: 'admin',
+          action: 'CREATE',
+          resourceType,
+          resourceId,
+          details: 'Resource created'
+        },
+        {
+          timestamp: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(),
+          user: 'user-2',
+          username: 'cro_admin',
+          action: 'MODIFY',
+          resourceType,
+          resourceId,
+          details: 'Resource modified'
+        },
+        {
+          timestamp: new Date().toISOString(),
+          user: 'user-3',
+          username: 'regulatory',
+          action: 'VIEW',
+          resourceType,
+          resourceId,
+          details: 'Resource viewed'
+        }
+      ];
+      
+      return trail;
+    } catch (error) {
+      console.error(`Error getting audit trail for ${resourceType}:${resourceId}:`, error);
       throw error;
     }
   }
