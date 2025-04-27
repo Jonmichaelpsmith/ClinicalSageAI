@@ -26,6 +26,7 @@ export default function App() {
             <div className="text-xl font-bold">TrialSage™</div>
             <div className="space-x-4">
               <Link href="/" className="hover:text-gray-300">Home</Link>
+              <Link href="/security-compliance" className="hover:text-gray-300">Security & Compliance</Link>
               <Link href="/vault-test" className="hover:text-gray-300">Vault Test</Link>
               {isLoggedIn ? (
                 <>
@@ -56,6 +57,14 @@ export default function App() {
         <Route path="/vault-test" component={VaultUploadTest} />
         <Route path="/client-portal" component={ClientPortalDashboard} />
         <Route path="/reference-model" component={ReferenceModelPage} />
+        <Route path="/security-compliance" component={() => {
+          window.location.href = "/security_compliance.html";
+          return null;
+        }} />
+        <Route path="/heor-security" component={() => {
+          window.location.href = "/heor_security.html";
+          return null;
+        }} />
         <Route path="/cmc">
           <CMCRoutes />
         </Route>

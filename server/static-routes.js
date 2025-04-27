@@ -316,6 +316,56 @@ export function setupStaticRoutes(app) {
       res.send(html);
     }
   });
+  
+  // Custom route for Security & Compliance page
+  app.get('/security_compliance.html', (req, res) => {
+    console.log('[StaticRoutes] Serving Security & Compliance page');
+    const securityPath = path.join(process.cwd(), 'security_compliance.html');
+    if (fs.existsSync(securityPath)) {
+      res.sendFile(securityPath);
+    } else {
+      // Fallback to generated page if file doesn't exist
+      const route = {
+        path: '/security_compliance.html',
+        title: 'Security & Compliance',
+        description: 'Enterprise-Grade Security with Blockchain Verification',
+        features: [
+          'Blockchain Verification - Immutable audit trails for all regulatory documentation',
+          'Multi-Factor Authentication - Enterprise-grade access control with role-based permissions',
+          '21 CFR Part 11 Compliance - Exceed FDA requirements for electronic records',
+          'End-to-End Encryption - AES-256 encryption at rest and TLS 1.3 in transit'
+        ]
+      };
+      const html = generateStaticPage(route);
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+    }
+  });
+  
+  // Custom route for HEOR Security page
+  app.get('/heor_security.html', (req, res) => {
+    console.log('[StaticRoutes] Serving HEOR Security page');
+    const heorSecurityPath = path.join(process.cwd(), 'heor_security.html');
+    if (fs.existsSync(heorSecurityPath)) {
+      res.sendFile(heorSecurityPath);
+    } else {
+      // Fallback to generated page if file doesn't exist
+      const route = {
+        path: '/heor_security.html',
+        title: 'HEOR Security Solutions',
+        description: 'Specialized Protection for Health Economics Data',
+        features: [
+          'Patient Data Protection - Advanced anonymization and de-identification technologies',
+          'Secure Analytics Environment - Isolated computational environment for sensitive health economics analysis',
+          'Differential Privacy - Mathematical techniques that add carefully calibrated noise to dataset outputs',
+          'Regulatory Compliance Framework - Comprehensive compliance with global health data regulations'
+        ]
+      };
+      const html = generateStaticPage(route);
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+    }
+  });
 
   console.log('[StaticRoutes] Static routes registered successfully');
 }
