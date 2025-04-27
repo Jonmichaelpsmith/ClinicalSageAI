@@ -5,6 +5,7 @@ import VaultUploadTest from './pages/VaultUploadTest.jsx';
 import ClientPortalDashboard from './pages/ClientPortalDashboard.jsx';
 import CMCRoutes from './pages/CMCBlueprintPage.jsx';
 import ReferenceModelPage from './pages/ReferenceModelPage.jsx';
+import INDWizardContainer from './components/ind-wizard/INDWizardContainer.jsx';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("authenticated") === "true");
@@ -33,6 +34,7 @@ export default function App() {
                   <Link href="/client-portal" className="hover:text-gray-300">Client Portal</Link>
                   <Link href="/cmc" className="hover:text-gray-300">CMC Blueprint</Link>
                   <Link href="/reference-model" className="hover:text-gray-300">Reference Model</Link>
+                  <Link href="/ind-wizard" className="hover:text-gray-300">IND Wizard</Link>
                   <button 
                     className="hover:text-gray-300"
                     onClick={() => {
@@ -70,6 +72,12 @@ export default function App() {
         </Route>
         <Route path="/cmc/blueprints/:id">
           <CMCRoutes />
+        </Route>
+        <Route path="/ind-wizard">
+          <INDWizardContainer projectId="12345" />
+        </Route>
+        <Route path="/ind-wizard/:subPath*">
+          <INDWizardContainer projectId="12345" />
         </Route>
       </Switch>
     </>
