@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { DatabaseAware, DataAware } from '@/components/ui/database-aware';
 
 // Import form generators
 import Form1571Generator from './Form1571Generator';
@@ -331,11 +332,17 @@ export default function FormsManager({ projectId, readOnly = false }) {
         
         <div className="md:col-span-2">
           {FormComponent && (
-            <FormComponent 
-              projectId={projectId}
-              onSuccess={() => refetchProgress()}
-              readOnly={readOnly}
-            />
+            <DatabaseAware
+              title="Form Generation Unavailable"
+              description="The database connection is currently unavailable. Form data cannot be loaded or saved at this time."
+              minHeight={400}
+            >
+              <FormComponent 
+                projectId={projectId}
+                onSuccess={() => refetchProgress()}
+                readOnly={readOnly}
+              />
+            </DatabaseAware>
           )}
         </div>
       </div>

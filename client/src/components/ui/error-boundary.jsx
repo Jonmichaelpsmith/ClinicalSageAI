@@ -1,22 +1,23 @@
-import React, { Component } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './card';
+import React from 'react';
+import { AlertTriangle, RotateCw } from 'lucide-react';
 import { Button } from './button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './card';
 
 /**
  * Error Boundary Component
  * 
- * This component catches JavaScript errors in its child component tree,
- * logs those errors, and displays a fallback UI instead of crashing.
+ * This component catches JavaScript errors anywhere in its child component tree,
+ * logs those errors, and displays a fallback UI instead of crashing the whole app.
  * 
  * Usage:
  * <ErrorBoundary>
  *   <YourComponent />
  * </ErrorBoundary>
  */
-class ErrorBoundary extends Component {
+class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = { 
       hasError: false,
       error: null,
@@ -31,68 +32,92 @@ class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     // Log the error to an error reporting service
-    console.error('Error Boundary caught an error:', error, errorInfo);
+    console.error('Error caught by boundary:', error, errorInfo);
     this.setState({ errorInfo });
-
-    // If an onError callback is provided, call it
-    if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+    
+    // Log to application monitoring service if available
+    if (window.appMonitor && typeof window.appMonitor.logError === 'function') {
+      window.appMonitor.logError(error, errorInfo);
     }
   }
-
+  
+  /**
+   * Reset the error boundary state
+   */
   resetErrorBoundary = () => {
-    this.setState({ 
+    this.setState({
       hasError: false,
       error: null,
       errorInfo: null
     });
-
-    // If an onReset callback is provided, call it
-    if (this.props.onReset) {
+    
+    // Call onReset callback if provided
+    if (this.props.onReset && typeof this.props.onReset === 'function') {
       this.props.onReset();
     }
-  }
+  };
 
   render() {
-    const { hasError, error } = this.state;
-    const { fallback, children } = this.props;
-
-    if (hasError) {
+    const { fallback, title, description, showHomeButton } = this.props;
+    
+    if (this.state.hasError) {
       // You can render any custom fallback UI
       if (fallback) {
         return typeof fallback === 'function' 
-          ? fallback({ error, resetErrorBoundary: this.resetErrorBoundary })
+          ? fallback({ 
+              error: this.state.error, 
+              resetErrorBoundary: this.resetErrorBoundary 
+            }) 
           : fallback;
       }
-
+      
+      // Default error UI
       return (
-        <Card className="w-full shadow-md border-destructive/20">
-          <CardHeader className="bg-destructive/10">
-            <CardTitle className="text-destructive flex items-center">
-              <AlertCircle className="mr-2 h-5 w-5" />
-              Something went wrong
+        <Card className="border-destructive/20 my-4">
+          <CardHeader>
+            <CardTitle className="flex items-center text-destructive">
+              <AlertTriangle className="mr-2 h-5 w-5" />
+              {title || 'Something went wrong'}
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="text-muted-foreground">
-              {error?.message ? (
-                <p className="mb-4">{error.message}</p>
-              ) : (
-                <p className="mb-4">An unexpected error occurred. Please try again.</p>
-              )}
-            </div>
+          <CardContent className="space-y-2">
+            <p className="text-muted-foreground text-sm">
+              {description || 'An unexpected error occurred in this component.'}
+            </p>
+            
+            {process.env.NODE_ENV !== 'production' && this.state.error && (
+              <div className="p-2 bg-muted/50 rounded text-xs font-mono overflow-auto max-h-32">
+                {this.state.error.toString()}
+              </div>
+            )}
           </CardContent>
-          <CardFooter>
-            <Button onClick={this.resetErrorBoundary} className="flex items-center">
-              <RefreshCw className="mr-2 h-4 w-4" />
+          <CardFooter className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={this.resetErrorBoundary}
+              className="text-xs"
+            >
+              <RotateCw className="mr-1 h-3.5 w-3.5" />
               Try Again
             </Button>
+            
+            {showHomeButton && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => window.location.href = '/'}
+                className="text-xs"
+              >
+                Go Home
+              </Button>
+            )}
           </CardFooter>
         </Card>
       );
     }
 
-    return children;
+    return this.props.children;
   }
 }
 
