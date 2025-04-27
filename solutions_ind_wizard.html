@@ -966,6 +966,505 @@
         </div>
     </section>
     
+    <section class="section" id="ind-wizard-demo">
+        <div class="container">
+            <h2 class="section-title">IND Wizard™ Demo Interface</h2>
+            <p class="section-description">Experience the power of our IND Wizard™ with this interactive demo.</p>
+            
+            <div class="ind-wizard-interface">
+                <div class="ind-tabs">
+                    <button class="ind-tab active" data-tab="projects">Projects</button>
+                    <button class="ind-tab" data-tab="forms">Form Generation</button>
+                    <button class="ind-tab" data-tab="history">Submission History</button>
+                </div>
+                
+                <div class="ind-tab-content" id="projects-tab">
+                    <div class="ind-panel">
+                        <div class="ind-panel-header">
+                            <h3>IND Projects</h3>
+                            <button class="btn btn-primary ind-new-project-btn">
+                                <i class="fas fa-plus"></i> New Project
+                            </button>
+                        </div>
+                        <div class="ind-panel-body">
+                            <div class="ind-loading" id="projects-loading">
+                                <i class="fas fa-spinner fa-spin"></i> Loading projects...
+                            </div>
+                            <table class="ind-table" id="projects-table">
+                                <thead>
+                                    <tr>
+                                        <th>Project ID</th>
+                                        <th>Drug Name</th>
+                                        <th>Sponsor</th>
+                                        <th>Protocol</th>
+                                        <th>PI Name</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projects-tbody">
+                                    <!-- Projects will be loaded here -->
+                                </tbody>
+                            </table>
+                            <div class="ind-empty" id="projects-empty">
+                                <i class="fas fa-folder-open"></i>
+                                <p>No projects found. Click "New Project" to create your first IND project.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ind-tab-content" id="forms-tab" style="display: none;">
+                    <div class="ind-panel">
+                        <div class="ind-panel-header">
+                            <h3>Form Generation</h3>
+                            <div class="ind-form-project-selector">
+                                <label for="form-project-select">Project:</label>
+                                <select id="form-project-select">
+                                    <option value="">Select a project</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ind-panel-body">
+                            <div class="ind-loading" id="forms-loading">
+                                <i class="fas fa-spinner fa-spin"></i> Loading form options...
+                            </div>
+                            <div class="ind-forms-grid">
+                                <div class="ind-form-card" data-form="1571">
+                                    <div class="ind-form-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <h4>Form FDA 1571</h4>
+                                    <p>Investigational New Drug Application</p>
+                                    <button class="btn btn-primary ind-generate-form-btn" data-form="1571">
+                                        Generate
+                                    </button>
+                                </div>
+                                <div class="ind-form-card" data-form="1572">
+                                    <div class="ind-form-icon">
+                                        <i class="fas fa-file-medical"></i>
+                                    </div>
+                                    <h4>Form FDA 1572</h4>
+                                    <p>Statement of Investigator</p>
+                                    <button class="btn btn-primary ind-generate-form-btn" data-form="1572">
+                                        Generate
+                                    </button>
+                                </div>
+                                <div class="ind-form-card" data-form="3674">
+                                    <div class="ind-form-icon">
+                                        <i class="fas fa-file-contract"></i>
+                                    </div>
+                                    <h4>Form FDA 3674</h4>
+                                    <p>Certification of Compliance</p>
+                                    <button class="btn btn-primary ind-generate-form-btn" data-form="3674">
+                                        Generate
+                                    </button>
+                                </div>
+                                <div class="ind-form-card" data-form="3454">
+                                    <div class="ind-form-icon">
+                                        <i class="fas fa-file-signature"></i>
+                                    </div>
+                                    <h4>Form FDA 3454</h4>
+                                    <p>Certification: Financial Interests</p>
+                                    <button class="btn btn-primary ind-generate-form-btn" data-form="3454">
+                                        Generate
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="ind-empty" id="forms-empty">
+                                <i class="fas fa-file-alt"></i>
+                                <p>Please select a project to enable form generation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ind-tab-content" id="history-tab" style="display: none;">
+                    <div class="ind-panel">
+                        <div class="ind-panel-header">
+                            <h3>Submission History</h3>
+                            <div class="ind-history-project-selector">
+                                <label for="history-project-select">Project:</label>
+                                <select id="history-project-select">
+                                    <option value="">Select a project</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ind-panel-body">
+                            <div class="ind-loading" id="history-loading">
+                                <i class="fas fa-spinner fa-spin"></i> Loading submission history...
+                            </div>
+                            <div class="ind-timeline" id="submission-timeline">
+                                <!-- History data will be loaded here -->
+                            </div>
+                            <div class="ind-empty" id="history-empty">
+                                <i class="fas fa-history"></i>
+                                <p>No submission history found for the selected project.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal for creating a new project -->
+            <div class="ind-modal" id="new-project-modal">
+                <div class="ind-modal-content">
+                    <div class="ind-modal-header">
+                        <h3>Create New IND Project</h3>
+                        <button class="ind-modal-close">&times;</button>
+                    </div>
+                    <div class="ind-modal-body">
+                        <form id="new-project-form">
+                            <div class="ind-form-group">
+                                <label for="project-drug-name">Drug Name*</label>
+                                <input type="text" id="project-drug-name" required placeholder="e.g., ENZYMAX FORTE">
+                            </div>
+                            <div class="ind-form-group">
+                                <label for="project-sponsor">Sponsor Name*</label>
+                                <input type="text" id="project-sponsor" required placeholder="e.g., TrialSage Pharmaceuticals">
+                            </div>
+                            <div class="ind-form-group">
+                                <label for="project-protocol">Protocol Number*</label>
+                                <input type="text" id="project-protocol" required placeholder="e.g., TS-ENZ-2025">
+                            </div>
+                            <div class="ind-form-group">
+                                <label for="project-pi-name">Principal Investigator Name*</label>
+                                <input type="text" id="project-pi-name" required placeholder="e.g., Dr. Jane Smith">
+                            </div>
+                            <div class="ind-form-group">
+                                <label for="project-pi-address">Principal Investigator Address*</label>
+                                <input type="text" id="project-pi-address" required placeholder="e.g., 123 Medical Center, San Francisco, CA 94158">
+                            </div>
+                            <div class="ind-form-group">
+                                <label for="project-nct-number">ClinicalTrials.gov Number (Optional)</label>
+                                <input type="text" id="project-nct-number" placeholder="e.g., NCT03456789">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="ind-modal-footer">
+                        <button class="btn btn-outline-primary ind-modal-cancel">Cancel</button>
+                        <button class="btn btn-primary" id="create-project-btn">Create Project</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <style>
+        /* IND Wizard Interface Styles */
+        .ind-wizard-interface {
+            background-color: var(--gray-50);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+        
+        .ind-tabs {
+            display: flex;
+            background-color: white;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .ind-tab {
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--gray-600);
+            border-bottom: 2px solid transparent;
+        }
+        
+        .ind-tab:hover {
+            color: var(--primary);
+        }
+        
+        .ind-tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .ind-tab-content {
+            min-height: 400px;
+        }
+        
+        .ind-panel {
+            background-color: white;
+        }
+        
+        .ind-panel-header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .ind-panel-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        
+        .ind-panel-body {
+            padding: 1.5rem;
+            position: relative;
+            min-height: 300px;
+        }
+        
+        .ind-form-project-selector,
+        .ind-history-project-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ind-form-project-selector select,
+        .ind-history-project-selector select {
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-300);
+        }
+        
+        .ind-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .ind-table th,
+        .ind-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .ind-table th {
+            font-weight: 600;
+            color: var(--gray-700);
+            background-color: var(--gray-50);
+        }
+        
+        .ind-table tr:hover {
+            background-color: var(--gray-50);
+        }
+        
+        .ind-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .ind-loading i {
+            margin-right: 0.5rem;
+        }
+        
+        .ind-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1rem;
+            color: var(--gray-500);
+            text-align: center;
+        }
+        
+        .ind-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .ind-forms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .ind-form-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .ind-form-icon {
+            width: 4rem;
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-light);
+            color: white;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .ind-form-card h4 {
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+        }
+        
+        .ind-form-card p {
+            margin-bottom: 1.5rem;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+        
+        .ind-timeline {
+            position: relative;
+            padding: 1.5rem 0;
+        }
+        
+        .ind-timeline-item {
+            padding-left: 2.5rem;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .ind-timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .ind-timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+        }
+        
+        .ind-timeline-connector {
+            position: absolute;
+            left: 0.75rem;
+            top: 1.5rem;
+            bottom: -2rem;
+            width: 2px;
+            background-color: var(--gray-300);
+            transform: translateX(-50%);
+        }
+        
+        .ind-timeline-item:last-child .ind-timeline-connector {
+            display: none;
+        }
+        
+        .ind-timeline-content {
+            background-color: var(--gray-50);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+        }
+        
+        .ind-timeline-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ind-timeline-date {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+        
+        /* Modal Styles */
+        .ind-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1050;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+        
+        .ind-modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+        
+        .ind-modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ind-modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        
+        .ind-modal-close {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-500);
+        }
+        
+        .ind-modal-body {
+            padding: 1.5rem;
+        }
+        
+        .ind-modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .ind-form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .ind-form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .ind-form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+        }
+        
+        .ind-form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+        }
+    </style>
+    
     <section class="cta-section">
         <div class="container">
             <div class="cta-content">
@@ -1022,64 +1521,366 @@
             window.location.href = '/';
         });
 
-        // IND Wizard functionality
+        // IND Wizard Interface
         document.addEventListener('DOMContentLoaded', function() {
-            // API base URL
-            const apiBaseUrl = window.location.hostname.includes('localhost') 
-                ? 'http://localhost:8000' 
-                : '/api/ind';
-
-            // Project state
-            let currentProject = null;
-            let projectList = [];
-
-            // DOM elements
-            const projectForm = document.getElementById('project-form');
-            const saveProjectBtn = document.getElementById('save-project');
-            const generateForm1571Btn = document.getElementById('generate-1571');
-            const generateForm1572Btn = document.getElementById('generate-1572');
-            const generateForm3674Btn = document.getElementById('generate-3674');
-            const generateSequenceBtn = document.getElementById('generate-sequence');
-            const sequenceDisplay = document.getElementById('sequence-display');
-            const projectSelect = document.getElementById('project-select');
+            // Tab Functionality
+            const tabs = document.querySelectorAll('.ind-tab');
+            const tabContents = document.querySelectorAll('.ind-tab-content');
             
-            // Initialize the application
-            function initApp() {
-                if (projectSelect) {
-                    fetchProjects();
-                }
-                
-                // Set up event listeners
-                if (saveProjectBtn) {
-                    saveProjectBtn.addEventListener('click', saveProject);
-                }
-                
-                if (generateForm1571Btn) {
-                    generateForm1571Btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        generateForm('1571');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show selected tab content
+                    tabContents.forEach(content => {
+                        content.style.display = 'none';
                     });
-                }
+                    document.getElementById(`${tabName}-tab`).style.display = 'block';
+                });
+            });
+            
+            // Modal Functionality
+            const newProjectBtn = document.querySelector('.ind-new-project-btn');
+            const newProjectModal = document.getElementById('new-project-modal');
+            const modalClose = document.querySelector('.ind-modal-close');
+            const modalCancel = document.querySelector('.ind-modal-cancel');
+            
+            function openModal() {
+                newProjectModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeModal() {
+                newProjectModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                document.getElementById('new-project-form').reset();
+            }
+            
+            newProjectBtn.addEventListener('click', openModal);
+            modalClose.addEventListener('click', closeModal);
+            modalCancel.addEventListener('click', closeModal);
+            
+            // Projects API
+            function loadProjects() {
+                const projectsTable = document.getElementById('projects-table');
+                const projectsEmpty = document.getElementById('projects-empty');
+                const projectsLoading = document.getElementById('projects-loading');
+                const projectsBody = document.getElementById('projects-tbody');
                 
-                if (generateForm1572Btn) {
-                    generateForm1572Btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        generateForm('1572');
+                projectsLoading.style.display = 'flex';
+                projectsTable.style.display = 'none';
+                projectsEmpty.style.display = 'none';
+                
+                fetch('/api/projects')
+                    .then(response => response.json())
+                    .then(projects => {
+                        projectsLoading.style.display = 'none';
+                        
+                        if (projects.length === 0) {
+                            projectsEmpty.style.display = 'flex';
+                            return;
+                        }
+                        
+                        projectsTable.style.display = 'table';
+                        
+                        // Clear existing rows
+                        projectsBody.innerHTML = '';
+                        
+                        // Update project dropdowns
+                        updateProjectDropdowns(projects);
+                        
+                        // Populate table
+                        projects.forEach(project => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${project.project_id}</td>
+                                <td>${project.drug_name}</td>
+                                <td>${project.sponsor}</td>
+                                <td>${project.protocol}</td>
+                                <td>${project.pi_name}</td>
+                                <td>${project.created}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary view-project" data-id="${project.project_id}">
+                                        View
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary generate-sequence" data-id="${project.project_id}">
+                                        Generate Sequence
+                                    </button>
+                                </td>
+                            `;
+                            projectsBody.appendChild(tr);
+                        });
+                        
+                        // Add event listeners to buttons
+                        document.querySelectorAll('.view-project').forEach(btn => {
+                            btn.addEventListener('click', (e) => {
+                                const projectId = e.target.dataset.id;
+                                // Switch to forms tab
+                                document.querySelector('.ind-tab[data-tab="forms"]').click();
+                                // Select the project
+                                document.getElementById('form-project-select').value = projectId;
+                                // Trigger change event
+                                const event = new Event('change');
+                                document.getElementById('form-project-select').dispatchEvent(event);
+                            });
+                        });
+                        
+                        document.querySelectorAll('.generate-sequence').forEach(btn => {
+                            btn.addEventListener('click', (e) => {
+                                const projectId = e.target.dataset.id;
+                                generateSequence(projectId);
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading projects:', error);
+                        projectsLoading.style.display = 'none';
+                        projectsEmpty.style.display = 'flex';
+                        projectsEmpty.innerHTML = `
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Failed to load projects. Please try again later.</p>
+                        `;
                     });
+            }
+            
+            function updateProjectDropdowns(projects) {
+                const formProjectSelect = document.getElementById('form-project-select');
+                const historyProjectSelect = document.getElementById('history-project-select');
+                
+                // Save current selections
+                const formCurrentValue = formProjectSelect.value;
+                const historyCurrentValue = historyProjectSelect.value;
+                
+                // Clear options except first one
+                formProjectSelect.innerHTML = '<option value="">Select a project</option>';
+                historyProjectSelect.innerHTML = '<option value="">Select a project</option>';
+                
+                // Add project options
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.project_id;
+                    option.textContent = `${project.drug_name} (${project.project_id})`;
+                    
+                    formProjectSelect.appendChild(option.cloneNode(true));
+                    historyProjectSelect.appendChild(option);
+                });
+                
+                // Restore selections if they still exist
+                if (formCurrentValue) {
+                    formProjectSelect.value = formCurrentValue;
                 }
                 
-                if (generateForm3674Btn) {
-                    generateForm3674Btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        generateForm('3674');
+                if (historyCurrentValue) {
+                    historyProjectSelect.value = historyCurrentValue;
+                }
+            }
+            
+            function createProject() {
+                const form = document.getElementById('new-project-form');
+                const createBtn = document.getElementById('create-project-btn');
+                
+                // Basic validation
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                const projectData = {
+                    drug_name: document.getElementById('project-drug-name').value,
+                    sponsor: document.getElementById('project-sponsor').value,
+                    protocol: document.getElementById('project-protocol').value,
+                    pi_name: document.getElementById('project-pi-name').value,
+                    pi_address: document.getElementById('project-pi-address').value,
+                    nct_number: document.getElementById('project-nct-number').value || null
+                };
+                
+                createBtn.disabled = true;
+                createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+                
+                fetch('/api/projects', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(projectData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to create project');
+                        }
+                        return response.json();
+                    })
+                    .then(project => {
+                        // Close modal and reload projects
+                        closeModal();
+                        loadProjects();
+                        
+                        // Show success message
+                        alert(`Project ${project.project_id} created successfully!`);
+                    })
+                    .catch(error => {
+                        console.error('Error creating project:', error);
+                        alert('Failed to create project. Please try again.');
+                    })
+                    .finally(() => {
+                        createBtn.disabled = false;
+                        createBtn.innerHTML = 'Create Project';
                     });
+            }
+            
+            function generateSequence(projectId) {
+                if (!projectId) return;
+                
+                fetch(`/api/ind/${projectId}/sequence`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to generate sequence');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert(`Sequence ${data.serial_number} generated successfully!`);
+                        // Reload projects to show updated sequence number
+                        loadProjects();
+                        // Load history for this project
+                        loadProjectHistory(projectId);
+                    })
+                    .catch(error => {
+                        console.error('Error generating sequence:', error);
+                        alert('Failed to generate sequence. Please try again.');
+                    });
+            }
+            
+            function loadProjectHistory(projectId) {
+                if (!projectId) {
+                    document.getElementById('history-empty').style.display = 'flex';
+                    document.getElementById('submission-timeline').innerHTML = '';
+                    return;
                 }
                 
-                if (generateSequenceBtn) {
-                    generateSequenceBtn.addEventListener('click', generateSequence);
+                const historyLoading = document.getElementById('history-loading');
+                const historyEmpty = document.getElementById('history-empty');
+                const timelineEl = document.getElementById('submission-timeline');
+                
+                historyLoading.style.display = 'flex';
+                historyEmpty.style.display = 'none';
+                timelineEl.innerHTML = '';
+                
+                fetch(`/api/ind/${projectId}/history`)
+                    .then(response => response.json())
+                    .then(history => {
+                        historyLoading.style.display = 'none';
+                        
+                        if (!history || history.length === 0) {
+                            historyEmpty.style.display = 'flex';
+                            return;
+                        }
+                        
+                        // Create timeline items
+                        history.forEach((item, index) => {
+                            const formattedDate = new Date(item.timestamp).toLocaleString();
+                            
+                            const timelineItem = document.createElement('div');
+                            timelineItem.className = 'ind-timeline-item';
+                            
+                            timelineItem.innerHTML = `
+                                <div class="ind-timeline-dot">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="ind-timeline-connector"></div>
+                                <div class="ind-timeline-content">
+                                    <div class="ind-timeline-title">
+                                        ${getActivityTypeLabel(item.type)} - Serial #${item.serial}
+                                    </div>
+                                    <div class="ind-timeline-date">${formattedDate}</div>
+                                </div>
+                            `;
+                            
+                            timelineEl.appendChild(timelineItem);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading history:', error);
+                        historyLoading.style.display = 'none';
+                        historyEmpty.style.display = 'flex';
+                        historyEmpty.innerHTML = `
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Failed to load submission history. Please try again later.</p>
+                        `;
+                    });
+            }
+            
+            function getActivityTypeLabel(type) {
+                const labels = {
+                    'creation': 'Project Created',
+                    'update': 'Project Updated',
+                    'form_generation': 'Form Generated',
+                    'submission': 'IND Submitted'
+                };
+                
+                return labels[type] || type;
+            }
+            
+            function generateForm(projectId, formType) {
+                if (!projectId || !formType) {
+                    alert('Please select a project first.');
+                    return;
                 }
                 
-                // Tab navigation
+                // Create a hidden form to submit the request
+                const form = document.createElement('form');
+                form.method = 'GET';
+                form.action = `/api/ind/${projectId}/forms/${formType}`;
+                form.target = '_blank';
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            }
+            
+            // Add event listeners
+            document.getElementById('create-project-btn').addEventListener('click', createProject);
+            
+            // Form generation buttons
+            document.querySelectorAll('.ind-generate-form-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const formType = e.target.dataset.form;
+                    const projectId = document.getElementById('form-project-select').value;
+                    generateForm(projectId, formType);
+                });
+            });
+            
+            // Project select change events
+            document.getElementById('form-project-select').addEventListener('change', (e) => {
+                const projectId = e.target.value;
+                const formsGrid = document.querySelector('.ind-forms-grid');
+                const formsEmpty = document.getElementById('forms-empty');
+                
+                if (projectId) {
+                    formsGrid.style.display = 'grid';
+                    formsEmpty.style.display = 'none';
+                } else {
+                    formsGrid.style.display = 'none';
+                    formsEmpty.style.display = 'flex';
+                }
+            });
+            
+            document.getElementById('history-project-select').addEventListener('change', (e) => {
+                const projectId = e.target.value;
+                loadProjectHistory(projectId);
+            });
+            
+            // Initial load
+            loadProjects();
                 const tabs = document.querySelectorAll('.wizard-tabs .tab');
                 tabs.forEach(tab => {
                     tab.addEventListener('click', function() {
