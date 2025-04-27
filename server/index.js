@@ -54,6 +54,18 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Serve static files
+app.use(express.static('./'));
+
+// Serve client portal pages
+app.get('/login', (req, res) => {
+  res.sendFile(path.resolve('./login.html'));
+});
+
+app.get('/client-portal', (req, res) => {
+  res.sendFile(path.resolve('./client-portal.html'));
+});
+
 // Initialize services
 initAnalytics();
 
