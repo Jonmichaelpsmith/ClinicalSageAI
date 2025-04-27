@@ -27,6 +27,7 @@ import enhancedInspectionRoutes from './routes/enhanced-inspection.js';
 import documentVersionRoutes from './routes/document-versions.js';
 import indProxyRouter from './routes/ind-proxy.js';
 import healthRoutes from './routes/health.js';
+import mashableBiRoutes from './routes/mashable-bi.js';
 
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
