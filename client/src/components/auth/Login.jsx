@@ -1,19 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
+import React, { useState } from 'react';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
   });
-  const [, setLocation] = useLocation();
-
-  // Check if already authenticated, redirect if so
-  useEffect(() => {
-    if (localStorage.getItem('isAuthenticated') === 'true') {
-      setLocation('/portal');
-    }
-  }, [setLocation]);
 
   const handleChange = (e) => {
     setCredentials({
@@ -35,8 +26,8 @@ const Login = () => {
         organization: 'TrialSage'
       }));
       
-      // Redirect to client portal within the React app
-      setLocation('/portal');
+      // Redirect directly to the standalone HTML page
+      window.location.href = '/client-portal.html.bak';
     } else {
       alert('Invalid credentials. Use admin/admin123');
     }
@@ -92,7 +83,7 @@ const Login = () => {
                   name: 'Admin User',
                   organization: 'TrialSage'
                 }));
-                setLocation('/portal');
+                window.location.href = '/client-portal.html.bak';
               }} 
               className="text-sm font-bold bg-pink-100 text-pink-800 px-2 py-1 rounded hover:bg-pink-200"
             >
@@ -117,7 +108,7 @@ const Login = () => {
                   name: 'Admin User',
                   organization: 'TrialSage'
                 }));
-                setLocation('/portal');
+                window.location.href = '/client-portal.html.bak';
               }}
               className="text-white bg-green-600 hover:bg-green-700 px-4 py-2 text-sm font-bold rounded transition-colors"
             >
