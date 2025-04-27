@@ -10,6 +10,7 @@ import ClientPortalPage from './pages/ClientPortalPage';
 import VaultPage from './pages/VaultPage';
 import INDWizardPage from './pages/INDWizardPage';
 import CSRPage from './pages/CSRPage';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
@@ -18,12 +19,19 @@ function App() {
         <div className="min-h-screen flex flex-col">
           <div className="flex-1">
             <Switch>
+              {/* Public routes */}
+              <Route path="/" component={LandingPage} />
               <Route path="/login" component={LoginPage} />
-              <ProtectedRoute path="/" component={DashboardPage} />
+              <Route path="/auth" component={LoginPage} />
+              
+              {/* Protected routes */}
+              <ProtectedRoute path="/dashboard" component={DashboardPage} />
               <ProtectedRoute path="/client-portal" component={ClientPortalPage} />
               <ProtectedRoute path="/vault" component={VaultPage} />
               <ProtectedRoute path="/ind-wizard" component={INDWizardPage} />
               <ProtectedRoute path="/csr" component={CSRPage} />
+              
+              {/* 404 page */}
               <Route component={NotFoundPage} />
             </Switch>
           </div>
