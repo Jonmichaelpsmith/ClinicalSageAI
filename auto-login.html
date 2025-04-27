@@ -3,18 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auto Login Redirect</title>
-  <script>
-    // Set authentication in localStorage
-    localStorage.setItem('authenticated', 'true');
-    localStorage.setItem('userEmail', 'admin@trialsage.com');
-    localStorage.setItem('userName', 'Admin User');
-    
-    // Redirect to client portal
-    window.location.href = '/client-portal.html';
-  </script>
+  <title>TrialSage™ Auto Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to bottom, white 80%, #ffd1dc 100%);
+      min-height: 100vh;
+    }
+    .text-primary {
+      color: #ff1493;
+    }
+    .bg-primary {
+      background-color: #ff1493;
+    }
+  </style>
 </head>
 <body>
-  <p>Logging in automatically and redirecting to client portal...</p>
+  <div class="min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
+      <h1 class="text-2xl font-bold mb-6 text-primary">TrialSage™ Auto Login</h1>
+      
+      <div class="mb-6">
+        <div class="w-16 h-16 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-gray-600">Logging you in automatically...</p>
+      </div>
+      
+      <button id="manualLoginBtn" class="bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90 transition-all">
+        Click if not redirected
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set authentication
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify({
+        username: 'admin',
+        role: 'admin',
+        name: 'Admin User',
+        organization: 'TrialSage'
+      }));
+      
+      // Redirect after a short delay
+      setTimeout(function() {
+        window.location.href = '/client-portal.html';
+      }, 1500);
+      
+      // Manual login button
+      document.getElementById('manualLoginBtn').addEventListener('click', function() {
+        window.location.href = '/client-portal.html';
+      });
+    });
+  </script>
 </body>
 </html>
