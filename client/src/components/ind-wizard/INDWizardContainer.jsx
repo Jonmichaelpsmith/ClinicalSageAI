@@ -37,6 +37,7 @@ import { apiRequest } from '@/lib/queryClient';
 
 // Import wizard step components
 import FdaFormsStep from './steps/FdaFormsStep';
+import RegulatoryIntelligenceStep from './steps/RegulatoryIntelligenceStep';
 import { useDatabaseStatus } from '@/components/providers/database-status-provider';
 import ErrorBoundary from '@/components/ui/error-boundary';
 
@@ -48,6 +49,12 @@ const IND_WIZARD_STEPS = [
     icon: Home, 
     path: '/ind-wizard',
     exact: true
+  },
+  { 
+    id: 'regulatory-intelligence', 
+    title: 'Regulatory Intelligence', 
+    icon: BookCheck, 
+    path: '/ind-wizard/regulatory-intelligence',
   },
   { 
     id: 'protocol', 
@@ -498,7 +505,7 @@ const ProjectOverview = ({ projectId, projectData }) => {
  * Main IND Wizard Container Component
  */
 export default function INDWizardContainer({ projectId = '12345' }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [activeStep, setActiveStep] = useState('overview');
   const { isConnected } = useDatabaseStatus();
   
@@ -598,6 +605,14 @@ export default function INDWizardContainer({ projectId = '12345' }) {
               <Switch>
                 <Route path="/ind-wizard" exact>
                   <ProjectOverview projectId={projectId} projectData={projectData} />
+                </Route>
+                
+                <Route path="/ind-wizard/regulatory-intelligence">
+                  <RegulatoryIntelligenceStep 
+                    projectId={projectId} 
+                    onComplete={() => setLocation('/ind-wizard/protocol')}
+                    onPrevious={() => setLocation('/ind-wizard')}
+                  />
                 </Route>
                 
                 <Route path="/ind-wizard/forms">
