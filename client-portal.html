@@ -15,6 +15,8 @@
     (function() {
       const isAuthenticated = localStorage.getItem('authenticated') === 'true';
       if (!isAuthenticated) {
+        // Store the intended destination for after login
+        localStorage.setItem('redirectAfterLogin', '/client-portal');
         window.location.href = '/login';
       }
       

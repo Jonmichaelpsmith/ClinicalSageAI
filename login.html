@@ -109,8 +109,10 @@
           localStorage.setItem('authenticated', 'true');
           localStorage.setItem('userEmail', email);
           
-          // Successful login - redirect to client portal
-          window.location.href = '/client-portal';
+          // Successful login - redirect to client portal or saved destination
+          const redirectTo = localStorage.getItem('redirectAfterLogin') || '/client-portal';
+          localStorage.removeItem('redirectAfterLogin'); // Clear the saved redirect
+          window.location.href = redirectTo;
         } else {
           // Alert if fields are empty
           alert('Please enter both email and password.');
@@ -162,8 +164,10 @@
         localStorage.setItem('userEmail', 'googleuser@gmail.com');
         localStorage.setItem('userName', 'Google User');
         
-        // Redirect to client portal
-        window.location.href = '/client-portal';
+        // Redirect to client portal or saved destination
+        const redirectTo = localStorage.getItem('redirectAfterLogin') || '/client-portal';
+        localStorage.removeItem('redirectAfterLogin'); // Clear the saved redirect
+        window.location.href = redirectTo;
       }, 1500);
     }
   </script>
