@@ -39,7 +39,8 @@ import {
   ChevronRight, 
   RotateCw, 
   Plus,
-  Home
+  Home,
+  BarChart2
 } from 'lucide-react';
 import { useLocation, Link } from 'wouter';
 
@@ -48,6 +49,7 @@ import AIRegulatoryAdvisor from '@/components/ind-wizard/AIRegulatoryAdvisor';
 import INDProjectDashboard from '@/components/ind-wizard/INDProjectDashboard';
 import AITimelineGenerator from '@/components/ind-wizard/AITimelineGenerator';
 import IndWizardLayout from '@/components/ind-wizard/IndWizardLayout';
+import INDAnalyticsDashboard from '@/components/mashable-bi/INDAnalyticsDashboard';
 
 export default function INDWizardAdvanced() {
   const { toast } = useToast();
@@ -186,6 +188,14 @@ export default function INDWizardAdvanced() {
                 Timeline Planner
               </Button>
               <Button 
+                variant={activeView === 'analytics' ? 'secondary' : 'ghost'} 
+                className="w-full justify-start"
+                onClick={() => setActiveView('analytics')}
+              >
+                <BarChart2 className="mr-2 h-4 w-4" />
+                Analytics & BI
+              </Button>
+              <Button 
                 variant="ghost" 
                 className="w-full justify-start"
                 onClick={handleGoToWizard}
@@ -259,7 +269,9 @@ export default function INDWizardAdvanced() {
                 <>
                   {activeProject.name}
                   <ChevronRight className="h-5 w-5 mx-1 text-muted-foreground" />
-                  {activeView === 'dashboard' ? 'Dashboard' : 'Timeline Planner'}
+                  {activeView === 'dashboard' ? 'Dashboard' : 
+                   activeView === 'timeline' ? 'Timeline Planner' : 
+                   activeView === 'analytics' ? 'Analytics & BI' : ''}
                 </>
               ) : (
                 'IND Wizard Advanced'
@@ -308,6 +320,15 @@ export default function INDWizardAdvanced() {
                   });
                   setActiveView('dashboard');
                 }}
+              />
+            </div>
+          ) : activeView === 'analytics' ? (
+            <div className="space-y-6">
+              <h1 className="text-2xl font-bold">IND Analytics & Business Intelligence</h1>
+              <p className="text-muted-foreground">Powered by MashableBI</p>
+              <INDAnalyticsDashboard 
+                projectId={activeProjectId}
+                showSummary={true}
               />
             </div>
           ) : null}

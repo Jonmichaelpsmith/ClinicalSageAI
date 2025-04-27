@@ -92,6 +92,9 @@ app.use('/', indProxyRouter);
 // Health check endpoints
 app.use('/api/health', healthRoutes);
 
+// MashableBI analytics routes
+app.use('/api/mashable-bi', mashableBiRoutes);
+
 // Ledger API
 app.get('/api/ledger/:submissionId', verifyJwt, async (req, res) => {
   try {
