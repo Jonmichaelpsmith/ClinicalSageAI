@@ -36,7 +36,7 @@ import { useDatabaseStatus } from '@/components/providers/database-status-provid
 import { DatabaseAware, DataAware } from '@/components/ui/database-aware';
 import { retryOperation } from '@/utils/databaseUtils';
 
-export default function Form1571Generator({ projectId, onSuccess }) {
+function Form1571Generator({ projectId, onSuccess }) {
   const { toast } = useToast();
   const [formData, setFormData] = useState(null);
   const [formView, setFormView] = useState('preview'); // preview, edit
