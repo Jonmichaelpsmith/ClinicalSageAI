@@ -1,167 +1,304 @@
 /**
  * Module Integration Layer
  * 
- * This component provides a shared context for all modules in the TrialSage platform,
- * enabling seamless integration and data sharing between modules.
+ * This component provides a context provider for module integration,
+ * allowing modules to communicate and share data throughout the platform.
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import securityService from '../../services/SecurityService';
-import docuShareService from '../../services/DocuShareService';
-import workflowService from '../../services/WorkflowService';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { RegulatoryIntelligenceCore } from '../../services/RegulatoryIntelligenceCore';
+import { BlockchainService } from '../../services/blockchain';
+import DocuShareService from '../../services/DocuShareService';
+import WorkflowService from '../../services/WorkflowService';
+import securityService from '../../services/SecurityService';
 
-// Create context for module integration
-const ModuleIntegrationContext = createContext();
+// Create integration context
+export const IntegrationContext = createContext({
+  // Module data sharing
+  sharedData: {},
+  setSharedData: () => {},
+  
+  // Module communication
+  notifyModule: () => {},
+  registerModuleListener: () => {},
+  
+  // Cross-module document handling
+  documentCache: {},
+  cacheDocument: () => {},
+  retrieveDocument: () => {},
+  
+  // Workflow coordination
+  triggerWorkflow: () => {},
+  
+  // Security context
+  currentUser: null,
+  currentOrganization: null,
+  
+  // Services access
+  regulatoryCore: null,
+  blockchainService: null,
+  docuShareService: null,
+  workflowService: null,
+  
+  // Module registry
+  registeredModules: [],
+  registerModule: () => {},
+  
+  // Global platform state
+  platformReady: false,
+  platformState: 'initializing',
+});
 
-// Integration provider component
-export const ModuleIntegrationProvider = ({ children }) => {
-  const [sharedContext, setSharedContext] = useState({
-    currentOrganization: null,
-    currentUser: null,
-    activeStudies: [],
-    recentDocuments: [],
-    settings: {},
+// Hook for using integration context
+export const useIntegration = () => useContext(IntegrationContext);
+
+// Integration Layer Component
+const ModuleIntegrationLayer = ({ children }) => {
+  // Shared data storage between modules
+  const [sharedData, setSharedData] = useState({});
+  
+  // Module event listeners
+  const [moduleListeners, setModuleListeners] = useState({});
+  
+  // Document cache for sharing documents between modules
+  const [documentCache, setDocumentCache] = useState({});
+  
+  // Registered modules for cross-module communication
+  const [registeredModules, setRegisteredModules] = useState([]);
+  
+  // Global platform state
+  const [platformState, setPlatformState] = useState('initializing');
+  const [platformReady, setPlatformReady] = useState(false);
+  
+  // Services initialization
+  const [services, setServices] = useState({
+    regulatoryCore: null,
+    blockchainService: null,
+    docuShareService: null,
+    workflowService: null
   });
   
-  const [regulatoryUpdates, setRegulatoryUpdates] = useState([]);
-  const [docuShareStatus, setDocuShareStatus] = useState({ connected: false, status: 'initializing' });
-  const [workflowStatus, setWorkflowStatus] = useState({ active: false, status: 'initializing' });
-  
-  // Initialize the integration layer
+  // Initialize services when component mounts
   useEffect(() => {
-    // Get current user and organization
-    const currentUser = securityService.currentUser;
-    const currentOrganization = securityService.currentOrganization;
+    const initializeServices = async () => {
+      try {
+        // Initialize regulatory intelligence core
+        const regulatoryCore = RegulatoryIntelligenceCore.getInstance();
+        await regulatoryCore.initialize();
+        
+        // Initialize blockchain service
+        const blockchainService = new BlockchainService();
+        await blockchainService.initialize();
+        
+        // Initialize document sharing service
+        const docuShareService = new DocuShareService();
+        await docuShareService.initialize();
+        
+        // Initialize workflow service
+        const workflowService = new WorkflowService();
+        await workflowService.initialize();
+        
+        setServices({
+          regulatoryCore,
+          blockchainService,
+          docuShareService,
+          workflowService
+        });
+        
+        setPlatformState('ready');
+        setPlatformReady(true);
+      } catch (error) {
+        console.error('Error initializing integration layer services:', error);
+        setPlatformState('error');
+      }
+    };
     
-    // Initialize shared context with user and organization
-    setSharedContext(prev => ({
-      ...prev,
-      currentUser,
-      currentOrganization,
-    }));
+    initializeServices();
     
-    // Initialize DocuShare service
-    docuShareService.initialize()
-      .then(() => {
-        setDocuShareStatus({ connected: true, status: 'connected' });
-      })
-      .catch((error) => {
-        console.error('DocuShare initialization error:', error);
-        setDocuShareStatus({ connected: false, status: 'error', error });
-      });
-    
-    // Initialize Workflow service
-    workflowService.initialize()
-      .then(() => {
-        setWorkflowStatus({ active: true, status: 'active' });
-      })
-      .catch((error) => {
-        console.error('Workflow initialization error:', error);
-        setWorkflowStatus({ active: false, status: 'error', error });
-      });
-    
-    // Subscribe to regulatory intelligence updates
-    const regulatoryCore = RegulatoryIntelligenceCore.getInstance();
-    
-    const regulatorySubscription = regulatoryCore.subscribeToUpdates((updates) => {
-      setRegulatoryUpdates(updates);
-    });
-    
-    // Cleanup subscriptions on unmount
+    // Cleanup function
     return () => {
-      regulatorySubscription.unsubscribe();
-      docuShareService.disconnect();
-      workflowService.disconnect();
+      console.log('Cleaning up integration layer...');
+      
+      // Cleanup would include service disposal if needed
+      if (services.blockchainService) {
+        services.blockchainService.dispose();
+      }
     };
   }, []);
   
-  // Method to get shared context for modules
-  const getSharedContext = () => {
-    return sharedContext;
+  // Update shared data with new data (merging with existing)
+  const updateSharedData = (newData) => {
+    setSharedData(prev => ({ ...prev, ...newData }));
   };
   
-  // Method to update shared context
-  const updateSharedContext = (partialContext) => {
-    setSharedContext(prev => ({
+  // Notify a specific module or all modules with an event
+  const notifyModule = (moduleId, eventType, eventData) => {
+    console.log(`[IntegrationLayer] Notifying module: ${moduleId}, event: ${eventType}`);
+    
+    // If moduleId is "all", notify all modules
+    if (moduleId === 'all') {
+      Object.keys(moduleListeners).forEach(id => {
+        moduleListeners[id].forEach(listener => {
+          if (listener.eventType === eventType || listener.eventType === 'all') {
+            listener.callback(eventData);
+          }
+        });
+      });
+      return;
+    }
+    
+    // Notify specific module
+    if (moduleListeners[moduleId]) {
+      moduleListeners[moduleId].forEach(listener => {
+        if (listener.eventType === eventType || listener.eventType === 'all') {
+          listener.callback(eventData);
+        }
+      });
+    }
+  };
+  
+  // Register a module to listen for events
+  const registerModuleListener = (moduleId, eventType, callback) => {
+    console.log(`[IntegrationLayer] Registering listener for module: ${moduleId}, event: ${eventType}`);
+    
+    setModuleListeners(prev => {
+      const moduleEvents = prev[moduleId] || [];
+      return {
+        ...prev,
+        [moduleId]: [
+          ...moduleEvents,
+          { eventType, callback, id: Date.now() }
+        ]
+      };
+    });
+    
+    // Return unsubscribe function
+    return () => {
+      setModuleListeners(prev => {
+        const moduleEvents = prev[moduleId] || [];
+        return {
+          ...prev,
+          [moduleId]: moduleEvents.filter(listener => 
+            !(listener.eventType === eventType && listener.callback === callback)
+          )
+        };
+      });
+    };
+  };
+  
+  // Cache a document for sharing between modules
+  const cacheDocument = (documentId, document) => {
+    setDocumentCache(prev => ({
       ...prev,
-      ...partialContext,
+      [documentId]: {
+        document,
+        timestamp: new Date().toISOString()
+      }
     }));
   };
   
-  // Method to get regulatory updates
-  const getRegulatoryUpdates = () => {
-    return regulatoryUpdates;
+  // Retrieve a document from cache
+  const retrieveDocument = (documentId) => {
+    return documentCache[documentId]?.document;
   };
   
-  // Share document between modules
-  const shareDocument = async (document, sourceModule, targetModule) => {
+  // Trigger a workflow across modules
+  const triggerWorkflow = async (workflowId, workflowData) => {
+    if (!services.workflowService) {
+      console.error('[IntegrationLayer] Workflow service not initialized');
+      return false;
+    }
+    
     try {
-      // Use DocuShare service to share document
-      const result = await docuShareService.shareDocument({
-        document,
-        sourceModule,
-        targetModule,
-        user: sharedContext.currentUser,
-        organization: sharedContext.currentOrganization,
+      // Start the workflow
+      const workflowResult = await services.workflowService.startWorkflow(
+        workflowId, 
+        workflowData
+      );
+      
+      // Notify all modules about the workflow
+      notifyModule('all', 'workflow_started', {
+        workflowId,
+        workflowData,
+        workflowResult
       });
       
-      // Update shared context with recent documents
-      updateSharedContext({
-        recentDocuments: [
-          result.document,
-          ...sharedContext.recentDocuments.filter(doc => doc.id !== result.document.id).slice(0, 9)
-        ]
-      });
-      
-      return result;
+      return workflowResult;
     } catch (error) {
-      console.error('Error sharing document:', error);
-      throw error;
+      console.error('[IntegrationLayer] Error triggering workflow:', error);
+      return false;
     }
   };
   
-  // Create a new workflow
-  const createWorkflow = async (workflowData) => {
-    try {
-      const result = await workflowService.createWorkflow({
-        ...workflowData,
-        user: sharedContext.currentUser,
-        organization: sharedContext.currentOrganization,
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('Error creating workflow:', error);
-      throw error;
+  // Register a module with the integration layer
+  const registerModule = (moduleId, moduleMeta) => {
+    console.log(`[IntegrationLayer] Registering module: ${moduleId}`);
+    
+    // Check if module is already registered
+    if (registeredModules.some(m => m.id === moduleId)) {
+      console.warn(`[IntegrationLayer] Module ${moduleId} already registered`);
+      return;
     }
+    
+    // Add module to registry
+    setRegisteredModules(prev => [
+      ...prev,
+      {
+        id: moduleId,
+        meta: moduleMeta,
+        registeredAt: new Date().toISOString()
+      }
+    ]);
+    
+    // Notify other modules about the new module
+    notifyModule('all', 'module_registered', {
+      moduleId,
+      moduleMeta
+    });
   };
   
-  // Value to be provided to consumers
-  const value = {
-    getSharedContext,
-    updateSharedContext,
-    getRegulatoryUpdates,
-    shareDocument,
-    createWorkflow,
-    docuShareStatus,
-    workflowStatus,
+  // Define context value
+  const contextValue = {
+    // Module data sharing
+    sharedData,
+    setSharedData: updateSharedData,
+    
+    // Module communication
+    notifyModule,
+    registerModuleListener,
+    
+    // Cross-module document handling
+    documentCache,
+    cacheDocument,
+    retrieveDocument,
+    
+    // Workflow coordination
+    triggerWorkflow,
+    
+    // Security context
+    currentUser: securityService.currentUser,
+    currentOrganization: securityService.currentOrganization,
+    
+    // Services access
+    regulatoryCore: services.regulatoryCore,
+    blockchainService: services.blockchainService,
+    docuShareService: services.docuShareService,
+    workflowService: services.workflowService,
+    
+    // Module registry
+    registeredModules,
+    registerModule,
+    
+    // Global platform state
+    platformReady,
+    platformState,
   };
   
   return (
-    <ModuleIntegrationContext.Provider value={value}>
+    <IntegrationContext.Provider value={contextValue}>
       {children}
-    </ModuleIntegrationContext.Provider>
+    </IntegrationContext.Provider>
   );
 };
 
-// Hook for using the module integration context
-export const useModuleIntegration = () => {
-  const context = useContext(ModuleIntegrationContext);
-  
-  if (!context) {
-    throw new Error('useModuleIntegration must be used within a ModuleIntegrationProvider');
-  }
-  
-  return context;
-};
+export default ModuleIntegrationLayer;

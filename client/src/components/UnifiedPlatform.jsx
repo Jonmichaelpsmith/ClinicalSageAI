@@ -1,397 +1,265 @@
 /**
- * Unified Platform Component
+ * Unified Platform
  * 
- * This component serves as the main container for the TrialSage platform,
- * integrating all modules and providing shared context and navigation.
+ * This component provides the main shell for the TrialSage platform with standardized 
+ * layout, header, sidebar, and module loading.
  */
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
-import { ModuleIntegrationProvider } from './integration/ModuleIntegrationLayer';
+import { Route, Switch, useLocation } from 'wouter';
 import AppHeader from './common/AppHeader';
 import AppSidebar from './common/AppSidebar';
-import AppFooter from './common/AppFooter';
-import NotificationCenter from './common/NotificationCenter';
+import { ClientContextBar } from './client-portal/ClientContextBar';
 import AIAssistantButton from './AIAssistantButton';
+import ModuleIntegrationLayer from './integration/ModuleIntegrationLayer';
+import securityService from '../services/SecurityService';
+import { RegulatoryIntelligenceCore } from '../services/RegulatoryIntelligenceCore';
+import { BlockchainService } from '../services/blockchain';
+
+// Module components (lazy loaded in a real implementation)
 import INDWizardModule from './ind-wizard/INDWizardModule';
 import TrialVaultModule from './trial-vault/TrialVaultModule';
 import CSRIntelligenceModule from './csr-intelligence/CSRIntelligenceModule';
 import StudyArchitectModule from './study-architect/StudyArchitectModule';
 import AnalyticsModule from './analytics/AnalyticsModule';
 import AdminModule from './admin/AdminModule';
-import { ClientContextBar } from './client-portal/ClientContextBar';
-import { X } from 'lucide-react';
-import securityService from '../services/SecurityService';
 
 const UnifiedPlatform = () => {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeModule, setActiveModule] = useState('home');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isCroUser, setIsCroUser] = useState(false);
-  const [showRegulatoryUpdate, setShowRegulatoryUpdate] = useState(false);
-  const [regulatoryUpdate, setRegulatoryUpdate] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // Determine active module based on location
+  // Initialize services
   useEffect(() => {
-    const path = location.split('/')[1] || 'home';
-    setActiveModule(path);
-  }, [location]);
-  
-  // Check if current user is from the CRO organization
-  useEffect(() => {
-    const checkUserType = async () => {
-      if (securityService.currentUser && securityService.currentOrganization) {
-        setIsCroUser(securityService.currentOrganization.type === 'cro');
+    const initializeServices = async () => {
+      try {
+        setIsInitializing(true);
+        
+        // Initialize the user (in a real app, retrieve from API or local storage)
+        const isLoggedIn = localStorage.getItem("authenticated") === "true";
+        setIsAuthenticated(isLoggedIn);
+        
+        // If not logged in, redirect to login page
+        if (!isLoggedIn && !location.startsWith('/auth')) {
+          setLocation('/auth');
+          setIsInitializing(false);
+          return;
+        }
+        
+        // Initialize regulatory intelligence core
+        const regulatoryCore = RegulatoryIntelligenceCore.getInstance();
+        await regulatoryCore.initialize();
+        
+        // Initialize blockchain service
+        const blockchainService = new BlockchainService();
+        await blockchainService.initialize();
+        
+        setIsInitializing(false);
+      } catch (error) {
+        console.error('Error initializing platform services:', error);
+        setIsInitializing(false);
       }
     };
     
-    checkUserType();
-  }, []);
+    initializeServices();
+  }, [location, setLocation]);
   
-  // Subscribe to regulatory updates
+  // Update active module based on location
   useEffect(() => {
-    // Simulated regulatory update
-    const simulateRegulatoryUpdate = () => {
-      const update = {
-        title: 'FDA Updates Guidance for Clinical Trial Endpoints',
-        source: 'FDA',
-        date: new Date().toLocaleDateString(),
-        summary: 'The FDA has released updated guidance for industry regarding clinical trial endpoints for drug and biological product development.',
-        url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents'
-      };
-      
-      setRegulatoryUpdate(update);
-      setShowRegulatoryUpdate(true);
-      
-      // Hide after 10 seconds
-      setTimeout(() => {
-        setShowRegulatoryUpdate(false);
-      }, 10000);
-    };
-    
-    // Simulate regulatory update after 3 seconds
-    const timeout = setTimeout(simulateRegulatoryUpdate, 3000);
-    
-    return () => clearTimeout(timeout);
-  }, []);
-  
-  // Toggle sidebar
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-  
-  // Render the active module
-  const renderActiveModule = () => {
-    switch (activeModule) {
-      case 'ind-wizard':
-        return <INDWizardModule />;
-      case 'trial-vault':
-        return <TrialVaultModule />;
-      case 'csr-intelligence':
-        return <CSRIntelligenceModule />;
-      case 'study-architect':
-        return <StudyArchitectModule />;
-      case 'analytics':
-        return <AnalyticsModule />;
-      case 'admin':
-        return <AdminModule />;
-      default:
-        return <HomeModule />;
+    if (location === '/' || location === '') {
+      setActiveModule('home');
+    } else if (location.startsWith('/ind-wizard')) {
+      setActiveModule('ind-wizard');
+    } else if (location.startsWith('/trial-vault')) {
+      setActiveModule('trial-vault');
+    } else if (location.startsWith('/csr-intelligence')) {
+      setActiveModule('csr-intelligence');
+    } else if (location.startsWith('/study-architect')) {
+      setActiveModule('study-architect');
+    } else if (location.startsWith('/analytics')) {
+      setActiveModule('analytics');
+    } else if (location.startsWith('/admin')) {
+      setActiveModule('admin');
+    } else if (location.startsWith('/settings')) {
+      setActiveModule('settings');
     }
+  }, [location]);
+  
+  // Handle sidebar toggle
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
   
+  // If not authenticated, show loading or redirect
+  if (!isAuthenticated && !location.startsWith('/auth')) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <div className="text-lg">Initializing TrialSage™ Platform...</div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
-    <ModuleIntegrationProvider>
-      <div className="flex flex-col min-h-screen bg-gray-50">
-        {/* Header */}
-        <AppHeader toggleSidebar={toggleSidebar} />
+    <div className="h-screen flex flex-col">
+      {/* Context bar for CRO users (top bar for organization switching) */}
+      <ClientContextBar />
+      
+      {/* Header */}
+      <AppHeader toggleSidebar={toggleSidebar} />
+      
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        <AppSidebar isOpen={isSidebarOpen} activeModule={activeModule} />
         
-        {/* Client context bar - shown only for CRO users */}
-        {isCroUser && <ClientContextBar />}
-        
-        {/* Main content area with sidebar */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar */}
-          <AppSidebar isOpen={sidebarOpen} activeModule={activeModule} />
-          
-          {/* Main content */}
-          <main className={`flex-1 overflow-auto transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-64' : 'ml-0'}`}>
-            {/* Regulatory update alert */}
-            {showRegulatoryUpdate && regulatoryUpdate && (
-              <div className="relative bg-blue-50 p-4 border-l-4 border-blue-500 mb-4 mx-4 mt-4 rounded shadow-sm">
-                <button 
-                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowRegulatoryUpdate(false)}
-                >
-                  <X size={16} />
-                </button>
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <span className="text-xs font-medium text-blue-800 uppercase bg-blue-100 px-2 py-0.5 rounded-full">{regulatoryUpdate.source}</span>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">{regulatoryUpdate.title}</h3>
-                    <div className="mt-1 text-sm text-blue-700">
-                      <p>{regulatoryUpdate.summary}</p>
-                    </div>
-                    <div className="mt-2">
-                      <a 
-                        href={regulatoryUpdate.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-xs font-medium text-blue-600 hover:text-blue-800"
-                      >
-                        View details →
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Active module content */}
-            <div className="p-4">
-              {renderActiveModule()}
-            </div>
-          </main>
-        </div>
-        
-        {/* Footer */}
-        <AppFooter />
-        
-        {/* Floating components */}
-        <AIAssistantButton />
-        <NotificationCenter />
-      </div>
-    </ModuleIntegrationProvider>
-  );
-};
-
-// Home module (dashboard)
-const HomeModule = () => {
-  return (
-    <div className="space-y-6">
-      <div className="text-center py-8 bg-gradient-to-b from-white to-pink-50 rounded-lg border shadow-sm">
-        <h1 className="text-4xl font-bold text-gray-900">Welcome to TrialSage™</h1>
-        <p className="mt-2 text-xl text-gray-600">AI-powered regulatory writing platform</p>
+        {/* Main content with module integration */}
+        <main 
+          className={`flex-1 overflow-auto transition-all duration-300 ${
+            isSidebarOpen ? 'md:ml-64' : 'ml-0 md:ml-16'
+          }`}
+        >
+          {/* Module integration layer provides shared context for all modules */}
+          <ModuleIntegrationLayer>
+            <Switch>
+              <Route path="/" component={() => <HomeDashboard />} />
+              
+              <Route path="/ind-wizard">
+                <INDWizardModule />
+              </Route>
+              
+              <Route path="/trial-vault">
+                <TrialVaultModule />
+              </Route>
+              
+              <Route path="/csr-intelligence">
+                <CSRIntelligenceModule />
+              </Route>
+              
+              <Route path="/study-architect">
+                <StudyArchitectModule />
+              </Route>
+              
+              <Route path="/analytics">
+                <AnalyticsModule />
+              </Route>
+              
+              <Route path="/admin">
+                <AdminModule />
+              </Route>
+              
+              <Route path="/settings">
+                <SettingsPage />
+              </Route>
+              
+              <Route>
+                <NotFoundPage />
+              </Route>
+            </Switch>
+          </ModuleIntegrationLayer>
+        </main>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <ModuleCard 
-          title="IND Wizard™" 
-          description="Streamlined IND preparation and submission"
-          icon="📝"
-          path="/ind-wizard"
-          color="bg-blue-500"
-        />
-        
-        <ModuleCard 
-          title="Trial Vault™" 
-          description="Secure document management with blockchain verification"
-          icon="🔒"
-          path="/trial-vault"
-          color="bg-green-500"
-        />
-        
-        <ModuleCard 
-          title="CSR Intelligence™" 
-          description="AI-powered clinical study report generation"
-          icon="📊"
-          path="/csr-intelligence"
-          color="bg-purple-500"
-        />
-        
-        <ModuleCard 
-          title="Study Architect™" 
-          description="Comprehensive clinical study design and planning"
-          icon="📋"
-          path="/study-architect"
-          color="bg-yellow-500"
-        />
-        
-        <ModuleCard 
-          title="Analytics Module" 
-          description="Comprehensive data analytics and insights"
-          icon="📈"
-          path="/analytics"
-          color="bg-red-500"
-        />
-        
-        <ModuleCard 
-          title="Administration" 
-          description="User, organization, and system management"
-          icon="⚙️"
-          path="/admin"
-          color="bg-gray-500"
-        />
-      </div>
-      
-      {/* AI and Blockchain highlight */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <div className="bg-black text-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold flex items-center">
-            <span className="mr-2">🧠</span>
-            AI-Powered Central Intelligence
-          </h2>
-          <p className="mt-2">
-            Our central AI system acts as the "regulatory and scientific central nervous system" for the entire platform, providing intelligent insights and automation across all modules.
-          </p>
-          <div className="mt-4 text-sm">
-            <ul className="space-y-2">
-              <li className="flex items-start">
-                <span className="mr-2">✓</span>
-                Real-time regulatory updates and guidance
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2">✓</span>
-                Intelligent document generation and analysis
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2">✓</span>
-                Automated compliance checking and recommendations
-              </li>
-            </ul>
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-pink-500 to-purple-600 text-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold flex items-center">
-            <span className="mr-2">🔗</span>
-            Enhanced Blockchain Security
-          </h2>
-          <p className="mt-2">
-            Our platform utilizes blockchain technology for enhanced security, document verification, and tamper-proof audit trails across all regulatory submissions.
-          </p>
-          <div className="mt-4 text-sm">
-            <ul className="space-y-2">
-              <li className="flex items-start">
-                <span className="mr-2">✓</span>
-                Secure document verification and integrity
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2">✓</span>
-                Immutable audit trails for regulatory compliance
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2">✓</span>
-                Enhanced security for sensitive clinical data
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      
-      {/* Recent activity section */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mt-8">
-        <h2 className="text-xl font-semibold">Recent Activity</h2>
-        <div className="mt-4 space-y-4">
-          <ActivityItem 
-            title="BTX-331 IND Submission Updated"
-            description="Protocol section updated by John Smith"
-            time="2 hours ago"
-            module="ind-wizard"
-          />
-          
-          <ActivityItem 
-            title="New Document Added to Vault"
-            description="Investigator Brochure v2.0 uploaded by Sarah Johnson"
-            time="Yesterday"
-            module="trial-vault"
-          />
-          
-          <ActivityItem 
-            title="BX-107 Phase II CSR In Review"
-            description="Clinical Study Report ready for review"
-            time="2 days ago"
-            module="csr-intelligence"
-          />
-          
-          <ActivityItem 
-            title="Study Protocol Completed"
-            description="NRX-405 Protocol finalized and approved"
-            time="3 days ago"
-            module="study-architect"
-          />
-        </div>
-      </div>
+      {/* AI Assistant Button (fixed position) */}
+      <AIAssistantButton />
     </div>
   );
 };
 
-// Module card component for homepage
-const ModuleCard = ({ title, description, icon, path, color }) => {
+// Placeholder components for routes that don't have dedicated modules yet
+const HomeDashboard = () => (
+  <div className="container mx-auto p-6">
+    <h1 className="text-3xl font-bold mb-8">TrialSage™ Platform</h1>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <ModuleCard 
+        title="IND Wizard™" 
+        description="Prepare submissions for Investigational New Drug applications with AI-assisted form filling and document generation."
+        path="/ind-wizard"
+        icon={<svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+      />
+      
+      <ModuleCard 
+        title="Trial Vault™" 
+        description="Securely store, manage, and share clinical and regulatory documents with blockchain verification."
+        path="/trial-vault"
+        icon={<svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>}
+      />
+      
+      <ModuleCard 
+        title="CSR Intelligence™" 
+        description="Generate and manage Clinical Study Reports with AI assistance and ICH compliance checking."
+        path="/csr-intelligence"
+        icon={<svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
+      />
+      
+      <ModuleCard 
+        title="Study Architect™" 
+        description="Design clinical trials with AI-guided protocol development and study planning."
+        path="/study-architect"
+        icon={<svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>}
+      />
+      
+      <ModuleCard 
+        title="Analytics" 
+        description="Visualize and analyze data across your clinical and regulatory programs."
+        path="/analytics"
+        icon={<svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
+      />
+      
+      <ModuleCard 
+        title="Administration" 
+        description="Manage users, permissions, and platform settings."
+        path="/admin"
+        icon={<svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>}
+      />
+    </div>
+  </div>
+);
+
+const ModuleCard = ({ title, description, path, icon }) => {
   const [, setLocation] = useLocation();
   
   return (
     <div 
-      className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 cursor-pointer"
       onClick={() => setLocation(path)}
     >
-      <div className={`h-2 ${color}`}></div>
-      <div className="p-6">
-        <div className="text-3xl mb-4">{icon}</div>
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <p className="mt-2 text-sm text-gray-600">{description}</p>
-        <button 
-          className="mt-4 text-sm text-primary hover:underline"
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-4">
+          {icon}
+        </div>
+        <h3 className="text-xl font-semibold mb-2">{title}</h3>
+        <p className="text-gray-600 mb-4">{description}</p>
+        <button
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             setLocation(path);
           }}
         >
-          Access Module →
+          Launch Module
         </button>
       </div>
     </div>
   );
 };
 
-// Activity item component for recent activity
-const ActivityItem = ({ title, description, time, module }) => {
-  const [, setLocation] = useLocation();
-  
-  const getModuleColor = (moduleName) => {
-    switch (moduleName) {
-      case 'ind-wizard':
-        return 'text-blue-600 bg-blue-50';
-      case 'trial-vault':
-        return 'text-green-600 bg-green-50';
-      case 'csr-intelligence':
-        return 'text-purple-600 bg-purple-50';
-      case 'study-architect':
-        return 'text-yellow-600 bg-yellow-50';
-      case 'analytics':
-        return 'text-red-600 bg-red-50';
-      case 'admin':
-        return 'text-gray-600 bg-gray-50';
-      default:
-        return 'text-primary bg-primary bg-opacity-10';
-    }
-  };
-  
-  return (
-    <div className="border-b pb-4 last:border-0 last:pb-0">
-      <div className="flex justify-between">
-        <h3 className="font-medium">{title}</h3>
-        <span className="text-xs text-gray-500">{time}</span>
-      </div>
-      <p className="text-sm text-gray-600 mt-1">{description}</p>
-      <div className="mt-2 flex">
-        <span 
-          className={`text-xs px-2 py-0.5 rounded-full ${getModuleColor(module)}`}
-          onClick={() => setLocation(`/${module}`)}
-        >
-          {module.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-        </span>
-        <button 
-          className="ml-auto text-xs text-primary hover:underline"
-          onClick={() => setLocation(`/${module}`)}
-        >
-          View Details
-        </button>
-      </div>
-    </div>
-  );
-};
+const SettingsPage = () => (
+  <div className="container mx-auto p-6">
+    <h1 className="text-3xl font-bold mb-6">Settings</h1>
+    <p>Platform settings page (under development)</p>
+  </div>
+);
+
+const NotFoundPage = () => (
+  <div className="container mx-auto p-6 text-center">
+    <h1 className="text-3xl font-bold mb-6">404 - Page Not Found</h1>
+    <p>The page you are looking for does not exist.</p>
+  </div>
+);
 
 export default UnifiedPlatform;

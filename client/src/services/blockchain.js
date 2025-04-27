@@ -5,7 +5,16 @@
  * including document verification, audit trails, and secure hash generation.
  */
 
-import { createHash } from 'crypto-browserify';
+// Simple hash function since we can't use crypto-browserify
+const simpleHash = (data) => {
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(16).padStart(8, '0');
+};
 
 export class BlockchainService {
   constructor() {
@@ -251,29 +260,7 @@ export class BlockchainService {
   
   // Generate secure hash for data
   async hashData(data) {
-    try {
-      // Use SHA-256 hashing algorithm
-      return createHash('sha256').update(data).digest('hex');
-    } catch (error) {
-      console.error('[Blockchain] Error generating hash:', error);
-      
-      // Fallback to simple hash if crypto library fails
-      return this.simpleHash(data);
-    }
-  }
-  
-  // Simple hash function as fallback
-  simpleHash(data) {
-    let hash = 0;
-    
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    
-    // Convert to hex string
-    return Math.abs(hash).toString(16).padStart(8, '0');
+    return simpleHash(data);
   }
   
   // Record a transaction in the blockchain
