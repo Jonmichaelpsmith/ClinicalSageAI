@@ -6,14 +6,26 @@
  */
 
 import express from 'express';
-import { testConnection, pool } from '../db.js';
+import { testConnection, pool, dbStatus } from '../db.js';
 
 const router = express.Router();
 
-// Database connection health monitoring
+// For backward compatibility with existing code
 let lastDatabaseStatus = false;
 let consecutiveFailures = 0;
 let lastSuccessfulConnection = null;
+
+// Update our monitoring variables from the dbStatus object
+dbStatus.events.on('connected', () => {
+  lastDatabaseStatus = true;
+  lastSuccessfulConnection = dbStatus.lastConnected;
+  consecutiveFailures = 0;
+});
+
+dbStatus.events.on('error', () => {
+  lastDatabaseStatus = false;
+  consecutiveFailures++; 
+});
 
 // Set up periodic health check for monitoring
 setInterval(async () => {
@@ -78,9 +90,14 @@ function getPoolStats() {
     total: pool.totalCount,
     idle: pool.idleCount,
     waiting: pool.waitingCount,
-    lastSuccessfulConnection: lastSuccessfulConnection ? lastSuccessfulConnection.toISOString() : null,
+    poolSize: dbStatus.poolSize,
+    lastSuccessfulConnection: dbStatus.lastConnected ? dbStatus.lastConnected.toISOString() : 
+      (lastSuccessfulConnection ? lastSuccessfulConnection.toISOString() : null),
+    connectionAttempts: dbStatus.connectionAttempts,
     consecutiveFailures,
-    status: lastDatabaseStatus ? 'online' : 'offline'
+    reconnecting: dbStatus.reconnecting,
+    status: dbStatus.connected ? 'online' : 'offline',
+    errorMessage: dbStatus.lastError ? dbStatus.lastError.message : null
   };
 }
 
