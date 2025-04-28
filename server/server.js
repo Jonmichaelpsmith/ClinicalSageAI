@@ -1,26 +1,24 @@
 // /server/server.js
 
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+const express = require('express');
+const path = require('path');
 const app = express();
 
-// API routes
-import projectsStatusRoutes from './routes/projectsStatus.js';
-// (you can import other API routes like next-actions, vault, analytics here)
+// Import API Routes
+const projectsStatusRoutes = require('./routes/projectsStatus');
+// (Later you will import other routes like nextActionsRoutes, vaultRoutes, etc.)
 
+// Middleware for JSON
+app.use(express.json());
+
+// API Routes
 app.use('/api/projects', projectsStatusRoutes);
-// Example: app.use('/api/next-actions', nextActionsRoutes);
 
-// Serve React frontend
+// Serve React App
 const clientBuildPath = path.join(__dirname, '../client/build');
 app.use(express.static(clientBuildPath));
 
-// Serve index.html for all non-API requests
+// React Router fallback - serve React index.html
 app.get('*', (req, res) => {
   if (req.originalUrl.startsWith('/api/')) {
     res.status(404).json({ message: 'API endpoint not found' });
@@ -29,7 +27,7 @@ app.get('*', (req, res) => {
   }
 });
 
-// Start the server
+// Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
