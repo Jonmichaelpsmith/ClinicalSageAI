@@ -246,9 +246,11 @@ export default function VaultDocumentViewer() {
       ) : (
         <ul className="divide-y divide-gray-200">
           {documents.map(([baseName, versions]) => {
-            // Get metadata from the first version (newest)
-            const doc = versions[0];
-            const moduleInfo = doc.ctdModule ? `${doc.ctdModule} - ${doc.ctdDescription}` : doc.moduleLinked;
+            // Get metadata from the first version (newest) with defensive coding
+            const doc = versions[0] || {};
+            const moduleInfo = doc.ctdModule ? 
+              `${doc.ctdModule} - ${doc.ctdDescription || 'No description'}` : 
+              (doc.moduleLinked || 'Unknown module');
           
             return (
               <li key={baseName} className="py-3">
