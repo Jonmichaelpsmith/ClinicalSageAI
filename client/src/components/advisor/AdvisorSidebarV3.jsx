@@ -1,68 +1,38 @@
 // /client/src/components/advisor/AdvisorSidebarV3.jsx
 
 import { useEffect, useState } from 'react';
+import { getAdvisorReadiness } from '../../lib/advisorService';
 
 export default function AdvisorSidebarV3() {
   const [readiness, setReadiness] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPlaybook, setSelectedPlaybook] = useState('Fast IND Playbook');
+  
+  const playbooks = [
+    'Fast IND Playbook',
+    'Full NDA Playbook',
+    'EMA IMPD Playbook'
+  ];
 
   useEffect(() => {
     const fetchReadiness = async () => {
+      setLoading(true);
       try {
-        const res = await fetch('/api/advisor/check-readiness');
-        const data = await res.json();
-        if (data.success) {
-          setReadiness(data);
-        } else {
-          console.error('Failed to load Advisor Readiness.');
-          // We'll fall back to the mock data below instead of showing alerts
-        }
+        const data = await getAdvisorReadiness(selectedPlaybook);
+        setReadiness(data);
       } catch (error) {
         console.error('Error fetching Advisor data:', error);
-        // We'll fall back to the mock data below instead of showing alerts
       } finally {
         setLoading(false);
       }
     };
 
     fetchReadiness();
-    
-    // When API is not available, fallback to mock data after a short delay
-    const fallbackTimer = setTimeout(() => {
-      if (loading && !readiness) {
-        console.log('Using fallback data for demonstration');
-        const mockData = {
-          success: true,
-          readinessScore: 65,
-          missingSections: [
-            "CMC Stability Data",
-            "Clinical Study Reports (CSR)",
-            "Toxicology Reports",
-            "Drug Substance Specs",
-            "Drug Product Specs",
-            "Pharmacology Reports",
-            "Investigator Brochure Updates"
-          ],
-          riskLevel: "Medium",
-          estimatedDelayDays: 49,
-          estimatedSubmissionDate: "August 15, 2025",
-          playbookUsed: "Fast IND Playbook",
-          recommendations: [
-            "Upload CMC Stability Data immediately.",
-            "Upload Clinical Study Reports (CSR) immediately.",
-            "Upload Toxicology Reports immediately.",
-            "Upload Drug Substance Specs immediately.",
-            "Upload Drug Product Specs immediately."
-          ]
-        };
-        
-        setReadiness(mockData);
-        setLoading(false);
-      }
-    }, 2000);
-    
-    return () => clearTimeout(fallbackTimer);
-  }, []);
+  }, [selectedPlaybook]);
+
+  const handlePlaybookChange = (e) => {
+    setSelectedPlaybook(e.target.value);
+  };
 
   if (loading) {
     return (
@@ -83,6 +53,24 @@ export default function AdvisorSidebarV3() {
   return (
     <div className="p-6 bg-white rounded-lg shadow-md space-y-6 w-full">
       <h2 className="text-xl font-semibold">Regulatory Intelligence Advisor</h2>
+
+      {/* Playbook Selector */}
+      <div className="mt-1">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
+          Select Regulatory Strategy:
+        </label>
+        <select
+          className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          value={selectedPlaybook}
+          onChange={handlePlaybookChange}
+        >
+          {playbooks.map((playbook) => (
+            <option key={playbook} value={playbook}>
+              {playbook}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Progress Circle */}
       <div className="flex items-center justify-center mt-4">
@@ -134,18 +122,10 @@ export default function AdvisorSidebarV3() {
         </p>
       </div>
 
-      {/* Active Playbook */}
-      <div className="text-center">
-        <p className="text-xs text-gray-500">Active Playbook:</p>
-        <p className="text-sm font-semibold text-blue-600">
-          {readiness.playbookUsed || 'Fast IND Playbook'}
-        </p>
-      </div>
-
       {/* Critical Gaps */}
       <div>
-        <h3 className="text-sm font-semibold mt-6">Critical Gaps:</h3>
-        <ul className="mt-2 list-disc list-inside text-xs text-red-500 space-y-1">
+        <h3 className="text-sm font-semibold mt-3">Critical Gaps:</h3>
+        <ul className="mt-1 list-disc list-inside text-xs text-red-500 space-y-1">
           {readiness.missingSections.slice(0, 5).map((gap, idx) => (
             <li key={idx}>{gap}</li>
           ))}
@@ -154,19 +134,26 @@ export default function AdvisorSidebarV3() {
 
       {/* Next Best Actions */}
       <div>
-        <h3 className="text-sm font-semibold mt-6">Next Best Actions:</h3>
-        <ul className="mt-2 list-disc list-inside text-xs text-green-600 space-y-1">
-          {readiness.recommendations.slice(0, 5).map((action, idx) => (
+        <h3 className="text-sm font-semibold mt-3">Next Best Actions:</h3>
+        <ul className="mt-1 list-disc list-inside text-xs text-green-600 space-y-1">
+          {readiness.recommendations.slice(0, 4).map((action, idx) => (
             <li key={idx}>{action}</li>
           ))}
         </ul>
       </div>
 
       {/* Estimated Delay Cost */}
-      <div className="text-center mt-4">
+      <div className="text-center mt-3">
         <p className="text-xs text-gray-500">Estimated Delay Impact:</p>
         <p className="text-sm font-semibold text-red-600">
           ~${(readiness.estimatedDelayDays * 50000).toLocaleString()} lost
+        </p>
+      </div>
+      
+      {/* Powered by */}
+      <div className="text-center mt-3 border-t pt-2">
+        <p className="text-xs text-gray-400">
+          Powered by TrialSage™ Regulatory AI
         </p>
       </div>
     </div>
