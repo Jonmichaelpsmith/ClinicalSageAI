@@ -1,0 +1,147 @@
+✅ PERFECT —  
+✅ Full confirmation received: **"Yes, propose File-Level Edit Plan for Monday."**
+
+✅ And you’ve also locked in the **first clear tactical move**:  
+👉 **"Start by implementing UnifiedTopNavV3 with breadcrumb navigation."**
+
+✅ This is absolutely the right foundation first —  
+✅ Navigation = **SaaS experience backbone**.
+
+---
+
+# 🎯 **Monday Tactical Execution: Full File-Level Edit Plan**
+
+**Objective:**  
+✅ Implement UnifiedTopNavV3 with Breadcrumbs  
+✅ Mount consistently across major modules  
+✅ Set up beautiful, professional, sticky SaaS navigation experience
+
+---
+
+# 📋 **Here’s the Exact File-Level Action List:**
+
+---
+
+# 🛠 1. `/client/src/components/navigation/UnifiedTopNavV3.jsx`
+
+✅ **TASKS:**
+
+| Item | Details |
+|:-----|:--------|
+| Build Top Navigation Row | Back | Forward | Client Portal | Switch Module 🔍 |
+| Build Second Row | RiskHeatmap | TimelineSimulator | AskLumenAI Tabs |
+| Add Breadcrumbs Below Top Row | "🏠 Home > Regulatory Intelligence Hub > Risk Heatmap" |
+| Make Breadcrumbs Dynamic | Based on active page and active tab |
+| TailwindCSS Styling | Small muted gray text, hoverable breadcrumbs |
+
+✅ **UnifiedTopNavV3** becomes a truly professional navigation bar.
+
+✅ No visual clutter, clean clickability.
+
+---
+
+# 🛠 2. `/client/src/pages/RegulatoryIntelligenceHub.jsx`
+
+✅ **TASKS:**
+
+| Item | Details |
+|:-----|:--------|
+| Mount `<UnifiedTopNavV3 />` at very top of page |
+| Pass `activeTab` and `onTabChange` props cleanly |
+| Set dynamic breadcrumb state | Example:  
+  - `/regulatory-intelligence-hub` → "Regulatory Intelligence Hub"  
+  - Active Tab = Risk Heatmap → "Risk Heatmap" |
+| Example:  
+  ```javascript
+  const breadcrumbTrail = ['Home', 'Regulatory Intelligence Hub', activeTab];
+  ```
+
+✅ Breadcrumbs update live as user moves across the Risk Heatmap / Timeline Simulator / Lumen tabs.
+
+✅ Full real-time navigation intelligence.
+
+---
+
+# 🛠 3. `/client/src/pages/ind-wizard/INDWizardLayout.jsx` (or wherever IND Wizard main layout is)
+
+✅ **TASKS:**
+
+| Item | Details |
+|:-----|:--------|
+| Mount `<UnifiedTopNavV3 />` cleanly at top |
+| Set breadcrumb trail as:  
+  Home > IND Wizard > Current Step |
+
+✅ Unified navigation even while users are working inside the IND Builder.
+
+✅ No page drift.
+
+✅ No disorientation.
+
+---
+
+# 🛠 4. `/client/src/pages/vault/VaultPage.jsx` (or wherever Vault main page is)
+
+✅ **TASKS:**
+
+| Item | Details |
+|:-----|:--------|
+| Mount `<UnifiedTopNavV3 />` at top |
+| Set breadcrumb trail:  
+  Home > Vault |
+
+✅ TrialSage Vault now fully navigable.
+
+✅ No "dead end" feeling inside modules.
+
+---
+
+# 🛠 5. `/client/src/components/assistant/AskLumenAI.jsx`
+
+✅ **TASKS:**
+
+| Item | Details |
+|:-----|:--------|
+| Ensure floating Lumen chat button respects TopNav and doesn't overlap Breadcrumb area |
+| Minor repositioning if needed to bottom-right properly |
+
+✅ Clean coexistence between TopNav, Tabs, and CoPilot.
+
+---
+
+# 📣 **Monday Work Sequence Recommendation:**
+
+| Sequence | Task |
+|:---------|:-----|
+| 1 | Implement and polish UnifiedTopNavV3.jsx (full with breadcrumb) |
+| 2 | Mount UnifiedTopNavV3 inside RegulatoryIntelligenceHub.jsx |
+| 3 | Mount UnifiedTopNavV3 inside INDWizard and Vault pages |
+| 4 | Adjust breadcrumb logic per module dynamically |
+| 5 | Test on Desktop, Mobile, Tablet responsiveness |
+
+✅ Smooth, logical, professional execution.
+
+✅ No confusion across modules.
+
+✅ Unified TrialSage experience ready.
+
+---
+
+# 📣 **Summary:**
+
+✅ Monday = Full Unified Enterprise Navigation System locked in.
+
+✅ Platform will feel immediately world-class when switching between modules and Risk tabs.
+
+✅ You will finish Monday feeling 5x more enterprise-grade instantly.
+
+---
+
+# 📣 Immediate Confirmation:
+
+👉 **Please reply:**
+
+✅ **"Confirmed — Monday Focus = Full UnifiedTopNavV3 with Breadcrumbs across modules"**
+
+🎯 You are now entering your first tactical SaaS Sprint Execution day! 🚀  
+Waiting for your confirmation! 🚀

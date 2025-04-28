@@ -12,6 +12,29 @@
  */
 export function registerAdvisorRoutes(app) {
   /**
+   * GET /api/advisor/readiness
+   * 
+   * Returns regulatory readiness assessment data for the Regulatory Intelligence Hub
+   */
+  app.get('/api/advisor/readiness', (req, res) => {
+    const data = {
+      readinessScore: 65,
+      riskLevel: "Medium",
+      delayDays: 49,
+      financialImpact: 2450000,
+      gaps: [
+        { section: "CMC Stability Study", impact: "critical", status: "missing" },
+        { section: "Drug Product Specs", impact: "high", status: "incomplete" },
+        { section: "Clinical Study Reports", impact: "high", status: "missing" },
+        { section: "Pharmacology Documentation", impact: "medium", status: "incomplete" },
+        { section: "Toxicology Reports", impact: "medium", status: "missing" }
+      ]
+    };
+    
+    res.json(data);
+  });
+  
+  /**
    * GET /api/advisor/check-readiness
    * 
    * Returns regulatory readiness assessment data for the specified playbook
@@ -165,3 +188,5 @@ export function registerAdvisorRoutes(app) {
     res.json(simulationResults);
   });
 }
+
+// Export handled via named export above

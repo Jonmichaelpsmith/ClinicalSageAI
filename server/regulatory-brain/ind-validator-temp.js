@@ -55,8 +55,8 @@ async function validateSponsorInfo(sponsorInfo) {
       }
     `;
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4-turbo",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
       messages: [
         {
           role: "system", 
@@ -71,7 +71,7 @@ async function validateSponsorInfo(sponsorInfo) {
     });
 
     // Parse the response into JSON
-    const responseText = response.data.choices[0].message.content;
+    const responseText = response.choices[0].message.content;
     return JSON.parse(responseText);
   } catch (error) {
     console.error('Error validating sponsor info:', error);
@@ -116,8 +116,8 @@ async function validateProtocolInfo(protocolInfo) {
       Respond in JSON format with severity levels for each finding.
     `;
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4-turbo",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
       messages: [
         {
           role: "system", 
@@ -132,7 +132,7 @@ async function validateProtocolInfo(protocolInfo) {
     });
 
     // Parse the response into JSON
-    const responseText = response.data.choices[0].message.content;
+    const responseText = response.choices[0].message.content;
     return JSON.parse(responseText);
   } catch (error) {
     console.error('Error validating protocol info:', error);
@@ -181,8 +181,8 @@ async function predictClinicalHoldRisk(indInfo) {
       Respond in JSON format.
     `;
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4-turbo",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
       messages: [
         {
           role: "system", 
@@ -197,7 +197,7 @@ async function predictClinicalHoldRisk(indInfo) {
     });
 
     // Parse the response into JSON
-    const responseText = response.data.choices[0].message.content;
+    const responseText = response.choices[0].message.content;
     return JSON.parse(responseText);
   } catch (error) {
     console.error('Error predicting clinical hold risk:', error);

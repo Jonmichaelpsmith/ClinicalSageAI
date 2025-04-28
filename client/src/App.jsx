@@ -44,7 +44,8 @@ function App() {
   
   // Check if we're on the landing page or regulatory hub (which has its own navigation)
   const isLandingPage = location === '/' || location === '/client-portal';
-  const isRegulatoryHub = location === '/regulatory-intelligence-hub';
+  const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
+                          location === '/client-portal/regulatory-intel';
   const shouldShowNav = !isLandingPage && !isRegulatoryHub;
   
   return (
@@ -60,6 +61,7 @@ function App() {
           
           {/* Client Portal Sub-Pages */}
           <Route path="/client-portal/vault" component={VaultPage} />
+          <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
 
           {/* Advanced IND Wizard - Main Entry Point */}
           <Route path="/ind-wizard" component={INDWizardAdvanced} />

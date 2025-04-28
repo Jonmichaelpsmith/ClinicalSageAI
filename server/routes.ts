@@ -62,10 +62,11 @@ import { logger, createContextLogger, requestLogger } from './utils/logger';
 import createSecurityHeadersMiddleware from './middleware/securityHeaders';
 import healthRoutes from './routes/health';
 import { storage, mockUsers } from './storage';
-// Import advisor routes
-import { registerAdvisorRoutes } from './advisor-routes';
+// Import advisor routes - using ES modules
+import { registerAdvisorRoutes } from './advisor-routes.js';
+
 // Import regulatory brain routes
-import regulatoryBrainRoutes from './regulatory-brain-routes';
+import regulatoryBrainRoutes from './regulatory-brain-routes.js';
 
 // Create circuit breakers for critical services
 const openaiCircuitBreaker = createCircuitBreakerMiddleware('openai', {
