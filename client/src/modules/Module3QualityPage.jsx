@@ -16,18 +16,18 @@ import Module3NextButton from '@/components/ind-wizard/Module3NextButton';
 
 export default function Module3QualityPage() {
   const [formStatus, setFormStatus] = useState({
-    drugSubstance: false,
-    drugProduct: false,
-    appendices: false,
-    regionalInfo: false,
+    drugSubstanceUploaded: false,
+    drugProductUploaded: false,
+    appendicesUploaded: false,
+    regionalInfoUploaded: false,
   });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Module 3: Quality (CMC) Documentation 
+          <h1 className="text-2xl font-bold flex items-center">
+            CTD Module 3: Quality (CMC Documentation)
             <InfoTooltipModule3 />
           </h1>
           <p className="text-muted-foreground">
