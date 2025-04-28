@@ -243,6 +243,29 @@ router.get('/reset', (req, res) => {
   }
 });
 
+// POST /api/vault/reset
+router.post('/reset', (req, res) => {
+  try {
+    const uploadDir = path.join(__dirname, '../../uploads');
+    const metadataPath = path.join(uploadDir, 'metadata.json');
+
+    // If metadata.json exists, delete it
+    if (fs.existsSync(metadataPath)) {
+      fs.unlinkSync(metadataPath);
+    }
+
+    // Recreate fresh empty metadata.json
+    fs.writeFileSync(metadataPath, '[]', { encoding: 'utf8' });
+
+    console.log('✅ Vault metadata.json reset successfully.');
+
+    return res.status(200).json({ success: true, message: 'Vault metadata reset to empty array.' });
+  } catch (error) {
+    console.error('❌ Error resetting Vault metadata:', error);
+    return res.status(500).json({ success: false, message: 'Vault reset failed.' });
+  }
+});
+
 // GET /api/vault/download/:filename
 router.get('/download/:filename', (req, res) => {
   try {
