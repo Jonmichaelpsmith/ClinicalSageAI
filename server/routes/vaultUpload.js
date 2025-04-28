@@ -6,32 +6,17 @@ const path = require('path');
 const fs = require('fs');
 const router = express.Router();
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 // Create a metadata file to store document information
-const metadataPath = path.join(uploadsDir, 'vault_metadata.json');
+const metadataPath = path.join(uploadDir, 'vault_metadata.json');
 if (!fs.existsSync(metadataPath)) {
   fs.writeFileSync(metadataPath, JSON.stringify([]));
 }
-
-// Set up basic storage with versioning support
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    // We'll generate the filename after checking for existing versions
-    // For now, use a temporary name that we'll rename after version check
-    const tempName = `temp-${Date.now()}-${file.originalname}`;
-    cb(null, tempName);
-  },
-});
-
-const upload = multer({ storage });
 
 // Helper function to read metadata
 function readMetadata() {
@@ -58,27 +43,26 @@ function writeMetadata(metadata) {
   }
 }
 
-// Helper function to check if document already exists (by name and project)
-function findExistingDocumentVersions(metadata, originalName, projectId, moduleLinked) {
-  return metadata.filter(doc => 
-    doc.baseFilename === originalName && 
-    doc.projectId === projectId &&
-    doc.moduleLinked === moduleLinked
-  );
-}
+// Configure storage with versioning
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const safeName = file.originalname.replace(/\s+/g, '_');
+    const baseName = safeName.replace(/\.[^/.]+$/, ''); // Remove extension
+    const ext = path.extname(file.originalname);
 
-// Helper to get the base filename (remove version suffix if present)
-function getBaseFilename(filename) {
-  // Remove version suffix like "v1", "v2", etc.
-  return filename.replace(/_v\d+(\.\w+)$/, '$1');
-}
+    // Check if a file with baseName already exists
+    const existingFiles = fs.readdirSync(uploadDir).filter(f => f.includes(baseName));
+    const version = existingFiles.length + 1;
 
-// Helper to generate versioned filename
-function generateVersionedFilename(baseFilename, version) {
-  const extension = path.extname(baseFilename);
-  const nameWithoutExtension = baseFilename.slice(0, -extension.length);
-  return `${nameWithoutExtension}_v${version}${extension}`;
-}
+    const newFilename = `${baseName}_v${version}${ext}`;
+    cb(null, newFilename);
+  }
+});
+
+const upload = multer({ storage });
 
 // POST /api/vault/upload
 router.post('/upload', upload.single('document'), (req, res) => {
@@ -87,69 +71,51 @@ router.post('/upload', upload.single('document'), (req, res) => {
       return res.status(400).json({ success: false, message: 'No file uploaded.' });
     }
 
-    // Read existing metadata
-    const metadata = readMetadata();
-    
-    // Get the base filename (without version number)
+    // Get filename without version for easier grouping
     const originalName = req.file.originalname;
-    const baseFilename = getBaseFilename(originalName);
-    const projectId = req.body.projectId || 'Unassigned';
-    const moduleLinked = req.body.module || 'Unknown';
+    const safeName = originalName.replace(/\s+/g, '_');
+    const baseName = safeName.replace(/\.[^/.]+$/, ''); // Name without extension
+    const ext = path.extname(originalName);
     
-    // Check if this document already exists (same name, same project)
-    const existingVersions = findExistingDocumentVersions(metadata, baseFilename, projectId, moduleLinked);
-    
-    // Determine version number
-    let version = 1;
-    if (existingVersions.length > 0) {
-      // Find highest version number
-      const highestVersion = Math.max(...existingVersions.map(doc => doc.version || 0));
-      version = highestVersion + 1;
-    }
-    
-    // Generate versioned filename
-    const versionedFilename = generateVersionedFilename(baseFilename, version);
-    
-    // Rename the temp file to versioned filename
-    const tempPath = path.join(uploadsDir, req.file.filename);
-    const newPath = path.join(uploadsDir, versionedFilename);
-    fs.renameSync(tempPath, newPath);
+    // Extract version from the stored filename (e.g., file_v2.pdf -> 2)
+    const versionMatch = req.file.filename.match(/_v(\d+)\.[^/.]+$/);
+    const version = versionMatch ? parseInt(versionMatch[1]) : 1;
     
     // Create metadata for the document
     const fileInfo = {
-      originalName: versionedFilename,
-      baseFilename: baseFilename,
-      storedName: versionedFilename,
+      originalName: originalName,
+      baseFilename: baseName + ext, // Store the original name without version suffix
+      storedName: req.file.filename,
       version: version,
       isLatestVersion: true, // Mark this as latest version
       uploadTime: new Date().toISOString(),
-      moduleLinked: moduleLinked,
-      projectId: projectId,
+      moduleLinked: req.body.module || 'Unknown',
+      projectId: req.body.projectId || 'Unassigned',
       uploader: req.body.uploader || 'Unknown',
       fileSize: req.file.size,
       mimeType: req.file.mimetype,
     };
     
-    // Mark all previous versions as not latest
-    if (existingVersions.length > 0) {
-      metadata.forEach(doc => {
-        if (doc.baseFilename === baseFilename && 
-            doc.projectId === projectId && 
-            doc.moduleLinked === moduleLinked) {
-          doc.isLatestVersion = false;
-        }
-      });
-    }
-
-    console.log(`✅ New Vault Upload: ${baseFilename} (v${version})`);
-
+    // Read existing metadata
+    const metadata = readMetadata();
+    
+    // Mark all previous versions of this file as not latest
+    metadata.forEach(doc => {
+      if (doc.baseFilename === fileInfo.baseFilename && 
+          doc.projectId === fileInfo.projectId && 
+          doc.moduleLinked === fileInfo.moduleLinked) {
+        doc.isLatestVersion = false;
+      }
+    });
+    
     // Add new document metadata
     metadata.push(fileInfo);
     
     // Save updated metadata
     writeMetadata(metadata);
 
-    // Respond back
+    console.log(`✅ Vault Upload with Versioning: ${baseName}${ext} (v${version})`);
+
     res.status(200).json({
       success: true,
       file: fileInfo,
@@ -178,15 +144,18 @@ router.get('/list', (req, res) => {
 router.get('/download/:filename', (req, res) => {
   try {
     const filename = req.params.filename;
-    const filePath = path.join(uploadsDir, filename);
+    const filePath = path.join(uploadDir, filename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ success: false, message: 'File not found' });
     }
     
+    // For download tracking, optionally log download metrics here
+    console.log(`✅ Downloading Vault document: ${filename}`);
+    
     res.download(filePath);
   } catch (error) {
-    console.error('Error downloading document:', error);
+    console.error('❌ Error downloading document:', error);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });

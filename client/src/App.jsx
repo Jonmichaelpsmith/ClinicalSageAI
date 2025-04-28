@@ -11,6 +11,7 @@ import CmcWizard from './modules/CmcWizard';
 import CsrAnalyzer from './modules/CsrAnalyzer';
 import Vault from './modules/Vault';
 import VaultPage from './pages/VaultPage';
+import VaultTestPage from './pages/VaultTestPage'; // Import the test page
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
 import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
@@ -52,6 +53,7 @@ function App() {
           <Route path="/csr-analyzer" component={CsrAnalyzer} />
           <Route path="/vault" component={Vault} />
           <Route path="/vault-page" component={VaultPage} />
+          <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           
