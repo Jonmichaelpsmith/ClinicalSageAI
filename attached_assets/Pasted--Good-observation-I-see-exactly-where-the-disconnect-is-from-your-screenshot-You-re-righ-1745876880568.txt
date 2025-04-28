@@ -1,0 +1,127 @@
+✅ Good observation —  
+✅ I see exactly where the disconnect is from your screenshot.
+
+You’re right: **you don't see the top [Back] [Forward] [Return to Client Portal] and Tabs** yet.
+
+---
+
+# 🛠 **Diagnosing the Problem:**
+
+| Cause | What’s Happening |
+|:------|:-----------------|
+| UnifiedTopNav.jsx was created ✅ | But |
+| It was connected to the **old RegulatoryDashboard.jsx** | ❌ not to the new **Regulatory Intelligence Hub** page |
+| Your active page now is `/regulatory-intelligence-hub`, NOT `/regulatory-dashboard` | ❌ UnifiedTopNav isn't mounted on this page yet |
+
+✅ We need to **move the UnifiedTopNav into the Regulatory Intelligence Hub main page** properly.
+
+✅ Then you will immediately see it **at the very top**, above RiskHeatmap/Timeline/AskLumen tabs.
+
+---
+
+# 📋 **Immediate Correct Fix:**
+
+---
+
+# 🛠 1. Open `/client/src/pages/RegulatoryIntelligenceHub.jsx`
+
+(this is your real main page now)
+
+✅ **At the top**, import the UnifiedTopNav:
+
+```javascript
+import UnifiedTopNav from '../components/navigation/UnifiedTopNav';
+```
+
+✅ Inside the main return JSX, at the very top,  
+before anything else (even before Readiness % or Risk metrics),  
+add:
+
+```jsx
+<UnifiedTopNav activeTab={activeTab} onTabChange={setActiveTab} />
+```
+
+✅ Example Clean Layout:
+
+```jsx
+export default function RegulatoryIntelligenceHub() {
+  const [activeTab, setActiveTab] = useState('RiskHeatmap');
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      
+      {/* Always show Unified Navigation at top */}
+      <UnifiedTopNav activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Main Regulatory Intelligence Panels */}
+      <div className="p-8 space-y-6">
+
+        {/* Top Readiness Metrics */}
+        <AdvisorSummaryPanel />
+
+        {/* Tab Area */}
+        {activeTab === 'RiskHeatmap' && (
+          <AdvisorRiskHeatmapV2 />
+        )}
+        {activeTab === 'TimelineSimulator' && (
+          <AdvisorTimelineSimulator />
+        )}
+        {activeTab === 'AskLumenAI' && (
+          <AskLumenCoPilot />
+        )}
+
+      </div>
+    </div>
+  );
+}
+```
+
+✅ **Now every major page load has:**
+- [ Back ] [ Forward ] [ Return to Client Portal ] sticky top bar
+- [ Risk Heatmap | Timeline Simulator | Ask Lumen AI ] tabs in center
+- Beautiful, professional SaaS experience
+
+---
+
+# 📈 **Result After You Fix:**
+
+✅ Top Navigation fully visible immediately when you visit `/regulatory-intelligence-hub`.
+
+✅ [Back], [Forward], [Return] buttons always accessible.
+
+✅ RiskHeatmap / TimelineSimulator / Ask Lumen Tabs unified across views.
+
+✅ Full UX consistency — clean SaaS-grade layout.
+
+---
+
+# 📣 Immediate Action:
+
+| Step | Action |
+|:-----|:-------|
+| 1 | Open `/client/src/pages/RegulatoryIntelligenceHub.jsx` |
+| 2 | Import `UnifiedTopNav` |
+| 3 | Place `<UnifiedTopNav activeTab={activeTab} onTabChange={setActiveTab} />` at the top |
+| 4 | Save |
+| 5 | Refresh `/regulatory-intelligence-hub` |
+
+✅ Navigation bar will now appear properly.
+
+✅ TrialSage Intelligence Hub will feel truly dynamic and strategic.
+
+---
+
+# 📣 After This:
+
+✅ I will guide you into **finishing Ask Lumen AI 2.0 Copilot** next.
+
+✅ Then **TrialSage Regulatory Intelligence Hub v1.0** launch is complete.
+
+---
+
+# 📣 Please reply:
+
+👉 **"UnifiedTopNav now visible on Regulatory Intelligence Hub, ready for Ask Lumen AI 2.0 Copilot build"**
+
+🎯 You are minutes away from making TrialSage a fully intelligent Regulatory Co-Pilot platform! 🚀  
+Waiting for your update! 🚀

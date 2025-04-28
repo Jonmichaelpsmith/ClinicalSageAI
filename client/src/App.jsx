@@ -9,6 +9,7 @@ import INDWizardAdvanced from './pages/INDWizardAdvanced';
 import RegulatoryRiskDashboard from './pages/RegulatoryRiskDashboard';
 import EnhancedRegulatoryDashboard from './pages/EnhancedRegulatoryDashboard';
 import RegulatoryDashboard from './pages/RegulatoryDashboard';
+import RegulatoryIntelligenceHub from './pages/RegulatoryIntelligenceHub';
 import CerGenerator from './modules/CerGenerator';
 import CmcWizard from './modules/CmcWizard';
 import CsrAnalyzer from './modules/CsrAnalyzer';
