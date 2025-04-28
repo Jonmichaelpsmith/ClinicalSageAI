@@ -8,6 +8,7 @@ import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
 const indAssemblerRoutes = require('./routes/indAssembler.js');
+const indWizardAPIRoutes = require('./routes/indWizardAPI.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 // API Routes
 app.use('/api/projects', projectsStatusRoutes);
 app.use('/api/ind', indAssemblerRoutes);
+app.use('/api/ind/wizard', indWizardAPIRoutes);
 
 // Log all API requests for development
 app.use('/api', (req, res, next) => {
