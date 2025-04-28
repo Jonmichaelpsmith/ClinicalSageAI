@@ -75,6 +75,144 @@ const getRecentDocuments = (req, res) => {
   }
 };
 
+// GET /api/vault/documents/:id
+const getDocumentById = (req, res) => {
+  try {
+    const { id } = req.params;
+    const document = recentDocuments.find(doc => doc.id === parseInt(id));
+    
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: `Document with ID ${id} not found`
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: document
+    });
+  } catch (error) {
+    console.error('Error fetching document:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch document',
+    });
+  }
+};
+
+// GET /api/vault/documents
+const getAllDocuments = (req, res) => {
+  try {
+    // In a real application, we would filter by permissions/project
+    const projectId = req.query.projectId;
+    const type = req.query.type;
+    
+    let documents = [...recentDocuments];
+    
+    // Apply filters
+    if (projectId) {
+      documents = documents.filter(doc => doc.projectId === projectId);
+    }
+    
+    if (type) {
+      documents = documents.filter(doc => doc.type === type);
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: documents,
+      stats: vaultStats
+    });
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch documents',
+    });
+  }
+};
+
+// POST /api/vault/documents
+const createDocument = (req, res) => {
+  try {
+    const newDocument = req.body;
+    
+    // In a real app, we would validate the document data
+    // Then save to database
+    
+    // For now, just return success with dummy data
+    res.status(201).json({
+      success: true,
+      message: 'Document created successfully',
+      data: {
+        id: recentDocuments.length + 1,
+        ...newDocument,
+        uploadDate: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Error creating document:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create document',
+    });
+  }
+};
+
+// PUT /api/vault/documents/:id
+const updateDocument = (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    // In a real app, we would check if document exists
+    // Then update in database
+    
+    res.status(200).json({
+      success: true,
+      message: `Document ${id} updated successfully`,
+      data: {
+        id: parseInt(id),
+        ...updates,
+        uploadDate: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Error updating document:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update document',
+    });
+  }
+};
+
+// DELETE /api/vault/documents/:id
+const deleteDocument = (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // In a real app, we would check if document exists
+    // Then delete from database
+    
+    res.status(200).json({
+      success: true,
+      message: `Document ${id} deleted successfully`
+    });
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete document',
+    });
+  }
+};
+
 module.exports = {
   getRecentDocuments,
+  getDocumentById,
+  getAllDocuments,
+  createDocument,
+  updateDocument,
+  deleteDocument
 };
