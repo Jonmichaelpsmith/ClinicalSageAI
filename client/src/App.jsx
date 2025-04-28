@@ -1,58 +1,35 @@
 // /client/src/App.jsx
 
-import React from 'react';
-import { Route, Switch } from 'wouter';
+import { Switch, Route } from 'wouter';
 
-// Import your Pages
+// Import Pages and Modules
 import ClientPortalLanding from './pages/ClientPortalLanding';
+import IndWizard from './modules/IndWizard';
+import CerGenerator from './modules/CerGenerator';
+import CmcWizard from './modules/CmcWizard';
+import CsrAnalyzer from './modules/CsrAnalyzer';
+import Vault from './modules/Vault';
+import StudyArchitect from './modules/StudyArchitect';
+import AnalyticsDashboard from './modules/AnalyticsDashboard';
 
-// Import your Modules (Module Home Pages) - we'll create placeholders
-const IndWizard = () => <div>IND Wizard Module Coming Soon</div>;
-const CerGenerator = () => <div>CER Generator Module Coming Soon</div>;
-const CmcWizard = () => <div>CMC Wizard Module Coming Soon</div>;
-const CsrAnalyzer = () => <div>CSR Analyzer Module Coming Soon</div>;
-const Vault = () => <div>Vault Module Coming Soon</div>;
-const StudyArchitect = () => <div>Study Architect Module Coming Soon</div>;
-const AnalyticsDashboard = () => <div>Analytics Dashboard Module Coming Soon</div>;
-
-// You can add any other pages/modules you have here
-
-const App = () => {
+function App() {
   return (
-    <div className="min-h-screen">
+    <div className="p-4">
       <Switch>
         {/* Main Portal Landing Page */}
-        <Route path="/client-portal">
-          <ClientPortalLanding />
-        </Route>
+        <Route path="/client-portal" component={ClientPortalLanding} />
 
         {/* Module Pages */}
-        <Route path="/ind-wizard">
-          <IndWizard />
-        </Route>
-        <Route path="/cer-generator">
-          <CerGenerator />
-        </Route>
-        <Route path="/cmc-wizard">
-          <CmcWizard />
-        </Route>
-        <Route path="/csr-analyzer">
-          <CsrAnalyzer />
-        </Route>
-        <Route path="/vault">
-          <Vault />
-        </Route>
-        <Route path="/study-architect">
-          <StudyArchitect />
-        </Route>
-        <Route path="/analytics">
-          <AnalyticsDashboard />
-        </Route>
+        <Route path="/ind-wizard" component={IndWizard} />
+        <Route path="/cer-generator" component={CerGenerator} />
+        <Route path="/cmc-wizard" component={CmcWizard} />
+        <Route path="/csr-analyzer" component={CsrAnalyzer} />
+        <Route path="/vault" component={Vault} />
+        <Route path="/study-architect" component={StudyArchitect} />
+        <Route path="/analytics" component={AnalyticsDashboard} />
 
-        {/* Fallback Route */}
-        <Route path="*">
-          <ClientPortalLanding />
-        </Route>
+        {/* Default Redirect (Optional) */}
+        <Route>404 - Page Not Found</Route>
       </Switch>
     </div>
   );
