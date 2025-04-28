@@ -1,0 +1,21 @@
+{
+  "name": "trialsage",
+  "version": "1.0.0",
+  "description": "AI-powered document management system for clinical research and FDA form management",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "build": "cd client && npm install && npm run build",
+    "start": "node server/index.js",
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
