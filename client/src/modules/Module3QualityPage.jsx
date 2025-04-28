@@ -13,6 +13,7 @@ import DrugProductUploader from '@/components/ind-wizard/DrugProductUploader';
 import AppendicesUploader from '@/components/ind-wizard/AppendicesUploader';
 import RegionalInfoUploader from '@/components/ind-wizard/RegionalInfoUploader';
 import Module3NextButton from '@/components/ind-wizard/Module3NextButton';
+import AdvisorSidebar from '@/components/advisor/AdvisorSidebar';
 
 export default function Module3QualityPage() {
   const [formStatus, setFormStatus] = useState({
@@ -37,9 +38,12 @@ export default function Module3QualityPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Status Tracker (1/4 width on desktop) */}
-        <div className="md:col-span-1">
+        {/* Status Tracker and Advisor (1/4 width on desktop) */}
+        <div className="md:col-span-1 space-y-6">
           <UploadStatusTrackerModule3 formStatus={formStatus} />
+          
+          {/* Add Advisor Sidebar */}
+          <AdvisorSidebar />
         </div>
 
         {/* Main Content (3/4 width on desktop) */}

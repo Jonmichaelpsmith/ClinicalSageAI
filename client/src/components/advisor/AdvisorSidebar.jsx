@@ -7,37 +7,50 @@ export default function AdvisorSidebar() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Temporarily use hardcoded data while the API is being fixed
-    console.log('Loading hardcoded Regulatory Intelligence data');
+    // Fetch data from the advisor API
+    console.log('Fetching Regulatory Intelligence data from API...');
     
-    // Simulate API timing
-    setTimeout(() => {
-      const mockData = {
-        success: true,
-        readinessScore: 65,
-        missingSections: [
-          "CMC Stability Data",
-          "Clinical Study Reports (CSR)",
-          "Toxicology Reports",
-          "Drug Substance Specs",
-          "Drug Product Specs",
-          "Pharmacology Reports",
-          "Investigator Brochure Updates"
-        ],
-        riskLevel: "Medium",
-        estimatedDelayDays: 49,
-        recommendations: [
-          "Upload CMC Stability Data immediately.",
-          "Upload Clinical Study Reports (CSR) immediately.",
-          "Upload Toxicology Reports immediately.",
-          "Upload Drug Substance Specs immediately.",
-          "Upload Drug Product Specs immediately."
-        ]
-      };
-      
-      setReadiness(mockData);
-      setLoading(false);
-    }, 500);
+    fetch('/api/advisor/check-readiness')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Received advisor data:', data);
+        setReadiness(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching advisor data:', error);
+        // Fallback to mock data if API fails
+        const mockData = {
+          success: true,
+          readinessScore: 65,
+          missingSections: [
+            "CMC Stability Data",
+            "Clinical Study Reports (CSR)",
+            "Toxicology Reports",
+            "Drug Substance Specs",
+            "Drug Product Specs",
+            "Pharmacology Reports",
+            "Investigator Brochure Updates"
+          ],
+          riskLevel: "Medium",
+          estimatedDelayDays: 49,
+          recommendations: [
+            "Upload CMC Stability Data immediately.",
+            "Upload Clinical Study Reports (CSR) immediately.",
+            "Upload Toxicology Reports immediately.",
+            "Upload Drug Substance Specs immediately.",
+            "Upload Drug Product Specs immediately."
+          ]
+        };
+        
+        setReadiness(mockData);
+        setLoading(false);
+      });
   }, []);
 
   if (loading) {
