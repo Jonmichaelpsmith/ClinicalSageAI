@@ -1,10 +1,7 @@
-// /server/routes/analytics.js
-
 const express = require('express');
 const router = express.Router();
-const analyticsController = require('../controllers/analyticsController');
+const { getAnalyticsMetrics } = require('../controllers/analyticsController');
 
-// Route: GET /api/analytics/metrics
-router.get('/metrics', analyticsController.getAnalyticsMetrics);
+router.get('/analytics/metrics', getAnalyticsMetrics);
 
 module.exports = router;
