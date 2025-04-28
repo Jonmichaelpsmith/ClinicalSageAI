@@ -89,6 +89,17 @@ function App() {
             {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           
+          {/* Client portal detail routes */}
+          <Route path="/projects">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/documents">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/activity">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          
           {/* Client Portal route - redirects to the main portal */}
           <Route path="/client-portal">
             {isAuthenticated ? <Redirect to="/portal" /> : <Redirect to="/login" />}

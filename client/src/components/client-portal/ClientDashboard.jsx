@@ -326,12 +326,15 @@ const ClientDashboard = () => {
     loadDashboardData();
   }, []);
   
+  // Get wouter location and setLocation
+  const [location, setLocation] = useLocation();
+  
   // Navigate to document
   const navigateToDocument = (document) => {
     // In a real app, would navigate to document viewer
     console.log('Navigate to document:', document);
     const path = `/${document.module}/documents/${document.id}`;
-    window.location.href = path; // Using window.location for immediate navigation
+    setLocation(path); // Using React Router navigation
   };
   
   // Navigate to deadline
@@ -339,7 +342,7 @@ const ClientDashboard = () => {
     // In a real app, would navigate to deadline details
     console.log('Navigate to deadline:', deadline);
     const path = `/deadlines/${deadline.id}`;
-    window.location.href = path; // Using window.location for immediate navigation
+    setLocation(path); // Using React Router navigation
   };
   
   // Navigate based on metric type
@@ -347,7 +350,7 @@ const ClientDashboard = () => {
     // In a real app, would navigate to appropriate section
     console.log('Navigate to metric:', metricType);
     const path = `/${metricType}`;
-    window.location.href = path; // Using window.location for immediate navigation
+    setLocation(path); // Using React Router navigation
   };
   
   // Handle quick action
@@ -355,7 +358,7 @@ const ClientDashboard = () => {
     // In a real app, would navigate to appropriate action
     console.log('Quick action:', action);
     const path = `/${action}`;
-    window.location.href = path; // Using window.location for immediate navigation
+    setLocation(path); // Using React Router navigation
   };
   
   // Render loading state
