@@ -1,5 +1,5 @@
 // Project Status API Routes
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // Sample project data
@@ -47,4 +47,4 @@ router.get('/status', (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
