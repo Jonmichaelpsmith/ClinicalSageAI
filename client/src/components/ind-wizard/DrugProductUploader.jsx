@@ -15,8 +15,7 @@ export default function DrugProductUploader({ setFormStatus }) {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h2 className="text-xl font-semibold">Drug Product Documentation (Module 3.2.P)</h2>
+    <div className="space-y-4">
       <p className="text-sm text-gray-600">
         Upload documentation for the final drug product including the description and composition, 
         manufacturing process, control of excipients, specifications, and stability information.

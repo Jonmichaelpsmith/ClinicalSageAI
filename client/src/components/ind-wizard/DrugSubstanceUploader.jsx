@@ -15,8 +15,7 @@ export default function DrugSubstanceUploader({ setFormStatus }) {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h2 className="text-xl font-semibold">Drug Substance Documentation (Module 3.2.S)</h2>
+    <div className="space-y-4">
       <p className="text-sm text-gray-600">
         Upload documentation for the active pharmaceutical ingredient (API) including general information, 
         manufacturing details, characterization, and control of drug substance.
