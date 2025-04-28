@@ -52,6 +52,9 @@ function App() {
           <Route path="/vault" component={Vault} />
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
+          
+          {/* IND Wizard Module Pages */}
+          <Route path="/ind-wizard/module-4" component={Module4NonclinicalPage} />
 
           {/* Default Redirect */}
           <Route>404 - Page Not Found</Route>

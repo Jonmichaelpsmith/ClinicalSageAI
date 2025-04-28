@@ -1,60 +1,35 @@
 // /client/src/components/ind-wizard/UploadStatusTrackerModule4.jsx
 
 export default function UploadStatusTrackerModule4({ formStatus }) {
-  const totalItems = 4;
-  const completedItems = [
-    formStatus?.pharmacologyUploaded,
-    formStatus?.pharmacokineticsUploaded,
-    formStatus?.toxicologyUploaded,
-    formStatus?.genotoxicityUploaded
-  ].filter(Boolean).length;
-
-  const percentComplete = Math.floor((completedItems / totalItems) * 100);
+  const items = [
+    { label: 'Pharmacology Reports Uploaded', key: 'pharmacologyUploaded' },
+    { label: 'Pharmacokinetics Reports Uploaded', key: 'pharmacokineticsUploaded' },
+    { label: 'Toxicology Reports Uploaded', key: 'toxicologyUploaded' },
+    { label: 'Genotoxicity Reports Uploaded', key: 'genotoxicityUploaded' },
+  ];
 
   return (
-    <div className="p-4 border border-gray-200 rounded-lg bg-white">
-      <h3 className="text-md font-semibold mb-3">Module 4 Upload Status</h3>
-      
-      <div className="space-y-3">
-        <div className="flex justify-between items-center text-sm">
-          <span>Progress:</span>
-          <span className="font-medium">{percentComplete}% Complete</span>
-        </div>
-        
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div 
-            className={`h-2.5 rounded-full ${percentComplete < 50 ? 'bg-yellow-500' : 'bg-green-600'}`}
-            style={{ width: `${percentComplete}%` }}
-          ></div>
-        </div>
-        
-        <ul className="space-y-2 text-sm mt-4">
-          <li className="flex items-start">
-            <span className={`mr-2 ${formStatus?.pharmacologyUploaded ? 'text-green-600' : 'text-gray-400'}`}>
-              {formStatus?.pharmacologyUploaded ? '✓' : '○'}
+    <div className="p-4 bg-white rounded-lg shadow-md mb-6">
+      <h2 className="text-lg font-semibold mb-4">Module 4 Completion Tracker</h2>
+
+      <ul className="space-y-2">
+        {items.map((item) => (
+          <li key={item.key} className="flex items-center space-x-2">
+            <span
+              className={`w-3 h-3 rounded-full ${
+                formStatus[item.key] ? 'bg-green-500' : 'bg-gray-300'
+              }`}
+            ></span>
+            <span
+              className={`text-sm ${
+                formStatus[item.key] ? 'text-green-700' : 'text-gray-500'
+              }`}
+            >
+              {item.label}
             </span>
-            <span>Pharmacology Study Reports</span>
           </li>
-          <li className="flex items-start">
-            <span className={`mr-2 ${formStatus?.pharmacokineticsUploaded ? 'text-green-600' : 'text-gray-400'}`}>
-              {formStatus?.pharmacokineticsUploaded ? '✓' : '○'}
-            </span>
-            <span>Pharmacokinetics (ADME) Study Reports</span>
-          </li>
-          <li className="flex items-start">
-            <span className={`mr-2 ${formStatus?.toxicologyUploaded ? 'text-green-600' : 'text-gray-400'}`}>
-              {formStatus?.toxicologyUploaded ? '✓' : '○'}
-            </span>
-            <span>Toxicology Study Reports</span>
-          </li>
-          <li className="flex items-start">
-            <span className={`mr-2 ${formStatus?.genotoxicityUploaded ? 'text-green-600' : 'text-gray-400'}`}>
-              {formStatus?.genotoxicityUploaded ? '✓' : '○'}
-            </span>
-            <span>Genotoxicity Study Reports</span>
-          </li>
-        </ul>
-      </div>
+        ))}
+      </ul>
     </div>
   );
 }
