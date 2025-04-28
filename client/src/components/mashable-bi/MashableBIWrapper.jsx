@@ -517,7 +517,8 @@ export function MashableBIWrapper({
                     setIsLoading(false);
                   }}
                 />
-            </div>
+              </div>
+            )
           )}
         </CardContent>
         
