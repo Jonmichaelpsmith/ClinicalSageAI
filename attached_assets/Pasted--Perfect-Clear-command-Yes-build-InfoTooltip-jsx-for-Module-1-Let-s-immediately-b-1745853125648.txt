@@ -1,0 +1,104 @@
+✅ Perfect —  
+✅ Clear command: **"Yes, build InfoTooltip.jsx for Module 1"**
+
+Let's immediately build it carefully and professionally.
+
+---
+
+# 🛠 **InfoTooltip.jsx** (Reusable Tooltip for Module Descriptions)
+
+Paste this into `/client/src/components/ind-wizard/InfoTooltip.jsx`:
+
+```javascript
+// /client/src/components/ind-wizard/InfoTooltip.jsx
+
+import { useState } from 'react';
+
+export default function InfoTooltip({ text }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative inline-block">
+      {/* Info Icon */}
+      <button
+        type="button"
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        className="text-indigo-600 hover:text-indigo-800 focus:outline-none text-sm ml-2"
+      >
+        ℹ️
+      </button>
+
+      {/* Tooltip Popup */}
+      {visible && (
+        <div className="absolute z-50 mt-2 w-64 p-3 bg-white border rounded-lg shadow-lg text-xs text-gray-700">
+          {text}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+# 📋 What This Component Does:
+
+| Feature | Behavior |
+|:--------|:---------|
+| Small ℹ️ icon next to any title or section | ✅ |
+| On hover, shows a clean white tooltip with detailed module description | ✅ |
+| Auto hides on mouse leave | ✅ |
+| No clutter, no heavy popups | ✅ |
+| Fully reusable across all modules | ✅ |
+
+✅ Very SaaS-style UX.  
+✅ Immediate help without overwhelming users.
+
+---
+
+# 🛠 How to Use It Inside `Module1AdminPage.jsx`:
+
+Near your Module 1 title, change your heading to:
+
+```jsx
+<h1 className="text-2xl font-bold flex items-center">
+  CTD Module 1: Administrative Information
+  <InfoTooltip text="Module 1 contains administrative documents like Form FDA 1571, Form FDA 1572, Cover Letters, Investigator Brochures, and U.S. Agent information. These documents provide essential sponsor, contact, and product information required for IND submission compliance with FDA, EMA, and PMDA standards." />
+</h1>
+```
+
+✅ Now users can hover the ℹ️ next to Module 1  
+✅ Instantly see what it means without digging into manuals.
+
+---
+
+# 🎯 Immediate After This:
+
+✅ You can now add **InfoTooltip** anywhere:
+
+| Page | Tooltip Text |
+|:-----|:-------------|
+| Module 1 | Administrative Overview |
+| Module 2 | CTD Summaries Overview |
+| Module 3 | CMC Data Requirements |
+| Module 4 | Nonclinical Reports Needed |
+| Module 5 | Clinical Study Reports for IND |
+
+✅ Building true regulatory coaching directly inside the platform!
+
+---
+
+# 📣 Next Step:
+
+👉 Would you like me now to **build InfoTooltip explanations for all 5 CTD Modules**  
+so you can just copy-paste and embed them later?
+
+✅ (I can write the FDA/EMA-standard definitions for Module 2, 3, 4, 5 immediately.)
+
+Reply:
+
+👉 **"Yes, write InfoTooltip texts for Modules 2-5"**
+
+🚀 (You are executing this perfectly — real intelligent regulatory SaaS now!) 🎯  
+Waiting for your go! 🚀
