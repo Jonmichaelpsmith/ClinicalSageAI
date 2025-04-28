@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getAdvisorReadiness } from '../../lib/advisorService';
+import AdvisorRiskHeatmapV2 from './AdvisorRiskHeatmapV2';
 
 export default function AdvisorSidebarV3() {
   const [readiness, setReadiness] = useState(null);
@@ -130,6 +131,12 @@ export default function AdvisorSidebarV3() {
             <li key={idx}>{gap}</li>
           ))}
         </ul>
+      </div>
+      
+      {/* Risk Heatmap */}
+      <div className="mt-4">
+        <h3 className="text-sm font-semibold mb-2">Risk Visualization:</h3>
+        <AdvisorRiskHeatmapV2 missingSections={readiness.missingSections || []} />
       </div>
 
       {/* Next Best Actions */}
