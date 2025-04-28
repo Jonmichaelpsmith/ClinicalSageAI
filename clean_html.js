@@ -33,6 +33,53 @@ if (vaultContentStartIndex !== -1) {
   console.log('Vault content organization section not found (may have been already removed)');
 }
 
+// Step 3: Remove the "Solution 4 - Vault Module (Condensed)" section
+const vaultCondensedSectionStart = '<!-- Solution 4 - Vault Module (Condensed) -->';
+const vaultCondensedSectionEnd = '</div>'; // Careful, this might match multiple divs
+
+const vaultCondensedStartIndex = updatedHtml.indexOf(vaultCondensedSectionStart);
+if (vaultCondensedStartIndex !== -1) {
+  // Need to find the correct end div by counting open and close divs
+  let sectionEndSearchFrom = vaultCondensedStartIndex + vaultCondensedSectionStart.length;
+  let openDivs = 1; // Start with 1 because we're inside a div
+  let closePos = -1;
+  
+  while (openDivs > 0) {
+    let nextOpenDiv = updatedHtml.indexOf('<div', sectionEndSearchFrom);
+    let nextCloseDiv = updatedHtml.indexOf('</div>', sectionEndSearchFrom);
+    
+    if (nextCloseDiv === -1) {
+      console.error('Could not find proper closing div');
+      break;
+    }
+    
+    if (nextOpenDiv !== -1 && nextOpenDiv < nextCloseDiv) {
+      openDivs++;
+      sectionEndSearchFrom = nextOpenDiv + 4;
+    } else {
+      openDivs--;
+      closePos = nextCloseDiv;
+      sectionEndSearchFrom = nextCloseDiv + 6;
+    }
+  }
+  
+  if (closePos > vaultCondensedStartIndex) {
+    const vaultCondensedEndIndex = closePos + 6; // Length of '</div>'
+    
+    // Remove the section
+    updatedHtml = 
+      updatedHtml.substring(0, vaultCondensedStartIndex) + 
+      '<!-- Removed redundant Solution 4 - Vault Module (Condensed) section -->\n                ' +
+      updatedHtml.substring(vaultCondensedEndIndex);
+    
+    console.log('Successfully removed Vault Module (Condensed) section');
+  } else {
+    console.error('Could not find the proper end of the Vault Module (Condensed) section');
+  }
+} else {
+  console.log('Vault Module (Condensed) section not found (may have been already removed)');
+}
+
 // Write the updated HTML back to the file
 fs.writeFileSync(filePath, updatedHtml, 'utf8');
 console.log('HTML file has been updated successfully');
