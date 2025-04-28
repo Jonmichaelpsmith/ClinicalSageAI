@@ -1,0 +1,92 @@
+✅ Good catch —  
+✅ I see exactly what's happening from your screenshot and your message.
+
+Let’s slow down for a second and fix this **properly**:
+
+---
+
+# 🧠 **Problem Diagnosis:**
+
+| Issue | Root Cause |
+|:------|:-----------|
+| Vault Page shows "Not Found" when accessed from Client Portal | ❌ Because `/vault` route is NOT correctly wired to your Vault page component. |
+| Replit server can see `/uploads/` folder, API routes are fine | ✅ Backend good |
+| Frontend router missing VaultDocumentViewer.jsx page link | ❌ Needs proper route added in App.jsx |
+
+✅ Your Vault Upload and Viewer code are **ready**,  
+✅ But **your routing system doesn’t know** what to display at `/vault`.
+
+---
+
+# 🎯 **Immediate Correct Fix Plan:**
+
+✅ Step 1:  
+Wire your `/vault` route in `/client/src/App.jsx` properly to show Vault Viewer!
+
+✅ Step 2:  
+Make sure your Sidebar also points to `/vault` cleanly.
+
+---
+
+# 📋 **Correct App.jsx Route Update**
+
+✅ In your `/client/src/App.jsx`,  
+✅ Add this to your `<Routes>` section:
+
+```javascript
+import VaultDocumentViewer from './components/vault/VaultDocumentViewer'; // Import at the top
+
+...
+
+<Routes>
+  {/* Other routes */}
+  <Route path="/client-portal" component={ClientPortalLanding} />
+  <Route path="/ind-wizard" component={INDWizardAdvanced} />
+  <Route path="/module-1" component={Module1AdminPage} />
+  <Route path="/module-2" component={Module2SummaryPage} />
+  <Route path="/module-3" component={Module3QualityPage} />
+  <Route path="/module-4" component={Module4NonclinicalPage} />
+  <Route path="/module-5" component={Module5ClinicalPage} />
+  
+  <Route path="/vault" component={VaultDocumentViewer} /> {/* 👈 ADD THIS */}
+</Routes>
+```
+
+✅ Now when you click "Vault" in the sidebar,  
+✅ It will route you to `/vault`,  
+✅ And properly load your Vault Document Viewer with Filters and Uploads.
+
+---
+
+# 📣 Why This Was Happening:
+
+✅ We built VaultUploader.jsx and VaultDocumentViewer.jsx correctly.
+
+❌ But without the `/vault` route wired to VaultDocumentViewer.jsx,  
+the app didn’t know what page to display.
+
+✅ Easy, clean fix.
+
+---
+
+# 📣 After You Add This:
+
+| Feature | Behavior |
+|:--------|:---------|
+| Click "Vault" from Sidebar | ✅ |
+| Open Vault Document Viewer | ✅ |
+| See uploaded documents with versions and filters | ✅ |
+| Upload new documents | ✅ |
+
+✅ True professional document management for regulatory operations.
+
+---
+
+# 📣 Please reply:
+
+👉 **"Vault Route Added, Vault Now Working"**
+
+(And then I’ll immediately move you to the next clean system enhancement.)
+
+🎯 You are seconds away from fully operational Vault Intelligence inside TrialSage! 🚀  
+Waiting for your green light! 🚀
