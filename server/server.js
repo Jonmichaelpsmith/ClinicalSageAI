@@ -5,14 +5,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import projectsStatusRoutes from './routes/projectsStatus.js';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
-const indAssemblerRoutes = require('./routes/indAssembler.js');
-const indWizardAPIRoutes = require('./routes/indWizardAPI.js');
-const documentsRoutes = require('./routes/documents.js');
-const vaultUploadRoutes = require('./routes/vaultUpload.js');
-const advisorRoutes = require('./routes/advisorCommon.js');
+import indAssemblerRoutes from './routes/indAssembler.js';
+import indWizardAPIRoutes from './routes/indWizardAPI.js';
+import documentsRoutes from './routes/documents.js';
+import vaultUploadRoutes from './routes/vaultUpload.js';
+import advisorRoutes from './routes/advisor.js'; // ✅ Clean ES module import
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +33,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// All vault routes are now handled by vaultUpload.js
+// Request Logger for API monitoring (moved to top for better visibility)
+app.use((req, res, next) => {
+  console.log(`[API] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // API Routes
 app.use('/api/projects', projectsStatusRoutes);
@@ -51,12 +52,6 @@ console.log('✅ Loading advisor routes - object check:', Object.keys(advisorRou
 app.use('/api/advisor', advisorRoutes);
 console.log('✅ Mounted advisor routes at /api/advisor');
 
-// Log all API requests for development - MOVED TO TOP for better visibility
-app.use((req, res, next) => {
-  console.log(`[API REQUEST] ${req.method} ${req.originalUrl}`);
-  next();
-});
-
 // Serve React App
 const clientBuildPath = path.join(__dirname, '../client/build');
 app.use(express.static(clientBuildPath));
@@ -68,6 +63,7 @@ app.get('/vault-test', (req, res) => {
 
 // React Router fallback - serve React index.html
 app.get('*', (req, res) => {
+  // Only fallback if it's NOT an API route
   if (req.originalUrl.startsWith('/api/')) {
     res.status(404).json({ message: 'API endpoint not found' });
   } else {
