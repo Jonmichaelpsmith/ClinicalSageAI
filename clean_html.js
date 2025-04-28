@@ -130,6 +130,31 @@ if (regulatoryTimelineStartIndex !== -1) {
   console.log('"Regulatory Timeline Section" not found (may have been already removed)');
 }
 
+// Step 6: Remove the "Vault™ Core Advantages" section
+const vaultCoreAdvantagesStart = '<!-- TrialSage Core Advantages - YPrime Style -->';
+const vaultCoreAdvantagesEnd = '</section>';
+
+const vaultCoreAdvantagesStartIndex = updatedHtml.indexOf(vaultCoreAdvantagesStart);
+if (vaultCoreAdvantagesStartIndex !== -1) {
+  // Find the end of the section (the first </section> after the start marker)
+  const coreAdvantagesSectionEndSearchFrom = vaultCoreAdvantagesStartIndex + vaultCoreAdvantagesStart.length;
+  const vaultCoreAdvantagesEndIndex = updatedHtml.indexOf(vaultCoreAdvantagesEnd, coreAdvantagesSectionEndSearchFrom) + vaultCoreAdvantagesEnd.length;
+  
+  if (vaultCoreAdvantagesEndIndex > vaultCoreAdvantagesStartIndex) {
+    // Remove the section
+    updatedHtml = 
+      updatedHtml.substring(0, vaultCoreAdvantagesStartIndex) + 
+      '<!-- Removed "Vault™ Core Advantages" section -->\n    ' +
+      updatedHtml.substring(vaultCoreAdvantagesEndIndex);
+    
+    console.log('Successfully removed "Vault™ Core Advantages" section');
+  } else {
+    console.error('Could not find the end of the "Vault™ Core Advantages" section');
+  }
+} else {
+  console.log('"Vault™ Core Advantages" section not found (may have been already removed)');
+}
+
 // Write the updated HTML back to the file
 fs.writeFileSync(filePath, updatedHtml, 'utf8');
 console.log('HTML file has been updated successfully');
