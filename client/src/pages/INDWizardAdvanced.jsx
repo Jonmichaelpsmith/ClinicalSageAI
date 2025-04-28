@@ -40,7 +40,8 @@ import {
   RotateCw, 
   Plus,
   Home,
-  BarChart2
+  BarChart2,
+  ClipboardList
 } from 'lucide-react';
 import { useLocation, Link } from 'wouter';
 
@@ -50,6 +51,7 @@ import INDProjectDashboard from '@/components/ind-wizard/INDProjectDashboard';
 import AITimelineGenerator from '@/components/ind-wizard/AITimelineGenerator';
 import IndWizardLayout from '@/components/ind-wizard/IndWizardLayout';
 import INDAnalyticsDashboard from '@/components/mashable-bi/INDAnalyticsDashboard';
+import Module1AdminPage from '@/modules/Module1AdminPage';
 
 export default function INDWizardAdvanced() {
   const { toast } = useToast();
@@ -196,6 +198,14 @@ export default function INDWizardAdvanced() {
                 Analytics & BI
               </Button>
               <Button 
+                variant={activeView === 'module1' ? 'secondary' : 'ghost'} 
+                className="w-full justify-start"
+                onClick={() => setActiveView('module1')}
+              >
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Module 1 (Admin)
+              </Button>
+              <Button 
                 variant="ghost" 
                 className="w-full justify-start"
                 onClick={handleGoToWizard}
@@ -271,7 +281,8 @@ export default function INDWizardAdvanced() {
                   <ChevronRight className="h-5 w-5 mx-1 text-muted-foreground" />
                   {activeView === 'dashboard' ? 'Dashboard' : 
                    activeView === 'timeline' ? 'Timeline Planner' : 
-                   activeView === 'analytics' ? 'Analytics & BI' : ''}
+                   activeView === 'analytics' ? 'Analytics & BI' :
+                   activeView === 'module1' ? 'Module 1 (Admin)' : ''}
                 </>
               ) : (
                 'IND Wizard Advanced'
@@ -331,6 +342,8 @@ export default function INDWizardAdvanced() {
                 showSummary={true}
               />
             </div>
+          ) : activeView === 'module1' ? (
+            <Module1AdminPage />
           ) : null}
         </div>
       </div>
