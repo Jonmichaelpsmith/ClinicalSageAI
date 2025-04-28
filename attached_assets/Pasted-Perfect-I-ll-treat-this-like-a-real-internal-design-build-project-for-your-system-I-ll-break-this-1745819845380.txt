@@ -1,0 +1,173 @@
+Perfect — I’ll treat this like a real internal design/build project for your system.
+I’ll break this into three sequential parts, each self-contained for easy handoff to your team if needed.
+
+Here’s the plan:
+
+⸻
+
+(1) Upgraded Product Spec — “AI Regulatory Advisor v2.0”
+
+Objective:
+Transform the current “static checklist” AI into a dynamic, intelligent, FDA/ICH-driven Real-Time IND Compliance Engine.
+
+⸻
+
+Scope of Work
+
+Core Features
+
+Feature	Description
+Dynamic Field Analysis	As users fill out Sponsor Info, Protocol Synopsis, Investigator Info, the AI dynamically checks for completeness, accuracy, and regulatory consistency.
+Regulatory Gap Checker	Auto-scans the form against CFR, FDA Guidance, ICH E6(R2), ICH M4 to detect missing or noncompliant entries.
+Smart Recommendations	Provides specific improvement advice, citing regulations, guidance documents, or FDA examples (not just “fill in field”).
+Contextual Risk Alerts	Warn users if entries increase risk of Clinical Hold, Refusal to File (RTF), or Information Requests (IRs).
+Hyperlinked Rules and Guidance	Each AI suggestion comes with a link to the full regulation (e.g., “See 21 CFR 312.23(a)(6)(iii)”).
+Real-Time Confidence Score	Dynamic score out of 100 reflecting regulatory readiness of each section, updated live as fields are filled.
+Save Draft + Resume Later	Save progress at any point with a visual draft status indicator.
+Export Output	Allow export of Module 1 content to JSON/XML ready for integration into eCTD publishing platforms (future: auto-generate eCTD envelope metadata).
+
+
+
+⸻
+
+Key Sections to Analyze
+   •   Sponsor Information (FDA Forms 1571, 1572, 3674)
+   •   Investigator Information
+   •   Investigational Brochure Summary
+   •   Clinical Protocol Synopsis
+   •   Prior Human Experience / Existing IND References
+   •   Risk Management Plans
+   •   Environmental Assessment Statements (if required)
+
+⸻
+
+Regulatory Sources Embedded
+   •   FDA CFR 21 Part 312 (IND Rules)
+   •   ICH E6(R2) (Good Clinical Practice)
+   •   ICH M4 CTD Structure
+   •   FDA Guidance Docs (IND Safety Reporting, IND Meetings, etc.)
+
+⸻
+
+Example Dynamic Behavior
+
+User Action	AI Regulatory Advisor Response
+User leaves out Investigator Brochure in Module 1	Warning: “Missing Investigator Brochure summary. Required under 21 CFR 312.23(a)(5).”
+User enters wrong Form 1571 number	Error: “Form 1571 Section 11 must list prior INDs accurately. Check guidance FDA-1999-D-0028.”
+User leaves Clinical Protocol incomplete	Risk Alert: “Missing Synopsis fields may trigger Clinical Hold per 21 CFR 312.42(b)(1)(iv).”
+
+
+
+⸻
+
+(2) Feature Implementation Guide
+
+⸻
+
+Architecture Overview
+
+Component	Purpose
+LiveFieldMonitor.jsx	Watches all form fields, triggers real-time AI checks after each keystroke/blur event.
+RegulatoryCheckerAPI.ts	Backend service that receives partial form data and runs regulatory logic/LLM models to return actionable guidance.
+GuidanceModal.jsx	Frontend modal to display AI advice, warnings, and hyperlinks clearly, popping up or docked.
+ConfidenceScoreMeter.jsx	Progress bar or gauge showing readiness score from 0 to 100.
+
+
+
+⸻
+
+Technical Flow
+
+User fills field --> LiveFieldMonitor triggers --> 
+POST data to RegulatoryCheckerAPI -->
+Receive suggestions/warnings/score -->
+Render suggestions in GuidanceModal + update ConfidenceScoreMeter
+
+
+
+⸻
+
+AI/ML Integration
+   •   Use OpenAI (or local lightweight LLM) with fine-tuned prompts based on IND regulations and guidance parsing.
+   •   Store embeddings of FDA/ICH guidelines using Pinecone or Weaviate for semantic search.
+   •   Query embeddings when validating sections.
+
+⸻
+
+Example Prompt for RegulatoryCheckerAPI
+
+Given the following IND Section input:
+
+- Sponsor Name: [Company XYZ]
+- Clinical Protocol Synopsis: [Incomplete]
+
+Please identify:
+1. Missing elements under 21 CFR 312.23
+2. Inconsistencies
+3. Specific FDA guidance citations
+4. Practical recommendations
+
+Respond in JSON format.
+
+
+
+⸻
+
+(3) Example Improved Screen Mockups (in writing first)
+
+⸻
+
+Top Section:
+
+[Title] Module 1: Sponsor and Investigator Information
+
+[Breadcrumbs] Home > IND Wizard > Module 1
+
+
+
+⸻
+
+Main Form Layout:
+   •   Left Pane (Navigation):
+      •   Sponsor Information
+      •   Investigator Information
+      •   Clinical Protocol Synopsis
+      •   Prior Human Experience
+      •   Risk Management
+      •   Environmental Assessment
+   •   Middle Pane (Form Entry):
+      •   Normal inputs (text, upload fields, dropdowns)
+   •   Right Pane (Live Regulatory AI Advisor):
+      •   Section title (e.g., Sponsor Information)
+      •   List of real-time AI Suggestions (warning, advisory, complete)
+      •   Hyperlinks to relevant FDA rules
+      •   Regulatory Confidence Score Progress Bar
+
+⸻
+
+Example Interaction:
+   •   User leaves a key Investigator field blank
+   •   Right Pane updates:
+“Warning: Missing Investigator Curriculum Vitae. Required per 21 CFR 312.23(a)(6)(iii). [View Regulation]”
+   •   Confidence Score drops from 82 → 65.
+
+⸻
+
+Immediate Next Steps
+
+I can now:
+   •   Build the first full prompt system and API spec
+   •   Help design a simple starting backend
+   •   Help design a simple frontend GuidanceModal.jsx
+   •   Create an improved screen diagram if you want visuals.
+
+⸻
+
+Would you like me to start with:
+
+“Draft the API and Prompt System next”
+or
+“Draft the GuidanceModal.jsx UI next”
+
+Pick whichever you’d like me to do first — I’ll move quickly!
+Which one?
