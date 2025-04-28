@@ -12,18 +12,15 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Define metadata path used throughout this file
+// Create metadata file path (used throughout the file)
 const metadataPath = path.join(uploadDir, 'metadata.json');
+console.log('📄 Vault Metadata configured at:', metadataPath);
 
 // Create metadata.json if it doesn't exist
 if (!fs.existsSync(metadataPath)) {
   console.log('📄 Creating empty metadata.json file for vault documents');
-  fs.writeFileSync(metadataPath, JSON.stringify([], null, 2));
+  fs.writeFileSync(metadataPath, '[]', { encoding: 'utf8' });
 }
-
-// Log the paths for debugging
-console.log('📂 Vault Upload Directory:', uploadDir);
-console.log('📄 Vault Metadata Path:', metadataPath);
 
 // Configure storage with versioning
 const storage = multer.diskStorage({
@@ -46,7 +43,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// POST /api/vault/upload
+// ENDPOINT: POST /api/vault/upload
 router.post('/upload', upload.single('document'), (req, res) => {
   try {
     if (!req.file) {
@@ -74,11 +71,22 @@ router.post('/upload', upload.single('document'), (req, res) => {
 
     // Save metadata
     let documents = [];
-    const metadataPath = path.join(uploadDir, 'metadata.json');
     if (fs.existsSync(metadataPath)) {
-      const metaRaw = fs.readFileSync(metadataPath);
-      documents = JSON.parse(metaRaw);
+      try {
+        const metaRaw = fs.readFileSync(metadataPath, 'utf8');
+        if (metaRaw && metaRaw.trim().length > 0) {
+          documents = JSON.parse(metaRaw);
+        }
+      } catch (err) {
+        console.error('Error parsing metadata, starting fresh:', err);
+      }
     }
+    
+    // Ensure documents is always an array
+    if (!Array.isArray(documents)) {
+      documents = [];
+    }
+    
     documents.push(fileInfo);
     fs.writeFileSync(metadataPath, JSON.stringify(documents, null, 2));
 
@@ -95,25 +103,42 @@ router.post('/upload', upload.single('document'), (req, res) => {
   }
 });
 
-// GET /api/vault/list
-
+// ENDPOINT: GET /api/vault/list
 router.get('/list', (req, res) => {
-  const vaultMetadataPath = path.join(uploadDir, 'metadata.json');
+  console.log('📂 Handling GET request to /api/vault/list');
   
   try {
-    if (!fs.existsSync(vaultMetadataPath)) {
-      // If no metadata yet, respond cleanly
+    // If metadata.json doesn't exist yet, respond with empty array
+    if (!fs.existsSync(metadataPath)) {
+      console.log('📄 metadata.json does not exist yet, returning empty array');
       return res.status(200).json({ success: true, documents: [] });
     }
 
-    const metaRaw = fs.readFileSync(vaultMetadataPath, { encoding: 'utf8' });
+    // Read the file
+    const metaRaw = fs.readFileSync(metadataPath, { encoding: 'utf8' });
+    console.log(`📄 Read metadata.json file (${metaRaw.length} bytes)`);
 
-    // Handle empty or corrupted file gracefully
+    // Handle empty or corrupted file
     let documents = [];
-    if (metaRaw.trim().length > 0) {
-      documents = JSON.parse(metaRaw);
+    if (metaRaw && metaRaw.trim().length > 0) {
+      try {
+        documents = JSON.parse(metaRaw);
+        console.log(`📄 Successfully parsed JSON with ${documents.length} documents`);
+      } catch (parseErr) {
+        console.error('❌ Error parsing metadata JSON:', parseErr);
+        // Return empty documents array on parse error
+      }
+    } else {
+      console.log('📄 Empty metadata file, returning empty documents array');
     }
 
+    // Ensure documents is always an array
+    if (!Array.isArray(documents)) {
+      console.log('📄 Documents is not an array, resetting to empty array');
+      documents = [];
+    }
+
+    console.log(`✅ Successfully returning ${documents.length} documents`);
     return res.status(200).json({ success: true, documents });
   } catch (error) {
     console.error('❌ Error listing Vault documents:', error);
@@ -121,18 +146,24 @@ router.get('/list', (req, res) => {
   }
 });
 
-// GET /api/vault/reset - EMERGENCY HOTFIX ENDPOINT
+// ENDPOINT: GET /api/vault/reset
 router.get('/reset', (req, res) => {
   try {
     console.log('🚨 EMERGENCY VAULT RESET: Resetting vault metadata to clean empty array');
     
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
     // Reset metadata.json to an empty array
-    const metadataPath = path.join(uploadDir, 'metadata.json');
-    fs.writeFileSync(metadataPath, '[]');
+    fs.writeFileSync(metadataPath, '[]', { encoding: 'utf8' });
+    console.log('✅ Reset metadata.json to empty array');
     
     return res.status(200).json({
       success: true,
       message: 'Vault metadata has been reset to empty array',
+      path: metadataPath,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -145,30 +176,43 @@ router.get('/reset', (req, res) => {
   }
 });
 
-// POST /api/vault/reset
+// ENDPOINT: POST /api/vault/reset
 router.post('/reset', (req, res) => {
   try {
-    const uploadDir = path.join(__dirname, '../../uploads');
-    const metadataPath = path.join(uploadDir, 'metadata.json');
-
+    console.log('🚨 EMERGENCY VAULT RESET (POST): Resetting vault metadata via POST');
+    
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
     // If metadata.json exists, delete it
     if (fs.existsSync(metadataPath)) {
       fs.unlinkSync(metadataPath);
+      console.log('✅ Deleted existing metadata.json');
     }
 
     // Recreate fresh empty metadata.json
     fs.writeFileSync(metadataPath, '[]', { encoding: 'utf8' });
-
-    console.log('✅ Vault metadata.json reset successfully.');
-
-    return res.status(200).json({ success: true, message: 'Vault metadata reset to empty array.' });
+    console.log('✅ Created fresh empty metadata.json');
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Vault metadata reset to empty array.',
+      path: metadataPath,
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
     console.error('❌ Error resetting Vault metadata:', error);
-    return res.status(500).json({ success: false, message: 'Vault reset failed.' });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Vault reset failed.',
+      error: error.message
+    });
   }
 });
 
-// GET /api/vault/download/:filename
+// ENDPOINT: GET /api/vault/download/:filename
 router.get('/download/:filename', (req, res) => {
   try {
     const filename = req.params.filename;
