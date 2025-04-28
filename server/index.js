@@ -83,6 +83,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Inline test API route - most direct approach
+app.get('/api/inline-test', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Inline test API is working!',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Direct API endpoints for testing
 app.get('/api/direct/next-actions', (req, res) => {
   const actions = [
@@ -212,9 +221,9 @@ app.use('/api/vault', vaultRoutes);
 app.use('/api/next-actions', actionsRoutes);
 app.use('/api/test', testApiRoutes); // Test API routes for development
 
-// CommonJS test routes
-const testRoutes = require('./routes/test');
-app.use('/api', testRoutes);
+// CommonJS test routes - Simplified direct API approach
+const directApi = require('./direct-api');
+app.use('/api/direct', directApi);
 
 // Ledger API
 app.get('/api/ledger/:submissionId', verifyJwt, async (req, res) => {
