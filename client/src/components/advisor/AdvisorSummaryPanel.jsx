@@ -1,182 +1,142 @@
 // /client/src/components/advisor/AdvisorSummaryPanel.jsx
 
 import React, { useState, useEffect } from 'react';
-import { getAdvisorReadiness } from '../../lib/advisorService';
-import { AlertTriangle, Clock, DollarSign, BarChart2 } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Clock, DollarSign } from 'lucide-react';
 
 export default function AdvisorSummaryPanel() {
-  const [readiness, setReadiness] = useState(null);
-  const [selectedPlaybook, setSelectedPlaybook] = useState('Fast IND Playbook');
-  const [loading, setLoading] = useState(true);
+  const [advisorData, setAdvisorData] = useState({
+    readinessScore: 65,
+    riskLevel: 'Medium',
+    delayDays: 49,
+    financialImpact: 2450000
+  });
   
-  const playbooks = [
-    'Fast IND Playbook',
-    'Full NDA Playbook',
-    'EMA IMPD Playbook'
-  ];
+  const [playbook, setPlaybook] = useState('Fast IND Playbook');
   
+  // Fetch advisor data from API
   useEffect(() => {
-    const fetchReadiness = async () => {
-      setLoading(true);
+    const fetchAdvisorReadiness = async () => {
       try {
-        const data = await getAdvisorReadiness(selectedPlaybook);
-        setReadiness(data);
+        const response = await fetch(`/api/advisor/check-readiness?playbook=${encodeURIComponent(playbook)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setAdvisorData(data);
+        } else {
+          console.error('Failed to load Advisor Readiness.');
+          console.log('Using fallback data for demonstration');
+          // Default fallback data is already set in useState above
+        }
       } catch (error) {
-        console.error('Failed to load Advisor Readiness.');
+        console.error('Failed to load Advisor Readiness.', error);
         console.log('Using fallback data for demonstration');
-        
-        // Fallback data for demonstration (will be replaced with API data in production)
-        setReadiness({
-          readinessScore: selectedPlaybook === 'Fast IND Playbook' ? 65 : 
-                         selectedPlaybook === 'Full NDA Playbook' ? 35 : 75,
-          riskLevel: selectedPlaybook === 'Full NDA Playbook' ? 'High' : 'Medium',
-          missingSections: selectedPlaybook === 'Fast IND Playbook' 
-            ? ['CMC Stability Study', 'Clinical Study Reports (CSR)', 'Toxicology Reports', 'Drug Substance Specs', 'Pharmacology Reports', 'Investigator Brochure Updates'] 
-            : selectedPlaybook === 'Full NDA Playbook'
-              ? ['CMC Stability Study', 'Clinical Study Reports (CSR)', 'Toxicology Reports', 'ADME Studies', 'Carcinogenicity Reports', 'Genotoxicity Reports', 'Quality Overall Summary', 'Nonclinical Overview', 'Clinical Summary', 'Drug Substance Specs', 'Drug Product Specs', 'Clinical Safety Reports']
-              : ['CMC Stability Study', 'GMP Certificates', 'Clinical Overview', 'Clinical Safety Reports'],
-          recommendations: [
-            'Upload CMC Stability Study immediately.',
-            'Upload Clinical Study Reports immediately.',
-            'Complete Quality Overall Summary.',
-            'Finalize Toxicology Reports within 14 days.',
-            'Update Drug Substance Specifications.'
-          ],
-          estimatedDelayDays: selectedPlaybook === 'Fast IND Playbook' ? 45 : 
-                              selectedPlaybook === 'Full NDA Playbook' ? 120 : 30,
-          estimatedSubmissionDate: "July 15, 2025"
-        });
-      } finally {
-        setLoading(false);
       }
     };
-    
-    fetchReadiness();
-  }, [selectedPlaybook]);
-  
-  const handlePlaybookChange = (e) => {
-    setSelectedPlaybook(e.target.value);
+
+    fetchAdvisorReadiness();
+  }, [playbook]);
+
+  // Format a number as currency
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
   };
-  
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
-  
-  if (!readiness) {
-    return (
-      <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-        <h3 className="text-lg font-medium text-red-800">Unable to load readiness data</h3>
-        <p className="text-red-700 mt-1">Please try again later or contact support.</p>
-      </div>
-    );
-  }
-  
+
+  // Get risk level color
+  const getRiskLevelColor = (level) => {
+    switch (level.toLowerCase()) {
+      case 'high':
+        return 'text-red-600 bg-red-50';
+      case 'medium':
+        return 'text-amber-600 bg-amber-50';
+      case 'low':
+        return 'text-green-600 bg-green-50';
+      default:
+        return 'text-blue-600 bg-blue-50';
+    }
+  };
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Regulatory Command Center</h1>
-        
-        <div className="w-64">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Regulatory Strategy:</label>
-          <select
-            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            value={selectedPlaybook}
-            onChange={handlePlaybookChange}
-          >
-            {playbooks.map((playbook) => (
-              <option key={playbook} value={playbook}>
-                {playbook}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className={`p-4 rounded-lg flex items-center ${
-          readiness.readinessScore >= 70 ? 'bg-green-50 text-green-800 border border-green-200' :
-          readiness.readinessScore >= 50 ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
-          'bg-red-50 text-red-800 border border-red-200'
-        }`}>
-          <div className="rounded-full p-2 mr-3 bg-white">
-            <BarChart2 className={
-              readiness.readinessScore >= 70 ? 'text-green-500' :
-              readiness.readinessScore >= 50 ? 'text-yellow-500' :
-              'text-red-500'
-            } size={20} />
-          </div>
-          <div>
-            <p className="text-xs opacity-80">Readiness Score</p>
-            <p className="text-xl font-bold">{readiness.readinessScore}%</p>
-          </div>
+    <div className="mb-8">
+      <div className="flex flex-col md:flex-row items-start justify-between mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Regulatory Intelligence Hub</h1>
+          <p className="text-gray-600 text-sm">
+            Comprehensive strategic regulatory platform with intelligent risk prediction,
+            dynamic timeline simulation, and AI-powered guidance.
+          </p>
         </div>
         
-        <div className={`p-4 rounded-lg flex items-center ${
-          readiness.riskLevel === 'Low' ? 'bg-green-50 text-green-800 border border-green-200' :
-          readiness.riskLevel === 'Medium' ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
-          'bg-red-50 text-red-800 border border-red-200'
-        }`}>
-          <div className="rounded-full p-2 mr-3 bg-white">
-            <AlertTriangle className={
-              readiness.riskLevel === 'Low' ? 'text-green-500' :
-              readiness.riskLevel === 'Medium' ? 'text-yellow-500' :
-              'text-red-500'
-            } size={20} />
-          </div>
-          <div>
-            <p className="text-xs opacity-80">Risk Level</p>
-            <p className="text-xl font-bold">{readiness.riskLevel}</p>
-          </div>
-        </div>
-        
-        <div className={`p-4 rounded-lg flex items-center ${
-          readiness.estimatedDelayDays <= 14 ? 'bg-green-50 text-green-800 border border-green-200' :
-          readiness.estimatedDelayDays <= 30 ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
-          'bg-red-50 text-red-800 border border-red-200'
-        }`}>
-          <div className="rounded-full p-2 mr-3 bg-white">
-            <Clock className={
-              readiness.estimatedDelayDays <= 14 ? 'text-green-500' :
-              readiness.estimatedDelayDays <= 30 ? 'text-yellow-500' :
-              'text-red-500'
-            } size={20} />
-          </div>
-          <div>
-            <p className="text-xs opacity-80">Estimated Delay</p>
-            <p className="text-xl font-bold">{readiness.estimatedDelayDays} days</p>
-          </div>
-        </div>
-        
-        <div className={`p-4 rounded-lg flex items-center ${
-          readiness.estimatedDelayDays * 50000 <= 500000 ? 'bg-green-50 text-green-800 border border-green-200' :
-          readiness.estimatedDelayDays * 50000 <= 1000000 ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
-          'bg-red-50 text-red-800 border border-red-200'
-        }`}>
-          <div className="rounded-full p-2 mr-3 bg-white">
-            <DollarSign className={
-              readiness.estimatedDelayDays * 50000 <= 500000 ? 'text-green-500' :
-              readiness.estimatedDelayDays * 50000 <= 1000000 ? 'text-yellow-500' :
-              'text-red-500'
-            } size={20} />
-          </div>
-          <div>
-            <p className="text-xs opacity-80">Financial Impact</p>
-            <p className="text-xl font-bold">${(readiness.estimatedDelayDays * 50000).toLocaleString()}</p>
+        {/* Playbook Selector */}
+        <div className="mt-3 md:mt-0">
+          <div className="flex items-center">
+            <span className="text-sm font-medium text-gray-700 mr-2">Regulatory Strategy:</span>
+            <select
+              value={playbook}
+              onChange={(e) => setPlaybook(e.target.value)}
+              className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="Fast IND Playbook">Fast IND Playbook</option>
+              <option value="Cost-Optimized IND Playbook">Cost-Optimized IND Playbook</option>
+              <option value="Global Submission Playbook">Global Submission Playbook</option>
+            </select>
           </div>
         </div>
       </div>
-      
-      <div className="flex justify-between items-center mt-2 mb-2">
-        <div className="text-sm text-indigo-600">
-          <span className="font-medium">Target Date:</span> {readiness.estimatedSubmissionDate || 'Calculating...'}
+
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Readiness Score */}
+        <div className="bg-yellow-50 p-4 rounded-md flex items-center justify-between">
+          <div>
+            <div className="text-xs font-medium text-yellow-800 mb-1">Readiness Score</div>
+            <div className="text-2xl font-bold text-yellow-800">{advisorData.readinessScore}%</div>
+          </div>
+          <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+            <TrendingUp className="h-6 w-6 text-yellow-700" />
+          </div>
         </div>
-        
-        <div className="text-sm text-gray-500">
-          {readiness.missingSections.length} critical sections missing
+
+        {/* Risk Level */}
+        <div className={`p-4 rounded-md flex items-center justify-between ${getRiskLevelColor(advisorData.riskLevel)}`}>
+          <div>
+            <div className="text-xs font-medium mb-1">Risk Level</div>
+            <div className="text-2xl font-bold">{advisorData.riskLevel}</div>
+          </div>
+          <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
+            advisorData.riskLevel.toLowerCase() === 'high' ? 'bg-red-100' : 
+            advisorData.riskLevel.toLowerCase() === 'medium' ? 'bg-amber-100' : 'bg-green-100'
+          }`}>
+            <AlertTriangle className={`h-6 w-6 ${
+              advisorData.riskLevel.toLowerCase() === 'high' ? 'text-red-700' : 
+              advisorData.riskLevel.toLowerCase() === 'medium' ? 'text-amber-700' : 'text-green-700'
+            }`} />
+          </div>
+        </div>
+
+        {/* Delay Estimate */}
+        <div className="bg-red-50 p-4 rounded-md flex items-center justify-between">
+          <div>
+            <div className="text-xs font-medium text-red-800 mb-1">Delay Estimate</div>
+            <div className="text-2xl font-bold text-red-800">{advisorData.delayDays} days</div>
+          </div>
+          <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
+            <Clock className="h-6 w-6 text-red-700" />
+          </div>
+        </div>
+
+        {/* Financial Impact */}
+        <div className="bg-green-50 p-4 rounded-md flex items-center justify-between">
+          <div>
+            <div className="text-xs font-medium text-green-800 mb-1">Financial Impact</div>
+            <div className="text-2xl font-bold text-green-800">{formatCurrency(advisorData.financialImpact)}</div>
+          </div>
+          <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+            <DollarSign className="h-6 w-6 text-green-700" />
+          </div>
         </div>
       </div>
     </div>

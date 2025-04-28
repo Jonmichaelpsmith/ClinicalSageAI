@@ -1,295 +1,257 @@
 // /client/src/components/advisor/AdvisorTimelineSimulator.jsx
 
 import React, { useState } from 'react';
-import { Calendar, ChevronRight, RefreshCcw } from 'lucide-react';
+import { Calendar, Calculator, CheckCircle, Clock, DollarSign, HeartPulse, TimerOff, XCircle } from 'lucide-react';
 
 export default function AdvisorTimelineSimulator() {
-  const [selectedSection, setSelectedSection] = useState('');
-  const [completionDate, setCompletionDate] = useState('');
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [simulationResults, setSimulationResults] = useState(null);
-  
-  // Demo data - would come from API in real implementation
-  const missingSections = [
-    "CMC Stability Study", 
-    "Clinical Study Reports (CSR)", 
-    "Toxicology Reports", 
-    "Drug Substance Specs", 
-    "Pharmacology Reports", 
-    "Investigator Brochure Updates"
+  const [targetDate, setTargetDate] = useState('2025-06-15');
+  const [selectedDocuments, setSelectedDocuments] = useState([
+    'Clinical Study Report',
+    'CMC Documentation',
+    'Safety Database'
+  ]);
+  const [readinessScore, setReadinessScore] = useState(65);
+  const [simulationResults, setSimulationResults] = useState({
+    daysToSubmission: 78,
+    risksIdentified: 3,
+    financialImpact: '$1.95M',
+    approvalProbability: '75%'
+  });
+
+  // All available documents to complete
+  const availableDocuments = [
+    { id: 'csr', name: 'Clinical Study Report', impact: 'High', daysSaved: 14 },
+    { id: 'cmc', name: 'CMC Documentation', impact: 'Critical', daysSaved: 21 },
+    { id: 'safety', name: 'Safety Database', impact: 'Medium', daysSaved: 8 },
+    { id: 'tox', name: 'Toxicology Reports', impact: 'Medium', daysSaved: 7 },
+    { id: 'stats', name: 'Statistical Analysis', impact: 'Low', daysSaved: 4 },
+    { id: 'irs', name: 'IRB Submissions', impact: 'Low', daysSaved: 3 },
+    { id: 'labels', name: 'Product Labeling', impact: 'Medium', daysSaved: 6 },
+    { id: 'sae', name: 'SAE Documentation', impact: 'High', daysSaved: 12 }
   ];
-  
-  const originalMetrics = {
-    readinessScore: 65,
-    delayDays: 45,
-    financialImpact: 2250000,
-    submissionDate: "July 15, 2025"
+
+  // Toggle document selection
+  const toggleDocument = (docId) => {
+    const doc = availableDocuments.find(d => d.id === docId);
+    
+    if (selectedDocuments.includes(doc.name)) {
+      setSelectedDocuments(selectedDocuments.filter(d => d !== doc.name));
+    } else {
+      setSelectedDocuments([...selectedDocuments, doc.name]);
+    }
   };
-  
-  const handleSectionChange = (e) => {
-    setSelectedSection(e.target.value);
-  };
-  
-  const handleDateChange = (e) => {
-    setCompletionDate(e.target.value);
-  };
-  
+
+  // Run simulation
   const runSimulation = () => {
-    if (!selectedSection || !completionDate) return;
+    // Sum up the days saved based on selected documents
+    const totalDaysSaved = availableDocuments
+      .filter(doc => selectedDocuments.includes(doc.name))
+      .reduce((total, doc) => total + doc.daysSaved, 0);
     
-    setIsSimulating(true);
+    // Calculate new days to submission
+    const baseDays = 120;
+    const newDaysToSubmission = Math.max(0, baseDays - totalDaysSaved);
     
-    // In a real implementation, this would be an API call
-    setTimeout(() => {
-      const today = new Date();
-      const targetDate = new Date(completionDate);
-      const daysUntilCompletion = Math.round((targetDate - today) / (86400000)); // ms in a day
-      
-      // Section impact data - would come from API
-      const sectionImpacts = {
-        "CMC Stability Study": { readiness: 15, delay: 30, financial: 1500000 },
-        "Clinical Study Reports (CSR)": { readiness: 20, delay: 45, financial: 2250000 },
-        "Toxicology Reports": { readiness: 10, delay: 14, financial: 700000 },
-        "Drug Substance Specs": { readiness: 8, delay: 21, financial: 1050000 },
-        "Pharmacology Reports": { readiness: 5, delay: 7, financial: 350000 },
-        "Investigator Brochure Updates": { readiness: 3, delay: 5, financial: 250000 }
-      };
-      
-      const impact = sectionImpacts[selectedSection];
-      
-      // Calculate improvements based on completion time
-      // Longer completion times reduce the benefit
-      const timeFactorAdjustment = Math.max(0.5, 1 - (daysUntilCompletion / 60));
-      
-      const newReadiness = originalMetrics.readinessScore + (impact.readiness * timeFactorAdjustment);
-      const newDelay = Math.max(0, originalMetrics.delayDays - (impact.delay * timeFactorAdjustment));
-      const newFinancial = Math.max(0, originalMetrics.financialImpact - (impact.financial * timeFactorAdjustment));
-      
-      // Calculate new submission date
-      const submissionDate = new Date();
-      submissionDate.setDate(submissionDate.getDate() + newDelay);
-      const formattedDate = submissionDate.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      
-      setSimulationResults({
-        original: originalMetrics,
-        new: {
-          readinessScore: Math.round(newReadiness),
-          delayDays: Math.round(newDelay),
-          financialImpact: Math.round(newFinancial),
-          submissionDate: formattedDate
-        },
-        improvement: {
-          readinessScore: Math.round(newReadiness - originalMetrics.readinessScore),
-          delayDays: Math.round(originalMetrics.delayDays - newDelay),
-          financialImpact: Math.round(originalMetrics.financialImpact - newFinancial)
-        },
-        section: selectedSection,
-        completionDate: completionDate
-      });
-      
-      setIsSimulating(false);
-    }, 1000);
+    // Calculate financial impact based on $25k per day saved
+    const financialImpact = (totalDaysSaved * 25000).toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0
+    });
+    
+    // Risk factors based on document selection
+    const criticalSelected = selectedDocuments.includes('CMC Documentation');
+    const highImpactSelected = selectedDocuments.includes('Clinical Study Report') && 
+                              selectedDocuments.includes('SAE Documentation');
+    
+    // Calculate risks based on selected documents
+    let risksIdentified = 5; // Start with maximum risks
+    if (criticalSelected) risksIdentified -= 2;
+    if (highImpactSelected) risksIdentified -= 1;
+    if (selectedDocuments.length > 5) risksIdentified -= 1;
+    
+    // Calculate approval probability
+    const baseProb = 60;
+    const docBonus = selectedDocuments.length * 3;
+    const criticalBonus = criticalSelected ? 10 : 0;
+    const highBonus = highImpactSelected ? 5 : 0;
+    const approvalProbability = Math.min(95, baseProb + docBonus + criticalBonus + highBonus) + '%';
+    
+    // Update simulation results
+    setSimulationResults({
+      daysToSubmission: newDaysToSubmission,
+      risksIdentified,
+      financialImpact,
+      approvalProbability
+    });
+    
+    // Update readiness score
+    const newReadiness = Math.min(100, 40 + (selectedDocuments.length * 8));
+    setReadinessScore(newReadiness);
   };
-  
-  const resetSimulation = () => {
-    setSimulationResults(null);
-    setSelectedSection('');
-    setCompletionDate('');
-  };
-  
-  // Get today's date in YYYY-MM-DD format for min date value
-  const today = new Date().toISOString().split('T')[0];
-  
-  // Get default date (14 days from now) for completion date field
-  const getDefaultDate = () => {
-    const defaultDate = new Date();
-    defaultDate.setDate(defaultDate.getDate() + 14);
-    return defaultDate.toISOString().split('T')[0];
-  };
-  
+
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Timeline Simulator</h2>
-      <p className="text-gray-600 mb-6">
-        Simulate how document completion timelines impact your regulatory readiness, submission date, and financial metrics.
-      </p>
+      <h2 className="text-xl font-bold text-gray-800 mb-6">Timeline Simulation Tool</h2>
       
-      {/* Simulation Controls */}
-      <div className="bg-gray-50 p-6 rounded-lg mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Select Document to Complete:</label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              value={selectedSection}
-              onChange={handleSectionChange}
-              disabled={isSimulating}
-            >
-              <option value="">-- Select Document --</option>
-              {missingSections.map((section) => (
-                <option key={section} value={section}>{section}</option>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Left Column - Settings */}
+        <div className="space-y-6">
+          {/* Target Date Selector */}
+          <div className="bg-white rounded-md shadow-sm p-4 border border-gray-200">
+            <h3 className="text-md font-semibold mb-3 flex items-center gap-2">
+              <Calendar size={18} className="text-indigo-600" />
+              Target Submission Date
+            </h3>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            />
+          </div>
+          
+          {/* Document Selection */}
+          <div className="bg-white rounded-md shadow-sm p-4 border border-gray-200">
+            <h3 className="text-md font-semibold mb-3 flex items-center gap-2">
+              <CheckCircle size={18} className="text-indigo-600" />
+              Document Completion Plan
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Select which documents you plan to complete by {new Date(targetDate).toLocaleDateString()}:
+            </p>
+            <div className="space-y-2 max-h-64 overflow-y-auto p-2">
+              {availableDocuments.map((doc) => (
+                <div key={doc.id} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={doc.id}
+                      checked={selectedDocuments.includes(doc.name)}
+                      onChange={() => toggleDocument(doc.id)}
+                      className="mr-2 h-4 w-4 text-indigo-600"
+                    />
+                    <label htmlFor={doc.id} className="text-sm">{doc.name}</label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      doc.impact === 'Critical' ? 'bg-red-100 text-red-700' :
+                      doc.impact === 'High' ? 'bg-orange-100 text-orange-700' :
+                      doc.impact === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {doc.impact}
+                    </span>
+                    <span className="text-xs text-gray-500">{doc.daysSaved} days</span>
+                  </div>
+                </div>
               ))}
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Completion Date:</label>
-            <div className="relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Calendar className="h-4 w-4 text-gray-400" />
-              </div>
-              <input
-                type="date"
-                min={today}
-                value={completionDate || getDefaultDate()}
-                onChange={handleDateChange}
-                className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                disabled={isSimulating}
-              />
             </div>
-          </div>
-          
-          <div className="flex items-end">
             <button
               onClick={runSimulation}
-              disabled={!selectedSection || !completionDate || isSimulating}
-              className={`w-full flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white ${
-                !selectedSection || !completionDate || isSimulating
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700'
-              }`}
+              className="mt-4 w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition-colors"
             >
-              {isSimulating ? (
-                <>Simulating <RefreshCcw className="ml-2 h-4 w-4 animate-spin" /></>
-              ) : (
-                <>Run Simulation <ChevronRight className="ml-1 h-4 w-4" /></>
-              )}
+              Run Simulation
             </button>
           </div>
         </div>
-      </div>
-      
-      {/* Simulation Results */}
-      {simulationResults ? (
-        <div className="bg-white border border-indigo-100 rounded-lg p-6">
-          <div className="flex justify-between mb-6">
-            <h3 className="text-lg font-semibold text-indigo-900">Simulation Results</h3>
-            <button 
-              onClick={resetSimulation}
-              className="flex items-center text-sm text-gray-600 hover:text-indigo-600"
-              disabled={isSimulating}
-            >
-              <RefreshCcw className="mr-1 h-4 w-4" /> Reset
-            </button>
+        
+        {/* Right Column - Results */}
+        <div className="space-y-6">
+          {/* Readiness Gauge */}
+          <div className="bg-white rounded-md shadow-sm p-4 border border-gray-200">
+            <h3 className="text-md font-semibold mb-3 flex items-center gap-2">
+              <Calculator size={18} className="text-indigo-600" />
+              Submission Readiness
+            </h3>
+            <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className={`h-full ${
+                  readinessScore < 50 ? 'bg-red-500' :
+                  readinessScore < 75 ? 'bg-yellow-500' :
+                  'bg-green-500'
+                }`}
+                style={{ width: `${readinessScore}%` }}
+              ></div>
+            </div>
+            <div className="flex justify-between mt-1">
+              <span className="text-xs text-gray-500">0%</span>
+              <span className="text-sm font-medium">{readinessScore}%</span>
+              <span className="text-xs text-gray-500">100%</span>
+            </div>
           </div>
           
-          <p className="text-sm text-indigo-700 mb-4">
-            Completing <strong>{simulationResults.section}</strong> by {new Date(simulationResults.completionDate).toLocaleDateString()} would result in:
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-2">Current Status</h4>
+          {/* Simulation Results */}
+          <div className="bg-indigo-50 rounded-md shadow-sm p-4 border border-indigo-100">
+            <h3 className="text-md font-semibold mb-3 text-indigo-700">Simulation Results</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {/* Days to Submission */}
+              <div className="bg-white p-3 rounded-md border border-gray-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock size={16} className="text-indigo-600" />
+                  <span className="text-xs text-gray-600">Timeline</span>
+                </div>
+                <p className="text-xl font-bold text-gray-800">{simulationResults.daysToSubmission} days</p>
+                <p className="text-xs text-gray-500">to submission</p>
+              </div>
               
-              <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-500">Readiness Score</p>
-                  <p className="text-2xl font-bold text-gray-900">{simulationResults.original.readinessScore}%</p>
+              {/* Risks Identified */}
+              <div className="bg-white p-3 rounded-md border border-gray-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <XCircle size={16} className="text-red-500" />
+                  <span className="text-xs text-gray-600">Risks</span>
                 </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-500">Estimated Delay</p>
-                  <p className="text-2xl font-bold text-gray-900">{simulationResults.original.delayDays} days</p>
+                <p className="text-xl font-bold text-gray-800">{simulationResults.risksIdentified}</p>
+                <p className="text-xs text-gray-500">critical risks identified</p>
+              </div>
+              
+              {/* Financial Impact */}
+              <div className="bg-white p-3 rounded-md border border-gray-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <DollarSign size={16} className="text-green-600" />
+                  <span className="text-xs text-gray-600">Financial Impact</span>
                 </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-500">Financial Impact</p>
-                  <p className="text-2xl font-bold text-gray-900">${(simulationResults.original.financialImpact).toLocaleString()}</p>
+                <p className="text-xl font-bold text-gray-800">{simulationResults.financialImpact}</p>
+                <p className="text-xs text-gray-500">potential savings</p>
+              </div>
+              
+              {/* Approval Probability */}
+              <div className="bg-white p-3 rounded-md border border-gray-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <HeartPulse size={16} className="text-indigo-600" />
+                  <span className="text-xs text-gray-600">Approval</span>
                 </div>
+                <p className="text-xl font-bold text-gray-800">{simulationResults.approvalProbability}</p>
+                <p className="text-xs text-gray-500">estimated probability</p>
               </div>
             </div>
             
-            <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-2">After Completion</h4>
-              
-              <div className="space-y-4">
-                <div className="bg-indigo-50 p-4 rounded-lg">
-                  <p className="text-sm text-indigo-500">Readiness Score</p>
-                  <div className="flex items-center">
-                    <p className="text-2xl font-bold text-indigo-900">{simulationResults.new.readinessScore}%</p>
-                    <span className="ml-2 text-sm font-medium text-green-600">
-                      +{simulationResults.improvement.readinessScore}%
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="bg-indigo-50 p-4 rounded-lg">
-                  <p className="text-sm text-indigo-500">Estimated Delay</p>
-                  <div className="flex items-center">
-                    <p className="text-2xl font-bold text-indigo-900">{simulationResults.new.delayDays} days</p>
-                    <span className="ml-2 text-sm font-medium text-green-600">
-                      -{simulationResults.improvement.delayDays} days
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="bg-indigo-50 p-4 rounded-lg">
-                  <p className="text-sm text-indigo-500">Financial Impact</p>
-                  <div className="flex items-center">
-                    <p className="text-2xl font-bold text-indigo-900">${(simulationResults.new.financialImpact).toLocaleString()}</p>
-                    <span className="ml-2 text-sm font-medium text-green-600">
-                      -${(simulationResults.improvement.financialImpact).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            {/* Action Recommendations */}
+            <div className="mt-4 bg-white rounded-md p-3 border border-gray-200">
+              <h4 className="text-sm font-medium mb-2">Recommended Actions</h4>
+              <ul className="text-xs space-y-2">
+                {!selectedDocuments.includes('CMC Documentation') && (
+                  <li className="flex items-center gap-2 text-red-700">
+                    <TimerOff size={14} />
+                    <span>Complete CMC Documentation to avoid critical delays</span>
+                  </li>
+                )}
+                {selectedDocuments.length < 4 && (
+                  <li className="flex items-center gap-2 text-yellow-700">
+                    <Calendar size={14} />
+                    <span>Prioritize at least 4 critical documents for optimal timeline</span>
+                  </li>
+                )}
+                {readinessScore >= 75 && (
+                  <li className="flex items-center gap-2 text-green-700">
+                    <CheckCircle size={14} />
+                    <span>Current plan is on track for FDA acceptance</span>
+                  </li>
+                )}
+              </ul>
             </div>
           </div>
-          
-          <div className="mt-6 p-4 bg-green-50 border border-green-100 rounded-lg">
-            <h3 className="text-sm font-semibold text-green-800 mb-1">New Estimated Submission Date: <span className="font-bold">{simulationResults.new.submissionDate}</span></h3>
-            <p className="text-sm text-green-700">
-              This simulation projects that completing {simulationResults.section} by the target date could save your team 
-              approximately ${(simulationResults.improvement.financialImpact).toLocaleString()} and accelerate your submission 
-              by {simulationResults.improvement.delayDays} days.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-          <h3 className="text-lg font-medium text-gray-700 mb-2">Run Your First Simulation</h3>
-          <p className="text-gray-600 mb-4 max-w-md mx-auto">
-            Select a document and estimated completion date to see how it impacts your regulatory 
-            timeline, readiness score, and financial projections.
-          </p>
-          <p className="text-sm text-gray-500">
-            The simulator will predict timeline acceleration, readiness improvements, and potential financial savings.
-          </p>
-        </div>
-      )}
-      
-      {/* Helpful Tips */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-blue-700 mb-1">High Impact Documents</h3>
-          <ul className="text-xs text-blue-600 space-y-1">
-            <li>• CMC Stability Studies (30+ day impact)</li>
-            <li>• Clinical Study Reports (45+ day impact)</li>
-            <li>• Toxicology Reports (14+ day impact)</li>
-          </ul>
-        </div>
-        
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-sm font-medium text-blue-700 mb-1">Optimization Tips</h3>
-          <ul className="text-xs text-blue-600 space-y-1">
-            <li>• Prioritize highest-impact documents first</li>
-            <li>• Consider interim reports for fastest timeline impact</li>
-            <li>• Complete CMC sections before clinical documents</li>
-          </ul>
         </div>
       </div>
     </div>
