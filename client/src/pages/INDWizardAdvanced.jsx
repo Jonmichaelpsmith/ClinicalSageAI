@@ -55,6 +55,7 @@ import Module1AdminPage from '@/modules/Module1AdminPage';
 import Module2SummaryPage from '@/modules/Module2SummaryPage';
 import Module3QualityPage from '@/modules/Module3QualityPage';
 import Module4NonclinicalPage from '@/modules/Module4NonclinicalPage';
+import Module5ClinicalPage from '@/modules/Module5ClinicalPage';
 
 export default function INDWizardAdvanced() {
   const { toast } = useToast();
@@ -233,6 +234,14 @@ export default function INDWizardAdvanced() {
                 Module 4 (Nonclinical)
               </Button>
               <Button 
+                variant={activeView === 'module5' ? 'secondary' : 'ghost'} 
+                className="w-full justify-start"
+                onClick={() => setActiveView('module5')}
+              >
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Module 5 (Clinical)
+              </Button>
+              <Button 
                 variant="ghost" 
                 className="w-full justify-start"
                 onClick={handleGoToWizard}
@@ -312,7 +321,8 @@ export default function INDWizardAdvanced() {
                    activeView === 'module1' ? 'Module 1 (Admin)' : 
                    activeView === 'module2' ? 'Module 2 (Summaries)' :
                    activeView === 'module3' ? 'Module 3 (Quality)' :
-                   activeView === 'module4' ? 'Module 4 (Nonclinical)' : ''}
+                   activeView === 'module4' ? 'Module 4 (Nonclinical)' :
+                   activeView === 'module5' ? 'Module 5 (Clinical)' : ''}
                 </>
               ) : (
                 'IND Wizard Advanced'
@@ -380,6 +390,8 @@ export default function INDWizardAdvanced() {
             <Module3QualityPage />
           ) : activeView === 'module4' ? (
             <Module4NonclinicalPage />
+          ) : activeView === 'module5' ? (
+            <Module5ClinicalPage />
           ) : null}
         </div>
       </div>
