@@ -3,6 +3,7 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import projectsStatusRoutes from './routes/projectsStatus.js';
 import { createRequire } from 'module';
 
@@ -76,26 +77,64 @@ app.get('/api/vault/list', (req, res) => {
   }
 });
 
-// EMERGENCY HOTFIX - Direct endpoint for vault reset
-app.get('/api/vault/reset', (req, res) => {
-  console.log('🚨 EMERGENCY HOTFIX: Direct vault reset endpoint activated');
+// EMERGENCY RESET ENDPOINT - Direct vault reset endpoint
+app.post('/api/vault/reset', (req, res) => {
+  console.log('🚨 EMERGENCY VAULT RESET: Directly resetting vault metadata');
   try {
-    const metadataPath = path.join(__dirname, '../uploads/metadata.json');
-    fs.writeFileSync(metadataPath, '[]');
+    // Find metadata.json in the possible locations
+    const locations = [
+      path.join(__dirname, '../uploads/metadata.json'),
+      path.join(__dirname, '../../uploads/metadata.json'),
+      path.join(process.cwd(), 'uploads/metadata.json')
+    ];
     
-    console.log('✅ Successfully reset vault metadata to empty array');
+    let metadataPath = null;
+    let success = false;
     
-    return res.status(200).json({
-      success: true,
-      message: 'Vault metadata has been reset to empty array',
-      timestamp: new Date().toISOString()
-    });
+    // Try each location
+    for (const loc of locations) {
+      try {
+        // Check if directory exists first
+        const dir = path.dirname(loc);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+          console.log(`Created directory: ${dir}`);
+        }
+        
+        // Delete existing file if it exists
+        if (fs.existsSync(loc)) {
+          fs.unlinkSync(loc);
+          console.log(`Deleted existing metadata at: ${loc}`);
+        }
+        
+        // Write empty array to file
+        fs.writeFileSync(loc, '[]');
+        console.log(`Reset metadata at: ${loc}`);
+        success = true;
+        metadataPath = loc;
+        break;
+      } catch (err) {
+        console.log(`Failed to write to ${loc}: ${err.message}`);
+      }
+    }
+    
+    if (success) {
+      console.log(`✅ Successfully reset vault metadata to empty array at ${metadataPath}`);
+      return res.status(200).json({
+        success: true,
+        message: 'Vault metadata has been reset to empty array',
+        location: metadataPath,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      throw new Error('Could not find or create metadata.json in any location');
+    }
   } catch (error) {
     console.error('❌ Error in emergency vault reset endpoint:', error);
-    return res.status(500).json({
+    return res.status(200).json({
       success: false,
-      message: 'Error resetting vault metadata',
-      error: error.message
+      message: 'Error resetting vault metadata: ' + error.message,
+      error: error.stack
     });
   }
 });
