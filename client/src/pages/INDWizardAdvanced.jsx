@@ -52,6 +52,7 @@ import AITimelineGenerator from '@/components/ind-wizard/AITimelineGenerator';
 import IndWizardLayout from '@/components/ind-wizard/IndWizardLayout';
 import INDAnalyticsDashboard from '@/components/mashable-bi/INDAnalyticsDashboard';
 import Module1AdminPage from '@/modules/Module1AdminPage';
+import Module2SummaryPage from '@/modules/Module2SummaryPage';
 
 export default function INDWizardAdvanced() {
   const { toast } = useToast();
@@ -206,6 +207,14 @@ export default function INDWizardAdvanced() {
                 Module 1 (Admin)
               </Button>
               <Button 
+                variant={activeView === 'module2' ? 'secondary' : 'ghost'} 
+                className="w-full justify-start"
+                onClick={() => setActiveView('module2')}
+              >
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Module 2 (Summaries)
+              </Button>
+              <Button 
                 variant="ghost" 
                 className="w-full justify-start"
                 onClick={handleGoToWizard}
@@ -282,7 +291,8 @@ export default function INDWizardAdvanced() {
                   {activeView === 'dashboard' ? 'Dashboard' : 
                    activeView === 'timeline' ? 'Timeline Planner' : 
                    activeView === 'analytics' ? 'Analytics & BI' :
-                   activeView === 'module1' ? 'Module 1 (Admin)' : ''}
+                   activeView === 'module1' ? 'Module 1 (Admin)' : 
+                   activeView === 'module2' ? 'Module 2 (Summaries)' : ''}
                 </>
               ) : (
                 'IND Wizard Advanced'
