@@ -47,20 +47,19 @@ const ProjectManagerGrid = ({ userId, orgId, onProjectSelect }) => {
 
   // Load projects when component mounts
   useEffect(() => {
-    const loadProjects = async () => {
+    const init = async () => {
       try {
-        setIsLoading(true);
-        const userProjects = await ProjectService.getUserProjects(userId, orgId);
-        setProjects(userProjects);
+        const response = await fetch('/api/projects');
+        const data = await response.json();
+        setProjects(data.data);
+        setIsLoading(false);
       } catch (error) {
         console.error('Error loading projects:', error);
-      } finally {
         setIsLoading(false);
       }
     };
-
-    loadProjects();
-  }, [userId, orgId]);
+    init();
+  }, []);
 
   // Render loading state
   if (isLoading) {
