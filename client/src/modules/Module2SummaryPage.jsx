@@ -8,7 +8,7 @@ import ClinicalOverviewUploader from '../components/ind-wizard/ClinicalOverviewU
 import WrittenTabulatedSummaryUploader from '../components/ind-wizard/WrittenTabulatedSummaryUploader';
 import UploadStatusTrackerModule2 from '../components/ind-wizard/UploadStatusTrackerModule2';
 import Module2NextButton from '../components/ind-wizard/Module2NextButton';
-import InfoTooltip from '../components/ind-wizard/InfoTooltip';
+import InfoTooltipModule2 from '../components/ind-wizard/InfoTooltipModule2';
 
 export default function Module2SummaryPage() {
   // Form status state to track completion of each section
@@ -23,15 +23,10 @@ export default function Module2SummaryPage() {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <h1 className="text-2xl font-bold">Module 2: Common Technical Document Summaries</h1>
-          <InfoTooltip 
-            title="CTD Module 2 Guidance" 
-            content="Module 2 is a critical component of INDs and NDAs. It presents summary documents that provide both scientific analyses and an overview of Modules 3-5. These summaries bridge the gap between detailed technical reports and high-level overviews needed by regulatory reviewers."
-            icgGuidanceLink="https://www.ich.org/page/ctd"
-            regulatoryRef="ICH M4: Organization of CTD"
-          />
-        </div>
+        <h1 className="text-2xl font-bold flex items-center">
+          CTD Module 2: Common Technical Document Summaries
+          <InfoTooltipModule2 />
+        </h1>
         <p className="text-gray-600">
           Module 2 contains the summaries of Modules 3, 4, and 5. It includes the overall Quality 
           Summary, Nonclinical Overview, Clinical Overview, and detailed Written and Tabulated Summaries.
