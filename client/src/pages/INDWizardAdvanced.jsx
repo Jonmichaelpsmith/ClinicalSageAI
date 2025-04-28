@@ -54,6 +54,7 @@ import INDAnalyticsDashboard from '@/components/mashable-bi/INDAnalyticsDashboar
 import Module1AdminPage from '@/modules/Module1AdminPage';
 import Module2SummaryPage from '@/modules/Module2SummaryPage';
 import Module3QualityPage from '@/modules/Module3QualityPage';
+import Module4NonclinicalPage from '@/modules/Module4NonclinicalPage';
 
 export default function INDWizardAdvanced() {
   const { toast } = useToast();
@@ -224,6 +225,14 @@ export default function INDWizardAdvanced() {
                 Module 3 (Quality)
               </Button>
               <Button 
+                variant={activeView === 'module4' ? 'secondary' : 'ghost'} 
+                className="w-full justify-start"
+                onClick={() => setActiveView('module4')}
+              >
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Module 4 (Nonclinical)
+              </Button>
+              <Button 
                 variant="ghost" 
                 className="w-full justify-start"
                 onClick={handleGoToWizard}
@@ -302,7 +311,8 @@ export default function INDWizardAdvanced() {
                    activeView === 'analytics' ? 'Analytics & BI' :
                    activeView === 'module1' ? 'Module 1 (Admin)' : 
                    activeView === 'module2' ? 'Module 2 (Summaries)' :
-                   activeView === 'module3' ? 'Module 3 (Quality)' : ''}
+                   activeView === 'module3' ? 'Module 3 (Quality)' :
+                   activeView === 'module4' ? 'Module 4 (Nonclinical)' : ''}
                 </>
               ) : (
                 'IND Wizard Advanced'
@@ -368,6 +378,8 @@ export default function INDWizardAdvanced() {
             <Module2SummaryPage />
           ) : activeView === 'module3' ? (
             <Module3QualityPage />
+          ) : activeView === 'module4' ? (
+            <Module4NonclinicalPage />
           ) : null}
         </div>
       </div>
