@@ -1,326 +1,351 @@
-// /client/src/components/ind-wizard/SponsorInfoForm.jsx
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { useState } from 'react';
-import { Building, CheckCircle, AlertCircle, HelpCircle, Save, RefreshCw } from 'lucide-react';
-
-export default function SponsorInfoForm({ setFormStatus }) {
-  const [formData, setFormData] = useState({
-    sponsorName: '',
-    contactPerson: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: 'United States',
-    phone: '',
-    email: '',
-    isNonUSCompany: false
+export default function SponsorInfoForm({ formData = {}, updateFormData }) {
+  const [sponsor, setSponsor] = useState({
+    sponsorName: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "United States",
+    contactName: "",
+    contactTitle: "",
+    contactPhone: "",
+    contactEmail: "",
+    usDAgent: false,
+    docketNumber: "",
+    ...formData
   });
 
-  const [showGuidance, setShowGuidance] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validation, setValidation] = useState({
+    status: "idle", // idle, loading, success, error
+    messages: []
+  });
 
-  // Check if form is complete
-  const isFormComplete = () => {
-    return formData.sponsorName && 
-           formData.contactPerson && 
-           formData.address && 
-           formData.city && 
-           formData.state && 
-           formData.zip && 
-           formData.country && 
-           formData.phone && 
-           formData.email;
-  };
-
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-
-    // If user toggles non-US company, update the form status
-    if (name === 'isNonUSCompany') {
-      setFormStatus(prev => ({ ...prev, usAgentRequired: checked }));
-    }
-  };
-
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    // Pass the updated data back to parent component
+    updateFormData(sponsor);
     
-    if (isFormComplete()) {
-      setIsSubmitting(true);
+    // Validate the form when key fields change
+    if (sponsor.sponsorName && sponsor.address && sponsor.contactName) {
+      validateFields();
+    }
+  }, [sponsor]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setSponsor({ ...sponsor, [name]: value });
+  };
+
+  const handleSelectChange = (name, value) => {
+    setSponsor({ ...sponsor, [name]: value });
+  };
+
+  const validateFields = async () => {
+    setValidation({ status: "loading", messages: [] });
+    
+    try {
+      // In a real implementation, this would call the validation API
+      // For now, we'll simulate the validation process
       
-      // Simulate API call
-      setTimeout(() => {
-        // In a real app, submit to server here
-        setFormSubmitted(true);
-        setFormStatus(prev => ({ ...prev, sponsorInfo: true }));
-        setIsSubmitting(false);
-      }, 1000);
+      // Simulated API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const messages = [];
+      
+      if (!sponsor.sponsorName.trim()) {
+        messages.push({
+          severity: "error",
+          message: "Sponsor name is required per 21 CFR 312.23(a)(1)",
+          field: "sponsorName"
+        });
+      }
+      
+      if (!sponsor.address.trim()) {
+        messages.push({
+          severity: "error",
+          message: "Sponsor address is required per 21 CFR 312.23(a)(1)",
+          field: "address"
+        });
+      }
+      
+      if (!sponsor.contactName.trim()) {
+        messages.push({
+          severity: "error",
+          message: "Contact person is required per 21 CFR 312.23(a)(1)",
+          field: "contactName"
+        });
+      }
+      
+      if (!sponsor.contactEmail.includes('@')) {
+        messages.push({
+          severity: "warning",
+          message: "Contact email appears to be invalid",
+          field: "contactEmail"
+        });
+      }
+      
+      if (sponsor.country !== "United States" && !sponsor.usDAgent) {
+        messages.push({
+          severity: "warning",
+          message: "Non-U.S. sponsors should designate a U.S. agent per FDA guidance",
+          field: "usDAgent"
+        });
+      }
+      
+      setValidation({
+        status: messages.length > 0 ? "error" : "success",
+        messages
+      });
+      
+    } catch (error) {
+      console.error("Validation error:", error);
+      setValidation({
+        status: "error",
+        messages: [{ severity: "error", message: "Failed to validate fields. Please try again." }]
+      });
     }
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold flex items-center">
-            <Building className="mr-2 h-5 w-5 text-blue-600" />
-            Sponsor Information
-          </h2>
-          <p className="text-gray-600 text-sm mt-1">
-            Information about the sponsor organization and primary contact
-          </p>
-        </div>
-        
-        <button 
-          onClick={() => setShowGuidance(!showGuidance)}
-          className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
-        >
-          <HelpCircle className="h-4 w-4 mr-1" />
-          Guidance
-        </button>
-      </div>
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Sponsor Information</h2>
       
-      {showGuidance && (
-        <div className="bg-blue-50 p-4 rounded-lg text-sm border border-blue-200">
-          <h3 className="font-medium text-blue-800 mb-2">Sponsor Information Requirements</h3>
-          <p className="mb-2">
-            According to 21 CFR 312.23(a)(1), the sponsor must provide complete contact information including:
-          </p>
-          <ul className="list-disc pl-6 space-y-1">
-            <li>Name and address of the sponsor</li>
-            <li>Name and title of the person responsible for monitoring the IND</li>
-            <li>Name and title of the person responsible for the review and evaluation of safety information</li>
-          </ul>
-          <p className="mt-3">
-            <strong>Note:</strong> If the sponsor is not located in the United States, a U.S. agent must be designated per 21 CFR 312.23(a)(1)(iv). The U.S. agent's contact information must be provided in the "U.S. Agent Information" section.
-          </p>
-        </div>
+      {validation.status === "error" && validation.messages.length > 0 && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Validation Issues</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc pl-5">
+              {validation.messages.map((msg, idx) => (
+                <li key={idx}>{msg.message}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
       )}
-
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
-            <label htmlFor="sponsorName" className="block text-sm font-medium text-gray-700 mb-1">
-              Sponsor Name/Organization*
-            </label>
-            <input
-              type="text"
+      
+      {validation.status === "success" && (
+        <Alert className="mb-6 bg-green-50 border-green-200">
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <AlertTitle className="text-green-600">Validation Passed</AlertTitle>
+          <AlertDescription className="text-green-600">
+            All required sponsor information is complete.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="sponsorName" className="text-base">
+              Sponsor Name <span className="text-red-500">*</span>
+            </Label>
+            <Input
               id="sponsorName"
               name="sponsorName"
-              value={formData.sponsorName}
-              onChange={handleInputChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Legal name of sponsoring company or organization"
-              required
+              value={sponsor.sponsorName}
+              onChange={handleChange}
+              className="mt-1"
+              placeholder="Enter company or sponsor name"
             />
           </div>
           
-          <div className="md:col-span-2">
-            <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700 mb-1">
-              Contact Person*
-            </label>
-            <input
-              type="text"
-              id="contactPerson"
-              name="contactPerson"
-              value={formData.contactPerson}
-              onChange={handleInputChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Full name and title of primary contact"
-              required
-            />
-          </div>
-          
-          <div className="md:col-span-2">
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-              Street Address*
-            </label>
-            <input
-              type="text"
+          <div>
+            <Label htmlFor="address" className="text-base">
+              Address <span className="text-red-500">*</span>
+            </Label>
+            <Input
               id="address"
               name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              value={sponsor.address}
+              onChange={handleChange}
+              className="mt-1"
               placeholder="Street address"
-              required
             />
           </div>
           
-          <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-              City*
-            </label>
-            <input
-              type="text"
-              id="city"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="City"
-              required
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-                State/Province*
-              </label>
-              <input
-                type="text"
+              <Label htmlFor="city" className="text-base">
+                City <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="city"
+                name="city"
+                value={sponsor.city}
+                onChange={handleChange}
+                className="mt-1"
+                placeholder="City"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="state" className="text-base">
+                State/Province <span className="text-red-500">*</span>
+              </Label>
+              <Input
                 id="state"
                 name="state"
-                value={formData.state}
-                onChange={handleInputChange}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={sponsor.state}
+                onChange={handleChange}
+                className="mt-1"
                 placeholder="State/Province"
-                required
               />
             </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="zip" className="block text-sm font-medium text-gray-700 mb-1">
-                ZIP/Postal Code*
-              </label>
-              <input
-                type="text"
-                id="zip"
-                name="zip"
-                value={formData.zip}
-                onChange={handleInputChange}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              <Label htmlFor="zipCode" className="text-base">
+                ZIP/Postal Code <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="zipCode"
+                name="zipCode"
+                value={sponsor.zipCode}
+                onChange={handleChange}
+                className="mt-1"
                 placeholder="ZIP/Postal code"
-                required
               />
             </div>
-          </div>
-          
-          <div>
-            <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-              Country*
-            </label>
-            <select
-              id="country"
-              name="country"
-              value={formData.country}
-              onChange={handleInputChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
-            >
-              <option value="United States">United States</option>
-              <option value="Canada">Canada</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="Germany">Germany</option>
-              <option value="France">France</option>
-              <option value="Japan">Japan</option>
-              <option value="China">China</option>
-              <option value="India">India</option>
-              <option value="Australia">Australia</option>
-              <option value="Switzerland">Switzerland</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number*
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="(xxx) xxx-xxxx"
-              required
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address*
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="email@example.com"
-              required
-            />
-          </div>
-          
-          <div className="md:col-span-2">
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="isNonUSCompany"
-                  name="isNonUSCompany"
-                  type="checkbox"
-                  checked={formData.isNonUSCompany}
-                  onChange={handleInputChange}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-              </div>
-              <div className="ml-3 text-sm">
-                <label htmlFor="isNonUSCompany" className="font-medium text-gray-700">
-                  This sponsor is located outside the United States
-                </label>
-                <p className="text-gray-500">
-                  If checked, you will be required to provide U.S. Agent information in the next section
-                </p>
-              </div>
+            
+            <div>
+              <Label htmlFor="country" className="text-base">
+                Country <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={sponsor.country}
+                onValueChange={(value) => handleSelectChange("country", value)}
+              >
+                <SelectTrigger id="country">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="United States">United States</SelectItem>
+                  <SelectItem value="Canada">Canada</SelectItem>
+                  <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                  <SelectItem value="Germany">Germany</SelectItem>
+                  <SelectItem value="France">France</SelectItem>
+                  <SelectItem value="Japan">Japan</SelectItem>
+                  <SelectItem value="China">China</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
         
-        <div className="mt-6 flex justify-end">
-          <button
-            type="submit"
-            className={`inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              isFormComplete() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-400 cursor-not-allowed'
-            }`}
-            disabled={!isFormComplete() || isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Save Sponsor Information
-              </>
-            )}
-          </button>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="contactName" className="text-base">
+              Contact Person <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="contactName"
+              name="contactName"
+              value={sponsor.contactName}
+              onChange={handleChange}
+              className="mt-1"
+              placeholder="Full name"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="contactTitle" className="text-base">
+              Title/Position
+            </Label>
+            <Input
+              id="contactTitle"
+              name="contactTitle"
+              value={sponsor.contactTitle}
+              onChange={handleChange}
+              className="mt-1"
+              placeholder="Title/Position"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="contactPhone" className="text-base">
+              Phone Number
+            </Label>
+            <Input
+              id="contactPhone"
+              name="contactPhone"
+              value={sponsor.contactPhone}
+              onChange={handleChange}
+              className="mt-1"
+              placeholder="Phone number"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="contactEmail" className="text-base">
+              Email <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="contactEmail"
+              name="contactEmail"
+              value={sponsor.contactEmail}
+              onChange={handleChange}
+              className="mt-1"
+              type="email"
+              placeholder="Email address"
+            />
+          </div>
         </div>
-      </form>
-      
-      <div className="mt-4">
-        {formSubmitted ? (
-          <div className="flex items-center text-green-600 bg-green-50 px-4 py-3 rounded-md">
-            <CheckCircle className="h-5 w-5 mr-2" />
-            <span>Sponsor information has been saved successfully</span>
-          </div>
-        ) : (
-          <div className="flex items-center text-amber-600">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            <span className="text-sm">Sponsor information is required for IND submission (21 CFR 312.23(a)(1))</span>
-          </div>
-        )}
       </div>
+      
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>U.S. Agent Information</CardTitle>
+          <CardDescription>
+            Required for non-U.S. sponsors without an office in the United States
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="usDAgent" className="text-base">
+                Do you have a U.S. Agent?
+              </Label>
+              <Select
+                value={sponsor.usDAgent}
+                onValueChange={(value) => handleSelectChange("usDAgent", value)}
+              >
+                <SelectTrigger id="usDAgent">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={true}>Yes</SelectItem>
+                  <SelectItem value={false}>No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="docketNumber" className="text-base">
+                FDA Docket Number (if known)
+              </Label>
+              <Input
+                id="docketNumber"
+                name="docketNumber"
+                value={sponsor.docketNumber}
+                onChange={handleChange}
+                className="mt-1"
+                placeholder="FDA docket number"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
