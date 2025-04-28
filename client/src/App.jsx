@@ -51,6 +51,11 @@ function App() {
             )}
           </Route>
 
+          {/* Client Portal IND Wizard Route */}
+          <Route path="/client-portal/ind-wizard">
+            <IndWizardLayout />
+          </Route>
+
           {/* Other Module Pages */}
           <Route path="/cer-generator" component={CerGenerator} />
           <Route path="/cmc-wizard" component={CmcWizard} />
