@@ -12,6 +12,7 @@ import CsrAnalyzer from './modules/CsrAnalyzer';
 import Vault from './modules/Vault';
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
+import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
 
 // IND Wizard step components
 import IndWizardLayout from './components/ind-wizard/IndWizardLayout';

@@ -18,8 +18,7 @@ export default function GenotoxicityReportsUploader({ setFormStatus }) {
     <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
       <h2 className="text-xl font-semibold">Genotoxicity Study Reports (Module 4.5)</h2>
       <p className="text-sm text-gray-600">
-        Upload in vitro and in vivo genotoxicity study reports that evaluate the potential of your investigational drug to 
-        cause genetic damage, including gene mutations and chromosomal aberrations.
+        Upload reports for gene mutation assays, chromosomal aberration tests, and in vitro/in vivo genotoxicity studies performed on your investigational product.
       </p>
 
       <div>
