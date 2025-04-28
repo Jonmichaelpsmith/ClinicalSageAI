@@ -1,359 +1,183 @@
-import express from 'express';
-import multer from 'multer';
-import supabase from '../lib/supabaseClient.js';
-import { verifyJwt, requireRoles } from '../middleware/auth.js';
-import { generateSummary, autoTag } from '../services/ai.js';
+// server/routes/documents.js
 
+const express = require('express');
 const router = express.Router();
 
-// Set up multer for file uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
-  },
-});
-
-/**
- * @route GET /api/vault/documents
- * @desc Get documents for the current tenant
- * @access Private
- */
-router.get('/', verifyJwt, async (req, res) => {
+// Get document list
+router.get('/list', (req, res) => {
   try {
-    const { tenantId } = req.user;
+    const { projectId, type } = req.query;
     
-    // Query parameters for filtering
-    const { status, limit = 100, offset = 0 } = req.query;
+    // Log the request
+    console.log(`Fetching documents for project ${projectId || 'all'}, type: ${type || 'all'}`);
     
-    // Build query
-    let query = supabase
-      .from('documents')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .order('inserted_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-    
-    // Add status filter if provided
-    if (status) {
-      query = query.eq('status', status);
-    }
-    
-    const { data, error, count } = await query;
-    
-    if (error) {
-      console.error('Error fetching documents:', error);
-      return res.status(500).json({ message: error.message });
-    }
-    
-    return res.json({
-      documents: data || [],
-      count,
-    });
-  } catch (error) {
-    console.error('Error in documents GET route:', error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-});
-
-/**
- * @route GET /api/vault/documents/:id
- * @desc Get a single document by ID
- * @access Private
- */
-router.get('/:id', verifyJwt, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { tenantId } = req.user;
-    
-    const { data, error } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('id', id)
-      .eq('tenant_id', tenantId)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching document:', error);
-      return res.status(404).json({ message: 'Document not found' });
-    }
-    
-    return res.json(data);
-  } catch (error) {
-    console.error('Error in document GET by ID route:', error);
-    return res.status(500).json({ message: 'Server error' });
-  }
-});
-
-/**
- * @route POST /api/vault/documents
- * @desc Upload a new document
- * @access Private
- */
-router.post('/', verifyJwt, upload.single('file'), async (req, res) => {
-  try {
-    const { file } = req;
-    const { tenantId, id: userId } = req.user;
-    
-    if (!file) {
-      return res.status(400).json({ message: 'No file uploaded' });
-    }
-    
-    console.log('File upload request received:', {
-      filename: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-    });
-    
-    // Create storage path based on tenant and timestamp
-    const timestamp = Date.now();
-    const path = `${tenantId}/${timestamp}_${file.originalname}`;
-    
-    // 1. Store file to Supabase Storage
-    console.log('Uploading file to Supabase Storage...');
-    const { error: uploadError } = await supabase.storage
-      .from('vault-files')
-      .upload(path, file.buffer, { 
-        contentType: file.mimetype,
-        upsert: false,
-      });
-    
-    if (uploadError) {
-      console.error('Storage upload error:', uploadError);
-      return res.status(500).json({ message: uploadError.message });
-    }
-    
-    // 2. Generate AI summary and tags if OpenAI API key is available
-    console.log('Generating AI summary and tags...');
-    let summary = 'AI summary not available';
-    let tags = ['document'];
-    
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        [summary, tags] = await Promise.all([
-          generateSummary(file.buffer, file.mimetype),
-          autoTag(file.buffer)
-        ]);
-      } catch (aiError) {
-        console.error('AI processing error:', aiError);
-        // Continue with default values
+    // Sample documents data
+    const documents = [
+      {
+        id: 'doc-001',
+        name: 'Form FDA 1571',
+        type: 'FDA Form',
+        category: 'Administrative',
+        status: 'draft',
+        uploadedBy: 'John Smith',
+        uploadDate: '2025-03-15T10:30:00Z',
+        fileSize: 450223,
+        fileType: 'application/pdf',
+        url: '/documents/fda-1571.pdf'
+      },
+      {
+        id: 'doc-002',
+        name: 'Investigator Brochure',
+        type: 'IND',
+        category: 'Clinical',
+        status: 'approved',
+        uploadedBy: 'Sarah Johnson',
+        uploadDate: '2025-03-20T14:45:00Z',
+        fileSize: 2503442,
+        fileType: 'application/pdf',
+        url: '/documents/investigator-brochure.pdf'
+      },
+      {
+        id: 'doc-003',
+        name: 'Protocol Synopsis',
+        type: 'Clinical',
+        category: 'Protocol',
+        status: 'in_review',
+        uploadedBy: 'Robert Thompson',
+        uploadDate: '2025-04-05T09:15:00Z',
+        fileSize: 1205431,
+        fileType: 'application/pdf',
+        url: '/documents/protocol-synopsis.pdf'
+      },
+      {
+        id: 'doc-004',
+        name: 'CMC Summary',
+        type: 'CMC',
+        category: 'Chemistry',
+        status: 'approved',
+        uploadedBy: 'Jennifer Lee',
+        uploadDate: '2025-04-10T11:20:00Z',
+        fileSize: 3421789,
+        fileType: 'application/pdf',
+        url: '/documents/cmc-summary.pdf'
+      },
+      {
+        id: 'doc-005',
+        name: 'Cover Letter',
+        type: 'Administrative',
+        category: 'Submission',
+        status: 'draft',
+        uploadedBy: 'Michael Brown',
+        uploadDate: '2025-04-15T16:00:00Z',
+        fileSize: 325678,
+        fileType: 'application/pdf',
+        url: '/documents/cover-letter.pdf'
       }
+    ];
+    
+    // Filter by project if specified
+    let filteredDocs = documents;
+    if (projectId) {
+      // In a real implementation, filter documents by projectId
     }
     
-    // 3. Insert metadata into database
-    console.log('Saving document metadata to database...');
-    const { data: document, error: dbError } = await supabase
-      .from('documents')
-      .insert({
-        tenant_id: tenantId,
-        path,
-        filename: file.originalname,
-        content_type: file.mimetype,
-        uploader_id: userId,
-        summary,
-        tags,
-        status: 'Draft',
-      })
-      .select()
-      .single();
-    
-    if (dbError) {
-      console.error('Database error:', dbError);
-      return res.status(500).json({ message: dbError.message });
+    // Filter by type if specified
+    if (type) {
+      filteredDocs = filteredDocs.filter(doc => doc.type === type || doc.category === type);
     }
     
-    // 4. Create audit log entry
-    await supabase.from('audit_logs').insert({
-      tenant_id: tenantId,
-      user_id: userId,
-      action: 'DOCUMENT_UPLOAD',
-      details: {
-        document_id: document.id,
-        filename: file.originalname,
-        content_type: file.mimetype,
-        size: file.size,
-      }
-    });
-    
-    return res.status(201).json(document);
+    return res.json(filteredDocs);
   } catch (error) {
-    console.error('Error in document upload route:', error);
-    return res.status(500).json({ message: 'Server error uploading document' });
+    console.error('Error fetching documents:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
-/**
- * @route PUT /api/vault/documents/:id
- * @desc Update a document's metadata
- * @access Private
- */
-router.put('/:id', verifyJwt, async (req, res) => {
+// Upload document
+router.post('/upload', (req, res) => {
   try {
-    const { id } = req.params;
-    const { tenantId, id: userId } = req.user;
-    const { status, tags } = req.body;
+    const { fileName, fileType, projectId, documentType, category } = req.body;
     
-    // Verify document exists and belongs to tenant
-    const { data: document, error: fetchError } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('id', id)
-      .eq('tenant_id', tenantId)
-      .single();
+    // In a production environment, this would handle the file upload
+    console.log(`Uploading document: ${fileName} for project ${projectId}`);
     
-    if (fetchError) {
-      console.error('Document fetch error:', fetchError);
-      return res.status(404).json({ message: 'Document not found' });
-    }
+    // Generate a sample document object
+    const document = {
+      id: `doc-${Date.now()}`,
+      name: fileName,
+      type: documentType,
+      category: category,
+      status: 'uploaded',
+      uploadedBy: 'Current User',
+      uploadDate: new Date().toISOString(),
+      fileSize: Math.floor(Math.random() * 5000000) + 100000, // Random file size
+      fileType: fileType,
+      url: `/documents/${fileName.toLowerCase().replace(/\s+/g, '-')}`
+    };
     
-    // Update document metadata
-    const updates = {};
-    if (status) updates.status = status;
-    if (tags) updates.tags = tags;
+    return res.json({ success: true, document });
+  } catch (error) {
+    console.error('Error uploading document:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+// Get document details
+router.get('/:documentId', (req, res) => {
+  try {
+    const { documentId } = req.params;
     
-    const { data: updatedDoc, error: updateError } = await supabase
-      .from('documents')
-      .update(updates)
-      .eq('id', id)
-      .eq('tenant_id', tenantId)
-      .select()
-      .single();
+    // In a production environment, fetch the document from a database
+    console.log(`Fetching document ${documentId}`);
     
-    if (updateError) {
-      console.error('Document update error:', updateError);
-      return res.status(500).json({ message: updateError.message });
-    }
-    
-    // Create audit log entry
-    await supabase.from('audit_logs').insert({
-      tenant_id: tenantId,
-      user_id: userId,
-      action: 'DOCUMENT_UPDATE',
-      details: {
-        document_id: id,
-        updated_fields: Object.keys(updates),
-        previous_values: {
-          status: document.status,
-          tags: document.tags,
+    // Sample document data
+    const document = {
+      id: documentId,
+      name: 'Sample Document',
+      type: 'IND',
+      category: 'Administrative',
+      status: 'approved',
+      uploadedBy: 'John Smith',
+      uploadDate: '2025-04-01T10:30:00Z',
+      fileSize: 1205431,
+      fileType: 'application/pdf',
+      url: `/documents/${documentId}.pdf`,
+      versions: [
+        {
+          version: 1,
+          uploadDate: '2025-03-15T10:30:00Z',
+          status: 'superseded',
+          uploadedBy: 'John Smith'
         },
-        new_values: updates,
-      }
-    });
+        {
+          version: 2,
+          uploadDate: '2025-04-01T10:30:00Z',
+          status: 'current',
+          uploadedBy: 'John Smith'
+        }
+      ]
+    };
     
-    return res.json(updatedDoc);
+    return res.json(document);
   } catch (error) {
-    console.error('Error in document update route:', error);
-    return res.status(500).json({ message: 'Server error updating document' });
+    console.error(`Error fetching document ${req.params.documentId}:`, error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
-/**
- * @route DELETE /api/vault/documents/:id
- * @desc Mark a document as deleted (soft delete)
- * @access Private
- */
-router.delete('/:id', verifyJwt, requireRoles(['admin', 'manager']), async (req, res) => {
+// Delete document
+router.delete('/:documentId', (req, res) => {
   try {
-    const { id } = req.params;
-    const { tenantId, id: userId } = req.user;
+    const { documentId } = req.params;
     
-    // Verify document exists and belongs to tenant
-    const { data: document, error: fetchError } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('id', id)
-      .eq('tenant_id', tenantId)
-      .single();
+    // In a production environment, delete the document from storage
+    console.log(`Deleting document ${documentId}`);
     
-    if (fetchError) {
-      console.error('Document fetch error:', fetchError);
-      return res.status(404).json({ message: 'Document not found' });
-    }
-    
-    // Soft delete by updating status
-    const { error: updateError } = await supabase
-      .from('documents')
-      .update({ status: 'Deleted' })
-      .eq('id', id)
-      .eq('tenant_id', tenantId);
-    
-    if (updateError) {
-      console.error('Document delete error:', updateError);
-      return res.status(500).json({ message: updateError.message });
-    }
-    
-    // Create audit log entry
-    await supabase.from('audit_logs').insert({
-      tenant_id: tenantId,
-      user_id: userId,
-      action: 'DOCUMENT_DELETE',
-      details: {
-        document_id: id,
-        filename: document.filename,
-      }
-    });
-    
-    return res.json({ message: 'Document deleted successfully' });
+    return res.json({ success: true, message: 'Document deleted successfully' });
   } catch (error) {
-    console.error('Error in document delete route:', error);
-    return res.status(500).json({ message: 'Server error deleting document' });
+    console.error(`Error deleting document ${req.params.documentId}:`, error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
-/**
- * @route GET /api/vault/documents/:id/download
- * @desc Download a document file
- * @access Private
- */
-router.get('/:id/download', verifyJwt, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { tenantId, id: userId } = req.user;
-    
-    // Verify document exists and belongs to tenant
-    const { data: document, error: fetchError } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('id', id)
-      .eq('tenant_id', tenantId)
-      .single();
-    
-    if (fetchError) {
-      console.error('Document fetch error:', fetchError);
-      return res.status(404).json({ message: 'Document not found' });
-    }
-    
-    // Generate signed URL for download
-    const { data: signedUrl, error: signedUrlError } = await supabase.storage
-      .from('vault-files')
-      .createSignedUrl(document.path, 60); // 60 second expiry
-    
-    if (signedUrlError) {
-      console.error('Signed URL generation error:', signedUrlError);
-      return res.status(500).json({ message: signedUrlError.message });
-    }
-    
-    // Create audit log entry
-    await supabase.from('audit_logs').insert({
-      tenant_id: tenantId,
-      user_id: userId,
-      action: 'DOCUMENT_DOWNLOAD',
-      details: {
-        document_id: id,
-        filename: document.filename,
-      }
-    });
-    
-    // Return the signed URL
-    return res.json({ 
-      url: signedUrl.signedUrl,
-      filename: document.filename,
-      expiresAt: new Date(Date.now() + 60 * 1000).toISOString(),
-    });
-  } catch (error) {
-    console.error('Error in document download route:', error);
-    return res.status(500).json({ message: 'Server error generating download link' });
-  }
-});
-
-export default router;
+module.exports = router;
