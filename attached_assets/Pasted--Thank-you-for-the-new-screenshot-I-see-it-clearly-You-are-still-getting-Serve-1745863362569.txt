@@ -1,0 +1,106 @@
+✅ Thank you for the new screenshot —  
+✅ I see it clearly.
+
+You are still getting:
+
+> ❌ **Server error while loading Vault documents**
+
+**even after updating the routing.**
+
+This means **one or both of the following is happening**:
+
+---
+
+# 🧠 **Precise Root Cause Possibilities:**
+
+| Cause | How to Confirm |
+|:------|:---------------|
+| 1. `/uploads/metadata.json` does not exist yet | Check your Replit project manually — is there a `metadata.json` file inside `/uploads/`? |
+| 2. `/uploads/` folder itself does not exist | Check Replit — is the `/uploads/` directory created at all? |
+| 3. `/api/vault/list` server route is crashing because it expects to read metadata.json | Check server logs — is there a crash trace? (File not found error) |
+
+✅ If **metadata.json** is missing,  
+✅ The server can't send back document metadata,  
+✅ So `/api/vault/list` crashes, and Vault Viewer can't load.
+
+---
+
+# 📋 **How to Fix It Right Now:**
+
+✅ Step 1: **Create `uploads/metadata.json` manually**
+
+- Navigate to your `/uploads/` folder in Replit.  
+- If there is no `/uploads/` folder, create one manually.
+- Inside `/uploads/`, create a file named: `metadata.json`.
+
+✅ Step 2: **Paste this inside `metadata.json`:**
+
+```json
+[]
+```
+
+✅ Save.
+
+✅ Restart the Replit server ("Stop" ➔ "Run").
+
+✅ Now `/api/vault/list` will return an **empty array** instead of crashing.
+
+✅ VaultDocumentViewer will load correctly (even if no documents yet).
+
+---
+
+# 📣 Why This is Happening:
+
+| Root Issue | Technical Reason |
+|:-----------|:-----------------|
+| No metadata.json file | The Vault list API assumes metadata.json exists, but on first install, it doesn't. |
+| Server crashes trying to read nonexistent metadata.json | Fatal crash leads to frontend Vault error. |
+
+✅ This happens in all document management systems until a minimal metadata structure exists.
+
+✅ After metadata.json exists, even empty, Vault becomes stable.
+
+---
+
+# 📣 After You Fix This:
+
+✅ Vault Upload → Will save into `/uploads/` folder.  
+✅ VaultDocumentViewer → Will fetch list of documents and show live.  
+✅ Vault Search/Filtering → Will work cleanly.
+
+✅ You will have full operational Vault Intelligence.
+
+---
+
+# 📣 Immediate Action for You:
+
+| Step | Action |
+|:-----|:-------|
+| 1 | Check `/uploads/metadata.json` exists |
+| 2 | If missing, create manually |
+| 3 | Paste `[]` inside |
+| 4 | Save |
+| 5 | Restart Replit |
+
+✅ Then refresh `/client-portal/vault`.
+
+✅ Server error will be gone.
+
+---
+
+# 🚀 After This:
+
+✅ I can help you immediately wire **Vault Version History Viewer** (Optional)  
+✅ Or **Vault File Deletion** (Optional)  
+✅ Or **Start Intelligent Timeline Risk Analysis for Submissions** (Timeline AI)
+
+---
+
+# 📣 Please reply after you create metadata.json:
+
+👉 **"Metadata.json created, Vault Viewer working"**
+
+(And I’ll proceed to the next powerful system enhancement.)
+
+🎯 You are just 1 click away from full document intelligence in TrialSage! 🚀  
+Waiting for your update! 🚀
