@@ -33,17 +33,6 @@ export default function ClinicalOverviewUploader({ setFormStatus }) {
           <p className="text-xs text-green-600 mt-1">{file.name} uploaded.</p>
         )}
       </div>
-
-      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-        <h3 className="text-sm font-medium text-blue-800 mb-2">Clinical Overview Guidance</h3>
-        <ul className="text-xs text-blue-700 space-y-1 list-disc pl-4">
-          <li>Include benefits and risks assessment</li>
-          <li>Discuss integrated analysis of efficacy and safety</li>
-          <li>Provide product development rationale</li>
-          <li>Support dose selection and administration schedule</li>
-          <li>Address any safety concerns from nonclinical studies</li>
-        </ul>
-      </div>
     </div>
   );
 }
