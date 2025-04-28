@@ -58,6 +58,7 @@ const ClientPortalLanding = () => {
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/client-portal/cmc-wizard' },
     { id: 'csr', title: 'CSR Analyzer™', description: 'AI-powered Clinical Study Report analysis', path: '/client-portal/csr-analyzer' },
     { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/client-portal/vault' },
+    { id: 'rih', title: 'Regulatory Intelligence Hub™', description: 'AI-powered strategy, timeline, and risk simulation', path: '/regulatory-intelligence-hub', highlight: true },
     { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/regulatory-risk-dashboard' },
     { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/client-portal/study-architect' },
     { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/client-portal/analytics' }
