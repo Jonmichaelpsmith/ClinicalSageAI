@@ -12,7 +12,7 @@ export default function Module2NextButton({ formStatus }) {
     'nonclinicalOverview'
   ];
 
-  // Clinical overview and written summaries are optional for some INDs
+  // Clinical overview and written summaries are considered optional for some INDs
   const isComplete = requiredFields.every((key) => formStatus[key] === true);
 
   const handleNext = () => {

@@ -18,7 +18,7 @@ export default function WrittenTabulatedSummaryUploader({ setFormStatus }) {
     <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
       <h2 className="text-xl font-semibold">Written and Tabulated Summaries (Module 2.6/2.7)</h2>
       <p className="text-sm text-gray-600">
-        Upload detailed summaries of nonclinical and clinical data, presented in textual and tabular formats according to ICH guidance.
+        Upload detailed summaries of nonclinical and clinical data, presented in textual and tabular formats.
       </p>
 
       <div>
@@ -41,17 +41,6 @@ export default function WrittenTabulatedSummaryUploader({ setFormStatus }) {
             </ul>
           </div>
         )}
-      </div>
-
-      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-        <h3 className="text-sm font-medium text-blue-800 mb-2">Guidance</h3>
-        <ul className="text-xs text-blue-700 space-y-1 list-disc pl-4">
-          <li>Include written summaries of nonclinical studies (module 2.6)</li>
-          <li>Include clinical summary documents (module 2.7)</li>
-          <li>Provide tabulated study data in structured formats</li>
-          <li>Ensure summaries are detailed and aligned with full reports</li>
-          <li>Note: These documents are optional for some Phase 1 INDs, but recommended</li>
-        </ul>
       </div>
     </div>
   );

@@ -33,17 +33,6 @@ export default function NonclinicalOverviewUploader({ setFormStatus }) {
           <p className="text-xs text-green-600 mt-1">{file.name} uploaded.</p>
         )}
       </div>
-
-      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-        <h3 className="text-sm font-medium text-blue-800 mb-2">Nonclinical Overview Guidance</h3>
-        <ul className="text-xs text-blue-700 space-y-1 list-disc pl-4">
-          <li>Integrate findings from all pharmacology, PK/ADME, and toxicology studies</li>
-          <li>Explain how nonclinical data supports the proposed clinical study design</li>
-          <li>Address any concerning findings and their clinical relevance</li>
-          <li>Justify the selection of the starting dose and dose escalation scheme</li>
-          <li>Discuss safety margins based on exposure data</li>
-        </ul>
-      </div>
     </div>
   );
 }
