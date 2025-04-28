@@ -185,10 +185,10 @@ export default function AdvisorRiskHeatmapV2({ sidebar = false }) {
                       </ul>
                     </div>
                     <div class="flex flex-col space-y-2">
-                      <button class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded">
+                      <button id="openDocumentEditor" class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded">
                         Open Document Editor
                       </button>
-                      <button class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded">
+                      <button id="viewAnalysis" class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded">
                         View Detailed Analysis
                       </button>
                       <button class="closeModal w-full py-2 px-4 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded mt-2">
@@ -199,6 +199,22 @@ export default function AdvisorRiskHeatmapV2({ sidebar = false }) {
                 `;
                 
                 document.body.appendChild(modal);
+                
+                // Add event listeners for all buttons
+                
+                // Open Document Editor button
+                modal.querySelector('#openDocumentEditor').addEventListener('click', () => {
+                  // Since we don't have the document editor built yet, show a message
+                  alert(`Document Editor for "${section}" is under development. Coming soon!`);
+                  // Keep the modal open so they can try other options
+                });
+                
+                // View Detailed Analysis button
+                modal.querySelector('#viewAnalysis').addEventListener('click', () => {
+                  // For now, just show an information message
+                  alert(`Detailed risk analysis for "${section}" is being generated. This feature will be available in the next release.`);
+                  // Keep the modal open
+                });
                 
                 // Handle close button
                 modal.querySelector('.closeModal').addEventListener('click', () => {
