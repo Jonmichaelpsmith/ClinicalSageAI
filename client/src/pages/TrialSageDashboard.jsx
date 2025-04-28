@@ -328,9 +328,11 @@ export default function TrialSageDashboard() {
                   </div>
                   
                   <div className="flex justify-end">
-                    <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-emerald-700 bg-emerald-100 hover:bg-emerald-200 dark:text-emerald-200 dark:bg-emerald-900 dark:hover:bg-emerald-800">
-                      Open Module <ArrowRight className="ml-1 h-4 w-4" />
-                    </button>
+                    <Link to={`/${module.id}`}>
+                      <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-emerald-700 bg-emerald-100 hover:bg-emerald-200 dark:text-emerald-200 dark:bg-emerald-900 dark:hover:bg-emerald-800">
+                        Open Module <ArrowRight className="ml-1 h-4 w-4" />
+                      </button>
+                    </Link>
                   </div>
                 </div>
               )}
@@ -341,9 +343,11 @@ export default function TrialSageDashboard() {
                     <div className={`h-2 w-2 rounded-full ${module.status === 'operational' ? 'bg-emerald-500' : 'bg-amber-500'} mr-2`}></div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">{module.status}</span>
                   </div>
-                  <button className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
-                    Details
-                  </button>
+                  <Link to={`/${module.id}`}>
+                    <button className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300">
+                      Details
+                    </button>
+                  </Link>
                 </div>
               )}
             </div>
