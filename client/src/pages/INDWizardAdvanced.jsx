@@ -53,6 +53,7 @@ import IndWizardLayout from '@/components/ind-wizard/IndWizardLayout';
 import INDAnalyticsDashboard from '@/components/mashable-bi/INDAnalyticsDashboard';
 import Module1AdminPage from '@/modules/Module1AdminPage';
 import Module2SummaryPage from '@/modules/Module2SummaryPage';
+import Module3QualityPage from '@/modules/Module3QualityPage';
 
 export default function INDWizardAdvanced() {
   const { toast } = useToast();
