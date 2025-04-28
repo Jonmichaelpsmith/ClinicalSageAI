@@ -1,5 +1,6 @@
 // /client/src/App.jsx
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route } from 'wouter';
 
 // Import Pages and Modules
@@ -15,42 +16,47 @@ import AnalyticsDashboard from './modules/AnalyticsDashboard';
 // IND Wizard step components
 import IndWizardLayout from './components/ind-wizard/IndWizardLayout';
 
+// Create a QueryClient instance to use with React Query
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <div className="p-4">
-      <Switch>
-        {/* Main Portal Landing Page */}
-        <Route path="/client-portal" component={ClientPortalLanding} />
+    <QueryClientProvider client={queryClient}>
+      <div className="p-4">
+        <Switch>
+          {/* Main Portal Landing Page */}
+          <Route path="/client-portal" component={ClientPortalLanding} />
 
-        {/* Advanced IND Wizard - Main Entry Point */}
-        <Route path="/ind-wizard" component={INDWizardAdvanced} />
-        
-        {/* IND Wizard Step Routes - For Individual Steps */}
-        <Route path="/ind-wizard/:projectId">
-          {(params) => (
-            <IndWizardLayout projectId={params.projectId} />
-          )}
-        </Route>
-        
-        {/* Individual IND Wizard Steps */}
-        <Route path="/ind/wizard/:step">
-          {(params) => (
-            <IndWizardLayout currentStep={params.step} />
-          )}
-        </Route>
+          {/* Advanced IND Wizard - Main Entry Point */}
+          <Route path="/ind-wizard" component={INDWizardAdvanced} />
+          
+          {/* IND Wizard Step Routes - For Individual Steps */}
+          <Route path="/ind-wizard/:projectId">
+            {(params) => (
+              <IndWizardLayout projectId={params.projectId} />
+            )}
+          </Route>
+          
+          {/* Individual IND Wizard Steps */}
+          <Route path="/ind/wizard/:step">
+            {(params) => (
+              <IndWizardLayout currentStep={params.step} />
+            )}
+          </Route>
 
-        {/* Other Module Pages */}
-        <Route path="/cer-generator" component={CerGenerator} />
-        <Route path="/cmc-wizard" component={CmcWizard} />
-        <Route path="/csr-analyzer" component={CsrAnalyzer} />
-        <Route path="/vault" component={Vault} />
-        <Route path="/study-architect" component={StudyArchitect} />
-        <Route path="/analytics" component={AnalyticsDashboard} />
+          {/* Other Module Pages */}
+          <Route path="/cer-generator" component={CerGenerator} />
+          <Route path="/cmc-wizard" component={CmcWizard} />
+          <Route path="/csr-analyzer" component={CsrAnalyzer} />
+          <Route path="/vault" component={Vault} />
+          <Route path="/study-architect" component={StudyArchitect} />
+          <Route path="/analytics" component={AnalyticsDashboard} />
 
-        {/* Default Redirect */}
-        <Route>404 - Page Not Found</Route>
-      </Switch>
-    </div>
+          {/* Default Redirect */}
+          <Route>404 - Page Not Found</Route>
+        </Switch>
+      </div>
+    </QueryClientProvider>
   );
 };
 

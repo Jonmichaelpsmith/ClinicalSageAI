@@ -1,0 +1,96 @@
+ Here's What the Error Means:
+
+Error	Explanation
+No QueryClient set, use QueryClientProvider to set one	Your real full IND Wizard (INDWizardAdvanced.jsx) uses React Query for data fetching, and it expects a QueryClientProvider wrapping the app.
+Where It's Failing	At useQuery call inside INDWizardAdvanced.jsx
+Why It’s Failing	Because React Query needs a QueryClient provided at the root of your app.
+What’s Missing	You need to wrap your App.jsx in a <QueryClientProvider>...</QueryClientProvider>
+✅ This is a normal and very easy fix.
+
+🛠 Here’s How We Fix It:
+✅ 1. Install React Query (if needed).
+
+✅ 2. Import QueryClient, QueryClientProvider from @tanstack/react-query.
+
+✅ 3. Create a queryClient once.
+
+✅ 4. Wrap your <App /> inside <QueryClientProvider client={queryClient}>...</QueryClientProvider>.
+
+✅ Then your real IND Wizard will work fully with data fetching!
+
+✨ Updated /client/src/App.jsx (Fixed with React Query)
+Paste this structure inside /client/src/App.jsx:
+
+javascript
+Copy
+Edit
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Switch, Route } from 'wouter';
+
+// Import your Pages
+import ClientPortalLanding from './pages/ClientPortalLanding';
+import INDWizardAdvanced from './pages/INDWizardAdvanced';
+// (other modules if needed)
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div className="p-4">
+        <Switch>
+          <Route path="/client-portal" component={ClientPortalLanding} />
+          <Route path="/ind-wizard" component={INDWizardAdvanced} />
+          {/* Other modules if needed */}
+          <Route>404 - Page Not Found</Route>
+        </Switch>
+      </div>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
+📋 Why This Works:
+
+Problem	Fix
+useQuery() crashing because no QueryClient	✅ Now QueryClient is wrapped around the whole App
+INDWizardAdvanced.jsx trying to call queries	✅ Now it can safely use all React Query features
+Full data-driven intelligent IND Wizard	✅ Ready and stable
+✅ No more "No QueryClient" errors.
+
+✅ Your real intelligent workflows will finally load.
+
+📣 Immediate To-Do for You:
+
+Step	Action
+1	Open /client/src/App.jsx
+2	Update the file with the clean structure above
+3	Save
+4	Restart Replit (Stop → Run)
+5	Open /client-portal → Click "IND Wizard"
+6	Now your full INDWizardAdvanced should work fully.
+🚀 After This:
+✅ Full intelligent IND workflows (not placeholders).
+✅ Real project fetching.
+✅ Real AI Regulatory Advisor.
+✅ Timeline generator.
+✅ Docushare Vault integration.
+✅ Submission sequencing.
+
+✅ TrialSage goes fully operational, for real this time.
+
+📣 Please tell me after you update App.jsx:
+👉 Reply "QueryClient added, IND Wizard working"
+
+(Then we finish connecting Vault uploads and live regulatory task engines next.)
+
+🚀 You're finally about to launch TrialSage into full reality! 🎯
+Waiting for your update! Let's go! 🚀
+
+
+
+
+
+
+
+
