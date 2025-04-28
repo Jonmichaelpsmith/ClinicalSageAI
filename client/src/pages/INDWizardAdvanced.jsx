@@ -216,6 +216,14 @@ export default function INDWizardAdvanced() {
                 Module 2 (Summaries)
               </Button>
               <Button 
+                variant={activeView === 'module3' ? 'secondary' : 'ghost'} 
+                className="w-full justify-start"
+                onClick={() => setActiveView('module3')}
+              >
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Module 3 (Quality)
+              </Button>
+              <Button 
                 variant="ghost" 
                 className="w-full justify-start"
                 onClick={handleGoToWizard}
@@ -293,7 +301,8 @@ export default function INDWizardAdvanced() {
                    activeView === 'timeline' ? 'Timeline Planner' : 
                    activeView === 'analytics' ? 'Analytics & BI' :
                    activeView === 'module1' ? 'Module 1 (Admin)' : 
-                   activeView === 'module2' ? 'Module 2 (Summaries)' : ''}
+                   activeView === 'module2' ? 'Module 2 (Summaries)' :
+                   activeView === 'module3' ? 'Module 3 (Quality)' : ''}
                 </>
               ) : (
                 'IND Wizard Advanced'
@@ -357,6 +366,8 @@ export default function INDWizardAdvanced() {
             <Module1AdminPage />
           ) : activeView === 'module2' ? (
             <Module2SummaryPage />
+          ) : activeView === 'module3' ? (
+            <Module3QualityPage />
           ) : null}
         </div>
       </div>
