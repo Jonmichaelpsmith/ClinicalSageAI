@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 
-export default function VaultUploader() {
+export default function VaultUploader({ onUploadComplete }) {
   const [file, setFile] = useState(null);
   const [moduleLinked, setModuleLinked] = useState('');
   const [projectId, setProjectId] = useState('');
   const [uploaderName, setUploaderName] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -15,6 +16,8 @@ export default function VaultUploader() {
       alert('❌ Please select a file to upload.');
       return;
     }
+
+    setIsUploading(true);
 
     const formData = new FormData();
     formData.append('document', file);
@@ -36,17 +39,24 @@ export default function VaultUploader() {
         setModuleLinked('');
         setProjectId('');
         setUploaderName('');
+        
+        // Notify parent component to refresh document list
+        if (onUploadComplete) {
+          onUploadComplete(data.file);
+        }
       } else {
-        alert('❌ Upload failed.');
+        alert('❌ Upload failed: ' + (data.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Upload error:', error);
       alert('❌ Upload error occurred.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-6 max-w-2xl mx-auto">
+    <div className="p-6 bg-white rounded-lg shadow-md space-y-6">
       <h2 className="text-xl font-semibold">Upload Document to Vault</h2>
 
       <form onSubmit={handleUpload} className="space-y-4">
@@ -55,21 +65,28 @@ export default function VaultUploader() {
           <label className="block text-sm font-medium mb-1">Select File</label>
           <input
             type="file"
-            accept=".pdf,.doc,.docx,.xls,.xlsx"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
             className="block w-full text-sm text-gray-700"
             onChange={(e) => setFile(e.target.files[0])}
+            disabled={isUploading}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Associated CTD Module</label>
-          <input
-            type="text"
+          <label className="block text-sm font-medium mb-1">CTD Module</label>
+          <select
             className="w-full border rounded px-3 py-2"
-            placeholder="e.g., Module 1, Module 3"
             value={moduleLinked}
             onChange={(e) => setModuleLinked(e.target.value)}
-          />
+            disabled={isUploading}
+          >
+            <option value="">Select a CTD Module</option>
+            <option value="module1">Module 1: Administrative</option>
+            <option value="module2">Module 2: Summaries</option>
+            <option value="module3">Module 3: Quality (CMC)</option>
+            <option value="module4">Module 4: Nonclinical</option>
+            <option value="module5">Module 5: Clinical</option>
+          </select>
         </div>
 
         <div>
@@ -80,6 +97,7 @@ export default function VaultUploader() {
             placeholder="Enter Project ID"
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
+            disabled={isUploading}
           />
         </div>
 
@@ -91,14 +109,20 @@ export default function VaultUploader() {
             placeholder="Your Name"
             value={uploaderName}
             onChange={(e) => setUploaderName(e.target.value)}
+            disabled={isUploading}
           />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+          className={`w-full px-4 py-2 rounded transition ${
+            isUploading 
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-indigo-600 text-white hover:bg-indigo-700'
+          }`}
+          disabled={isUploading}
         >
-          Upload Document
+          {isUploading ? 'Uploading...' : 'Upload Document'}
         </button>
 
       </form>
