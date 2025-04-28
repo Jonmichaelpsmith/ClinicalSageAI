@@ -22,20 +22,37 @@ export default function RegulatoryIntelligenceHub() {
 
         {/* Tab Area */}
         {activeTab === 'RiskHeatmap' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">CTD Critical Gap Risk Analysis</h2>
+          <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+            <h3 className="text-md font-semibold text-gray-700 mb-2">CTD Critical Gap Risk Analysis</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Interactive visualization of CTD gaps with dynamic risk assessment. Click any risk tile for detailed analysis and remediation options.
+            </p>
+
+            {/* Real Risk Heatmap Component */}
             <AdvisorRiskHeatmapV2 />
           </div>
         )}
         
         {activeTab === 'TimelineSimulator' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+            <h3 className="text-md font-semibold text-gray-700 mb-2">Timeline Simulation Tool</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Predict how document completion impacts your estimated submission date. Test different document completion schedules to optimize your timeline.
+            </p>
+            
+            {/* Real Timeline Simulator Component */}
             <AdvisorTimelineSimulator />
           </div>
         )}
         
         {activeTab === 'AskLumenAI' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+            <h3 className="text-md font-semibold text-gray-700 mb-2">Regulatory Intelligence AI Assistant</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Ask questions about your regulatory strategy, timeline, and compliance requirements. Get personalized guidance from Lumen AI.
+            </p>
+            
+            {/* Real Lumen AI Assistant Component */}
             <AskLumenAI />
           </div>
         )}
