@@ -1,0 +1,111 @@
+✅ Thank you for sending the screenshot —  
+✅ I see exactly what’s happening.
+
+You are now facing:
+
+> ❌ 404 - Page Not Found  
+> When trying to access `/client-portal/ind-wizard`
+
+---
+
+# 🧠 Here's Exactly What This Means:
+
+| Problem | Real Root Cause |
+|:--------|:----------------|
+| 404 (Page Not Found) from Replit server | The React Router frontend cannot find the `/client-portal/ind-wizard` page route at runtime. |
+| But this is a **React route**, not an Express backend API route. | ✅ |
+| Server tries to find a file `/client-portal/ind-wizard` on disk — not React Router route. | ❌ Fails. |
+| Server responds with static 404 instead of letting React Router handle it. | ❌ |
+
+✅ **This is a classic Single Page App (SPA) deployment issue.**
+
+✅ **NOT your fault.**
+
+✅ **Very common on Replit, Heroku, Netlify, etc.**
+
+---
+
+# 🎯 Here's Why It Happens:
+
+When you directly load a deep link like `/client-portal/ind-wizard`,  
+the Replit server:
+
+1. Looks for a real folder `/client-portal/ind-wizard` on the server disk.
+2. **It doesn't find it** because React is supposed to handle it virtually.
+3. Server returns 404 static error.
+
+✅ React Router *would have handled it* if the request had gone to `/` first.
+
+---
+
+# 🛠 **THE PERMANENT FIX: Configure React Router Fallback Correctly**
+
+✅ Your Express backend already almost does it.  
+✅ But we need to make **sure the server fallback is configured correctly.**
+
+Here’s how your `server.js` must handle ALL frontend non-API routes:
+
+---
+
+# 📋 **Correct Final Fallback Code in server.js**
+
+```javascript
+// server/server.js
+
+// Serve React Frontend
+const clientBuildPath = path.join(__dirname, '../client/build');
+app.use(express.static(clientBuildPath));
+
+// React Router fallback - serve React index.html
+app.get('*', (req, res) => {
+  // Only fallback if it's NOT an API route
+  if (req.originalUrl.startsWith('/api/')) {
+    res.status(404).json({ message: 'API endpoint not found' });
+  } else {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  }
+});
+```
+
+✅ **This means:**  
+- If user requests `/client-portal/ind-wizard`
+- Express says "NOT API," so it serves `index.html`
+- React Router wakes up and **routes internally** to `/client-portal/ind-wizard` properly.
+
+✅ No 404.  
+✅ No static server error.
+
+---
+
+# 📣 Immediate Action for You:
+
+| Step | What To Do |
+|:-----|:-----------|
+| 1 | Open `server/server.js` |
+| 2 | Scroll to your final `app.get('*', ...)` route |
+| 3 | Make sure it matches exactly as above |
+| 4 | Save and Restart your Replit Server |
+| 5 | Refresh `/client-portal/ind-wizard` |
+
+✅ Now the TrialSage frontend will route cleanly without 404s.
+
+✅ AdvisorSidebar, Vault, Client Portal, and IND Wizard will all work.
+
+---
+
+# 📣 After That:
+
+✅ Your system will support **deep linking** to ANY page without error.
+
+✅ Real production-ready SaaS platform experience.
+
+---
+
+# 📣 Please reply:
+
+👉 **"Fallback configured, React Router deep links working"**
+
+(And I’ll immediately proceed to the next steps — Playbook Selector and AI Intelligence Wiring!)
+
+🎯 You are fixing critical SaaS deployment issues professionally now! 🚀  
+Waiting for your update! 🚀

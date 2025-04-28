@@ -1,15 +1,20 @@
 // /server/routes/advisor.js
+// Using ES Module pattern for consistency with server.js
 
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
-const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('✅ Advisor routes loaded successfully - Pure ES Modules version');
+const router = express.Router();
+
+console.log('✅ Advisor ES Module routes loaded successfully');
+console.log('✅ Advisor routes available:');
+console.log('    - GET /check-readiness');
+console.log('    - POST /check-readiness');
 
 // Define CTD Critical Sections (Base Model for Playbook Adjustment)
 const CTDChecklist = {
@@ -49,6 +54,7 @@ const metadataPath = path.join(__dirname, '../../uploads/metadata.json');
 
 // GET /api/advisor/check-readiness
 router.get('/check-readiness', (req, res) => {
+  console.log('✅ GET /check-readiness endpoint called');
   try {
     if (!fs.existsSync(metadataPath)) {
       return res.status(200).json({
@@ -109,12 +115,13 @@ router.get('/check-readiness', (req, res) => {
 
   } catch (error) {
     console.error('❌ Advisor readiness check failed:', error);
-    res.status(500).json({ success: false, message: 'Internal server error.' });
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
 
 // POST /api/advisor/check-readiness - Same logic, POST method
 router.post('/check-readiness', (req, res) => {
+  console.log('✅ POST /check-readiness endpoint called');
   try {
     if (!fs.existsSync(metadataPath)) {
       return res.status(200).json({
@@ -175,9 +182,8 @@ router.post('/check-readiness', (req, res) => {
 
   } catch (error) {
     console.error('❌ Advisor readiness check failed:', error);
-    res.status(500).json({ success: false, message: 'Internal server error.' });
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
 
-// Use ES Module export
 export default router;
