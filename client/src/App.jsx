@@ -15,6 +15,7 @@ import VaultTestPage from './pages/VaultTestPage'; // Import the test page
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
 import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
+import VaultDocumentViewer from './components/vault/VaultDocumentViewer'; // Import VaultDocumentViewer
 
 // IND Wizard step components
 import IndWizardLayout from './components/ind-wizard/IndWizardLayout';
@@ -29,6 +30,9 @@ function App() {
         <Switch>
           {/* Main Portal Landing Page */}
           <Route path="/client-portal" component={ClientPortalLanding} />
+          
+          {/* Client Portal Sub-Pages */}
+          <Route path="/client-portal/vault" component={VaultPage} />
 
           {/* Advanced IND Wizard - Main Entry Point */}
           <Route path="/ind-wizard" component={INDWizardAdvanced} />
@@ -51,7 +55,7 @@ function App() {
           <Route path="/cer-generator" component={CerGenerator} />
           <Route path="/cmc-wizard" component={CmcWizard} />
           <Route path="/csr-analyzer" component={CsrAnalyzer} />
-          <Route path="/vault" component={Vault} />
+          <Route path="/vault" component={VaultDocumentViewer} /> {/* Updated to use VaultDocumentViewer directly */}
           <Route path="/vault-page" component={VaultPage} />
           <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
           <Route path="/study-architect" component={StudyArchitect} />

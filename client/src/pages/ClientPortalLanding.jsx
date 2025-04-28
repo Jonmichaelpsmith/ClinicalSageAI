@@ -53,13 +53,13 @@ const ClientPortalLanding = () => {
 
   // Module cards for the dashboard
   const moduleCards = [
-    { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard' },
-    { id: 'cer', title: 'CER Generator™', description: 'EU MDR 2017/745 Clinical Evaluation Reports', path: '/cer-generator' },
-    { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc-wizard' },
-    { id: 'csr', title: 'CSR Analyzer™', description: 'AI-powered Clinical Study Report analysis', path: '/csr-analyzer' },
-    { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault' },
-    { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/study-architect' },
-    { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/analytics' }
+    { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/client-portal/ind-wizard' },
+    { id: 'cer', title: 'CER Generator™', description: 'EU MDR 2017/745 Clinical Evaluation Reports', path: '/client-portal/cer-generator' },
+    { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/client-portal/cmc-wizard' },
+    { id: 'csr', title: 'CSR Analyzer™', description: 'AI-powered Clinical Study Report analysis', path: '/client-portal/csr-analyzer' },
+    { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/client-portal/vault' },
+    { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/client-portal/study-architect' },
+    { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/client-portal/analytics' }
   ];
   
   return (
