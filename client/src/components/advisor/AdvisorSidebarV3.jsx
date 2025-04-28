@@ -136,7 +136,7 @@ export default function AdvisorSidebarV3() {
       {/* Risk Heatmap */}
       <div className="mt-4">
         <h3 className="text-sm font-semibold mb-2">Risk Visualization:</h3>
-        <AdvisorRiskHeatmapV2 missingSections={readiness.missingSections || []} />
+        <AdvisorRiskHeatmapV2 missingSections={readiness.missingSections || []} sidebar={true} />
       </div>
 
       {/* Next Best Actions */}
