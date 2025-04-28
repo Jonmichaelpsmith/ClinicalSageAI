@@ -5,149 +5,244 @@ import { useEffect, useState } from 'react';
 export default function VaultDocumentViewer() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [expandedDocs, setExpandedDocs] = useState({});
+  const [metadata, setMetadata] = useState({
+    uniqueModules: [],
+    uniqueUploaders: [],
+    uniqueProjects: [],
+    ctdModuleMapping: {}
+  });
+  
+  // Filtering state
+  const [filters, setFilters] = useState({
+    module: 'all',
+    uploader: 'all',
+    projectId: 'all',
+    search: ''
+  });
+  
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const res = await fetch('/api/vault/list');
-        const data = await res.json();
-        if (data.success) {
-          setDocuments(data.documents);
-        } else {
-          alert('❌ Failed to load Vault documents.');
-        }
-      } catch (error) {
-        console.error('Error fetching documents:', error);
-        alert('❌ Server error while loading Vault documents.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDocuments();
-  }, []);
+  }, [filters]); // Re-fetch when filters change
 
-  // Group documents by baseFilename, projectId, and moduleLinked
-  const groupedDocuments = documents.reduce((acc, doc) => {
-    // If doc has no baseFilename yet (legacy documents), use originalName as key
-    const baseKey = doc.baseFilename || doc.originalName;
-    const projectId = doc.projectId || 'Unassigned';
-    const moduleLinked = doc.moduleLinked || 'Unknown';
-    
-    // Create a composite key for grouping
-    const key = `${baseKey}|${projectId}|${moduleLinked}`;
-    
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    
-    acc[key].push(doc);
-    return acc;
-  }, {});
-
-  // Sort each group by version number (descending)
-  Object.keys(groupedDocuments).forEach(key => {
-    groupedDocuments[key].sort((a, b) => {
-      // Sort by version if available, otherwise by uploadTime
-      if (a.version && b.version) {
-        return b.version - a.version;
+  const fetchDocuments = async () => {
+    try {
+      // Build query string from filters
+      const queryParams = new URLSearchParams();
+      if (filters.module !== 'all') queryParams.append('module', filters.module);
+      if (filters.uploader !== 'all') queryParams.append('uploader', filters.uploader);
+      if (filters.projectId !== 'all') queryParams.append('projectId', filters.projectId);
+      if (filters.search) queryParams.append('search', filters.search);
+      
+      const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+      
+      const res = await fetch(`/api/vault/list${queryString}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        const organized = organizeVersions(data.documents);
+        setDocuments(organized);
+        setMetadata(data.metadata || {
+          uniqueModules: [],
+          uniqueUploaders: [],
+          uniqueProjects: [],
+          totalCount: 0,
+          ctdModuleMapping: {}
+        });
+      } else {
+        alert('❌ Failed to load Vault documents.');
       }
-      return new Date(b.uploadTime) - new Date(a.uploadTime);
-    });
-  });
+    } catch (error) {
+      console.error('Error fetching Vault documents:', error);
+      alert('❌ Server error while loading Vault documents.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const toggleExpand = (key) => {
-    setExpandedDocs(prev => ({
+  // Organize files by base name (group versions together)
+  const organizeVersions = (docs) => {
+    const groups = {};
+
+    docs.forEach(doc => {
+      const baseName = doc.originalName.replace(/\s+/g, '_').replace(/\.[^/.]+$/, ''); // Remove extension
+      const cleanBase = baseName.replace(/_v\d+$/, ''); // Remove version suffix if exists
+
+      if (!groups[cleanBase]) {
+        groups[cleanBase] = [];
+      }
+      groups[cleanBase].push(doc);
+    });
+
+    return Object.entries(groups);
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [name]: value
     }));
   };
 
-  if (loading) {
-    return <p className="text-gray-500">Loading documents...</p>;
+  // Handle search input
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // The search will be triggered by the useEffect due to filters changing
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setFilters({
+      module: 'all',
+      uploader: 'all',
+      projectId: 'all',
+      search: ''
+    });
+  };
+
+  if (loading && documents.length === 0) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-md space-y-6 max-w-5xl mx-auto">
+        <h2 className="text-2xl font-semibold">Vault Document Repository</h2>
+        <p className="text-gray-500">Loading documents...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-6">
-      <h2 className="text-2xl font-semibold">Vault Document Repository</h2>
+    <div className="p-6 bg-white rounded-lg shadow-md space-y-6 max-w-5xl mx-auto">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-semibold">Vault Document Repository</h2>
+        <button 
+          onClick={() => setShowFilters(!showFilters)}
+          className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md text-gray-700"
+        >
+          {showFilters ? 'Hide Filters' : 'Show Filters'}
+        </button>
+      </div>
+      
+      {/* Filter controls */}
+      {showFilters && (
+        <div className="p-4 bg-gray-50 rounded-md">
+          <h3 className="text-sm font-medium text-gray-700 mb-2">Filter Documents</h3>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Module</label>
+              <select 
+                name="module" 
+                value={filters.module} 
+                onChange={handleFilterChange}
+                className="w-full rounded-md border-gray-300 shadow-sm text-sm"
+              >
+                <option value="all">All Modules</option>
+                {metadata.uniqueModules?.sort().map(module => (
+                  <option key={module} value={module}>{module}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Uploader</label>
+              <select 
+                name="uploader" 
+                value={filters.uploader} 
+                onChange={handleFilterChange}
+                className="w-full rounded-md border-gray-300 shadow-sm text-sm"
+              >
+                <option value="all">All Uploaders</option>
+                {metadata.uniqueUploaders?.sort().map(uploader => (
+                  <option key={uploader} value={uploader}>{uploader}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Project</label>
+              <select 
+                name="projectId" 
+                value={filters.projectId} 
+                onChange={handleFilterChange}
+                className="w-full rounded-md border-gray-300 shadow-sm text-sm"
+              >
+                <option value="all">All Projects</option>
+                {metadata.uniqueProjects?.sort().map(project => (
+                  <option key={project} value={project}>{project}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          <form onSubmit={handleSearch} className="mt-3 flex space-x-2">
+            <input
+              type="text"
+              name="search"
+              value={filters.search}
+              onChange={handleFilterChange}
+              placeholder="Search documents..."
+              className="flex-1 rounded-md border-gray-300 shadow-sm text-sm"
+            />
+            <button 
+              type="submit"
+              className="px-3 py-1 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700"
+            >
+              Search
+            </button>
+            <button 
+              type="button"
+              onClick={resetFilters}
+              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300"
+            >
+              Reset
+            </button>
+          </form>
 
-      {Object.keys(groupedDocuments).length === 0 ? (
-        <p className="text-gray-500 text-sm">No documents uploaded yet.</p>
+          <div className="mt-3 text-xs text-gray-500">
+            Showing {documents.length} document groups from a total of {metadata.totalCount || 0} documents
+          </div>
+        </div>
+      )}
+
+      {documents.length === 0 ? (
+        <p className="text-gray-500 text-sm">No documents match your filter criteria.</p>
       ) : (
         <ul className="divide-y divide-gray-200">
-          {Object.entries(groupedDocuments).map(([key, versions]) => {
-            // The latest version is always first due to our sorting
-            const latestDoc = versions[0];
-            const [baseFilename, projectId, moduleLinked] = key.split('|');
-            const hasMultipleVersions = versions.length > 1;
-            const isExpanded = expandedDocs[key] || false;
-            
-            // Extract core name without version suffix for display
-            const displayName = latestDoc.baseFilename || baseFilename.replace(/_v\d+(\.\w+)$/, '$1');
-            
+          {documents.map(([baseName, versions]) => {
+            // Get metadata from the first version (newest)
+            const doc = versions[0];
+            const moduleInfo = doc.ctdModule ? `${doc.ctdModule} - ${doc.ctdDescription}` : doc.moduleLinked;
+          
             return (
-              <li key={key} className="py-3">
-                <div className="flex items-center justify-between">
+              <li key={baseName} className="py-3">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                   <div>
-                    <div className="flex items-center">
-                      <p className="text-sm font-medium">{displayName}</p>
-                      {latestDoc.version && (
-                        <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full">
-                          v{latestDoc.version}
-                        </span>
-                      )}
-                      {hasMultipleVersions && (
-                        <button 
-                          onClick={() => toggleExpand(key)}
-                          className="ml-2 text-xs text-gray-500 hover:text-indigo-600"
-                        >
-                          {isExpanded ? 'Hide History' : 'Show History'}
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      Module: {moduleLinked} • Project: {projectId} • 
-                      Uploaded by {latestDoc.uploader || 'Unknown'} • 
-                      {new Date(latestDoc.uploadTime).toLocaleString()}
+                    <p className="text-sm font-semibold">{baseName.replace(/_/g, ' ')}</p>
+                    <p className="text-xs text-gray-500">
+                      Module: {moduleInfo} • Project: {doc.projectId || 'Unassigned'}
+                      {doc.documentType && ` • Type: ${doc.documentType}`}
                     </p>
                   </div>
-                  <a
-                    href={`/uploads/${latestDoc.storedName}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-indigo-600 hover:underline"
-                  >
-                    Download
-                  </a>
                 </div>
                 
-                {/* Version history (only shown when expanded) */}
-                {isExpanded && hasMultipleVersions && (
-                  <div className="mt-2 pl-4 border-l-2 border-gray-200">
-                    <p className="text-xs font-medium text-gray-500 mb-1">Version History:</p>
-                    <ul className="space-y-1">
-                      {versions.slice(1).map((doc, idx) => (
-                        <li key={idx} className="flex items-center justify-between text-xs">
-                          <div>
-                            <span className="text-gray-600">
-                              v{doc.version || '?'} • {new Date(doc.uploadTime).toLocaleString()} • 
-                              {doc.uploader}
-                            </span>
-                          </div>
-                          <a
-                            href={`/uploads/${doc.storedName}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-indigo-600 hover:underline"
-                          >
-                            Download
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                <ul className="pl-4 mt-2 space-y-1 text-xs text-gray-700">
+                  {versions.sort((a, b) => (a.storedName > b.storedName ? -1 : 1)).map((doc, idx) => (
+                    <li key={idx} className="flex justify-between items-center py-1 hover:bg-gray-50 px-2 rounded">
+                      <span>
+                        Version: {doc.storedName.match(/_v(\d+)/)?.[1] || '1'} • 
+                        Uploaded: {new Date(doc.uploadTime).toLocaleString()} • 
+                        By: {doc.uploader || 'Unknown'}
+                      </span>
+                      <a
+                        href={`/api/vault/download/${doc.storedName}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 hover:underline"
+                      >
+                        Download
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </li>
             );
           })}
