@@ -1,6 +1,6 @@
 // /server/routes/projectsStatus.js
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // Sample project status data - in a real app, this would come from a database
@@ -71,4 +71,4 @@ router.get('/status/:id', (req, res) => {
   res.json(project);
 });
 
-module.exports = router;
+export default router;
