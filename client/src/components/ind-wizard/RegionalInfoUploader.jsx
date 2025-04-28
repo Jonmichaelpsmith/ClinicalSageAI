@@ -9,7 +9,7 @@ export default function RegionalInfoUploader({ setFormStatus }) {
     const uploadedFiles = Array.from(e.target.files);
     if (uploadedFiles.length > 0) {
       setFiles(uploadedFiles);
-      setFormStatus(prev => ({ ...prev, regionalInfo: true }));
+      setFormStatus(prev => ({ ...prev, regionalInfoUploaded: true }));
       alert(`✅ ${uploadedFiles.length} Regional Information files uploaded successfully.`);
     }
   };
