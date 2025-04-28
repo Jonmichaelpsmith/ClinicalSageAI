@@ -17,13 +17,12 @@ export default function AppendicesUploader({ setFormStatus }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-600">
-        Upload supplementary information including facilities and equipment documentation, 
-        adventitious agents safety evaluation, and novel excipients information.
+        Upload supporting appendices such as GMP Certificates, Manufacturing Process Validation Reports, Stability Study Summaries, or Certificates of Analysis (CoAs).
       </p>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Upload Documentation (Multiple Files Allowed)</label>
+          <label className="block text-sm font-medium mb-1">Upload Appendix Files (Multiple Allowed)</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx,.xls,.xlsx"
