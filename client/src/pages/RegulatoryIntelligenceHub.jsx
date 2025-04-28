@@ -12,8 +12,7 @@ export default function RegulatoryIntelligenceHub() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Enhanced Enterprise SaaS Global Smart Navigation System */}
-      <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Navigation is now handled at the App level */}
 
       {/* Main Regulatory Intelligence Panels */}
       <div className="p-8 space-y-6">
