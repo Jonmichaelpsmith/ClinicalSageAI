@@ -1,12 +1,14 @@
 // /server/server.js
 
-const express = require('express');
-const path = require('path');
-const app = express();
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import projectsStatusRoutes from './routes/projectsStatus.js';
 
-// Import API Routes
-const projectsStatusRoutes = require('./routes/projectsStatus');
-// (Later you will import other routes like nextActionsRoutes, vaultRoutes, etc.)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
 
 // Middleware for JSON
 app.use(express.json());
