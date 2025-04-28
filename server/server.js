@@ -46,10 +46,17 @@ app.use('/api/ind/wizard', indWizardAPIRoutes);
 app.use('/api/docs', documentsRoutes);
 app.use('/api/vault', vaultUploadRoutes);
 
-// Import and mount advisor routes directly
+// Import route modules
 import advisorRoutes from './routes/advisor.js';
+import { registerDiagnostics } from './diagnostics.js';
+
+// Register diagnostics routes first (for troubleshooting)
+registerDiagnostics(app);
+
+// Mount advisor routes with explicit console logging for debugging
+console.log('✅ Preparing to mount advisor routes at /api/advisor');
 app.use('/api/advisor', advisorRoutes);
-console.log('✅ Advisor routes imported and mounted directly at /api/advisor');
+console.log('✅ Advisor routes imported and mounted at /api/advisor');
 
 // Serve React App
 const clientBuildPath = path.join(__dirname, '../client/build');
@@ -60,14 +67,28 @@ app.get('/vault-test', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/vault-test.html'));
 });
 
-// React Router fallback - serve React index.html
+// Custom 404 Handler for API routes only
+app.use('/api/*', (req, res, next) => {
+  // This only runs if no other route handled the request
+  console.log(`⚠️ Unhandled API route: ${req.originalUrl}`);
+  res.status(404).json({ 
+    message: 'API endpoint not found', 
+    path: req.originalUrl,
+    availablePaths: [
+      '/api/advisor/check-readiness', 
+      '/api/health',
+      '/api/diagnostics/routes',
+      '/api/diagnostics/echo',
+      '/api/diagnostics/advisor-test'
+    ]
+  });
+});
+
+// React Router fallback - serve React index.html for client routes
 app.get('*', (req, res) => {
-  // Only fallback if it's NOT an API route
-  if (req.originalUrl.startsWith('/api/')) {
-    res.status(404).json({ message: 'API endpoint not found' });
-  } else {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
-  }
+  // Frontend route - serve React app
+  console.log(`🔄 Serving React app for: ${req.originalUrl}`);
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
 // Start Server
