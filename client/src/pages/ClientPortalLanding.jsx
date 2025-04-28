@@ -22,7 +22,14 @@ const ClientPortalLanding = () => {
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/projects/status');
+        // Try all possible endpoints to find our API
+        const response = await axios.get('/api/projects/status').catch(async err => {
+          console.log('Trying port 3000...');
+          return await axios.get('http://localhost:3000/api/projects/status').catch(async err => {
+            console.log('Trying port 5000...');
+            return await axios.get('http://localhost:5000/api/projects/status');
+          });
+        });
         if (response.data && response.data.success && response.data.projects) {
           console.log('Received projects data:', response.data);
           setProjects(response.data.projects);

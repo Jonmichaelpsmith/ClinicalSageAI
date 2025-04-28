@@ -10,8 +10,22 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Middleware for JSON
+// Middleware for JSON and CORS
 app.use(express.json());
+
+// Add CORS middleware to allow cross-origin requests
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
 
 // API Routes
 app.use('/api/projects', projectsStatusRoutes);
