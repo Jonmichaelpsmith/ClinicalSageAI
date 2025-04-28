@@ -479,13 +479,12 @@ const ClientDashboard = () => {
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800">Upcoming Deadlines</h2>
-            <button 
-              onClick={() => setLocation('/deadlines')}
-              className="text-sm text-primary hover:underline flex items-center"
-            >
-              View All
-              <ChevronRight size={16} className="ml-1" />
-            </button>
+            <Link to="/deadlines">
+              <button className="text-sm text-primary hover:underline flex items-center">
+                View All
+                <ChevronRight size={16} className="ml-1" />
+              </button>
+            </Link>
           </div>
           
           <div className="space-y-4">
