@@ -12,7 +12,7 @@ const indAssemblerRoutes = require('./routes/indAssembler.js');
 const indWizardAPIRoutes = require('./routes/indWizardAPI.js');
 const documentsRoutes = require('./routes/documents.js');
 const vaultUploadRoutes = require('./routes/vaultUpload.js');
-const advisorRoutes = require('./routes/advisor.js');
+const advisorRoutes = require('./routes/advisorRoutes.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
