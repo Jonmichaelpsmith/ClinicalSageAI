@@ -1,8 +1,9 @@
 // /server/routes/vault.js
 
-const express = require('express');
+import express from 'express';
+import * as vaultController from '../controllers/vaultController.js';
+
 const router = express.Router();
-const vaultController = require('../controllers/vaultController');
 
 // GET /api/vault/recent-docs - Get recent documents for the current user
 router.get('/recent-docs', vaultController.getRecentDocuments);
@@ -22,4 +23,4 @@ router.put('/documents/:id', vaultController.updateDocument);
 // DELETE /api/vault/documents/:id - Delete a document
 router.delete('/documents/:id', vaultController.deleteDocument);
 
-module.exports = router;
+export default router;

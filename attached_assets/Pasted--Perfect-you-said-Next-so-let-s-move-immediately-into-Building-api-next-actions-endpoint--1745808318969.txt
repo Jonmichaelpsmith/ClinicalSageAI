@@ -1,0 +1,108 @@
+✅ Perfect —
+you said Next, so let’s move immediately into:
+
+🛠 Building /api/next-actions endpoint
+
+(This will feed live personalized tasks to your NextActionsSidebar.)
+
+⸻
+
+📋 What /api/next-actions Will Do:
+
+Field	Purpose
+taskId	Unique task ID
+projectId	Which study/project it’s tied to
+actionDescription	What needs to be done
+urgency	High, Medium, Low
+dueDate	Deadline for the action
+link	Where the "Work Now" button should send user
+
+✅ All mapped back to real regulatory pathways (IND, CSR, CER, CRC, CMC).
+
+⸻
+
+🚀 Now building:
+
+👉 /server/controllers/actionController.js
+(Handles task data logic.)
+
+⸻
+
+✨ /server/controllers/actionController.js
+
+// /server/controllers/actionController.js
+
+// Dummy next actions for now
+const nextActions = [
+  {
+    taskId: 1,
+    projectId: 'ind-2025-034',
+    actionDescription: 'Draft CMC Section (Module 3.2)',
+    urgency: 'high',
+    dueDate: '2025-05-20',
+    link: '/ind-wizard/cmcdoc/3.2',
+  },
+  {
+    taskId: 2,
+    projectId: 'csr-2024-089',
+    actionDescription: 'Finalize Safety Section in CSR',
+    urgency: 'medium',
+    dueDate: '2025-05-25',
+    link: '/csr-analyzer/safety-section',
+  },
+  {
+    taskId: 3,
+    projectId: 'protocol-507',
+    actionDescription: 'Upload Final Investigator Brochure',
+    urgency: 'high',
+    dueDate: '2025-05-22',
+    link: '/vault/upload/ib',
+  },
+];
+
+// GET /api/next-actions
+const getNextActions = (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      data: nextActions,
+    });
+  } catch (error) {
+    console.error('Error fetching next actions:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch next actions',
+    });
+  }
+};
+
+module.exports = {
+  getNextActions,
+};
+
+
+
+⸻
+
+📋 What This Controller Does:
+
+✅ Defines dummy tasks.
+✅ Returns tasks safely.
+✅ Handles server error.
+✅ Ready to be connected to an Express route.
+
+⸻
+
+📣 Next:
+
+✅ Now I will immediately build:
+
+👉 /server/routes/actions.js
+(connects this controller to /api/next-actions)
+
+⸻
+
+🚀 Proceed to next — build /routes/actions.js?
+
+(Reply “Next” to continue cleanly — keeping our momentum perfect.) 🎯
+Waiting for you! 🚀
