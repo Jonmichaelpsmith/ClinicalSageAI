@@ -19,15 +19,24 @@ export function setupStaticRoutes(app) {
     }
   });
   
-  // Serve the client portal page
-  app.get('/client-portal', (req, res) => {
-    console.log('[StaticRoutes] Serving client portal page');
-    const clientPortalPath = path.join(process.cwd(), 'client-portal.html');
-    if (fs.existsSync(clientPortalPath)) {
-      res.sendFile(clientPortalPath);
-    } else {
-      res.status(404).send('Client portal page not found');
-    }
+  // Forward React app routes to our React app
+  const reactRoutes = [
+    '/client-portal*',
+    '/ind-wizard*',
+    '/cer-generator*',
+    '/cmc-wizard*',
+    '/csr-analyzer*',
+    '/vault*',
+    '/study-architect*',
+    '/analytics*'
+  ];
+  
+  reactRoutes.forEach(route => {
+    app.get(route, (req, res, next) => {
+      console.log(`[StaticRoutes] Forwarding ${req.path} to React app`);
+      // Forward to the next middleware/route handler
+      next();
+    });
   });
   
   // Serve solutions HTML files directly
