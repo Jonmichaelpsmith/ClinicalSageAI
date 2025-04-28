@@ -1,0 +1,90 @@
+// /client/src/components/VaultQuickAccess.jsx
+
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useIntegration } from '../integration/ModuleIntegrationLayer';
+
+const VaultQuickAccess = () => {
+  const { securityService } = useIntegration();
+  const [recentDocs, setRecentDocs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const org = securityService.getCurrentOrganization();
+
+        // Dummy documents for now until backend integration
+        const dummyDocs = [
+          {
+            id: 1,
+            name: 'IND-2025-034-Protocol.docx',
+            type: 'Protocol',
+            updatedAt: '2025-04-26',
+          },
+          {
+            id: 2,
+            name: 'CSR-2024-089-Draft.pdf',
+            type: 'CSR Draft',
+            updatedAt: '2025-04-25',
+          },
+          {
+            id: 3,
+            name: 'Investigator_Brochure_v2.pdf',
+            type: 'IB',
+            updatedAt: '2025-04-24',
+          },
+        ];
+
+        setRecentDocs(dummyDocs);
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to load Vault documents:', err);
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [securityService]);
+
+  if (loading) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold mb-2">Vault Quick Access</h2>
+        <p>Loading documents...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Vault Quick Access</h2>
+        <Link to="/vault">
+          <button className="text-xs text-primary hover:underline">Go to Vault →</button>
+        </Link>
+      </div>
+
+      {recentDocs.length === 0 ? (
+        <p className="text-gray-500 text-sm">No documents found.</p>
+      ) : (
+        <ul className="space-y-2 mb-4">
+          {recentDocs.slice(0, 3).map((doc) => (
+            <li key={doc.id} className="text-sm">
+              <span className="font-medium">{doc.name}</span>
+              <span className="text-gray-400 text-xs ml-2">({doc.type})</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Link to="/vault/upload">
+        <button className="bg-primary text-white text-xs px-3 py-1 rounded-md hover:bg-primary-dark">
+          Upload New Document
+        </button>
+      </Link>
+    </div>
+  );
+};
+
+export default VaultQuickAccess;

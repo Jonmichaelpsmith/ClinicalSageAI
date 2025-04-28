@@ -1,0 +1,121 @@
+// /client/src/components/ProjectManagerGrid.jsx
+
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useIntegration } from '../integration/ModuleIntegrationLayer';
+
+const ProjectManagerGrid = () => {
+  const { securityService } = useIntegration();
+  const [organizationType, setOrganizationType] = useState('biotech');
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load projects and detect org type
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const org = securityService.getCurrentOrganization();
+        setOrganizationType(org.type || 'biotech');
+
+        // Dummy projects for now
+        const dummyProjects = [
+          {
+            id: 'ind-2025-034',
+            name: 'IND-2025-034',
+            client: 'NeuraTech Biomedical',
+            status: 'in_progress',
+            percentComplete: 65,
+            nextDue: 'May 20, 2025',
+            missingItems: ['CMC Module 3.2'],
+          },
+          {
+            id: 'csr-2024-089',
+            name: 'CSR-2024-089',
+            client: 'SynaptiCure',
+            status: 'complete',
+            percentComplete: 100,
+            nextDue: 'Completed',
+            missingItems: [],
+          },
+          {
+            id: 'protocol-507',
+            name: 'Protocol-507',
+            client: 'GenomaCure',
+            status: 'at_risk',
+            percentComplete: 42,
+            nextDue: 'June 10, 2025',
+            missingItems: ['Safety Section', 'IRB Letter'],
+          },
+        ];
+        setProjects(dummyProjects);
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to load projects:', err);
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [securityService]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p>Loading Projects...</p>
+      </div>
+    );
+  }
+
+  const isCRO = organizationType === 'cro';
+  const columnCount = isCRO ? 5 : 3;
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">My Regulatory Projects</h2>
+      <div className={`grid grid-cols-1 md:grid-cols-${columnCount} gap-6`}>
+        {projects.map((project) => (
+          <Link
+            key={project.id}
+            to={`/project/${project.id}`}
+            className="bg-white border rounded-lg p-6 hover:shadow-lg transition"
+          >
+            <h3 className="text-lg font-bold mb-1">{project.name}</h3>
+            <p className="text-sm text-gray-600">{project.client}</p>
+
+            <div className="mt-3">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full ${
+                    project.status === 'complete'
+                      ? 'bg-green-500'
+                      : project.status === 'at_risk'
+                      ? 'bg-red-500'
+                      : 'bg-yellow-500'
+                  }`}
+                  style={{ width: `${project.percentComplete}%` }}
+                ></div>
+              </div>
+              <div className="text-right text-xs text-gray-500 mt-1">
+                {project.percentComplete}% Complete
+              </div>
+            </div>
+
+            {project.missingItems.length > 0 && (
+              <div className="mt-3 text-xs text-red-500">
+                Missing: {project.missingItems.join(', ')}
+              </div>
+            )}
+
+            <div className="mt-4">
+              <button className="bg-primary text-white text-xs px-3 py-1 rounded-md">
+                Go to Work →
+              </button>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default ProjectManagerGrid;

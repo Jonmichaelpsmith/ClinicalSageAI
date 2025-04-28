@@ -1,0 +1,85 @@
+// /client/src/components/AnalyticsQuickView.jsx
+
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useIntegration } from '../integration/ModuleIntegrationLayer';
+
+const AnalyticsQuickView = () => {
+  const { securityService } = useIntegration();
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const org = securityService.getCurrentOrganization();
+
+        // Dummy metrics for now until backend integration
+        const dummyMetrics = {
+          submissionsLast90Days: 8,
+          avgReviewTimeDays: 32,
+          delayRiskPercent: 25,
+        };
+
+        setMetrics(dummyMetrics);
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to load analytics metrics:', err);
+        setLoading(false);
+      }
+    };
+
+    init();
+  }, [securityService]);
+
+  if (loading) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold mb-2">Analytics Overview</h2>
+        <p>Loading analytics...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Analytics Overview</h2>
+        <Link to="/analytics">
+          <button className="text-xs text-primary hover:underline">Full Analytics →</button>
+        </Link>
+      </div>
+
+      <div className="text-sm text-gray-700 space-y-3 mb-4">
+        <div>
+          <span className="font-medium">Submissions Last 90 Days:</span> {metrics.submissionsLast90Days}
+        </div>
+        <div>
+          <span className="font-medium">Avg. Review Time:</span> {metrics.avgReviewTimeDays} days
+        </div>
+        <div>
+          <span className="font-medium">Delay Risk:</span>{' '}
+          <span
+            className={`${
+              metrics.delayRiskPercent >= 50
+                ? 'text-red-600'
+                : metrics.delayRiskPercent >= 25
+                ? 'text-yellow-600'
+                : 'text-green-600'
+            }`}
+          >
+            {metrics.delayRiskPercent}%
+          </span>
+        </div>
+      </div>
+
+      <Link to="/analytics">
+        <button className="bg-primary text-white text-xs px-3 py-1 rounded-md hover:bg-primary-dark">
+          View Detailed Metrics
+        </button>
+      </Link>
+    </div>
+  );
+};
+
+export default AnalyticsQuickView;
