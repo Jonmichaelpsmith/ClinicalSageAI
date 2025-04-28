@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { 
   Users, 
   Building, 
@@ -91,7 +91,7 @@ const ClientPortal = () => {
       
       if (result.success) {
         // Redirect to CRO dashboard (admin)
-        setLocation('/admin');
+        window.location.href = '/admin'; // Using window.location for immediate navigation
       } else {
         setError(result.error || 'Failed to return to CRO portal');
       }

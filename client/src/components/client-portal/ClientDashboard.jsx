@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { 
   FileText, 
   FileCheck, 
@@ -330,28 +330,32 @@ const ClientDashboard = () => {
   const navigateToDocument = (document) => {
     // In a real app, would navigate to document viewer
     console.log('Navigate to document:', document);
-    setLocation(`/${document.module}/documents/${document.id}`);
+    const path = `/${document.module}/documents/${document.id}`;
+    window.location.href = path; // Using window.location for immediate navigation
   };
   
   // Navigate to deadline
   const navigateToDeadline = (deadline) => {
     // In a real app, would navigate to deadline details
     console.log('Navigate to deadline:', deadline);
-    setLocation(`/deadlines/${deadline.id}`);
+    const path = `/deadlines/${deadline.id}`;
+    window.location.href = path; // Using window.location for immediate navigation
   };
   
   // Navigate based on metric type
   const navigateToMetric = (metricType) => {
     // In a real app, would navigate to appropriate section
     console.log('Navigate to metric:', metricType);
-    setLocation(`/${metricType}`);
+    const path = `/${metricType}`;
+    window.location.href = path; // Using window.location for immediate navigation
   };
   
   // Handle quick action
   const handleQuickAction = (action) => {
     // In a real app, would navigate to appropriate action
     console.log('Quick action:', action);
-    setLocation(`/${action}`);
+    const path = `/${action}`;
+    window.location.href = path; // Using window.location for immediate navigation
   };
   
   // Render loading state
@@ -508,13 +512,12 @@ const ClientDashboard = () => {
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800">Recent Documents</h2>
-            <button 
-              onClick={() => setLocation('/documents')}
-              className="text-sm text-primary hover:underline flex items-center"
-            >
-              View All
-              <ChevronRight size={16} className="ml-1" />
-            </button>
+            <Link to="/documents">
+              <button className="text-sm text-primary hover:underline flex items-center">
+                View All
+                <ChevronRight size={16} className="ml-1" />
+              </button>
+            </Link>
           </div>
           
           <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
