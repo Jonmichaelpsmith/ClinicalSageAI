@@ -1,0 +1,83 @@
+router.get('/check-readiness', (req, res) => {
+  try {
+    const selectedPlaybook = req.query.playbook || 'Fast IND Playbook';
+
+    // Base CTD Checklist
+    let checklist = { ...CTDChecklist };
+
+    // Modify Checklist Dynamically Based on Playbook
+    if (selectedPlaybook === 'Fast IND Playbook') {
+      // Relax certain sections for faster submission
+      checklist["Module 4"] = checklist["Module 4"].filter(section => section.includes('Toxicology') || section.includes('Pharmacology'));
+      checklist["Module 3"] = checklist["Module 3"].filter(section => section !== 'GMP Certificates');
+    } else if (selectedPlaybook === 'Full NDA Playbook') {
+      // Full checklist — no changes needed
+    } else if (selectedPlaybook === 'EMA IMPD Playbook') {
+      // Adjust for EMA focus
+      checklist["Module 1"] = checklist["Module 1"].filter(section => section !== 'US Agent Appointment');
+      checklist["Module 2"] = checklist["Module 2"].filter(section => section.includes('Intro Summary') || section.includes('Clinical Overview'));
+    }
+
+    if (!fs.existsSync(metadataPath)) {
+      return res.status(200).json({
+        success: true,
+        playbookUsed: selectedPlaybook,
+        readinessScore: 0,
+        missingSections: Object.values(checklist).flat(),
+        riskLevel: 'High',
+        estimatedDelayDays: 90,
+        recommendations: ["Start uploading critical CTD documents immediately."]
+      });
+    }
+
+    const metaRaw = fs.readFileSync(metadataPath, { encoding: 'utf8' });
+    const documents = metaRaw.trim().length > 0 ? JSON.parse(metaRaw) : [];
+
+    const uploadedSections = new Set(
+      documents.map(doc => (doc.moduleLinked || '').toLowerCase().trim())
+    );
+
+    let totalWeight = 0;
+    let completedWeight = 0;
+    let missingSections = [];
+
+    Object.entries(checklist).forEach(([module, sections]) => {
+      sections.forEach(section => {
+        totalWeight += sectionWeights[section] || 1;
+        const match = [...uploadedSections].find(name => name.includes(section.toLowerCase()));
+        if (match) {
+          completedWeight += sectionWeights[section] || 1;
+        } else {
+          missingSections.push(section);
+        }
+      });
+    });
+
+    const readinessScore = Math.round((completedWeight / totalWeight) * 100);
+
+    let riskLevel = "Low";
+    if (readinessScore < 50) riskLevel = "High";
+    else if (readinessScore < 80) riskLevel = "Medium";
+
+    const estimatedDelayDays = missingSections.length * 7;
+    const today = new Date();
+    const estimatedSubmissionDate = new Date(today.setDate(today.getDate() + estimatedDelayDays)).toISOString().slice(0, 10);
+
+    const recommendations = missingSections.map(section => `Upload ${section} immediately.`);
+
+    res.status(200).json({
+      success: true,
+      playbookUsed: selectedPlaybook,
+      readinessScore,
+      missingSections,
+      riskLevel,
+      estimatedDelayDays,
+      estimatedSubmissionDate,
+      recommendations
+    });
+
+  } catch (error) {
+    console.error('❌ Advisor readiness check failed:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});

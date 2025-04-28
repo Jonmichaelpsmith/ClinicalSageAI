@@ -46,10 +46,10 @@ app.use('/api/ind/wizard', indWizardAPIRoutes);
 app.use('/api/docs', documentsRoutes);
 app.use('/api/vault', vaultUploadRoutes);
 
-// Set up API routes using the routes/index.js module
-import setupApiRoutes from './routes/index.js';
-setupApiRoutes(app);
-console.log('✅ API routes setup initiated via routes/index.js');
+// Import and mount advisor routes directly
+import advisorRoutes from './routes/advisor.js';
+app.use('/api/advisor', advisorRoutes);
+console.log('✅ Advisor routes imported and mounted directly at /api/advisor');
 
 // Serve React App
 const clientBuildPath = path.join(__dirname, '../client/build');
