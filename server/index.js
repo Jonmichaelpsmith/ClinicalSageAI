@@ -34,6 +34,7 @@ import prewarmRoutes from './routes/prewarm.js';
 // Import our new API routes
 import vaultRoutes from './routes/vault.js';
 import actionsRoutes from './routes/actions.js';
+import testApiRoutes from './routes/test-api.js';
 
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
@@ -79,6 +80,66 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
+  });
+});
+
+// Direct API endpoints for testing
+app.get('/api/direct/next-actions', (req, res) => {
+  const actions = [
+    {
+      id: 1,
+      title: 'Review Protocol Draft',
+      description: 'Review draft protocol for BTX-331 Phase 1 study',
+      dueDate: '2025-05-05',
+      priority: 'high',
+      projectId: 'ind-2025-034',
+      assignedTo: 'james.wilson'
+    },
+    {
+      id: 2,
+      title: 'Complete Safety Narrative',
+      description: 'Finalize safety narrative for CSR section 12.3',
+      dueDate: '2025-05-08',
+      priority: 'medium',
+      projectId: 'csr-2024-089',
+      assignedTo: 'emily.chen'
+    }
+  ];
+  
+  res.status(200).json({
+    success: true,
+    data: actions
+  });
+});
+
+app.get('/api/direct/vault/recent-docs', (req, res) => {
+  const docs = [
+    {
+      id: 1,
+      name: 'IND-2025-034-Protocol.docx',
+      type: 'Protocol',
+      uploadedAt: '2025-04-26',
+      uploadedBy: 'Sarah Johnson',
+    },
+    {
+      id: 2,
+      name: 'CSR-2024-089-Draft.pdf',
+      type: 'CSR Draft',
+      uploadedAt: '2025-04-25',
+      uploadedBy: 'Mark Wilson',
+    },
+    {
+      id: 3,
+      name: 'Investigator_Brochure_v2.pdf',
+      type: 'IB',
+      uploadedAt: '2025-04-24',
+      uploadedBy: 'Emily Chen',
+    }
+  ];
+  
+  res.status(200).json({
+    success: true,
+    data: docs
   });
 });
 
@@ -146,9 +207,14 @@ app.use('/api/health', healthRoutes);
 // MashableBI analytics routes
 app.use('/api/mashable-bi', mashableBiRoutes);
 
-// Our new API routes
+// Our new API routes 
 app.use('/api/vault', vaultRoutes);
 app.use('/api/next-actions', actionsRoutes);
+app.use('/api/test', testApiRoutes); // Test API routes for development
+
+// CommonJS test routes
+const testRoutes = require('./routes/test');
+app.use('/api', testRoutes);
 
 // Ledger API
 app.get('/api/ledger/:submissionId', verifyJwt, async (req, res) => {
