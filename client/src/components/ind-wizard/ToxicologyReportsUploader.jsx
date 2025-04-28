@@ -18,8 +18,7 @@ export default function ToxicologyReportsUploader({ setFormStatus }) {
     <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
       <h2 className="text-xl font-semibold">Toxicology Study Reports (Module 4.4)</h2>
       <p className="text-sm text-gray-600">
-        Upload single-dose toxicity, repeated-dose toxicity, carcinogenicity, reproductive toxicity, and local tolerance
-        study reports that demonstrate the safety profile of your investigational drug prior to human administration.
+        Upload single-dose, repeated-dose, reproductive, developmental, and carcinogenicity toxicity study reports conducted on your investigational product.
       </p>
 
       <div>
