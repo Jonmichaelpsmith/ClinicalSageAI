@@ -17,13 +17,12 @@ export default function DrugProductUploader({ setFormStatus }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-600">
-        Upload documentation for the final drug product including the description and composition, 
-        manufacturing process, control of excipients, specifications, and stability information.
+        Upload documents related to the drug product's final dosage form, including formulation, manufacturing process, packaging, control of critical steps, and stability studies.
       </p>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Upload Documentation (Multiple Files Allowed)</label>
+          <label className="block text-sm font-medium mb-1">Upload Drug Product Files (Multiple Allowed)</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx,.xls,.xlsx"

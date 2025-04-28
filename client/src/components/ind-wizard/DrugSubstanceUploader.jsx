@@ -17,13 +17,12 @@ export default function DrugSubstanceUploader({ setFormStatus }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-600">
-        Upload documentation for the active pharmaceutical ingredient (API) including general information, 
-        manufacturing details, characterization, and control of drug substance.
+        Upload specifications, batch data, manufacturing process descriptions, stability reports, and other documents related to the active pharmaceutical ingredient (API).
       </p>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Upload Documentation (Multiple Files Allowed)</label>
+          <label className="block text-sm font-medium mb-1">Upload Drug Substance Files (Multiple Allowed)</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx,.xls,.xlsx"
