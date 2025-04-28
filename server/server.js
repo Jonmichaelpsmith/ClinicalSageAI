@@ -76,6 +76,30 @@ app.get('/api/vault/list', (req, res) => {
   }
 });
 
+// EMERGENCY HOTFIX - Direct endpoint for vault reset
+app.get('/api/vault/reset', (req, res) => {
+  console.log('🚨 EMERGENCY HOTFIX: Direct vault reset endpoint activated');
+  try {
+    const metadataPath = path.join(__dirname, '../uploads/metadata.json');
+    fs.writeFileSync(metadataPath, '[]');
+    
+    console.log('✅ Successfully reset vault metadata to empty array');
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Vault metadata has been reset to empty array',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error in emergency vault reset endpoint:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error resetting vault metadata',
+      error: error.message
+    });
+  }
+});
+
 // API Routes
 app.use('/api/projects', projectsStatusRoutes);
 app.use('/api/ind', indAssemblerRoutes);
