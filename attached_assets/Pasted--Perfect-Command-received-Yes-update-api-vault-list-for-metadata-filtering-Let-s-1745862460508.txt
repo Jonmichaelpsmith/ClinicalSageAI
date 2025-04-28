@@ -1,0 +1,114 @@
+✅ Perfect —  
+✅ Command received: **"Yes, update /api/vault/list for metadata filtering"**
+
+Let's immediately upgrade it carefully.
+
+---
+
+# 🛠 **Updated `/api/vault/list` (Support Metadata for Filtering)**
+
+✅ Open your `/server/routes/vaultUpload.js`.
+
+✅ Replace your current GET `/list` route with this **enhanced version**:
+
+```javascript
+// /server/routes/vaultUpload.js
+
+router.get('/list', (req, res) => {
+  try {
+    const uploadDir = path.join(__dirname, '../../uploads');
+    const metadataFile = path.join(uploadDir, 'metadata.json');
+
+    let documents = [];
+
+    // If metadata file exists, read it
+    if (fs.existsSync(metadataFile)) {
+      const metaRaw = fs.readFileSync(metadataFile);
+      documents = JSON.parse(metaRaw);
+    }
+
+    res.status(200).json({ success: true, documents });
+  } catch (error) {
+    console.error('❌ Error listing Vault documents with metadata:', error);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});
+```
+
+---
+
+# 📋 How This Works:
+
+| Thing | Behavior |
+|:------|:---------|
+| Reads a `metadata.json` file inside `/uploads/` directory | ✅ |
+| Returns all Vault documents **with full metadata** (module, uploader, project ID, etc.) | ✅ |
+| Supports clean, fast filtering in the frontend | ✅ |
+| Will allow dynamic searching by Module, Uploader, Project | ✅ |
+
+✅ Full metadata listing — ready for Vault intelligent filtering.
+
+---
+
+# 🛠 But Wait — We Need to Save Metadata Too
+
+✅ We must also slightly enhance the `/upload` route to **save metadata** into `metadata.json`.
+
+✅ Here’s how to **enhance your `/upload` POST handler**:
+
+**In `/server/routes/vaultUpload.js`, update inside your POST /upload:**
+
+```javascript
+// Inside router.post('/upload', upload.single('document'), async (req, res) => {...}
+
+const fileInfo = {
+  originalName: req.file.originalname,
+  storedName: req.file.filename,
+  uploadTime: new Date(),
+  moduleLinked: req.body.module || 'Unknown',
+  projectId: req.body.projectId || 'Unassigned',
+  uploader: req.body.uploader || 'Unknown',
+};
+
+// Save metadata
+let documents = [];
+const metadataPath = path.join(uploadDir, 'metadata.json');
+if (fs.existsSync(metadataPath)) {
+  const metaRaw = fs.readFileSync(metadataPath);
+  documents = JSON.parse(metaRaw);
+}
+documents.push(fileInfo);
+fs.writeFileSync(metadataPath, JSON.stringify(documents, null, 2));
+
+// Respond back
+res.status(200).json({
+  success: true,
+  file: fileInfo,
+});
+```
+
+✅ This ensures **every upload** appends metadata cleanly into a lightweight JSON file.
+
+✅ Future-proof for real database later if you scale up.
+
+---
+
+# 📣 After This:
+
+✅ I will immediately enhance VaultDocumentViewer.jsx  
+✅ To show Filter Dropdowns:  
+- **Filter by Module**  
+- **Filter by Uploader**
+
+✅ Live, dynamic document searching inside TrialSage Vault!
+
+---
+
+# 🚀 Please reply:
+
+👉 **"Vault API metadata ready, build Vault Filters next"**
+
+(And I’ll immediately proceed.)
+
+🎯 You are now at the real intelligent Vault management phase — the final piece before AI-assisted TrialSage submission acceleration! 🚀  
+Waiting for your green light! 🚀

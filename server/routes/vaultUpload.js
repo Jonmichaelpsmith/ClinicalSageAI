@@ -12,37 +12,6 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Create a metadata file to store document information
-const metadataPath = path.join(uploadDir, 'vault_metadata.json');
-if (!fs.existsSync(metadataPath)) {
-  fs.writeFileSync(metadataPath, JSON.stringify([]));
-}
-
-// Helper function to read metadata
-function readMetadata() {
-  try {
-    if (!fs.existsSync(metadataPath)) {
-      return [];
-    }
-    const data = fs.readFileSync(metadataPath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading metadata:', error);
-    return [];
-  }
-}
-
-// Helper function to write metadata
-function writeMetadata(metadata) {
-  try {
-    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error writing metadata:', error);
-    return false;
-  }
-}
-
 // Configure storage with versioning
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -71,51 +40,38 @@ router.post('/upload', upload.single('document'), (req, res) => {
       return res.status(400).json({ success: false, message: 'No file uploaded.' });
     }
 
-    // Get filename without version for easier grouping
-    const originalName = req.file.originalname;
-    const safeName = originalName.replace(/\s+/g, '_');
-    const baseName = safeName.replace(/\.[^/.]+$/, ''); // Name without extension
-    const ext = path.extname(originalName);
-    
     // Extract version from the stored filename (e.g., file_v2.pdf -> 2)
     const versionMatch = req.file.filename.match(/_v(\d+)\.[^/.]+$/);
     const version = versionMatch ? parseInt(versionMatch[1]) : 1;
     
     // Create metadata for the document
     const fileInfo = {
-      originalName: originalName,
-      baseFilename: baseName + ext, // Store the original name without version suffix
+      originalName: req.file.originalname,
       storedName: req.file.filename,
       version: version,
-      isLatestVersion: true, // Mark this as latest version
-      uploadTime: new Date().toISOString(),
+      uploadTime: new Date(),
       moduleLinked: req.body.module || 'Unknown',
       projectId: req.body.projectId || 'Unassigned',
       uploader: req.body.uploader || 'Unknown',
+      section: req.body.section || null,
+      documentType: req.body.documentType || null,
       fileSize: req.file.size,
       mimeType: req.file.mimetype,
     };
-    
-    // Read existing metadata
-    const metadata = readMetadata();
-    
-    // Mark all previous versions of this file as not latest
-    metadata.forEach(doc => {
-      if (doc.baseFilename === fileInfo.baseFilename && 
-          doc.projectId === fileInfo.projectId && 
-          doc.moduleLinked === fileInfo.moduleLinked) {
-        doc.isLatestVersion = false;
-      }
-    });
-    
-    // Add new document metadata
-    metadata.push(fileInfo);
-    
-    // Save updated metadata
-    writeMetadata(metadata);
 
-    console.log(`✅ Vault Upload with Versioning: ${baseName}${ext} (v${version})`);
+    // Save metadata
+    let documents = [];
+    const metadataPath = path.join(uploadDir, 'metadata.json');
+    if (fs.existsSync(metadataPath)) {
+      const metaRaw = fs.readFileSync(metadataPath);
+      documents = JSON.parse(metaRaw);
+    }
+    documents.push(fileInfo);
+    fs.writeFileSync(metadataPath, JSON.stringify(documents, null, 2));
 
+    console.log(`✅ Vault Upload with Versioning: ${req.file.originalname} (v${version})`);
+
+    // Respond back
     res.status(200).json({
       success: true,
       file: fileInfo,
@@ -129,13 +85,84 @@ router.post('/upload', upload.single('document'), (req, res) => {
 // GET /api/vault/list
 router.get('/list', (req, res) => {
   try {
-    const documents = readMetadata();
+    const { module, uploader, projectId, search, documentType } = req.query;
+    const metadataFile = path.join(uploadDir, 'metadata.json');
+
+    let documents = [];
+
+    // If metadata file exists, read it
+    if (fs.existsSync(metadataFile)) {
+      const metaRaw = fs.readFileSync(metadataFile);
+      documents = JSON.parse(metaRaw);
+    }
+    
+    // Extract unique values for filtering dropdowns
+    const uniqueModules = [...new Set(documents.map(doc => doc.moduleLinked || 'Unknown'))];
+    const uniqueUploaders = [...new Set(documents.map(doc => doc.uploader || 'Unknown'))];
+    const uniqueProjects = [...new Set(documents.map(doc => doc.projectId || 'Unassigned'))];
+    const uniqueTypes = [...new Set(documents.map(doc => doc.documentType).filter(Boolean))];
+    
+    // Apply filters if provided
+    let filteredDocs = [...documents];
+    
+    if (module && module !== 'all') {
+      filteredDocs = filteredDocs.filter(doc => doc.moduleLinked === module);
+    }
+    
+    if (uploader && uploader !== 'all') {
+      filteredDocs = filteredDocs.filter(doc => doc.uploader === uploader);
+    }
+    
+    if (projectId && projectId !== 'all') {
+      filteredDocs = filteredDocs.filter(doc => doc.projectId === projectId);
+    }
+    
+    if (documentType && documentType !== 'all') {
+      filteredDocs = filteredDocs.filter(doc => doc.documentType === documentType);
+    }
+    
+    // Apply text search if provided
+    if (search && search.trim() !== '') {
+      const searchTerms = search.toLowerCase().trim().split(/\s+/);
+      filteredDocs = filteredDocs.filter(doc => {
+        const searchableText = [
+          doc.originalName, 
+          doc.moduleLinked, 
+          doc.projectId, 
+          doc.uploader,
+          doc.documentType
+        ].filter(Boolean).join(' ').toLowerCase();
+        
+        return searchTerms.every(term => searchableText.includes(term));
+      });
+    }
+    
+    // Get CTD module mapping for better organization
+    const ctdModuleMapping = {
+      'Module 1': 'Administrative Information',
+      'Module 2': 'CTD Summaries',
+      'Module 3': 'Quality',
+      'Module 4': 'Nonclinical Study Reports',
+      'Module 5': 'Clinical Study Reports'
+    };
+    
+    console.log(`✅ Listing ${filteredDocs.length} documents from Vault (${documents.length} total)`);
+    
     return res.status(200).json({ 
       success: true, 
-      documents: documents
+      documents: filteredDocs,
+      metadata: {
+        totalCount: documents.length,
+        filteredCount: filteredDocs.length,
+        uniqueModules,
+        uniqueUploaders,
+        uniqueProjects,
+        uniqueTypes,
+        ctdModuleMapping
+      }
     });
   } catch (error) {
-    console.error('Error listing documents:', error);
+    console.error('❌ Error listing documents:', error);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
