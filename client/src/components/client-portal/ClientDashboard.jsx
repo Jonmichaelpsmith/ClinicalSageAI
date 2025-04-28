@@ -326,8 +326,8 @@ const ClientDashboard = () => {
     loadDashboardData();
   }, []);
   
-  // Get wouter location and setLocation
-  const [location, setLocation] = useLocation();
+  // Location is already defined at the component level
+  // const [location, setLocation] = useLocation();
   
   // Navigate to document
   const navigateToDocument = (document) => {
