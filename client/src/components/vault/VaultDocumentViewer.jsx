@@ -232,12 +232,35 @@ export default function VaultDocumentViewer() {
         <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm mb-4">
           <p className="font-medium">❌ Error</p>
           <p>{error}</p>
-          <button 
-            onClick={fetchDocuments} 
-            className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm"
-          >
-            Try Again
-          </button>
+          <div className="flex space-x-2 mt-2">
+            <button 
+              onClick={fetchDocuments} 
+              className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm"
+            >
+              Try Again
+            </button>
+            <button 
+              onClick={() => {
+                fetch('/api/vault/reset')
+                  .then(response => response.json())
+                  .then(data => {
+                    if (data.success) {
+                      alert('Vault reset successful! Refreshing documents...');
+                      fetchDocuments();
+                    } else {
+                      alert('Vault reset failed: ' + (data.message || 'Unknown error'));
+                    }
+                  })
+                  .catch(err => {
+                    console.error('Error resetting vault:', err);
+                    alert('Error resetting vault: ' + err.message);
+                  });
+              }} 
+              className="px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md text-sm font-medium"
+            >
+              Emergency Reset
+            </button>
+          </div>
         </div>
       )}
   

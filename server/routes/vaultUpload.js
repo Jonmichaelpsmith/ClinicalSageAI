@@ -219,6 +219,30 @@ router.get('/list', (req, res) => {
   }
 });
 
+// GET /api/vault/reset - EMERGENCY HOTFIX ENDPOINT
+router.get('/reset', (req, res) => {
+  try {
+    console.log('🚨 EMERGENCY VAULT RESET: Resetting vault metadata to clean empty array');
+    
+    // Reset metadata.json to an empty array
+    const metadataPath = path.join(uploadDir, 'metadata.json');
+    fs.writeFileSync(metadataPath, '[]');
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Vault metadata has been reset to empty array',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Error resetting vault metadata:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error during vault reset',
+      error: error.message
+    });
+  }
+});
+
 // GET /api/vault/download/:filename
 router.get('/download/:filename', (req, res) => {
   try {
