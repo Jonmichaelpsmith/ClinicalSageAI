@@ -43,7 +43,74 @@ const sectionWeights = {
 
 const metadataPath = path.join(__dirname, '../../uploads/metadata.json');
 
+// GET /api/advisor/check-readiness
 router.get('/check-readiness', (req, res) => {
+  try {
+    if (!fs.existsSync(metadataPath)) {
+      return res.status(200).json({
+        success: true,
+        readinessScore: 0,
+        missingSections: Object.values(CTDChecklist).flat(),
+        riskLevel: 'High',
+        estimatedDelayDays: 90,
+        recommendations: ["Start uploading critical CTD documents immediately."]
+      });
+    }
+
+    const metaRaw = fs.readFileSync(metadataPath, { encoding: 'utf8' });
+    const documents = metaRaw.trim().length > 0 ? JSON.parse(metaRaw) : [];
+
+    const uploadedSections = new Set(
+      documents.map(doc => (doc.moduleLinked || '').toLowerCase().trim())
+    );
+
+    // Calculate Readiness
+    let totalWeight = 0;
+    let completedWeight = 0;
+    let missingSections = [];
+
+    Object.entries(CTDChecklist).forEach(([module, sections]) => {
+      sections.forEach(section => {
+        totalWeight += sectionWeights[section] || 1;
+        const match = [...uploadedSections].find(name => name.includes(section.toLowerCase()));
+        if (match) {
+          completedWeight += sectionWeights[section] || 1;
+        } else {
+          missingSections.push(section);
+        }
+      });
+    });
+
+    const readinessScore = Math.round((completedWeight / totalWeight) * 100);
+
+    // Calculate Risk
+    let riskLevel = "Low";
+    if (readinessScore < 50) riskLevel = "High";
+    else if (readinessScore < 80) riskLevel = "Medium";
+
+    // Delay Prediction
+    let estimatedDelayDays = (missingSections.length * 7); // Assume 1 week delay per missing section
+
+    // Recommendations
+    const recommendations = missingSections.map(section => `Upload ${section} immediately.`);
+
+    res.status(200).json({
+      success: true,
+      readinessScore,
+      missingSections,
+      riskLevel,
+      estimatedDelayDays,
+      recommendations
+    });
+
+  } catch (error) {
+    console.error('❌ Advisor readiness check failed:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});
+
+// POST /api/advisor/check-readiness - Same logic, POST method
+router.post('/check-readiness', (req, res) => {
   try {
     if (!fs.existsSync(metadataPath)) {
       return res.status(200).json({
