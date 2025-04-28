@@ -7,7 +7,7 @@ import InvestigatorBrochureUpdatesUploader from '../components/ind-wizard/Invest
 import ClinicalSafetyReportsUploader from '../components/ind-wizard/ClinicalSafetyReportsUploader';
 import UploadStatusTrackerModule5 from '../components/ind-wizard/UploadStatusTrackerModule5';
 import Module5SubmissionButton from '../components/ind-wizard/Module5SubmissionButton';
-import InfoTooltipModule5 from '../components/ind-wizard/InfoTooltipModule5';
+import InfoTooltip from '../components/ind-wizard/InfoTooltip';
 
 export default function Module5ClinicalPage() {
   const [formStatus, setFormStatus] = useState({
@@ -19,10 +19,14 @@ export default function Module5ClinicalPage() {
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
-      <div className="flex items-center">
-        <h1 className="text-2xl font-bold">CTD Module 5: Clinical Study Reports</h1>
-        <InfoTooltipModule5 />
-      </div>
+      <h1 className="text-2xl font-bold flex items-center">
+        CTD Module 5: Clinical Study Reports
+        <InfoTooltip 
+          title="Module 5: Clinical Study Reports"
+          content="Module 5 includes Clinical Study Protocols, Clinical Study Reports (CSRs), updated Investigator Brochures, and Clinical Safety Reports such as DSURs. Required by FDA, EMA, and PMDA for full clinical evaluation before approval."
+          regulatoryRef="ICH E3, FDA, EMA Guidelines"
+        />
+      </h1>
       <p className="text-gray-600">
         Upload clinical study protocols, full clinical study reports (CSRs), safety narratives, and investigator brochure updates as required by FDA, EMA, and PMDA for regulatory submissions.
       </p>
