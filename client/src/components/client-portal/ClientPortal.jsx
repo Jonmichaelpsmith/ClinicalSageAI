@@ -440,12 +440,11 @@ const ClientPortal = () => {
               )}
             </div>
             <div className="px-4 py-3 border-t bg-gray-50 text-center">
-              <button 
-                onClick={() => setLocation('/projects')}
-                className="text-sm text-primary hover:underline"
-              >
-                View All Projects
-              </button>
+              <Link to="/projects">
+                <button className="text-sm text-primary hover:underline">
+                  View All Projects
+                </button>
+              </Link>
             </div>
           </div>
           
@@ -481,12 +480,11 @@ const ClientPortal = () => {
               )}
             </div>
             <div className="px-4 py-3 border-t bg-gray-50 text-center">
-              <button 
-                onClick={() => setLocation('/documents')}
-                className="text-sm text-primary hover:underline"
-              >
-                View All Documents
-              </button>
+              <Link to="/documents">
+                <button className="text-sm text-primary hover:underline">
+                  View All Documents
+                </button>
+              </Link>
             </div>
           </div>
           
@@ -519,12 +517,11 @@ const ClientPortal = () => {
               )}
             </div>
             <div className="px-4 py-3 border-t bg-gray-50 text-center">
-              <button 
-                onClick={() => setLocation('/activity')}
-                className="text-sm text-primary hover:underline"
-              >
-                View All Activity
-              </button>
+              <Link to="/activity">
+                <button className="text-sm text-primary hover:underline">
+                  View All Activity
+                </button>
+              </Link>
             </div>
           </div>
         </div>
