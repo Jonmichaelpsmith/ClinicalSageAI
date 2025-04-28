@@ -8,7 +8,7 @@ import PharmacologyReportsUploader from '../components/ind-wizard/PharmacologyRe
 import PharmacokineticsReportsUploader from '../components/ind-wizard/PharmacokineticsReportsUploader';
 import ToxicologyReportsUploader from '../components/ind-wizard/ToxicologyReportsUploader';
 import GenotoxicityReportsUploader from '../components/ind-wizard/GenotoxicityReportsUploader';
-import InfoTooltipModule4 from '../components/ind-wizard/InfoTooltipModule4';
+import InfoTooltip from '../components/ind-wizard/InfoTooltip';
 import UploadStatusTrackerModule4 from '../components/ind-wizard/UploadStatusTrackerModule4';
 import Module4NextButton from '../components/ind-wizard/Module4NextButton';
 
@@ -26,8 +26,14 @@ export default function Module4NonclinicalPage() {
   return (
     <div className="container mx-auto py-6 px-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Module 4: Nonclinical Study Reports</h1>
-        <InfoTooltipModule4 />
+        <h1 className="text-2xl font-bold flex items-center">
+          CTD Module 4: Nonclinical Study Reports
+          <InfoTooltip 
+            title="Module 4: Nonclinical Study Reports"
+            content="Module 4 includes detailed pharmacology, pharmacokinetics (ADME), toxicology, and genotoxicity study reports supporting the preclinical safety of the investigational product. Required under ICH CTD guidelines for IND, NDA, and BLA submissions."
+            regulatoryRef="ICH M4S, FDA/EMA guidelines"
+          />
+        </h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
