@@ -12,7 +12,7 @@ const indAssemblerRoutes = require('./routes/indAssembler.js');
 const indWizardAPIRoutes = require('./routes/indWizardAPI.js');
 const documentsRoutes = require('./routes/documents.js');
 const vaultUploadRoutes = require('./routes/vaultUpload.js');
-import advisorRoutes from './routes/advisor.js';
+const advisorRoutes = require('./routes/advisorCommon.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,7 +44,12 @@ app.use('/api/ind', indAssemblerRoutes);
 app.use('/api/ind/wizard', indWizardAPIRoutes);
 app.use('/api/docs', documentsRoutes);
 app.use('/api/vault', vaultUploadRoutes);
+
+// Check if advisor routes exist
+console.log('✅ Loading advisor routes - object check:', Object.keys(advisorRoutes).length > 0 ? 'Routes present' : 'Empty routes object');
+
 app.use('/api/advisor', advisorRoutes);
+console.log('✅ Mounted advisor routes at /api/advisor');
 
 // Log all API requests for development - MOVED TO TOP for better visibility
 app.use((req, res, next) => {
