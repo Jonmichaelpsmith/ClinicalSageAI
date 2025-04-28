@@ -1,6 +1,6 @@
 // server/routes/documents.js
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // Get document list
@@ -180,4 +180,4 @@ router.delete('/:documentId', (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
