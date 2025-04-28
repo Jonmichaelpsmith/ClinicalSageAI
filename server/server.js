@@ -10,6 +10,7 @@ const require = createRequire(import.meta.url);
 const indAssemblerRoutes = require('./routes/indAssembler.js');
 const indWizardAPIRoutes = require('./routes/indWizardAPI.js');
 const documentsRoutes = require('./routes/documents.js');
+const vaultUploadRoutes = require('./routes/vaultUpload.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,6 +39,7 @@ app.use('/api/projects', projectsStatusRoutes);
 app.use('/api/ind', indAssemblerRoutes);
 app.use('/api/ind/wizard', indWizardAPIRoutes);
 app.use('/api/docs', documentsRoutes);
+app.use('/api/vault', vaultUploadRoutes);
 
 // Log all API requests for development
 app.use('/api', (req, res, next) => {
