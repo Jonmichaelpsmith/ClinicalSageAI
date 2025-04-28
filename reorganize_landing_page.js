@@ -6,7 +6,7 @@
  * through regulatory submissions.
  */
 
-const fs = require('fs');
+import fs from 'fs';
 
 // File paths
 const landingPagePath = 'clean_landing_page.html';
