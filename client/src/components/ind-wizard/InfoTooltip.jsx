@@ -12,6 +12,7 @@ import {
 export default function InfoTooltip({ 
   title, 
   content, 
+  text, // Added text parameter
   icgGuidanceLink = null,
   regulatoryRef = null,
   expanded = false 
@@ -41,7 +42,7 @@ export default function InfoTooltip({
         >
           <div className="p-3 bg-gradient-to-r from-indigo-50 to-white border-b">
             <div className="flex justify-between items-center">
-              <h3 className="text-sm font-semibold text-indigo-700">{title}</h3>
+              <h3 className="text-sm font-semibold text-indigo-700">{title || "Module Information"}</h3>
               <button 
                 type="button" 
                 onClick={toggleTooltip}
@@ -52,7 +53,7 @@ export default function InfoTooltip({
             </div>
           </div>
           <div className="p-3">
-            <p className="text-xs text-gray-700">{content}</p>
+            <p className="text-xs text-gray-700">{text || content}</p>
             {(icgGuidanceLink || regulatoryRef) && (
               <div className="mt-2 border-t border-gray-100 pt-2">
                 {icgGuidanceLink && (
