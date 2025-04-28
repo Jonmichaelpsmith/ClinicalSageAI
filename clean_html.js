@@ -80,6 +80,56 @@ if (vaultCondensedStartIndex !== -1) {
   console.log('Vault Module (Condensed) section not found (may have been already removed)');
 }
 
+// Step 4: Remove the Vault Intelligence System section with the "Learn More About Vault™" button
+const vaultIntelligenceButtonStart = '<div style="text-align: center; margin-top: 40px;">';
+const vaultIntelligenceButtonEnd = '</section>';
+
+const vaultIntelligenceButtonStartIndex = updatedHtml.indexOf(vaultIntelligenceButtonStart);
+if (vaultIntelligenceButtonStartIndex !== -1) {
+  // Find the end of the section (the first </section> after the start marker)
+  const buttonSectionEndSearchFrom = vaultIntelligenceButtonStartIndex + vaultIntelligenceButtonStart.length;
+  const vaultIntelligenceButtonEndIndex = updatedHtml.indexOf(vaultIntelligenceButtonEnd, buttonSectionEndSearchFrom) + vaultIntelligenceButtonEnd.length;
+  
+  if (vaultIntelligenceButtonEndIndex > vaultIntelligenceButtonStartIndex) {
+    // Remove the section
+    updatedHtml = 
+      updatedHtml.substring(0, vaultIntelligenceButtonStartIndex) + 
+      '<!-- Removed redundant "Learn More About Vault™" button section -->\n            ' +
+      updatedHtml.substring(vaultIntelligenceButtonEndIndex);
+    
+    console.log('Successfully removed "Learn More About Vault™" button section');
+  } else {
+    console.error('Could not find the end of the "Learn More About Vault™" button section');
+  }
+} else {
+  console.log('"Learn More About Vault™" button section not found (may have been already removed)');
+}
+
+// Step 5: Remove the "Regulatory Timeline Section" containing Vault redundancy
+const regulatoryTimelineStart = '<!-- Regulatory Timeline Section -->';
+const regulatoryTimelineEnd = '</section>';
+
+const regulatoryTimelineStartIndex = updatedHtml.indexOf(regulatoryTimelineStart);
+if (regulatoryTimelineStartIndex !== -1) {
+  // Find the end of the section (the first </section> after the start marker)
+  const timelineSectionEndSearchFrom = regulatoryTimelineStartIndex + regulatoryTimelineStart.length;
+  const regulatoryTimelineEndIndex = updatedHtml.indexOf(regulatoryTimelineEnd, timelineSectionEndSearchFrom) + regulatoryTimelineEnd.length;
+  
+  if (regulatoryTimelineEndIndex > regulatoryTimelineStartIndex) {
+    // Remove the section
+    updatedHtml = 
+      updatedHtml.substring(0, regulatoryTimelineStartIndex) + 
+      '<!-- Removed redundant "Regulatory Timeline Section" -->\n    ' +
+      updatedHtml.substring(regulatoryTimelineEndIndex);
+    
+    console.log('Successfully removed "Regulatory Timeline Section"');
+  } else {
+    console.error('Could not find the end of the "Regulatory Timeline Section"');
+  }
+} else {
+  console.log('"Regulatory Timeline Section" not found (may have been already removed)');
+}
+
 // Write the updated HTML back to the file
 fs.writeFileSync(filePath, updatedHtml, 'utf8');
 console.log('HTML file has been updated successfully');
