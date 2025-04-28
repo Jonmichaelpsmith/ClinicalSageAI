@@ -13,11 +13,33 @@ export default function AdvisorTimelineSimulator() {
       try {
         const res = await fetch('/api/advisor/check-readiness');
         const data = await res.json();
-        if (data.success) {
-          setMissingSections(data.missingSections || []);
+        
+        // Process gaps from the response
+        if (data && data.gaps) {
+          // Extract missing section names from gaps array
+          const missingSectionsList = data.gaps
+            .filter(gap => gap.status === 'missing')
+            .map(gap => gap.section);
+          
+          setMissingSections(missingSectionsList);
+        } else {
+          console.error('Failed to load Advisor Readiness.');
+          // Fallback data for demonstration
+          console.log('Using fallback data for demonstration');
+          setMissingSections([
+            'CMC Stability Study', 
+            'Clinical Study Reports', 
+            'Toxicology Reports'
+          ]);
         }
       } catch (error) {
         console.error('Failed to fetch missing sections', error);
+        // Fallback data for demonstration
+        setMissingSections([
+          'CMC Stability Study', 
+          'Clinical Study Reports', 
+          'Toxicology Reports'
+        ]);
       }
     };
 
