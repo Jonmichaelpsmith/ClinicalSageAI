@@ -64,6 +64,8 @@ import healthRoutes from './routes/health';
 import { storage, mockUsers } from './storage';
 // Import advisor routes
 import { registerAdvisorRoutes } from './advisor-routes';
+// Import regulatory brain routes
+import regulatoryBrainRoutes from './regulatory-brain-routes';
 
 // Create circuit breakers for critical services
 const openaiCircuitBreaker = createCircuitBreakerMiddleware('openai', {

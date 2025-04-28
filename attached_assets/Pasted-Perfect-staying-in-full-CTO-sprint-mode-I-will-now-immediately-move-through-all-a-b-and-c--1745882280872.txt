@@ -1,0 +1,209 @@
+Perfect — staying in full CTO sprint mode.
+I will now immediately move through all (a), (b), and (c) sequentially for you.
+
+Here’s the gameplan:
+
+Step	Task	Purpose
+(a)	Write full MVP Product Spec	Get devs ready to build MVP
+(b)	Design MVP UI Wireframes	Show screens for frontend team
+(c)	Write sample Regulatory Intelligence Report	Show clients the value after submitting
+
+
+
+⸻
+
+(a) Full MVP Product Specification for IND Wizard + eCTD Builder
+
+⸻
+
+Product: AI-Powered IND Wizard + eCTD Submission System (MVP)
+
+⸻
+
+MVP Scope
+
+Module	Features
+IND Wizard	Dynamic form fields (Sponsor, Investigator, Protocol Synopsis)
+AI Real-Time Validator	GPT-driven Assistant validating field entries
+Risk Predictor	Predicts risk of Clinical Hold, IRs, RTF
+Document Upload Engine	Upload Forms 1571/1572/3674, Protocol, IB
+Auto-Document Classifier	Sorts uploads into CTD sections
+eCTD Folder Builder	Auto-create Module 1, Module 2, Module 3 folders
+XML Backbone Generator	Auto-generate index.xml, envelope.xml
+ZIP Exporter	Build .zip file ready for FDA ESG upload (manual for MVP)
+Knowledgebase Assistant	RAG engine to answer regulatory questions live
+Audit Trail	Track all changes made during submission drafting
+User Dashboard	Track active submissions, drafts, and past downloads
+
+
+
+⸻
+
+Non-MVP Features (Future Phases)
+   •   Direct ESG submission (FDA gateway upload)
+   •   Multi-region support (EMA, PMDA)
+   •   Full Study Tagging Files (STF) generator
+   •   Dynamic FDA response parsing (IR management)
+
+⸻
+
+User Roles
+
+Role	Abilities
+Regulatory User	Create/Edit/Submit INDs
+Reviewer	View submission drafts only
+Admin	Manage users, see audit trails
+
+
+
+⸻
+
+Technical Requirements
+
+System	Stack
+Frontend	React.js + TailwindCSS
+Backend	Node.js or FastAPI (Python)
+AI Layer	OpenAI GPT-4 Turbo Assistants API, Embeddings
+Database	PostgreSQL
+File Storage	S3 Bucket or Replit File Storage
+Vector Store	Pinecone or Weaviate
+
+
+
+⸻
+
+✅ (a) MVP Product Spec Done.
+
+⸻
+
+(b) MVP UI Wireframes (Text Description)
+
+⸻
+
+1. Landing Dashboard
+   •   Logo + Navigation (Home, Start Submission, Knowledgebase)
+   •   “Start New IND Wizard” button
+   •   List of Draft Submissions (Status: Draft, Ready for Submission, Incomplete)
+
+⸻
+
+2. IND Wizard
+
+Section	Details
+Sponsor Information Form	Name, Address, Contact, FDA Agent (if any)
+Investigator Information	PI Name, CV Upload, Site Details
+Protocol Synopsis	Title, Objective, Phase, Treatment Plan Upload
+Forms Upload	1571, 1572, 3674 drag-drop upload
+Supporting Documents Upload	IB, Human Experience Data Upload
+
+Right Sidebar:
+   •   AI Regulatory Advisor (real-time suggestions, warnings, citations)
+   •   Confidence Score Progress Bar
+
+Bottom Navigation:
+   •   Previous / Next Section Buttons
+   •   Save Draft Button
+
+⸻
+
+3. eCTD Packaging Preview Screen
+   •   Visual Folder Tree (expandable Modules 1, 2, 3)
+   •   Warning Icons for missing documents
+   •   “Download Submission ZIP” button
+   •   (Future: “Submit to FDA ESG” button)
+
+⸻
+
+4. Knowledgebase Search Panel
+   •   Search Box: “Ask about regulations”
+   •   Pulls semantic matches from CFR/ICH corpus
+
+⸻
+
+✅ (b) MVP Wireframes mapped.
+
+⸻
+
+(c) Regulatory Intelligence Report Template
+
+⸻
+
+Title:
+
+Submission Risk Assessment Report — IND 00012345 | Concept2Cures.AI
+
+⸻
+
+Executive Summary
+
+Prepared on: 2025-04-28
+Prepared for: Jon-Michael Smith, Regulatory Lead
+
+Summary:
+This assessment evaluates the submission readiness, risk profile, and compliance quality of your IND based on AI analysis of your draft package.
+
+⸻
+
+Submission Readiness Score
+
+Metric	Score (%)	Comment
+Completeness	84%	Sponsor, Investigator, Protocol sections complete
+Regulatory Compliance	78%	Minor format issues detected in Cover Letter
+Risk of Clinical Hold	22%	Acceptably low risk
+Risk of Information Request	48%	Some missing prior human experience details
+
+
+
+⸻
+
+Identified Issues
+
+Issue	Section	Risk
+Missing Sponsor Address	Sponsor Info (Module 1)	High
+No Environmental Assessment Uploaded	Supporting Docs	Medium
+Investigator CV Missing	Investigator Info	High
+
+
+
+⸻
+
+Recommendations
+   •   Complete Sponsor Address field under 21 CFR 312.23(a)(1)(i).
+   •   Upload Environmental Impact statement per 21 CFR 312.23(a)(7).
+   •   Attach updated Investigator Curriculum Vitae as required.
+
+⸻
+
+Regulatory Knowledge Insights
+   •   Typical Clinical Holds occur when missing: IB, Prior Human Experience, CMC Description.
+   •   Oncology INDs usually require risk mitigation plans even in Phase 1.
+
+⸻
+
+✅ (c) First Regulatory Intelligence Report ready to generate per submission.
+
+⸻
+
+Full Update:
+
+Step	Status
+(a) MVP Spec	✅ Complete
+(b) MVP Wireframes	✅ Complete
+(c) Sample Regulatory Report	✅ Complete
+
+
+
+⸻
+
+Immediate Next Opportunity:
+
+We can now either:
+   •   (1) Start coding the full frontend in React/Tailwind (design system kickoff),
+   •   (2) Start preparing Backend+OpenAI orchestration code (Router for AI, Validation, Risk),
+   •   (3) Build a Client Beta Invite Plan and first outreach scripts.
+
+Would you like me to keep going in sequence —
+or choose 1, 2, or 3 to prioritize?
+
+(You’re about 2 weeks away from a functional MVP if you stay with me at this pace.)
+What’s your next command? (Ready.)
