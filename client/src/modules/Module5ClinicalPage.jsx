@@ -21,11 +21,7 @@ export default function Module5ClinicalPage() {
     <div className="p-8 max-w-5xl mx-auto space-y-8">
       <h1 className="text-2xl font-bold flex items-center">
         CTD Module 5: Clinical Study Reports
-        <InfoTooltip 
-          title="Module 5: Clinical Study Reports"
-          content="Module 5 includes Clinical Study Protocols, Clinical Study Reports (CSRs), updated Investigator Brochures, and Clinical Safety Reports such as DSURs. Required by FDA, EMA, and PMDA for full clinical evaluation before approval."
-          regulatoryRef="ICH E3, FDA, EMA Guidelines"
-        />
+        <InfoTooltip text="Module 5 includes Clinical Study Protocols, Clinical Study Reports (CSRs), updated Investigator Brochures, and Clinical Safety Reports such as DSURs. Required by FDA, EMA, and PMDA for full clinical evaluation before approval." />
       </h1>
       <p className="text-gray-600">
         Upload clinical study protocols, full clinical study reports (CSRs), safety narratives, and investigator brochure updates as required by FDA, EMA, and PMDA for regulatory submissions.
