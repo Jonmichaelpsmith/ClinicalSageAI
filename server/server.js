@@ -35,58 +35,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// EMERGENCY HOTFIX - Direct endpoint for vault list
-app.use('/api/vault/list', (req, res) => {
-  console.log('📂 EMERGENCY HOTFIX: Direct vault list endpoint activated');
-  
-  // Force a clean response that the frontend can parse
-  const emptyResponse = {
-    success: true,
-    documents: [],
-    metadata: {
-      totalCount: 0,
-      filteredCount: 0,
-      uniqueModules: [],
-      uniqueUploaders: [],
-      uniqueProjects: [],
-      uniqueTypes: [],
-      ctdModuleMapping: {
-        'Module 1': 'Administrative Information',
-        'Module 2': 'CTD Summaries',
-        'Module 3': 'Quality',
-        'Module 4': 'Nonclinical Study Reports',
-        'Module 5': 'Clinical Study Reports'
-      }
-    }
-  };
-  
-  // Reset the actual metadata.json to ensure it's clean
-  try {
-    const locations = [
-      path.join(__dirname, '../uploads/metadata.json'),
-      path.join(__dirname, '../../uploads/metadata.json'),
-      path.join(process.cwd(), 'uploads/metadata.json')
-    ];
-    
-    // Try to fix the metadata file at each possible location
-    for (const loc of locations) {
-      const dir = path.dirname(loc);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-        console.log(`Created directory: ${dir}`);
-      }
-      
-      // Always write a clean metadata file
-      fs.writeFileSync(loc, '[]');
-      console.log(`📂 Reset metadata.json at ${loc}`);
-    }
-  } catch (fixError) {
-    console.log('📂 Auto-fixing attempt failed:', fixError.message);
-  }
-  
-  // Always return success with empty data to avoid frontend errors
-  return res.status(200).json(emptyResponse);
-});
+// No longer needed - Using dedicated implementation in vaultUpload.js instead
 
 // EMERGENCY RESET ENDPOINT - Direct vault reset endpoint
 app.post('/api/vault/reset', (req, res) => {
