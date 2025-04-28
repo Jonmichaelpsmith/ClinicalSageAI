@@ -96,16 +96,17 @@ router.post('/upload', upload.single('document'), (req, res) => {
 });
 
 // GET /api/vault/list
-const metadataPath = path.join(__dirname, '../../uploads/metadata.json');
 
 router.get('/list', (req, res) => {
+  const vaultMetadataPath = path.join(uploadDir, 'metadata.json');
+  
   try {
-    if (!fs.existsSync(metadataPath)) {
+    if (!fs.existsSync(vaultMetadataPath)) {
       // If no metadata yet, respond cleanly
       return res.status(200).json({ success: true, documents: [] });
     }
 
-    const metaRaw = fs.readFileSync(metadataPath, { encoding: 'utf8' });
+    const metaRaw = fs.readFileSync(vaultMetadataPath, { encoding: 'utf8' });
 
     // Handle empty or corrupted file gracefully
     let documents = [];
