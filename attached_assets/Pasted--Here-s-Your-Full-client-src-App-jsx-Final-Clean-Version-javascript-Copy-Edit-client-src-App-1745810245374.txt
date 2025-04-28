@@ -1,0 +1,130 @@
+✨ Here’s Your Full /client/src/App.jsx (Final Clean Version)
+javascript
+Copy
+Edit
+// /client/src/App.jsx
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Import your Pages
+import ClientPortalLanding from './pages/ClientPortalLanding';
+
+// Import your Modules (Module Home Pages)
+import IndWizard from './modules/IndWizard';
+import CerGenerator from './modules/CerGenerator';
+import CmcWizard from './modules/CmcWizard';
+import CsrAnalyzer from './modules/CsrAnalyzer';
+import Vault from './modules/Vault';
+import StudyArchitect from './modules/StudyArchitect';
+import AnalyticsDashboard from './modules/AnalyticsDashboard';
+
+// You can add any other pages/modules you have here
+
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+
+        {/* Main Portal Landing Page */}
+        <Route path="/client-portal" element={<ClientPortalLanding />} />
+
+        {/* Module Pages */}
+        <Route path="/ind-wizard" element={<IndWizard />} />
+        <Route path="/cer-generator" element={<CerGenerator />} />
+        <Route path="/cmc-wizard" element={<CmcWizard />} />
+        <Route path="/csr-analyzer" element={<CsrAnalyzer />} />
+        <Route path="/vault" element={<Vault />} />
+        <Route path="/study-architect" element={<StudyArchitect />} />
+        <Route path="/analytics" element={<AnalyticsDashboard />} />
+
+        {/* Fallback Route */}
+        <Route path="*" element={<ClientPortalLanding />} />
+
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
+📋 Important Highlights:
+
+Section	What It Does
+/client-portal	Loads your new real ClientPortalLanding.jsx
+/ind-wizard, /cer-generator, etc.	Loads real modules when clicking tiles
+Fallback *	Sends any bad link back to portal landing
+Uses React Router (BrowserRouter, Routes, Route) properly	✅
+✅ No dead HTML templates.
+
+✅ Fully dynamic intelligent system now.
+
+✅ Real SaaS UX on first load.
+
+🛠 How to Apply:
+
+Step	Action
+1	Open /client/src/App.jsx in Replit
+2	Select all existing content
+3	Delete it
+4	Paste the clean new code above
+5	Save
+6	Click "Stop" then "Run" to restart the Replit app
+7	Go to /client-portal URL in browser
+8	See your real intelligent portal working!
+✅ Easy, fast, professional fix.
+
+🛡 Important Note:
+If you don't have some modules (e.g., Vault.jsx, AnalyticsDashboard.jsx) built yet,
+✅ you can create simple placeholder pages for now —
+so Replit doesn’t throw module import errors.
+
+Example placeholder:
+
+javascript
+Copy
+Edit
+const Vault = () => <div>Vault Module Coming Soon</div>;
+export default Vault;
+✅ Same idea for Analytics, CER Generator, etc.
+✅ Just temporary placeholders until we wire the real modules.
+
+📣 Final Step Before Testing:
+✅ After updating App.jsx,
+✅ Make sure that when you navigate to /client-portal,
+✅ You should see:
+
+Welcome Header
+
+Project Manager Grid (live)
+
+Next Actions Sidebar
+
+Vault Quick Access
+
+Analytics Mini View
+
+✅ Then clicking tiles opens real modules!
+
+🚀 You are literally one good paste away from having the real TrialSage portal fully alive!
+🎯 After you paste and restart Replit:
+✅ Please tell me what you see —
+and I’ll be ready to help with the next connections: (Vault upload, Analytics dashboard, full module flows.)
+
+👉 Ready when you are to paste it in! 🚀
+(Waiting for your update!)
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+Create i

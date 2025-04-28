@@ -1,123 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { Route, Switch, useLocation, Redirect } from 'wouter';
-import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
-import UnifiedPlatform from './components/UnifiedPlatform';
-import Login from './components/auth/Login';
+// /client/src/App.jsx
 
-function App() {
-  // Get location for navigation
-  const [location, setLocation] = useLocation();
-  
-  // Check if user is authenticated
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  // Check for authentication on mount
-  useEffect(() => {
-    // Check localStorage for authentication
-    const isAuth = localStorage.getItem('isAuthenticated') === 'true';
-    setIsAuthenticated(isAuth);
-    console.log('Authentication state:', isAuth);
-    
-    // Listen for storage changes (in case auth changes in another tab)
-    const handleStorageChange = () => {
-      const newAuthState = localStorage.getItem('isAuthenticated') === 'true';
-      setIsAuthenticated(newAuthState);
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+// Import your Pages
+import ClientPortalLanding from './pages/ClientPortalLanding';
+
+// Import your Modules (Module Home Pages)
+import IndWizard from './modules/IndWizard';
+import CerGenerator from './modules/CerGenerator';
+import CmcWizard from './modules/CmcWizard';
+import CsrAnalyzer from './modules/CsrAnalyzer';
+import Vault from './modules/Vault';
+import StudyArchitect from './modules/StudyArchitect';
+import AnalyticsDashboard from './modules/AnalyticsDashboard';
+
+// You can add any other pages/modules you have here
+
+const App = () => {
   return (
-    <ModuleIntegrationProvider>
-      <div className="min-h-screen flex flex-col">
-        <Switch>
-          {/* Login route */}
-          <Route path="/login">
-            <Login />
-          </Route>
-          
-          {/* Authenticated routes */}
-          <Route path="/dashboard">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/vault">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/csr-intelligence">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/study-architect">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/ind-wizard">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/portal">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/portal/ind">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          
-          {/* Additional module routes based on dashboard */}
-          <Route path="/cer-developer">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/protocol-optimizer">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/ind-automation">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/study-designer">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/deep-learning">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/analytics">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/cer-generator">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/cmc-wizard">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/csr-analyzer">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          
-          {/* Client portal detail routes */}
-          <Route path="/projects">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/documents">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          <Route path="/activity">
-            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
-          </Route>
-          
-          {/* Client Portal route - redirects to the main portal */}
-          <Route path="/client-portal">
-            {isAuthenticated ? <Redirect to="/portal" /> : <Redirect to="/login" />}
-          </Route>
-          
-          {/* Default route */}
-          <Route path="/" exact>
-            <Redirect to="/login" />
-          </Route>
-          
-          {/* Catch all routes and redirect to login */}
-          <Route path="/:rest*">
-            <Redirect to="/login" />
-          </Route>
-        </Switch>
-      </div>
-    </ModuleIntegrationProvider>
+    <Router>
+      <Routes>
+
+        {/* Main Portal Landing Page */}
+        <Route path="/client-portal" element={<ClientPortalLanding />} />
+
+        {/* Module Pages */}
+        <Route path="/ind-wizard" element={<IndWizard />} />
+        <Route path="/cer-generator" element={<CerGenerator />} />
+        <Route path="/cmc-wizard" element={<CmcWizard />} />
+        <Route path="/csr-analyzer" element={<CsrAnalyzer />} />
+        <Route path="/vault" element={<Vault />} />
+        <Route path="/study-architect" element={<StudyArchitect />} />
+        <Route path="/analytics" element={<AnalyticsDashboard />} />
+
+        {/* Fallback Route */}
+        <Route path="*" element={<ClientPortalLanding />} />
+
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
