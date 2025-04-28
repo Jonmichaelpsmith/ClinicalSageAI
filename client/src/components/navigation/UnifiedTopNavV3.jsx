@@ -42,9 +42,9 @@ const routeConfig = {
   "/client-portal/timeline": { label: "Timeline Planner", parent: "/client-portal" },
 };
 
-export default function UnifiedTopNavV3() {
+export default function UnifiedTopNavV3({ currentModule = "", currentPage = "" }) {
   const [location, navigate] = useLocation();
-  const [selectedModule, setSelectedModule] = useState("regulatory-intel");
+  const [selectedModule, setSelectedModule] = useState(currentModule || "regulatory-intel");
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   
   // History management for back/forward navigation
@@ -76,20 +76,54 @@ export default function UnifiedTopNavV3() {
     }
   }, [location]);
   
+  // Update breadcrumbs when currentModule or currentPage props change
+  useEffect(() => {
+    generateBreadcrumbs(location);
+  }, [currentModule, currentPage]);
+  
   // Generate breadcrumbs based on current location
   const generateBreadcrumbs = (path) => {
-    const pathSegments = [];
-    let currentPath = path;
-    
-    while (currentPath && routeConfig[currentPath]) {
-      pathSegments.unshift({
-        path: currentPath,
-        label: routeConfig[currentPath].label,
-      });
-      currentPath = routeConfig[currentPath].parent;
+    // Use default path-based breadcrumbs
+    if (!currentModule || !currentPage) {
+      const pathSegments = [];
+      let currentPath = path;
+      
+      while (currentPath && routeConfig[currentPath]) {
+        pathSegments.unshift({
+          path: currentPath,
+          label: routeConfig[currentPath].label,
+        });
+        currentPath = routeConfig[currentPath].parent;
+      }
+      
+      setBreadcrumbs(pathSegments);
+      return;
     }
     
-    setBreadcrumbs(pathSegments);
+    // Use props-based breadcrumbs for specialized pages
+    const moduleName = moduleConfig.find(m => m.id === currentModule)?.name || "Regulatory Intelligence";
+    
+    // Create breadcrumb trail based on current module and page
+    const customBreadcrumbs = [
+      {
+        path: "/client-portal",
+        label: "Home"
+      },
+      {
+        path: `/client-portal/${currentModule}`,
+        label: moduleName
+      }
+    ];
+    
+    // Add current page if provided and different from module
+    if (currentPage && currentPage !== moduleName) {
+      customBreadcrumbs.push({
+        path: `#${currentPage.toLowerCase().replace(/\s+/g, '-')}`,
+        label: currentPage
+      });
+    }
+    
+    setBreadcrumbs(customBreadcrumbs);
   };
   
   // Navigate to a module

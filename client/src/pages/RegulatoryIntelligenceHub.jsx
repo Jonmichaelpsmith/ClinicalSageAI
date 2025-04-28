@@ -76,14 +76,36 @@ export default function RegulatoryIntelligenceHub() {
     }).format(amount);
   };
 
+  // Convert active tab value to readable label for breadcrumbs
+  const getActiveTabLabel = () => {
+    switch(activeTab) {
+      case "advisor-summary":
+        return "Advisor Summary";
+      case "risk-heatmap":
+        return "Risk Heatmap";
+      case "timeline-simulator":
+        return "Timeline Simulator";
+      case "ask-lumen":
+        return "Ask Lumen AI";
+      default:
+        return "Advisor Summary";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <UnifiedTopNavV3 />
+      <UnifiedTopNavV3 currentModule="regulatory-intel" currentPage={getActiveTabLabel()} />
       
-      <main className="container mx-auto px-4 py-8 transition-all duration-500 ease-in-out">
+      <main className="container mx-auto px-4 py-8 transition-all duration-500 ease-in-out glass-card my-6 rounded-lg">
         <h1 className="text-3xl font-bold mb-8">Regulatory Intelligence Hub</h1>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full transition-all duration-300 ease-in-out">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(value) => {
+            setActiveTab(value);
+            // Force breadcrumb update when tab changes
+          }} 
+          className="w-full transition-all duration-300 ease-in-out">
           <TabsList className="mb-8 flex flex-wrap space-x-2">
             <TabsTrigger 
               value="advisor-summary" 
