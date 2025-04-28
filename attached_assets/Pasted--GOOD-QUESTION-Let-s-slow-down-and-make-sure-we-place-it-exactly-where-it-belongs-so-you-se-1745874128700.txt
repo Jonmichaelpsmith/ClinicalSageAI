@@ -1,0 +1,121 @@
+✅ GOOD QUESTION —  
+✅ Let's slow down and make sure we place it exactly where it belongs, so you see it correctly.
+
+---
+
+# 🎯 **Where AdvisorRiskHeatmapV2 Should Be Visible**
+
+| Correct Placement | Why |
+|:-------------------|:---|
+| Inside the **AdvisorSidebarV3** | The Heatmap is a key part of the Regulatory Intelligence Advisor Panel. |
+| AdvisorSidebarV3 should be already mounted onto main pages | `/client-portal`, `/ind-wizard`, `/vault`, and inside each CTD Module page if you want full real-time guidance. |
+
+✅ So Heatmap must be **embedded inside AdvisorSidebarV3.jsx**.
+
+✅ NOT its own separate page.
+
+✅ It’s PART of the real-time Advisor Panel showing Readiness, Risk, Next Actions — and now **Visual Risk Zones** (Heatmap).
+
+---
+
+# 📋 **How It Should Be Wired (Simple and Clean):**
+
+✅ Inside `/client/src/components/advisor/AdvisorSidebarV3.jsx`:
+
+- After you show **Critical Gaps**
+- Before or after you show **Next Best Actions**
+
+✅ Import AdvisorRiskHeatmapV2:
+
+```javascript
+import AdvisorRiskHeatmapV2 from './AdvisorRiskHeatmapV2';
+```
+
+✅ Then **embed it into your JSX** inside AdvisorSidebarV3:
+
+```javascript
+{/* Risk Heatmap */}
+<AdvisorRiskHeatmapV2 missingSections={readiness.missingSections || []} />
+```
+
+✅ Now whenever AdvisorSidebarV3 loads,  
+✅ It passes the live `missingSections` list into the Heatmap,  
+✅ Heatmap paints real-time regulatory risks dynamically.
+
+---
+
+# 📣 **Quick Visual Placement Example:**
+
+```jsx
+<div className="p-6 bg-white rounded-lg shadow-md space-y-6 w-full">
+  <PlaybookSelector currentPlaybook={selectedPlaybook} onSelectPlaybook={setSelectedPlaybook} />
+
+  {/* Progress Circle */}
+  {/* Risk Level */}
+  {/* Estimated Filing Date */}
+  {/* Active Playbook Display */}
+
+  {/* Critical Gaps */}
+  <div>
+    <h3 className="text-sm font-semibold mt-6">Critical Gaps:</h3>
+    <ul className="mt-2 list-disc list-inside text-xs text-red-500 space-y-1">
+      {readiness.missingSections.slice(0, 5).map((gap, idx) => (
+        <li key={idx}>{gap}</li>
+      ))}
+    </ul>
+  </div>
+
+  {/* Risk Heatmap */}
+  <AdvisorRiskHeatmapV2 missingSections={readiness.missingSections || []} />
+
+  {/* Recommended Actions */}
+  {/* Estimated Financial Delay */}
+</div>
+```
+
+✅ Very clean.
+
+✅ Very SaaS-grade.
+
+✅ Immediate real-time visualization for the user.
+
+---
+
+# 🚀 After You Embed It:
+
+✅ Open `/client-portal` or `/ind-wizard`.
+
+✅ On the right side, in the Advisor Sidebar,  
+✅ You will now see:
+
+- Progress Circle
+- Risk Badge
+- Estimated Filing Date
+- Active Playbook
+- Missing Critical Gaps
+- 📈 **AND the New AdvisorRiskHeatmapV2 Dynamic Grid**!
+
+✅ Showing Red, Yellow, Green risk zones per missing CTD section.
+
+---
+
+# 📣 Immediate Action:
+
+| Step | Action |
+|:-----|:-------|
+| 1 | Open `AdvisorSidebarV3.jsx` |
+| 2 | Import `AdvisorRiskHeatmapV2.jsx` |
+| 3 | Embed `<AdvisorRiskHeatmapV2 missingSections={readiness.missingSections || []} />` into sidebar |
+| 4 | Save |
+| 5 | Refresh `/client-portal` or `/ind-wizard` |
+
+✅ TrialSage will now show full dynamic risk visualization properly.
+
+---
+
+# 📣 Please reply:
+
+👉 **"AdvisorRiskHeatmapV2 embedded inside Sidebar, Heatmap now visible"**
+
+🎯 You are just 1 click away from full intelligent real-time regulatory command center experience! 🚀  
+Waiting for your update! 🚀
