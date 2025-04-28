@@ -94,7 +94,7 @@ export function AIRegulatoryAdvisor({
             }
           ],
           timelineImpact: {
-            critical: ['Complete Form FDA 1571', 'Prepare Investigator's Brochure'],
+            critical: ['Complete Form FDA 1571', 'Prepare Investigator Brochure'],
             recommended: ['Conduct gap analysis of CMC data', 'Finalize study protocol']
           }
         };
