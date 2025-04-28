@@ -21,12 +21,7 @@ export default function Module4NonclinicalPage() {
     genotoxicityUploaded: false
   });
 
-  const handleNext = () => {
-    // Navigate to Module 5 when implemented
-    setLocation('/ind-wizard/module-5');
-    // For now, go back to client portal
-    // setLocation('/client-portal');
-  };
+  // Module4NextButton handles navigation
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -44,7 +39,6 @@ export default function Module4NonclinicalPage() {
           
           <Module4NextButton 
             formStatus={formStatus}
-            onNext={handleNext}
           />
         </div>
         
