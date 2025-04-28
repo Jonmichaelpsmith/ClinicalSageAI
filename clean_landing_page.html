@@ -619,6 +619,33 @@
             background: linear-gradient(to right, rgba(230, 0, 125, 0), rgba(230, 0, 125, 0.3) 50%, rgba(230, 0, 125, 0) 100%);
         }
     </style>
+    <script>
+        // Fix all "Access Module" and "Learn More" buttons to point to client-portal
+        document.addEventListener("DOMContentLoaded", function() {
+            // Find all buttons that currently link to '/portal/client' and update them
+            const clientPortalButtons = document.querySelectorAll('button[onclick*="/portal/client"]');
+            clientPortalButtons.forEach(button => {
+                button.setAttribute('onclick', "window.location.href='/client-portal'");
+            });
+            
+            // Find all solution links and update those too
+            const solutionLinks = document.querySelectorAll('.solution-link');
+            solutionLinks.forEach(link => {
+                if (link.tagName === 'A') {
+                    link.setAttribute('href', '/client-portal');
+                }
+            });
+            
+            // Replace any "Learn More" text with "Access Module"
+            document.querySelectorAll('.solution-link').forEach(link => {
+                if (link.textContent.includes('Learn More')) {
+                    link.innerHTML = link.innerHTML.replace('Learn More', 'Access Module');
+                }
+            });
+            
+            console.log('All module access links updated to point to /client-portal');
+        });
+    </script>
 </head>
 <body>
     <!-- YPrime-style Header - Exact Copy -->
@@ -648,7 +675,7 @@
                 <div class="action-buttons">
                     <a href="#" id="open-rfp-modal" class="btn btn-outline">RFP</a>
                     <a href="/demo" class="btn btn-primary">Demo</a>
-                    <a href="/portal/client" class="btn btn-primary">Client Login</a>
+                    <a href="/client-portal" class="btn btn-primary">Client Portal</a>
                     <a href="/support" class="btn btn-outline">Support</a>
                 </div>
             </div>
