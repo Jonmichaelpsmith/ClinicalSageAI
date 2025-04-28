@@ -244,9 +244,10 @@ function checkAuth(req, res, next) {
 }
 
 // Public client portal (no auth check)
-app.get('/client-portal', (req, res) => {
-  res.sendFile(path.resolve('./client-portal.html'));
-});
+// Let React router handle this route instead of serving static HTML
+// app.get('/client-portal', (req, res) => {
+//   res.sendFile(path.resolve('./client-portal.html'));
+// });
 
 // Secure client portal (with auth check)
 app.get('/client-portal-direct', checkAuth, (req, res) => {

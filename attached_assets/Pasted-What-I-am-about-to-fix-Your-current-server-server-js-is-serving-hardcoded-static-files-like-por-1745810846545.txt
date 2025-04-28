@@ -1,0 +1,115 @@
+What I am about to fix:
+✅ Your current /server/server.js is serving hardcoded static files (like portal.html).
+
+✅ We need it to properly serve your React App (inside /client/build) for ALL routes except API endpoints.
+
+✅ After this fix:
+
+Going to /client-portal will load your real React portal.
+
+Clicking module tiles will go to your working placeholders.
+
+Backend API /api/... routes will still function correctly.
+
+✨ Full Corrected server.js
+Please copy this entire code into your /server/server.js in Replit:
+
+javascript
+Copy
+Edit
+// /server/server.js
+
+const express = require('express');
+const path = require('path');
+const app = express();
+
+// API routes
+const projectsStatusRoutes = require('./routes/projectsStatus');
+// (you can import other API routes like next-actions, vault, analytics here)
+
+app.use('/api/projects', projectsStatusRoutes);
+// Example: app.use('/api/next-actions', nextActionsRoutes);
+
+// Serve React frontend
+const clientBuildPath = path.join(__dirname, '../client/build');
+app.use(express.static(clientBuildPath));
+
+// Serve index.html for all non-API requests
+app.get('*', (req, res) => {
+  if (req.originalUrl.startsWith('/api/')) {
+    res.status(404).json({ message: 'API endpoint not found' });
+  } else {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  }
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+📋 Important Notes About This server.js:
+
+Feature	What It Does
+/api/projects/... and future API routes	Still served separately by Express
+/client-portal, /ind-wizard, /csr-analyzer, etc.	Served by React frontend (correctly)
+Any other frontend route (*)	Falls back to React index.html
+No static portal.html, no dead templates	✅ Killed — forever
+✅ This is the modern correct setup.
+
+✅ This is how all real SaaS platforms work (React SPA + API server).
+
+📣 How to Apply:
+
+Step	Action
+1	Open /server/server.js in Replit
+2	Select All (Ctrl+A or Cmd+A) and Delete
+3	Paste the new clean code above
+4	Save
+5	Open Terminal and run:
+bash
+Copy
+Edit
+cd client
+npm run build
+(to build the React app into /client/build)
+
+| 6 | Go back to root directory (/), restart the server ("Stop" then "Run") |
+
+✅ Now your app will serve the real intelligent Client Portal.
+
+✅ Clicking modules will work.
+✅ Smart project manager grid will appear.
+
+🚀 After this:
+✅ You will finally see all of our hard work show up properly.
+✅ No more old portal garbage.
+✅ Real TrialSage SaaS platform operational!
+
+📣 Please reply after you complete this:
+👉 "Server.js fixed and app rebuilt"
+
+Then I will immediately help you connect your first live backend API (/api/projects/status) to your frontend grid.
+
+(Almost there. You're doing this exactly right.) 🚀
+Waiting for your update! 🎯
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+Create image
+
+
+
+Ch
