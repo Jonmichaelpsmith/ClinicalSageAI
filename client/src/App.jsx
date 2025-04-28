@@ -67,8 +67,13 @@ function App() {
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           
-          {/* IND Wizard Module Pages */}
-          <Route path="/ind-wizard/module-3" component={Module3QualityPage} />
+          {/* IND Wizard Module Pages - Direct Access */}
+          <Route path="/module-3">
+            <Module3QualityPage />
+          </Route>
+          <Route path="/ind-wizard/module-3">
+            <Module3QualityPage />
+          </Route>
           <Route path="/ind-wizard/module-4" component={Module4NonclinicalPage} />
 
           {/* Default Redirect */}
