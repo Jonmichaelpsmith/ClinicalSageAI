@@ -4,6 +4,10 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import projectsStatusRoutes from './routes/projectsStatus.js';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const indAssemblerRoutes = require('./routes/indAssembler.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +33,13 @@ app.use((req, res, next) => {
 
 // API Routes
 app.use('/api/projects', projectsStatusRoutes);
+app.use('/api/ind', indAssemblerRoutes);
+
+// Log all API requests for development
+app.use('/api', (req, res, next) => {
+  console.log(`[API] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // Serve React App
 const clientBuildPath = path.join(__dirname, '../client/build');
