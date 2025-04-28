@@ -143,7 +143,7 @@ export default function IndWizardLayout({ children }) {
               {indWizardSteps.map((step, index) => (
                 <li key={step.path}>
                   <Link
-                    to={`/ind/wizard/${step.path}`}
+                    to={`/module-${index + 1}`}
                     className={`block p-2 rounded hover:bg-gray-100 ${index === adjustedStepIndex ? 'font-bold text-blue-600 bg-blue-50' : ''}`}
                   >
                     Step {index + 1}: {step.title}
