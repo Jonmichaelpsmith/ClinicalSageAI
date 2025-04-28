@@ -12,6 +12,7 @@ import USAgentForm from '../components/ind-wizard/USAgentForm';
 import UploadStatusTracker from '../components/ind-wizard/UploadStatusTracker';
 import Module1NextButton from '../components/ind-wizard/Module1NextButton';
 import LiveFieldMonitor from '../components/ind-wizard/LiveFieldMonitor';
+import InfoTooltip from '../components/ind-wizard/InfoTooltip';
 
 export default function Module1AdminPage() {
   // Track the state of various form submissions
@@ -55,7 +56,10 @@ export default function Module1AdminPage() {
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-3/4">
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h1 className="text-2xl font-bold mb-2">IND Module 1: Administrative Information</h1>
+            <h1 className="text-2xl font-bold flex items-center mb-2">
+              CTD Module 1: Administrative Information
+              <InfoTooltip text="Module 1 contains administrative documents like Form FDA 1571, Form FDA 1572, Cover Letters, Investigator Brochures, and U.S. Agent information. These documents provide essential sponsor, contact, and product information required for IND submission compliance with FDA, EMA, and PMDA standards." />
+            </h1>
             <p className="text-gray-600">
               Complete all required administrative documents for your IND application.
             </p>

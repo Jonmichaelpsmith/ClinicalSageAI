@@ -40,7 +40,12 @@ export default function FDAFormsUploader({ setFormStatus }) {
       
       // Check if all required forms are uploaded
       if (updatedForms.form1571 && updatedForms.form3674) {
-        setFormStatus(prev => ({ ...prev, fdaFormsUploaded: true }));
+        setFormStatus(prev => ({ 
+          ...prev, 
+          fdaFormsUploaded: true,
+          form1571Uploaded: true,
+          form1572Uploaded: true
+        }));
       }
     }
   };
@@ -53,7 +58,12 @@ export default function FDAFormsUploader({ setFormStatus }) {
     }));
     
     // Update parent component's form status
-    setFormStatus(prev => ({ ...prev, fdaFormsUploaded: false }));
+    setFormStatus(prev => ({
+      ...prev, 
+      fdaFormsUploaded: false,
+      form1571Uploaded: formName !== 'form1571' && prev.form1571Uploaded,
+      form1572Uploaded: formName !== 'form1572' && prev.form1572Uploaded
+    }));
   };
 
   // Handle generating form templates
