@@ -7,6 +7,12 @@
 const { createServer } = require('http');
 const fdaComplianceRoutes = require('./routes/fda-compliance-routes');
 
+// Import our new API routes
+const projectRoutes = require('./routes/projects');
+const actionsRoutes = require('./routes/actions');
+const vaultRoutes = require('./routes/vault');
+const analyticsRoutes = require('./routes/analytics');
+
 /**
  * Register routes on the Express app
  * 
@@ -37,6 +43,19 @@ function registerRoutes(app) {
   // Register FDA compliance routes - make sure the path is correct
   console.log('Registering FDA compliance routes');
   app.use('/api/fda-compliance', fdaComplianceRoutes);
+  
+  // Register our new API routes
+  console.log('Registering project routes');
+  app.use('/api/projects', projectRoutes);
+  
+  console.log('Registering next actions routes');
+  app.use('/api/next-actions', actionsRoutes);
+  
+  console.log('Registering vault routes');
+  app.use('/api/vault', vaultRoutes);
+  
+  console.log('Registering analytics routes');
+  app.use('/api/analytics', analyticsRoutes);
   
   // Log all routes for debugging
   app._router.stack.forEach(function(r){

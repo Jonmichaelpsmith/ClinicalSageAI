@@ -201,7 +201,7 @@ const QuickActionButton = ({ icon, title, onClick }) => {
 
 // Client Dashboard component
 const ClientDashboard = () => {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [metrics, setMetrics] = useState(null);
   const [deadlines, setDeadlines] = useState([]);
   const [recentDocuments, setRecentDocuments] = useState([]);
