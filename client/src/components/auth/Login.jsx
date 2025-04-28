@@ -28,8 +28,12 @@ const Login = () => {
         password: 'admin123'
       });
       
-      // Redirect to client portal with preloaded auth
-      window.location.href = '/portal.html';
+      // Check if we have a redirect parameter in the URL
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get('redirect');
+      
+      // Redirect to the specified module or default to portal
+      window.location.href = redirectTo || '/portal/client';
     } catch (error) {
       console.error('Login failed:', error);
       setLoginError(error.message || 'Login failed. Please try again.');
