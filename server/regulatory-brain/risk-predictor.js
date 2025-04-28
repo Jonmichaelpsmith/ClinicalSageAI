@@ -10,15 +10,14 @@
  * regulatory risks before submission.
  */
 
-const { Configuration, OpenAIApi } = require('openai');
+import OpenAI from 'openai';
 
 // Initialize OpenAI client
 let openai;
 if (process.env.OPENAI_API_KEY) {
-  const configuration = new Configuration({
+  openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
-  openai = new OpenAIApi(configuration);
 } else {
   console.warn('OPENAI_API_KEY not found in environment variables');
 }
@@ -59,8 +58,8 @@ async function predictSubmissionRisk(submissionDraft) {
       }
     `;
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4-turbo",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // Updated to the latest version
       messages: [
         {
           role: "system", 
@@ -75,7 +74,7 @@ async function predictSubmissionRisk(submissionDraft) {
     });
 
     // Parse the response into JSON
-    const responseText = response.data.choices[0].message.content;
+    const responseText = response.choices[0].message.content;
     return JSON.parse(responseText);
   } catch (error) {
     console.error('Error predicting submission risk:', error);
@@ -127,8 +126,8 @@ async function generateRegulatoryReport(submissionData, riskAssessment) {
       Format as a structured JSON report.
     `;
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4-turbo",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // Updated to the latest version
       messages: [
         {
           role: "system", 
@@ -143,7 +142,7 @@ async function generateRegulatoryReport(submissionData, riskAssessment) {
     });
 
     // Parse the response into JSON
-    const responseText = response.data.choices[0].message.content;
+    const responseText = response.choices[0].message.content;
     return JSON.parse(responseText);
   } catch (error) {
     console.error('Error generating regulatory report:', error);
@@ -187,8 +186,8 @@ async function analyzeProtocolRisks(protocolData) {
       Respond in JSON format.
     `;
     
-    const response = await openai.createChatCompletion({
-      model: "gpt-4-turbo",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // Updated to the latest version
       messages: [
         {
           role: "system", 
@@ -203,7 +202,7 @@ async function analyzeProtocolRisks(protocolData) {
     });
 
     // Parse the response into JSON
-    const responseText = response.data.choices[0].message.content;
+    const responseText = response.choices[0].message.content;
     return JSON.parse(responseText);
   } catch (error) {
     console.error('Error analyzing protocol risks:', error);
@@ -217,7 +216,7 @@ async function analyzeProtocolRisks(protocolData) {
   }
 }
 
-module.exports = {
+export {
   predictSubmissionRisk,
   generateRegulatoryReport,
   analyzeProtocolRisks

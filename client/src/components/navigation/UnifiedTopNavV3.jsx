@@ -1,130 +1,254 @@
-// /client/src/components/navigation/UnifiedTopNavV3.jsx
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Home, 
+  LayoutDashboard, 
+  FileText, 
+  FlaskConical,
+  Folder, 
+  Search, 
+  BarChart3, 
+  Calendar,
+  Bell,
+  HelpCircle,
+  User
+} from "lucide-react";
 
-import { useLocation } from 'wouter'; // wouter doesn't have useNavigate
-import { useState } from 'react';
+const moduleConfig = [
+  { id: "regulatory-intel", name: "Regulatory Intelligence", icon: <BarChart3 className="w-4 h-4 mr-2" /> },
+  { id: "ind-wizard", name: "IND Wizard", icon: <FileText className="w-4 h-4 mr-2" /> },
+  { id: "vault", name: "Document Vault", icon: <Folder className="w-4 h-4 mr-2" /> },
+  { id: "csr-intelligence", name: "CSR Intelligence", icon: <FlaskConical className="w-4 h-4 mr-2" /> },
+  { id: "timeline", name: "Timeline Planner", icon: <Calendar className="w-4 h-4 mr-2" /> },
+];
 
-export default function UnifiedTopNavV3({ activeTab, onTabChange }) {
+// Routes and breadcrumb mappings
+const routeConfig = {
+  "/client-portal": { label: "Home", parent: null },
+  "/client-portal/regulatory-intel": { label: "Regulatory Intelligence Hub", parent: "/client-portal" },
+  "/client-portal/regulatory-intel/risk-heatmap": { label: "Risk Heatmap", parent: "/client-portal/regulatory-intel" },
+  "/client-portal/regulatory-intel/timeline": { label: "Timeline Simulator", parent: "/client-portal/regulatory-intel" },
+  "/client-portal/ind-wizard": { label: "IND Wizard", parent: "/client-portal" },
+  "/client-portal/ind-wizard/sponsor": { label: "Sponsor Information", parent: "/client-portal/ind-wizard" },
+  "/client-portal/ind-wizard/investigator": { label: "Investigator Information", parent: "/client-portal/ind-wizard" },
+  "/client-portal/ind-wizard/protocol": { label: "Protocol Synopsis", parent: "/client-portal/ind-wizard" },
+  "/client-portal/vault": { label: "Document Vault", parent: "/client-portal" },
+  "/client-portal/csr-intelligence": { label: "CSR Intelligence", parent: "/client-portal" },
+  "/client-portal/timeline": { label: "Timeline Planner", parent: "/client-portal" },
+};
+
+export default function UnifiedTopNavV3() {
   const [location, navigate] = useLocation();
-  const [showModuleSwitcher, setShowModuleSwitcher] = useState(false);
-
-  const modules = [
-    { name: 'Client Portal', path: '/client-portal' },
-    { name: 'Regulatory Intelligence Hub', path: '/regulatory-intelligence-hub' },
-    { name: 'IND Wizard', path: '/ind-wizard' },
-    { name: 'CMC Wizard', path: '/cmc-wizard' },
-    { name: 'CER Generator', path: '/cer-generator' },
-    { name: 'CSR Analyzer', path: '/csr-analyzer' },
-    { name: 'Study Architect', path: '/study-architect' },
-    { name: 'TrialSage Vault', path: '/vault' },
-    { name: 'Analytics Dashboard', path: '/analytics' },
-  ];
-
-  // Navigate to a path safely
-  const navigateTo = (path) => {
-    // Use window.location for more reliable navigation between modules
-    window.location.href = path;
+  const [selectedModule, setSelectedModule] = useState("regulatory-intel");
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
+  
+  // History management for back/forward navigation
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  
+  // When location changes, update history
+  useEffect(() => {
+    if (location !== history[historyIndex]) {
+      // If we navigated using back/forward, don't add to history
+      if (history[historyIndex + 1] !== location) {
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(location);
+        setHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
+      }
+      
+      // Determine selected module based on current location
+      const modulePath = location.split('/').slice(0, 3).join('/');
+      for (const module of moduleConfig) {
+        if (modulePath.includes(module.id)) {
+          setSelectedModule(module.id);
+          break;
+        }
+      }
+      
+      // Update breadcrumbs when location changes
+      generateBreadcrumbs(location);
+    }
+  }, [location]);
+  
+  // Generate breadcrumbs based on current location
+  const generateBreadcrumbs = (path) => {
+    const pathSegments = [];
+    let currentPath = path;
+    
+    while (currentPath && routeConfig[currentPath]) {
+      pathSegments.unshift({
+        path: currentPath,
+        label: routeConfig[currentPath].label,
+      });
+      currentPath = routeConfig[currentPath].parent;
+    }
+    
+    setBreadcrumbs(pathSegments);
+  };
+  
+  // Navigate to a module
+  const handleModuleChange = (moduleId) => {
+    setSelectedModule(moduleId);
+    navigate(`/client-portal/${moduleId}`);
+  };
+  
+  // Navigate back in history
+  const handleBack = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      navigate(history[newIndex]);
+    }
+  };
+  
+  // Navigate forward in history
+  const handleForward = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      navigate(history[newIndex]);
+    }
+  };
+  
+  // Navigate home
+  const handleHome = () => {
+    navigate("/client-portal");
   };
 
   return (
-    <div className="w-full sticky top-0 z-50 bg-white shadow-md flex flex-col">
-
-      {/* Top Row - Navigation and Module Switcher */}
-      <div className="flex justify-between items-center p-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => window.history.back()}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200"
+    <div className="w-full sticky top-0 z-50 bg-white border-b shadow-sm">
+      {/* Navigation and Module Switcher Row */}
+      <div className="px-4 py-2 flex items-center justify-between border-b transition-all duration-300 ease-in-out">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            disabled={historyIndex <= 0}
+            className="transition-colors duration-200 hover:bg-indigo-100 hover:text-indigo-700"
           >
-            ← Back
-          </button>
-
-          <button
-            onClick={() => window.history.forward()}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200"
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleForward}
+            disabled={historyIndex >= history.length - 1}
+            className="transition-colors duration-200 hover:bg-indigo-100 hover:text-indigo-700"
           >
-            → Forward
-          </button>
-
-          <button
-            onClick={() => navigateTo('/client-portal')}
-            className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleHome}
+            className="transition-colors duration-200 hover:bg-indigo-100 hover:text-indigo-700"
           >
-            🏠 Client Portal
-          </button>
-        </div>
-
-        <div>
-          <button
-            onClick={() => setShowModuleSwitcher(true)}
-            className="px-4 py-1 text-xs font-medium bg-indigo-50 rounded hover:bg-indigo-100 text-indigo-600"
-          >
-            🔍 Switch Module
-          </button>
-        </div>
-      </div>
-
-      {/* Second Row - Functional Tabs */}
-      <div className="flex justify-center gap-8 border-t border-gray-100 p-2 bg-white">
-        <button
-          onClick={() => onTabChange('RiskHeatmap')}
-          className={`text-sm font-semibold ${
-            activeTab === 'RiskHeatmap' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-600 hover:text-indigo-600'
-          }`}
-        >
-          Risk Heatmap
-        </button>
-
-        <button
-          onClick={() => onTabChange('TimelineSimulator')}
-          className={`text-sm font-semibold ${
-            activeTab === 'TimelineSimulator' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-600 hover:text-indigo-600'
-          }`}
-        >
-          Timeline Simulator
-        </button>
-
-        <button
-          onClick={() => onTabChange('AskLumenAI')}
-          className={`text-sm font-semibold ${
-            activeTab === 'AskLumenAI' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-600 hover:text-indigo-600'
-          }`}
-        >
-          Ask Lumen AI
-        </button>
-      </div>
-
-      {/* Module Switcher Modal */}
-      {showModuleSwitcher && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-start pt-20 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] md:w-[50%] space-y-6">
-            <h2 className="text-lg font-bold text-gray-800">Switch to Module</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {modules.map((mod, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    navigateTo(mod.path);
-                    setShowModuleSwitcher(false);
-                  }}
-                  className="border border-gray-300 hover:border-indigo-500 rounded-md p-4 text-sm font-semibold text-gray-700 hover:text-indigo-600 transition"
-                >
-                  {mod.name}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowModuleSwitcher(false)}
-                className="px-4 py-2 text-xs bg-gray-100 rounded hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-            </div>
+            <Home className="h-4 w-4" />
+          </Button>
+          
+          <div className="mx-2 h-4 border-l border-gray-300"></div>
+          
+          <div className="hidden md:flex items-center">
+            <LayoutDashboard className="h-5 w-5 text-indigo-600 mr-2" />
+            <span className="font-semibold text-lg text-indigo-900">TrialSage™ Elite</span>
           </div>
         </div>
-      )}
-
+        
+        <div className="flex items-center space-x-3">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="transition-colors duration-200 hover:bg-indigo-100 hover:text-indigo-700"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="transition-colors duration-200 hover:bg-indigo-100 hover:text-indigo-700"
+          >
+            <Bell className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="transition-colors duration-200 hover:bg-indigo-100 hover:text-indigo-700"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="transition-colors duration-200 hover:bg-indigo-100 hover:text-indigo-700"
+          >
+            <User className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      
+      {/* Module Tabs Row */}
+      <div className="px-4 flex items-center justify-between border-b transition-all duration-300 ease-in-out">
+        <Tabs 
+          value={selectedModule} 
+          onValueChange={handleModuleChange}
+          className="w-full transition-all duration-300 ease-in-out"
+        >
+          <TabsList className="h-10 bg-transparent justify-start w-full overflow-x-auto">
+            {moduleConfig.map((module) => (
+              <TabsTrigger
+                key={module.id}
+                value={module.id}
+                className="transition-all duration-200 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-700 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none px-4"
+              >
+                <div className="flex items-center">
+                  {module.icon}
+                  <span>{module.name}</span>
+                </div>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+      
+      {/* Breadcrumb Row */}
+      <div className="px-4 py-1 flex items-center text-xs text-gray-500 bg-gray-50 transition-all duration-300 ease-in-out">
+        {breadcrumbs.length > 0 ? (
+          <div className="flex items-center flex-wrap">
+            {breadcrumbs.map((breadcrumb, index) => (
+              <React.Fragment key={breadcrumb.path}>
+                {index > 0 && <ChevronRight className="h-3 w-3 mx-1 text-gray-400" />}
+                <Link 
+                  href={breadcrumb.path}
+                  className="hover:text-indigo-600 hover:underline transition-colors duration-200"
+                >
+                  {index === 0 ? (
+                    <div className="flex items-center">
+                      <Home className="h-3 w-3 mr-1" />
+                      {breadcrumb.label}
+                    </div>
+                  ) : breadcrumb.label}
+                </Link>
+              </React.Fragment>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <Home className="h-3 w-3 mr-1" />
+            <span>Home</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

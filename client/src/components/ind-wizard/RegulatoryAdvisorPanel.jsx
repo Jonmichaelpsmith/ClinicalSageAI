@@ -171,7 +171,7 @@ export default function RegulatoryAdvisorPanel({ formData, currentStep }) {
     else if (currentStep === 5) {
       newInsights.push({
         type: 'warning',
-        message: 'An Investigator's Brochure (IB) containing relevant information about the investigational drug is required.',
+        message: 'An Investigator\'s Brochure (IB) containing relevant information about the investigational drug is required.',
         citation: '21 CFR 312.23(a)(5)'
       });
       
@@ -197,7 +197,7 @@ export default function RegulatoryAdvisorPanel({ formData, currentStep }) {
     // Add general insights regardless of step
     newInsights.push({
       type: 'info',
-      message: 'FDA's goal date for reviewing a complete IND is typically 30 days from receipt.',
+      message: 'FDA\'s goal date for reviewing a complete IND is typically 30 days from receipt.',
       citation: '21 CFR 312.40(b)(1)'
     });
     

@@ -5,12 +5,12 @@
  * including the IND Wizard, eCTD Builder, and Risk Predictor.
  */
 
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
-const { validateSponsorInfo, validateProtocolInfo, predictClinicalHoldRisk } = require('./regulatory-brain/ind-validator');
-const { predictSubmissionRisk, generateRegulatoryReport, analyzeProtocolRisks } = require('./regulatory-brain/risk-predictor');
-const { createEctdStructure, saveDocument, mapDocumentToFolder, validateEctdStructure } = require('./regulatory-brain/folder-builder');
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import { validateSponsorInfo, validateProtocolInfo, predictClinicalHoldRisk } from './regulatory-brain/ind-validator.js';
+import { predictSubmissionRisk, generateRegulatoryReport, analyzeProtocolRisks } from './regulatory-brain/risk-predictor.js';
+import { createEctdStructure, saveDocument, mapDocumentToFolder, validateEctdStructure } from './regulatory-brain/folder-builder.js';
 
 // Create router
 const router = express.Router();
@@ -197,4 +197,4 @@ router.post('/api/ectd/validate-structure', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

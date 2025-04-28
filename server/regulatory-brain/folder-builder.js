@@ -5,8 +5,8 @@
  * and prepares for document packaging and submission.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Creates the standard eCTD folder structure
@@ -179,7 +179,7 @@ function validateEctdStructure(basePath) {
   };
 }
 
-module.exports = {
+export {
   createEctdStructure,
   saveDocument,
   mapDocumentToFolder,
