@@ -3863,5 +3863,64 @@
     
     <!-- AI Assistant Script -->
     <script src="/js/vault-ai-assistant.js"></script>
+    
+    <!-- Module Access Script -->
+    <script>
+        // Redirect all "Learn more" links to the client portal and change text
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all links that contain "Learn more" text
+            const learnMoreLinks = document.querySelectorAll('a');
+            
+            learnMoreLinks.forEach(function(link) {
+                if (link.textContent.trim().includes('Learn more')) {
+                    // Change the link to point to the client portal
+                    link.href = '/portal/client';
+                    
+                    // Keep the original URL as data attribute for debugging
+                    const originalHref = link.getAttribute('href');
+                    link.setAttribute('data-original-href', originalHref);
+                    
+                    // Replace the text content while preserving the icon
+                    const iconElement = link.querySelector('i');
+                    if (iconElement) {
+                        // Clear the link text
+                        link.textContent = '';
+                        // Add new text
+                        link.appendChild(document.createTextNode('Access Module '));
+                        // Re-add the icon
+                        link.appendChild(iconElement);
+                    } else {
+                        // If no icon, just replace the text
+                        link.textContent = 'Access Module';
+                    }
+                }
+            });
+            
+            // Also handle any buttons that might have "Learn more" text
+            const learnMoreButtons = document.querySelectorAll('button');
+            learnMoreButtons.forEach(function(button) {
+                if (button.textContent.trim().includes('Learn more')) {
+                    // Set onclick to go to client portal
+                    button.onclick = function() {
+                        window.location.href = '/portal/client';
+                    };
+                    
+                    // Replace the text content while preserving the icon
+                    const iconElement = button.querySelector('i');
+                    if (iconElement) {
+                        // Clear the button text
+                        button.textContent = '';
+                        // Add new text
+                        button.appendChild(document.createTextNode('Access Module '));
+                        // Re-add the icon
+                        button.appendChild(iconElement);
+                    } else {
+                        // If no icon, just replace the text
+                        button.textContent = 'Access Module';
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
