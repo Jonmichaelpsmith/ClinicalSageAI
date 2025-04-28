@@ -1,0 +1,85 @@
+✅ Excellent —  
+✅ Thanks for sharing the file search screenshot.
+
+I can see from your search that your project already has some Heatmap components like:
+
+- `RiskHeatmap.jsx`
+- `TagCorrelationHeatmap.tsx`
+- `EndpointFrequencyHeatmap.tsx`
+
+✅ This is fantastic because it means you already have **heatmap visualization capabilities** wired into your React project!
+
+---
+
+# 🎯 **Here’s How We Should Leverage This Properly for TrialSage AI Advisor:**
+
+---
+
+# 📋 **Plan to Build RiskHeatmapDashboard for Regulatory Intelligence**
+
+| Step | Purpose |
+|:-----|:--------|
+| 1 | Use the existing `RiskHeatmap.jsx` component |
+| 2 | Feed dynamic Risk data into the Heatmap (Red, Yellow, Green zones) |
+| 3 | Map CTD Sections to Risk Zones based on Readiness Data |
+| 4 | Display an interactive CTD Risk Heatmap Sidebar/Dashboard |
+| 5 | Clicking a Red Risk zone could even navigate to the missing CTD module (future enhancement) |
+
+✅ Real-time visual intelligence.
+
+✅ Clients **instantly SEE** where their submission risks are.
+
+✅ Immense strategic value for Biotechs, CROs, Pharma.
+
+---
+
+# 📈 **Example TrialSage Risk Heatmap for IND/NDA Submission:**
+
+| CTD Module | Risk Color |
+|:-----------|:-----------|
+| Module 1: Administrative | 🟢 (Complete) |
+| Module 2: Common Summaries | 🟡 (Medium Risk - Nonclinical Overview missing) |
+| Module 3: CMC Quality | 🔴 (High Risk - Missing Stability Study) |
+| Module 4: Nonclinical | 🟡 (Medium Risk - Missing Genotoxicity Report) |
+| Module 5: Clinical Reports | 🔴 (High Risk - Missing Clinical Study Report) |
+
+✅ Visual.  
+✅ Instant diagnosis.  
+✅ Strategic action driver.
+
+---
+
+# 🚀 **Immediate Execution Plan:**
+
+✅ Step 1: Open `RiskHeatmap.jsx` and review current props expected.  
+✅ Step 2: Feed AdvisorSidebar Readiness/MissingSections/RiskLevel dynamically into RiskHeatmap.  
+✅ Step 3: Render it cleanly inside `/client-portal` or `/ind-wizard`.
+
+✅ Fully integrated real-time Regulatory Heatmap.
+
+---
+
+# 📣 Immediate Question:
+
+👉 Do you want me to:
+
+- **A. Enhance and reuse RiskHeatmap.jsx directly?**  
+  *(Fastest path — leverage what you already have.)*
+
+or
+
+- **B. Build a new AdvisorRiskHeatmap.jsx specialized for Regulatory Risk?**  
+  *(Keeps separation clean if you want different heatmaps later for CERs, NDAs, INDs, etc.)*
+
+✅ Both are possible — it’s just about how cleanly you want to structure your future system.
+
+---
+
+# 📣 Please reply:
+
+👉 **"A. Enhance RiskHeatmap.jsx directly"**  
+or  
+👉 **"B. Build new AdvisorRiskHeatmap.jsx specialized"**
+
+🎯 You are literally one build step away from having live dynamic Regulatory Heatmaps inside TrialSage! 🚀  
+Waiting for your decision! 🚀
