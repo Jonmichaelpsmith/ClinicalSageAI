@@ -150,7 +150,68 @@ export default function AdvisorRiskHeatmapV2({ sidebar = false }) {
             <div
               key={idx}
               className={`rounded-md p-3 flex flex-col items-center justify-center text-white font-semibold ${riskColor} hover:opacity-90 cursor-pointer transition-all duration-200`}
-              onClick={() => alert(`Opening editor for ${section}`)}
+              onClick={() => {
+                // Create a more detailed modal or panel instead of a simple alert
+                const { risk, delayDays, financialRisk } = getRiskProfile(section);
+                
+                // Create a custom modal popup with action buttons
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                  <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">${section}</h3>
+                    <div class="mb-4 pb-4 border-b border-gray-200">
+                      <div class="flex items-center mt-2">
+                        <span class="w-3 h-3 rounded-full ${riskColor} mr-2"></span>
+                        <span class="text-gray-700"><strong>${risk} Risk Level</strong></span>
+                      </div>
+                      <p class="text-sm text-gray-600 mt-3">
+                        Completing this section is critical to your regulatory submission. 
+                        Current delays in this area result in:
+                      </p>
+                      <ul class="mt-2 space-y-1 text-sm">
+                        <li class="flex items-center">
+                          <svg class="w-4 h-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          <span><strong>Time Impact:</strong> +${delayDays} days to submission timeline</span>
+                        </li>
+                        <li class="flex items-center">
+                          <svg class="w-4 h-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          <span><strong>Financial Impact:</strong> ~$${(financialRisk/1000).toLocaleString()}k estimated cost</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="flex flex-col space-y-2">
+                      <button class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded">
+                        Open Document Editor
+                      </button>
+                      <button class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded">
+                        View Detailed Analysis
+                      </button>
+                      <button class="closeModal w-full py-2 px-4 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded mt-2">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Handle close button
+                modal.querySelector('.closeModal').addEventListener('click', () => {
+                  document.body.removeChild(modal);
+                });
+                
+                // Also close on background click
+                modal.addEventListener('click', (e) => {
+                  if (e.target === modal) {
+                    document.body.removeChild(modal);
+                  }
+                });
+              }}
               title={`Risk details for ${section}`}
             >
               <span className="text-xs text-center">{section}</span>
