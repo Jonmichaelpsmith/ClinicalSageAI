@@ -1,9 +1,10 @@
-// /server/routes/vaultUpload.js
+// server/routes/vaultRoutes.js
 
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
 
 // Create uploads directory if it doesn't exist
@@ -18,25 +19,42 @@ if (!fs.existsSync(metadataPath)) {
   fs.writeFileSync(metadataPath, JSON.stringify([]));
 }
 
-// Set up basic storage (this saves uploads into server 'uploads' folder)
+// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `${uniqueSuffix}-${file.originalname}`);
+    // Generate a unique filename while preserving the original extension
+    const fileExtension = path.extname(file.originalname);
+    const storedName = `${uuidv4()}${fileExtension}`;
+    cb(null, storedName);
   },
 });
 
-const upload = multer({ storage });
+// Create the multer upload middleware
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  fileFilter: (req, file, cb) => {
+    // Allow common document formats
+    const allowedTypes = [
+      '.pdf', '.doc', '.docx', '.xls', '.xlsx', 
+      '.ppt', '.pptx', '.txt', '.csv'
+    ];
+    
+    const fileExt = path.extname(file.originalname).toLowerCase();
+    if (allowedTypes.includes(fileExt)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only document files are allowed.'));
+    }
+  },
+});
 
 // Helper function to read metadata
 function readMetadata() {
   try {
-    if (!fs.existsSync(metadataPath)) {
-      return [];
-    }
     const data = fs.readFileSync(metadataPath, 'utf8');
     return JSON.parse(data);
   } catch (error) {
@@ -56,54 +74,54 @@ function writeMetadata(metadata) {
   }
 }
 
-// POST /api/vault/upload
+// Route to upload a document
 router.post('/upload', upload.single('document'), (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded.' });
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
 
     // Create metadata for the document
-    const fileInfo = {
+    const documentMetadata = {
       originalName: req.file.originalname,
       storedName: req.file.filename,
-      uploadTime: new Date().toISOString(),
       moduleLinked: req.body.module || 'Unknown',
-      projectId: req.body.projectId || 'Unassigned',
-      uploader: req.body.uploader || 'Unknown',
+      projectId: req.body.projectId || 'Unknown',
+      uploader: req.body.uploader || 'Anonymous',
       fileSize: req.file.size,
       mimeType: req.file.mimetype,
+      uploadDate: new Date().toISOString(),
     };
-
-    console.log('✅ New Vault Upload:', fileInfo);
 
     // Read existing metadata
     const metadata = readMetadata();
     
     // Add new document metadata
-    metadata.push(fileInfo);
+    metadata.push(documentMetadata);
     
     // Save updated metadata
-    writeMetadata(metadata);
-
-    // Respond back
-    res.status(200).json({
-      success: true,
-      file: fileInfo,
-    });
+    if (writeMetadata(metadata)) {
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Document uploaded successfully',
+        file: documentMetadata
+      });
+    } else {
+      return res.status(500).json({ success: false, message: 'Failed to save document metadata' });
+    }
   } catch (error) {
-    console.error('❌ Vault Upload Error:', error);
-    res.status(500).json({ success: false, message: 'Internal server error.' });
+    console.error('Error uploading document:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-// GET /api/vault/list
+// Route to list all documents
 router.get('/list', (req, res) => {
   try {
-    const documents = readMetadata();
+    const metadata = readMetadata();
     return res.status(200).json({ 
       success: true, 
-      documents: documents
+      documents: metadata
     });
   } catch (error) {
     console.error('Error listing documents:', error);
@@ -111,7 +129,7 @@ router.get('/list', (req, res) => {
   }
 });
 
-// GET /api/vault/download/:filename
+// Route to download a document
 router.get('/download/:filename', (req, res) => {
   try {
     const filename = req.params.filename;
