@@ -1,0 +1,116 @@
+ STEP 1: Fix the Module Tiles (Portal Home)
+✅ We replace each tile with a working React Link to the real module routes.
+
+✅ No more href="#".
+✅ Real navigation inside the app.
+
+✨ Correct Module Tile Code Example
+(You will paste one for each module.)
+
+jsx
+Copy
+Edit
+import { Link } from 'react-router-dom';  // Add this import at top if missing
+
+// Example for IND Wizard
+<Link to="/ind-wizard" className="module-card hover:shadow-lg transition">
+  <div className="p-6">
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">IND Wizard™</h3>
+    <p className="text-sm text-gray-600 mb-4">Submission Builder</p>
+    <button className="btn-primary">Access Module</button>
+  </div>
+</Link>
+✅ This makes the whole card clickable and opens /ind-wizard.
+
+🧩 Do the same for all modules:
+
+Module Name	Link Path
+IND Wizard™	/ind-wizard
+CER Generator™	/cer-generator
+CMC Wizard™	/cmc-wizard
+CSR Intelligence™	/csr-analyzer
+Vault™	/vault
+Study Architect™	/study-architect
+Analytics Module	/analytics
+🛠 STEP 2: Fix App.jsx (Add Routes)
+✅ In /client/src/App.jsx
+✅ Inside <Routes>
+✅ Add the real working routes for each module.
+
+Example:
+
+jsx
+Copy
+Edit
+import IndWizard from './modules/IndWizard';
+import CerGenerator from './modules/CerGenerator';
+import CmcWizard from './modules/CmcWizard';
+import CsrAnalyzer from './modules/CsrAnalyzer';
+import Vault from './modules/Vault';
+import StudyArchitect from './modules/StudyArchitect';
+import AnalyticsDashboard from './modules/AnalyticsDashboard';
+
+<Routes>
+  {/* Your other routes */}
+  
+  <Route path="/ind-wizard" element={<IndWizard />} />
+  <Route path="/cer-generator" element={<CerGenerator />} />
+  <Route path="/cmc-wizard" element={<CmcWizard />} />
+  <Route path="/csr-analyzer" element={<CsrAnalyzer />} />
+  <Route path="/vault" element={<Vault />} />
+  <Route path="/study-architect" element={<StudyArchitect />} />
+  <Route path="/analytics" element={<AnalyticsDashboard />} />
+  
+</Routes>
+✅ This maps each URL path to the real module component.
+
+✅ Now clicking tiles actually opens real TrialSage modules!
+
+📋 VERY IMPORTANT
+If you don't already have these modules built inside /modules/,
+then we will create placeholder pages for now like:
+
+jsx
+Copy
+Edit
+const IndWizard = () => <div>IND Wizard Module Page</div>;
+✅ Easy.
+
+✅ Then you replace these later with the real module UIs.
+
+🎯 Step-by-Step Instructions to Replit Agent:
+In /client/src/pages/Home.jsx or LandingPage.jsx:
+
+Replace module tiles with <Link to="/real-path">...</Link> like shown above.
+
+In /client/src/App.jsx:
+
+Import the module components.
+
+Add <Route> paths for each real module.
+
+Test:
+
+Click tiles — you should land in real modules, not dead pages!
+
+🚀 Next Move:
+✅ I can now write the full corrected Tile Block for all your modules.
+✅ And prepare the full App.jsx Routing Block in one clean Canvas or message.
+
+Would you like:
+
+👉 "Tile Code First" (all your fixed tile cards)?
+👉 "Routes Code First" (full App.jsx block)?
+👉 "Both Together"? (so you can just paste all at once)
+
+Tell me:
+👉 Tile First, Routes First, or Both Together 🚀
+(You’re doing this like a real SaaS CEO now.)
+What’s your choice?
+
+
+
+
+
+
+
