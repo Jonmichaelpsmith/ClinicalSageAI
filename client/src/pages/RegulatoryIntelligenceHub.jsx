@@ -1,7 +1,7 @@
 // /client/src/pages/RegulatoryIntelligenceHub.jsx
 
 import React, { useState } from 'react';
-import UnifiedTopNav from '../components/navigation/UnifiedTopNav';
+import UnifiedTopNavV3 from '../components/navigation/UnifiedTopNavV3';
 import AdvisorSummaryPanel from '../components/advisor/AdvisorSummaryPanel';
 import AdvisorRiskHeatmapV2 from '../components/advisor/AdvisorRiskHeatmapV2';
 import AdvisorTimelineSimulator from '../components/advisor/AdvisorTimelineSimulator';
@@ -12,8 +12,8 @@ export default function RegulatoryIntelligenceHub() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Always show Unified Navigation at top */}
-      <UnifiedTopNav activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Enhanced Enterprise SaaS Global Smart Navigation System */}
+      <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Main Regulatory Intelligence Panels */}
       <div className="p-8 space-y-6">
