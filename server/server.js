@@ -12,6 +12,7 @@ const indAssemblerRoutes = require('./routes/indAssembler.js');
 const indWizardAPIRoutes = require('./routes/indWizardAPI.js');
 const documentsRoutes = require('./routes/documents.js');
 const vaultUploadRoutes = require('./routes/vaultUpload.js');
+const advisorRoutes = require('./routes/advisor.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,69 +36,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// No longer needed - Using dedicated implementation in vaultUpload.js instead
-
-// EMERGENCY RESET ENDPOINT - Direct vault reset endpoint
-app.post('/api/vault/reset', (req, res) => {
-  console.log('🚨 EMERGENCY VAULT RESET: Directly resetting vault metadata');
-  try {
-    // Find metadata.json in the possible locations
-    const locations = [
-      path.join(__dirname, '../uploads/metadata.json'),
-      path.join(__dirname, '../../uploads/metadata.json'),
-      path.join(process.cwd(), 'uploads/metadata.json')
-    ];
-    
-    let metadataPath = null;
-    let success = false;
-    
-    // Try each location
-    for (const loc of locations) {
-      try {
-        // Check if directory exists first
-        const dir = path.dirname(loc);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-          console.log(`Created directory: ${dir}`);
-        }
-        
-        // Delete existing file if it exists
-        if (fs.existsSync(loc)) {
-          fs.unlinkSync(loc);
-          console.log(`Deleted existing metadata at: ${loc}`);
-        }
-        
-        // Write empty array to file
-        fs.writeFileSync(loc, '[]');
-        console.log(`Reset metadata at: ${loc}`);
-        success = true;
-        metadataPath = loc;
-        break;
-      } catch (err) {
-        console.log(`Failed to write to ${loc}: ${err.message}`);
-      }
-    }
-    
-    if (success) {
-      console.log(`✅ Successfully reset vault metadata to empty array at ${metadataPath}`);
-      return res.status(200).json({
-        success: true,
-        message: 'Vault metadata has been reset to empty array',
-        location: metadataPath,
-        timestamp: new Date().toISOString()
-      });
-    } else {
-      throw new Error('Could not find or create metadata.json in any location');
-    }
-  } catch (error) {
-    console.error('❌ Error in emergency vault reset endpoint:', error);
-    return res.status(200).json({
-      success: false,
-      message: 'Error resetting vault metadata: ' + error.message,
-      error: error.stack
-    });
-  }
-});
+// All vault routes are now handled by vaultUpload.js
 
 // API Routes
 app.use('/api/projects', projectsStatusRoutes);
@@ -105,6 +44,7 @@ app.use('/api/ind', indAssemblerRoutes);
 app.use('/api/ind/wizard', indWizardAPIRoutes);
 app.use('/api/docs', documentsRoutes);
 app.use('/api/vault', vaultUploadRoutes);
+app.use('/api/advisor', advisorRoutes);
 
 // Log all API requests for development
 app.use('/api', (req, res, next) => {
