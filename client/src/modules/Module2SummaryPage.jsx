@@ -54,22 +54,22 @@ export default function Module2SummaryPage() {
                   The CTD Module 2 presents scientific information in summary documents. It bridges 
                   detailed technical reports with high-level overviews needed by regulatory reviewers.
                 </p>
-                <p>
+                <div>
                   <strong>Required components:</strong>
                   <ul className="list-disc pl-5 mt-1 space-y-1">
                     <li>Introduction (M2.1)</li>
                     <li>Quality Overall Summary (M2.3)</li>
                     <li>Nonclinical Overview (M2.4)</li>
                   </ul>
-                </p>
-                <p>
+                </div>
+                <div className="mt-2">
                   <strong>Optional for some INDs:</strong>
                   <ul className="list-disc pl-5 mt-1 space-y-1">
                     <li>Clinical Overview (M2.5)</li>
                     <li>Written Summaries (M2.6)</li>
                     <li>Tabulated Summaries (M2.7)</li>
                   </ul>
-                </p>
+                </div>
               </div>
             </div>
           </div>
