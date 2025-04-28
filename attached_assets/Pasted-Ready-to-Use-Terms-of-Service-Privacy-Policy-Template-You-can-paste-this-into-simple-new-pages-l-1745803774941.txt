@@ -1,0 +1,131 @@
+Ready-to-Use Terms of Service + Privacy Policy Template
+✅ You can paste this into simple new pages like /terms.html and /privacy.html,
+or just create a /client/src/pages/Terms.jsx and /Privacy.jsx later.
+
+✅ This is basic but covers your SaaS TrialSage for now.
+
+✍️ Terms of Service (TOS)
+markdown
+Copy
+Edit
+# Terms of Service
+
+Effective Date: [Today’s Date]
+
+Welcome to TrialSage™!
+
+By accessing or using our services, you agree to be bound by these Terms of Service.  
+If you do not agree, please do not use our platform.
+
+## 1. Services Provided
+TrialSage offers AI-powered regulatory intelligence tools for clinical trial management and documentation.  
+Features include IND Wizards, CER Generators, CSR Analyzers, and related portals.
+
+## 2. User Responsibilities
+You agree to use the platform in compliance with all applicable laws and regulations.  
+You must not misuse, hack, or interfere with the service.
+
+## 3. Data and Privacy
+All personal data submitted is handled according to our [Privacy Policy](#).  
+By using TrialSage, you consent to the processing of your data.
+
+## 4. Intellectual Property
+All content, trademarks, and software belong to Concept2Cures, Inc.  
+You may not copy, modify, or distribute any materials without permission.
+
+## 5. Termination
+We reserve the right to terminate accounts that violate these terms at any time.
+
+## 6. Changes to Terms
+We may update these Terms from time to time. Updated terms will be posted here.
+
+## 7. Contact Us
+For questions about these Terms, please contact support@concept2cures.ai.
+
+---
+
+✅ Easy. You can link this on your website footer as "Terms of Service."
+
+✍️ Privacy Policy
+markdown
+Copy
+Edit
+# Privacy Policy
+
+Effective Date: [Today’s Date]
+
+Your privacy is important to us at TrialSage™.
+
+## 1. Information We Collect
+We collect only the necessary information to provide regulatory intelligence services,  
+such as login information, organization details, and usage analytics.
+
+## 2. How We Use Your Information
+- To provide and operate the TrialSage services
+- To improve user experience
+- To respond to customer support requests
+- To comply with legal obligations
+
+## 3. Data Sharing
+We do not sell or rent your personal information.  
+We may share information with trusted service providers who assist us.
+
+## 4. Security
+We implement measures to protect your data, including encrypted storage and secure authentication.
+
+## 5. Your Rights
+You have the right to access, correct, or delete your personal information.
+
+## 6. Changes to This Policy
+We may revise this Privacy Policy. Updates will be posted on this page.
+
+## 7. Contact Us
+If you have any questions about this Privacy Policy, contact support@concept2cures.ai.
+
+---
+
+✅ Basic, legally safe starter Privacy Policy.
+
+✅ You can link this on your footer too: "Privacy Policy."
+
+🚀 UptimeRobot Setup Instructions
+✅ UptimeRobot will ping your Replit app every 5 minutes so it doesn’t go to sleep.
+
+Here’s exactly how to set it up:
+
+
+Step	Action
+1	Go to https://uptimerobot.com/ and create a free account.
+2	Click “Add New Monitor”.
+3	Set monitor type to HTTP(s).
+4	Enter your Replit URL (example: https://your-trialsage-app.repl.co/).
+5	Set interval to every 5 minutes (free plan allows this).
+6	Save monitor.
+7	Done! Your app will stay awake 24/7.
+✅ No coding needed.
+✅ Free account is enough.
+✅ You can monitor uptime too (nice bonus).
+
+📣 Summary:
+✅ You now have:
+
+A clean Terms of Service
+
+A clean Privacy Policy
+
+A working UptimeRobot plan to keep your app awake
+
+🎯 Next (optional, if you want):
+I can build your footer links ("Terms | Privacy | Contact") into your landing page automatically
+
+I can help you draft a Client Demo Guide (what you show live during your TrialSage demo)
+
+👉 Would you like me to help next with Footer Links or Client Demo Guide? (Or both?) 🚀
+(You're almost fully SaaS launch-ready!)
+
+
+
+
+
+
+
