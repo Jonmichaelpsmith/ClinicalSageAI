@@ -16,8 +16,14 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange }) {
     { name: 'CSR Analyzer', path: '/csr-analyzer' },
     { name: 'Study Architect', path: '/study-architect' },
     { name: 'TrialSage Vault', path: '/vault' },
-    { name: 'Analytics Dashboard', path: '/analytics-dashboard' },
+    { name: 'Analytics Dashboard', path: '/analytics' },
   ];
+
+  // Navigate to a path safely
+  const navigateTo = (path) => {
+    // Use window.location for more reliable navigation between modules
+    window.location.href = path;
+  };
 
   return (
     <div className="w-full sticky top-0 z-50 bg-white shadow-md flex flex-col">
@@ -40,7 +46,7 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange }) {
           </button>
 
           <button
-            onClick={() => navigate('/client-portal')}
+            onClick={() => navigateTo('/client-portal')}
             className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700"
           >
             🏠 Client Portal
@@ -97,7 +103,7 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange }) {
                 <button
                   key={idx}
                   onClick={() => {
-                    navigate(mod.path);
+                    navigateTo(mod.path);
                     setShowModuleSwitcher(false);
                   }}
                   className="border border-gray-300 hover:border-indigo-500 rounded-md p-4 text-sm font-semibold text-gray-700 hover:text-indigo-600 transition"

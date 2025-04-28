@@ -42,16 +42,18 @@ function App() {
   // Get current location to determine when to show the unified nav
   const [location] = useLocation();
   
-  // Check if we're on the landing page
+  // Check if we're on the landing page or regulatory hub (which has its own navigation)
   const isLandingPage = location === '/' || location === '/client-portal';
+  const isRegulatoryHub = location === '/regulatory-intelligence-hub';
+  const shouldShowNav = !isLandingPage && !isRegulatoryHub;
   
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Only show the UnifiedTopNavV3 if we're not on the landing page */}
-      {!isLandingPage && (
+      {/* Only show the UnifiedTopNavV3 if we're not on the landing page or regulatory hub */}
+      {shouldShowNav && (
         <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
       )}
-      <div className={isLandingPage ? "p-4" : "p-4 mt-24"}>
+      <div className={isLandingPage ? "p-4" : (isRegulatoryHub ? "p-0" : "p-4 mt-24")}>
         <Switch>
           {/* Main Portal Landing Page */}
           <Route path="/client-portal" component={ClientPortalLanding} />

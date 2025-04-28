@@ -1,20 +1,28 @@
 // /client/src/pages/RegulatoryIntelligenceHub.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdvisorSummaryPanel from '../components/advisor/AdvisorSummaryPanel';
 import AdvisorRiskHeatmapV2 from '../components/advisor/AdvisorRiskHeatmapV2';
 import AdvisorTimelineSimulator from '../components/advisor/AdvisorTimelineSimulator';
 import AskLumenAI from '../components/assistant/AskLumenAI'; // Enhanced AI assistant
+import UnifiedTopNavV3 from '../components/navigation/UnifiedTopNavV3'; // Import the navigation component
 
 export default function RegulatoryIntelligenceHub() {
   const [activeTab, setActiveTab] = useState('RiskHeatmap');
 
+  // Handle tab change from the navigation component
+  const handleTabChange = (tab) => {
+    console.log("Tab changed to:", tab);
+    setActiveTab(tab);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation is now handled at the App level */}
+      {/* Add the navigation component directly in this page */}
+      <UnifiedTopNavV3 activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Main Regulatory Intelligence Panels */}
-      <div className="p-8 space-y-6">
+      <div className="p-8 space-y-6 mt-20">
         {/* Top Readiness Metrics */}
         <AdvisorSummaryPanel />
 
