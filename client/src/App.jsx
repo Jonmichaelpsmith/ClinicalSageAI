@@ -14,6 +14,7 @@ import VaultPage from './pages/VaultPage';
 import VaultTestPage from './pages/VaultTestPage'; // Import the test page
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
+import Module3QualityPage from './modules/Module3QualityPage';
 import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
 import VaultDocumentViewer from './components/vault/VaultDocumentViewer'; // Import VaultDocumentViewer
 
@@ -67,6 +68,7 @@ function App() {
           <Route path="/analytics" component={AnalyticsDashboard} />
           
           {/* IND Wizard Module Pages */}
+          <Route path="/ind-wizard/module-3" component={Module3QualityPage} />
           <Route path="/ind-wizard/module-4" component={Module4NonclinicalPage} />
 
           {/* Default Redirect */}
