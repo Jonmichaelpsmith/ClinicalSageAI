@@ -3,6 +3,7 @@ import { Route, Switch, useLocation, Redirect } from 'wouter';
 import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
 import UnifiedPlatform from './components/UnifiedPlatform';
 import Login from './components/auth/Login';
+import { ClientPortalLanding } from './components/client-portal/ClientPortalLanding';
 
 function App() {
   // Get location for navigation
