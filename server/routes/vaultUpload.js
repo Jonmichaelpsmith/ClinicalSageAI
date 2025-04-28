@@ -12,8 +12,10 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Create metadata.json if it doesn't exist
+// Define metadata path used throughout this file
 const metadataPath = path.join(uploadDir, 'metadata.json');
+
+// Create metadata.json if it doesn't exist
 if (!fs.existsSync(metadataPath)) {
   console.log('📄 Creating empty metadata.json file for vault documents');
   fs.writeFileSync(metadataPath, JSON.stringify([], null, 2));
@@ -93,129 +95,28 @@ router.post('/upload', upload.single('document'), (req, res) => {
   }
 });
 
-// GET /api/vault/list - Emergency stable implementation 
+// GET /api/vault/list
+const metadataPath = path.join(__dirname, '../../uploads/metadata.json');
+
 router.get('/list', (req, res) => {
-  console.log('📂 Returning stable vault list response');
-  
-  // Default response in case anything fails
-  const defaultResponse = {
-    success: true, 
-    documents: [],
-    metadata: {
-      totalCount: 0,
-      filteredCount: 0,
-      uniqueModules: [],
-      uniqueUploaders: [],
-      uniqueProjects: [],
-      uniqueTypes: [],
-      ctdModuleMapping: {
-        'Module 1': 'Administrative Information',
-        'Module 2': 'CTD Summaries',
-        'Module 3': 'Quality',
-        'Module 4': 'Nonclinical Study Reports',
-        'Module 5': 'Clinical Study Reports'
-      }
-    }
-  };
-  
   try {
-    const { module, uploader, projectId, search, documentType } = req.query;
-    
-    // Get metadata.json path
-    const metadataPath = path.join(uploadDir, 'metadata.json');
-    
-    // If metadata.json doesn't exist, create it
     if (!fs.existsSync(metadataPath)) {
-      fs.writeFileSync(metadataPath, JSON.stringify([], null, 2));
-      console.log('📄 Created fresh metadata.json file');
-      return res.status(200).json(defaultResponse);
+      // If no metadata yet, respond cleanly
+      return res.status(200).json({ success: true, documents: [] });
     }
-    
-    // Read and parse metadata
+
+    const metaRaw = fs.readFileSync(metadataPath, { encoding: 'utf8' });
+
+    // Handle empty or corrupted file gracefully
     let documents = [];
-    try {
-      const metaRaw = fs.readFileSync(metadataPath, 'utf8');
-      documents = JSON.parse(metaRaw || '[]');
-      console.log(`✅ Read ${documents.length} documents from metadata`);
-    } catch (parseError) {
-      console.error('❌ Error parsing metadata:', parseError);
-      fs.writeFileSync(metadataPath, JSON.stringify([], null, 2));
-      return res.status(200).json(defaultResponse);
+    if (metaRaw.trim().length > 0) {
+      documents = JSON.parse(metaRaw);
     }
-    
-    // Ensure documents is an array
-    if (!Array.isArray(documents)) {
-      documents = [];
-    }
-    
-    // Extract unique values for filters
-    const uniqueModules = [...new Set(documents.map(doc => doc.moduleLinked || 'Unknown'))];
-    const uniqueUploaders = [...new Set(documents.map(doc => doc.uploader || 'Unknown'))];
-    const uniqueProjects = [...new Set(documents.map(doc => doc.projectId || 'Unassigned'))];
-    const uniqueTypes = [...new Set(documents.map(doc => doc.documentType).filter(Boolean))];
-    
-    // Apply filters
-    let filteredDocs = [...documents];
-    
-    if (module && module !== 'all') {
-      filteredDocs = filteredDocs.filter(doc => doc.moduleLinked === module);
-    }
-    
-    if (uploader && uploader !== 'all') {
-      filteredDocs = filteredDocs.filter(doc => doc.uploader === uploader);
-    }
-    
-    if (projectId && projectId !== 'all') {
-      filteredDocs = filteredDocs.filter(doc => doc.projectId === projectId);
-    }
-    
-    if (documentType && documentType !== 'all') {
-      filteredDocs = filteredDocs.filter(doc => doc.documentType === documentType);
-    }
-    
-    // Apply text search if provided
-    if (search && search.trim() !== '') {
-      const searchTerms = search.toLowerCase().trim().split(/\s+/);
-      filteredDocs = filteredDocs.filter(doc => {
-        const searchableText = [
-          doc.originalName, 
-          doc.moduleLinked, 
-          doc.projectId, 
-          doc.uploader,
-          doc.documentType
-        ].filter(Boolean).join(' ').toLowerCase();
-        
-        return searchTerms.every(term => searchableText.includes(term));
-      });
-    }
-    
-    // CTD module mapping for reference
-    const ctdModuleMapping = {
-      'Module 1': 'Administrative Information',
-      'Module 2': 'CTD Summaries',
-      'Module 3': 'Quality',
-      'Module 4': 'Nonclinical Study Reports',
-      'Module 5': 'Clinical Study Reports'
-    };
-    
-    console.log(`✅ Listing ${filteredDocs.length} documents from Vault (${documents.length} total)`);
-    
-    return res.status(200).json({ 
-      success: true, 
-      documents: filteredDocs,
-      metadata: {
-        totalCount: documents.length,
-        filteredCount: filteredDocs.length,
-        uniqueModules,
-        uniqueUploaders,
-        uniqueProjects,
-        uniqueTypes,
-        ctdModuleMapping
-      }
-    });
+
+    return res.status(200).json({ success: true, documents });
   } catch (error) {
-    console.error('❌ Error listing documents:', error);
-    return res.status(200).json(defaultResponse);
+    console.error('❌ Error listing Vault documents:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 });
 
