@@ -163,7 +163,7 @@ export default function VaultDocumentViewer() {
                 className="w-full rounded-md border-gray-300 shadow-sm text-sm"
               >
                 <option value="all">All Modules</option>
-                {metadata.uniqueModules?.sort().map(module => (
+                {(metadata?.uniqueModules || []).map(module => (
                   <option key={module} value={module}>{module}</option>
                 ))}
               </select>
@@ -177,7 +177,7 @@ export default function VaultDocumentViewer() {
                 className="w-full rounded-md border-gray-300 shadow-sm text-sm"
               >
                 <option value="all">All Uploaders</option>
-                {metadata.uniqueUploaders?.sort().map(uploader => (
+                {(metadata?.uniqueUploaders || []).map(uploader => (
                   <option key={uploader} value={uploader}>{uploader}</option>
                 ))}
               </select>
@@ -191,7 +191,7 @@ export default function VaultDocumentViewer() {
                 className="w-full rounded-md border-gray-300 shadow-sm text-sm"
               >
                 <option value="all">All Projects</option>
-                {metadata.uniqueProjects?.sort().map(project => (
+                {(metadata?.uniqueProjects || []).map(project => (
                   <option key={project} value={project}>{project}</option>
                 ))}
               </select>
@@ -223,7 +223,7 @@ export default function VaultDocumentViewer() {
           </form>
 
           <div className="mt-3 text-xs text-gray-500">
-            Showing {documents.length} document groups from a total of {metadata.totalCount || 0} documents
+            Showing {documents.length} document groups from a total of {metadata?.totalCount || 0} documents
           </div>
         </div>
       )}
