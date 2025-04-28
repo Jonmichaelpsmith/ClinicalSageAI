@@ -5,6 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const router = express.Router();
 
+console.log('✅ Advisor routes loaded successfully');
+
 // Define CTD Critical Sections (Base Model for Playbook Adjustment)
 const CTDChecklist = {
   "Module 1": ["Form 1571", "Form 1572", "Cover Letter", "Investigator Brochure", "US Agent Appointment"],
