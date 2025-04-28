@@ -1,0 +1,64 @@
+// /client/src/components/vault/VaultDocumentViewer.jsx
+
+import { useEffect, useState } from 'react';
+
+export default function VaultDocumentViewer() {
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const res = await fetch('/api/vault/list');
+        const data = await res.json();
+        if (data.success) {
+          setDocuments(data.documents);
+        } else {
+          alert('❌ Failed to load Vault documents.');
+        }
+      } catch (error) {
+        console.error('Error fetching Vault documents:', error);
+        alert('❌ Server error while loading Vault documents.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDocuments();
+  }, []);
+
+  if (loading) {
+    return <p className="text-gray-500">Loading documents...</p>;
+  }
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md space-y-6 max-w-5xl mx-auto">
+      <h2 className="text-2xl font-semibold">Vault Document Repository</h2>
+
+      {documents.length === 0 ? (
+        <p className="text-gray-500 text-sm">No documents uploaded yet.</p>
+      ) : (
+        <ul className="divide-y divide-gray-200">
+          {documents.map((doc, idx) => (
+            <li key={idx} className="py-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">{doc.originalName}</p>
+                <p className="text-xs text-gray-400">
+                  Module: {doc.moduleLinked || 'Unknown'} • Uploaded by {doc.uploader || 'Unknown'}
+                </p>
+              </div>
+              <a
+                href={`/uploads/${doc.storedName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-indigo-600 hover:underline"
+              >
+                Download
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

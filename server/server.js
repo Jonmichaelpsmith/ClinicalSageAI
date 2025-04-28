@@ -51,6 +51,11 @@ app.use('/api', (req, res, next) => {
 const clientBuildPath = path.join(__dirname, '../client/build');
 app.use(express.static(clientBuildPath));
 
+// Serve the vault test HTML page
+app.get('/vault-test', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/vault-test.html'));
+});
+
 // React Router fallback - serve React index.html
 app.get('*', (req, res) => {
   if (req.originalUrl.startsWith('/api/')) {
