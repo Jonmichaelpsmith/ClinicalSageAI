@@ -15,7 +15,8 @@ import {
   Calendar,
   Bell,
   HelpCircle,
-  User
+  User,
+  MessageSquare
 } from "lucide-react";
 
 const moduleConfig = [
@@ -222,32 +223,46 @@ export default function UnifiedTopNavV3() {
       </div>
       
       {/* Breadcrumb Row */}
-      <div className="px-4 py-1 flex items-center text-xs text-gray-500 bg-gray-50 transition-all duration-300 ease-in-out">
-        {breadcrumbs.length > 0 ? (
-          <div className="flex items-center flex-wrap">
-            {breadcrumbs.map((breadcrumb, index) => (
-              <React.Fragment key={breadcrumb.path}>
-                {index > 0 && <ChevronRight className="h-3 w-3 mx-1 text-gray-400" />}
-                <Link 
-                  href={breadcrumb.path}
-                  className="hover:text-indigo-600 hover:underline transition-colors duration-200"
-                >
-                  {index === 0 ? (
-                    <div className="flex items-center">
-                      <Home className="h-3 w-3 mr-1" />
-                      {breadcrumb.label}
-                    </div>
-                  ) : breadcrumb.label}
-                </Link>
-              </React.Fragment>
-            ))}
-          </div>
-        ) : (
-          <div className="flex items-center">
-            <Home className="h-3 w-3 mr-1" />
-            <span>Home</span>
-          </div>
-        )}
+      <div className="px-4 py-2 flex items-center justify-between text-xs bg-gray-50 border-b transition-all duration-300 ease-in-out">
+        <div className="flex-1 animate-fadeIn">
+          {breadcrumbs.length > 0 ? (
+            <div className="flex items-center flex-wrap">
+              {breadcrumbs.map((breadcrumb, index) => (
+                <React.Fragment key={breadcrumb.path}>
+                  {index > 0 && <ChevronRight className="h-3 w-3 mx-1 text-gray-400" />}
+                  <Link 
+                    href={breadcrumb.path}
+                    className={`text-gray-600 hover:text-indigo-600 hover:underline transition-all duration-200 ${index === breadcrumbs.length - 1 ? 'font-medium text-indigo-700' : ''}`}
+                  >
+                    {index === 0 ? (
+                      <div className="flex items-center">
+                        <Home className="h-3 w-3 mr-1" />
+                        {breadcrumb.label}
+                      </div>
+                    ) : breadcrumb.label}
+                  </Link>
+                </React.Fragment>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center text-gray-600">
+              <Home className="h-3 w-3 mr-1" />
+              <span>Home</span>
+            </div>
+          )}
+        </div>
+        
+        {/* Ask Lumen AI Button */}
+        <div className="ml-2">
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-xs flex items-center text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200"
+          >
+            <MessageSquare className="h-3 w-3 mr-1" />
+            <span className="hidden sm:inline">Ask Lumen AI</span>
+          </Button>
+        </div>
       </div>
     </div>
   );
