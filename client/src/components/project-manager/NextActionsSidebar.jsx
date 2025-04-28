@@ -47,20 +47,19 @@ const NextActionsSidebar = ({ userId, orgId, maxItems = 8 }) => {
 
   // Load actions when component mounts
   useEffect(() => {
-    const loadActions = async () => {
+    const init = async () => {
       try {
-        setIsLoading(true);
-        const nextActions = await ProjectService.getNextActions(userId, orgId);
-        setActions(nextActions.slice(0, maxItems));
+        const response = await fetch('/api/next-actions');
+        const data = await response.json();
+        setActions(data.data.slice(0, maxItems));
+        setIsLoading(false);
       } catch (error) {
         console.error('Error loading next actions:', error);
-      } finally {
         setIsLoading(false);
       }
     };
-
-    loadActions();
-  }, [userId, orgId, maxItems]);
+    init();
+  }, [maxItems]);
 
   // Helper to format due date
   const formatDueDate = (dateStr) => {
@@ -99,9 +98,10 @@ const NextActionsSidebar = ({ userId, orgId, maxItems = 8 }) => {
   // Render loading state
   if (isLoading) {
     return (
-      <Card className="min-h-[300px] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </Card>
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold mb-2">My Next Actions</h2>
+        <p>Loading tasks...</p>
+      </div>
     );
   }
 

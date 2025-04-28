@@ -40,56 +40,30 @@ const VaultQuickAccess = ({ userId, orgId, recentDocsCount = 3 }) => {
   const [recentDocs, setRecentDocs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate fetching vault stats and recent documents
+  // Fetch vault stats and recent documents from API
   useEffect(() => {
-    const loadVaultData = async () => {
+    const init = async () => {
       try {
-        setIsLoading(true);
+        const response = await fetch('/api/vault/recent-docs');
+        const data = await response.json();
+        setRecentDocs(data.data);
         
-        // In a real app, this would be an API call
-        // Mock data for demonstration
-        setTimeout(() => {
-          setVaultStats({
-            totalDocuments: 148,
-            totalSize: "2.4 GB",
-            securityLevel: "Enhanced",
-            lastBackup: "Today"
-          });
-          
-          setRecentDocs([
-            {
-              id: "doc-1",
-              name: "Protocol_BTX331_v2.1.docx",
-              type: "protocol",
-              uploadDate: "2025-04-27T15:32:00Z",
-              size: "4.2 MB"
-            },
-            {
-              id: "doc-2",
-              name: "CMC_Module3_draft.pdf",
-              type: "regulatory",
-              uploadDate: "2025-04-26T11:45:00Z",
-              size: "8.7 MB"
-            },
-            {
-              id: "doc-3",
-              name: "Safety_Update_Q1_2025.xlsx",
-              type: "safety",
-              uploadDate: "2025-04-25T09:12:00Z",
-              size: "1.5 MB"
-            }
-          ]);
-          
-          setIsLoading(false);
-        }, 800);
+        // Set default vault stats until we have a dedicated endpoint
+        setVaultStats({
+          totalDocuments: data.data.length,
+          totalSize: "2.4 GB",
+          securityLevel: "Enhanced",
+          lastBackup: "Today"
+        });
+        
+        setIsLoading(false);
       } catch (error) {
-        console.error('Error loading vault data:', error);
+        console.error('Error loading Vault documents:', error);
         setIsLoading(false);
       }
     };
-
-    loadVaultData();
-  }, [userId, orgId, recentDocsCount]);
+    init();
+  }, []);
 
   // Helper to format date
   const formatDate = (dateStr) => {
