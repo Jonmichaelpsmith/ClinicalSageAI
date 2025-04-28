@@ -1,7 +1,7 @@
 // /client/src/components/assistant/AskLumenAI.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, UserRound, Bot, Sparkles, PieChart, Clock, Scale, Briefcase, XCircle, Minimize2, Maximize2 } from 'lucide-react';
+import { Send, UserRound, Bot, Sparkles, PieChart, Clock, Scale, Briefcase, XCircle, Minimize2, Maximize2, Paperclip, File, X } from 'lucide-react';
 import { getAdvisorReadiness } from '../../lib/advisorService';
 
 export default function AskLumenAI() {
@@ -18,8 +18,12 @@ export default function AskLumenAI() {
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(true); // Set to true initially to show the panel
+  const [attachedFiles, setAttachedFiles] = useState([]);
+  const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
+  const [documentAnalysisActive, setDocumentAnalysisActive] = useState(false);
   const messagesEndRef = useRef(null);
   const chatInputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Fetch advisor data on load
   useEffect(() => {
@@ -230,6 +234,60 @@ What specific aspect of your regulatory strategy would you like to discuss? I ca
       setIsTyping(false);
     }, 1200);
   };
+  
+  // Handle file attachment
+  const handleFileAttachment = () => {
+    fileInputRef.current?.click();
+  };
+  
+  // Handle file input change
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length === 0) return;
+    
+    // Add new files to existing attachments
+    setAttachedFiles(prev => [...prev, ...selectedFiles]);
+    
+    // Show message about attached files
+    const fileNames = selectedFiles.map(file => file.name).join(', ');
+    setMessages(prev => [
+      ...prev,
+      { 
+        role: 'user', 
+        content: `I've attached the following documents for analysis: ${fileNames}` 
+      }
+    ]);
+    
+    // Show typing indicator
+    setIsTyping(true);
+    
+    // Simulate document analysis
+    setTimeout(() => {
+      setDocumentAnalysisActive(true);
+      
+      // Generate response after "analysis"
+      setTimeout(() => {
+        const aiResponse = `I've analyzed the following documents: ${fileNames}
+
+Based on my review, these documents appear to be related to ${selectedFiles[0].type.includes('pdf') ? 'regulatory submissions' : 'clinical research'}.
+
+Would you like me to:
+1. Extract key information from these documents
+2. Compare these to your current submission requirements
+3. Identify potential gaps or issues in the documentation
+4. Suggest improvements based on regulatory standards`;
+        
+        setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+        setIsTyping(false);
+        setDocumentAnalysisActive(false);
+      }, 3000);
+    }, 1500);
+  };
+  
+  // Remove an attached file
+  const handleRemoveFile = (indexToRemove) => {
+    setAttachedFiles(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
 
   // Handle mode change
   const handleModeChange = (mode) => {
@@ -394,26 +452,82 @@ What specific aspect of your regulatory strategy would you like to discuss? I ca
           ))}
         </div>
         
+        {/* Attached Files Section */}
+        {attachedFiles.length > 0 && (
+          <div className="px-4 py-2 border-t border-gray-200 bg-gray-50">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-xs font-medium text-gray-700">Attached Documents ({attachedFiles.length})</h4>
+              {documentAnalysisActive && (
+                <div className="flex items-center text-xs text-indigo-600">
+                  <div className="animate-spin mr-1 h-3 w-3 border-2 border-indigo-600 rounded-full border-t-transparent"></div>
+                  Analyzing documents...
+                </div>
+              )}
+            </div>
+            <div className="space-y-2 max-h-24 overflow-y-auto">
+              {attachedFiles.map((file, idx) => (
+                <div key={idx} className="flex items-center justify-between bg-white p-2 rounded text-xs border border-gray-200">
+                  <div className="flex items-center">
+                    <File size={14} className="text-indigo-500 mr-2" />
+                    <span className="truncate max-w-[180px]">{file.name}</span>
+                  </div>
+                  <button 
+                    onClick={() => handleRemoveFile(idx)}
+                    className="text-gray-400 hover:text-red-500"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         {/* Input Form */}
         <form 
           id="chat-form"
           onSubmit={handleSubmit} 
-          className="border-t border-gray-200 p-3 flex"
+          className="border-t border-gray-200 p-3 flex items-center"
         >
+          {/* Hidden file input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            multiple
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+          />
+          
+          {/* File attachment button */}
+          <button
+            type="button"
+            onClick={handleFileAttachment}
+            disabled={isTyping || documentAnalysisActive}
+            className={`p-2 mr-1 rounded ${
+              isTyping || documentAnalysisActive
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-indigo-600 hover:bg-indigo-50'
+            }`}
+            title="Attach documents for analysis"
+          >
+            <Paperclip size={18} />
+          </button>
+          
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about your regulatory strategy..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            disabled={isTyping}
+            disabled={isTyping || documentAnalysisActive}
             ref={chatInputRef}
           />
           <button
             type="submit"
-            disabled={!input.trim() || isTyping}
+            disabled={!input.trim() || isTyping || documentAnalysisActive}
             className={`px-4 py-2 rounded-r-md ${
-              !input.trim() || isTyping
+              !input.trim() || isTyping || documentAnalysisActive
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'
             }`}
