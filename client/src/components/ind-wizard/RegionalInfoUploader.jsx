@@ -17,13 +17,12 @@ export default function RegionalInfoUploader({ setFormStatus }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-600">
-        Upload region-specific information including DMF reference letters for FDA submissions, 
-        process validation schemes, and other documentation required for specific regulatory authorities.
+        Upload country-specific regional documents, such as U.S. Drug Master File (DMF) Reference Letters, Certificates of Foreign Government, or other regional regulatory documents.
       </p>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Upload Regional Files (Multiple Allowed)</label>
+          <label className="block text-sm font-medium mb-1">Upload Regional Information Files (Multiple Allowed)</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx,.xls,.xlsx"
