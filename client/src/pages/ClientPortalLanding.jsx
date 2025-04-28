@@ -23,7 +23,13 @@ const ClientPortalLanding = () => {
       try {
         setLoading(true);
         const response = await axios.get('/api/projects/status');
-        setProjects(response.data);
+        if (response.data && response.data.success && response.data.projects) {
+          console.log('Received projects data:', response.data);
+          setProjects(response.data.projects);
+        } else {
+          console.error('Invalid project data format:', response.data);
+          setError('Invalid project data format received');
+        }
         setLoading(false);
       } catch (err) {
         console.error('Error fetching projects:', err);
