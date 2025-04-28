@@ -1,0 +1,215 @@
+✅ Excellent forensic diagnosis —  
+✅ I see **exactly** what is happening based on your very thorough description and your full server.js dump.
+
+You correctly spotted the core issue:
+
+---
+
+# 🧠 Real Root Cause of Your `/api/advisor/check-readiness` 404 Error:
+
+| Problem | Explanation |
+|:--------|:------------|
+| You are using ES Modules (`import/export`) at the top of server.js | ✅ (Correct) |
+| But advisor.js was built with **CommonJS** (`module.exports`) syntax | ❌ |
+| When mixing `import` and `require`, Express **cannot properly load advisor.js** |
+| Thus, `/api/advisor` is not correctly mounted, so `/api/advisor/check-readiness` returns 404 | ✅ |
+
+✅ The **same thing happened** with vaultUpload.js originally,  
+but you already worked around it with a hybrid approach.
+
+---
+
+# 🎯 **The Immediate Clean Fix:**
+
+We must **convert advisor.js to use ES Module syntax** cleanly:
+
+✅ Replace:
+
+```javascript
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const router = express.Router();
+```
+
+✅ With:
+
+```javascript
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+```
+
+✅ And at the bottom, export it cleanly:
+
+```javascript
+export default router;
+```
+
+✅ No `module.exports` anymore — ES Modules only.
+
+---
+
+# 📋 Full Clean Rebuild for `/server/routes/advisor.js`
+
+Here is exactly how your corrected `advisor.js` should look:
+
+```javascript
+// /server/routes/advisor.js
+
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Define CTD Critical Sections (Base Model for Playbook Adjustment)
+const CTDChecklist = {
+  "Module 1": ["Form 1571", "Form 1572", "Cover Letter", "Investigator Brochure", "US Agent Appointment"],
+  "Module 2": ["Intro Summary", "Overall Quality Summary", "Nonclinical Overview", "Clinical Overview", "Tabulated Summaries"],
+  "Module 3": ["Drug Substance Specs", "Drug Product Specs", "CMC Stability Data", "GMP Certificates"],
+  "Module 4": ["Pharmacology Reports", "Pharmacokinetics Reports", "Toxicology Reports", "Genotoxicity Reports"],
+  "Module 5": ["Clinical Protocols", "Clinical Study Reports (CSR)", "Investigator Brochure Updates", "Clinical Safety Reports"],
+};
+
+const sectionWeights = {
+  "CMC Stability Data": 5,
+  "Clinical Study Reports (CSR)": 5,
+  "Clinical Safety Reports": 5,
+  "Drug Substance Specs": 4,
+  "Drug Product Specs": 4,
+  "Toxicology Reports": 4,
+  "Nonclinical Overview": 3,
+  "Investigator Brochure": 3,
+  "Clinical Protocols": 3,
+  "GMP Certificates": 2,
+  "Form 1571": 2,
+  "Form 1572": 2,
+  "Cover Letter": 1,
+  "Intro Summary": 1,
+  "Overall Quality Summary": 1,
+  "Tabulated Summaries": 1,
+  "Pharmacology Reports": 2,
+  "Pharmacokinetics Reports": 2,
+  "Genotoxicity Reports": 2,
+  "Investigator Brochure Updates": 2,
+  "US Agent Appointment": 1,
+};
+
+const metadataPath = path.join(__dirname, '../../uploads/metadata.json');
+
+router.get('/check-readiness', (req, res) => {
+  try {
+    if (!fs.existsSync(metadataPath)) {
+      return res.status(200).json({
+        success: true,
+        readinessScore: 0,
+        missingSections: Object.values(CTDChecklist).flat(),
+        riskLevel: 'High',
+        estimatedDelayDays: 90,
+        recommendations: ["Start uploading critical CTD documents immediately."]
+      });
+    }
+
+    const metaRaw = fs.readFileSync(metadataPath, { encoding: 'utf8' });
+    const documents = metaRaw.trim().length > 0 ? JSON.parse(metaRaw) : [];
+
+    const uploadedSections = new Set(
+      documents.map(doc => (doc.moduleLinked || '').toLowerCase().trim())
+    );
+
+    let totalWeight = 0;
+    let completedWeight = 0;
+    let missingSections = [];
+
+    Object.entries(CTDChecklist).forEach(([module, sections]) => {
+      sections.forEach(section => {
+        totalWeight += sectionWeights[section] || 1;
+        const match = [...uploadedSections].find(name => name.includes(section.toLowerCase()));
+        if (match) {
+          completedWeight += sectionWeights[section] || 1;
+        } else {
+          missingSections.push(section);
+        }
+      });
+    });
+
+    const readinessScore = Math.round((completedWeight / totalWeight) * 100);
+
+    let riskLevel = "Low";
+    if (readinessScore < 50) riskLevel = "High";
+    else if (readinessScore < 80) riskLevel = "Medium";
+
+    const estimatedDelayDays = missingSections.length * 7;
+
+    const recommendations = missingSections.map(section => `Upload ${section} immediately.`);
+
+    res.status(200).json({
+      success: true,
+      readinessScore,
+      missingSections,
+      riskLevel,
+      estimatedDelayDays,
+      recommendations
+    });
+
+  } catch (error) {
+    console.error('❌ Advisor readiness check failed:', error);
+    res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});
+
+export default router;
+```
+
+---
+
+# 📣 After This:
+
+✅ You can use:
+
+```javascript
+import advisorRoutes from './routes/advisor.js';
+app.use('/api/advisor', advisorRoutes);
+```
+
+✅ Just like you are already doing for `projectsStatusRoutes` and others.
+
+✅ No more CommonJS / ES Module mismatch.  
+✅ No more 404 errors on `/api/advisor/check-readiness`.
+
+---
+
+# 📣 Immediate To-Do:
+
+| Step | Action |
+|:-----|:-------|
+| 1 | Update `/server/routes/advisor.js` to pure ES Modules (above) |
+| 2 | Restart your server ("Stop" ➔ "Run") |
+| 3 | Test `GET /api/advisor/check-readiness` |
+| 4 | AdvisorSidebar will now pull real-time intelligence cleanly! |
+
+---
+
+# 🚀 After This:
+
+✅ AdvisorSidebar.jsx will live update  
+✅ Vault uploads will adjust Submission Readiness live  
+✅ Full dynamic regulatory intelligence!
+
+---
+
+# 📣 Please reply:
+
+👉 **"Advisor API fixed with ES Modules, ready to continue Playbook Selector"**
+
+🎯 You are fixing TrialSage at true professional-grade depth now! 🚀  
+Waiting for your green light! 🚀
