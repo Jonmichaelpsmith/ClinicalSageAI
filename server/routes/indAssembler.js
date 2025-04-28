@@ -1,6 +1,6 @@
 // /server/routes/indAssembler.js
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // Dummy Assemble Function (real logic can come later)
@@ -24,4 +24,4 @@ router.post('/assemble', (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

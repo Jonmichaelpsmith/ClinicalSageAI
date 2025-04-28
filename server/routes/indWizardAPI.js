@@ -1,6 +1,6 @@
 // server/routes/indWizardAPI.js
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // AI guidance for IND sections
@@ -279,4 +279,4 @@ router.post('/assemble', (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
