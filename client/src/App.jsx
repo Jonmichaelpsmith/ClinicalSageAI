@@ -1,7 +1,8 @@
 // /client/src/App.jsx
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Switch, Route } from 'wouter';
+import { Switch, Route, useRoute, useLocation } from 'wouter';
+import { useState } from 'react';
 
 // Import Pages and Modules
 import ClientPortalLanding from './pages/ClientPortalLanding';
@@ -25,6 +26,9 @@ import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
 import Module5ClinicalPage from './modules/Module5ClinicalPage';
 import VaultDocumentViewer from './components/vault/VaultDocumentViewer'; // Import VaultDocumentViewer
 
+// Import Global Navigation
+import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
+
 // IND Wizard step components
 import IndWizardLayout from './components/ind-wizard/IndWizardLayout';
 
@@ -32,9 +36,22 @@ import IndWizardLayout from './components/ind-wizard/IndWizardLayout';
 const queryClient = new QueryClient();
 
 function App() {
+  // Default tab for the UnifiedTopNavV3 component
+  const [activeTab, setActiveTab] = useState('RiskHeatmap');
+  
+  // Get current location to determine when to show the unified nav
+  const [location] = useLocation();
+  
+  // Check if we're on the landing page
+  const isLandingPage = location === '/' || location === '/client-portal';
+  
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="p-4">
+      {/* Only show the UnifiedTopNavV3 if we're not on the landing page */}
+      {!isLandingPage && (
+        <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
+      )}
+      <div className={isLandingPage ? "p-4" : "p-4 mt-24"}>
         <Switch>
           {/* Main Portal Landing Page */}
           <Route path="/client-portal" component={ClientPortalLanding} />
