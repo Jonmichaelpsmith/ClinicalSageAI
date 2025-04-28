@@ -1,70 +1,82 @@
 // /server/controllers/actionsController.js
 
-// Dummy next actions for now
+// Dummy next actions data (later connect to database)
 const nextActions = [
   {
-    taskId: 1,
+    id: 1,
+    title: 'Review Protocol Draft',
+    description: 'Review draft protocol for BTX-331 Phase 1 study',
+    dueDate: '2025-05-05',
+    priority: 'high',
+    status: 'pending',
     projectId: 'ind-2025-034',
-    actionDescription: 'Draft CMC Section (Module 3.2)',
-    urgency: 'high',
-    dueDate: '2025-05-20',
-    link: '/ind-wizard/cmcdoc/3.2',
+    assignedTo: 'james.wilson',
+    createdAt: '2025-04-20T10:15:00Z',
+    updatedAt: '2025-04-20T10:15:00Z'
   },
   {
-    taskId: 2,
+    id: 2,
+    title: 'Complete Safety Narrative',
+    description: 'Finalize safety narrative for CSR section 12.3',
+    dueDate: '2025-05-08',
+    priority: 'medium',
+    status: 'in-progress',
     projectId: 'csr-2024-089',
-    actionDescription: 'Finalize Safety Section in CSR',
-    urgency: 'medium',
-    dueDate: '2025-05-25',
-    link: '/csr-analyzer/safety-section',
+    assignedTo: 'emily.chen',
+    createdAt: '2025-04-21T09:30:00Z',
+    updatedAt: '2025-04-25T14:45:00Z'
   },
   {
-    taskId: 3,
+    id: 3,
+    title: 'IB Risk Assessment Review',
+    description: 'Review risk assessment section in Investigator\'s Brochure',
+    dueDate: '2025-05-12',
+    priority: 'medium',
+    status: 'pending',
     projectId: 'protocol-507',
-    actionDescription: 'Upload Final Investigator Brochure',
-    urgency: 'high',
-    dueDate: '2025-05-22',
-    link: '/vault/upload/ib',
+    assignedTo: 'john.davis',
+    createdAt: '2025-04-22T14:20:00Z',
+    updatedAt: '2025-04-22T14:20:00Z'
   },
   {
-    taskId: 4,
+    id: 4,
+    title: 'CMC Section Review',
+    description: 'Review updated CMC section with recent stability data',
+    dueDate: '2025-05-01',
+    priority: 'high',
+    status: 'pending',
     projectId: 'ind-2025-034',
-    actionDescription: 'Review Preclinical Data Summary',
-    urgency: 'low',
-    dueDate: '2025-06-05',
-    link: '/ind-wizard/preclinical',
+    assignedTo: 'susan.williams',
+    createdAt: '2025-04-18T11:05:00Z',
+    updatedAt: '2025-04-18T11:05:00Z'
   },
   {
-    taskId: 5,
-    projectId: 'csr-2024-089',
-    actionDescription: 'Finalize Statistical Analysis Plan',
-    urgency: 'medium',
-    dueDate: '2025-05-30',
-    link: '/csr-analyzer/stats-plan',
+    id: 5,
+    title: 'Device Technical Specification',
+    description: 'Finalize technical specifications for medical device CER',
+    dueDate: '2025-05-15',
+    priority: 'low',
+    status: 'in-progress',
+    projectId: 'cer-2025-012',
+    assignedTo: 'robert.johnson',
+    createdAt: '2025-04-23T09:15:00Z',
+    updatedAt: '2025-04-26T16:30:00Z'
   }
 ];
 
-// GET /api/next-actions - Get all actions
+// GET /api/next-actions - Get all next actions
 export const getAllActions = (req, res) => {
   try {
-    // Sort by urgency (high first) and then by due date
-    const sortedActions = [...nextActions].sort((a, b) => {
-      const urgencyOrder = { high: 1, medium: 2, low: 3 };
-      if (urgencyOrder[a.urgency] !== urgencyOrder[b.urgency]) {
-        return urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
-      }
-      return new Date(a.dueDate) - new Date(b.dueDate);
-    });
-    
+    // In a real app, we would filter by user permissions
     res.status(200).json({
       success: true,
-      data: sortedActions,
+      data: nextActions
     });
   } catch (error) {
-    console.error('Error fetching next actions:', error);
+    console.error('Error fetching actions:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch next actions',
+      message: 'Failed to fetch actions'
     });
   }
 };
@@ -73,19 +85,17 @@ export const getAllActions = (req, res) => {
 export const getActionsByUser = (req, res) => {
   try {
     const { userId } = req.params;
-    // In a real app, we would filter by user permissions
-    // For now, just return all actions
+    const userActions = nextActions.filter(action => action.assignedTo === userId);
     
     res.status(200).json({
       success: true,
-      data: nextActions,
-      userId
+      data: userActions
     });
   } catch (error) {
     console.error('Error fetching user actions:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch user actions',
+      message: 'Failed to fetch user actions'
     });
   }
 };
@@ -98,14 +108,13 @@ export const getActionsByProject = (req, res) => {
     
     res.status(200).json({
       success: true,
-      data: projectActions,
-      projectId
+      data: projectActions
     });
   } catch (error) {
     console.error('Error fetching project actions:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch project actions',
+      message: 'Failed to fetch project actions'
     });
   }
 };
@@ -114,18 +123,17 @@ export const getActionsByProject = (req, res) => {
 export const getActionsByPriority = (req, res) => {
   try {
     const { level } = req.params;
-    const priorityActions = nextActions.filter(action => action.urgency === level);
+    const priorityActions = nextActions.filter(action => action.priority === level);
     
     res.status(200).json({
       success: true,
-      data: priorityActions,
-      priorityLevel: level
+      data: priorityActions
     });
   } catch (error) {
     console.error('Error fetching priority actions:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch priority actions',
+      message: 'Failed to fetch priority actions'
     });
   }
 };
@@ -134,23 +142,25 @@ export const getActionsByPriority = (req, res) => {
 export const createAction = (req, res) => {
   try {
     const newAction = req.body;
-    // In a real app, we would validate the action data
+    
+    // In a real app, validate action data
     // Then save to database
     
-    // For now, just return success with dummy data
     res.status(201).json({
       success: true,
       message: 'Action created successfully',
       data: {
-        taskId: nextActions.length + 1,
+        id: nextActions.length + 1,
         ...newAction,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     });
   } catch (error) {
     console.error('Error creating action:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to create action',
+      message: 'Failed to create action'
     });
   }
 };
@@ -161,22 +171,23 @@ export const updateAction = (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     
-    // In a real app, we would check if action exists
+    // In a real app, check if action exists
     // Then update in database
     
     res.status(200).json({
       success: true,
       message: `Action ${id} updated successfully`,
       data: {
-        taskId: parseInt(id),
+        id: parseInt(id),
         ...updates,
+        updatedAt: new Date().toISOString()
       }
     });
   } catch (error) {
     console.error('Error updating action:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update action',
+      message: 'Failed to update action'
     });
   }
 };
@@ -186,7 +197,7 @@ export const deleteAction = (req, res) => {
   try {
     const { id } = req.params;
     
-    // In a real app, we would check if action exists
+    // In a real app, check if action exists
     // Then delete from database
     
     res.status(200).json({
@@ -197,7 +208,7 @@ export const deleteAction = (req, res) => {
     console.error('Error deleting action:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete action',
+      message: 'Failed to delete action'
     });
   }
 };
@@ -207,23 +218,23 @@ export const completeAction = (req, res) => {
   try {
     const { id } = req.params;
     
-    // In a real app, we would check if action exists
-    // Then mark as complete in database
+    // In a real app, check if action exists
+    // Then update in database
     
     res.status(200).json({
       success: true,
       message: `Action ${id} marked as complete`,
       data: {
-        taskId: parseInt(id),
-        completed: true,
-        completedAt: new Date().toISOString()
+        id: parseInt(id),
+        status: 'completed',
+        updatedAt: new Date().toISOString()
       }
     });
   } catch (error) {
     console.error('Error completing action:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to complete action',
+      message: 'Failed to complete action'
     });
   }
 };
