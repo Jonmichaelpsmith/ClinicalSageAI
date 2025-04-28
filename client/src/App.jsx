@@ -60,6 +60,35 @@ function App() {
             {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
           </Route>
           
+          {/* Additional module routes based on dashboard */}
+          <Route path="/cer-developer">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/protocol-optimizer">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/ind-automation">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/study-designer">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/deep-learning">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/analytics">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/cer-generator">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/cmc-wizard">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/csr-analyzer">
+            {isAuthenticated ? <UnifiedPlatform /> : <Redirect to="/login" />}
+          </Route>
+          
           {/* Client Portal route - redirects to the main portal */}
           <Route path="/client-portal">
             {isAuthenticated ? <Redirect to="/portal" /> : <Redirect to="/login" />}
