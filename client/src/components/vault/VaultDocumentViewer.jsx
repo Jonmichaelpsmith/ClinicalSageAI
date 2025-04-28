@@ -12,6 +12,9 @@ export default function VaultDocumentViewer() {
     ctdModuleMapping: {}
   });
   
+  // State for UI messages 
+  const [error, setError] = useState(null);
+  
   // Filtering state
   const [filters, setFilters] = useState({
     module: 'all',
@@ -27,6 +30,9 @@ export default function VaultDocumentViewer() {
   }, [filters]); // Re-fetch when filters change
 
   const fetchDocuments = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
       // Build query string from filters
       const queryParams = new URLSearchParams();
@@ -37,11 +43,18 @@ export default function VaultDocumentViewer() {
       
       const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
       
+      console.log(`📁 Fetching vault documents from: /api/vault/list${queryString}`);
       const res = await fetch(`/api/vault/list${queryString}`);
+      
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+      }
+      
       const data = await res.json();
+      console.log('📁 Vault documents fetched:', data);
       
       if (data.success) {
-        const organized = organizeVersions(data.documents);
+        const organized = organizeVersions(data.documents || []);
         setDocuments(organized);
         setMetadata(data.metadata || {
           uniqueModules: [],
@@ -50,12 +63,24 @@ export default function VaultDocumentViewer() {
           totalCount: 0,
           ctdModuleMapping: {}
         });
+      } else if (data.error) {
+        setError(`Error loading documents: ${data.error}`);
       } else {
-        alert('❌ Failed to load Vault documents.');
+        setError('Failed to load Vault documents - No success status returned');
       }
     } catch (error) {
       console.error('Error fetching Vault documents:', error);
-      alert('❌ Server error while loading Vault documents.');
+      setError(`Server error: ${error.message || 'Unknown error'}`);
+      
+      // Initialize with empty data to avoid UI errors
+      setDocuments([]);
+      setMetadata({
+        uniqueModules: [],
+        uniqueUploaders: [],
+        uniqueProjects: [],
+        totalCount: 0,
+        ctdModuleMapping: {}
+      });
     } finally {
       setLoading(false);
     }
@@ -203,7 +228,20 @@ export default function VaultDocumentViewer() {
         </div>
       )}
 
-      {documents.length === 0 ? (
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm mb-4">
+          <p className="font-medium">❌ Error</p>
+          <p>{error}</p>
+          <button 
+            onClick={fetchDocuments} 
+            className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+  
+      {!error && documents.length === 0 ? (
         <p className="text-gray-500 text-sm">No documents match your filter criteria.</p>
       ) : (
         <ul className="divide-y divide-gray-200">
