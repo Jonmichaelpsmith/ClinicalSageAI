@@ -51,6 +51,7 @@ import INDProjectDashboard from '@/components/ind-wizard/INDProjectDashboard';
 import AITimelineGenerator from '@/components/ind-wizard/AITimelineGenerator';
 import IndWizardLayout from '@/components/ind-wizard/IndWizardLayout';
 import INDAnalyticsDashboard from '@/components/mashable-bi/INDAnalyticsDashboard';
+import IndWizardSidebar from '@/components/ind-wizard/IndWizardSidebar';
 import Module1AdminPage from '@/modules/Module1AdminPage';
 import Module2SummaryPage from '@/modules/Module2SummaryPage';
 import Module3QualityPage from '@/modules/Module3QualityPage';
@@ -241,14 +242,10 @@ export default function INDWizardAdvanced() {
                 <ClipboardList className="mr-2 h-4 w-4" />
                 Module 5 (Clinical)
               </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start"
-                onClick={handleGoToWizard}
-              >
-                <ListChecks className="mr-2 h-4 w-4" />
-                Step-by-Step Wizard
-              </Button>
+              <div className="mt-4 border-t pt-4">
+                <p className="px-2 text-sm font-medium mb-2">Step-by-Step Wizard</p>
+                <IndWizardSidebar />
+              </div>
               <Button 
                 variant="ghost" 
                 className="w-full justify-start"
