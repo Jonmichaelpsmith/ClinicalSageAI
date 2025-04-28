@@ -16,13 +16,13 @@ export default function WrittenTabulatedSummaryUploader({ setFormStatus }) {
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h2 className="text-xl font-semibold">Written and Tabulated Summaries (Module 2.6/2.7)</h2>
+      <h2 className="text-xl font-semibold">Written and Tabulated Summaries Upload (Module 2.6/2.7)</h2>
       <p className="text-sm text-gray-600">
-        Upload detailed summaries of nonclinical and clinical data, presented in textual and tabular formats.
+        Upload detailed summaries of nonclinical and clinical data, presented in textual and tabular formats according to ICH guidance.
       </p>
 
       <div>
-        <label className="block text-sm font-medium mb-1">Upload Written and Tabulated Summaries</label>
+        <label className="block text-sm font-medium mb-1">Upload Written and Tabulated Summaries (Multiple Files)</label>
         <input
           type="file"
           accept=".pdf,.doc,.docx,.xls,.xlsx"
