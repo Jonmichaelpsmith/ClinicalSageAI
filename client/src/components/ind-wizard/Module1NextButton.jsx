@@ -1,49 +1,41 @@
 // /client/src/components/ind-wizard/Module1NextButton.jsx
 
-import React from 'react';
-import { ChevronRight, AlertCircle } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 export default function Module1NextButton({ formStatus }) {
-  // Check if all required fields are complete
-  const isComplete = formStatus.sponsorInfo && 
-                    formStatus.form1571Uploaded && 
-                    formStatus.form1572Uploaded &&
-                    formStatus.coverLetterUploaded &&
-                    formStatus.ibUploaded &&
-                    (!formStatus.usAgentRequired || formStatus.usAgentInfo);
+  const [, setLocation] = useLocation();
+
+  const requiredFields = [
+    'sponsorInfo',
+    'form1571Uploaded',
+    'form1572Uploaded',
+    'coverLetterUploaded',
+    'ibUploaded',
+  ];
+
+  const isComplete = requiredFields.every((key) => formStatus[key] === true);
 
   const handleNext = () => {
     if (isComplete) {
-      // In a real app, this would navigate to Module 2 or save data to backend
-      alert('✅ Proceeding to Module 2: Chemistry, Manufacturing, and Controls');
+      setLocation('/module-2'); // We can later wire this properly when Module 2 is built
     } else {
-      alert('❌ Please complete all required fields before proceeding');
+      alert('❌ Please complete all required fields before continuing.');
     }
   };
 
   return (
-    <div className="mt-8">
-      <div className="flex flex-col items-end">
-        {!isComplete && (
-          <div className="mb-2 text-amber-600 flex items-center text-sm">
-            <AlertCircle className="h-4 w-4 mr-1" />
-            <span>Complete all required fields to proceed</span>
-          </div>
-        )}
-        
-        <button
-          onClick={handleNext}
-          disabled={!isComplete}
-          className={`flex items-center px-6 py-2 rounded-lg transition ${
-            isComplete
-              ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-              : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-          }`}
-        >
-          Next: Module 2 (CMC)
-          <ChevronRight className="ml-2 h-5 w-5" />
-        </button>
-      </div>
+    <div className="flex justify-end mt-6">
+      <button
+        onClick={handleNext}
+        disabled={!isComplete}
+        className={`px-6 py-2 rounded-md text-white font-semibold ${
+          isComplete
+            ? 'bg-indigo-600 hover:bg-indigo-700'
+            : 'bg-gray-400 cursor-not-allowed'
+        }`}
+      >
+        Next →
+      </button>
     </div>
   );
 }
