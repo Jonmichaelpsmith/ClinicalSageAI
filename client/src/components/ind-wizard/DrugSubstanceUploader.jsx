@@ -9,7 +9,7 @@ export default function DrugSubstanceUploader({ setFormStatus }) {
     const uploadedFiles = Array.from(e.target.files);
     if (uploadedFiles.length > 0) {
       setFiles(uploadedFiles);
-      setFormStatus(prev => ({ ...prev, drugSubstance: true }));
+      setFormStatus(prev => ({ ...prev, drugSubstanceUploaded: true }));
       alert(`✅ ${uploadedFiles.length} Drug Substance documentation files uploaded successfully.`);
     }
   };

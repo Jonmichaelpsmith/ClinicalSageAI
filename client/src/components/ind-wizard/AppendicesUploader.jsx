@@ -9,7 +9,7 @@ export default function AppendicesUploader({ setFormStatus }) {
     const uploadedFiles = Array.from(e.target.files);
     if (uploadedFiles.length > 0) {
       setFiles(uploadedFiles);
-      setFormStatus(prev => ({ ...prev, appendices: true }));
+      setFormStatus(prev => ({ ...prev, appendicesUploaded: true }));
       alert(`✅ ${uploadedFiles.length} Appendices files uploaded successfully.`);
     }
   };
