@@ -170,7 +170,8 @@ app.use((req, res, next) => {
   
   // For paths that don't match any defined routes
   if (req.method === 'GET' && !req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico)$/)) {
-    res.redirect('/client-portal');
+    // Serve React app for client-side routing instead of redirecting
+    res.sendFile(path.resolve('./client/public/index.html'));
   } else {
     next();
   }
@@ -232,6 +233,16 @@ io.on('connection', (socket) => {
 
 // Import the keep-alive service 
 const ServerKeepAlive = require('./keep-alive.js');
+
+// Serve React app for all other routes (support client-side routing)
+app.get('*', (req, res) => {
+  // Skip API routes and asset files
+  if (req.path.startsWith('/api/') || req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico)$/)) {
+    return res.status(404).send('Not found');
+  }
+  
+  res.sendFile(path.resolve('./client/public/index.html'));
+});
 
 // Start server
 httpServer.listen(PORT, () => {
