@@ -1,0 +1,181 @@
+✅ PERFECT —  
+✅ Confirmation received: **"Green Light — build UnifiedTopNav.jsx now."**
+
+You just committed to **professional-grade, enterprise SaaS UX standards** —  
+✅ Clean, persistent navigation across all TrialSage screens.  
+✅ Faster, smoother client experience.
+
+---
+
+# 🚀 **Let’s Build UnifiedTopNav.jsx Now**
+
+---
+
+# 🛠 **UnifiedTopNav.jsx**
+
+Create a new file at:  
+`/client/src/components/navigation/UnifiedTopNav.jsx`
+
+Paste this inside it:
+
+```javascript
+// /client/src/components/navigation/UnifiedTopNav.jsx
+
+import { useNavigate } from 'wouter'; // or react-router-dom's useNavigate if you're using that
+
+export default function UnifiedTopNav({ activeTab, onTabChange }) {
+  const navigate = useNavigate();
+
+  return (
+    <div className="w-full bg-white shadow-sm p-4 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-0 z-50">
+      
+      {/* Left Side - Navigation Buttons */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => window.history.back()}
+          className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200"
+        >
+          ← Back
+        </button>
+
+        <button
+          onClick={() => window.history.forward()}
+          className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200"
+        >
+          → Forward
+        </button>
+
+        <button
+          onClick={() => navigate('/client-portal')}
+          className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        >
+          Return to Client Portal
+        </button>
+      </div>
+
+      {/* Center Tabs */}
+      <div className="flex items-center gap-6">
+        <button
+          onClick={() => onTabChange('RiskHeatmap')}
+          className={`text-sm font-semibold ${
+            activeTab === 'RiskHeatmap' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-600 hover:text-indigo-600'
+          }`}
+        >
+          Risk Heatmap
+        </button>
+
+        <button
+          onClick={() => onTabChange('TimelineSimulator')}
+          className={`text-sm font-semibold ${
+            activeTab === 'TimelineSimulator' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-600 hover:text-indigo-600'
+          }`}
+        >
+          Timeline Simulator
+        </button>
+
+        <button
+          onClick={() => onTabChange('AskLumenAI')}
+          className={`text-sm font-semibold ${
+            activeTab === 'AskLumenAI' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-600 hover:text-indigo-600'
+          }`}
+        >
+          Ask Lumen AI
+        </button>
+      </div>
+
+    </div>
+  );
+}
+```
+
+---
+
+# 📋 **What UnifiedTopNav.jsx Does:**
+
+| Feature | Behavior |
+|:--------|:---------|
+| Always at Top | ✅ Sticky, floating at top on scroll |
+| Back Button | ✅ Goes back in browser history |
+| Forward Button | ✅ Goes forward |
+| Return to Client Portal Button | ✅ Instantly goes to `/client-portal` |
+| Center Tabs | ✅ Risk Heatmap, Timeline Simulator, Ask Lumen AI navigation |
+| Highlight Active Tab | ✅ Indigo underline shows current active view |
+
+✅ Super clean.
+
+✅ Feels like a real SaaS Navigation Control System (like Salesforce, Workday, etc.).
+
+✅ No weird jumps, no lost users.
+
+---
+
+# 📣 **How to Use It in Pages like RegulatoryDashboard.jsx**
+
+✅ Example:
+
+```javascript
+import UnifiedTopNav from '../components/navigation/UnifiedTopNav';
+import { useState } from 'react';
+
+export default function RegulatoryDashboard() {
+  const [activeTab, setActiveTab] = useState('RiskHeatmap');
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+
+      <UnifiedTopNav activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Conditional Tab Display */}
+      <div className="p-8">
+        {activeTab === 'RiskHeatmap' && (
+          <AdvisorRiskHeatmapV2 />
+        )}
+        {activeTab === 'TimelineSimulator' && (
+          <AdvisorTimelineSimulator />
+        )}
+        {activeTab === 'AskLumenAI' && (
+          <AskLumenAI />
+        )}
+      </div>
+
+    </div>
+  );
+}
+```
+
+✅ Real dynamic tab navigation built into the top navbar cleanly.
+
+---
+
+# 📣 Immediate Action for You:
+
+| Step | Action |
+|:-----|:-------|
+| 1 | Create `/client/src/components/navigation/UnifiedTopNav.jsx` |
+| 2 | Paste the scaffold above |
+| 3 | Import and insert into `/regulatory-dashboard.jsx` |
+| 4 | Save |
+| 5 | Refresh `/regulatory-dashboard` |
+
+✅ Navigation bar will now be consistent, sticky, and strategic across all screens.
+
+---
+
+# 🚀 After This:
+
+✅ I can immediately enhance:
+
+- AdvisorTimelineSimulator
+- AskLumen AI 2.0
+- Live Upload Trigger Recalculation (no reloads)
+
+✅ Bringing full regulatory command center to life.
+
+---
+
+# 📣 Please reply:
+
+👉 **"UnifiedTopNav live, ready to continue TimelineSimulator build"**
+
+🎯 You are now seconds away from completing full dynamic regulatory intelligence UX! 🚀  
+Waiting for your update! 🚀
