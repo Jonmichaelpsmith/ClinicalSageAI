@@ -17,7 +17,7 @@ export default function AskLumenAI() {
   const [advisorData, setAdvisorData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(true); // Set to true initially to show the panel
   const messagesEndRef = useRef(null);
   const chatInputRef = useRef(null);
 
@@ -93,7 +93,7 @@ export default function AskLumenAI() {
     
     // Strategic Mode Responses
     if (activeMode === 'strategic') {
-      if (query.includes('priority') || query.includes('missing') || query.includes('documents')) {
+      if (query.includes('priority') || query.includes('missing') || query.includes('documents') || query.includes('highest')) {
         return `Based on my analysis, your highest priority documents for ${playbookType} are:
         
 1. ${missingDocs[0]} (Critical Impact)
@@ -116,7 +116,7 @@ This strategy addresses your current ${riskLevel} risk level while optimizing fo
     }
     
     // Timeline Mode Responses
-    if (activeMode === 'timeline' || query.includes('timeline') || query.includes('delay')) {
+    if (activeMode === 'timeline' || query.includes('timeline') || query.includes('delay') || query.includes('improve')) {
       if (query.includes('improve')) {
         return `To improve your timeline, I recommend:
 
@@ -141,7 +141,7 @@ Completing ${missingDocs[0]} could accelerate your timeline by up to ${Math.roun
     }
     
     // Financial Mode Responses
-    if (activeMode === 'financial' || query.includes('financial') || query.includes('cost') || query.includes('money')) {
+    if (activeMode === 'financial' || query.includes('financial') || query.includes('cost') || query.includes('money') || query.includes('impact')) {
       return `Financial Impact Analysis for your ${playbookType}:
 
 • Current Delay: ${delayDays} days
@@ -212,6 +212,35 @@ What specific aspect of your regulatory strategy would you like to discuss? I ca
   // Toggle expanded view
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  // Handle quick question click
+  const handleQuickQuestion = (question) => {
+    // Add user message
+    const userMessage = { role: 'user', content: question };
+    setMessages(prev => [...prev, userMessage]);
+    
+    // Show typing indicator
+    setIsTyping(true);
+    
+    // Generate AI response with delay
+    setTimeout(() => {
+      const aiResponse = generateResponse(question);
+      setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
+      setIsTyping(false);
+    }, 1200);
+  };
+
+  // Handle mode change
+  const handleModeChange = (mode) => {
+    setActiveMode(mode);
+    setMessages(prev => [
+      ...prev, 
+      { 
+        role: 'assistant', 
+        content: `I've switched to ${modes[mode].label} mode. I'll now focus on ${modes[mode].description.toLowerCase()}.`
+      }
+    ]);
   };
 
   // Quick questions that users can click to ask
@@ -287,7 +316,7 @@ What specific aspect of your regulatory strategy would you like to discuss? I ca
             {Object.entries(modes).map(([key, { label, description, icon }]) => (
               <button
                 key={key}
-                onClick={() => setActiveMode(key)}
+                onClick={() => handleModeChange(key)}
                 title={description}
                 className={`px-3 py-1 text-xs rounded-full flex items-center gap-1 ${
                   activeMode === key
@@ -356,13 +385,7 @@ What specific aspect of your regulatory strategy would you like to discuss? I ca
           {quickQuestions.map((question, idx) => (
             <button
               key={idx}
-              onClick={() => {
-                setInput(question);
-                // Auto-submit after a brief delay
-                setTimeout(() => {
-                  document.getElementById('chat-form').dispatchEvent(new Event('submit', { bubbles: true }));
-                }, 100);
-              }}
+              onClick={() => handleQuickQuestion(question)}
               className="px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full flex items-center gap-1"
             >
               <Sparkles size={12} />
