@@ -2,10 +2,10 @@
 
 export default function UploadStatusTrackerModule3({ formStatus }) {
   const items = [
-    { label: 'Drug Substance (API) Documentation Uploaded', key: 'drugSubstanceUploaded' },
+    { label: 'Drug Substance Documentation Uploaded', key: 'drugSubstanceUploaded' },
     { label: 'Drug Product Documentation Uploaded', key: 'drugProductUploaded' },
-    { label: 'Appendices Documentation Uploaded', key: 'appendicesUploaded' },
-    { label: 'Regional Information Uploaded', key: 'regionalInfoUploaded' },
+    { label: 'Appendices Uploaded (GMP, Validation Reports)', key: 'appendicesUploaded' },
+    { label: 'Regional Information Uploaded (e.g., US DMF)', key: 'regionalInfoUploaded' },
   ];
 
   return (
