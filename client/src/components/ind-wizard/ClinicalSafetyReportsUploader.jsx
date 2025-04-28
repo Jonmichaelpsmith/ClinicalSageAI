@@ -17,7 +17,7 @@ export default function ClinicalSafetyReportsUploader({ setFormStatus }) {
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h2 className="text-xl font-semibold">Clinical Safety Reports</h2>
+      <h2 className="text-xl font-semibold">Clinical Safety Reports (Module 5.4)</h2>
       <p className="text-sm text-gray-600">
         Upload Development Safety Update Reports (DSURs), safety narratives, or serious adverse event compilations required for regulatory review. These safety assessments are critical for the evaluation of your clinical program.
       </p>
