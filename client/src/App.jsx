@@ -6,6 +6,7 @@ import { Switch, Route } from 'wouter';
 // Import Pages and Modules
 import ClientPortalLanding from './pages/ClientPortalLanding';
 import INDWizardAdvanced from './pages/INDWizardAdvanced';
+import RegulatoryRiskDashboard from './pages/RegulatoryRiskDashboard';
 import CerGenerator from './modules/CerGenerator';
 import CmcWizard from './modules/CmcWizard';
 import CsrAnalyzer from './modules/CsrAnalyzer';
@@ -69,6 +70,7 @@ function App() {
           <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
+          <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
           
           {/* IND Wizard Module Pages - Direct Access */}
           <Route path="/module-1">
