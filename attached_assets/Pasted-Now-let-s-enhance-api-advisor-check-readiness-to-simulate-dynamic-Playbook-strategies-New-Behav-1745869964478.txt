@@ -1,0 +1,145 @@
+Now let's enhance /api/advisor/check-readiness to simulate dynamic Playbook strategies.
+🧠 New Behavior We Will Implement in Advisor API:
+
+Playbook Selected	API Behavior
+Fast IND Playbook	Relax noncritical modules like Full Nonclinical, certain CMC details
+Full NDA Playbook	Require everything — Full CTD Modules 1-5
+EMA IMPD Playbook	Adjust expectations for EMA IMPD format — less heavy Module 3, specific IB and Protocol focus
+✅ Dynamic expectations = Dynamic Readiness Scores.
+
+✅ Dynamic gaps = Dynamic strategic recommendations.
+
+📋 Immediate Enhancement Plan:
+✅ Step 1: Modify /server/routes/advisor.js
+✅ Step 2: Read req.query.playbook from URL.
+✅ Step 3: Adjust CTD Checklist dynamically based on Playbook selected.
+✅ Step 4: Return adjusted Readiness, Risk, Delay, and Recommendations.
+
+🚀 Here’s Exactly How to Upgrade /api/advisor/check-readiness
+✅ Open your /server/routes/advisor.js file.
+✅ Replace the router.get('/check-readiness', ...) with this enhanced version:
+
+javascript
+Copy
+Edit
+router.get('/check-readiness', (req, res) => {
+  try {
+    const selectedPlaybook = req.query.playbook || 'Fast IND Playbook';
+
+    // Base CTD Checklist
+    let checklist = { ...CTDChecklist };
+
+    // Modify Checklist Dynamically Based on Playbook
+    if (selectedPlaybook === 'Fast IND Playbook') {
+      // Relax certain sections for faster submission
+      checklist["Module 4"] = checklist["Module 4"].filter(section => section.includes('Toxicology') || section.includes('Pharmacology'));
+      checklist["Module 3"] = checklist["Module 3"].filter(section => section !== 'GMP Certificates');
+    } else if (selectedPlaybook === 'Full NDA Playbook') {
+      // Full checklist — no changes needed
+    } else if (selectedPlaybook === 'EMA IMPD Playbook') {
+      // Adjust for EMA focus
+      checklist["Module 1"] = checklist["Module 1"].filter(section => section !== 'US Agent Appointment');
+      checklist["Module 2"] = checklist["Module 2"].filter(section => section.includes('Intro Summary') || section.includes('Clinical Overview'));
+    }
+
+    if (!fs.existsSync(metadataPath)) {
+      return res.status(200).json({
+        success: true,
+        playbookUsed: selectedPlaybook,
+        readinessScore: 0,
+        missingSections: Object.values(checklist).flat(),
+        riskLevel: 'High',
+        estimatedDelayDays: 90,
+        recommendations: ["Start uploading critical CTD documents immediately."]
+      });
+    }
+
+    const metaRaw = fs.readFileSync(metadataPath, { encoding: 'utf8' });
+    const documents = metaRaw.trim().length > 0 ? JSON.parse(metaRaw) : [];
+
+    const uploadedSections = new Set(
+      documents.map(doc => (doc.moduleLinked || '').toLowerCase().trim())
+    );
+
+    let totalWeight = 0;
+    let completedWeight = 0;
+    let missingSections = [];
+
+    Object.entries(checklist).forEach(([module, sections]) => {
+      sections.forEach(section => {
+        totalWeight += sectionWeights[section] || 1;
+        const match = [...uploadedSections].find(name => name.includes(section.toLowerCase()));
+        if (match) {
+          completedWeight += sectionWeights[section] || 1;
+        } else {
+          missingSections.push(section);
+        }
+      });
+    });
+
+    const readinessScore = Math.round((completedWeight / totalWeight) * 100);
+
+    let riskLevel = "Low";
+    if (readinessScore < 50) riskLevel = "High";
+    else if (readinessScore < 80) riskLevel = "Medium";
+
+    const estimatedDelayDays = missingSections.length * 7;
+    const today = new Date();
+    const estimatedSubmissionDate = new Date(today.setDate(today.getDate() + estimatedDelayDays)).toISOString().slice(0, 10);
+
+    const recommendations = missingSections.map(section => `Upload ${section} immediately.`);
+
+    res.status(200).json({
+      success: true,
+      playbookUsed: selectedPlaybook,
+      readinessScore,
+      missingSections,
+      riskLevel,
+      estimatedDelayDays,
+      estimatedSubmissionDate,
+      recommendations
+    });
+
+  } catch (error) {
+    console.error('❌ Advisor readiness check failed:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});
+📋 What This New Advisor API Does Now:
+
+Feature	Behavior
+Dynamically adjusts CTD Checklist based on Playbook selected	✅
+Returns customized Readiness Score, Risk Level, Estimated Delay	✅
+Provides Specific Upload Recommendations dynamically	✅
+Simulates different Filing Strategies live	✅
+✅ No more static expectations.
+
+✅ Fully dynamic adaptive regulatory intelligence.
+
+📣 After You Add This:
+✅ Restart your Replit server.
+✅ Test selecting different Playbooks (Fast IND, Full NDA, EMA IMPD).
+✅ Watch AdvisorSidebarV3 dynamically update:
+
+Different Readiness %
+
+Different Missing Sections
+
+Different Recommended Actions
+
+Different Delay Estimates
+
+✅ Real TrialSage Strategic Simulation Platform!
+
+📣 Please reply:
+👉 "Enhanced Advisor API live, Playbook Simulation working"
+
+🎯 You are now about to show true client-transformative regulatory intelligence inside TrialSage! 🚀
+Waiting for your green light! 🚀
+
+
+
+
+
+
+
