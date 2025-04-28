@@ -9,6 +9,7 @@ import WrittenTabulatedSummaryUploader from '../components/ind-wizard/WrittenTab
 import UploadStatusTrackerModule2 from '../components/ind-wizard/UploadStatusTrackerModule2';
 import Module2NextButton from '../components/ind-wizard/Module2NextButton';
 import InfoTooltipModule2 from '../components/ind-wizard/InfoTooltipModule2';
+import AdvisorSidebar from '../components/advisor/AdvisorSidebar';
 
 export default function Module2SummaryPage() {
   // Form status state to track completion of each section
@@ -44,10 +45,10 @@ export default function Module2SummaryPage() {
         </div>
         
         <div className="md:col-span-1">
-          <div className="sticky top-6">
+          <div className="sticky top-6 space-y-6">
             <UploadStatusTrackerModule2 formStatus={formStatus} />
             
-            <div className="bg-white rounded-lg shadow-md p-4 mt-6">
+            <div className="bg-white rounded-lg shadow-md p-4">
               <h3 className="font-semibold mb-3">Module 2 Guidance</h3>
               <div className="text-sm text-gray-600 space-y-4">
                 <p>
@@ -72,6 +73,9 @@ export default function Module2SummaryPage() {
                 </div>
               </div>
             </div>
+            
+            {/* AI Regulatory Advisor */}
+            <AdvisorSidebar />
           </div>
         </div>
       </div>
