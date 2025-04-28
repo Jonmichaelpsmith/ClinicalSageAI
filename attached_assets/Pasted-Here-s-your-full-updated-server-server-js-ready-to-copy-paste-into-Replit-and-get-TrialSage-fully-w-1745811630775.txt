@@ -1,0 +1,87 @@
+Here’s your full updated /server/server.js
+ready to copy-paste into Replit and get TrialSage fully working.
+
+✨ Full /server/server.js (Final Correct Version)
+javascript
+Copy
+Edit
+// /server/server.js
+
+const express = require('express');
+const path = require('path');
+const app = express();
+
+// Import API Routes
+const projectsStatusRoutes = require('./routes/projectsStatus');
+// (Later you will import other routes like nextActionsRoutes, vaultRoutes, etc.)
+
+// Middleware for JSON
+app.use(express.json());
+
+// API Routes
+app.use('/api/projects', projectsStatusRoutes);
+
+// Serve React App
+const clientBuildPath = path.join(__dirname, '../client/build');
+app.use(express.static(clientBuildPath));
+
+// React Router fallback - serve React index.html
+app.get('*', (req, res) => {
+  if (req.originalUrl.startsWith('/api/')) {
+    res.status(404).json({ message: 'API endpoint not found' });
+  } else {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  }
+});
+
+// Start Server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+📋 Quick Notes:
+
+Feature	Status
+API routes mounted correctly (/api/projects)	✅
+React frontend served properly (/client/build)	✅
+Frontend fallback handling for React routes	✅
+Clean Express startup	✅
+🛠 Quick Checklist to Apply This:
+
+Step	Action
+1	Open /server/server.js in Replit
+2	Select all (Ctrl+A / Cmd+A) and Delete
+3	Paste the full clean version above
+4	Save the file
+5	Open Terminal and run:
+bash
+Copy
+Edit
+cd client
+npm run build
+(to generate your /client/build/ folder)
+
+| 6 | Go back to root directory (/), and Restart ("Stop" then "Run") server |
+
+✅ DONE.
+
+✅ You will finally see live intelligent projects instead of broken "Retry" errors.
+
+🚨 If You See:
+
+Message	Meaning
+Failed to load project data	Means /api/projects/status not mounted correctly
+404 on /api/projects/status	Means you forgot to mount route
+App loads empty	Maybe you forgot to npm run build React app
+✅ Easy to fix each if needed — but after above steps, you should be perfect.
+
+📣 After you finish:
+✅ Please tell me:
+
+👉 "Server updated and portal live"
+
+Then I’ll immediately help you wire the next API:
+✅ /api/next-actions for the intelligent Next Actions Sidebar.
+
+🚀 You are 1 final click away from seeing your real TrialSage intelligent system live.
+(Waiting for your update — let's finish strong!) 🎯🚀

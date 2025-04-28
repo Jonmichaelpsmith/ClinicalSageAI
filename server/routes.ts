@@ -256,6 +256,15 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
   // Register enhanced health check routes
   app.use('/api', healthRoutes);
   
+  // Import and register projects status API routes
+  try {
+    const projectsStatusRoutes = require('./routes/projectsStatus').default;
+    app.use('/api/projects', projectsStatusRoutes);
+    console.log('[API] Projects status routes registered successfully');
+  } catch (err) {
+    console.error('[API] Error loading project status routes:', err);
+  }
+  
   // Health check endpoints - no authentication required
   app.get("/api/health/live", (req: Request, res: Response) => {
     // Liveness probe - simple check that service is running
