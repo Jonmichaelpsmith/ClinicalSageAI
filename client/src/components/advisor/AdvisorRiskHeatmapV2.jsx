@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function AdvisorRiskHeatmapV2({ missingSections = [] }) {
+export default function AdvisorRiskHeatmapV2({ missingSections = [], sidebar = false }) {
   // Define criticality and delay impact mappings
   const sectionRiskProfile = {
     "CMC Stability Study": { risk: "High", delayDays: 30, financialRisk: 750000 },
@@ -20,12 +20,51 @@ export default function AdvisorRiskHeatmapV2({ missingSections = [] }) {
     "Tabulated Summaries": { risk: "Low", delayDays: 5, financialRisk: 25000 },
     "Investigator Brochure Updates": { risk: "Low", delayDays: 5, financialRisk: 25000 },
     "US Agent Appointment": { risk: "Low", delayDays: 2, financialRisk: 20000 },
+    "GMP Certificates": { risk: "Medium", delayDays: 14, financialRisk: 350000 },
+    "Clinical Overview": { risk: "Medium", delayDays: 21, financialRisk: 450000 },
+    "ADME Studies": { risk: "Medium", delayDays: 14, financialRisk: 300000 },
+    "Carcinogenicity Reports": { risk: "High", delayDays: 30, financialRisk: 650000 },
+    "Quality Overall Summary": { risk: "High", delayDays: 28, financialRisk: 550000 },
+    "Clinical Summary": { risk: "Medium", delayDays: 21, financialRisk: 400000 },
   };
 
   const getRiskProfile = (section) => {
     return sectionRiskProfile[section] || { risk: "Low", delayDays: 5, financialRisk: 25000 };
   };
 
+  // For sidebar view - more compact version
+  if (sidebar) {
+    return (
+      <div>
+        <div className="grid grid-cols-2 gap-1">
+          {missingSections.slice(0, 4).map((section, idx) => {
+            const { risk } = getRiskProfile(section);
+            const riskColor =
+              risk === "High" ? "bg-red-500" :
+              risk === "Medium" ? "bg-yellow-400" :
+              "bg-green-400";
+
+            return (
+              <div
+                key={idx}
+                className={`rounded-sm p-1 text-white text-xs ${riskColor}`}
+              >
+                <span className="text-[10px] block truncate">{section}</span>
+              </div>
+            );
+          })}
+        </div>
+        
+        {missingSections.length > 4 && (
+          <div className="text-xs mt-1 text-gray-500">
+            +{missingSections.length - 4} more risks...
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // For dashboard view - full version
   return (
     <div className="p-4 bg-white rounded-lg shadow-md space-y-4">
       <h3 className="text-md font-semibold text-gray-700 mb-2">Regulatory Risk Heatmap</h3>
