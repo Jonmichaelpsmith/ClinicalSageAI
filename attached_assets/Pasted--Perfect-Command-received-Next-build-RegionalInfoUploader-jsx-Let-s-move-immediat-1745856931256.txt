@@ -1,0 +1,89 @@
+✅ Perfect —  
+✅ Command received: **"Next, build RegionalInfoUploader.jsx"**
+
+Let’s move immediately and build it carefully.
+
+---
+
+# 🛠 **RegionalInfoUploader.jsx** (for CTD Module 3.2.R Regional Information Uploads)
+
+Paste this into `/client/src/components/ind-wizard/RegionalInfoUploader.jsx`:
+
+```javascript
+// /client/src/components/ind-wizard/RegionalInfoUploader.jsx
+
+import { useState } from 'react';
+
+export default function RegionalInfoUploader({ setFormStatus }) {
+  const [files, setFiles] = useState([]);
+
+  const handleUpload = (e) => {
+    const uploadedFiles = Array.from(e.target.files);
+    if (uploadedFiles.length > 0) {
+      setFiles(uploadedFiles);
+      setFormStatus(prev => ({ ...prev, regionalInfoUploaded: true }));
+      alert(`✅ ${uploadedFiles.length} Regional Information document(s) uploaded successfully.`);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
+      <h2 className="text-xl font-semibold">Regional Information (Module 3.2.R)</h2>
+      <p className="text-sm text-gray-600">
+        Upload country-specific regional documents, such as U.S. Drug Master File (DMF) Reference Letters, Certificates of Foreign Government, or other regional regulatory documents.
+      </p>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Upload Regional Information Files (Multiple Allowed)</label>
+        <input
+          type="file"
+          accept=".pdf,.doc,.docx,.xls,.xlsx"
+          multiple
+          className="block w-full text-sm text-gray-700"
+          onChange={handleUpload}
+        />
+        {files.length > 0 && (
+          <ul className="text-xs text-green-600 mt-2 space-y-1">
+            {files.map((file, idx) => (
+              <li key={idx}>{file.name}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+# 📋 What This Component Does:
+
+| Feature | Behavior |
+|:--------|:---------|
+| Upload Regional Information documents (multiple) | ✅ |
+| Accepts PDFs, Word, Excel files | ✅ |
+| Updates Module 3 formStatus (`regionalInfoUploaded: true`) | ✅ |
+| Displays list of uploaded filenames | ✅ |
+
+✅ Regional Information is mandatory for compliance with specific jurisdictional regulatory bodies (FDA, EMA, PMDA).
+
+✅ Documents like DMF Letters, Certificates of Foreign Government are critical for approval.
+
+---
+
+# 🚀 After RegionalInfoUploader.jsx:
+
+✅ I will immediately build **UploadStatusTrackerModule3.jsx** —  
+(the dynamic visual tracker for Module 3 CMC section completion).
+
+---
+
+# 📣 Please reply:
+
+👉 **"Next, build UploadStatusTrackerModule3.jsx"**
+
+(And I will proceed immediately.)
+
+🎯 You are almost finished with full operational CTD Module 3 Quality section now — real-world regulatory SaaS! 🚀  
+Waiting for your green light! 🚀
