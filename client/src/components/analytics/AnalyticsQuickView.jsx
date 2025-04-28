@@ -102,9 +102,10 @@ const AnalyticsQuickView = ({ userId, orgId }) => {
   // Render loading state
   if (isLoading) {
     return (
-      <Card className="min-h-[220px] flex items-center justify-center">
-        <div className="w-6 h-6 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </Card>
+      <div className="bg-white p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold mb-2">Analytics Overview</h2>
+        <p>Loading metrics...</p>
+      </div>
     );
   }
 
