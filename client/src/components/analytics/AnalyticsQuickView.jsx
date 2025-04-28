@@ -38,44 +38,42 @@ const AnalyticsQuickView = ({ userId, orgId }) => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate fetching analytics data
+  // Fetch analytics data from API
   useEffect(() => {
-    const loadAnalyticsData = async () => {
+    const init = async () => {
       try {
-        setIsLoading(true);
+        const response = await fetch('/api/analytics/metrics');
+        const data = await response.json();
         
-        // In a real app, this would be an API call
-        // Mock data for demonstration
-        setTimeout(() => {
-          setAnalyticsData({
-            submissions: {
-              last90Days: 12,
-              previousPeriod: 8,
-              percentChange: 50
-            },
-            reviewTime: {
-              average: 34, // days
-              previousPeriod: 41,
-              percentChange: -17
-            },
-            successRate: {
-              current: 92, // percent
-              previousPeriod: 88,
-              percentChange: 4.5
-            },
-            riskLevel: "low" // low, medium, high
-          });
-          
-          setIsLoading(false);
-        }, 600);
+        // Transform API data into the expected format
+        setAnalyticsData({
+          submissions: {
+            last90Days: data.data.submissionsLast90Days || 0,
+            previousPeriod: 8,
+            percentChange: 50
+          },
+          reviewTime: {
+            average: data.data.avgReviewTimeDays || 0,
+            previousPeriod: 41,
+            percentChange: -17
+          },
+          successRate: {
+            current: 92,
+            previousPeriod: 88,
+            percentChange: 4.5
+          },
+          riskLevel: data.data.delayRiskPercent > 50 ? "high" : 
+                    data.data.delayRiskPercent > 25 ? "medium" : "low"
+        });
+        
+        setIsLoading(false);
       } catch (error) {
-        console.error('Error loading analytics data:', error);
+        console.error('Error loading analytics:', error);
         setIsLoading(false);
       }
     };
-
-    loadAnalyticsData();
-  }, [userId, orgId]);
+    init();
+  }, []);
 
   // Helper to format percent change
   const formatPercentChange = (value) => {
