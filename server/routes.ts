@@ -62,6 +62,8 @@ import { logger, createContextLogger, requestLogger } from './utils/logger';
 import createSecurityHeadersMiddleware from './middleware/securityHeaders';
 import healthRoutes from './routes/health';
 import { storage, mockUsers } from './storage';
+// Import advisor routes
+import { registerAdvisorRoutes } from './advisor-routes';
 
 // Create circuit breakers for critical services
 const openaiCircuitBreaker = createCircuitBreakerMiddleware('openai', {
@@ -255,6 +257,11 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
   
   // Register enhanced health check routes
   app.use('/api', healthRoutes);
+  
+  // Register advisor API routes for regulatory intelligence
+  console.log('[API] Setting up advisor API routes');
+  registerAdvisorRoutes(app);
+  console.log('[API] Advisor routes registered successfully');
   
   // Directly implement projects status API routes
   console.log('[API] Setting up project status routes directly');
