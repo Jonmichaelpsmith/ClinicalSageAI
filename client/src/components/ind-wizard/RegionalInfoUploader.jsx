@@ -15,8 +15,7 @@ export default function RegionalInfoUploader({ setFormStatus }) {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h2 className="text-xl font-semibold">Regional Information (Module 3.2.R)</h2>
+    <div className="space-y-4">
       <p className="text-sm text-gray-600">
         Upload region-specific information including DMF reference letters for FDA submissions, 
         process validation schemes, and other documentation required for specific regulatory authorities.

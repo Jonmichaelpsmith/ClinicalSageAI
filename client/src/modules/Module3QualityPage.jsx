@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Flask, Vial, Scroll, Globe } from 'lucide-react';
+import { Beaker, Box, FileText, Globe } from 'lucide-react';
 
 // Import Module 3 components
 import InfoTooltipModule3 from '@/components/ind-wizard/InfoTooltipModule3';
@@ -47,17 +47,17 @@ export default function Module3QualityPage() {
           <Tabs defaultValue="substance" className="w-full">
             <TabsList className="grid grid-cols-4 mb-4 w-full">
               <TabsTrigger value="substance" className="flex items-center">
-                <Vial className="h-4 w-4 mr-2" />
+                <Beaker className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Drug Substance</span>
                 <span className="sm:hidden">3.2.S</span>
               </TabsTrigger>
               <TabsTrigger value="product" className="flex items-center">
-                <Flask className="h-4 w-4 mr-2" />
+                <Beaker className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Drug Product</span>
                 <span className="sm:hidden">3.2.P</span>
               </TabsTrigger>
               <TabsTrigger value="appendices" className="flex items-center">
-                <Scroll className="h-4 w-4 mr-2" />
+                <Box className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Appendices</span>
                 <span className="sm:hidden">3.2.A</span>
               </TabsTrigger>

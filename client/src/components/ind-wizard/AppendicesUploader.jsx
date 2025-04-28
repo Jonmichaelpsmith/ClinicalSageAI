@@ -15,8 +15,7 @@ export default function AppendicesUploader({ setFormStatus }) {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md space-y-4">
-      <h2 className="text-xl font-semibold">Appendices Documentation (Module 3.2.A)</h2>
+    <div className="space-y-4">
       <p className="text-sm text-gray-600">
         Upload supplementary information including facilities and equipment documentation, 
         adventitious agents safety evaluation, and novel excipients information.
