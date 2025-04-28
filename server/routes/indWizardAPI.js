@@ -3,6 +3,57 @@
 const express = require('express');
 const router = express.Router();
 
+// AI guidance for IND sections
+router.post('/ai-guidance', (req, res) => {
+  try {
+    const { projectId, step, indData } = req.body;
+    
+    console.log(`Generating AI guidance for project ${projectId}, step: ${step}`);
+    
+    // Sample response data
+    const guidanceData = {
+      recommendations: [
+        'Ensure all required fields are completed accurately',
+        'Verify consistency between related sections',
+        'Check for compliance with FDA guidelines for this section'
+      ],
+      risks: [
+        {
+          level: 'high',
+          description: 'Missing information in critical sections',
+          impact: 'May result in a refusal-to-file determination'
+        },
+        {
+          level: 'medium',
+          description: 'Inconsistent information across sections',
+          impact: 'Could trigger requests for clarification, delaying review'
+        }
+      ],
+      regulations: [
+        {
+          citation: '21 CFR 312.23(a)(1)',
+          description: 'Requires a comprehensive table of contents',
+          url: 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfcfr/CFRSearch.cfm?fr=312.23'
+        },
+        {
+          citation: 'FDA Guidance for Industry: IND Applications',
+          description: 'Provides detailed instructions for specific IND components',
+          url: 'https://www.fda.gov/drugs/investigational-new-drug-ind-application/ind-application-procedures'
+        }
+      ],
+      timelineImpact: {
+        critical: ['Complete Form FDA 1571', 'Prepare Investigator Brochure'],
+        recommended: ['Conduct gap analysis of CMC data', 'Finalize study protocol']
+      }
+    };
+    
+    return res.json(guidanceData);
+  } catch (error) {
+    console.error('Error generating AI guidance:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
 // Fetch IND projects
 router.get('/projects', (req, res) => {
   try {
@@ -122,6 +173,84 @@ router.post('/generate-timeline', (req, res) => {
     return res.json(timelineData);
   } catch (error) {
     console.error('Error generating IND timeline:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+// Field-specific guidance endpoint
+router.post('/field-guidance', (req, res) => {
+  try {
+    const { projectId, step, field, indData } = req.body;
+    
+    console.log(`Generating field guidance for project ${projectId}, step: ${step}, field: ${field}`);
+    
+    // Sample field guidance
+    const fieldGuidanceData = {
+      field,
+      recommendations: [
+        `Ensure ${field} is properly documented according to FDA guidelines`,
+        `Cross-reference ${field} with related information in other sections`,
+        `Consider including additional details about ${field} for clarity`
+      ],
+      examples: [
+        {
+          description: 'Example of well-formatted content',
+          text: `This is an example of how ${field} should be documented properly...`
+        }
+      ],
+      regulations: [
+        {
+          citation: '21 CFR 312.23',
+          relevance: `This regulation specifically addresses requirements for ${field}`
+        }
+      ]
+    };
+    
+    return res.json(fieldGuidanceData);
+  } catch (error) {
+    console.error('Error generating field guidance:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+});
+
+// Section assessment endpoint
+router.post('/section-assessment', (req, res) => {
+  try {
+    const { projectId, step, indData } = req.body;
+    
+    console.log(`Performing section assessment for project ${projectId}, step: ${step}`);
+    
+    // Sample section assessment
+    const assessmentData = {
+      step,
+      completeness: 75,
+      qualityScore: 82,
+      issues: [
+        {
+          severity: 'medium',
+          description: 'Some required information is missing or incomplete',
+          recommendation: 'Review and complete all required fields in this section'
+        },
+        {
+          severity: 'low',
+          description: 'Formatting inconsistencies detected',
+          recommendation: 'Standardize formatting for better readability'
+        }
+      ],
+      regulatoryAlignment: {
+        status: 'generally_aligned',
+        notes: 'Content aligns with FDA expectations but could benefit from additional detail in key areas'
+      },
+      nextSteps: [
+        'Complete missing information',
+        'Enhance technical details where noted',
+        'Add supporting references where appropriate'
+      ]
+    };
+    
+    return res.json(assessmentData);
+  } catch (error) {
+    console.error('Error performing section assessment:', error);
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
