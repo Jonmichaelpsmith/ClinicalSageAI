@@ -1,49 +1,39 @@
-/**
- * TrialSage API Routes Index
- * 
- * This module registers all API routes with the Express application:
- * - Blockchain security routes
- * - AI security routes
- * - Security middleware
- * - IND Wizard routes (Protocol Builder, Regulatory Intelligence)
- */
+// /server/routes/index.js
+import express from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const blockchainRoutes = require('./blockchain');
-const aiRoutes = require('./ai');
-const rolePrivilegeService = require('../services/role-privilege-service');
-import protocolRoutes from './protocol.js';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-/**
- * Register all API routes with the Express application
- * 
- * @param {Express} app - Express application
- */
-function registerRoutes(app) {
-  // Register blockchain routes
-  app.use('/api/blockchain', blockchainRoutes);
-  
-  // Register AI routes
-  app.use('/api/ai', aiRoutes);
-  
-  // Register role and privilege routes
-  rolePrivilegeService.setupRolePrivilegeRoutes(app);
-  
-  // Register IND Wizard protocol routes
-  app.use('/api/ind', protocolRoutes);
-  
-  // Root API status endpoint
-  app.get('/api/status', (req, res) => {
-    res.json({
-      status: 'operational',
-      version: '1.0.0',
-      timestamp: new Date().toISOString(),
-      services: [
-        { name: 'blockchain', status: 'online' },
-        { name: 'ai', status: 'online' },
-        { name: 'security', status: 'online' },
-      ],
+export default function setupApiRoutes(app) {
+  // Import advisor routes directly
+  import('./advisor.js')
+    .then(advisorModule => {
+      const advisorRoutes = advisorModule.default;
+      console.log('✅ Advisor routes loaded dynamically');
+      
+      // Create directories for advisor metadata if they don't exist
+      const uploadsDir = path.join(__dirname, '../../uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+        console.log(`✅ Created uploads directory at ${uploadsDir}`);
+      }
+
+      // Create metadata.json if it doesn't exist
+      const metadataPath = path.join(uploadsDir, 'metadata.json');
+      if (!fs.existsSync(metadataPath)) {
+        fs.writeFileSync(metadataPath, JSON.stringify([]), 'utf8');
+        console.log(`✅ Created empty metadata.json at ${metadataPath}`);
+      }
+
+      app.use('/api/advisor', advisorRoutes);
+      console.log('✅ Mounted advisor routes at /api/advisor');
+    })
+    .catch(err => {
+      console.error('❌ Failed to load advisor routes:', err);
     });
-  });
-}
 
-module.exports = registerRoutes;
+  // Add more API routes here
+}

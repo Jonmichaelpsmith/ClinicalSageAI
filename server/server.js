@@ -9,7 +9,7 @@ import indAssemblerRoutes from './routes/indAssembler.js';
 import indWizardAPIRoutes from './routes/indWizardAPI.js';
 import documentsRoutes from './routes/documents.js';
 import vaultUploadRoutes from './routes/vaultUpload.js';
-import advisorRoutes from './routes/advisor.js'; // ✅ Clean ES module import
+// We'll import advisor routes dynamically in routes/index.js
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,25 +46,10 @@ app.use('/api/ind/wizard', indWizardAPIRoutes);
 app.use('/api/docs', documentsRoutes);
 app.use('/api/vault', vaultUploadRoutes);
 
-// Check if advisor routes exist
-console.log('✅ Loading advisor routes - stack check:', advisorRoutes.stack?.length > 0 ? `${advisorRoutes.stack.length} routes present` : 'No routes in stack');
-
-// Create directories for advisor metadata if they don't exist
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log(`✅ Created uploads directory at ${uploadsDir}`);
-}
-
-// Create metadata.json if it doesn't exist
-const metadataPath = path.join(uploadsDir, 'metadata.json');
-if (!fs.existsSync(metadataPath)) {
-  fs.writeFileSync(metadataPath, JSON.stringify([]), 'utf8');
-  console.log(`✅ Created empty metadata.json at ${metadataPath}`);
-}
-
-app.use('/api/advisor', advisorRoutes);
-console.log('✅ Mounted advisor routes at /api/advisor');
+// Set up API routes using the routes/index.js module
+import setupApiRoutes from './routes/index.js';
+setupApiRoutes(app);
+console.log('✅ API routes setup initiated via routes/index.js');
 
 // Serve React App
 const clientBuildPath = path.join(__dirname, '../client/build');
