@@ -10,7 +10,7 @@ export default function RegionalInfoUploader({ setFormStatus }) {
     if (uploadedFiles.length > 0) {
       setFiles(uploadedFiles);
       setFormStatus(prev => ({ ...prev, regionalInfoUploaded: true }));
-      alert(`✅ ${uploadedFiles.length} Regional Information files uploaded successfully.`);
+      alert(`✅ ${uploadedFiles.length} Regional Information document(s) uploaded successfully.`);
     }
   };
 
@@ -23,7 +23,7 @@ export default function RegionalInfoUploader({ setFormStatus }) {
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Upload Documentation (Multiple Files Allowed)</label>
+          <label className="block text-sm font-medium mb-1">Upload Regional Files (Multiple Allowed)</label>
           <input
             type="file"
             accept=".pdf,.doc,.docx,.xls,.xlsx"

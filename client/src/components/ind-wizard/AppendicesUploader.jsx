@@ -10,7 +10,7 @@ export default function AppendicesUploader({ setFormStatus }) {
     if (uploadedFiles.length > 0) {
       setFiles(uploadedFiles);
       setFormStatus(prev => ({ ...prev, appendicesUploaded: true }));
-      alert(`✅ ${uploadedFiles.length} Appendices files uploaded successfully.`);
+      alert(`✅ ${uploadedFiles.length} Appendix document(s) uploaded successfully.`);
     }
   };
 
