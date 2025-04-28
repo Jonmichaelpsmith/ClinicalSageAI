@@ -74,7 +74,7 @@ function App() {
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
-          <Route path="/regulatory-intelligence-hub" component={EnhancedRegulatoryDashboard} />
+          <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
           <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
           
           {/* IND Wizard Module Pages - Direct Access */}
