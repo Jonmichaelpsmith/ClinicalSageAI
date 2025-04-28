@@ -2,50 +2,38 @@
 
 import { useLocation } from 'wouter';
 
-export default function Module3NextButton({ formStatus, onValidationFail }) {
-  const [location, navigate] = useLocation();
+export default function Module3NextButton({ formStatus }) {
+  const [, setLocation] = useLocation();
 
-  const validateForm = () => {
-    const requiredFields = [
-      'drugSubstanceUploaded',
-      'drugProductUploaded',
-      'appendicesUploaded',
-      'regionalInfoUploaded'
-    ];
-    
-    const missingFields = requiredFields.filter(field => !formStatus[field]);
-    
-    if (missingFields.length > 0) {
-      const fieldLabels = {
-        drugSubstanceUploaded: 'Drug Substance Documentation',
-        drugProductUploaded: 'Drug Product Documentation',
-        appendicesUploaded: 'Appendices (GMP, Validation Reports)',
-        regionalInfoUploaded: 'Regional Information'
-      };
-      
-      const missingLabels = missingFields.map(field => fieldLabels[field]);
-      onValidationFail(`Please complete the following sections before proceeding: ${missingLabels.join(', ')}`);
-      return false;
-    }
-    
-    return true;
-  };
+  const requiredFields = [
+    'drugSubstanceUploaded',
+    'drugProductUploaded',
+    'appendicesUploaded',
+    'regionalInfoUploaded',
+  ];
+
+  const isComplete = requiredFields.every((key) => formStatus[key] === true);
 
   const handleNext = () => {
-    if (validateForm()) {
-      // Save form data if needed (optional)
-      // Navigate to the next module
-      navigate('/ind-wizard/module-4');
+    if (isComplete) {
+      setLocation('/module-4'); // Route for CTD Module 4 (Nonclinical Study Reports)
+    } else {
+      alert('❌ Please complete all required Module 3 sections before continuing.');
     }
   };
 
   return (
-    <div className="flex justify-end mt-8">
+    <div className="flex justify-end mt-6">
       <button
         onClick={handleNext}
-        className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        disabled={!isComplete}
+        className={`px-6 py-2 rounded-md text-white font-semibold ${
+          isComplete
+            ? 'bg-indigo-600 hover:bg-indigo-700'
+            : 'bg-gray-400 cursor-not-allowed'
+        }`}
       >
-        Next: Module 4 (Nonclinical) →
+        Next →
       </button>
     </div>
   );
