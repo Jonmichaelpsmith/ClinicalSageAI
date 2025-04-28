@@ -53,7 +53,7 @@ const vaultStats = {
 };
 
 // GET /api/vault/recent-docs
-const getRecentDocuments = (req, res) => {
+export const getRecentDocuments = (req, res) => {
   try {
     // In a real application, we would filter by user ID and permissions
     const userId = req.query.userId || '1';
@@ -76,7 +76,7 @@ const getRecentDocuments = (req, res) => {
 };
 
 // GET /api/vault/documents/:id
-const getDocumentById = (req, res) => {
+export const getDocumentById = (req, res) => {
   try {
     const { id } = req.params;
     const document = recentDocuments.find(doc => doc.id === parseInt(id));
@@ -102,7 +102,7 @@ const getDocumentById = (req, res) => {
 };
 
 // GET /api/vault/documents
-const getAllDocuments = (req, res) => {
+export const getAllDocuments = (req, res) => {
   try {
     // In a real application, we would filter by permissions/project
     const projectId = req.query.projectId;
@@ -134,7 +134,7 @@ const getAllDocuments = (req, res) => {
 };
 
 // POST /api/vault/documents
-const createDocument = (req, res) => {
+export const createDocument = (req, res) => {
   try {
     const newDocument = req.body;
     
@@ -161,7 +161,7 @@ const createDocument = (req, res) => {
 };
 
 // PUT /api/vault/documents/:id
-const updateDocument = (req, res) => {
+export const updateDocument = (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -188,7 +188,7 @@ const updateDocument = (req, res) => {
 };
 
 // DELETE /api/vault/documents/:id
-const deleteDocument = (req, res) => {
+export const deleteDocument = (req, res) => {
   try {
     const { id } = req.params;
     
@@ -206,13 +206,4 @@ const deleteDocument = (req, res) => {
       message: 'Failed to delete document',
     });
   }
-};
-
-module.exports = {
-  getRecentDocuments,
-  getDocumentById,
-  getAllDocuments,
-  createDocument,
-  updateDocument,
-  deleteDocument
 };

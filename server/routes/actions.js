@@ -1,8 +1,9 @@
 // /server/routes/actions.js
 
-const express = require('express');
+import express from 'express';
+import * as actionsController from '../controllers/actionsController.js';
+
 const router = express.Router();
-const actionsController = require('../controllers/actionsController');
 
 // GET /api/next-actions - Get all next actions
 router.get('/', actionsController.getAllActions);
@@ -28,4 +29,4 @@ router.delete('/:id', actionsController.deleteAction);
 // PUT /api/next-actions/:id/complete - Mark an action as complete
 router.put('/:id/complete', actionsController.completeAction);
 
-module.exports = router;
+export default router;

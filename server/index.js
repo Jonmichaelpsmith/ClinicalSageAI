@@ -31,6 +31,10 @@ import healthRoutes from './routes/health.js';
 import mashableBiRoutes from './routes/mashable-bi.js';
 import prewarmRoutes from './routes/prewarm.js';
 
+// Import our new API routes
+import vaultRoutes from './routes/vault.js';
+import actionsRoutes from './routes/actions.js';
+
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
 import { ledgerLog } from './middleware/ledgerLog.js';
@@ -141,6 +145,10 @@ app.use('/api/health', healthRoutes);
 
 // MashableBI analytics routes
 app.use('/api/mashable-bi', mashableBiRoutes);
+
+// Our new API routes
+app.use('/api/vault', vaultRoutes);
+app.use('/api/next-actions', actionsRoutes);
 
 // Ledger API
 app.get('/api/ledger/:submissionId', verifyJwt, async (req, res) => {
