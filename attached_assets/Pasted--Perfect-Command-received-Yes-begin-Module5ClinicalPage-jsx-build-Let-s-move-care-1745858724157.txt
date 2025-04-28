@@ -1,0 +1,86 @@
+✅ Perfect —  
+✅ Command received: **"Yes, begin Module5ClinicalPage.jsx build"**
+
+Let’s move carefully and cleanly to build the true CTD Module 5 container.
+
+---
+
+# 🛠 **Module5ClinicalPage.jsx** (Main Container for Clinical Study Reports Upload)
+
+Paste this into `/client/src/modules/Module5ClinicalPage.jsx`:
+
+```javascript
+// /client/src/modules/Module5ClinicalPage.jsx
+
+import { useState } from 'react';
+import ClinicalProtocolsUploader from '../components/ind-wizard/ClinicalProtocolsUploader';
+import ClinicalStudyReportsUploader from '../components/ind-wizard/ClinicalStudyReportsUploader';
+import InvestigatorBrochureUpdatesUploader from '../components/ind-wizard/InvestigatorBrochureUpdatesUploader';
+import ClinicalSafetyReportsUploader from '../components/ind-wizard/ClinicalSafetyReportsUploader';
+import UploadStatusTrackerModule5 from '../components/ind-wizard/UploadStatusTrackerModule5';
+import Module5SubmissionButton from '../components/ind-wizard/Module5SubmissionButton';
+
+export default function Module5ClinicalPage() {
+  const [formStatus, setFormStatus] = useState({
+    clinicalProtocolsUploaded: false,
+    clinicalStudyReportsUploaded: false,
+    investigatorBrochureUpdatesUploaded: false,
+    clinicalSafetyReportsUploaded: false,
+  });
+
+  return (
+    <div className="p-8 max-w-5xl mx-auto space-y-8">
+      <h1 className="text-2xl font-bold">CTD Module 5: Clinical Study Reports</h1>
+      <p className="text-gray-600">
+        Upload clinical study protocols, full clinical study reports (CSRs), safety narratives, and investigator brochure updates as required by FDA, EMA, and PMDA for regulatory submissions.
+      </p>
+
+      <UploadStatusTrackerModule5 formStatus={formStatus} />
+
+      <div className="space-y-8">
+        <ClinicalProtocolsUploader setFormStatus={setFormStatus} />
+        <ClinicalStudyReportsUploader setFormStatus={setFormStatus} />
+        <InvestigatorBrochureUpdatesUploader setFormStatus={setFormStatus} />
+        <ClinicalSafetyReportsUploader setFormStatus={setFormStatus} />
+      </div>
+
+      <Module5SubmissionButton formStatus={formStatus} />
+    </div>
+  );
+}
+```
+
+---
+
+# 📋 What This Component Does:
+
+| Feature | Behavior |
+|:--------|:---------|
+| Clinical Study Protocols Upload Section | ✅ |
+| Clinical Study Reports (CSR) Upload Section | ✅ |
+| Investigator Brochure Updates Upload Section | ✅ |
+| Clinical Safety Reports Upload Section | ✅ |
+| Dynamic Clinical Study Completion Tracker | ✅ |
+| Final Submit Button only activates when complete | ✅ |
+
+✅ CTD Module 5 compliance is critical for final drug approval.
+
+✅ FDA, EMA, and PMDA examine this section in the deepest regulatory detail.
+
+---
+
+# 🚀 After Module5ClinicalPage.jsx:
+
+✅ I will immediately build **ClinicalProtocolsUploader.jsx** —  
+(for uploading final Clinical Study Protocols.)
+
+---
+
+# 📣 Please reply:
+
+👉 **"Next, build ClinicalProtocolsUploader.jsx"**
+
+(And I will proceed immediately.)
+
+🎯 You are about to fully operationalize TrialSage's regulatory submission engine! 🚀  
+Waiting for your green light! 🚀
