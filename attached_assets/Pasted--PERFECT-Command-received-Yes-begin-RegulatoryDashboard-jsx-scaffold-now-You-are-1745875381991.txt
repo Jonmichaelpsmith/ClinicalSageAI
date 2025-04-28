@@ -1,0 +1,117 @@
+✅ PERFECT —  
+✅ Command received: **"Yes, begin RegulatoryDashboard.jsx scaffold now."**
+
+You are about to build **the core brain and control center** for TrialSage.  
+✅ Full real-time regulatory readiness, risk, financial exposure, AI copilot integration.
+
+---
+
+# 🚀 **Let's Immediately Build the RegulatoryDashboard.jsx Scaffold**
+
+---
+
+# 🛠 **RegulatoryDashboard.jsx**
+
+Create a new file at:  
+`/client/src/pages/RegulatoryDashboard.jsx`
+
+Paste this clean, powerful scaffold inside it:
+
+```javascript
+// /client/src/pages/RegulatoryDashboard.jsx
+
+import React from 'react';
+import AdvisorSummaryPanel from '../components/advisor/AdvisorSummaryPanel';
+import AdvisorRiskHeatmapV2 from '../components/advisor/AdvisorRiskHeatmapV2';
+import AdvisorTimelineSimulator from '../components/advisor/AdvisorTimelineSimulator';
+import LumenAssistantButton from '../components/assistant/LumenAssistantButton'; // Chat Co-Pilot button
+
+export default function RegulatoryDashboard() {
+  return (
+    <div className="p-8 space-y-10 bg-gray-50 min-h-screen">
+      
+      {/* Top Metrics Section */}
+      <AdvisorSummaryPanel />
+
+      {/* Dynamic Risk Heatmap */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <AdvisorRiskHeatmapV2 />
+      </div>
+
+      {/* Timeline Impact Simulator */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <AdvisorTimelineSimulator />
+      </div>
+
+      {/* Floating Ask Lumen AI Co-Pilot */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <LumenAssistantButton variant="default" size="lg" tooltip="Ask Regulatory AI" />
+      </div>
+
+    </div>
+  );
+}
+```
+
+---
+
+# 📋 **What This Scaffold Does:**
+
+| Section | Behavior |
+|:--------|:---------|
+| Top | Shows Readiness Score, Risk Level, Estimated Delay, Financial Impact |
+| Middle | Full Dynamic Risk Heatmap (Clickable and Live) |
+| Lower | Timeline Simulator (future build) |
+| Bottom Floating | Ask Lumen CoPilot Button (always accessible) |
+
+✅ Structured cleanly for rapid layering.
+
+✅ True enterprise SaaS architecture.
+
+✅ Feels strategic and empowering for users immediately.
+
+---
+
+# 📣 **After You Scaffold:**
+
+✅ Create clean placeholder versions of:
+
+- `AdvisorSummaryPanel.jsx`
+- `AdvisorTimelineSimulator.jsx`
+
+✅ They can return dummy UI temporarily while we wire dynamic data.
+
+✅ RiskHeatmapV2 and LumenAssistant already partially built!
+
+---
+
+# 📣 **After This Scaffold is Live:**
+
+✅ You will be able to visit `/regulatory-dashboard`  
+✅ And see the future Regulatory Command Center skeleton!
+
+✅ Then we immediately wire real-time metrics.
+
+---
+
+# 📣 Immediate Action for You:
+
+| Step | Action |
+|:-----|:-------|
+| 1 | Create `/client/src/pages/RegulatoryDashboard.jsx` |
+| 2 | Paste scaffold above |
+| 3 | Save |
+| 4 | Add `<Route path="/regulatory-dashboard" component={RegulatoryDashboard} />` to your `/client/src/App.jsx` |
+| 5 | Restart Replit frontend |
+| 6 | Visit `/regulatory-dashboard` |
+
+✅ Boom — TrialSage's real SaaS regulatory AI brain begins!
+
+---
+
+# 📣 Please reply:
+
+👉 **"RegulatoryDashboard.jsx scaffold live, ready to build AdvisorSummaryPanel.jsx next"**
+
+🎯 You are literally minutes away from showing the first live regulatory intelligence dashboard! 🚀  
+Waiting for your update! 🚀

@@ -8,6 +8,7 @@ import ClientPortalLanding from './pages/ClientPortalLanding';
 import INDWizardAdvanced from './pages/INDWizardAdvanced';
 import RegulatoryRiskDashboard from './pages/RegulatoryRiskDashboard';
 import EnhancedRegulatoryDashboard from './pages/EnhancedRegulatoryDashboard';
+import RegulatoryDashboard from './pages/RegulatoryDashboard';
 import CerGenerator from './modules/CerGenerator';
 import CmcWizard from './modules/CmcWizard';
 import CsrAnalyzer from './modules/CsrAnalyzer';
@@ -73,6 +74,7 @@ function App() {
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
           <Route path="/regulatory-intelligence-hub" component={EnhancedRegulatoryDashboard} />
+          <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
           
           {/* IND Wizard Module Pages - Direct Access */}
           <Route path="/module-1">
