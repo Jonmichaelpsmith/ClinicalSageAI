@@ -354,6 +354,8 @@ export default function INDWizardAdvanced() {
             </div>
           ) : activeView === 'module1' ? (
             <Module1AdminPage />
+          ) : activeView === 'module2' ? (
+            <Module2SummaryPage />
           ) : null}
         </div>
       </div>
