@@ -69,7 +69,7 @@ function getPlaybookFallbackData(playbookType) {
 // Get missing sections based on playbook type
 function getMissingSectionsForPlaybook(playbookType) {
   const commonMissingItems = [
-    "CMC Stability Data",
+    "CMC Stability Study",
     "Drug Substance Specs",
     "Drug Product Specs"
   ];
@@ -89,20 +89,21 @@ function getMissingSectionsForPlaybook(playbookType) {
       "Toxicology Reports",
       "Pharmacology Reports",
       "ADME Studies",
-      "Carcinogenicity Studies",
-      "Genotoxicity Studies",
+      "Carcinogenicity Reports",
+      "Genotoxicity Reports",
       "Quality Overall Summary",
       "Nonclinical Overview",
       "Clinical Summary",
-      "Module 2 Introduction",
+      "Intro Summary",
       "GMP Certificates",
-      "Validation Reports"
+      "Clinical Safety Reports"
     ];
   } else { // EMA IMPD Playbook
     return [
       ...commonMissingItems,
       "GMP Certificates",
-      "Clinical Overview"
+      "Clinical Overview",
+      "Clinical Safety Reports"
     ];
   }
 }
