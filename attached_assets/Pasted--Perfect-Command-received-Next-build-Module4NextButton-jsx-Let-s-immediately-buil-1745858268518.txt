@@ -1,0 +1,86 @@
+✅ Perfect —  
+✅ Command received: **"Next, build Module4NextButton.jsx"**
+
+Let’s immediately build it carefully.
+
+---
+
+# 🛠 **Module4NextButton.jsx** (Controlled Progression to CTD Module 5)
+
+Paste this into `/client/src/components/ind-wizard/Module4NextButton.jsx`:
+
+```javascript
+// /client/src/components/ind-wizard/Module4NextButton.jsx
+
+import { useLocation } from 'wouter';
+
+export default function Module4NextButton({ formStatus }) {
+  const [, setLocation] = useLocation();
+
+  const requiredFields = [
+    'pharmacologyUploaded',
+    'pharmacokineticsUploaded',
+    'toxicologyUploaded',
+    'genotoxicityUploaded',
+  ];
+
+  const isComplete = requiredFields.every((key) => formStatus[key] === true);
+
+  const handleNext = () => {
+    if (isComplete) {
+      setLocation('/module-5'); // Route for CTD Module 5 (Clinical Study Reports)
+    } else {
+      alert('❌ Please complete all required Nonclinical sections before continuing.');
+    }
+  };
+
+  return (
+    <div className="flex justify-end mt-6">
+      <button
+        onClick={handleNext}
+        disabled={!isComplete}
+        className={`px-6 py-2 rounded-md text-white font-semibold ${
+          isComplete
+            ? 'bg-indigo-600 hover:bg-indigo-700'
+            : 'bg-gray-400 cursor-not-allowed'
+        }`}
+      >
+        Next →
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+# 📋 What This Component Does:
+
+| Feature | Behavior |
+|:--------|:---------|
+| Validates all required Nonclinical sections complete | ✅ |
+| "Next →" button disabled until all uploads are done | ✅ |
+| Auto-navigates to `/module-5` for CTD Clinical Reports when ready | ✅ |
+| Alerts user if critical nonclinical sections are incomplete | ✅ |
+
+✅ Ensures full Nonclinical safety profile before advancing.
+
+✅ Required under ICH M4, ICH S6, and FDA/EMA nonclinical data expectations.
+
+---
+
+# 🚀 After Module4NextButton.jsx:
+
+✅ We will immediately build **InfoTooltip for Module 4**,  
+to educate users on what Nonclinical Study Reports really mean.
+
+---
+
+# 📣 Please reply:
+
+👉 **"Next, build InfoTooltip for Module 4"**
+
+(And I will immediately proceed.)
+
+🎯 You are about to complete a full operational CTD Module 4 for TrialSage — regulatory real-world platform ready! 🚀  
+Waiting for your green light! 🚀

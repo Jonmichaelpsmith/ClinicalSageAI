@@ -1,49 +1,47 @@
 // /client/src/components/ind-wizard/InfoTooltipModule4.jsx
 
-import { Info } from 'lucide-react';
 import { useState } from 'react';
 
 export default function InfoTooltipModule4() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="relative inline-block">
+    <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-6 h-6 text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none"
+        className="text-blue-600 bg-blue-50 hover:bg-blue-100 p-1 rounded-full w-6 h-6 flex items-center justify-center"
+        aria-label="Information about Module 4"
       >
-        <Info size={14} />
+        i
       </button>
-      
+
       {isOpen && (
-        <div className="absolute z-10 w-80 p-4 mt-2 text-sm bg-white border border-gray-200 rounded-md shadow-lg left-0 top-full">
-          <h3 className="font-semibold text-gray-900 mb-1">CTD Module 4: Nonclinical Study Reports</h3>
-          <p className="text-gray-700 mb-3">
-            Module 4 contains the nonclinical study reports that demonstrate the safety and pharmacological profile of your investigational product. These studies are critical for justifying human clinical trials.
+        <div className="absolute right-0 z-50 mt-2 w-80 p-4 bg-white rounded-lg shadow-xl border border-gray-200">
+          <h3 className="font-semibold text-lg mb-2">CTD Module 4: Nonclinical Study Reports</h3>
+          
+          <p className="text-sm text-gray-600 mb-3">
+            Module 4 contains comprehensive nonclinical studies that assess safety and pharmacology 
+            before human exposure. These studies are required by regulatory agencies to justify 
+            first-in-human and subsequent clinical trials.
           </p>
           
-          <h4 className="font-medium text-gray-900 mb-1">Key Sections:</h4>
-          <ul className="text-gray-700 list-disc list-inside mb-3 space-y-1">
-            <li>4.2.1: Pharmacology (primary/secondary effects)</li>
-            <li>4.2.2: Pharmacokinetics (ADME studies)</li>
-            <li>4.2.3: Toxicology (acute/chronic toxicity)</li>
-            <li>4.2.3.7.1: Genotoxicity studies</li>
-          </ul>
-          
-          <h4 className="font-medium text-gray-900 mb-1">Regulatory Requirements:</h4>
-          <ul className="text-gray-700 list-disc list-inside space-y-1">
-            <li>Conducted according to GLP standards</li>
-            <li>Demonstrates target engagement and activity</li>
-            <li>Identifies safety concerns prior to human exposure</li>
-            <li>Supports proposed clinical dosing</li>
-          </ul>
-          
-          <div className="mt-3 text-xs text-gray-500">
-            Upload study reports in PDF, Word, or Excel format
+          <div className="mb-3">
+            <h4 className="font-medium text-sm mb-1">Required Sections:</h4>
+            <ul className="text-xs text-gray-600 space-y-1">
+              <li>• Pharmacology studies (primary/secondary targets)</li>
+              <li>• Pharmacokinetics/ADME studies (absorption, metabolism)</li>
+              <li>• Toxicology studies (acute/chronic toxicity)</li>
+              <li>• Genotoxicity studies (mutagenicity assessment)</li>
+            </ul>
           </div>
-          <button
+          
+          <div className="text-xs text-gray-500 mb-2">
+            Per ICH M4S and FDA/EMA guidelines, all nonclinical studies should follow Good Laboratory Practice (GLP) standards.
+          </div>
+          
+          <button 
             onClick={() => setIsOpen(false)}
-            className="mt-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded"
+            className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
           >
             Close
           </button>
