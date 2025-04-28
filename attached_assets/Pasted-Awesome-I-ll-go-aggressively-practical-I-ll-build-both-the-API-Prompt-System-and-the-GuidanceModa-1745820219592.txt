@@ -1,0 +1,196 @@
+Awesome — I’ll go aggressively practical:
+I’ll build both the API/Prompt System and the GuidanceModal.jsx UI —
+because you’ll need them together anyway to actually make this real-time AI wizard work properly.
+
+Let’s dive right in:
+
+⸻
+
+(4) API + Prompt System for RegulatoryCheckerAPI
+
+⸻
+
+Endpoint Specification
+
+Item	Description
+Endpoint	/api/ind-wizard/check-regulatory-compliance
+Method	POST
+Payload	JSON object containing current form field entries
+Response	JSON list of dynamic AI recommendations, errors, citations, and updated confidence score
+
+
+
+⸻
+
+Example API Request (Frontend → Backend)
+
+{
+  "module": "Module 1 - Sponsor Information",
+  "fields": {
+    "sponsor_name": "Concept2Cures.AI",
+    "address": "",
+    "contact_name": "Jon-Michael P. Smith",
+    "fda_forms_uploaded": false
+  }
+}
+
+
+
+⸻
+
+Example API Response (Backend → Frontend)
+
+{
+  "confidence_score": 74,
+  "recommendations": [
+    {
+      "type": "warning",
+      "message": "Sponsor address is missing. Required per 21 CFR 312.23(a)(1)(i).",
+      "link": "https://www.ecfr.gov/current/title-21/chapter-I/subchapter-D/part-312"
+    },
+    {
+      "type": "error",
+      "message": "FDA Forms 1571/1572/3674 not uploaded. Filing incomplete under IND regulations.",
+      "link": "https://www.fda.gov/media/78118/download"
+    }
+  ]
+}
+
+
+
+⸻
+
+Backend Processing Logic
+	1.	Receive the partial form data.
+	2.	Evaluate missing fields or inconsistencies based on IND rules.
+	3.	Query OpenAI / embeddings DB for regulatory checks.
+	4.	Return structured JSON of errors, warnings, suggestions.
+	5.	Calculate and return updated confidence score.
+
+⸻
+
+Example LLM Prompt (for OpenAI or local model)
+
+You are an FDA Regulatory Expert.
+
+Analyze the following IND Module 1 draft submission:
+
+- Sponsor Information: (details)
+- Uploaded Forms: (list)
+
+Tasks:
+1. Identify missing required fields under 21 CFR 312.23.
+2. Detect inconsistencies.
+3. Cite exact CFR, ICH, or FDA guidance references.
+4. Suggest corrections.
+
+Format your response in JSON like this:
+{
+  "confidence_score": (0-100),
+  "recommendations": [
+    { "type": "error/warning/info", "message": "text", "link": "URL if applicable" }
+  ]
+}
+
+
+
+⸻
+
+(5) GuidanceModal.jsx (Frontend UI)
+
+⸻
+
+Functional Specification
+
+Item	Description
+Component Name	GuidanceModal.jsx
+Purpose	Display dynamic real-time AI feedback, errors, warnings, and readiness score next to form entries
+Trigger	Auto-refresh after every form field update
+Close Behavior	Persistent (optional close/minimize, not full dismiss)
+
+
+
+⸻
+
+Basic JSX Structure
+
+import React from "react";
+
+export default function GuidanceModal({ recommendations, confidenceScore }) {
+  return (
+    <div className="fixed right-0 top-20 w-80 p-4 shadow-lg bg-white border-l-2 border-gray-200 z-50">
+      <h2 className="text-lg font-bold mb-2">Regulatory AI Advisor</h2>
+      <div className="mb-4">
+        <span className="text-sm">Confidence Score:</span>
+        <div className="w-full bg-gray-100 rounded-full h-2.5">
+          <div
+            className="bg-green-500 h-2.5 rounded-full"
+            style={{ width: `${confidenceScore}%` }}
+          ></div>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">{confidenceScore}% Complete</p>
+      </div>
+      <ul className="space-y-2">
+        {recommendations.map((rec, idx) => (
+          <li key={idx} className={`p-2 rounded ${rec.type === "error" ? "bg-red-100" : rec.type === "warning" ? "bg-yellow-100" : "bg-green-100"}`}>
+            <p className="text-sm">{rec.message}</p>
+            {rec.link && (
+              <a
+                href={rec.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 text-xs underline mt-1 inline-block"
+              >
+                View Regulation
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+
+
+⸻
+
+Visual Behavior
+   •   Sits on the right side of the screen at all times while user is in the IND Wizard.
+   •   Auto-updates live as suggestions are refreshed.
+   •   Color-coded tips:
+      •   Red = Errors (must fix)
+      •   Yellow = Warnings (should fix)
+      •   Green = Advisory only (good to fix)
+
+⸻
+
+Final Notes
+   •   This system is modular — if you later want more AI models, eCTD auto-building, or global regulatory mode (EMA, PMDA), you can expand it easily.
+   •   Starting with Module 1 is smart — it’s the most “form-driven” and rigid in INDs. Perfect for high-value AI guidance.
+
+⸻
+
+Summary: Built for You Today
+   •   API + Prompt System
+   •   GuidanceModal.jsx
+
+⸻
+
+If you’d like, next I can:
+   •   Write you the first working RegulatoryCheckerAPI backend code (Node/Express, Flask, FastAPI — your pick),
+   •   Help sketch the screen diagrams professionally for your Replit devs,
+   •   Draft first prompts for IND Form Checks (Form 1571, Form 1572, 3674),
+   •   Help you prioritize Phase 2 work (Module 2, 3).
+
+⸻
+
+Would you like me to now:
+   •   “Build the RegulatoryCheckerAPI server code”
+or
+   •   “Mock up the Full IND Wizard Screen Layouts”
+or
+   •   “Prioritize Phase 2 next steps”?
+
+Which one?
+(We’re moving fast now!)

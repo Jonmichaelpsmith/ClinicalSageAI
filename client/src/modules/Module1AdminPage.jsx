@@ -1,8 +1,8 @@
 // /client/src/modules/Module1AdminPage.jsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Building, Upload, PenLine, Users, ArrowLeft } from 'lucide-react';
+import { FileText, Building, Upload, PenLine, Users, ArrowLeft, Brain } from 'lucide-react';
 
 import SponsorInfoForm from '../components/ind-wizard/SponsorInfoForm';
 import FDAFormsUploader from '../components/ind-wizard/FDAFormsUploader';
@@ -11,22 +11,25 @@ import InvestigatorBrochureUploader from '../components/ind-wizard/InvestigatorB
 import USAgentForm from '../components/ind-wizard/USAgentForm';
 import UploadStatusTracker from '../components/ind-wizard/UploadStatusTracker';
 import Module1NextButton from '../components/ind-wizard/Module1NextButton';
+import LiveFieldMonitor from '../components/ind-wizard/LiveFieldMonitor';
 
 export default function Module1AdminPage() {
   // Track the state of various form submissions
   const [formStatus, setFormStatus] = useState({
     sponsorInfo: false,
-    form1571Uploaded: false,
-    form1572Uploaded: false,
+    fdaFormsUploaded: false,
     coverLetterUploaded: false,
     ibUploaded: false,
     usAgentRequired: false,
     usAgentInfo: false
   });
+  
+  // Track whether the AI advisor is enabled
+  const [showAIAdvisor, setShowAIAdvisor] = useState(true);
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="flex items-center mb-6">
+      <div className="flex items-center justify-between mb-6">
         <button 
           onClick={() => window.history.back()} 
           className="flex items-center text-gray-600 hover:text-gray-800"
@@ -34,7 +37,20 @@ export default function Module1AdminPage() {
           <ArrowLeft className="h-4 w-4 mr-1" />
           <span>Back to IND Wizard</span>
         </button>
+        
+        <button
+          onClick={() => setShowAIAdvisor(!showAIAdvisor)}
+          className={`flex items-center px-3 py-1.5 rounded text-sm ${
+            showAIAdvisor ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'
+          }`}
+        >
+          <Brain className="h-4 w-4 mr-1.5" />
+          {showAIAdvisor ? 'AI Advisor Active' : 'Enable AI Advisor'}
+        </button>
       </div>
+      
+      {/* AI Advisor component */}
+      {showAIAdvisor && <LiveFieldMonitor formData={formStatus} />}
 
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-3/4">

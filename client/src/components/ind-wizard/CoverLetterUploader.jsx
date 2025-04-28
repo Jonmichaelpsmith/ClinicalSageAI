@@ -1,32 +1,44 @@
 // /client/src/components/ind-wizard/CoverLetterUploader.jsx
 
 import { useState } from 'react';
-import { FileText, Upload, CheckCircle, AlertCircle, HelpCircle, Trash2, Download } from 'lucide-react';
+import { 
+  FileText, 
+  Upload, 
+  CheckCircle, 
+  AlertCircle, 
+  HelpCircle, 
+  Trash2, 
+  Download, 
+  Pencil,
+  ChevronRight,
+  ChevronDown 
+} from 'lucide-react';
 
 export default function CoverLetterUploader({ setFormStatus }) {
-  const [letterFile, setLetterFile] = useState(null);
+  const [coverLetterFile, setCoverLetterFile] = useState(null);
   const [showGuidance, setShowGuidance] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   // Handle file upload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       // In a real app, upload the file to server here
-      setLetterFile(file);
+      setCoverLetterFile(file);
       setFormStatus(prev => ({ ...prev, coverLetterUploaded: true }));
     }
   };
 
   // Handle file deletion
   const handleDeleteFile = () => {
-    setLetterFile(null);
+    setCoverLetterFile(null);
     setFormStatus(prev => ({ ...prev, coverLetterUploaded: false }));
   };
 
   // Handle generating a template
-  const handleGenerateTemplate = () => {
+  const handleGenerateTemplate = (templateType) => {
     // In a real app, this would generate and download a template
-    alert('A cover letter template would be generated here.');
+    alert(`A ${templateType} cover letter template would be generated here.`);
   };
 
   return (
@@ -38,7 +50,7 @@ export default function CoverLetterUploader({ setFormStatus }) {
             Cover Letter
           </h2>
           <p className="text-gray-600 text-sm mt-1">
-            Upload your IND application cover letter
+            Upload your cover letter for this IND application
           </p>
         </div>
         
@@ -54,58 +66,97 @@ export default function CoverLetterUploader({ setFormStatus }) {
       {showGuidance && (
         <div className="bg-blue-50 p-4 rounded-lg text-sm border border-blue-200">
           <h3 className="font-medium text-blue-800 mb-2">Cover Letter Requirements</h3>
-          <p className="mb-3">
-            The cover letter should provide key information about your IND submission:
+          <p className="mb-2">
+            Although not explicitly required by regulations, a well-written cover letter is standard practice and helps FDA reviewers understand the context of your IND submission. Your cover letter should:
           </p>
           <ul className="list-disc pl-6 space-y-1">
-            <li>Application type (e.g., initial IND submission)</li>
-            <li>Product name and description</li>
-            <li>Proposed indication(s)</li>
-            <li>Reference to any previous communications with FDA</li>
-            <li>List of all items included in the submission</li>
-            <li>Contact information for questions about the submission</li>
+            <li>Clearly state that this is an Initial IND submission</li>
+            <li>Provide a brief overview of the investigational drug</li>
+            <li>Reference the proposed indication</li>
+            <li>Mention the proposed phase of investigation</li>
+            <li>List all parts of the submission (table of contents)</li>
+            <li>Include contact information for the sponsor's authorized representative</li>
           </ul>
           <p className="mt-3 mb-3">
-            The cover letter should be on company letterhead, dated, and signed by the sponsor's authorized representative.
+            The cover letter serves as a roadmap to your IND application and helps ensure that it is routed to the appropriate FDA division for review.
           </p>
-          <button 
-            onClick={handleGenerateTemplate}
-            className="text-blue-600 hover:text-blue-800 underline flex items-center"
-          >
-            <Download className="h-3 w-3 mr-1" />
-            Generate Cover Letter Template
-          </button>
+          
+          <div className="mt-4">
+            <button 
+              onClick={() => setShowTemplates(!showTemplates)}
+              className="flex items-center text-blue-600 font-medium"
+            >
+              {showTemplates ? <ChevronDown className="h-4 w-4 mr-1" /> : <ChevronRight className="h-4 w-4 mr-1" />}
+              Cover Letter Templates
+            </button>
+            
+            {showTemplates && (
+              <div className="mt-2 pl-5 space-y-2">
+                <button 
+                  onClick={() => handleGenerateTemplate('Phase 1')}
+                  className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Phase 1 IND Cover Letter Template
+                </button>
+                <button 
+                  onClick={() => handleGenerateTemplate('Phase 2')}
+                  className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Phase 2 IND Cover Letter Template
+                </button>
+                <button 
+                  onClick={() => handleGenerateTemplate('Phase 3')}
+                  className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Phase 3 IND Cover Letter Template
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       <div className="border rounded-lg overflow-hidden">
         <div className="bg-gray-50 px-4 py-3 border-b">
-          <h3 className="font-medium">IND Cover Letter</h3>
-          <p className="text-xs text-gray-500">Required for all IND submissions</p>
+          <h3 className="font-medium">Cover Letter</h3>
+          <p className="text-xs text-gray-500">Recommended for all IND submissions</p>
         </div>
         
         <div className="p-4">
-          {!letterFile ? (
+          {!coverLetterFile ? (
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
               <div className="flex flex-col items-center">
                 <Upload className="h-8 w-8 text-gray-400 mb-2" />
                 <h4 className="text-gray-700 font-medium">Upload Cover Letter</h4>
-                <p className="text-gray-500 text-sm mb-4">PDF format (Max 5MB)</p>
+                <p className="text-gray-500 text-sm mb-4">PDF or Word format (Max 10MB)</p>
                 
-                <input
-                  type="file"
-                  id="coverLetterUpload"
-                  accept=".pdf,.doc,.docx"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-                <label 
-                  htmlFor="coverLetterUpload" 
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer inline-flex items-center"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Cover Letter
-                </label>
+                <div className="flex space-x-4">
+                  <input
+                    type="file"
+                    id="coverLetterUpload"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+                  <label 
+                    htmlFor="coverLetterUpload" 
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer inline-flex items-center"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload File
+                  </label>
+                  
+                  <button 
+                    onClick={() => handleGenerateTemplate('Standard')}
+                    className="border border-green-600 text-green-600 hover:bg-green-50 px-4 py-2 rounded inline-flex items-center"
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Create New
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -113,9 +164,9 @@ export default function CoverLetterUploader({ setFormStatus }) {
               <div className="flex items-center">
                 <FileText className="h-8 w-8 text-green-600 mr-3" />
                 <div>
-                  <h4 className="font-medium">{letterFile.name}</h4>
+                  <h4 className="font-medium">{coverLetterFile.name}</h4>
                   <p className="text-sm text-gray-500">
-                    {(letterFile.size / (1024 * 1024)).toFixed(2)} MB • Uploaded {new Date().toLocaleDateString()}
+                    {(coverLetterFile.size / (1024 * 1024)).toFixed(2)} MB • Uploaded {new Date().toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -143,10 +194,10 @@ export default function CoverLetterUploader({ setFormStatus }) {
       </div>
       
       <div className="flex items-center mt-4">
-        {!letterFile ? (
+        {!coverLetterFile ? (
           <div className="flex items-center text-amber-600">
             <AlertCircle className="h-4 w-4 mr-2" />
-            <span className="text-sm">Cover letter is required for IND submission</span>
+            <span className="text-sm">A cover letter is recommended for a well-organized IND submission</span>
           </div>
         ) : (
           <div className="flex items-center text-green-600">
