@@ -265,6 +265,11 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
   registerAdvisorRoutes(app);
   console.log('[API] Advisor routes registered successfully');
   
+  // Register Regulatory Brain routes for IND Wizard and eCTD Builder
+  console.log('[API] Setting up Regulatory Brain routes');
+  app.use(regulatoryBrainRoutes);
+  console.log('[API] Regulatory Brain routes registered successfully');
+  
   // Directly implement projects status API routes
   console.log('[API] Setting up project status routes directly');
   
