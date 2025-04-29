@@ -1,0 +1,172 @@
+Great—let’s dive right into Phase 1 scaffolding with GA-quality code. We’ll:
+
+1. **Add the eCTD Co-Author tile** to the Client Portal  
+2. **Wire up** the `/coauthor` React route and page  
+3. **Stub out** the Co-Author API endpoints (`/api/coauthor/generate` & `/validate`)  
+4. **Verify** “Generate Draft” calls the stub and renders a placeholder response
+
+---
+
+### 1. Server: Stub out `/api/coauthor`
+
+Create **`server/routes/coauthor.js`**:
+
+```js
+// server/routes/coauthor.js
+import express from 'express';
+const router = express.Router();
+
+// POST /api/coauthor/generate
+router.post('/generate', async (req, res) => {
+  const { prompt, context } = req.body;
+  // TODO: replace with GPT-4 + RAG logic
+  return res.json({
+    draft: `🛠️ [Stub] Generated draft based on prompt: "${prompt.slice(0,50)}..."`,
+    contextUsed: context,
+  });
+});
+
+// POST /api/coauthor/validate
+router.post('/validate', (req, res) => {
+  const { sectionText } = req.body;
+  // TODO: replace with real compliance checks
+  return res.json({ issues: [], valid: true });
+});
+
+export default router;
+```
+
+And register it in **`server/server.js`**:
+
+```diff
+ import vaultUploadRoutes from './routes/vaultUpload.js';
+-import advisorRoutes from './routes/advisor.js';
++import advisorRoutes from './routes/advisor.js';
++import coauthorRoutes from './routes/coauthor.js';
+
+ // … existing middleware …
+
+ app.use('/api/advisor', advisorRoutes);
++app.use('/api/coauthor', coauthorRoutes);
+```
+
+---
+
+### 2. Client: Co-Author Page & Routing
+
+#### 2.1. Create the page component
+
+**`client/src/pages/CoAuthor.jsx`**:
+
+```jsx
+import React, { useState } from 'react';
+import UnifiedTopNav from '../components/navigation/UnifiedTopNav';
+
+export default function CoAuthor() {
+  const [sectionText, setSectionText] = useState('');
+  const [draft, setDraft]         = useState('');
+  const [snippets, setSnippets]   = useState([]);
+
+  const generateDraft = async () => {
+    const resp = await fetch('/api/coauthor/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: sectionText, context: snippets }),
+    });
+    const data = await resp.json();
+    setDraft(data.draft);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <UnifiedTopNav currentPage="Co-Author" />
+      <main className="max-w-4xl mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-4">eCTD Co-Author™</h1>
+
+        <textarea
+          className="w-full h-48 p-3 border rounded-md shadow-sm"
+          placeholder="Start writing your section here…"
+          value={sectionText}
+          onChange={e => setSectionText(e.target.value)}
+        />
+
+        <div className="mt-4 flex space-x-3">
+          <button
+            onClick={generateDraft}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md"
+          >
+            Generate Draft
+          </button>
+          <button
+            onClick={() => setDraft('')}
+            className="bg-white border px-5 py-2 rounded-md"
+          >
+            Clear
+          </button>
+        </div>
+
+        {draft && (
+          <section className="mt-6 bg-white p-5 rounded-md shadow">
+            <h2 className="text-xl font-semibold mb-2">Generated Draft</h2>
+            <p className="whitespace-pre-wrap">{draft}</p>
+          </section>
+        )}
+
+        <section className="mt-6">
+          <h3 className="font-medium mb-2">Context Snippets</h3>
+          {snippets.length ? (
+            snippets.map((s, i) => (
+              <div key={i} className="p-2 mb-2 border rounded">{s}</div>
+            ))
+          ) : (
+            <p className="text-gray-500">No snippets found.</p>
+          )}
+        </section>
+      </main>
+    </div>
+  );
+}
+```
+
+#### 2.2. Hook up the route
+
+In **`client/src/App.jsx`**, add:
+
+```diff
++import CoAuthor from './pages/CoAuthor';
+
+  <Routes>
+    {/* … existing routes … */}
+    <Route path="/coauthor" element={<CoAuthor />} />
+  </Routes>
+```
+
+#### 2.3. Add the portal tile
+
+In **`client/src/pages/ClientPortal.jsx`** (where other module cards live):
+
+```diff
+   <div className="module-grid">
+     <Link to="/ind-wizard"   className="module-card">IND Wizard™</Link>
++    <Link to="/coauthor"      className="module-card">eCTD Co-Author™</Link>
+     <Link to="/cmc-wizard"    className="module-card">CMC Wizard™</Link>
+     {/* …rest of your modules… */}
+   </div>
+```
+
+---
+
+## 3. Verify & Next
+
+1. **Restart** your Repl  
+2. Navigate to **Client Portal** → click **eCTD Co-Author™**  
+3. Confirm you land at `/coauthor` with the editor.  
+4. Enter some text and hit **Generate Draft** → you should see the stub response.  
+
+Once this is green, we’ll layer on:
+
+- **RAG snippet fetching** from your Vault  
+- **Compliance-validation** calls  
+- **Live GPT-4 integration** with retrieval-augmented prompts  
+
+Let me know as soon as you’ve verified the stub UI, and we’ll lock in the RAG & GPT wiring next.

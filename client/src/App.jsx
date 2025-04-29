@@ -18,6 +18,7 @@ import Vault from './modules/Vault';
 import VaultPage from './pages/VaultPage';
 import VaultTestPage from './pages/VaultTestPage'; // Import the test page
 import ContextDemoPage from './pages/ContextDemoPage'; // Import our new context demo page
+import CoAuthor from './pages/CoAuthor'; // Import our new CoAuthor page
 import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import ModuleSectionEditor for co-author page
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
@@ -95,13 +96,7 @@ function App() {
           <Route path="/vault-page" component={VaultPage} />
           <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
           <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
-          <Route path="/coauthor">
-            <ModuleSectionEditor 
-              moduleId="IND_Module2"
-              sectionId="Quality_Overall_Summary"
-              initialContent="Start writing your Quality Overall Summary here..."
-            />
-          </Route>
+          <Route path="/coauthor" component={CoAuthor} /> {/* Add our CoAuthor page */}
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
