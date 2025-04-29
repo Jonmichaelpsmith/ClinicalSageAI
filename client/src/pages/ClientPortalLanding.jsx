@@ -18,34 +18,37 @@ const ClientPortalLanding = () => {
     // Log that the ClientPortalLanding component has mounted
     console.log('ClientPortalLanding component mounted');
     
-    // Fetch project data from API
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        // Try all possible endpoints to find our API
-        const response = await axios.get('/api/projects/status').catch(async err => {
-          console.log('Trying port 3000...');
-          return await axios.get('http://localhost:3000/api/projects/status').catch(async err => {
-            console.log('Trying port 5000...');
-            return await axios.get('http://localhost:5000/api/projects/status');
-          });
-        });
-        if (response.data && response.data.success && response.data.projects) {
-          console.log('Received projects data:', response.data);
-          setProjects(response.data.projects);
-        } else {
-          console.error('Invalid project data format:', response.data);
-          setError('Invalid project data format received');
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching projects:', err);
-        setError('Failed to load project data');
-        setLoading(false);
+    // Use mock data instead of fetching from API
+    const mockProjects = [
+      { 
+        id: 'proj-001', 
+        name: 'Enzymax Forte IND', 
+        status: 'active', 
+        progress: 65, 
+        lastUpdated: '2025-04-20',
+        modules: ['IND Wizard', 'CMC Wizard'] 
+      },
+      { 
+        id: 'proj-002', 
+        name: 'Cardiozen Phase 2 Study', 
+        status: 'active', 
+        progress: 42, 
+        lastUpdated: '2025-04-22',
+        modules: ['Study Architect', 'CSR Analyzer'] 
+      },
+      { 
+        id: 'proj-003', 
+        name: 'Neuroclear Medical Device', 
+        status: 'pending', 
+        progress: 28, 
+        lastUpdated: '2025-04-18',
+        modules: ['CER Generator'] 
       }
-    };
-
-    fetchProjects();
+    ];
+    
+    // Set mock projects data
+    setProjects(mockProjects);
+    setLoading(false);
     
     // Update console log for tracking
     console.log('All module access links updated to point to /client-portal');
