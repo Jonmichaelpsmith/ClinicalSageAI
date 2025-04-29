@@ -27,6 +27,7 @@ export default function CoAuthor() {
   const [loadingContext, setLoadingContext] = useState(false);
   const [validating, setValidating] = useState(false);
   const [selectedContext, setSelectedContext] = useState([]);
+  const [generatingDraft, setGeneratingDraft] = useState(false);
 
   // Breadcrumbs for navigation context
   const breadcrumbs = ['TrialSage™', 'eCTD Co-Author™', `Module ${moduleId.replace('m', '')}`, `Section ${sectionId}`];
@@ -90,6 +91,44 @@ export default function CoAuthor() {
       setContextSnippets([]);
     } finally {
       setLoadingContext(false);
+    }
+  };
+
+  // Generate Draft
+  const handleGenerateDraft = async () => {
+    setGeneratingDraft(true);
+    setValidationIssues(null); // Clear any existing validation issues
+    
+    try {
+      const { data } = await axios.post('/api/coauthor/generate', {
+        moduleId,
+        sectionId,
+        prompt: sectionText,
+        context: selectedContext.map(s => s.text)
+      });
+      
+      if (data.success && data.draft) {
+        setSectionText(data.draft);
+        // Show a temporary success message
+        setValidationIssues([{
+          type: 'info',
+          message: 'Draft generated successfully. You can now edit or further refine it.'
+        }]);
+      } else {
+        console.error('Draft generation returned error', data);
+        setValidationIssues([{ 
+          type: 'error', 
+          message: data.error || 'Failed to generate draft content' 
+        }]);
+      }
+    } catch (err) {
+      console.error('Draft generation error', err);
+      setValidationIssues([{ 
+        type: 'error', 
+        message: 'Server error during draft generation. Please try again.' 
+      }]);
+    } finally {
+      setGeneratingDraft(false);
     }
   };
 
@@ -237,8 +276,26 @@ export default function CoAuthor() {
               
               <div className="mt-4 flex space-x-3">
                 <button
+                  onClick={handleGenerateDraft}
+                  disabled={generatingDraft || !sectionText.trim()}
+                  className="flex items-center px-4 py-2 bg-indigo-600 disabled:bg-indigo-300 text-white rounded hover:bg-indigo-700 transition-colors"
+                >
+                  {generatingDraft ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-2">✨</span>
+                      Generate Draft
+                    </>
+                  )}
+                </button>
+                
+                <button
                   onClick={validateDraft}
-                  disabled={validating}
+                  disabled={validating || !sectionText.trim()}
                   className="flex items-center px-4 py-2 bg-amber-600 disabled:bg-amber-300 text-white rounded hover:bg-amber-700 transition-colors"
                 >
                   {validating ? (
