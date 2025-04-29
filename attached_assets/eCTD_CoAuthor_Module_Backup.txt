@@ -1,0 +1,1867 @@
+# eCTD Co-Author Module Backup
+# Created: April 29, 2025
+
+This file contains the complete code for all components required by the eCTD Co-Author module.
+Use this as a reference if you need to restore any components in the future.
+
+## 1. CoauthorModule.jsx
+```jsx
+import React, { useState } from 'react';
+import SectionHeader from './SectionHeader';
+import DraftEditor from './DraftEditor';
+import RegulatorySearch from './RegulatorySearch';
+import RiskAnalysisWidget from './RiskAnalysisWidget';
+import GuidancePanel from './GuidancePanel';
+import LumenChatPane from './LumenChatPane';
+import TimelineSimulator from './TimelineSimulator';
+
+export default function CoauthorModule() {
+  const [content, setContent] = useState(
+    'This is the initial content for your CTD section. You can edit this and use AI to help generate a compliant draft.'
+  );
+
+  return (
+    <div className="p-6 space-y-6">
+      <SectionHeader
+        sectionId="2.7"
+        title="Clinical Summary"
+        onGenerate={() => {/* enqueue draft generation via WebSocket */}}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          <DraftEditor
+            content={content}
+            onChange={setContent}
+            onGenerateDraft={() => {/* call /api/coauthor/generate-draft */}}
+          />
+        </div>
+
+        <aside className="space-y-4">
+          <RegulatorySearch />
+          <RiskAnalysisWidget sectionId="2.7" />
+          <GuidancePanel sectionId="2.7" />
+        </aside>
+      </div>
+
+      <div className="space-y-6">
+        <LumenChatPane contextId="2.7" />
+        <TimelineSimulator />
+      </div>
+    </div>
+  );
+}
+```
+
+## 2. SectionHeader.jsx
+```jsx
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Sparkles, ExternalLink, Calendar, BookOpen, History, Settings, Loader2, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+
+export default function SectionHeader({ sectionId, title, onGenerate }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState('');
+  const [generationProgress, setGenerationProgress] = useState(0);
+  
+  // Simulate generation steps for demo purposes
+  const simulateGeneration = () => {
+    setIsGenerating(true);
+    setGenerationProgress(0);
+    setGenerationStep('Initializing AI model...');
+    
+    const steps = [
+      { progress: 10, message: 'Loading clinical templates...' },
+      { progress: 20, message: 'Analyzing ICH E3 guidelines...' },
+      { progress: 35, message: 'Retrieving clinical study data...' },
+      { progress: 50, message: 'Structuring section content...' },
+      { progress: 65, message: 'Generating summary tables...' },
+      { progress: 80, message: 'Applying regulatory compliance checks...' },
+      { progress: 95, message: 'Finalizing document formatting...' },
+      { progress: 100, message: 'Draft generation complete!' }
+    ];
+    
+    // Simulate progress updates with realistic timing
+    let stepIndex = 0;
+    const interval = setInterval(() => {
+      if (stepIndex < steps.length) {
+        const { progress, message } = steps[stepIndex];
+        setGenerationProgress(progress);
+        setGenerationStep(message);
+        stepIndex++;
+      } else {
+        clearInterval(interval);
+        // Wait a moment at 100% before finishing
+        setTimeout(() => {
+          setIsGenerating(false);
+          // Invoke the callback from parent
+          onGenerate && onGenerate();
+        }, 1000);
+      }
+    }, 1200); // 1.2 seconds between updates
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(interval);
+  };
+  
+  // WebSocket-driven progress updates (mocked for demo)
+  useEffect(() => {
+    // In a real implementation, this would connect to WebSocket
+    // and listen for progress events for this specific section
+    
+    // Clean up listener on unmount
+    return () => {
+      // socket.off('progress:update', handleProgressUpdate);
+    };
+  }, [sectionId]);
+  
+  return (
+    <div className="flex flex-col space-y-4 mb-6">
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" className="text-gray-500">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Back to Document
+        </Button>
+        <span className="text-gray-400 px-1">|</span>
+        <div className="text-sm text-gray-500">
+          Module 2 / Section {sectionId} / {title}
+        </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Section {sectionId}: {title}
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Provide a comprehensive clinical summary with detailed analysis of benefits and risks.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <History className="h-4 w-4" />
+            <span>Version History</span>
+          </Button>
+          
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <BookOpen className="h-4 w-4" />
+            <span>Guidance</span>
+          </Button>
+          
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <Calendar className="h-4 w-4" />
+            <span>Timeline</span>
+          </Button>
+          
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <Settings className="h-4 w-4" />
+            <span>Settings</span>
+          </Button>
+          
+          <Button 
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white gap-1.5"
+            onClick={simulateGeneration}
+            disabled={isGenerating}
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                <span>Generate Draft</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+      
+      {/* Real-time generation progress indicator */}
+      {isGenerating && (
+        <div className="bg-blue-50 p-3 rounded-md border border-blue-100 animate-pulse">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center text-blue-700 text-sm font-medium">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <span>{generationStep}</span>
+            </div>
+            <span className="text-blue-600 text-sm font-medium">{generationProgress}%</span>
+          </div>
+          <Progress value={generationProgress} className="h-2" />
+        </div>
+      )}
+      
+      {/* Standard guidance note (shown when not generating) */}
+      {!isGenerating && (
+        <div className="flex items-center text-xs bg-blue-50 text-blue-700 p-2 rounded-md border border-blue-100">
+          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+          <span>
+            <span className="font-medium">Guidance Note:</span> This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## 3. DraftEditor.jsx
+```jsx
+import React, { useRef, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
+import { Sparkles, History, Save, Download, FileUp, FileDown, Code, Undo, Redo, Check } from 'lucide-react';
+
+export default function DraftEditor({ content, onChange, onGenerateDraft }) {
+  const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [wordCount, setWordCount] = useState(() => countWords(content));
+  const [charCount, setCharCount] = useState(() => content.length);
+  const textareaRef = useRef(null);
+  
+  // Count words in text
+  function countWords(text) {
+    return text.split(/\s+/).filter(word => word.length > 0).length;
+  }
+  
+  // Handle text changes
+  const handleChange = (e) => {
+    const newContent = e.target.value;
+    onChange(newContent);
+    setWordCount(countWords(newContent));
+    setCharCount(newContent.length);
+  };
+  
+  // Simulate saving
+  const handleSave = () => {
+    setIsSaving(true);
+    
+    setTimeout(() => {
+      setIsSaving(false);
+      toast({
+        title: "Draft saved",
+        description: "Your document has been saved successfully.",
+      });
+    }, 800);
+  };
+  
+  // Simulate draft generation
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    
+    setTimeout(() => {
+      setIsGenerating(false);
+      
+      // Example of generated content
+      const generatedContent = `
+# 2.7 Clinical Summary
+
+## Introduction
+This clinical summary provides a comprehensive analysis of the clinical studies conducted for [Product Name], a novel therapeutic agent for the treatment of [Indication]. The document presents an integrated assessment of efficacy and safety data from [Number] clinical trials involving [Number] patients.
+
+## Overview of Clinical Development Program
+The clinical development program consisted of [Number] Phase I studies in healthy volunteers, [Number] Phase II studies in patients with [Indication], and [Number] pivotal Phase III trials. These studies evaluated the safety, efficacy, pharmacokinetics, and dose-response characteristics of [Product Name].
+
+## Efficacy Results
+Across the Phase III program, [Product Name] demonstrated statistically significant improvements in the primary endpoint of [Primary Endpoint] compared to placebo (p<0.001). The treatment effect was consistent across demographic subgroups and was maintained throughout the [Duration] treatment period.
+
+Key efficacy findings include:
+- [Finding 1]
+- [Finding 2]
+- [Finding 3]
+
+## Safety Profile
+The safety profile of [Product Name] was characterized by a low incidence of serious adverse events (SAEs). The most common adverse events were [AE 1], [AE 2], and [AE 3], which were generally mild to moderate in severity and transient in nature.
+
+Long-term safety data from the extension studies showed no new safety signals emerging with continued treatment for up to [Duration].
+
+## Benefit-Risk Assessment
+Based on the efficacy and safety data presented, [Product Name] demonstrates a favorable benefit-risk profile for patients with [Indication], providing a clinically meaningful improvement in [Benefit] with a well-characterized and manageable safety profile.
+`;
+      
+      onChange(generatedContent);
+      setWordCount(countWords(generatedContent));
+      setCharCount(generatedContent.length);
+      
+      // Call the callback if provided
+      if (onGenerateDraft) {
+        onGenerateDraft();
+      }
+      
+      toast({
+        title: "Draft generated",
+        description: "AI has generated a draft based on ICH requirements for Section 2.7.",
+      });
+    }, 2000);
+  };
+  
+  // Handle keyboard shortcuts
+  const handleKeyDown = (e) => {
+    // Ctrl+Enter or Cmd+Enter to generate content
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      handleGenerate();
+    }
+    
+    // Ctrl+S or Cmd+S to save
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      handleSave();
+    }
+  };
+  
+  return (
+    <Card className="shadow-md">
+      <div className="border-b p-2 bg-gray-50 flex items-center justify-between">
+        <div className="flex items-center space-x-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-600 border-t-transparent mr-1" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-1" />
+                <span>Save</span>
+              </>
+            )}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2"
+          >
+            <History className="h-4 w-4 mr-1" />
+            <span>History</span>
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2"
+          >
+            <Download className="h-4 w-4 mr-1" />
+            <span>Export</span>
+          </Button>
+        </div>
+        
+        <div className="flex items-center space-x-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Undo"
+          >
+            <Undo className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Redo"
+          >
+            <Redo className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Format"
+          >
+            <Code className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            title="Import File"
+          >
+            <FileUp className="h-4 w-4" />
+          </Button>
+          
+          <div className="border-l h-6 mx-1"></div>
+          
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-8 gap-1.5"
+            onClick={handleGenerate}
+            disabled={isGenerating}
+          >
+            {isGenerating ? (
+              <>
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                <span>Generate Draft</span>
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+      
+      <CardContent className="p-0">
+        <Textarea
+          ref={textareaRef}
+          className="rounded-none border-0 min-h-[400px] focus-visible:ring-0 resize-none p-4 font-mono text-sm"
+          placeholder="Start drafting your document here or use the Generate Draft button to create AI-powered content..."
+          value={content}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+        />
+        
+        <div className="border-t p-2 bg-gray-50 flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center gap-3">
+            <span>{wordCount} words</span>
+            <span>{charCount} characters</span>
+          </div>
+          
+          <div className="flex items-center">
+            <Check className="h-3.5 w-3.5 text-green-500 mr-1" />
+            <span>Autosaved at {new Date().toLocaleTimeString()}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## 4. RegulatorySearch.jsx
+```jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Search, Clock, Bookmark, X, FileText, ExternalLink, ThumbsUp } from 'lucide-react';
+
+export default function RegulatorySearch() {
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([
+    'ICH E3 clinical summary', 
+    'FDA Module 2 requirements',
+    'EMA eCTD guidance'
+  ]);
+  const [savedItems, setSavedItems] = useState([]);
+  const searchRef = useRef(null);
+  
+  // Focus on search input when component mounts
+  useEffect(() => {
+    if (searchRef.current) {
+      searchRef.current.focus();
+    }
+  }, []);
+  
+  // Simulate search results based on query
+  const handleSearch = () => {
+    if (!query.trim()) return;
+    
+    setIsSearching(true);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      // Generate mock regulatory search results based on query
+      const results = generateMockResults(query);
+      setSearchResults(results);
+      setIsSearching(false);
+      
+      // Add to recent searches if not already present
+      if (!recentSearches.includes(query)) {
+        setRecentSearches(prev => [query, ...prev].slice(0, 5));
+      }
+    }, 800);
+  };
+  
+  // Handle Enter key press
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+  
+  // Clear search results
+  const clearSearch = () => {
+    setQuery('');
+    setSearchResults([]);
+    searchRef.current?.focus();
+  };
+  
+  // Handle saving an item
+  const handleSaveItem = (item) => {
+    const isAlreadySaved = savedItems.some(saved => saved.id === item.id);
+    
+    if (!isAlreadySaved) {
+      setSavedItems(prev => [...prev, item]);
+    } else {
+      setSavedItems(prev => prev.filter(saved => saved.id !== item.id));
+    }
+  };
+  
+  // Remove a recent search
+  const removeRecentSearch = (search) => {
+    setRecentSearches(prev => prev.filter(item => item !== search));
+  };
+  
+  // Generate mock search results based on query
+  const generateMockResults = (searchQuery) => {
+    const lowerQuery = searchQuery.toLowerCase();
+    const results = [];
+    
+    // ICH guidelines
+    if (lowerQuery.includes('ich') || lowerQuery.includes('guideline') || lowerQuery.includes('clinical')) {
+      results.push({
+        id: 'ich-e3',
+        title: 'ICH E3: Structure and Content of Clinical Study Reports',
+        type: 'Guideline',
+        source: 'ICH',
+        link: 'https://database.ich.org/sites/default/files/E3_Guideline.pdf',
+        description: 'Provides guidance on the structure and content of clinical study reports for submission to regulatory authorities.',
+        relevance: 98
+      });
+      
+      results.push({
+        id: 'ich-m4e',
+        title: 'ICH M4E(R2): Common Technical Document for the Registration of Pharmaceuticals for Human Use - Efficacy',
+        type: 'Guideline',
+        source: 'ICH',
+        link: 'https://database.ich.org/sites/default/files/M4E_R2_Guideline.pdf',
+        description: 'Provides guidance on the format and content of the efficacy section of the Common Technical Document.',
+        relevance: 95
+      });
+    }
+    
+    // FDA guidelines
+    if (lowerQuery.includes('fda') || lowerQuery.includes('module') || lowerQuery.includes('summary')) {
+      results.push({
+        id: 'fda-ctd',
+        title: 'FDA Guidance: M4: The CTD — Efficacy',
+        type: 'Guidance',
+        source: 'FDA',
+        link: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/m4e-ctd-efficacy',
+        description: 'FDA guidance on the preparation and formatting of the efficacy section of the Common Technical Document.',
+        relevance: 90
+      });
+      
+      results.push({
+        id: 'fda-csr',
+        title: 'FDA Guidance: Integrated Summaries of Effectiveness and Safety',
+        type: 'Guidance',
+        source: 'FDA',
+        link: 'https://www.fda.gov/media/130749/download',
+        description: 'Guidance on preparing the integrated summary of effectiveness and integrated summary of safety for NDAs and BLAs.',
+        relevance: 85
+      });
+    }
+    
+    // EMA guidelines
+    if (lowerQuery.includes('ema') || lowerQuery.includes('eu') || lowerQuery.includes('european')) {
+      results.push({
+        id: 'ema-templates',
+        title: 'EMA Clinical Trial Templates and Forms',
+        type: 'Templates',
+        source: 'EMA',
+        link: 'https://www.ema.europa.eu/en/human-regulatory/research-development/clinical-trials-human-medicines',
+        description: "Templates and forms for clinical trial protocol, investigator's brochure, and clinical study reports in the EU.",
+        relevance: 80
+      });
+    }
+    
+    // eCTD guidelines
+    if (lowerQuery.includes('ectd') || lowerQuery.includes('electronic') || lowerQuery.includes('submission')) {
+      results.push({
+        id: 'ectd-guidance',
+        title: 'eCTD Guidance and Technical Specifications',
+        type: 'Technical Specification',
+        source: 'ICH',
+        link: 'https://www.ich.org/page/ich-electronic-common-technical-document-ectd-v4',
+        description: 'Technical specifications for the electronic Common Technical Document (eCTD) submission format.',
+        relevance: 75
+      });
+    }
+    
+    // Add some general results if specific ones aren't found
+    if (results.length < 2) {
+      results.push({
+        id: 'general-regulatory',
+        title: 'Regulatory Writing Best Practices',
+        type: 'Best Practice',
+        source: 'Regulatory Affairs Professionals Society',
+        link: 'https://www.raps.org/news-and-articles/news-articles/2020/3/regulatory-writing-best-practices',
+        description: 'Best practices for writing regulatory documents, including clinical summaries and study reports.',
+        relevance: 70
+      });
+      
+      results.push({
+        id: 'clinical-data-presentation',
+        title: 'Guidance on Presenting Clinical Data in Submissions',
+        type: 'Guidance',
+        source: 'Multiple Regulatory Bodies',
+        link: 'https://link.springer.com/article/10.1007/s43441-020-00119-1',
+        description: 'Approaches to presenting clinical data effectively in regulatory submissions across different regions.',
+        relevance: 65
+      });
+    }
+    
+    // Sort by relevance
+    return results.sort((a, b) => b.relevance - a.relevance);
+  };
+  
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="p-3">
+        <div className="space-y-3">
+          {/* Search Input */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                ref={searchRef}
+                placeholder="Search regulatory guidance..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="pr-8"
+              />
+              {query && (
+                <button 
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={clearSearch}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <Button 
+              onClick={handleSearch} 
+              disabled={!query.trim() || isSearching}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isSearching ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : (
+                <Search className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          
+          {/* Recent Searches */}
+          {recentSearches.length > 0 && !searchResults.length && (
+            <div className="space-y-2 pb-2">
+              <div className="flex items-center text-xs text-gray-500">
+                <Clock className="h-3.5 w-3.5 mr-1" />
+                <span>Recent Searches</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {recentSearches.map((search, index) => (
+                  <div key={index} className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-xs">
+                    <span 
+                      className="cursor-pointer hover:text-blue-600"
+                      onClick={() => {
+                        setQuery(search);
+                        handleSearch();
+                      }}
+                    >
+                      {search}
+                    </span>
+                    <button
+                      className="ml-1.5 text-gray-400 hover:text-gray-600"
+                      onClick={() => removeRecentSearch(search)}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <ScrollArea className="h-[240px] pr-3">
+              <div className="space-y-3">
+                {searchResults.map((result) => (
+                  <div 
+                    key={result.id} 
+                    className="bg-white border border-gray-200 rounded-md p-2.5 shadow-sm hover:border-blue-200 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-800">{result.title}</h4>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <Badge variant="outline" className="px-1.5 py-0 text-[10px] bg-blue-50 text-blue-700 border-blue-200">
+                            {result.type}
+                          </Badge>
+                          <span className="text-xs text-gray-500">{result.source}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => handleSaveItem(result)}
+                        >
+                          <Bookmark 
+                            className={`h-4 w-4 ${
+                              savedItems.some(item => item.id === result.id)
+                                ? 'fill-blue-600 text-blue-600' 
+                                : 'text-gray-400 hover:text-gray-600'
+                            }`}
+                          />
+                        </Button>
+                        <a
+                          href={result.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center h-7 w-7 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-gray-600 mt-1.5">{result.description}</p>
+                    
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="text-xs text-gray-500 flex items-center">
+                        <ThumbsUp className="h-3 w-3 mr-1 text-blue-500" />
+                        <span>Relevance: {result.relevance}%</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-xs px-2 text-blue-600"
+                      >
+                        <FileText className="h-3 w-3 mr-1" />
+                        <span>Cite</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+          
+          {/* Saved Items */}
+          {savedItems.length > 0 && !searchResults.length && (
+            <div className="space-y-2">
+              <div className="flex items-center text-xs text-gray-500">
+                <Bookmark className="h-3.5 w-3.5 mr-1 fill-blue-500 text-blue-500" />
+                <span>Saved Items</span>
+              </div>
+              <ScrollArea className="h-[200px] pr-3">
+                <div className="space-y-2">
+                  {savedItems.map((item) => (
+                    <div key={item.id} className="bg-blue-50 border border-blue-100 rounded-md p-2 text-xs">
+                      <div className="flex justify-between items-start">
+                        <div className="font-medium text-blue-800">{item.title}</div>
+                        <div className="flex items-center gap-1">
+                          <button 
+                            className="text-blue-400 hover:text-blue-600"
+                            onClick={() => handleSaveItem(item)}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-blue-600 mt-1 text-[10px]">{item.source} • {item.type}</div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+          
+          {/* Empty state */}
+          {!searchResults.length && !savedItems.length && recentSearches.length === 0 && (
+            <div className="py-4 text-center">
+              <div className="text-gray-400 mb-2">
+                <Search className="h-8 w-8 mx-auto opacity-30" />
+              </div>
+              <p className="text-xs text-gray-500">
+                Search regulatory guidance documents, ICH guidelines, and FDA/EMA requirements
+              </p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## 5. GuidancePanel.jsx
+```jsx
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, BookOpen, ExternalLink, FileText, Check, PlusCircle } from 'lucide-react';
+
+export default function GuidancePanel({ sectionId }) {
+  const [expanded, setExpanded] = useState(true);
+
+  // Simulate real guidance data based on section
+  const getGuidanceForSection = (id) => {
+    const guidanceMap = {
+      '2.5': [
+        {
+          title: 'ICH M4E Clinical Overview',
+          source: 'ICH Guidelines',
+          link: 'https://database.ich.org/sites/default/files/M4E_R2_Guideline.pdf',
+          key_points: [
+            'Provide a critical analysis of all available clinical data',
+            'Include benefit-risk assessment',
+            'Reference other sections without duplicating information'
+          ]
+        },
+        {
+          title: 'FDA Guidance on Clinical Overview',
+          source: 'FDA',
+          link: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
+          key_points: [
+            'Discuss clinical context for evaluation',
+            'Address any study design issues',
+            'Explain any deviations from clinical protocols'
+          ]
+        }
+      ],
+      '2.7': [
+        {
+          title: 'ICH E3 Structure and Content of Clinical Study Reports',
+          source: 'ICH Guidelines',
+          link: 'https://database.ich.org/sites/default/files/E3_Guideline.pdf',
+          key_points: [
+            'Organize data by study type and indication',
+            'Present summary tables of all relevant efficacy data',
+            'Include detailed summaries of safety information'
+          ]
+        },
+        {
+          title: 'FDA Guidance on Clinical Summaries',
+          source: 'FDA',
+          link: 'https://www.fda.gov/media/103618/download',
+          key_points: [
+            'Focus on key efficacy findings and safety issues',
+            'Address scientific questions likely to be raised by regulators',
+            'Cross-reference without duplicating information in Module 5'
+          ]
+        },
+        {
+          title: 'EMA Clinical Summary Guidance',
+          source: 'European Medicines Agency',
+          link: 'https://www.ema.europa.eu/en/documents/scientific-guideline/ich-m-4-e-r-2-common-technical-document-registration-pharmaceuticals-human-use-efficacy-step-5_en.pdf',
+          key_points: [
+            'Ensure consistency with Summary of Product Characteristics',
+            'Highlight region-specific requirements',
+            'Include detailed analysis of benefit-risk balance'
+          ]
+        }
+      ],
+      '3.2.P': [
+        {
+          title: 'ICH M4Q Quality Overall Summary',
+          source: 'ICH Guidelines',
+          link: 'https://database.ich.org/sites/default/files/M4Q_R1_Guideline.pdf',
+          key_points: [
+            'Summarize information on drug substance and drug product',
+            'Include critical quality attributes',
+            'Describe pharmaceutical development and manufacturing process'
+          ]
+        }
+      ],
+      '4.2.1': [
+        {
+          title: 'ICH M4S Nonclinical Overview and Summaries',
+          source: 'ICH Guidelines',
+          link: 'https://database.ich.org/sites/default/files/M4S_R2_Guideline.pdf',
+          key_points: [
+            'Summarize pharmacology studies and their relation to proposed indication',
+            'Describe pharmacokinetic and toxicology findings',
+            'Discuss relevance of animal models to humans'
+          ]
+        }
+      ],
+      '5.3.5': [
+        {
+          title: 'FDA Guidance on Clinical Efficacy',
+          source: 'FDA',
+          link: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
+          key_points: [
+            'Present data from controlled clinical trials',
+            'Discuss strengths and limitations of evidence',
+            'Address differences in efficacy across subgroups'
+          ]
+        },
+        {
+          title: 'ICH E9 Statistical Principles for Clinical Trials',
+          source: 'ICH Guidelines',
+          link: 'https://database.ich.org/sites/default/files/E9_Guideline.pdf',
+          key_points: [
+            'Follow proper statistical methodology',
+            'Address multiplicity issues',
+            'Describe primary and secondary endpoints with justification'
+          ]
+        }
+      ]
+    };
+    
+    return guidanceMap[id] || [
+      {
+        title: 'General eCTD Guidance',
+        source: 'ICH Guidelines',
+        link: 'https://database.ich.org/sites/default/files/M4_R4_Guideline.pdf',
+        key_points: [
+          'Follow eCTD structure and formatting requirements',
+          'Ensure document granularity meets regional expectations',
+          'Cross-reference without duplicating information'
+        ]
+      }
+    ];
+  };
+  
+  const guidance = getGuidanceForSection(sectionId);
+  
+  return (
+    <Card className="shadow-sm overflow-hidden">
+      <div 
+        className="flex items-center justify-between bg-blue-50 p-3 border-b cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-5 w-5 text-blue-600" />
+          <h3 className="font-medium text-blue-800">Regulatory Guidance</h3>
+        </div>
+        <ChevronDown 
+          className={`h-5 w-5 text-blue-600 transition-transform ${expanded ? 'transform rotate-180' : ''}`} 
+        />
+      </div>
+      
+      {expanded && (
+        <CardContent className="p-0">
+          <ScrollArea className="h-[220px] p-0">
+            <div className="p-3 space-y-4">
+              {guidance.map((item, index) => (
+                <div key={index} className="bg-white rounded-md border border-gray-200 p-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-sm text-gray-800">{item.title}</h4>
+                      <div className="text-xs text-gray-500 flex items-center mt-0.5">
+                        <FileText className="h-3 w-3 mr-1" />
+                        <span>{item.source}</span>
+                      </div>
+                    </div>
+                    <a 
+                      href={item.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 text-xs flex items-center hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      <span>View</span>
+                    </a>
+                  </div>
+                  
+                  <div className="mt-2">
+                    <div className="text-xs font-medium text-gray-700">Key Points:</div>
+                    <ul className="mt-1 space-y-1">
+                      {item.key_points.map((point, i) => (
+                        <li key={i} className="text-xs text-gray-600 flex items-start">
+                          <Check className="h-3 w-3 text-green-500 mr-1 mt-0.5 flex-shrink-0" />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+              
+              <div className="flex justify-center py-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs text-blue-600 flex items-center gap-1.5"
+                >
+                  <PlusCircle className="h-3 w-3" />
+                  <span>Load More Guidelines</span>
+                </Button>
+              </div>
+            </div>
+          </ScrollArea>
+        </CardContent>
+      )}
+    </Card>
+  );
+}
+```
+
+## 6. LumenChatPane.jsx
+```jsx
+import React, { useState, useRef, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sparkles, Send, User, Cpu, Copy, CheckCircle, Brain, FileQuestion, BookOpen } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+
+export default function LumenChatPane({ contextId }) {
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      role: 'system',
+      content: 'Welcome to Lumen AI Assistant! Ask me anything about regulatory guidelines or drafting help for this section.'
+    }
+  ]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
+  
+  const scrollAreaRef = useRef(null);
+  const inputRef = useRef(null);
+  
+  // Simulate automatic scrolling to bottom of chat
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollArea = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollArea) {
+        scrollArea.scrollTop = scrollArea.scrollHeight;
+      }
+    }
+  }, [messages]);
+  
+  // Function to add a user message and generate a response
+  const handleSendMessage = async () => {
+    if (!input.trim()) return;
+    
+    // Add user message
+    const userMessage = {
+      id: Date.now(),
+      role: 'user',
+      content: input
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    
+    // Simulate AI typing indicator
+    setIsTyping(true);
+    
+    // Simulate AI response based on context
+    setTimeout(() => {
+      const aiResponse = generateAIResponse(input, contextId);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: aiResponse
+      }]);
+      setIsTyping(false);
+    }, 1000 + Math.random() * 2000); // Random delay to feel more natural
+  };
+  
+  // Handle Enter key press
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+  
+  // Copy message content to clipboard
+  const handleCopyToClipboard = (text, id) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(id);
+      toast({
+        title: "Copied to clipboard",
+        description: "Message content has been copied to clipboard."
+      });
+      
+      // Reset copied status after 2 seconds
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+  
+  // Insert AI suggestion into editor
+  const handleInsertSuggestion = (text) => {
+    // This would typically dispatch an event to the parent component
+    // or use a context/state management to update the editor content
+    toast({
+      title: "Content inserted",
+      description: "AI suggestion has been inserted into your draft."
+    });
+  };
+  
+  // Simulate AI responses based on the question and section context
+  const generateAIResponse = (question, sectionId) => {
+    // Context-aware responses based on the specific section
+    const lowerQuestion = question.toLowerCase();
+    
+    if (lowerQuestion.includes('ich') && lowerQuestion.includes('e3')) {
+      return `## ICH E3 Guidelines for Section ${sectionId}\n\nFor the Clinical Summary section, ICH E3 recommends:\n\n1. **Comprehensive Overview:** Provide a clear, concise summary of all clinical findings.\n\n2. **Study Design:** Summarize the design of pivotal studies, including randomization methods and blinding procedures.\n\n3. **Efficacy Results:** Present the primary and secondary endpoint results with appropriate statistical analyses.\n\n4. **Safety Analysis:** Include a thorough evaluation of adverse events, laboratory findings, and other safety parameters.\n\n5. **Benefit-Risk Assessment:** Conclude with an integrated benefit-risk assessment supporting the proposed indication.`;
+    }
+    
+    if (lowerQuestion.includes('template') || lowerQuestion.includes('structure')) {
+      return `# Recommended Structure for Section ${sectionId}\n\n## 2.7.1 Summary of Biopharmaceutic Studies\n- Bioavailability results\n- Comparative BA/BE studies\n- In vitro dissolution studies\n\n## 2.7.2 Summary of Clinical Pharmacology\n- Mechanism of action\n- PK characteristics\n- Drug interactions\n\n## 2.7.3 Summary of Clinical Efficacy\n- Study demographics\n- Primary endpoints\n- Secondary analyses\n- Subgroup analyses\n\n## 2.7.4 Summary of Clinical Safety\n- Exposure\n- Adverse events\n- Laboratory findings\n- Vital signs\n\nI can help draft any of these subsections for you.`;
+    }
+    
+    if (lowerQuestion.includes('table') || lowerQuestion.includes('data')) {
+      return `Here's a sample data table format for Section ${sectionId}:\n\n| Study ID | Design | N | Primary Endpoint | Result | P-value |\n|---------|--------|---|-----------------|--------|--------|\n| ABC-123 | RCT, DB, PC | 305 | HbA1c change | -1.2% | <0.001 |\n| ABC-124 | RCT, DB, AC | 411 | HbA1c change | -1.1% | <0.001 |\n| ABC-125 | OL, Extension | 527 | TEAE incidence | 12.3% | - |\n\nWould you like me to generate a specific table for your clinical data?`;
+    }
+    
+    if (lowerQuestion.includes('references') || lowerQuestion.includes('cite')) {
+      return `For Section ${sectionId}, include these key references:\n\n1. Smith J, et al. (2023). Novel approaches for treatment of diabetes mellitus. *J Clin Res*. 45(2):112-119.\n\n2. European Medicines Agency (2024). Guideline on clinical development of products for treatment of diabetes mellitus. EMA/CHMP/27994/2024.\n\n3. FDA Guidance (2023). Type 2 Diabetes Mellitus: Developing Drugs and Therapeutic Biologics for Treatment and Prevention. FDA-2023-D-3005.\n\nI can format these references according to your preferred citation style.`;
+    }
+    
+    // Default response when no specific context is detected
+    return `I can help you draft content for Section ${sectionId}. For the Clinical Summary, consider including:\n\n- Overview of clinical development program\n- Summary of key efficacy findings across studies\n- Integrated safety analysis with focus on serious adverse events\n- Dose-response relationships and key subgroup analyses\n- Benefit-risk conclusions supporting the proposed indication\n\nWould you like me to help draft any specific part of this section?`;
+  };
+  
+  return (
+    <Card className="shadow-md overflow-hidden">
+      <CardContent className="p-0">
+        <div className="flex items-center justify-between bg-blue-50 p-3 border-b">
+          <div className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-blue-600" />
+            <h3 className="font-medium text-blue-800">Lumen AI Chat Assistant</h3>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-blue-600">
+            <FileQuestion className="h-4 w-4" />
+            <span>Section {contextId} Context-Aware</span>
+          </div>
+        </div>
+        
+        <ScrollArea className="h-[350px] p-4" ref={scrollAreaRef}>
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div 
+                key={message.id} 
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div 
+                  className={`flex gap-3 max-w-[80%] ${
+                    message.role === 'user' 
+                      ? 'bg-blue-600 text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
+                      : message.role === 'system'
+                        ? 'bg-gray-100 text-gray-800 rounded-tl-lg rounded-tr-lg rounded-br-lg border border-gray-200'
+                        : 'bg-gradient-to-r from-indigo-50 to-blue-50 text-gray-800 rounded-tl-lg rounded-tr-lg rounded-br-lg border border-blue-100'
+                  } p-3 relative`}
+                >
+                  {message.role !== 'user' && (
+                    <div className="flex-shrink-0 mt-1">
+                      {message.role === 'system' ? (
+                        <Cpu className="h-5 w-5 text-blue-600" />
+                      ) : (
+                        <Sparkles className="h-5 w-5 text-blue-600" />
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col">
+                    <div className="text-sm whitespace-pre-wrap" style={{ overflowWrap: 'break-word' }}>
+                      {message.content}
+                    </div>
+                    
+                    {/* Action buttons for AI messages */}
+                    {message.role === 'assistant' && (
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-100"
+                          onClick={() => handleCopyToClipboard(message.content, message.id)}
+                        >
+                          {copiedId === message.id ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              <span>Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3 mr-1" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-100"
+                          onClick={() => handleInsertSuggestion(message.content)}
+                        >
+                          <BookOpen className="h-3 w-3 mr-1" />
+                          <span>Insert</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {message.role === 'user' && (
+                    <div className="flex-shrink-0 mt-1 ml-2">
+                      <User className="h-5 w-5 text-blue-200" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            
+            {/* AI typing indicator */}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 text-gray-800 rounded-lg p-3 max-w-[80%] flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-blue-600" />
+                  <div className="flex space-x-1 items-center">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+        
+        <div className="border-t p-2">
+          <div className="flex gap-2">
+            <Input
+              ref={inputRef}
+              placeholder="Ask Lumen AI about regulatory guidelines, section content, or drafting help..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isTyping}
+              className="focus-visible:ring-blue-500"
+            />
+            <Button
+              onClick={handleSendMessage}
+              disabled={!input.trim() || isTyping}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="text-xs text-gray-500 mt-1 px-2">
+            Context: Clinical Summary (Section {contextId}) • Powered by LumenAI™
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## 7. TimelineSimulator.jsx
+```jsx
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Calendar, Clock, CalendarDays, Check, Edit, Plus, Trash2, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
+
+export default function TimelineSimulator() {
+  const [duration, setDuration] = useState(120); // Default 120 days
+  const [targetDate, setTargetDate] = useState(() => {
+    // Default to 120 days from today
+    const date = new Date();
+    date.setDate(date.getDate() + 120);
+    return date.toISOString().split('T')[0];
+  });
+  const [milestones, setMilestones] = useState([
+    { 
+      id: 1, 
+      title: 'Initial Draft Completion', 
+      day: 30, 
+      completed: true 
+    },
+    { 
+      id: 2, 
+      title: 'Internal Review', 
+      day: 45, 
+      completed: false 
+    },
+    { 
+      id: 3, 
+      title: 'Quality Check', 
+      day: 60, 
+      completed: false 
+    },
+    { 
+      id: 4, 
+      title: 'Regulatory Review', 
+      day: 90, 
+      completed: false 
+    },
+    { 
+      id: 5, 
+      title: 'Final Approval', 
+      day: 105, 
+      completed: false 
+    },
+    { 
+      id: 6, 
+      title: 'Submission', 
+      day: 120, 
+      completed: false 
+    }
+  ]);
+  const [editingMilestone, setEditingMilestone] = useState(null);
+  const [newMilestone, setNewMilestone] = useState({ title: '', day: 0 });
+  const [currentDay, setCurrentDay] = useState(30); // Simulate we're at day 30
+  
+  // Update target date when duration changes
+  useEffect(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + duration);
+    setTargetDate(date.toISOString().split('T')[0]);
+  }, [duration]);
+  
+  // Format date to display
+  const formatDate = (daysFromNow) => {
+    const date = new Date();
+    date.setDate(date.getDate() + daysFromNow);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+  
+  // Handle adding a new milestone
+  const handleAddMilestone = () => {
+    if (!newMilestone.title.trim()) return;
+    
+    const id = Math.max(0, ...milestones.map(m => m.id)) + 1;
+    setMilestones([...milestones, { ...newMilestone, id, completed: false }]);
+    setNewMilestone({ title: '', day: 0 });
+  };
+  
+  // Handle removing a milestone
+  const handleRemoveMilestone = (id) => {
+    setMilestones(milestones.filter(m => m.id !== id));
+  };
+  
+  // Handle editing a milestone
+  const handleEditMilestone = (milestone) => {
+    setEditingMilestone(milestone);
+  };
+  
+  // Handle saving edits
+  const handleSaveEdit = () => {
+    if (!editingMilestone || !editingMilestone.title.trim()) return;
+    
+    setMilestones(milestones.map(m => 
+      m.id === editingMilestone.id ? editingMilestone : m
+    ));
+    setEditingMilestone(null);
+  };
+  
+  // Handle toggling completion status
+  const handleToggleComplete = (id) => {
+    setMilestones(milestones.map(m => 
+      m.id === id ? { ...m, completed: !m.completed } : m
+    ));
+  };
+  
+  // Calculate the percentage position for the timeline markers
+  const calculatePosition = (day) => {
+    return (day / duration) * 100;
+  };
+  
+  return (
+    <Card className="shadow-md">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold text-gray-800 flex items-center">
+            <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+            eCTD Submission Timeline Simulator
+          </CardTitle>
+          <span className="text-sm text-blue-600 font-medium flex items-center">
+            <Clock className="h-4 w-4 mr-1" />
+            Current day: {currentDay}
+          </span>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        {/* Timeline visualization */}
+        <div className="mb-6">
+          <div className="relative">
+            {/* Timeline bar */}
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="absolute h-full bg-blue-500" 
+                style={{ width: `${calculatePosition(currentDay)}%` }}
+              />
+            </div>
+            
+            {/* Current day marker */}
+            <div 
+              className="absolute w-4 h-4 bg-white border-2 border-blue-600 rounded-full -top-1" 
+              style={{ left: `${calculatePosition(currentDay)}%`, transform: 'translateX(-50%)' }}
+            />
+            
+            {/* Milestone markers */}
+            {milestones.map((milestone) => (
+              <div
+                key={milestone.id}
+                className={`absolute w-3 h-3 rounded-full -top-0.5 ${
+                  milestone.completed 
+                    ? 'bg-green-500' 
+                    : calculatePosition(milestone.day) <= calculatePosition(currentDay)
+                      ? 'bg-yellow-500'
+                      : 'bg-gray-400'
+                }`}
+                style={{ 
+                  left: `${calculatePosition(milestone.day)}%`, 
+                  transform: 'translateX(-50%)'
+                }}
+                title={`${milestone.title} (Day ${milestone.day})`}
+              />
+            ))}
+          </div>
+          
+          {/* Timeline dates */}
+          <div className="flex justify-between mt-2 text-xs text-gray-500">
+            <div>Today</div>
+            <div>{formatDate(duration / 4)}</div>
+            <div>{formatDate(duration / 2)}</div>
+            <div>{formatDate(duration * 3 / 4)}</div>
+            <div>{formatDate(duration)}</div>
+          </div>
+        </div>
+        
+        {/* Timeline duration control */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <Label className="text-sm font-medium">Timeline Duration (Days)</Label>
+            <span className="text-sm text-blue-600 font-medium flex items-center">
+              <CalendarDays className="h-4 w-4 mr-1" />
+              Target: {formatDate(duration)}
+            </span>
+          </div>
+          <div className="flex gap-4 items-center">
+            <Slider
+              value={[duration]}
+              min={30}
+              max={365}
+              step={1}
+              onValueChange={(val) => setDuration(val[0])}
+              className="flex-1"
+            />
+            <Input
+              type="number"
+              min={30}
+              max={365}
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-20"
+            />
+          </div>
+        </div>
+        
+        {/* Milestones section */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <Label className="text-sm font-medium">Submission Milestones</Label>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 text-xs flex items-center text-blue-600"
+              onClick={() => setCurrentDay(currentDay < duration ? currentDay + 5 : currentDay)}
+            >
+              <ArrowRight className="h-3.5 w-3.5 mr-1" />
+              <span>Advance 5 days</span>
+            </Button>
+          </div>
+          
+          <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+            {milestones.map((milestone) => (
+              <div 
+                key={milestone.id}
+                className={`flex items-center justify-between p-2 rounded border ${
+                  calculatePosition(milestone.day) <= calculatePosition(currentDay)
+                    ? milestone.completed 
+                      ? 'bg-green-50 border-green-200' 
+                      : 'bg-yellow-50 border-yellow-200'
+                    : 'bg-gray-50 border-gray-200'
+                }`}
+              >
+                {editingMilestone && editingMilestone.id === milestone.id ? (
+                  <>
+                    <div className="flex-1 flex gap-2">
+                      <Input
+                        value={editingMilestone.title}
+                        onChange={(e) => setEditingMilestone({ ...editingMilestone, title: e.target.value })}
+                        className="h-8 text-sm"
+                      />
+                      <Input
+                        type="number"
+                        min={0}
+                        max={duration}
+                        value={editingMilestone.day}
+                        onChange={(e) => setEditingMilestone({ ...editingMilestone, day: Number(e.target.value) })}
+                        className="h-8 text-sm w-16"
+                      />
+                    </div>
+                    <div className="flex">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-green-600"
+                        onClick={handleSaveEdit}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 w-7 p-0 rounded-full ${
+                          milestone.completed
+                            ? 'bg-green-500 text-white hover:bg-green-600'
+                            : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+                        }`}
+                        onClick={() => handleToggleComplete(milestone.id)}
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </Button>
+                      <div>
+                        <div className="font-medium text-sm">{milestone.title}</div>
+                        <div className="text-xs text-gray-500">Day {milestone.day} ({formatDate(milestone.day)})</div>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-blue-600"
+                        onClick={() => handleEditMilestone(milestone)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-red-600"
+                        onClick={() => handleRemoveMilestone(milestone.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {/* Add new milestone */}
+          <div className="mt-3 border-t pt-3">
+            <div className="flex gap-2">
+              <Input
+                placeholder="New milestone"
+                value={newMilestone.title}
+                onChange={(e) => setNewMilestone({ ...newMilestone, title: e.target.value })}
+                className="h-8 text-sm"
+              />
+              <Input
+                type="number"
+                placeholder="Day"
+                min={0}
+                max={duration}
+                value={newMilestone.day || ''}
+                onChange={(e) => setNewMilestone({ ...newMilestone, day: Number(e.target.value) })}
+                className="h-8 text-sm w-16"
+              />
+              <Button 
+                onClick={handleAddMilestone} 
+                className="h-8 bg-blue-600 hover:bg-blue-700"
+                disabled={!newMilestone.title.trim()}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## 8. RiskAnalysisWidget.jsx
+```jsx
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChevronDown, AlertTriangle, ShieldCheck, ChevronRight, FileText, XCircle, Zap } from 'lucide-react';
+
+export default function RiskAnalysisWidget({ sectionId }) {
+  const [expanded, setExpanded] = useState(true);
+  const [activeTab, setActiveTab] = useState('regulatory');
+
+  // Generate risk analysis data based on section ID
+  const getRiskData = (section) => {
+    return {
+      regulatory: [
+        {
+          id: 'risk-1',
+          category: 'Clinical Compliance',
+          severity: 'medium',
+          description: 'Efficacy data presentation may not meet ICH E3 requirements for integrated summary.',
+          recommendation: 'Include additional statistical analysis tables comparing treatment groups across all studies.'
+        },
+        {
+          id: 'risk-2',
+          category: 'Consistency',
+          severity: 'high',
+          description: 'Discrepancy found between adverse event data in this section versus Module 5 reports.',
+          recommendation: 'Reconcile adverse event counts across all document sections before submission.'
+        },
+        {
+          id: 'risk-3',
+          category: 'Data Integrity',
+          severity: 'low',
+          description: 'Some patient demographic information contains minor inconsistencies in age groupings.',
+          recommendation: 'Standardize age group categorization across clinical documentation.'
+        }
+      ],
+      content: [
+        {
+          id: 'content-1',
+          category: 'Completeness',
+          severity: 'medium',
+          description: 'Missing discussion of dose-response relationship in special populations.',
+          recommendation: 'Add analysis of dose adjustments needed for geriatric and hepatic impairment populations.'
+        },
+        {
+          id: 'content-2',
+          category: 'Scientific Justification',
+          severity: 'low',
+          description: 'Limited discussion of mechanism of action related to observed adverse events.',
+          recommendation: 'Expand scientific rationale connecting pharmacology to safety findings.'
+        }
+      ],
+      formatting: [
+        {
+          id: 'format-1',
+          category: 'eCTD Structure',
+          severity: 'low',
+          description: 'Some cross-references to Module 5 lack hyperlink functionality.',
+          recommendation: 'Update cross-references using proper eCTD linking format.'
+        },
+        {
+          id: 'format-2',
+          category: 'Readability',
+          severity: 'medium',
+          description: 'Tables exceed recommended width for PDF display in review systems.',
+          recommendation: 'Reformat wide tables to ensure proper display in regulatory review tools.'
+        }
+      ]
+    };
+  };
+  
+  const riskData = getRiskData(sectionId);
+  const activeRisks = riskData[activeTab] || [];
+  
+  // Count risks by severity
+  const countBySeverity = (risks) => {
+    return risks.reduce((counts, risk) => {
+      counts[risk.severity] = (counts[risk.severity] || 0) + 1;
+      return counts;
+    }, {});
+  };
+  
+  const getSeverityColor = (severity) => {
+    const colors = {
+      high: 'text-red-600',
+      medium: 'text-amber-500',
+      low: 'text-green-600'
+    };
+    return colors[severity] || 'text-gray-500';
+  };
+  
+  const getSeverityBgColor = (severity) => {
+    const colors = {
+      high: 'bg-red-50 border-red-100',
+      medium: 'bg-amber-50 border-amber-100',
+      low: 'bg-green-50 border-green-100'
+    };
+    return colors[severity] || 'bg-gray-50 border-gray-100';
+  };
+  
+  const totalRisks = Object.values(riskData).reduce((sum, risks) => sum + risks.length, 0);
+  const regulatoryCounts = countBySeverity(riskData.regulatory);
+  const contentCounts = countBySeverity(riskData.content);
+  const formattingCounts = countBySeverity(riskData.formatting);
+  
+  return (
+    <Card className="shadow-sm overflow-hidden">
+      <div 
+        className="flex items-center justify-between bg-blue-50 p-3 border-b cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-blue-600" />
+          <h3 className="font-medium text-blue-800">Risk Analysis</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+            {totalRisks} findings
+          </span>
+          <ChevronDown 
+            className={`h-5 w-5 text-blue-600 transition-transform ${expanded ? 'transform rotate-180' : ''}`} 
+          />
+        </div>
+      </div>
+      
+      {expanded && (
+        <CardContent className="p-0">
+          <div className="grid grid-cols-3 border-b text-sm">
+            <Button
+              variant="ghost"
+              className={`rounded-none h-10 border-b-2 ${activeTab === 'regulatory' ? 'border-blue-600 text-blue-800 font-medium' : 'border-transparent text-gray-500'}`}
+              onClick={() => setActiveTab('regulatory')}
+            >
+              Regulatory
+              {regulatoryCounts.high > 0 && (
+                <span className="ml-1.5 px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
+                  {regulatoryCounts.high}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              className={`rounded-none h-10 border-b-2 ${activeTab === 'content' ? 'border-blue-600 text-blue-800 font-medium' : 'border-transparent text-gray-500'}`}
+              onClick={() => setActiveTab('content')}
+            >
+              Content
+              {contentCounts.high > 0 && (
+                <span className="ml-1.5 px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
+                  {contentCounts.high}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              className={`rounded-none h-10 border-b-2 ${activeTab === 'formatting' ? 'border-blue-600 text-blue-800 font-medium' : 'border-transparent text-gray-500'}`}
+              onClick={() => setActiveTab('formatting')}
+            >
+              Formatting
+              {formattingCounts.high > 0 && (
+                <span className="ml-1.5 px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
+                  {formattingCounts.high}
+                </span>
+              )}
+            </Button>
+          </div>
+          
+          <ScrollArea className="h-[240px]">
+            <div className="p-3 space-y-3">
+              {activeRisks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <ShieldCheck className="h-10 w-10 text-green-500 mb-2" />
+                  <p className="text-sm text-gray-500">No issues found in this category</p>
+                </div>
+              ) : (
+                activeRisks.map((risk) => (
+                  <div 
+                    key={risk.id} 
+                    className={`rounded-md border p-3 ${getSeverityBgColor(risk.severity)}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <div 
+                            className={`uppercase text-xs font-semibold ${getSeverityColor(risk.severity)}`}
+                          >
+                            {risk.severity} risk
+                          </div>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-xs text-gray-600">{risk.category}</span>
+                        </div>
+                        
+                        <p className="text-sm mt-1 text-gray-800">
+                          {risk.description}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-2 pt-2 border-t border-dashed border-gray-200">
+                      <div className="flex items-center">
+                        <Zap className="h-3.5 w-3.5 text-blue-500 mr-1.5" />
+                        <span className="text-xs text-blue-700 font-medium">Recommendation:</span>
+                      </div>
+                      <p className="text-xs mt-1 text-gray-700">
+                        {risk.recommendation}
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-2 mt-2 text-xs">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 px-2 text-blue-600"
+                      >
+                        <FileText className="h-3 w-3 mr-1" />
+                        <span>View Details</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 px-2 text-red-600"
+                      >
+                        <XCircle className="h-3 w-3 mr-1" />
+                        <span>Dismiss</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+          
+          <div className="p-2 border-t bg-gray-50">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full h-7 text-xs text-gray-600 flex justify-center items-center"
+            >
+              <span>Run Full Risk Analysis</span>
+              <ChevronRight className="h-3.5 w-3.5 ml-1" />
+            </Button>
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  );
+}
+```
