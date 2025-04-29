@@ -788,17 +788,34 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
   
   // POST /api/coauthor/generate - Generate a draft for a CTD section
   app.post("/api/coauthor/generate", async (req: Request, res: Response) => {
-    const { moduleId, sectionId, prompt, context } = req.body;
-    console.log('🐙 POST /api/coauthor/generate', { moduleId, sectionId });
+    // Support both parameter formats for backward compatibility
+    const { moduleId, sectionId, prompt, context, module, section, currentText, contextSnippets } = req.body;
+    
+    // Use new parameter format if provided, fall back to old format
+    const effectiveModuleId = module || moduleId;
+    const effectiveSectionId = section || sectionId;
+    const effectivePrompt = currentText || prompt;
+    const effectiveContext = contextSnippets || context;
+    
+    console.log('🐙 POST /api/coauthor/generate', { 
+      moduleId: effectiveModuleId, 
+      sectionId: effectiveSectionId,
+      contextCount: Array.isArray(effectiveContext) ? effectiveContext.length : 0
+    });
     
     try {
       // Call the service to generate the draft
-      const draft = await generateDraft(moduleId, sectionId, prompt, context);
+      const draft = await generateDraft(
+        effectiveModuleId, 
+        effectiveSectionId, 
+        effectivePrompt, 
+        effectiveContext
+      );
       
       return res.json({
         success: true,
         draft,
-        contextUsed: context || []
+        contextUsed: effectiveContext || []
       });
     } catch (error) {
       console.error('Error generating draft:', error);
