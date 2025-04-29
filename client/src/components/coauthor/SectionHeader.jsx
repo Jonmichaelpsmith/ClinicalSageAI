@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import templates from '@/services/templates/ctdTemplates.json';
 
-export default function SectionHeader({ sectionId, title, onGenerate }) {
+export default function SectionHeader({ sectionId, title, onGenerate, onBackToSelector }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
   const [generationProgress, setGenerationProgress] = useState(0);
@@ -67,7 +67,7 @@ export default function SectionHeader({ sectionId, title, onGenerate }) {
           variant="ghost" 
           size="sm" 
           className="text-gray-500"
-          onClick={() => window.location.href = '/coauthor'}
+          onClick={onBackToSelector}
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to Document Selection

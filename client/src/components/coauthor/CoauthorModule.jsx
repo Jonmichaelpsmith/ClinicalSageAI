@@ -13,7 +13,7 @@ import { FileText, Layout } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import templates from '@/services/templates/ctdTemplates.json';
 
-export default function CoauthorModule() {
+export default function CoauthorModule({ onBackToSelector }) {
   const sections = [
     { id: '2.1', title: 'Table of Contents' },
     { id: '2.2', title: 'Introduction' },
@@ -66,6 +66,7 @@ export default function CoauthorModule() {
         sectionId={activeSection}
         title={currentSectionTitle}
         onGenerate={handleGenerate}
+        onBackToSelector={onBackToSelector}
       />
 
       <Tabs 
