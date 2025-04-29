@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { fetchAllCERs, generateFullCER, generateSampleCER } from "../services/cerService";
 import { 
   FileText, Search, Download, Upload, FileSpreadsheet, 
   Book, Database, Layers, Settings, Microscope, BarChart4, 
