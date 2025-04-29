@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ReferenceModelBrowser } from '@/components/vault/ReferenceModelBrowser';
 import { useLocation, Link } from 'wouter';
-import { 
-  Button,
+import { Button } from '@/components/ui/button';
+import {
   Separator,
   Tabs,
   TabsContent,
