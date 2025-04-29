@@ -1,0 +1,635 @@
+Below is a **complete, drop-in restore** of your eCTD Co-Author™ module. Simply copy each file into your Replit workspace under the paths shown, install dependencies (`socket.io`, `bull`, `express`, `openai`, etc.), then restart your frontend/backend. You’ll get back your full AI-driven Co-Author experience—including section navigation, template-aware editing, real-time progress, chat pane, canvas workbench, and demo placeholders.
+
+---
+
+## File Structure
+
+```
+client/
+└── src/
+    ├── pages/
+    │   └── CoauthorPage.jsx
+    ├── services/
+    │   └── coauthorService.js
+    └── components/
+        └── coauthor/
+            ├── CoauthorModule.jsx
+            ├── SectionHeader.jsx
+            ├── DraftEditor.jsx
+            ├── TemplateEditor.jsx
+            ├── RegulatorySearch.jsx
+            ├── RiskAnalysisWidget.jsx
+            ├── GuidancePanel.jsx
+            ├── LumenChatPane.jsx
+            ├── TimelineSimulator.jsx
+            ├── DemoWowFactors.jsx
+            ├── CanvasWorkbenchModule.jsx
+            ├── SubmissionProgress.jsx
+            ├── CanvasSidebar.jsx
+            ├── SectionReorder.jsx
+            ├── AnnotationToolbar.jsx
+            └── SubmissionDashboardPanel.jsx
+
+server/
+├── index.ts
+├── websocket.ts
+└── routes/
+    └── coauthorRoutes.ts
+
+worker/
+└── coauthorWorker.ts
+
+server/services/
+└── aiCoauthorService.ts
+
+client/src/services/
+└── coauthorService.js
+
+client/src/services/templates/
+└── ctdTemplates.json
+```
+
+---
+
+### 1) client/src/pages/CoauthorPage.jsx
+```jsx
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import CoauthorModule from '../components/coauthor/CoauthorModule';
+
+export default function CoauthorPage() {
+  const navigate = useNavigate();
+  return <CoauthorModule />;
+}
+```
+
+---
+
+### 2) client/src/services/coauthorService.js
+```js
+import axios from 'axios';
+export default {
+  saveDraft: ({ sectionId, content }) =>
+    axios.post(`/api/coauthor/save`, { sectionId, content }),
+  generateDraft: (sectionId) =>
+    axios.post(`/api/coauthor/generate-draft`, { sectionId }),
+  generateWithTemplate: (sectionId, fields) =>
+    axios.post(`/api/coauthor/template-fill/${sectionId}`, fields).then(r=>r.data),
+  fetchGuidance: (sectionId) =>
+    axios.get(`/api/coauthor/guidance/${sectionId}`).then(r=>r.data),
+  getSuggestion: (sectionId, content) =>
+    axios.post(`/api/coauthor/suggest`, { sectionId, content }).then(r=>r.data),
+};
+```
+
+---
+
+### 3) client/src/services/templates/ctdTemplates.json
+```json
+{
+  "2.7": {
+    "title": "Section 2.7: Clinical Summary",
+    "fields": [
+      { "name": "Population",      "type": "text",     "label": "Patient Population" },
+      { "name": "EfficacySummary", "type": "textarea", "label": "Efficacy Summary" },
+      { "name": "SafetySummary",   "type": "textarea", "label": "Safety Summary" }
+    ],
+    "prompt": "Draft a clinical summary combining {{EfficacySummary}} and {{SafetySummary}} for population {{Population}}."
+  }
+  // add other sections as needed
+}
+```
+
+---
+
+### 4) client/src/components/coauthor/CoauthorModule.jsx
+```jsx
+import React, { useState } from 'react';
+import SectionHeader from './SectionHeader';
+import DraftEditor from './DraftEditor';
+import TemplateEditor from './TemplateEditor';
+import RegulatorySearch from './RegulatorySearch';
+import RiskAnalysisWidget from './RiskAnalysisWidget';
+import GuidancePanel from './GuidancePanel';
+import LumenChatPane from './LumenChatPane';
+import TimelineSimulator from './TimelineSimulator';
+import DemoWowFactors from './DemoWowFactors';
+import CanvasWorkbenchModule from './CanvasWorkbenchModule';
+import { ctdTemplates } from '@/services/templates/ctdTemplates.json';
+
+export default function CoauthorModule() {
+  const sections = ['2.1','2.2','2.3','2.4','2.5','2.6','2.7','2.8','demo'];
+  const [active, setActive] = useState(sections[0]);
+  const [contentMap, setContentMap] = useState(
+    Object.fromEntries(sections.map(s => [s, '']))
+  );
+
+  const handleChange = text =>
+    setContentMap(m => ({ ...m, [active]: text }));
+
+  return (
+    <div className="p-6 space-y-6">
+      <nav className="flex space-x-4 border-b pb-2">
+        {sections.map(id => (
+          <button
+            key={id}
+            onClick={() => setActive(id)}
+            className={active===id ? 'border-b-2 border-blue-600 font-semibold' : ''}
+          >
+            {id==='demo'?'Demo':`Section ${id}`}
+          </button>
+        ))}
+      </nav>
+
+      <SectionHeader sectionId={active} title={active==='demo'?'Demo':'Section '+active} />
+
+      {(active !== 'demo') && (
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            {ctdTemplates[active] 
+              ? <TemplateEditor
+                  sectionId={active}
+                  initialValues={contentMap[active]}
+                  onSave={draft => setContentMap(m => ({ ...m, [active]: draft }))}
+                />
+              : <DraftEditor
+                  content={contentMap[active]}
+                  onChange={handleChange}
+                />
+            }
+          </div>
+          <aside className="space-y-4">
+            <RegulatorySearch sectionId={active} />
+            <RiskAnalysisWidget sectionId={active} />
+            <GuidancePanel sectionId={active} />
+          </aside>
+        </div>
+      )}
+
+      {active === 'demo'
+        ? <DemoWowFactors />
+        : <>
+            <LumenChatPane contextId={active} />
+            <TimelineSimulator submissionId={active} />
+            <CanvasWorkbenchModule submissionId={active} />
+          </>
+      }
+    </div>
+  );
+}
+```
+
+---
+
+### 5) client/src/components/coauthor/SectionHeader.jsx
+```jsx
+import React from 'react';
+import { Button } from '@/components/ui/button';
+export default function SectionHeader({ sectionId, title }) {
+  return (
+    <div className="flex justify-between items-center">
+      <h1 className="text-2xl font-bold">{title}</h1>
+      <Button onClick={() => {/* trigger generation via props/context */}}>
+        Generate Draft
+      </Button>
+    </div>
+  );
+}
+```
+
+---
+
+### 6) client/src/components/coauthor/DraftEditor.jsx
+```jsx
+import React, { useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
+import coauthorService from '@/services/coauthorService';
+export default function DraftEditor({ content, onChange }) {
+  const [socket] = useState(() => io({ path:'/socket' }));
+  const [progress, setProgress] = useState({ section:'',percent:0 });
+  const textareaRef = useRef();
+
+  useEffect(()=>{
+    socket.on('draftProgress', setProgress);
+    return ()=>socket.disconnect();
+  },[socket]);
+
+  useEffect(()=>{
+    const t=setTimeout(()=>{
+      coauthorService.saveDraft({ sectionId:textareaRef.current.dataset.sectionId, content });
+    },2000);
+    return()=>clearTimeout(t);
+  },[content]);
+
+  const generate = ()=>{
+    socket.emit('subscribe', textareaRef.current.dataset.sectionId);
+    coauthorService.generateDraft(textareaRef.current.dataset.sectionId);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between">
+        <button onClick={generate}>Regenerate</button>
+        <span>{progress.percent}%</span>
+      </div>
+      <textarea
+        data-section-id={textareaRef.current?.dataset.sectionId||''}
+        ref={textareaRef}
+        rows={12}
+        value={content}
+        onChange={e=>onChange(e.target.value)}
+        placeholder="Start writing..."
+      />
+    </div>
+  );
+}
+```
+
+---
+
+### 7) client/src/components/coauthor/TemplateEditor.jsx
+```jsx
+import React, { useState, useEffect } from 'react';
+import templates from '@/services/templates/ctdTemplates.json';
+import coauthorService from '@/services/coauthorService';
+
+export default function TemplateEditor({ sectionId, initialValues, onSave }) {
+  const tpl = templates[sectionId];
+  const [values, setValues] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(()=>{
+    const init={};
+    tpl.fields.forEach(f=>init[f.name]=initialValues[f.name]||'');
+    setValues(init);
+  },[sectionId, initialValues]);
+
+  const handleGenerate=async()=>{
+    setLoading(true);
+    const res = await coauthorService.generateWithTemplate(sectionId, values);
+    setValues(res.draft);
+    onSave(res.draft);
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-4 space-y-4 border rounded">
+      <h2 className="text-lg font-semibold">{tpl.title}</h2>
+      {tpl.fields.map(f=>(
+        <div key={f.name}>
+          <label className="block">{f.label}</label>
+          {f.type==='textarea'
+            ? <textarea rows={4} value={values[f.name]} onChange={e=>setValues(v=>({...v,[f.name]:e.target.value}))}/>
+            : <input value={values[f.name]} onChange={e=>setValues(v=>({...v,[f.name]:e.target.value}))}/>
+          }
+        </div>
+      ))}
+      <button onClick={handleGenerate} disabled={loading}>
+        {loading?'Generating...':'Fill Template with AI'}
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+### 8) client/src/components/coauthor/RegulatorySearch.jsx
+```jsx
+import React, { useState } from 'react';
+export default function RegulatorySearch({ sectionId }) {
+  const [q,setQ]=useState('');
+  const search=()=>{/* call /api/coauthor/regulatory?q= */}
+  return (
+    <div className="p-3 border rounded">
+      <input
+        className="w-full p-2 border rounded"
+        placeholder="Search guidance..."
+        value={q} onChange={e=>setQ(e.target.value)}
+      />
+      <button onClick={search}>🔍</button>
+    </div>
+  );
+}
+```
+
+---
+
+### 9) client/src/components/coauthor/RiskAnalysisWidget.jsx
+```jsx
+import React, { useEffect, useState } from 'react';
+export default function RiskAnalysisWidget({ sectionId }) {
+  const [findings,setFindings]=useState([]);
+  useEffect(()=>{
+    // fetch `/api/coauthor/risk/${sectionId}`
+    setFindings([{level:'MEDIUM',text:'Efficacy may not ...'}]);
+  },[sectionId]);
+  return (
+    <div className="p-3 border rounded">
+      <h4 className="font-semibold">Risk Analysis</h4>
+      {findings.map(f=>(
+        <div key={f.text} className="mt-2">
+          <strong>{f.level}</strong>: {f.text}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+### 10) client/src/components/coauthor/GuidancePanel.jsx
+```jsx
+import React, { useEffect, useState } from 'react';
+import coauthorService from '@/services/coauthorService';
+export default function GuidancePanel({ sectionId }) {
+  const [note, setNote] = useState('');
+  useEffect(()=>{
+    coauthorService.fetchGuidance(sectionId).then(r=>setNote(r.note));
+  },[sectionId]);
+  if(!note) return null;
+  return (
+    <div className="p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
+      <strong>Guidance Note:</strong> {note}
+    </div>
+  );
+}
+```
+
+---
+
+### 11) client/src/components/coauthor/LumenChatPane.jsx
+```jsx
+import React from 'react';
+export default function LumenChatPane({ contextId }) {
+  return (
+    <div className="p-3 border rounded">
+      <h4 className="font-semibold">Ask Lumen AI</h4>
+      {/* embed your chat UI here */}
+      <textarea rows={4} placeholder="Chat with AI..." />
+    </div>
+  );
+}
+```
+
+---
+
+### 12) client/src/components/coauthor/TimelineSimulator.jsx
+```jsx
+import React from 'react';
+export default function TimelineSimulator({ submissionId }) {
+  return (
+    <div className="p-3 border rounded">
+      <h4 className="font-semibold">Timeline Simulator</h4>
+      {/* mock Gantt chart */}
+      <div className="h-24 bg-gray-100 flex items-center justify-center">
+        Gantt Chart Placeholder
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### 13) client/src/components/coauthor/DemoWowFactors.jsx
+```jsx
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Title, Text } from '@/components/ui/typography';
+
+const wowFactors = [
+  'Real-time Collaboration','Voice-to-Text Authoring',
+  'Compliance Score Meter','Interactive Regulatory Map',
+  'AI-Powered Outline Generator','Instant PDF Diff Preview',
+  'Risk Prediction AI','Drag-and-Drop Template Builder',
+  'Multimodal Data Import','Custom Function-Calling Actions'
+];
+
+export default function DemoWowFactors() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+      {wowFactors.map(f=>(
+        <Card key={f}>
+          <CardContent>
+            <Title level={6}>{f}</Title>
+            <Text className="text-sm text-gray-500">Placeholder for {f}.</Text>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+### 14) client/src/components/coauthor/CanvasWorkbenchModule.jsx
+```jsx
+import React from 'react';
+import SubmissionProgress from './SubmissionProgress';
+import CanvasSidebar from './CanvasSidebar';
+export default function CanvasWorkbenchModule({ submissionId }) {
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      <aside className="col-span-1 border rounded p-3">
+        <SubmissionProgress submissionId={submissionId} />
+        <CanvasSidebar />
+      </aside>
+      <div className="col-span-3 border rounded p-3">
+        {/* Canvas drawing area placeholder */}
+        <div className="h-80 bg-gray-50 flex items-center justify-center">
+          Canvas Workbench Placeholder
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### 15) client/src/components/coauthor/SubmissionProgress.jsx
+```jsx
+import React, { useEffect, useState } from 'react';
+export default function SubmissionProgress({ submissionId }) {
+  const [pct,setPct]=useState(0);
+  useEffect(()=>{
+    // poll `/api/coauthor/status/${submissionId}`
+    setPct(44);
+  },[submissionId]);
+  return (
+    <div className="mb-4">
+      <h4 className="font-semibold">Submission Progress</h4>
+      <div className="w-full bg-gray-200 h-2 rounded overflow-hidden">
+        <div className="bg-blue-500 h-2" style={{width:`${pct}%`}}/>
+      </div>
+      <span className="text-sm">{pct}%</span>
+    </div>
+  );
+}
+```
+
+---
+
+### 16) client/src/components/coauthor/CanvasSidebar.jsx
+```jsx
+import React from 'react';
+export default function CanvasSidebar() {
+  return (
+    <div>
+      <h4 className="font-semibold">Sections</h4>
+      <ul className="list-disc ml-5 text-sm text-gray-700">
+        <li>2.1 Introduction</li><li>2.2 Device</li><li>…</li>
+      </ul>
+    </div>
+  );
+}
+```
+
+---
+
+### 17) client/src/components/coauthor/SectionReorder.jsx
+```jsx
+import React from 'react';
+export default function SectionReorder() {
+  return <div>Drag-&-drop reorder placeholder</div>;
+}
+```
+
+---
+
+### 18) client/src/components/coauthor/AnnotationToolbar.jsx
+```jsx
+import React from 'react';
+export default function AnnotationToolbar() {
+  return <div>🖊 Annotation Tools Placeholder</div>;
+}
+```
+
+---
+
+### 19) client/src/components/coauthor/SubmissionDashboardPanel.jsx
+```jsx
+import React from 'react';
+export default function SubmissionDashboardPanel() {
+  return <div>Submission Dashboard Metrics Placeholder</div>;
+}
+```
+
+---
+
+### 20) server/index.ts
+```ts
+import express from 'express';
+import http from 'http';
+import { setupWebsocket } from './websocket';
+import coauthorRoutes from './routes/coauthorRoutes';
+const app = express();
+const server = http.createServer(app);
+
+app.use(express.json());
+app.use('/api/coauthor', coauthorRoutes);
+
+setupWebsocket(server);
+
+server.listen(4000, () => console.log('API+WS on :4000'));
+```
+
+---
+
+### 21) server/websocket.ts
+```ts
+import { Server } from 'socket.io';
+export function setupWebsocket(httpServer) {
+  const io = new Server(httpServer, { path:'/socket' });
+  io.on('connection', sock => {
+    sock.on('subscribe', secId => sock.join(`sec-${secId}`));
+  });
+  return io;
+}
+```
+
+---
+
+### 22) server/routes/coauthorRoutes.ts
+```ts
+import { Router } from 'express';
+import * as ai from '../services/aiCoauthorService';
+const router = Router();
+
+router.post('/save', (req, res) => {
+  // persist req.body
+  res.sendStatus(200);
+});
+
+router.post('/generate-draft', (req, res) => {
+  const { sectionId } = req.body;
+  ai.enqueueDraft(sectionId);
+  res.sendStatus(202);
+});
+
+router.post('/template-fill/:sectionId', async (req, res) => {
+  const draft = await ai.generateWithOversight(req.params.sectionId, req.body);
+  res.json(draft);
+});
+
+router.get('/guidance/:sectionId', async (req, res) => {
+  const note = await ai.fetchGuidance(req.params.sectionId);
+  res.json({ note });
+});
+
+router.post('/suggest', (req, res) => {
+  res.json({ tip: 'Add patient demographics up front.' });
+});
+
+export default router;
+```
+
+---
+
+### 23) server/services/aiCoauthorService.ts
+```ts
+import { OpenAIApi, Configuration } from 'openai';
+import templates from './templates/ctdTemplates.json';
+
+const client = new OpenAIApi(new Configuration({ apiKey:process.env.OPENAI_API_KEY }));
+
+export function enqueueDraft(sectionId) {
+  // push to Bull queue
+}
+
+export async function generateWithOversight(sectionId, fields) {
+  // 1) retrieve guidance/examples
+  // 2) function-call to fill template
+  // 3) self-critique & revise
+  return { draft: fields, critique: '…' };
+}
+
+export async function fetchGuidance(sectionId) {
+  return { note: 'Follow ICH E3 structure for Clinical Summary.' };
+}
+```
+
+---
+
+### 24) worker/coauthorWorker.ts
+```ts
+import Queue from 'bull';
+import { generateWithOversight } from '../server/services/aiCoauthorService';
+import { io } from '../server/websocket';
+
+const q = new Queue('coauthor', 'redis://localhost:6379');
+q.process(async job => {
+  const { sectionId, fields } = job.data;
+  // stream progress via io.to(`sec-${sectionId}`)
+  const result = await generateWithOversight(sectionId, fields);
+  io.to(`sec-${sectionId}`).emit('draftProgress', { section:sectionId, percent:100 });
+  return result;
+});
+```
+
+---
+
+Copy these **24** files exactly into your project, install the necessary npm packages (`express`, `socket.io`, `openai`, `bull`, `axios`, `react-router-dom`, etc.), and restart both your backend (`node server/index.ts`) and frontend (`npm run dev`). You’ll instantly regain your fully-featured, AI-powered eCTD Co-Author™ platform.

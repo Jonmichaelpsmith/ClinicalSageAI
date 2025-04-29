@@ -1,235 +1,138 @@
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Lightbulb, ChevronsRight, RefreshCw, ThumbsUp, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, BookOpen, ExternalLink, FileText, Check, PlusCircle } from 'lucide-react';
-import templates from '@/services/templates/ctdTemplates.json';
+
+// Mock guidance data by section
+const mockGuidance = {
+  '1.1': {
+    note: "Administrative information should include all relevant contact details for the sponsor and investigators. Reference 21 CFR 312.23(a)(1) for complete requirements.",
+    tips: [
+      "Ensure all contact information is current and accurate",
+      "Include 24-hour emergency contact information",
+      "Provide FDA correspondence reference numbers if applicable"
+    ]
+  },
+  '2.7': {
+    note: "The Clinical Summary section 2.7 should provide a detailed but concise summary of all clinical data. This is one of the most scrutinized sections by regulatory reviewers.",
+    tips: [
+      "Present efficacy and safety data separately for clarity",
+      "Include clear tables summarizing key study outcomes",
+      "Address any inconclusive or contradictory results directly"
+    ]
+  },
+  '3.2': {
+    note: "Quality section 3.2 must detail all aspects of drug substance and drug product quality. This is critical for manufacturing approval.",
+    tips: [
+      "Include comprehensive batch analysis data",
+      "Detail all analytical procedures with validation data",
+      "Provide complete stability data supporting shelf-life claims"
+    ]
+  }
+};
+
+// Default guidance for sections without specific data
+const defaultGuidance = {
+  note: "This section should follow the ICH CTD format guidelines. Ensure all content is clear, accurate, and supported by appropriate data.",
+  tips: [
+    "Use consistent terminology throughout the document",
+    "Ensure all references are properly cited",
+    "Include a table of contents for complex sections"
+  ]
+};
 
 export default function GuidancePanel({ sectionId }) {
-  const [expanded, setExpanded] = useState(true);
-  
-  // Get guidance note for the section
-  const getGuidanceNote = (id) => {
-    // First check if we have template guidance
-    if (templates[id] && templates[id].guidanceText) {
-      return templates[id].guidanceText;
-    }
-    
-    // If not, use the static notes
-    const notes = {
-      '2.1': 'This section should follow CTD format and include a comprehensive Table of Contents for Module 2.',
-      '2.2': 'Introduction should provide a concise overview of the pharmaceutical class, mode of action, and proposed clinical use.',
-      '2.3': 'Quality Overall Summary should follow ICH M4Q guidelines with appropriate cross-references.',
-      '2.4': 'Nonclinical Overview should interpret findings against product safety per ICH M4S.',
-      '2.5': 'Clinical Overview should provide critical analysis per ICH M4E guidelines.',
-      '2.6': 'Nonclinical Written and Tabulated Summaries must follow regional requirements.',
-      '2.7': 'This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.',
-      '2.8': 'Be sure all referenced studies from Module 5 are properly summarized with study synopses.',
-    };
-    return notes[id] || 'Follow eCTD guidelines for this section and include proper cross-references to supporting documentation.';
+  const [guidance, setGuidance] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate API call delay
+    setLoading(true);
+    setTimeout(() => {
+      // Get section-specific guidance or default guidance
+      const data = mockGuidance[sectionId] || defaultGuidance;
+      setGuidance(data);
+      setLoading(false);
+    }, 500);
+  }, [sectionId]);
+
+  const handleCopyTip = (tip) => {
+    navigator.clipboard.writeText(tip)
+      .then(() => {
+        // Would show a toast in real implementation
+        console.log('Copied to clipboard');
+      })
+      .catch(err => {
+        console.error('Failed to copy:', err);
+      });
   };
 
-  // For detailed guidance content
-  const getGuidanceDetails = (id) => {
-    // First check if we have template data that we can use for guidance
-    if (templates[id]) {
-      const template = templates[id];
-      
-      // Create a template-specific guidance item
-      const templateGuidance = {
-        title: `${template.title} Template Guidance`,
-        source: 'TrialSage™ Templates',
-        link: 'javascript:void(0)',  // No external link for template guidance
-        key_points: [
-          template.description,
-          // Add field-specific guidance points
-          ...(template.fields || []).map(field => `Include information about ${field.label.toLowerCase()}`)
-        ]
-      };
-      
-      // Add template guidance to the list of guidance items
-      const standardGuidance = getStandardGuidance(id);
-      return [templateGuidance, ...standardGuidance];
-    }
-    
-    // If no template, return standard guidance
-    return getStandardGuidance(id);
-  };
-  
-  // Standard guidance items from regulatory sources
-  const getStandardGuidance = (id) => {
-    const guidanceMap = {
-      '2.5': [
-        {
-          title: 'ICH M4E Clinical Overview',
-          source: 'ICH Guidelines',
-          link: 'https://database.ich.org/sites/default/files/M4E_R2_Guideline.pdf',
-          key_points: [
-            'Provide a critical analysis of all available clinical data',
-            'Include benefit-risk assessment',
-            'Reference other sections without duplicating information'
-          ]
-        },
-        {
-          title: 'FDA Guidance on Clinical Overview',
-          source: 'FDA',
-          link: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
-          key_points: [
-            'Discuss clinical context for evaluation',
-            'Address any study design issues',
-            'Explain any deviations from clinical protocols'
-          ]
-        }
-      ],
-      '2.7': [
-        {
-          title: 'ICH E3 Structure and Content of Clinical Study Reports',
-          source: 'ICH Guidelines',
-          link: 'https://database.ich.org/sites/default/files/E3_Guideline.pdf',
-          key_points: [
-            'Organize data by study type and indication',
-            'Present summary tables of all relevant efficacy data',
-            'Include detailed summaries of safety information'
-          ]
-        },
-        {
-          title: 'FDA Guidance on Clinical Summaries',
-          source: 'FDA',
-          link: 'https://www.fda.gov/media/103618/download',
-          key_points: [
-            'Focus on key efficacy findings and safety issues',
-            'Address scientific questions likely to be raised by regulators',
-            'Cross-reference without duplicating information in Module 5'
-          ]
-        },
-        {
-          title: 'EMA Clinical Summary Guidance',
-          source: 'European Medicines Agency',
-          link: 'https://www.ema.europa.eu/en/documents/scientific-guideline/ich-m-4-e-r-2-common-technical-document-registration-pharmaceuticals-human-use-efficacy-step-5_en.pdf',
-          key_points: [
-            'Ensure consistency with Summary of Product Characteristics',
-            'Highlight region-specific requirements',
-            'Include detailed analysis of benefit-risk balance'
-          ]
-        }
-      ],
-      '2.2': [
-        {
-          title: 'ICH M4E Introduction Guidance',
-          source: 'ICH Guidelines',
-          link: 'https://database.ich.org/sites/default/files/M4E_R2_Guideline.pdf',
-          key_points: [
-            'Provide a concise overview of the product',
-            'Include the pharmaceutical class',
-            'Describe proposed clinical indication'
-          ]
-        }
-      ],
-      '2.1': [
-        {
-          title: 'ICH M4 Common Technical Document',
-          source: 'ICH Guidelines',
-          link: 'https://database.ich.org/sites/default/files/M4_R4_Guideline.pdf',
-          key_points: [
-            'Include all Module 2 sections in TOC',
-            'Follow the proper section numbering convention',
-            'Use consistent document formatting'
-          ]
-        }
-      ]
-    };
-    
-    return guidanceMap[id] || [
-      {
-        title: 'General eCTD Guidance',
-        source: 'ICH Guidelines',
-        link: 'https://database.ich.org/sites/default/files/M4_R4_Guideline.pdf',
-        key_points: [
-          'Follow eCTD structure and formatting requirements',
-          'Ensure document granularity meets regional expectations',
-          'Cross-reference without duplicating information'
-        ]
-      }
-    ];
-  };
-  
-  // Get guidance for the current section
-  const guidance = getGuidanceDetails(sectionId);
-  const guidanceNote = getGuidanceNote(sectionId);
-  
-  return (
-    <Card className="shadow-sm overflow-hidden">
-      <div 
-        className="flex items-center justify-between bg-blue-50 p-3 border-b cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="flex items-center gap-2">
-          <BookOpen className="h-5 w-5 text-blue-600" />
-          <h3 className="font-medium text-blue-800">Regulatory Guidance</h3>
-        </div>
-        <ChevronDown 
-          className={`h-5 w-5 text-blue-600 transition-transform ${expanded ? 'transform rotate-180' : ''}`} 
-        />
-      </div>
-      
-      {expanded && (
-        <CardContent className="p-0">
-          <div className="p-3 bg-blue-50 border-b border-blue-100 text-sm text-blue-800">
-            <ExternalLink className="h-4 w-4 inline-block mr-1.5 mb-0.5" />
-            <span className="font-medium">Guidance Note:</span> {guidanceNote}
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center">
+            <Lightbulb className="h-4 w-4 mr-2" />
+            Regulatory Guidance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center py-4">
+            <RefreshCw className="h-5 w-5 animate-spin text-primary" />
           </div>
-          
-          <ScrollArea className="h-[220px] p-0">
-            <div className="p-3 space-y-4">
-              {guidance.map((item, index) => (
-                <div key={index} className="bg-white rounded-md border border-gray-200 p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm text-gray-800">{item.title}</h4>
-                      <div className="text-xs text-gray-500 flex items-center mt-0.5">
-                        <FileText className="h-3 w-3 mr-1" />
-                        <span>{item.source}</span>
-                      </div>
-                    </div>
-                    <a 
-                      href={item.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 text-xs flex items-center hover:text-blue-800"
-                    >
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      <span>View</span>
-                    </a>
-                  </div>
-                  
-                  <div className="mt-2">
-                    <div className="text-xs font-medium text-gray-700">Key Points:</div>
-                    <ul className="mt-1 space-y-1">
-                      {item.key_points.map((point, i) => (
-                        <li key={i} className="text-xs text-gray-600 flex items-start">
-                          <Check className="h-3 w-3 text-green-500 mr-1 mt-0.5 flex-shrink-0" />
-                          <span>{point}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-              
-              <div className="flex justify-center py-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="text-xs text-blue-600 flex items-center gap-1.5"
-                >
-                  <PlusCircle className="h-3 w-3" />
-                  <span>Load More Guidelines</span>
-                </Button>
-              </div>
-            </div>
-          </ScrollArea>
         </CardContent>
-      )}
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center">
+          <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
+          Regulatory Guidance
+        </CardTitle>
+        <CardDescription>
+          AI-powered recommendations for Section {sectionId}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="p-3 bg-amber-50 border-l-4 border-amber-400 rounded text-sm">
+          {guidance.note}
+        </div>
+        
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Expert Recommendations:</h4>
+          {guidance.tips.map((tip, index) => (
+            <div 
+              key={index} 
+              className="flex items-start space-x-2 p-2 hover:bg-slate-50 rounded-md group"
+            >
+              <ChevronsRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <p className="text-sm flex-1">{tip}</p>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 flex-shrink-0"
+                onClick={() => handleCopyTip(tip)}
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
+        </div>
+        
+        <div className="pt-1 flex justify-end">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs flex items-center text-muted-foreground"
+          >
+            <ThumbsUp className="h-3 w-3 mr-1" />
+            Helpful
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 }

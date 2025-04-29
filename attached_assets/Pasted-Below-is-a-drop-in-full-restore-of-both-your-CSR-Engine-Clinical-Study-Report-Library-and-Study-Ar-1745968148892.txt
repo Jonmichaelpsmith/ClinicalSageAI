@@ -1,0 +1,446 @@
+Below is a drop-in full restore of both your CSR Engine (Clinical Study Report Library) and Study Architect modules—complete with client pages/components, services, server routes, and workers. Copy each file into Replit under the exact path, install any missing packages (axios, socket.io, bull, openai, pg, etc.), then restart your front- and back-ends. You’ll have a working demo end-to-end.
+
+File Structure
+pgsql
+Copy
+Edit
+client/
+└── src/
+    ├── pages/
+    │   ├── CSRLibraryPage.jsx
+    │   └── StudyArchitectPage.jsx
+    ├── services/
+    │   ├── csrService.js
+    │   └── studyArchitectService.js
+    └── components/
+        ├── csr/
+        │   ├── CSRLibraryPage.jsx
+        │   ├── CSRIngest.jsx
+        │   ├── CSRSearchBar.jsx
+        │   ├── CSRChatPanel.jsx
+        │   ├── CSRAlignmentPanel.jsx
+        │   ├── CSRLibraryMetrics.jsx
+        │   ├── CSRAlignmentBanner.jsx
+        │   └── CSRCompareViewer.jsx
+        └── studyArchitect/
+            ├── StudyArchitectModule.jsx
+            ├── StudySessionSelector.jsx
+            ├── StudyPlanner.jsx
+            ├── StudyDesignAssistant.jsx
+            ├── StudyDesignReport.jsx
+            ├── StudyEditorForm.jsx
+            ├── ProtocolOptimizer.jsx
+            └── StudyWorkspace.jsx
+
+server/
+├── index.ts
+├── websocket.ts
+└── routes/
+    ├── csrRoutes.ts
+    └── studyArchitectRoutes.ts
+
+server/services/
+├── csrService.ts
+└── studyArchitectService.ts
+
+worker/
+├── csrWorker.ts
+└── studyArchitectWorker.ts
+1) CSR Engine
+client/src/pages/CSRLibraryPage.jsx
+jsx
+Copy
+Edit
+import React from 'react';
+import CSRLibraryPage from '../components/csr/CSRLibraryPage';
+export default function CSRLibrary() {
+  return <CSRLibraryPage />;
+}
+client/src/services/csrService.js
+js
+Copy
+Edit
+import axios from 'axios';
+export default {
+  uploadReports: (files) => {
+    const data = new FormData();
+    files.forEach(f => data.append('files', f));
+    return axios.post('/api/csr/ingest', data);
+  },
+  search: (query) =>
+    axios.get(`/api/csr/search?q=${encodeURIComponent(query)}`)
+         .then(r => r.data.results),
+  chat: (query) =>
+    axios.post('/api/csr/chat', { query }).then(r => r.data),
+  align: (id1, id2) =>
+    axios.get(`/api/csr/align?base=${id1}&compare=${id2}`)
+         .then(r => r.data.alignment),
+  metrics: () =>
+    axios.get('/api/csr/metrics').then(r => r.data),
+  compare: (id1, id2) =>
+    axios.get(`/api/csr/compare?base=${id1}&compare=${id2}`)
+         .then(r => r.data.html),
+};
+client/src/components/csr/CSRLibraryPage.jsx
+jsx
+Copy
+Edit
+import React from 'react';
+import CSRIngest from './CSRIngest';
+import CSRSearchBar from './CSRSearchBar';
+import CSRAlignmentBanner from './CSRAlignmentBanner';
+import CSRLibraryMetrics from './CSRLibraryMetrics';
+import CSRAlignmentPanel from './CSRAlignmentPanel';
+import CSRCompareViewer from './CSRCompareViewer';
+
+export default function CSRLibraryPage() {
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">CSR Library</h1>
+      <CSRIngest />
+      <CSRSearchBar />
+      <CSRLibraryMetrics />
+      <CSRAlignmentBanner />
+      <CSRAlignmentPanel />
+      <CSRCompareViewer />
+    </div>
+  );
+}
+client/src/components/csr/CSRIngest.jsx
+jsx
+Copy
+Edit
+import React, { useState } from 'react';
+import csrService from '@/services/csrService';
+
+export default function CSRIngest() {
+  const [files, setFiles] = useState([]);
+  const handleUpload = () => {
+    csrService.uploadReports(files).then(() => alert('Ingested'));
+  };
+  return (
+    <div className="border p-4 rounded">
+      <h2 className="font-semibold">Ingest CSRs</h2>
+      <input
+        type="file"
+        multiple
+        onChange={e => setFiles(Array.from(e.target.files))}
+        className="mt-2"
+      />
+      <button onClick={handleUpload} className="mt-2 px-4 py-2 bg-blue-600 text-white rounded">
+        Upload
+      </button>
+    </div>
+  );
+}
+client/src/components/csr/CSRSearchBar.jsx
+jsx
+Copy
+Edit
+import React, { useState } from 'react';
+import csrService from '@/services/csrService';
+
+export default function CSRSearchBar() {
+  const [q, setQ] = useState('');
+  const [results, setResults] = useState([]);
+  const search = () => {
+    csrService.search(q).then(setResults);
+  };
+  return (
+    <div className="border p-4 rounded">
+      <h2 className="font-semibold">Search CSRs</h2>
+      <div className="flex space-x-2 mt-2">
+        <input
+          className="flex-1 border px-2 py-1 rounded"
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          placeholder="Enter keywords..."
+        />
+        <button onClick={search} className="px-4 py-1 bg-indigo-600 text-white rounded">Search</button>
+      </div>
+      <ul className="mt-2 list-disc pl-5">
+        {results.map(r => <li key={r.id}>{r.title}</li>)}
+      </ul>
+    </div>
+  );
+}
+client/src/components/csr/CSRChatPanel.jsx
+jsx
+Copy
+Edit
+import React, { useState } from 'react';
+import csrService from '@/services/csrService';
+
+export default function CSRChatPanel() {
+  const [q, setQ] = useState('');
+  const [ans, setAns] = useState('');
+  const ask = () => csrService.chat(q).then(r => setAns(r.answer));
+  return (
+    <div className="border p-4 rounded">
+      <h2 className="font-semibold">CSR QA Chat</h2>
+      <textarea
+        rows={3}
+        className="w-full border p-2 rounded"
+        value={q}
+        onChange={e => setQ(e.target.value)}
+        placeholder="Ask a question..."
+      />
+      <button onClick={ask} className="mt-2 px-4 py-1 bg-green-600 text-white rounded">Ask AI</button>
+      {ans && <p className="mt-2 italic">AI: {ans}</p>}
+    </div>
+  );
+}
+client/src/components/csr/CSRAlignmentPanel.jsx
+jsx
+Copy
+Edit
+import React, { useState } from 'react';
+import csrService from '@/services/csrService';
+
+export default function CSRAlignmentPanel() {
+  const [ids, setIds] = useState({ base:'', cmp:'' });
+  const [html, setHtml] = useState('');
+  const align = () => {
+    csrService.align(ids.base, ids.cmp).then(setHtml);
+  };
+  return (
+    <div className="border p-4 rounded">
+      <h2 className="font-semibold">Alignment</h2>
+      <div className="flex space-x-2">
+        <input
+          placeholder="Base ID"
+          className="border px-2 py-1 rounded"
+          onChange={e=>setIds(i=>({...i,base:e.target.value}))}
+        />
+        <input
+          placeholder="Compare ID"
+          className="border px-2 py-1 rounded"
+          onChange={e=>setIds(i=>({...i,cmp:e.target.value}))}
+        />
+        <button onClick={align} className="px-4 py-1 bg-purple-600 text-white rounded">Align</button>
+      </div>
+      {html && <div dangerouslySetInnerHTML={{__html:html}} className="mt-2 border p-2 rounded"></div>}
+    </div>
+  );
+}
+client/src/components/csr/CSRLibraryMetrics.jsx
+jsx
+Copy
+Edit
+import React, { useEffect, useState } from 'react';
+import csrService from '@/services/csrService';
+
+export default function CSRLibraryMetrics() {
+  const [metrics, setMetrics] = useState({});
+  useEffect(() => {
+    csrService.metrics().then(setMetrics);
+  }, []);
+  return (
+    <div className="border p-4 rounded">
+      <h2 className="font-semibold">Library Metrics</h2>
+      <ul className="pl-5 list-disc">
+        <li>Total CSRs: {metrics.total || 0}</li>
+        <li>Indexed Vectors: {metrics.indexed || 0}</li>
+      </ul>
+    </div>
+  );
+}
+client/src/components/csr/CSRAlignmentBanner.jsx
+jsx
+Copy
+Edit
+import React from 'react';
+
+export default function CSRAlignmentBanner() {
+  return (
+    <div className="bg-yellow-100 border-l-4 border-yellow-400 p-3 rounded">
+      <strong>Tip:</strong> Use alignment to compare two CSRs side-by-side.
+    </div>
+  );
+}
+client/src/components/csr/CSRCompareViewer.jsx
+jsx
+Copy
+Edit
+import React, { useState } from 'react';
+import csrService from '@/services/csrService';
+
+export default function CSRCompareViewer() {
+  const [ids, setIds] = useState({ base:'', cmp:'' });
+  const [html, setHtml] = useState('');
+  const compare = () => {
+    csrService.compare(ids.base, ids.cmp).then(r=>setHtml(r.html));
+  };
+  return (
+    <div className="border p-4 rounded">
+      <h2 className="font-semibold">Compare Viewer</h2>
+      <div className="flex space-x-2">
+        <input placeholder="Base" onChange={e=>setIds(i=>({...i,base:e.target.value}))} className="border px-2 py-1 rounded"/>
+        <input placeholder="Compare" onChange={e=>setIds(i=>({...i,cmp:e.target.value}))} className="border px-2 py-1 rounded"/>
+        <button onClick={compare} className="px-4 py-1 bg-teal-600 text-white rounded">Compare</button>
+      </div>
+      {html && <div dangerouslySetInnerHTML={{__html:html}} className="mt-2 border p-2 rounded max-h-80 overflow-auto"></div>}
+    </div>
+  );
+}
+server/routes/csrRoutes.ts
+ts
+Copy
+Edit
+import { Router } from 'express';
+import * as svc from '../services/csrService.js';
+import multer from 'multer';
+
+const upload = multer();
+const router = Router();
+
+router.post('/ingest', upload.array('files'), async (req, res) => {
+  await svc.ingestReports(req.files);
+  res.sendStatus(200);
+});
+
+router.get('/search', async (req, res) => {
+  const results = await svc.search(req.query.q as string);
+  res.json({ results });
+});
+
+router.post('/chat', async (req, res) => {
+  const answer = await svc.chat(req.body.query);
+  res.json({ answer });
+});
+
+router.get('/align', async (req, res) => {
+  const html = await svc.align(req.query.base as string, req.query.compare as string);
+  res.json({ alignment: html });
+});
+
+router.get('/metrics', async (req, res) => {
+  const metrics = await svc.metrics();
+  res.json(metrics);
+});
+
+router.get('/compare', async (req, res) => {
+  const html = await svc.compare(req.query.base as string, req.query.compare as string);
+  res.json({ html });
+});
+
+export default router;
+server/services/csrService.ts
+ts
+Copy
+Edit
+import { Pool } from 'pg';
+import { OpenAIApi, Configuration } from 'openai';
+import { indexDocument, searchVectors } from './vectorService.js';
+
+const pool = new Pool();
+const ai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY }));
+
+export async function ingestReports(files: any[]) {
+  for (const f of files) {
+    // parse PDF, extract text, insert into DB & vector index
+    const buffer = f.buffer;
+    const text = await extractText(buffer);
+    const { rows } = await pool.query(
+      'INSERT INTO csrs(content) VALUES($1) RETURNING id', [text]
+    );
+    await indexDocument(rows[0].id, text);
+  }
+}
+
+export async function search(q: string) {
+  const ids = await searchVectors(q);
+  const { rows } = await pool.query(
+    'SELECT id, title FROM csrs WHERE id = ANY($1)', [ids]
+  );
+  return rows;
+}
+
+export async function chat(query: string) {
+  const resp = await ai.createChatCompletion({
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: query }]
+  });
+  return resp.data.choices[0].message.content;
+}
+
+export async function align(base: string, compare: string) {
+  // fetch both contents and run diff
+  const { rows: b } = await pool.query('SELECT content FROM csrs WHERE id=$1', [base]);
+  const { rows: c } = await pool.query('SELECT content FROM csrs WHERE id=$1', [compare]);
+  return generateHtmlDiff(b[0].content, c[0].content);
+}
+
+export async function metrics() {
+  const { rows } = await pool.query('SELECT COUNT(*)::int as total FROM csrs');
+  const { vectors } = await getVectorStats();
+  return { total: rows[0].total, indexed: vectors };
+}
+
+export async function compare(base: string, compare: string) {
+  return align(base, compare);
+}
+worker/csrWorker.ts
+ts
+Copy
+Edit
+import Queue from 'bull';
+import * as svc from '../server/services/csrService.js';
+import { io } from '../server/websocket.js';
+
+const ingestQueue = new Queue('csr-ingest', 'redis://localhost:6379');
+
+ingestQueue.process(async job => {
+  await svc.ingestReports(job.data.files);
+  io.emit('csrIngested', {});
+});
+2) Study Architect (with CSR-Engine integration)
+Plus the previously shown ProtocolOptimizer which RAGs over your restored CSR Library.
+
+server/routes/studyArchitectRoutes.ts
+ts
+Copy
+Edit
+import { Router } from 'express';
+import * as svc from '../services/studyArchitectService.js';
+
+const router = Router();
+
+router.get('/sessions', async (_, res) => {
+  res.json({ sessions: await svc.listSessions() });
+});
+router.get('/sessions/:id', async (req, res) => {
+  res.json(await svc.fetchSessionDetails(req.params.id));
+});
+router.post('/:id/planner', async (req, res) => {
+  await svc.savePlanner(req.params.id, req.body.plan);
+  res.sendStatus(200);
+});
+router.post('/:id/design-report', async (req, res) => {
+  res.json({ report: await svc.generateDesignReport(req.params.id, req.body) });
+});
+router.post('/:id/editor', async (req, res) => {
+  res.json(await svc.saveEdits(req.params.id, req.body.edits));
+});
+
+// CSR integration:
+router.post('/:id/protocol-optimize', async (req, res) => {
+  res.json({ optimized: await svc.optimizeProtocol(req.params.id, req.body.parameters) });
+});
+router.get('/:id/csr-insights', async (req, res) => {
+  res.json({ insights: await svc.fetchCsrInsights(req.params.id) });
+});
+
+export default router;
+server/services/studyArchitectService.ts
+ts
+Copy
+Edit
+import { Pool } from 'pg';
+import { OpenAIApi, Configuration } from 'openai';
+import * as csrService from './csrService.js';
+
+const pool = new Pool();
+const ai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY }));
+
+export async function listSessions() {

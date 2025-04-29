@@ -1,181 +1,232 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Save, RefreshCw } from 'lucide-react';
-import templates from '@/services/templates/ctdTemplates.json';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Sparkles, 
+  RefreshCw, 
+  Save, 
+  Copy, 
+  BookOpenCheck,
+  FileText,
+  ArrowDown
+} from 'lucide-react';
 
-export default function TemplateEditor({ sectionId, content, onChange, onGenerateDraft }) {
-  const tpl = templates[sectionId] || {
-    title: "No Template Available",
-    description: "There is no template defined for this section.",
-    fields: []
-  };
-
-  // Initialize the values with existing content data or empty values
+export default function TemplateEditor({ 
+  sectionId, 
+  initialValues = {},
+  template,
+  onSave 
+}) {
   const [values, setValues] = useState({});
-  const [isGenerating, setIsGenerating] = useState(false);
-  
-  // Initialize values from content or template fields
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [output, setOutput] = useState('');
+
   useEffect(() => {
-    try {
-      // Try to parse existing content as JSON
-      const contentObj = content?.startsWith('{') ? JSON.parse(content) : null;
-      
-      // If we have parsed content, use it; otherwise initialize empty fields
-      const initialValues = contentObj || 
-        tpl.fields.reduce((obj, field) => ({ 
-          ...obj, 
-          [field.name]: field.type === 'checkbox' ? false : '' 
-        }), {});
-      
-      setValues(initialValues);
-    } catch (error) {
-      // If parsing fails, initialize empty fields
-      const initialValues = tpl.fields.reduce((obj, field) => ({ 
-        ...obj, 
-        [field.name]: field.type === 'checkbox' ? false : '' 
-      }), {});
-      
-      setValues(initialValues);
+    // Initialize form values from initial values or empty strings
+    if (template?.fields) {
+      const defaultValues = {};
+      template.fields.forEach(field => {
+        defaultValues[field.name] = initialValues[field.name] || '';
+      });
+      setValues(defaultValues);
     }
-  }, [sectionId, content, tpl.fields]);
+  }, [sectionId, initialValues, template]);
 
   const handleInputChange = (name, value) => {
-    setValues(prev => {
-      const updated = { ...prev, [name]: value };
-      // Save the entire form values as JSON in the parent component
-      onChange(JSON.stringify(updated, null, 2));
-      return updated;
-    });
+    setValues(prev => ({ ...prev, [name]: value }));
   };
 
-  const generateDraft = async () => {
-    setIsGenerating(true);
+  const handleGenerate = async () => {
+    setLoading(true);
+    setProgress(0);
     
-    try {
-      // In a real implementation, this would call the AI service
-      // We'll simulate it for now with a timeout
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    // Simulate progress updates
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) {
+          clearInterval(interval);
+          return 95;
+        }
+        return prev + 5;
+      });
+    }, 100);
+    
+    // Simulate API delay
+    setTimeout(() => {
+      clearInterval(interval);
+      setProgress(100);
       
-      // Call the parent's generate function
-      onGenerateDraft();
-    } finally {
-      setIsGenerating(false);
-    }
+      // Create a template-based output
+      let result = template.prompt;
+      
+      // Replace template variables
+      Object.entries(values).forEach(([key, value]) => {
+        result = result.replace(new RegExp(`{{${key}}}`, 'g'), value || `[${key}]`);
+      });
+      
+      // Expand the result into a full document
+      const expandedResult = `
+# ${template.title}
+
+## Introduction
+${result}
+
+## Details
+${values.EfficacySummary ? `
+### Efficacy Results
+${values.EfficacySummary}
+` : ''}
+
+${values.SafetySummary ? `
+### Safety Profile
+${values.SafetySummary}
+` : ''}
+
+${values.ManufacturingProcess ? `
+### Manufacturing Information
+${values.ManufacturingProcess}
+` : ''}
+
+${values.QualityControls ? `
+### Quality Control Procedures
+${values.QualityControls}
+` : ''}
+
+## Conclusion
+Based on the provided information, this ${template.title.toLowerCase()} meets regulatory requirements and provides a comprehensive overview of the product's profile.
+      `.trim();
+      
+      setOutput(expandedResult);
+      setLoading(false);
+      
+      // Call onSave with the generated content
+      if (onSave) {
+        onSave(expandedResult);
+      }
+    }, 2000);
   };
 
-  if (!tpl || tpl.fields.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>No Template Available</CardTitle>
-          <CardDescription>
-            There is no template defined for this section. Use the regular editor instead.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
+  const handleTemplateReset = () => {
+    const defaultValues = {};
+    template.fields.forEach(field => {
+      defaultValues[field.name] = '';
+    });
+    setValues(defaultValues);
+    setOutput('');
+  };
+
+  if (!template) {
+    return <p>No template available for section {sectionId}</p>;
   }
 
   return (
-    <Card className="bg-white">
+    <Card>
       <CardHeader>
-        <CardTitle>{tpl.title} Template</CardTitle>
-        <CardDescription>{tpl.description}</CardDescription>
+        <CardTitle className="flex items-center">
+          <FileText className="mr-2 h-5 w-5" />
+          {template.title} Template
+        </CardTitle>
+        <CardDescription>
+          Fill in the fields below to generate content using AI
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          {tpl.fields.map(field => (
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {template.fields.map(field => (
             <div key={field.name} className="space-y-2">
               <Label htmlFor={field.name}>{field.label}</Label>
-              
               {field.type === 'textarea' ? (
                 <Textarea
                   id={field.name}
+                  rows={4}
                   value={values[field.name] || ''}
                   onChange={e => handleInputChange(field.name, e.target.value)}
-                  rows={4}
-                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                  placeholder={`Enter ${field.label.toLowerCase()}...`}
+                  disabled={loading}
                 />
-              ) : field.type === 'text' ? (
+              ) : (
                 <Input
                   id={field.name}
+                  type="text"
                   value={values[field.name] || ''}
                   onChange={e => handleInputChange(field.name, e.target.value)}
-                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                  placeholder={`Enter ${field.label.toLowerCase()}...`}
+                  disabled={loading}
                 />
-              ) : field.type === 'checkbox' ? (
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id={field.name}
-                    checked={Boolean(values[field.name])}
-                    onCheckedChange={checked => handleInputChange(field.name, checked)}
-                  />
-                  <label
-                    htmlFor={field.name}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {field.label}
-                  </label>
-                </div>
-              ) : field.type === 'select' ? (
-                <Select
-                  value={values[field.name] || ''}
-                  onValueChange={value => handleInputChange(field.name, value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {field.options.map(option => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              ) : null}
+              )}
             </div>
           ))}
-          
-          <div className="flex items-center justify-end space-x-2 pt-4">
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => setValues({})}
-              className="gap-1.5"
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <div className="space-x-2">
+            <Button 
+              onClick={handleGenerate} 
+              disabled={loading}
+              className="flex items-center"
             >
-              <RefreshCw className="h-4 w-4" />
-              <span>Reset Fields</span>
-            </Button>
-            
-            <Button
-              type="button"
-              onClick={generateDraft}
-              disabled={isGenerating}
-              className="gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-            >
-              {isGenerating ? (
+              {loading ? (
                 <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Generating...</span>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
-                  <span>Generate From Template</span>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate with AI
                 </>
               )}
             </Button>
+            
+            <Button
+              variant="outline"
+              onClick={handleTemplateReset}
+              disabled={loading}
+            >
+              Reset
+            </Button>
           </div>
+          
+          {loading && (
+            <span className="text-sm text-muted-foreground">
+              {progress}% complete
+            </span>
+          )}
         </div>
+        
+        {loading && (
+          <Progress value={progress} className="h-1" />
+        )}
+        
+        {output && (
+          <>
+            <div className="flex items-center justify-center py-2">
+              <ArrowDown className="h-6 w-6 text-muted-foreground" />
+            </div>
+            
+            <div className="relative">
+              <Textarea
+                className="min-h-[300px] font-mono resize-y"
+                value={output}
+                readOnly
+              />
+              <div className="absolute top-2 right-2 space-x-1">
+                <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                  <BookOpenCheck className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
