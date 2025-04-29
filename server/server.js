@@ -47,6 +47,11 @@ import coauthorCanvasRoutes from './routes/coauthorCanvas.js';
 import protocolRoutes from './routes/protocol.js';
 import csrRoutes from './routes/csr.js';
 import cmcRoutes from './routes/cmc.js';
+import cerRoutes from './routes/cer.js';
+import blueprintRoutes from './routes/blueprint.js';
+import citationRoutes from './routes/citation.js';
+import pubmedRoutes from './routes/pubmed.js';
+import openFDARoutes from './routes/openfda.js';
 
 // Direct test endpoint for coauthor generate
 app.post('/api/coauthor/generate/test', (req, res) => {
@@ -72,6 +77,11 @@ app.use('/api/timeline', timelineRoutes);
 app.use('/api/protocol', protocolRoutes);
 app.use('/api/csr', csrRoutes);
 app.use('/api/cmc', cmcRoutes);
+app.use('/api/cer', cerRoutes);
+app.use('/api/blueprint', blueprintRoutes);
+app.use('/api/citation', citationRoutes);
+app.use('/api/pubmed', pubmedRoutes);
+app.use('/api/openfda', openFDARoutes);
 
 // Import route modules
 import advisorRoutes from './routes/advisor.js';
