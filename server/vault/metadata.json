@@ -1,0 +1,24 @@
+{
+  "documents": [
+    {
+      "id": "ich-q2r2-2023",
+      "path": "ICH_Q2(R2)_Guideline_2023_1130.pdf",
+      "title": "ICH Q2(R2) Guideline (2023)",
+      "author": "International Council for Harmonisation",
+      "date": "2023-11-30",
+      "type": "guidance",
+      "category": "CMC",
+      "tags": ["ICH", "quality", "validation", "analytical procedures"]
+    },
+    {
+      "id": "ich-q3d-r2-2022",
+      "path": "ICH_Q3D(R2)_Step4Presentation_2022_0527.pdf",
+      "title": "ICH Q3D(R2) Step 4 Presentation",
+      "author": "International Council for Harmonisation",
+      "date": "2022-05-27",
+      "type": "presentation",
+      "category": "CMC",
+      "tags": ["ICH", "quality", "elemental impurities", "presentation"]
+    }
+  ]
+}
