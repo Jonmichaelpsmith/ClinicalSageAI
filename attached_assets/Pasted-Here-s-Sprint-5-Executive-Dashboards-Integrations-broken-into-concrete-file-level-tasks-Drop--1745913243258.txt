@@ -1,0 +1,83 @@
+Here’s Sprint 5 (“Executive Dashboards & Integrations”) broken into concrete file-level tasks. Drop each section into your Replit, then restart to kick off Phase 5.
+
+⸻
+
+1️⃣ Install Charting & Utilities
+
+# Client: for charts
+npm install chart.js react-chartjs-2
+
+# Server: for HTTP requests to external APIs (if needed)
+npm install axios
+
+
+
+⸻
+
+2️⃣ Back-end: Analytics & News Endpoints
+
+File	Task
+server/routes/analytics.js	• GET /api/analytics/readiness-history → returns [ { date, readiness } ]• GET /api/analytics/velocity → returns [ { module, completedPercent, timestamp } ]
+server/routes/news.js	• GET /api/news/updates → fetch/regurgitate a list of recent FDA/EMA guidance headlines (stubbed)
+server/routes/integrations.js	• POST /api/integrations/ctms/sync → stub that “pulls” study metadata from an external CTMS• GET /api/integrations/ctms/status → last sync timestamp + status
+
+Then mount them in server/server.js:
+
+import analyticsRoutes   from './routes/analytics.js';
+import newsRoutes        from './routes/news.js';
+import integrationsRoutes from './routes/integrations.js';
+
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/news',      newsRoutes);
+app.use('/api/integrations', integrationsRoutes);
+
+
+
+⸻
+
+3️⃣ Client-side API Helpers
+
+File	Task
+client/src/api/analytics.js	Export fetchReadinessHistory(), fetchVelocityData()
+client/src/api/news.js	Export fetchRegulatoryNews()
+client/src/api/integrations.js	Export syncCTMS() and fetchCTMSStatus()
+
+
+
+⸻
+
+4️⃣ Executive Dashboard Page & Routing
+
+File	Task
+client/src/pages/ExecutiveDashboard.jsx	Scaffold a page with:• KPI Cards (current readiness %, modules complete)• Line Chart of readiness over time (using react-chartjs-2)• Bar Chart of module velocity• News Ticker showing regulatory updates• CTMS Sync button + status indicator
+client/src/pages/ExecutiveDashboard.css	Style the grid of cards & charts, the horizontal news ticker, and the sync button.
+client/src/App.jsx	Add <Route path="/executive" element={<ExecutiveDashboard />} /> and a new tab in UnifiedTopNavV5.
+
+
+
+⸻
+
+5️⃣ Components & Charts
+
+File	Task
+client/src/components/dashboard/KPICard.jsx	A card component showing a single metric (title, value, optional sparkline mini-chart). Styles via theme tokens.
+client/src/components/dashboard/ReadinessChart.jsx	A Line chart from react-chartjs-2 that takes fetchReadinessHistory() data and plots date vs % readiness.
+client/src/components/dashboard/VelocityChart.jsx	A Bar chart plotting each module’s completion velocity over the past X days.
+client/src/components/dashboard/NewsTicker.jsx	A horizontal, auto-scrolling list of headlines fetched from fetchRegulatoryNews(). Click opens source in new tab.
+client/src/components/dashboard/CTMSSyncButton.jsx	A button that calls syncCTMS(), displays a spinner while syncing, then shows last sync time from fetchCTMSStatus().
+
+
+
+⸻
+
+6️⃣ Verification Steps
+	1.	Restart server & client.
+	2.	Navigate to /executive.
+	3.	You should see:
+      •   KPI Cards for overall readiness & modules complete
+      •   Readiness Line Chart trending over time
+      •   Velocity Bar Chart per module
+      •   News Ticker of regulatory updates
+      •   CTMS Sync button that shows “Syncing…” then “Last synced: ”
+
+Once this looks good, the app will have a fully-fledged executive command center plus foundational integration points—ready to extend into Monte Carlo simulations, RPA connectors, and zero-trust deployment in subsequent sprints. Let me know any tweaks or if we should dive into Sprint 13’s advanced features!

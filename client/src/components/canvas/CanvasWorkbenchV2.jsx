@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useWindowSize from '../../hooks/useWindowSize';
 import { CanvasNode } from './CanvasNode';
 import { CanvasSidePanel } from './CanvasSidePanel';
+import NodeDetailPanel from './NodeDetailPanel';
+import { fetchCTDSections, fetchRiskConnections } from '../../api/coauthor';
 import '../../styles/theme.css';
 import './CanvasWorkbenchV2.css';
 
@@ -18,54 +20,13 @@ export default function CanvasWorkbenchV2({ onNodeClick }) {
   const { width, height } = useWindowSize();
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
-  
-  // Load sections on mount
+
+  // Load sections data
   useEffect(() => {
-    fetch('/api/coauthor/sections')
-      .then(res => res.json())
+    fetchCTDSections()
       .then(data => setSections(data))
       .catch(console.error);
   }, []);
-  
-  // Load guidance when section is selected
-  useEffect(() => {
-    if (!selected) {
-      setGuidance('');
-      return;
-    }
-    
-    fetch('/api/coauthor/advice', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sectionId: selected.id })
-    })
-      .then(res => res.json())
-      .then(data => setGuidance(data.advice))
-      .catch(err => {
-        console.error(err);
-        setGuidance('Failed to load guidance. Please try again.');
-      });
-      
-    // Load section annotations as snippets
-    fetch(`/api/coauthor/annotation/${selected.id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.notes) {
-          // Split notes by line breaks to create snippets
-          const snippetList = data.notes.split('\n').filter(Boolean).map((text, idx) => ({
-            id: `snip-${idx}`,
-            text
-          }));
-          setSnippets(snippetList);
-        } else {
-          setSnippets([]);
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        setSnippets([]);
-      });
-  }, [selected]);
 
   // Handle drag start
   const handleDragStart = (e, section) => {
@@ -399,7 +360,7 @@ export default function CanvasWorkbenchV2({ onNodeClick }) {
         >
           {/* Connections (simple div-based arrows) */}
           {sections.flatMap(sec =>
-            sec.connections.map(toId => {
+            sec.connections?.map(toId => {
               const from = sections.find(s => s.id === sec.id);
               const to = sections.find(s => s.id === toId);
               
@@ -448,7 +409,7 @@ export default function CanvasWorkbenchV2({ onNodeClick }) {
                   </div>
                 </React.Fragment>
               );
-            })
+            }) || []
           )}
           
           {/* Nodes */}
@@ -457,48 +418,33 @@ export default function CanvasWorkbenchV2({ onNodeClick }) {
               key={section.id}
               className={`node-wrapper ${selection.includes(section.id) ? 'selected' : ''}`}
               style={{
-                position: 'absolute',
-                top: section.y,
-                left: section.x,
-                transform: 'translate(0, 0)',
-                transition: isDragging ? 'none' : 'transform 0.15s ease-out',
-                zIndex: selected?.id === section.id ? 10 : 1
+                transform: `translate(${section.x}px, ${section.y}px)`
               }}
-              onMouseDown={(e) => handleDragStart(e, section)}
-              onClick={(e) => handleSectionClick(section, e)}
+              onMouseDown={e => handleDragStart(e, section)}
+              onClick={e => handleSectionClick(section, e)}
             >
-              <CanvasNode
-                id={section.id}
-                title={section.title}
-                status={section.status}
-              />
+              <div className={`node node-${section.status || 'pending'}`}>
+                <div className="node-badge">{section.id}</div>
+                <div className="node-content">
+                  <div className="node-title">{section.title}</div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
         
-        {/* Side Panel */}
-        {selected && (
-          <CanvasSidePanel
-            section={selected}
-            guidance={guidance}
-            snippets={snippets}
-            onClose={handleCloseSidePanel}
-            onChatOpen={handleChatOpen}
-          />
+        {/* Selection indicators */}
+        {selection.length > 0 && (
+          <div className="selection-count">
+            {selection.length} selected
+          </div>
         )}
-      </div>
-      
-      {/* Keyboard shortcuts info */}
-      <div className="keyboard-shortcuts">
-        <div className="keyboard-shortcut">
-          <kbd>Delete</kbd> - Remove selected
-        </div>
-        <div className="keyboard-shortcut">
-          <kbd>↑↓←→</kbd> - Move selected
-        </div>
-        <div className="keyboard-shortcut">
-          <kbd>Ctrl</kbd> + Click - Multi-select
-        </div>
+        
+        {/* Side panel when a section is selected */}
+        <NodeDetailPanel 
+          sectionId={selected?.id}
+          onClose={handleCloseSidePanel}
+        />
       </div>
     </div>
   );

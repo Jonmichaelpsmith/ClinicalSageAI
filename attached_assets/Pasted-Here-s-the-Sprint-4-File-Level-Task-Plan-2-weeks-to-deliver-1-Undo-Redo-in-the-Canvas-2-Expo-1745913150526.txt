@@ -1,0 +1,187 @@
+Here’s the Sprint 4 File-Level Task Plan (≈2 weeks) to deliver:
+	1.	Undo/Redo in the Canvas
+	2.	Export PNG & PDF of the Canvas
+	3.	eCTD Manifest Stub API + Download UI
+
+⸻
+
+1. Canvas Undo/Redo
+
+File: client/src/components/canvas/CanvasWorkbenchV2.jsx
+
+import ReactFlow, {
+-  // …
++  // …
+  useNodesState,
+  useEdgesState,
++  useReactFlow  // ← import hook
+} from 'reactflow';
+// …
+
+export default function CanvasWorkbenchV2({ onNodeClick }) {
+  // …
++ const { undo, redo, canUndo, canRedo } = useReactFlow();
+
+  return (
+    <div ref={containerRef} style={{ position:'relative', height:'100%' }}>
++     {/* Undo / Redo */}
++     <div style={{ position:'absolute', top:16, left:16, zIndex:10, display:'flex', gap:'8px' }}>
++       <button onClick={undo} disabled={!canUndo()} title="Undo">↶</button>
++       <button onClick={redo} disabled={!canRedo()} title="Redo">↷</button>
++     </div>
+
+      {/* Export & existing UI… */}
+    </div>
+  );
+}
+
+No new CSS needed; buttons inherit your theme.
+
+⸻
+
+2. Export PNG & PDF
+
+a. Install html2canvas
+
+npm install html2canvas
+
+b. Enhance CanvasWorkbenchV2.jsx
+
+import React, { /* … */ } from 'react';
++import html2canvas from 'html2canvas';
+
+export default function CanvasWorkbenchV2({ onNodeClick }) {
+  // …
+  const exportSvg = useCallback(() => { /* existing SVG code */ }, [rfInstance]);
+
++ // Export PNG
++ const exportPng = useCallback(() => {
++   html2canvas(containerRef.current).then(canvas => {
++     canvas.toBlob(blob => {
++       const url = URL.createObjectURL(blob);
++       const a = document.createElement('a');
++       a.href = url; a.download = 'ctd-workbench.png'; a.click();
++     });
++   });
++ }, []);
+
++ // Export PDF
++ const exportPdf = useCallback(() => {
++   html2canvas(containerRef.current).then(canvas => {
++     const imgData = canvas.toDataURL('image/png');
++     const pdf = new window.jspdf.jsPDF({
++       orientation: 'landscape',
++       unit: 'px',
++       format: [canvas.width, canvas.height]
++     });
++     pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
++     pdf.save('ctd-workbench.pdf');
++   });
++ }, []);
+
+  return (
+    <div ref={containerRef} style={{ position:'relative', height:'100%' }}>
+      {/* Export buttons */}
+      <div style={{ position:'absolute', top:16, right:16, zIndex:10, display:'flex', gap:'8px' }}>
+        <button onClick={exportSvg}>SVG</button>
+        <button onClick={exportPng}>PNG</button>
+        <button onClick={exportPdf}>PDF</button>
+      </div>
+
+      {/* existing ReactFlow… */}
+    </div>
+  );
+}
+
+c. Install jspdf (for PDF export)
+
+npm install jspdf
+
+
+
+⸻
+
+3. eCTD Manifest Stub
+
+a. Server: server/routes/manifest.js
+
+import express from 'express';
+const router = express.Router();
+
+/**
+ * GET /api/package/manifest
+ * Returns a minimal eCTD manifest JSON stub
+ */
+router.get('/manifest', (req, res) => {
+  const manifest = {
+    eCTDVersion: '4.0',
+    modules: [
+      { id: '1', title: 'Administrative', files: [] },
+      { id: '2', title: 'CTD Summaries',   files: [] },
+      // … etc
+    ],
+    generatedAt: new Date().toISOString()
+  };
+  res.json(manifest);
+});
+
+export default router;
+
+b. Mount in server/server.js
+
+import manifestRoutes from './routes/manifest.js';
+// …
+app.use('/api/package', manifestRoutes);
+
+c. Client Download UI
+
+File: client/src/components/package/ManifestDownloader.jsx
+
+import React, { useState } from 'react';
+
+export default function ManifestDownloader() {
+  const [loading, setLoading] = useState(false);
+
+  const downloadManifest = async () => {
+    setLoading(true);
+    const res = await fetch('/api/package/manifest');
+    const manifest = await res.json();
+    const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'eCTD-manifest.json'; a.click();
+    setLoading(false);
+  };
+
+  return (
+    <button onClick={downloadManifest} disabled={loading}>
+      {loading ? 'Generating…' : 'Download eCTD Manifest'}
+    </button>
+  );
+}
+
+d. Expose in Dashboard
+
+Modify ModuleDashboard.jsx (or add a new ExportPage.jsx):
+
+import ModuleCard from '../components/dashboard/ModuleCard';
++import ManifestDownloader from '../components/package/ManifestDownloader';
+
+// inside return, above the grid:
++ <div style={{ margin:'1rem 0' }}>
++   <ManifestDownloader />
++ </div>
+
+
+
+⸻
+
+✅ Verification
+	1.	Restart server & client.
+	2.	Canvas now has:
+      •   Undo/Redo buttons (↶/↷)
+      •   SVG/PNG/PDF export buttons
+	3.	Dashboard now shows a Download eCTD Manifest button.
+	4.	Clicking it downloads a well-formed eCTD-manifest.json stub.
+
+That wraps Sprint 4! Ready to plan Sprint 5 (Executive Dashboards & Integrations).

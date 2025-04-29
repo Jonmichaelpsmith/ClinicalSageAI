@@ -1,0 +1,126 @@
+Next, integrate the Export SVG button and the new NodeDetailPanel into your Canvas workbench.
+
+⸻
+
+Updated CanvasWorkbenchV2.jsx
+
+// client/src/components/canvas/CanvasWorkbenchV2.jsx
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import ReactFlow, {
+  MiniMap,
+  Controls,
+  Background,
+  addEdge,
+  useNodesState,
+  useEdgesState
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import NodeDetailPanel from './NodeDetailPanel';
+import { fetchCTDSections, fetchRiskConnections } from '../../api/coauthor';
+
+export default function CanvasWorkbenchV2({ onNodeClick }) {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedSection, setSelectedSection] = useState(null);
+  const [rfInstance, setRfInstance] = useState(null);
+  const containerRef = useRef();
+
+  // Load nodes & edges once
+  useEffect(() => {
+    fetchCTDSections()
+      .then(data => setNodes(data.map(sec => ({
+        id: sec.id,
+        type: 'default',
+        position: { x: sec.x, y: sec.y },
+        data: { label: sec.title, status: sec.status }
+      }))))
+      .catch(console.error);
+
+    fetchRiskConnections()
+      .then(data => setEdges(data.map(c => ({
+        id: `e${c.from}-${c.to}`,
+        source: c.from,
+        target: c.to,
+        animated: c.critical,
+        style: {
+          stroke: c.critical ? '#dc3545' : '#888',
+          strokeWidth: 2
+        }
+      }))))
+      .catch(console.error);
+  }, [setNodes, setEdges]);
+
+  // Handle new edges
+  const onConnect = useCallback(params => {
+    setEdges(es => addEdge({ ...params, animated: true, style:{ stroke:'#555', strokeWidth: 2 } }, es));
+  }, [setEdges]);
+
+  // Export SVG
+  const exportSvg = useCallback(() => {
+    if (!rfInstance) return;
+    const svg = rfInstance.toSVG();
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'ctd-workbench.svg'; a.click();
+  }, [rfInstance]);
+
+  return (
+    <div ref={containerRef} style={{ width:'100%', height:'100%', position:'relative' }}>
+      {/* Export button */}
+      <button
+        onClick={exportSvg}
+        style={{
+          position: 'absolute', top: 16, right: 16, zIndex: 10,
+          background: 'var(--color-primary)', color: '#fff',
+          border: 'none', padding: '6px 12px', borderRadius: 4,
+          cursor: 'pointer'
+        }}
+      >
+        Export SVG
+      </button>
+
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onInit={setRfInstance}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onNodeClick={(e, node) => {
+          setSelectedSection(node.id);
+          onNodeClick?.(node);
+        }}
+        fitView
+      >
+        <MiniMap
+          nodeStrokeColor={n =>
+            n.data.status === 'complete' ? '#28a745' :
+            n.data.status === 'warning'  ? '#ffc107' : '#dc3545'
+          }
+          nodeColor={() => '#fff'}
+          maskColor="rgba(0,0,0,0.1)"
+        />
+        <Controls />
+        <Background gap={20} />
+      </ReactFlow>
+
+      {/* Side panel */}
+      <NodeDetailPanel
+        sectionId={selectedSection}
+        onClose={() => setSelectedSection(null)}
+      />
+    </div>
+  );
+}
+
+
+
+⸻
+
+Done! 🎉
+   •   NodeDetailPanel.jsx / .css live in client/src/components/canvas
+   •   CanvasWorkbenchV2.jsx now hosts the Export SVG button and invokes NodeDetailPanel
+   •   Clicking a node opens the AI-driven guidance/risk panel
+
+Next up: Sprint 3 – real-time collaboration with cursors, grid & snap-to-grid. Let me know when you’re ready! ￼

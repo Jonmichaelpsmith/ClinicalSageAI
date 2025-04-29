@@ -1,71 +1,26 @@
 import express from 'express';
 const router = express.Router();
 
+// Dummy in‐memory CTD sections
+let sections = [
+  { id: '1.1', title: 'Module 1: Administrative', status: 'complete', x: 50,  y: 50 },
+  { id: '2.7', title: 'Module 2.7: Clinical Summary', status: 'critical', x: 300, y: 50 },
+  { id: '4.1', title: 'Module 4.1: Nonclinical Studies', status: 'warning',  x: 300, y: 200 },
+  { id: '5.1', title: 'Module 5.1: Study Listings', status: 'warning',  x: 50,  y: 200 },
+];
+
+// Dummy connections between sections
+let connections = [
+  { from: '1.1', to: '2.7', critical: true },
+  { from: '1.1', to: '4.1', critical: false },
+  { from: '1.1', to: '5.1', critical: false },
+];
+
 /**
  * GET /api/coauthor/sections
  * Returns an array of CTD sections with their metadata
  */
 router.get('/sections', (req, res) => {
-  // In a real implementation, this would fetch from a database
-  const sections = [
-    {
-      id: "2.5",
-      title: "Clinical Overview",
-      status: "pending",
-      x: 150,
-      y: 120,
-      connections: ["2.7"]
-    },
-    {
-      id: "2.7",
-      title: "Clinical Summary",
-      status: "complete",
-      x: 450,
-      y: 120,
-      connections: ["5.3.5"]
-    },
-    {
-      id: "3.2.P",
-      title: "Drug Product",
-      status: "critical",
-      x: 150,
-      y: 300,
-      connections: ["3.2.S"]
-    },
-    {
-      id: "3.2.S",
-      title: "Drug Substance",
-      status: "pending",
-      x: 450,
-      y: 300,
-      connections: []
-    },
-    {
-      id: "4.2.1",
-      title: "Pharmacology",
-      status: "pending",
-      x: 150,
-      y: 480,
-      connections: ["4.2.3"]
-    },
-    {
-      id: "4.2.3",
-      title: "Toxicology",
-      status: "critical",
-      x: 450,
-      y: 480,
-      connections: []
-    },
-    {
-      id: "5.3.5",
-      title: "Clinical Studies",
-      status: "pending",
-      x: 750,
-      y: 120,
-      connections: []
-    }
-  ];
-  
   res.json(sections);
 });
 
@@ -74,14 +29,6 @@ router.get('/sections', (req, res) => {
  * Returns an array of connections between sections with metadata
  */
 router.get('/connections', (req, res) => {
-  // In a real implementation, this would be derived from section data or stored separately
-  const connections = [
-    { from: "2.5", to: "2.7", critical: false },
-    { from: "2.7", to: "5.3.5", critical: true },
-    { from: "3.2.P", to: "3.2.S", critical: true },
-    { from: "4.2.1", to: "4.2.3", critical: false }
-  ];
-  
   res.json(connections);
 });
 
