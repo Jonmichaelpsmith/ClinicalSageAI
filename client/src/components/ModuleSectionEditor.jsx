@@ -12,17 +12,34 @@ export default function ModuleSectionEditor({
   moduleId,
   sectionId,
   onSave,
-  onCancel
+  onCancel,
+  onContentChange,
+  contextSnippets: externalContextSnippets = []
 }) {
-  const [content, setContent] = useState(initialContent);
+  const [content, setContentInternal] = useState(initialContent);
   const [contextQuery, setContextQuery] = useState("");
   const [isGenerating, setIsGenerating] = useState(false); // Controls the loading state for draft generation
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [isFetchingContext, setIsFetchingContext] = useState(false);
-  const [contextSnippets, setContextSnippets] = useState([]);
+  const [contextSnippets, setContextSnippets] = useState(externalContextSnippets || []);
   const [error, setError] = useState(null);
   const [contextError, setContextError] = useState(null);
   const [phase, setPhase] = useState("editing"); // editing, retrieving, drafting
+  
+  // Update content and notify parent component
+  const setContent = (newContent) => {
+    setContentInternal(newContent);
+    if (onContentChange) {
+      onContentChange(newContent);
+    }
+  }
+  
+  // Update contextSnippets when externalContextSnippets changes
+  useEffect(() => {
+    if (externalContextSnippets && externalContextSnippets.length > 0) {
+      setContextSnippets(externalContextSnippets);
+    }
+  }, [externalContextSnippets]);
 
   const textareaRef = useRef(null);
 
