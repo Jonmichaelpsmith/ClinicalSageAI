@@ -90,7 +90,8 @@ function App() {
         "p-4 mt-24"
       }>
         <Switch>
-          {/* Main Portal Landing Page */}
+          {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
+          <Route path="/" component={ClientPortalLanding} />
           <Route path="/client-portal" component={ClientPortalLanding} />
           
           {/* Client Portal Sub-Pages */}
@@ -216,20 +217,18 @@ function App() {
             {() => <CERV2Page />}
           </Route>
           
-          {/* Default Redirect with helpful message */}
+          {/* Default Redirect to Client Portal */}
           <Route>
-            {() => (
-              <div className="flex flex-col items-center justify-center p-8">
-                <h2 className="text-2xl font-bold mb-4 text-red-600">404 - Page Not Found</h2>
-                <p className="mb-4 text-gray-600">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
-                <Button 
-                  onClick={() => window.location.href = '/client-portal'}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
-                >
-                  Return to Client Portal
-                </Button>
-              </div>
-            )}
+            {() => {
+              // Automatically redirect to client portal
+              window.location.href = '/client-portal';
+              return (
+                <div className="flex flex-col items-center justify-center p-8">
+                  <h2 className="text-xl font-medium mb-4">Redirecting to Client Portal...</h2>
+                  <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+                </div>
+              );
+            }}
           </Route>
         </Switch>
       </div>
