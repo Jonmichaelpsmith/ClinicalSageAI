@@ -22,6 +22,9 @@ import CoAuthor from './pages/CoAuthor'; // Import our new CoAuthor page
 import ModuleDashboard from './pages/ModuleDashboard'; // Import our Module Dashboard page
 import CanvasPage from './pages/CanvasPage'; // Import our Canvas page
 import TimelinePage from './pages/TimelinePage'; // Import our Timeline page
+import ProtocolDesignerPage from './pages/ProtocolDesignerPage'; // Import Protocol Designer page
+import CSRPage from './pages/CSRPage'; // Import CSR Deep Intelligence page
+import CMCPage from './pages/CMCPage'; // Import CMC Module page
 import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import ModuleSectionEditor for co-author page
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
@@ -120,6 +123,9 @@ function App() {
           <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
           <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
           <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
+          <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
+          <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
+          <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
