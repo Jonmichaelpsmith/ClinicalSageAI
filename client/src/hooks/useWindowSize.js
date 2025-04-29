@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 
 /**
- * Custom hook for tracking window dimensions
- * @returns {Object} width and height of the window
+ * A custom hook that tracks window dimensions
+ * @returns {{ width: number, height: number }} Current window dimensions
  */
 export default function useWindowSize() {
-  // Initialize state with current window dimensions
+  // Initialize with reasonable defaults for SSR
   const [windowSize, setWindowSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: typeof window !== 'undefined' ? window.innerWidth : 1200,
+    height: typeof window !== 'undefined' ? window.innerHeight : 800,
   });
 
   useEffect(() => {
+    // Only execute this on the client
+    if (typeof window === 'undefined') return;
+
     // Handler to call on window resize
     function handleResize() {
       // Set window dimensions in state
@@ -20,7 +23,7 @@ export default function useWindowSize() {
         height: window.innerHeight,
       });
     }
-    
+
     // Add event listener
     window.addEventListener('resize', handleResize);
     
@@ -29,7 +32,7 @@ export default function useWindowSize() {
     
     // Remove event listener on cleanup
     return () => window.removeEventListener('resize', handleResize);
-  }, []); // Empty array ensures that effect runs only on mount and unmount
+  }, []); // Empty array ensures effect runs only on mount and unmount
 
   return windowSize;
 }

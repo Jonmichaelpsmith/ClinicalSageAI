@@ -43,6 +43,7 @@ app.use((req, res, next) => {
 import aiRoutes from './routes/ai-routes.js';
 import coauthorRoutes from './routes/coauthor.js';
 import timelineRoutes from './routes/timeline.js';
+import coauthorCanvasRoutes from './routes/coauthorCanvas.js';
 
 // Direct test endpoint for coauthor generate
 app.post('/api/coauthor/generate/test', (req, res) => {
@@ -63,6 +64,7 @@ app.use('/api/docs', documentsRoutes);
 app.use('/api/vault', vaultUploadRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/coauthor', coauthorRoutes);
+app.use('/api/coauthor/canvas', coauthorCanvasRoutes);
 app.use('/api/timeline', timelineRoutes);
 
 // Import route modules

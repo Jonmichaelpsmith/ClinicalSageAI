@@ -1,88 +1,177 @@
 import express from 'express';
 const router = express.Router();
 
-// Dummy in‐memory CTD sections
-let sections = [
-  { id: '1.1', title: 'Module 1: Administrative', status: 'complete', x: 50,  y: 50 },
-  { id: '2.7', title: 'Module 2.7: Clinical Summary', status: 'critical', x: 300, y: 50 },
-  { id: '4.1', title: 'Module 4.1: Nonclinical Studies', status: 'warning',  x: 300, y: 200 },
-  { id: '5.1', title: 'Module 5.1: Study Listings', status: 'warning',  x: 50,  y: 200 },
-];
-
-// Dummy connections between sections
-let connections = [
-  { from: '1.1', to: '2.7', critical: true },
-  { from: '1.1', to: '4.1', critical: false },
-  { from: '1.1', to: '5.1', critical: false },
+// Mock CTD sections database
+let ctdSections = [
+  { 
+    id: '1.1', 
+    title: 'Forms & Cover Letters', 
+    status: 'complete', 
+    x: 100, 
+    y: 100,
+    connections: ['1.2']
+  },
+  { 
+    id: '1.2', 
+    title: 'TOC & Indices', 
+    status: 'complete', 
+    x: 300, 
+    y: 100,
+    connections: ['1.3', '2.1', '3.1'] 
+  },
+  { 
+    id: '1.3', 
+    title: 'Administrative Info', 
+    status: 'pending', 
+    x: 500, 
+    y: 100,
+    connections: ['2.1']
+  },
+  { 
+    id: '2.1', 
+    title: 'CTD Overview', 
+    status: 'pending', 
+    x: 300, 
+    y: 200,
+    connections: ['2.2', '2.3']
+  },
+  { 
+    id: '2.2', 
+    title: 'Clinical Overview', 
+    status: 'critical', 
+    x: 500, 
+    y: 200,
+    connections: ['2.3', '2.4', '2.5']
+  },
+  { 
+    id: '2.3', 
+    title: 'Nonclinical Overview', 
+    status: 'pending', 
+    x: 700, 
+    y: 200,
+    connections: ['2.4']
+  },
+  { 
+    id: '2.4', 
+    title: 'Clinical Summaries', 
+    status: 'pending', 
+    x: 500, 
+    y: 300,
+    connections: ['2.5']
+  },
+  { 
+    id: '2.5', 
+    title: 'Nonclinical Summaries', 
+    status: 'pending', 
+    x: 700, 
+    y: 300
+  },
+  { 
+    id: '3.1', 
+    title: 'Quality Reports', 
+    status: 'pending', 
+    x: 200, 
+    y: 400,
+    connections: ['3.2', '3.3']
+  },
+  { 
+    id: '3.2', 
+    title: 'Nonclinical Reports', 
+    status: 'pending', 
+    x: 400, 
+    y: 400,
+    connections: ['3.3']
+  },
+  { 
+    id: '3.3', 
+    title: 'Clinical Reports', 
+    status: 'critical', 
+    x: 600, 
+    y: 400
+  }
 ];
 
 /**
  * GET /api/coauthor/sections
- * Returns an array of CTD sections with their metadata
+ * Returns all CTD sections with position and connection data
  */
 router.get('/sections', (req, res) => {
-  res.json(sections);
+  res.json(ctdSections);
 });
 
 /**
- * GET /api/coauthor/connections
- * Returns an array of connections between sections with metadata
+ * GET /api/coauthor/sections/:id
+ * Returns a specific CTD section by ID
  */
-router.get('/connections', (req, res) => {
-  res.json(connections);
+router.get('/sections/:id', (req, res) => {
+  const section = ctdSections.find(s => s.id === req.params.id);
+  
+  if (!section) {
+    return res.status(404).json({ error: 'Section not found' });
+  }
+  
+  res.json(section);
 });
 
 /**
  * POST /api/coauthor/layout/:id
- * Updates the position of a section
+ * Updates the position of a CTD section
  */
 router.post('/layout/:id', (req, res) => {
   const { id } = req.params;
   const { x, y } = req.body;
   
-  // In a real implementation, this would update the database
-  console.log(`Updating position for section ${id} to (${x}, ${y})`);
+  const sectionIndex = ctdSections.findIndex(s => s.id === id);
   
-  res.json({ success: true, id, x, y });
+  if (sectionIndex === -1) {
+    return res.status(404).json({ error: 'Section not found' });
+  }
+  
+  // Update the section's position
+  ctdSections[sectionIndex] = {
+    ...ctdSections[sectionIndex],
+    x,
+    y
+  };
+  
+  res.json(ctdSections[sectionIndex]);
+});
+
+/**
+ * GET /api/coauthor/risks
+ * Returns risk connection data for the Canvas
+ */
+router.get('/risks', (req, res) => {
+  // Mock risk connections
+  const riskConnections = [
+    { source: '2.2', target: '3.3', riskLevel: 'high' },
+    { source: '1.3', target: '2.1', riskLevel: 'medium' },
+    { source: '3.1', target: '3.2', riskLevel: 'low' }
+  ];
+  
+  res.json(riskConnections);
 });
 
 /**
  * GET /api/coauthor/guidance/:id
- * Returns AI guidance for a specific section
+ * Returns regulatory guidance for a specific section
  */
 router.get('/guidance/:id', (req, res) => {
   const { id } = req.params;
   
-  // In a real implementation, this would be generated with AI or fetched from a CMS
+  // In a real implementation, this would query a database of regulatory guidance
   const guidance = {
-    id,
-    title: `Guidance for Section ${id}`,
-    content: `This section should describe the ${id.includes('2') ? 'clinical' : id.includes('3') ? 'chemical' : id.includes('4') ? 'nonclinical' : id.includes('5') ? 'clinical study' : 'relevant'} aspects in detail.`,
-    examples: [`Example from a similar ${id} section in a successful IND submission`]
+    text: `Regulatory guidance for section ${id} would be retrieved from the database.
+This section requires comprehensive documentation according to ICH guidelines.
+Include all relevant supporting information and cross-reference to other modules as needed.`,
+    examples: [
+      'Example 1 from FDA guidelines',
+      'Example 2 from ICH guidelines',
+      'Example 3 from EMA guidelines'
+    ]
   };
   
   res.json(guidance);
-});
-
-/**
- * GET /api/coauthor/risk/:id
- * Returns risk assessment for a specific section
- */
-router.get('/risk/:id', (req, res) => {
-  const { id } = req.params;
-  
-  // In a real implementation, this would be calculated based on content analysis
-  const risk = {
-    id,
-    level: id.includes('critical') ? 'high' : Math.random() > 0.5 ? 'medium' : 'low',
-    factors: [
-      `Quality of data in section ${id}`,
-      `Completeness of information`
-    ],
-    delayImpact: Math.floor(Math.random() * 10) + 1 // 1-10 days
-  };
-  
-  res.json(risk);
 });
 
 export default router;
