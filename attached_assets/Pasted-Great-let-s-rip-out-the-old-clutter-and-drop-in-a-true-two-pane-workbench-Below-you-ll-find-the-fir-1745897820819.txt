@@ -1,0 +1,158 @@
+Great—let’s rip out the old clutter and drop in a true two-pane workbench. Below you’ll find the first scaffolding step:
+
+---
+
+## 1. Create `CoAuthorLayout.jsx`
+
+**File:** `client/src/components/coauthor/CoAuthorLayout.jsx`
+
+```jsx
+import React from 'react';
+import UnifiedTopNavV3 from '../navigation/UnifiedTopNavV3';
+import Breadcrumbs from '../navigation/Breadcrumbs';
+
+export default function CoAuthorLayout({ children, copilot }) {
+  return (
+    <div className="coauthor-page">
+      {/* 1) Sticky top nav */}
+      <UnifiedTopNavV3
+        backPath="/client-portal"
+        clientPortalLabel="Client Portal"
+        switchModulePath="/switch-module"
+      />
+
+      {/* 2) Single breadcrumb row */}
+      <Breadcrumbs
+        items={[
+          { label: 'TrialSage™', to: '/' },
+          { label: 'eCTD Co-Author™', to: '/coauthor' },
+          { label: 'Module 2', to: '/coauthor?module=2' },
+          { label: 'Section 2.7', to: '' }
+        ]}
+      />
+
+      {/* 3) Two-pane container */}
+      <div className="coauthor-content">
+        <div className="editor-pane">
+          {children}
+        </div>
+        <div className="copilot-pane">
+          {copilot}
+        </div>
+      </div>
+
+      {/* 4) Footer status */}
+      <footer className="coauthor-footer">
+        Auto-save active — last saved: {new Date().toLocaleTimeString()}
+      </footer>
+    </div>
+  );
+}
+```
+
+---
+
+## 2. Stub out the AI Copilot panel
+
+**File:** `client/src/components/coauthor/AICopilotPanel.jsx`
+
+```jsx
+import React from 'react';
+
+export default function AICopilotPanel() {
+  return (
+    <div className="ai-copilot-panel">
+      <h2>AI Copilot</h2>
+      <p>🎉 Coming soon: context retrieval, compliance checks & next-best-actions.</p>
+    </div>
+  );
+}
+```
+
+---
+
+## 3. Hook it up in your CoAuthor page
+
+**Edit:** `client/src/pages/CoAuthor.jsx`
+
+```diff
+-import SectionEditor from '../components/coauthor/SectionEditor';
++import CoAuthorLayout from '../components/coauthor/CoAuthorLayout';
++import SectionEditor   from '../components/coauthor/SectionEditor';
++import AICopilotPanel  from '../components/coauthor/AICopilotPanel';
+
+ export default function CoAuthor() {
+-  return <SectionEditor />;
++  return (
++    <CoAuthorLayout copilot={<AICopilotPanel />}>
++      <SectionEditor />
++    </CoAuthorLayout>
++  );
+ }
+```
+
+---
+
+## 4. Minimal CSS for layout
+
+**Edit:** `client/src/index.css` (or your global stylesheet)
+
+```css
+.coauthor-page {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.coauthor-content {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.editor-pane {
+  flex: 7;
+  /* dashed border to visualize placeholder */
+  border: 1px dashed #ccc;
+  min-height: 400px;
+  padding: 16px;
+  background: #fff;
+}
+
+.copilot-pane {
+  flex: 3;
+  border: 1px dashed #ccc;
+  min-height: 400px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.coauthor-footer {
+  margin-top: 16px;
+  text-align: right;
+  font-size: 12px;
+  color: #666;
+}
+
+/* Stub styling for AI panel */
+.ai-copilot-panel {
+  font-family: sans-serif;
+  color: #333;
+}
+```
+
+---
+
+### ✅ Next step
+
+1. **Restart** your dev server (`npm start` or `yarn start`).
+2. **Navigate** to `/coauthor` in the client.
+3. You should see a **clean two-pane layout**: left is your SectionEditor box; right is the “Coming soon” AI Copilot.
+
+Once you can see this skeleton in place, we’ll refine:  
+- Swap the dashed borders for real card UIs.  
+- Wire up the rich-text editor (e.g. React-Quill).  
+- Flesh out the Copilot panel with live context retrieval & validation.  
+- Polish spacing, typography and color tokens for a Microsoft-grade finish.
+
+Go ahead and check it out—then share a screenshot so we can layer on the next level of polish.
