@@ -1,0 +1,68 @@
+const express = require('express');
+const matrix = require('matrix-js-sdk');
+const app = express();
+
+app.use(express.json());
+app.use(express.static('public'));
+
+// Matrix client
+const matrixClient = matrix.createClient({
+  baseUrl: 'https://your-domain.com',
+});
+
+// Login
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    await matrixClient.login('m.login.password', { user: username, password });
+    res.json({ access_token: matrixClient.getAccessToken() });
+  } catch (err) {
+    res.status(401).json({ error: 'Login failed' });
+  }
+});
+
+// Create module-specific room
+app.post('/create-room', async (req, res) => {
+  const { moduleName, accessToken } = req.body;
+  try {
+    matrixClient.setAccessToken(accessToken);
+    const room = await matrixClient.createRoom({
+      name: `${moduleName} Discussion`,
+      visibility: 'private',
+      preset: 'trusted_private_chat',
+      initial_state: [{ type: 'm.room.encryption', state_key: '', content: { algorithm: 'm.megolm.v1.aes-sha2' } }],
+    });
+    res.json({ room_id: room.room_id });
+  } catch (err) {
+    res.status(500).json({ error: 'Room creation failed' });
+  }
+});
+
+// Invite third-party vendor
+app.post('/invite-vendor', async (req, res) => {
+  const { roomId, vendorId, accessToken } = req.body;
+  try {
+    matrixClient.setAccessToken(accessToken);
+    await matrixClient.invite(roomId, vendorId);
+    await matrixClient.setPowerLevel(roomId, vendorId, 10); // Limited permissions
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Invite failed' });
+  }
+});
+
+// DocuShare document link
+app.get('/docushare-link/:docId', async (req, res) => {
+  const { docId } = req.params;
+  try {
+    const response = await fetch(`https://your-docushare-server/rest/api/documents/${docId}/link`, {
+      headers: { 'Authorization': 'Bearer your-docushare-token' },
+    });
+    const data = await response.json();
+    res.json({ link: data.link });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch document link' });
+  }
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
