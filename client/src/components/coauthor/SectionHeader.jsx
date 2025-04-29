@@ -1,162 +1,183 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Sparkles, ExternalLink, Calendar, BookOpen, History, Settings, Loader2, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import templates from '@/services/templates/ctdTemplates.json';
+import { 
+  FileText, 
+  Save, 
+  FileSearch, 
+  History, 
+  Download, 
+  Share, 
+  ChevronLeft, 
+  MoreHorizontal, 
+  CheckSquare,
+  Eye
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-export default function SectionHeader({ sectionId, title, onGenerate, onBackToSelector }) {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStep, setGenerationStep] = useState('');
-  const [generationProgress, setGenerationProgress] = useState(0);
-  
-  // Simulate generation steps for demo purposes
-  const simulateGeneration = () => {
-    setIsGenerating(true);
-    setGenerationProgress(0);
-    setGenerationStep('Initializing AI model...');
-    
-    const steps = [
-      { progress: 10, message: 'Loading clinical templates...' },
-      { progress: 20, message: 'Analyzing ICH E3 guidelines...' },
-      { progress: 35, message: 'Retrieving clinical study data...' },
-      { progress: 50, message: 'Structuring section content...' },
-      { progress: 65, message: 'Generating summary tables...' },
-      { progress: 80, message: 'Applying regulatory compliance checks...' },
-      { progress: 95, message: 'Finalizing document formatting...' },
-      { progress: 100, message: 'Draft generation complete!' }
-    ];
-    
-    // Simulate progress updates with realistic timing
-    let stepIndex = 0;
-    const interval = setInterval(() => {
-      if (stepIndex < steps.length) {
-        const { progress, message } = steps[stepIndex];
-        setGenerationProgress(progress);
-        setGenerationStep(message);
-        stepIndex++;
-      } else {
-        clearInterval(interval);
-        // Wait a moment at 100% before finishing
-        setTimeout(() => {
-          setIsGenerating(false);
-          // Invoke the callback from parent
-          onGenerate && onGenerate();
-        }, 1000);
-      }
-    }, 1200); // 1.2 seconds between updates
-    
-    // Clean up interval on component unmount
-    return () => clearInterval(interval);
-  };
-  
-  // WebSocket-driven progress updates (mocked for demo)
-  useEffect(() => {
-    // In a real implementation, this would connect to WebSocket
-    // and listen for progress events for this specific section
-    
-    // Clean up listener on unmount
-    return () => {
-      // socket.off('progress:update', handleProgressUpdate);
-    };
-  }, [sectionId]);
-  
+export default function SectionHeader({ 
+  sectionId, 
+  sectionTitle, 
+  sectionStatus = 'draft',
+  wordCount = 0,
+  lastSaved = null,
+  onBack,
+  activeTab = 'edit',
+  onTabChange,
+  onSave
+}) {
   return (
-    <div className="flex flex-col space-y-4 mb-6">
-      <div className="flex items-center gap-2">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-gray-500"
-          onClick={onBackToSelector}
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Document Selection
-        </Button>
-        <span className="text-gray-400 px-1">|</span>
-        <div className="text-sm text-gray-500">
-          Module 2 / Section {sectionId} / {title}
-        </div>
-      </div>
-
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Section {sectionId}: {title}
-          </h1>
-          <p className="text-gray-500 mt-1">
-            Provide a comprehensive clinical summary with detailed analysis of benefits and risks.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <History className="h-4 w-4" />
-            <span>Version History</span>
-          </Button>
-          
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <BookOpen className="h-4 w-4" />
-            <span>Guidance</span>
-          </Button>
-          
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Calendar className="h-4 w-4" />
-            <span>Timeline</span>
-          </Button>
-          
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <Settings className="h-4 w-4" />
-            <span>Settings</span>
-          </Button>
-          
-          <Button 
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white gap-1.5"
-            onClick={simulateGeneration}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Generating...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4" />
-                <span>Generate Draft</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
-      
-      {/* Real-time generation progress indicator */}
-      {isGenerating && (
-        <div className="bg-blue-50 p-3 rounded-md border border-blue-100 animate-pulse">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center text-blue-700 text-sm font-medium">
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              <span>{generationStep}</span>
-            </div>
-            <span className="text-blue-600 text-sm font-medium">{generationProgress}%</span>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-3">
+          {onBack && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 w-8 p-0" 
+              onClick={onBack}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div className="flex items-center">
+            <FileText className="h-5 w-5 mr-2 text-muted-foreground" />
+            <h1 className="text-xl font-semibold flex items-center">
+              {sectionId && <span className="text-muted-foreground mr-2">{sectionId}</span>}
+              {sectionTitle}
+            </h1>
           </div>
-          <Progress value={generationProgress} className="h-2" />
+          <StatusBadge status={sectionStatus} />
         </div>
-      )}
-      
-      {/* Dynamic guidance note (shown when not generating) */}
-      {!isGenerating && (
-        <div className="flex items-center text-xs bg-blue-50 text-blue-700 p-2 rounded-md border border-blue-100">
-          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-          <span>
-            <span className="font-medium">Guidance Note:</span> {
-              templates[sectionId]?.guidanceText || 
-              (sectionId === '2.7' 
-                ? 'This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.'
-                : 'Follow eCTD guidelines for this section. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.')
-            }
-          </span>
+        <div className="flex items-center space-x-2">
+          <div className="text-sm text-muted-foreground mr-2">
+            {wordCount > 0 && (
+              <span>{wordCount.toLocaleString()} words</span>
+            )}
+            {lastSaved && wordCount > 0 && <span className="mx-1">·</span>}
+            {lastSaved && (
+              <span>Last saved {formatLastSaved(lastSaved)}</span>
+            )}
+          </div>
+          <Button 
+            variant="default" 
+            size="sm"
+            onClick={onSave}
+            className="gap-1"
+          >
+            <Save className="h-4 w-4" />
+            Save
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Document Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <History className="h-4 w-4 mr-2" />
+                View History
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Download className="h-4 w-4 mr-2" />
+                Export as Word
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Eye className="h-4 w-4 mr-2" />
+                Preview
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Share className="h-4 w-4 mr-2" />
+                Share for Review
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Mark as Complete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      )}
+      </div>
+
+      <Tabs 
+        defaultValue={activeTab} 
+        value={activeTab}
+        onValueChange={onTabChange}
+        className="w-full"
+      >
+        <TabsList className="grid grid-cols-4 w-full max-w-md">
+          <TabsTrigger value="edit">
+            <FileText className="h-4 w-4 mr-2" />
+            Edit
+          </TabsTrigger>
+          <TabsTrigger value="template">
+            <FileSearch className="h-4 w-4 mr-2" />
+            Templates
+          </TabsTrigger>
+          <TabsTrigger value="guidance">
+            <FileSearch className="h-4 w-4 mr-2" />
+            Guidance
+          </TabsTrigger>
+          <TabsTrigger value="review">
+            <FileSearch className="h-4 w-4 mr-2" />
+            Review
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
     </div>
   );
+}
+
+function StatusBadge({ status }) {
+  const statusMap = {
+    draft: { label: 'Draft', variant: 'outline' },
+    review: { label: 'In Review', variant: 'default' },
+    approved: { label: 'Approved', variant: 'success' },
+    rejected: { label: 'Rejected', variant: 'destructive' },
+    published: { label: 'Published', variant: 'default' }
+  };
+
+  const config = statusMap[status] || statusMap.draft;
+
+  return (
+    <Badge variant={config.variant}>
+      {config.label}
+    </Badge>
+  );
+}
+
+function formatLastSaved(date) {
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  
+  if (diffMins < 1) {
+    return 'just now';
+  } else if (diffMins < 60) {
+    return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  } else {
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString(undefined, { 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit'
+      });
+    }
+  }
 }

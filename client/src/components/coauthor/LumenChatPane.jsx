@@ -1,251 +1,233 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, Send, User, Cpu, Copy, CheckCircle, Brain, FileQuestion, BookOpen } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Send, Bot, User, Paperclip, ListChecks, RefreshCw, ChevronDown, Code, Image, Copy } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 
-export default function LumenChatPane({ contextId }) {
-  const [messages, setMessages] = useState([
+// Mock chat history
+const initialMessages = {
+  '2.7': [
     {
       id: 1,
-      role: 'system',
-      content: 'Welcome to Lumen AI Assistant! Ask me anything about regulatory guidelines or drafting help for this section.'
+      role: 'user',
+      content: 'What should I include in section 2.7?',
+      timestamp: new Date(Date.now() - 60000 * 60),
+    },
+    {
+      id: 2,
+      role: 'assistant',
+      content: 'Section 2.7 (Clinical Summary) should include a detailed yet concise analysis of all clinical data. Make sure to cover:\n\n1. Biopharmaceutic studies\n2. Clinical pharmacology studies\n3. Clinical efficacy studies\n4. Clinical safety findings\n5. Benefit-risk conclusions\n\nI recommend organizing this section with clear tables and graphs for the key efficacy and safety endpoints. Would you like me to help with a specific subsection?',
+      timestamp: new Date(Date.now() - 60000 * 59),
     }
-  ]);
+  ],
+  '3.2': [
+    {
+      id: 1,
+      role: 'user',
+      content: 'How should I structure the manufacturing information?',
+      timestamp: new Date(Date.now() - 60000 * 180),
+    },
+    {
+      id: 2,
+      role: 'assistant',
+      content: 'For Section 3.2, structure your manufacturing information as follows:\n\n1. Description of the manufacturing process and process controls\n2. Control of materials\n3. Control of critical steps and intermediates\n4. Process validation and/or evaluation\n5. Manufacturing process development\n\nEnsure you include flow diagrams of the manufacturing process and clearly identify critical process parameters (CPPs) and critical quality attributes (CQAs).',
+      timestamp: new Date(Date.now() - 60000 * 179),
+    }
+  ]
+};
+
+// Default messages for sections without specific history
+const defaultMessages = [
+  {
+    id: 1,
+    role: 'assistant',
+    content: "Hello! I'm your Lumen AI Regulatory Assistant. I can help you with drafting, formatting, and ensuring compliance for this section. Feel free to ask me any questions about regulatory requirements, content suggestions, or best practices.",
+    timestamp: new Date(Date.now() - 60000 * 5),
+  }
+];
+
+export default function LumenChatPane({ contextId }) {
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [copiedId, setCopiedId] = useState(null);
+  const messagesEndRef = useRef(null);
   
-  const scrollAreaRef = useRef(null);
-  const inputRef = useRef(null);
-  
-  // Simulate automatic scrolling to bottom of chat
+  // Load section-specific chat history
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollArea = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollArea) {
-        scrollArea.scrollTop = scrollArea.scrollHeight;
-      }
-    }
+    setMessages(initialMessages[contextId] || defaultMessages);
+  }, [contextId]);
+
+  // Auto-scroll to bottom of messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  
-  // Function to add a user message and generate a response
-  const handleSendMessage = async () => {
+
+  const handleSendMessage = () => {
     if (!input.trim()) return;
-    
+
     // Add user message
     const userMessage = {
-      id: Date.now(),
+      id: messages.length + 1,
       role: 'user',
-      content: input
+      content: input,
+      timestamp: new Date(),
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-    
-    // Simulate AI typing indicator
     setIsTyping(true);
-    
-    // Simulate AI response based on context
+
+    // Simulate AI response after a delay
     setTimeout(() => {
-      const aiResponse = generateAIResponse(input, contextId);
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
+      const aiResponses = {
+        '1.1': "For this administrative section, make sure to include all required contact information for the sponsor and investigators. Also, ensure Form FDA 356h is properly completed and signed. Would you like me to help with anything specific about this form?",
+        '1.2': "In the cover letter, you should clearly state the purpose of the submission, reference any prior communications with the FDA, and provide a high-level overview of what's included. Consider adding a table of contents for the submission package.",
+        '2.1': "The ToC should follow the exact structure defined in ICH M4. Make sure all section numbering is correct and hyperlinks are working properly if submitting electronically.",
+        '2.5': "Your Clinical Overview should focus on the benefit-risk assessment, integrating all relevant data from Module 5. Make sure to address any safety concerns identified in nonclinical studies and how the clinical program addressed them.",
+        '2.7': "Based on your current content, I'd recommend strengthening the efficacy summary with more quantitative data. The primary endpoint results should be presented with confidence intervals and p-values. Would you like me to suggest a table format for this data?",
+        '3.2': "Your quality information appears comprehensive, but you might need to add more details on batch analysis. Regulatory authorities typically expect at least 3 batches of data. Also, consider adding a risk assessment for critical process parameters.",
+        '4.2': "For the pharmacology section, make sure to clearly link the mechanism of action to the proposed indication. Include a summary table of all major nonclinical findings and their clinical relevance.",
+        '5.3': "Clinical study reports should follow ICH E3 guidelines. Each CSR should include a protocol and statistical analysis plan as appendices. For pivotal studies, include patient narratives for serious adverse events and discontinuations due to adverse events."
+      };
+
+      const defaultResponse = "I've analyzed this section and it appears to follow regulatory guidelines. To enhance it further, consider adding more cross-references to supporting data in other modules. Is there any specific regulatory requirement you're concerned about?";
+
+      const aiMessage = {
+        id: messages.length + 2,
         role: 'assistant',
-        content: aiResponse
-      }]);
+        content: aiResponses[contextId] || defaultResponse,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000); // Random delay to feel more natural
+    }, 1500);
   };
-  
-  // Handle Enter key press
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
-  
-  // Copy message content to clipboard
-  const handleCopyToClipboard = (text, id) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedId(id);
-      toast({
-        title: "Copied to clipboard",
-        description: "Message content has been copied to clipboard."
-      });
-      
-      // Reset copied status after 2 seconds
-      setTimeout(() => setCopiedId(null), 2000);
-    });
+
+  const formatTime = (timestamp) => {
+    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
-  
-  // Insert AI suggestion into editor
-  const handleInsertSuggestion = (text) => {
-    // This would typically dispatch an event to the parent component
-    // or use a context/state management to update the editor content
-    toast({
-      title: "Content inserted",
-      description: "AI suggestion has been inserted into your draft."
-    });
-  };
-  
-  // Simulate AI responses based on the question and section context
-  const generateAIResponse = (question, sectionId) => {
-    // Context-aware responses based on the specific section
-    const lowerQuestion = question.toLowerCase();
-    
-    if (lowerQuestion.includes('ich') && lowerQuestion.includes('e3')) {
-      return `## ICH E3 Guidelines for Section ${sectionId}\n\nFor the Clinical Summary section, ICH E3 recommends:\n\n1. **Comprehensive Overview:** Provide a clear, concise summary of all clinical findings.\n\n2. **Study Design:** Summarize the design of pivotal studies, including randomization methods and blinding procedures.\n\n3. **Efficacy Results:** Present the primary and secondary endpoint results with appropriate statistical analyses.\n\n4. **Safety Analysis:** Include a thorough evaluation of adverse events, laboratory findings, and other safety parameters.\n\n5. **Benefit-Risk Assessment:** Conclude with an integrated benefit-risk assessment supporting the proposed indication.`;
-    }
-    
-    if (lowerQuestion.includes('template') || lowerQuestion.includes('structure')) {
-      return `# Recommended Structure for Section ${sectionId}\n\n## 2.7.1 Summary of Biopharmaceutic Studies\n- Bioavailability results\n- Comparative BA/BE studies\n- In vitro dissolution studies\n\n## 2.7.2 Summary of Clinical Pharmacology\n- Mechanism of action\n- PK characteristics\n- Drug interactions\n\n## 2.7.3 Summary of Clinical Efficacy\n- Study demographics\n- Primary endpoints\n- Secondary analyses\n- Subgroup analyses\n\n## 2.7.4 Summary of Clinical Safety\n- Exposure\n- Adverse events\n- Laboratory findings\n- Vital signs\n\nI can help draft any of these subsections for you.`;
-    }
-    
-    if (lowerQuestion.includes('table') || lowerQuestion.includes('data')) {
-      return `Here's a sample data table format for Section ${sectionId}:\n\n| Study ID | Design | N | Primary Endpoint | Result | P-value |\n|---------|--------|---|-----------------|--------|--------|\n| ABC-123 | RCT, DB, PC | 305 | HbA1c change | -1.2% | <0.001 |\n| ABC-124 | RCT, DB, AC | 411 | HbA1c change | -1.1% | <0.001 |\n| ABC-125 | OL, Extension | 527 | TEAE incidence | 12.3% | - |\n\nWould you like me to generate a specific table for your clinical data?`;
-    }
-    
-    if (lowerQuestion.includes('references') || lowerQuestion.includes('cite')) {
-      return `For Section ${sectionId}, include these key references:\n\n1. Smith J, et al. (2023). Novel approaches for treatment of diabetes mellitus. *J Clin Res*. 45(2):112-119.\n\n2. European Medicines Agency (2024). Guideline on clinical development of products for treatment of diabetes mellitus. EMA/CHMP/27994/2024.\n\n3. FDA Guidance (2023). Type 2 Diabetes Mellitus: Developing Drugs and Therapeutic Biologics for Treatment and Prevention. FDA-2023-D-3005.\n\nI can format these references according to your preferred citation style.`;
-    }
-    
-    // Default response when no specific context is detected
-    return `I can help you draft content for Section ${sectionId}. For the Clinical Summary, consider including:\n\n- Overview of clinical development program\n- Summary of key efficacy findings across studies\n- Integrated safety analysis with focus on serious adverse events\n- Dose-response relationships and key subgroup analyses\n- Benefit-risk conclusions supporting the proposed indication\n\nWould you like me to help draft any specific part of this section?`;
-  };
-  
+
   return (
-    <Card className="shadow-md overflow-hidden">
-      <CardContent className="p-0">
-        <div className="flex items-center justify-between bg-blue-50 p-3 border-b">
-          <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-blue-600" />
-            <h3 className="font-medium text-blue-800">Lumen AI Chat Assistant</h3>
-          </div>
-          <div className="flex items-center gap-1 text-xs text-blue-600">
-            <FileQuestion className="h-4 w-4" />
-            <span>Section {contextId} Context-Aware</span>
-          </div>
-        </div>
-        
-        <ScrollArea className="h-[350px] p-4" ref={scrollAreaRef}>
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div 
-                key={message.id} 
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div 
-                  className={`flex gap-3 max-w-[80%] ${
-                    message.role === 'user' 
-                      ? 'bg-blue-600 text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
-                      : message.role === 'system'
-                        ? 'bg-gray-100 text-gray-800 rounded-tl-lg rounded-tr-lg rounded-br-lg border border-gray-200'
-                        : 'bg-gradient-to-r from-indigo-50 to-blue-50 text-gray-800 rounded-tl-lg rounded-tr-lg rounded-br-lg border border-blue-100'
-                  } p-3 relative`}
-                >
-                  {message.role !== 'user' && (
-                    <div className="flex-shrink-0 mt-1">
-                      {message.role === 'system' ? (
-                        <Cpu className="h-5 w-5 text-blue-600" />
-                      ) : (
-                        <Sparkles className="h-5 w-5 text-blue-600" />
-                      )}
-                    </div>
-                  )}
-                  
-                  <div className="flex flex-col">
-                    <div className="text-sm whitespace-pre-wrap" style={{ overflowWrap: 'break-word' }}>
-                      {message.content}
-                    </div>
-                    
-                    {/* Action buttons for AI messages */}
+    <Card className="border shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center">
+          <Bot className="h-5 w-5 mr-2 text-primary" />
+          Lumen AI Assistant
+        </CardTitle>
+        <CardDescription>
+          Ask me about regulatory requirements, content suggestions, or compliance issues
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-4">
+        <div className="space-y-4 h-[300px] overflow-y-auto mb-4 p-2">
+          {messages.map((message) => (
+            <div 
+              key={message.id} 
+              className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}
+            >
+              {message.role === 'assistant' && (
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/avatar-bot.png" />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    <Bot className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              <div className={`max-w-[80%] ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'} rounded-xl px-4 py-2.5`}>
+                <div className="space-y-2">
+                  <div className="prose prose-sm whitespace-pre-line break-words">
+                    {message.content}
+                  </div>
+                  <div className={`text-xs ${message.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'} justify-between flex`}>
+                    <span>{formatTime(message.timestamp)}</span>
                     {message.role === 'assistant' && (
-                      <div className="flex gap-2 mt-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-100"
-                          onClick={() => handleCopyToClipboard(message.content, message.id)}
-                        >
-                          {copiedId === message.id ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              <span>Copied</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-3 w-3 mr-1" />
-                              <span>Copy</span>
-                            </>
-                          )}
-                        </Button>
-                        
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs text-gray-600 hover:text-blue-700 hover:bg-blue-100"
-                          onClick={() => handleInsertSuggestion(message.content)}
-                        >
-                          <BookOpen className="h-3 w-3 mr-1" />
-                          <span>Insert</span>
-                        </Button>
-                      </div>
+                      <Button variant="ghost" size="icon" className="h-4 w-4 text-muted-foreground hover:text-foreground">
+                        <Copy className="h-3 w-3" />
+                      </Button>
                     )}
                   </div>
-                  
-                  {message.role === 'user' && (
-                    <div className="flex-shrink-0 mt-1 ml-2">
-                      <User className="h-5 w-5 text-blue-200" />
-                    </div>
-                  )}
                 </div>
               </div>
-            ))}
-            
-            {/* AI typing indicator */}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 text-gray-800 rounded-lg p-3 max-w-[80%] flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-blue-600" />
-                  <div className="flex space-x-1 items-center">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
+              {message.role === 'user' && (
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/avatar-user.png" />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+            </div>
+          ))}
+
+          {isTyping && (
+            <div className="flex items-start gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/avatar-bot.png" />
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  <Bot className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="max-w-[80%] bg-muted rounded-xl px-4 py-3.5">
+                <div className="flex space-x-1">
+                  <span className="animate-bounce">•</span>
+                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>•</span>
+                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>•</span>
                 </div>
               </div>
-            )}
-          </div>
-        </ScrollArea>
-        
-        <div className="border-t p-2">
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
-              placeholder="Ask Lumen AI about regulatory guidelines, section content, or drafting help..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isTyping}
-              className="focus-visible:ring-blue-500"
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!input.trim() || isTyping}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="text-xs text-gray-500 mt-1 px-2">
-            Context: Clinical Summary (Section {contextId}) • Powered by LumenAI™
-          </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="icon" className="flex-shrink-0">
+            <Paperclip className="h-4 w-4" />
+          </Button>
+          <Textarea
+            placeholder="Ask about regulatory requirements..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="min-h-10 flex-1"
+            rows={1}
+          />
+          <Button 
+            variant="default" 
+            size="icon"
+            onClick={handleSendMessage}
+            disabled={!input.trim() || isTyping}
+            className="flex-shrink-0"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
       </CardContent>
+      <CardFooter className="pt-0 px-4 pb-4 border-t flex justify-between items-center text-xs text-muted-foreground">
+        <span>Powered by GPT-4o & Regulatory Knowledge Base</span>
+        <div className="flex space-x-2">
+          <Button variant="ghost" size="sm" className="h-7 px-2">
+            <Image className="h-3 w-3 mr-1" />
+            Images
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2">
+            <Code className="h-3 w-3 mr-1" />
+            Tables
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 px-2">
+            <ListChecks className="h-3 w-3 mr-1" />
+            Actions
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

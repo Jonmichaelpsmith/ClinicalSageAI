@@ -1,0 +1,187 @@
+Below is everything you need to wire up Ask Lumen AI across both CSR Library and Study Architect modules. Copy each file in place, restart, and you’ll have a live Lumen chat pane everywhere.
+
+1) Server – Lumen Routes
+server/routes/lumenRoutes.ts
+
+ts
+Copy
+Edit
+import { Router } from 'express';
+import { chat } from '../services/lumenService.js';
+
+const router = Router();
+
+// POST /api/lumen/chat
+// { sessionId, context, message } → { reply }
+router.post('/lumen/chat', async (req, res) => {
+  const { sessionId, context, message } = req.body;
+  try {
+    const reply = await chat({ sessionId, context, message });
+    res.json({ reply });
+  } catch (err) {
+    console.error('Lumen chat error', err);
+    res.status(500).json({ error: 'Lumen chat failed' });
+  }
+});
+
+export default router;
+Then in server/index.ts:
+
+ts
+Copy
+Edit
+import express from 'express';
+import lumenRoutes from './routes/lumenRoutes.js';
+// … other imports
+
+app.use(express.json());
+app.use('/api', lumenRoutes);
+// … mount csrRoutes, studyArchitectRoutes, coauthorRoutes, etc.
+2) Server – Lumen Service
+server/services/lumenService.ts
+
+ts
+Copy
+Edit
+import { OpenAIApi, Configuration } from 'openai';
+
+const openai = new OpenAIApi(new Configuration({
+  apiKey: process.env.OPENAI_API_KEY
+}));
+
+export async function chat({ sessionId, context, message }) {
+  const completion = await openai.createChatCompletion({
+    model: 'gpt-4o',
+    messages: [
+      { role: 'system', content: `You are Lumen AI, an expert regulatory assistant.` },
+      { role: 'user', content: context + '\nQuestion: ' + message }
+    ],
+    user: sessionId
+  });
+  return completion.data.choices[0].message.content;
+}
+3) Client – Lumen Service
+client/src/services/lumenService.js
+
+js
+Copy
+Edit
+import axios from 'axios';
+
+export default {
+  chat: ({ sessionId, context, message }) =>
+    axios
+      .post('/api/lumen/chat', { sessionId, context, message })
+      .then(r => r.data.reply),
+};
+4) Client – Shared Lumen Chat Pane
+client/src/components/common/LumenChatPane.jsx
+
+jsx
+Copy
+Edit
+import React, { useState, useRef, useEffect } from 'react';
+import lumenService from '@/services/lumenService';
+
+export default function LumenChatPane({ contextId }) {
+  const [history, setHistory] = useState([]);
+  const [input, setInput] = useState('');
+  const endRef = useRef();
+
+  const send = async () => {
+    if (!input.trim()) return;
+    const userMsg = input;
+    setHistory(h => [...h, { from: 'user', text: userMsg }]);
+    setInput('');
+    const reply = await lumenService.chat({
+      sessionId: contextId,
+      context: history.map(m => m.text).join('\n'),
+      message: userMsg,
+    });
+    setHistory(h => [...h, { from: 'lumen', text: reply }]);
+  };
+
+  useEffect(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), [history]);
+
+  return (
+    <div className="border rounded p-4 flex flex-col h-64">
+      <h4 className="font-semibold mb-2">Ask Lumen AI</h4>
+      <div className="flex-1 overflow-auto mb-2 space-y-1">
+        {history.map((m, i) => (
+          <div key={i} className={m.from === 'user' ? 'text-right' : 'text-left'}>
+            <span className={`inline-block px-2 py-1 rounded ${m.from==='user'?'bg-blue-100':'bg-gray-100'}`}>
+              {m.text}
+            </span>
+          </div>
+        ))}
+        <div ref={endRef} />
+      </div>
+      <div className="flex space-x-2">
+        <input
+          className="flex-1 border px-2 py-1 rounded"
+          placeholder="Type your question..."
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && send()}
+        />
+        <button
+          onClick={send}
+          className="px-4 py-1 bg-blue-600 text-white rounded"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  );
+}
+5) Integrate in CSR Library
+In client/src/components/csr/CSRLibraryPage.jsx, import and render at the bottom of the page:
+
+jsx
+Copy
+Edit
+import LumenChatPane from '@/components/common/LumenChatPane';
+// …
+export default function CSRLibraryPage() {
+  return (
+    <div className="p-6 space-y-6">
+      {/* existing CSR sections… */}
+      <LumenChatPane contextId="csr-library" />
+    </div>
+  );
+}
+6) Integrate in Study Architect
+In client/src/components/studyArchitect/StudyArchitectModule.jsx, below your planner/workspace:
+
+diff
+Copy
+Edit
++ import LumenChatPane from '@/components/common/LumenChatPane';
+  // …
+  {activeSession && (
+    <>
+      {/* existing planners, editors, etc. */}
++     <LumenChatPane contextId={`study-${activeSession}`} />
+    </>
+  )}
+Once pasted and your servers are restarted, both CSR Library and Study Architect pages will have a fully functional “Ask Lumen AI” chat pane, powered by your LumenService backend. This ensures AI is running live in both modules for your demo.
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+Create image
+
+
+
+Ch
