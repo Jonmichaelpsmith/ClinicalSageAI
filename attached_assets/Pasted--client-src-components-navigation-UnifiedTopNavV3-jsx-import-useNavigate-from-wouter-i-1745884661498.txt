@@ -1,0 +1,81 @@
+// /client/src/components/navigation/UnifiedTopNavV3.jsx
+
+import { useNavigate } from 'wouter';
+import { useEffect } from 'react';
+
+export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = [] }) {
+  const navigate = useNavigate();
+
+  // Format tab names for display
+  const formatTabName = (name) => {
+    return name
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
+  };
+
+  return (
+    <div className="w-full sticky top-0 z-50 bg-white shadow-md flex flex-col">
+
+      {/* Top Row - Navigation and Module Switcher */}
+      <div className="flex justify-between items-center px-4 py-2 border-b">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.history.back()}
+            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200 transition"
+          >
+            ← Back
+          </button>
+          <button
+            onClick={() => window.history.forward()}
+            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200 transition"
+          >
+            → Forward
+          </button>
+          <button
+            onClick={() => navigate('/client-portal')}
+            className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+          >
+            🏠 Client Portal
+          </button>
+        </div>
+
+        <div>
+          <button
+            onClick={() => navigate('/switch-module')}
+            className="px-4 py-1 text-xs font-medium bg-indigo-50 rounded hover:bg-indigo-100 text-indigo-600 transition"
+          >
+            🔍 Switch Module
+          </button>
+        </div>
+      </div>
+
+      {/* Breadcrumb Trail */}
+      <div className="px-4 py-1 text-xs text-gray-500 font-medium bg-white border-b">
+        {breadcrumbs.map((crumb, idx) => (
+          <span key={idx}>
+            {idx > 0 && ' > '}
+            <span className="hover:underline cursor-default transition">{crumb}</span>
+          </span>
+        ))}
+      </div>
+
+      {/* Functional Tabs Row */}
+      <div className="flex justify-center gap-8 border-b border-gray-100 bg-white py-2">
+        {['RiskHeatmap', 'TimelineSimulator', 'AskLumenAI'].map((tabKey) => (
+          <button
+            key={tabKey}
+            onClick={() => onTabChange(tabKey)}
+            className={`text-sm font-semibold px-2 ${
+              activeTab === tabKey
+                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                : 'text-gray-600 hover:text-indigo-600'
+            } transition duration-200`}
+          >
+            {formatTabName(tabKey)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

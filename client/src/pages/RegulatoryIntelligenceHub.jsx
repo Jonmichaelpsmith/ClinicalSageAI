@@ -94,7 +94,11 @@ export default function RegulatoryIntelligenceHub() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <UnifiedTopNavV3 currentModule="regulatory-intel" currentPage={getActiveTabLabel()} />
+      <UnifiedTopNavV3 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        breadcrumbs={['Home', 'Regulatory Intelligence Hub', getActiveTabLabel()]} 
+      />
       
       <main className="container mx-auto px-4 py-8 transition-all duration-500 ease-in-out glass-card my-6 rounded-lg">
         <h1 className="text-3xl font-bold mb-8">Regulatory Intelligence Hub</h1>
