@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Sparkles, ExternalLink, Calendar, BookOpen, History, Settings, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import templates from '@/services/templates/ctdTemplates.json';
 
 export default function SectionHeader({ sectionId, title, onGenerate }) {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -148,9 +149,10 @@ export default function SectionHeader({ sectionId, title, onGenerate }) {
           <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
           <span>
             <span className="font-medium">Guidance Note:</span> {
-              sectionId === '2.7' 
+              templates[sectionId]?.guidanceText || 
+              (sectionId === '2.7' 
                 ? 'This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.'
-                : 'Follow eCTD guidelines for this section. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.'
+                : 'Follow eCTD guidelines for this section. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.')
             }
           </span>
         </div>

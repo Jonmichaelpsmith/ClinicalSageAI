@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, BookOpen, ExternalLink, FileText, Check, PlusCircle } from 'lucide-react';
+import templates from '@/services/templates/ctdTemplates.json';
 
 // This would be a real service in production
 const guidanceService = {
@@ -17,6 +18,12 @@ const guidanceService = {
 };
 
 function getGuidanceNoteForSection(id) {
+  // First check if we have template guidance
+  if (templates[id] && templates[id].guidanceText) {
+    return templates[id].guidanceText;
+  }
+  
+  // If not, use the static notes
   const notes = {
     '2.1': 'This section should follow CTD format and include a comprehensive Table of Contents for Module 2.',
     '2.2': 'Introduction should provide a concise overview of the pharmaceutical class, mode of action, and proposed clinical use.',
