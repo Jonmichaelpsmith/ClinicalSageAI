@@ -1,0 +1,102 @@
+// routes/cerRoutes.js
+const express = require('express');
+const router = express.Router();
+const Queue = require('bull');
+const path = require('path');
+
+// Initialize Bull queue (requires Redis)
+const cerQueue = new Queue('cer-generation', {
+  redis: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT }
+});
+
+// POST /api/cer/generate-full
+router.post('/generate-full', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Create a new job with user ID and any needed payload
+    const job = await cerQueue.add({ userId }, {
+      removeOnComplete: true,
+      removeOnFail: true
+    });
+    return res.json({ jobId: job.id });
+  } catch (err) {
+    console.error('Failed to enqueue CER job', err);
+    return res.status(500).json({ error: 'Could not start report generation' });
+  }
+});
+
+// GET /api/cer/jobs/:id/status
+router.get('/jobs/:id/status', async (req, res) => {
+  const jobId = req.params.id;
+  const job = await cerQueue.getJob(jobId);
+  if (!job) return res.status(404).json({ error: 'Job not found' });
+  const state = await job.getState();
+  const progress = job._progress || 0;
+  const data = job.data || {};
+  return res.json({ status: state, progress, step: data.currentStep || '' });
+});
+
+// GET /api/cer/jobs/:id/result
+router.get('/jobs/:id/result', async (req, res) => {
+  const jobId = req.params.id;
+  // PDF files stored temporarily under /tmp/cer-job-${jobId}.pdf
+  const filePath = path.join('/tmp', `cer-job-${jobId}.pdf`);
+  res.download(filePath, `ClinicalEvaluationReport-${jobId}.pdf`, err => {
+    if (err) console.error('Error sending PDF', err);
+  });
+});
+
+module.exports = router;
+
+// worker/cerWorker.js
+const Queue = require('bull');
+const fs = require('fs');
+const path = require('path');
+const { generateCerSections, assembleHtml } = require('../services/cerGenerator');
+const puppeteer = require('puppeteer');
+
+const cerQueue = new Queue('cer-generation', {
+  redis: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT }
+});
+
+cerQueue.process(async job => {
+  const { id, data } = job;
+  try {
+    // Step 1: fetch section definitions
+    job.progress(10);
+    data.currentStep = 'Fetching section templates';
+
+    const sections = await generateCerSections(data.userId);
+
+    // Step 2: call OpenAI to build each section
+    let compiledHtml = '<html><body>';
+    for (let i = 0; i < sections.length; i++) {
+      data.currentStep = `Generating section ${i + 1} of ${sections.length}`;
+      job.progress(10 + ((i / sections.length) * 60));
+      const sectionHtml = await sections[i].render();
+      compiledHtml += sectionHtml;
+    }
+    compiledHtml += '</body></html>';
+
+    // Step 3: assemble full HTML
+    data.currentStep = 'Assembling document';
+    job.progress(75);
+    const finalHtml = assembleHtml(compiledHtml);
+
+    // Step 4: render to PDF via Puppeteer
+    data.currentStep = 'Rendering PDF';
+    job.progress(90);
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(finalHtml, { waitUntil: 'networkidle0' });
+    const pdfPath = path.join('/tmp', `cer-job-${id}.pdf`);
+    await page.pdf({ path: pdfPath, format: 'A4' });
+    await browser.close();
+
+    job.progress(100);
+    return Promise.resolve();
+  } catch (error) {
+    console.error('CER job error', error);
+    throw error;
+  }
+});

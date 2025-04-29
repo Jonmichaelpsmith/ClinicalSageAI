@@ -1,0 +1,110 @@
+Here’s how to hook your front-end “Generate Full CER Report” button up to the new backend, add a built-in default template, show live progress, and preview the PDF in-app:
+
+---
+
+## 1. Wire the Button into Your CER Page
+
+In whatever file renders the header buttons (e.g. `CerPage.jsx`), replace the disabled “Generate Full CER Report” `<Button>` with our `GenerateFullCerButton` component:
+
+```diff jsx
+// CerPage.jsx (or similar)
+-import { Button } from '@/components/ui/button'
++import GenerateFullCerButton from './GenerateFullCerButton'
+…
+<div className="flex space-x-4">
+  <SampleCerButton />
+- <Button disabled>Generate Full CER Report</Button>
++ <GenerateFullCerButton />
+</div>
+```
+
+---
+
+## 2. Backend: Use a Preconfigured Default Template
+
+In `routes/cerRoutes.js`, let the POST payload accept an optional `templateId`, and if none is provided, look up your “default” regulatory template in the database:
+
+```js
+// routes/cerRoutes.js
+router.post('/generate-full', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    let { templateId } = req.body;
+
+    // If no templateId, load the system default
+    if (!templateId) {
+      const defaultTpl = await TemplateModel.findOne({ isDefault: true });
+      if (!defaultTpl) {
+        return res.status(500).json({ error: 'No default CER template configured' });
+      }
+      templateId = defaultTpl.id;
+    }
+
+    const job = await cerQueue.add(
+      { userId, templateId },
+      { removeOnComplete: true, removeOnFail: true }
+    );
+    return res.json({ jobId: job.id });
+  } catch (err) {
+    console.error('Failed to enqueue CER job', err);
+    return res.status(500).json({ error: 'Could not start report generation' });
+  }
+});
+```
+
+And in your worker (`worker/cerWorker.js`), fetch that template and drive section-generation off it:
+
+```js
+// worker/cerWorker.js
+cerQueue.process(async job => {
+  const { id, data: { userId, templateId } } = job;
+
+  // Load the template definition (e.g. list of sections, regulatory headers)
+  const tpl = await TemplateModel.findById(templateId);
+  const sections = tpl.sections; // assume an array of { name, prompt, order }
+
+  // …then generate each section in order…
+});
+```
+
+---
+
+## 3. Real-time Progress & In-App Preview
+
+Your `GenerateFullCerButton` already polls `/api/cer/jobs/:id/status`. Once you get `stat.status === 'completed'` and `resultUrl`:
+
+1. Show a link to download:  
+   ```jsx
+   <a href={resultUrl} target="_blank">Download PDF</a>
+   ```
+2. **Or** embed it inline for preview, e.g.:
+   ```jsx
+   {!polling && resultUrl && (
+     <div className="mt-4">
+       <h4 className="font-medium">Preview</h4>
+       <iframe
+         src={resultUrl}
+         className="w-full h-96 border"
+         title="CER Preview"
+       />
+     </div>
+   )}
+   ```
+
+---
+
+### Final Checklist
+
+- [ ] Import and render `GenerateFullCerButton` on the main CER page  
+- [ ] Configure a default template in your `TemplateModel` with `isDefault: true`  
+- [ ] Update `POST /api/cer/generate-full` to pick up that default  
+- [ ] Ensure your worker reads `data.templateId` to drive section assembly  
+- [ ] Embed an `<iframe>` or PDF.js viewer in your modal/drawer for in-app preview  
+
+Once you’ve got this wired up, clicking **Generate Full CER Report** will:
+
+1. Fire off a job with a built-in template  
+2. Push real-time progress updates to the modal  
+3. Auto-show the completed PDF in a viewer (with download)  
+
+Let me know if you want to dive deeper into any of these steps!

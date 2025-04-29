@@ -15,6 +15,7 @@ import { fetchDocuments, approveDocument, fetchCERHistory } from "../services/do
 import DocumentFilterPanel from "../components/documents/DocumentFilterPanel";
 import DocumentList from "../components/documents/DocumentList";
 import ReportHistoryPanel from "../components/cer/ReportHistoryPanel";
+import GenerateFullCerButton from "../components/cer/GenerateFullCerButton";
 import { 
   FileText, Search, Download, Upload, FileSpreadsheet, 
   Book, Database, Layers, Settings, Microscope, BarChart4, 
@@ -341,62 +342,7 @@ const CERV2Page = () => {
     }, 3000);
   };
   
-  // Generate full CER report (comprehensive AI-assisted generation)
-  const generateFullCERReport = async () => {
-    if (!deviceName || !deviceType || !manufacturer || !selectedTemplate) {
-      return;
-    }
-    
-    setIsGeneratingFull(true);
-    
-    try {
-      // Prepare device info object
-      const deviceInfo = {
-        name: deviceName,
-        type: deviceTypes.find(t => t.value === deviceType)?.label || deviceType,
-        manufacturer: manufacturer
-      };
-      
-      // Call our API to generate the full CER
-      const result = await generateFullCER({
-        deviceInfo,
-        literature: selectedArticles,
-        fdaData: fdaData?.results || [],
-        templateId: selectedTemplate
-      });
-      
-      // Update UI with the generated report
-      setReportStatus({
-        id: result.id,
-        status: 'completed',
-        generatedAt: result.createdAt || new Date().toISOString(),
-        templateUsed: templateOptions.find(t => t.value === selectedTemplate)?.label,
-        deviceName,
-        deviceType: deviceTypes.find(t => t.value === deviceType)?.label,
-        manufacturer,
-        includedArticles: selectedArticles.length,
-        includedFDAEvents: fdaData?.results?.length || 0,
-        pageCount: result.pageCount,
-        wordCount: result.wordCount
-      });
-      
-      // Open report in new tab if URL is available
-      if (result.downloadUrl) {
-        window.open(result.downloadUrl, '_blank');
-      }
-      
-      // Refresh document history to include the new report
-      loadDocuments(docFilters, 1);
-      
-      // Switch to report tab
-      setActiveTab('report');
-    } catch (error) {
-      console.error('Error generating full CER:', error);
-      alert('Failed to generate full CER. Please try again.');
-    } finally {
-      setIsGeneratingFull(false);
-    }
-  };
+  // The full CER generation is now handled by the GenerateFullCerButton component
   
   return (
     <div className="cerv2-page p-6">
@@ -517,86 +463,16 @@ const CERV2Page = () => {
             Generate Sample CER
           </Button>
           
-          <Button 
-            className="flex items-center" 
-            size="lg"
-            disabled={!deviceName || !deviceType || !manufacturer || !selectedTemplate}
-            onClick={() => {
-              setActiveTab('generating');
-              // Call API: POST /api/cer/generate-full
-              setGenerationProgress(0);
-              setGenerationStep('Initializing template structure');
-              
-              // Set up a progress simulation
-              const progressInterval = setInterval(() => {
-                setGenerationProgress(prev => {
-                  const newProgress = prev + Math.random() * 5;
-                  
-                  // Update the generation step based on progress
-                  if (newProgress > 20 && newProgress <= 40) {
-                    setGenerationStep('Processing clinical literature data');
-                  } else if (newProgress > 40 && newProgress <= 60) {
-                    setGenerationStep('Analyzing FDA adverse events');
-                  } else if (newProgress > 60 && newProgress <= 80) {
-                    setGenerationStep('Generating risk-benefit analysis');
-                  } else if (newProgress > 80) {
-                    setGenerationStep('Compiling final document');
-                  }
-                  
-                  return newProgress > 95 ? 95 : newProgress;
-                });
-              }, 300);
-              
-              // Make the actual API call
-              fetch('/api/cer/generate-full', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  deviceInfo: {
-                    name: deviceName,
-                    type: deviceTypes.find(t => t.value === deviceType)?.label,
-                    manufacturer
-                  },
-                  literature: selectedArticles,
-                  fdaData: fdaData?.results || [],
-                  templateId: selectedTemplate
-                })
-              })
-                .then(response => response.json())
-                .then(data => {
-                  clearInterval(progressInterval);
-                  setGenerationProgress(100);
-                  setReportStatus({
-                    id: data.id,
-                    status: data.status,
-                    generatedAt: data.generatedAt,
-                    templateUsed: templateOptions.find(t => t.value === selectedTemplate)?.label,
-                    deviceName,
-                    deviceType: deviceTypes.find(t => t.value === deviceType)?.label,
-                    manufacturer,
-                    includedArticles: data.metadata.includedLiterature || selectedArticles.length,
-                    includedFDAEvents: data.metadata.includedAdverseEvents || (fdaData?.results?.length || 0),
-                    pageCount: data.metadata.pageCount,
-                    wordCount: data.metadata.wordCount,
-                    url: data.url
-                  });
-                  setTimeout(() => {
-                    setActiveTab('report');
-                  }, 500);
-                })
-                .catch(error => {
-                  clearInterval(progressInterval);
-                  console.error('Error generating report:', error);
-                  alert('Failed to generate report. Please try again.');
-                  setActiveTab('input');
-                });
+          <GenerateFullCerButton 
+            deviceInfo={{
+              name: deviceName,
+              type: deviceTypes.find(t => t.value === deviceType)?.label || deviceType,
+              manufacturer: manufacturer
             }}
-          >
-            <FileText className="h-5 w-5 mr-2" />
-            Generate Full CER Report
-          </Button>
+            literature={selectedArticles}
+            fdaData={fdaData?.results || []}
+            templateId={selectedTemplate}
+          />
         </div>
       </div>
       
