@@ -26,7 +26,7 @@ export default function ReportHistoryPanel({ onOpenReport, refreshTrigger }) {
 
   if (loading) return (
     <div className="flex justify-center items-center h-60">
-      <Spinner className="h-8 w-8 text-primary/50" />
+      <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
     </div>
   );
 
