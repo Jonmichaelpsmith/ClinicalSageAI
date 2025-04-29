@@ -535,7 +535,7 @@ export default function INDWizardContainer({ projectId = '12345' }) {
     queryKey: ['ind-projects'],
     queryFn: async () => {
       try {
-        const response = await apiRequest('GET', `/api/ind/wizard/projects`);
+        const response = await apiRequest('GET', `/api/ind-wizard/projects`);
         if (!response.ok) throw new Error('Failed to fetch projects list');
         const projects = await response.json();
         setLoadedProjects(projects);

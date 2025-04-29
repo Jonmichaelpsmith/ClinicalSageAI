@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import path from 'path';
+import indWizardRouter from './routes/indWizardAPI.js';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
@@ -76,6 +77,9 @@ router.get('/cer/jobs/:id/status', (req, res) => {
 export default function registerRoutes(app: Express): void {
   // API routes
   app.use('/api', router);
+  
+  // Register IND Wizard API routes
+  app.use('/api/ind-wizard', indWizardRouter);
   
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
