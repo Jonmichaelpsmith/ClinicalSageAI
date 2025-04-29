@@ -54,6 +54,7 @@ const ClientPortalLanding = () => {
   // Module cards for the dashboard
   const moduleCards = [
     { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/client-portal/ind-wizard' },
+    { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor' },
     { id: 'cer', title: 'CER Generator™', description: 'EU MDR 2017/745 Clinical Evaluation Reports', path: '/client-portal/cer-generator' },
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/client-portal/cmc-wizard' },
     { id: 'csr', title: 'CSR Analyzer™', description: 'AI-powered Clinical Study Report analysis', path: '/client-portal/csr-analyzer' },

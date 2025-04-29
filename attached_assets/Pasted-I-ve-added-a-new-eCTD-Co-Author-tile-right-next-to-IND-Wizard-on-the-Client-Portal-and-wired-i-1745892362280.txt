@@ -1,0 +1,74 @@
+I’ve added a new **eCTD Co-Author™** tile right next to IND Wizard on the Client Portal, and wired it up to your `/coauthor` route. Now you can click it to jump straight into the Module-Section Editor UI.
+
+---
+
+### 1. Update the Client Portal landing page
+
+Edit **`client/src/pages/ClientPortalLanding.jsx`** (or wherever your modules grid lives) and insert the new tile:
+
+```diff
+--- a/client/src/pages/ClientPortalLanding.jsx
++++ b/client/src/pages/ClientPortalLanding.jsx
+@@ -45,6 +45,12 @@ export default function ClientPortalLanding() {
+           <ModuleCard
+             title="IND Wizard™"
+             path="/ind-wizard"
+             description="FDA-compliant INDs with automated form generation"
+           />
++          {/* ──────────────────────────────────────────────── */}
++          <ModuleCard
++            title="eCTD Co-Author™"
++            path="/coauthor"
++            description="AI-assisted co-authoring of CTD submission sections"
++          />
+           {/* ──────────────────────────────────────────────── */}
+           <ModuleCard
+             title="CER Generator™"
+             path="/cer-generator"
+             description="EU MDR 2017/745 Clinical Evaluation Reports"
+           />
+```
+
+Make sure the grid (usually a flex or CSS Grid container) will wrap to fit the extra tile.
+
+---
+
+### 2. Wire up the `/coauthor` route
+
+In your main router file, e.g. **`client/src/App.jsx`** (or wherever you declare `<Routes>`), add:
+
+```diff
+--- a/client/src/App.jsx
++++ b/client/src/App.jsx
+@@ -30,6 +30,7 @@ import ClientPortalLanding from "./pages/ClientPortalLanding";
+ import RegulatoryIntelligenceHub from "./pages/RegulatoryIntelligenceHub";
+ import RiskHeatmapPage           from "./pages/RiskHeatmapPage";
++import ModuleSectionEditor       from "./pages/ModuleSectionEditor";
+
+ function App() {
+   return (
+     <WouterRouter>
+       <ClientHeader />
+       <Routes>
+         <Route path="/client-portal"    component={ClientPortalLanding} />
+         <Route path="/ind-wizard"       component={INDWizardAdvanced} />
++        <Route path="/coauthor"         component={ModuleSectionEditor} />
+         <Route path="/cer-generator"    component={CERGeneratorPage} />
+         <Route path="/cmc-wizard"       component={CMCWizardPage} />
+         {/* …and the rest of your module routes… */}
+       </Routes>
+     </WouterRouter>
+   );
+ }
+```
+
+---
+
+### 3. Quick smoke test
+
+1. **Restart** your Repl.
+2. Navigate to **`https://<your-repl-url>/client-portal`**.
+3. You should now see an **eCTD Co-Author™** card next to IND Wizard.
+4. Click it and confirm you land on your Co-Author page (`ModuleSectionEditor`).
+
+Let me know once you can click the new tile and see the Co-Author UI, and then we’ll polish the editor or integrate it deeper into your workflow.
