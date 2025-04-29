@@ -185,8 +185,51 @@ function App() {
           <Route path="/stability" component={StabilityStudiesStubPage} />
           <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorStubPage} />
 
-          {/* Default Redirect */}
-          <Route>404 - Page Not Found</Route>
+          {/* Error fallback and catch-all routes for specific modules */}
+          <Route path="/cer-*">
+            {() => (
+              <div className="flex flex-col items-center justify-center p-8">
+                <h2 className="text-2xl font-bold mb-4 text-indigo-700">Redirecting to CER Generator</h2>
+                <p className="mb-4 text-gray-600">The URL you're trying to access is being redirected to the CER Generator module.</p>
+                <Button 
+                  onClick={() => window.location.href = '/cerv2'}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+                >
+                  Go to CER Generator
+                </Button>
+              </div>
+            )}
+          </Route>
+          
+          {/* CER Generator catch-all routes */}
+          <Route path="/cer-generator/*">
+            {() => <CERV2Page />}
+          </Route>
+          <Route path="/client-portal/cer-generator/*">
+            {() => <CERV2Page />}
+          </Route>
+          <Route path="/cerv2/*">
+            {() => <CERV2Page />}
+          </Route>
+          <Route path="/cerV2/*">
+            {() => <CERV2Page />}
+          </Route>
+          
+          {/* Default Redirect with helpful message */}
+          <Route>
+            {() => (
+              <div className="flex flex-col items-center justify-center p-8">
+                <h2 className="text-2xl font-bold mb-4 text-red-600">404 - Page Not Found</h2>
+                <p className="mb-4 text-gray-600">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+                <Button 
+                  onClick={() => navigate('/client-portal')}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+                >
+                  Return to Client Portal
+                </Button>
+              </div>
+            )}
+          </Route>
         </Switch>
       </div>
     </QueryClientProvider>
