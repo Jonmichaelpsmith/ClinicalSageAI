@@ -2,89 +2,121 @@ import express from 'express';
 const router = express.Router();
 
 /**
- * Playbook validation rules
- * - Each playbook has specific requirements that must be met
- * - Used to determine if a playbook strategy is viable given current state
+ * GET /api/timeline/milestones?type=ind
+ * Returns an array of milestone objects for a specific submission type
  */
-const playbookValidation = {
-  'fast-ind': [
-    { field: 'preclinical', minimumValue: 80, message: 'Preclinical data must be at least 80% complete' },
-    { field: 'manufacturingReadiness', minimumValue: 60, message: 'Manufacturing readiness must be at least 60%' }
-  ],
-  'standard': [
-    { field: 'preclinical', minimumValue: 70, message: 'Preclinical data must be at least 70% complete' }
-  ],
-  'full-nda': [
-    { field: 'clinicalTrials', minimumValue: 90, message: 'Clinical trials must be at least 90% complete' },
-    { field: 'preclinical', minimumValue: 95, message: 'Preclinical data must be at least 95% complete' },
-    { field: 'manufacturingReadiness', minimumValue: 85, message: 'Manufacturing readiness must be at least 85%' }
-  ],
-  'ema-impd': [
-    { field: 'preclinical', minimumValue: 85, message: 'Preclinical data must be at least 85% complete' },
-    { field: 'manufacturingReadiness', minimumValue: 80, message: 'Manufacturing readiness must be at least 80%' },
-    { field: 'qualitySystem', minimumValue: 90, message: 'Quality system must be at least 90% complete' }
-  ]
-};
-
-/**
- * Current state values
- * In a real implementation, these would be fetched from a database
- */
-const currentState = {
-  preclinical: 85,
-  clinicalTrials: 75,
-  manufacturingReadiness: 82,
-  qualitySystem: 88
-};
-
-/**
- * GET /api/timeline/info
- * Returns:
- *  - readiness: current readiness % 
- *  - missingDays: estimated days of work remaining
- *  - reviewDays: estimated FDA review duration
- */
-router.get('/info', (req, res) => {
-  // In a real implementation, compute readiness & missingDays
-  const readiness = 82;           // e.g. 82% ready
-  const totalMissingWork = 45;    // days if 0% ready
-  const missingDays = Math.round((100 - readiness) / 100 * totalMissingWork);
-  const reviewDays  = 30;         // FDA review duration
+router.get('/milestones', (req, res) => {
+  const submissionType = req.query.type || 'ind';
   
-  res.json({ readiness, missingDays, reviewDays });
+  // In a real implementation, this would be retrieved from a database
+  // Base IND timeline
+  const indTimeline = [
+    { id: 1, title: 'Project Kickoff', date: '2025-01-15', completed: true },
+    { id: 2, title: 'Protocol Development', date: '2025-02-10', completed: true },
+    { id: 3, title: 'IND Preparation', date: '2025-03-20', completed: true },
+    { id: 4, title: 'CMC Documentation', date: '2025-04-15', completed: false },
+    { id: 5, title: 'Nonclinical Review', date: '2025-05-05', completed: false },
+    { id: 6, title: 'IND Submission', date: '2025-06-10', completed: false },
+    { id: 7, title: 'FDA Feedback', date: '2025-07-10', completed: false },
+    { id: 8, title: 'Trial Start', date: '2025-08-01', completed: false },
+  ];
+  
+  // NDA timeline
+  const ndaTimeline = [
+    { id: 1, title: 'Pre-NDA Meeting', date: '2025-01-15', completed: true },
+    { id: 2, title: 'Clinical Study Reports', date: '2025-02-25', completed: true },
+    { id: 3, title: 'NDA Preparation', date: '2025-04-10', completed: false },
+    { id: 4, title: 'CMC Documentation', date: '2025-05-20', completed: false },
+    { id: 5, title: 'NDA Submission', date: '2025-07-15', completed: false },
+    { id: 6, title: 'FDA Filing Decision', date: '2025-09-01', completed: false },
+    { id: 7, title: 'FDA Review', date: '2025-11-20', completed: false },
+    { id: 8, title: 'PDUFA Date', date: '2026-01-15', completed: false },
+  ];
+  
+  // BLA timeline
+  const blaTimeline = [
+    { id: 1, title: 'Pre-BLA Meeting', date: '2025-01-20', completed: true },
+    { id: 2, title: 'Clinical Study Reports', date: '2025-03-15', completed: false },
+    { id: 3, title: 'Manufacturing Readiness', date: '2025-05-10', completed: false },
+    { id: 4, title: 'BLA Preparation', date: '2025-07-05', completed: false },
+    { id: 5, title: 'BLA Submission', date: '2025-09-01', completed: false },
+    { id: 6, title: 'FDA Filing Decision', date: '2025-11-01', completed: false },
+    { id: 7, title: 'FDA Inspection', date: '2026-01-15', completed: false },
+    { id: 8, title: 'PDUFA Date', date: '2026-03-01', completed: false },
+  ];
+  
+  // MAA timeline
+  const maaTimeline = [
+    { id: 1, title: 'Scientific Advice', date: '2025-01-15', completed: true },
+    { id: 2, title: 'Clinical Study Reports', date: '2025-03-10', completed: false },
+    { id: 3, title: 'CMC Documentation', date: '2025-05-15', completed: false },
+    { id: 4, title: 'MAA Preparation', date: '2025-07-20', completed: false },
+    { id: 5, title: 'MAA Submission', date: '2025-09-15', completed: false },
+    { id: 6, title: 'EMA Validation', date: '2025-10-15', completed: false },
+    { id: 7, title: 'CHMP Opinion', date: '2026-01-20', completed: false },
+    { id: 8, title: 'EC Decision', date: '2026-03-15', completed: false },
+  ];
+  
+  let timeline;
+  
+  // Return the appropriate timeline based on the submission type
+  switch (submissionType) {
+    case 'nda':
+      timeline = ndaTimeline;
+      break;
+    case 'bla':
+      timeline = blaTimeline;
+      break;
+    case 'maa':
+      timeline = maaTimeline;
+      break;
+    default:
+      timeline = indTimeline;
+  }
+  
+  res.json({ timeline, submissionType });
 });
 
 /**
- * GET /api/timeline/playbooks
- * Returns:
- *  - valid playbooks with their validation status 
+ * GET /api/timeline/activities
+ * Returns an array of recent activities
  */
-router.get('/playbooks', (req, res) => {
-  const results = Object.keys(playbookValidation).map(playbook => {
-    const rules = playbookValidation[playbook];
-    const validationResults = rules.map(rule => {
-      const currentValue = currentState[rule.field];
-      const isValid = currentValue >= rule.minimumValue;
-      
-      return {
-        field: rule.field,
-        required: rule.minimumValue,
-        current: currentValue,
-        isValid,
-        message: isValid ? null : rule.message
-      };
-    });
-    
-    const isPlaybookValid = validationResults.every(r => r.isValid);
-    
-    return {
-      id: playbook,
-      isValid: isPlaybookValid,
-      validations: validationResults
-    };
-  });
+router.get('/activities', (req, res) => {
+  // In a real implementation, this would be retrieved from a database
+  const activities = [
+    { id: 1, date: '2025-04-25', description: 'Updated IND Module 3 CMC documentation' },
+    { id: 2, date: '2025-04-22', description: 'Completed toxicology report review' },
+    { id: 3, date: '2025-04-20', description: 'Added clinical protocol to Module 5' },
+    { id: 4, date: '2025-04-18', description: 'Scheduled pre-IND meeting with FDA' },
+    { id: 5, date: '2025-04-15', description: 'Finalized Phase 1 study design' },
+  ];
   
-  res.json(results);
+  res.json({ activities });
+});
+
+/**
+ * GET /api/timeline/stats?type=ind
+ * Returns statistics for the timeline
+ */
+router.get('/stats', (req, res) => {
+  const submissionType = req.query.type || 'ind';
+  
+  // Map of submission types to target dates
+  const targetDates = {
+    'ind': 'June 10, 2025',
+    'nda': 'November 15, 2025',
+    'bla': 'December 20, 2025',
+    'maa': 'January 10, 2026'
+  };
+  
+  // In a real implementation, these would be calculated based on the milestones
+  const stats = {
+    progress: '42%',
+    targetDate: targetDates[submissionType] || targetDates.ind,
+    milestonesCompleted: '3 of 8'
+  };
+  
+  res.json({ stats, submissionType });
 });
 
 export default router;

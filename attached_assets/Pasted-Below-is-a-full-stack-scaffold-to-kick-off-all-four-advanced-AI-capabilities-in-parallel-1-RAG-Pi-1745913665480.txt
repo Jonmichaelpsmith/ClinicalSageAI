@@ -1,0 +1,317 @@
+Below is a full-stack scaffold to kick off all four advanced AI capabilities in parallel:
+	1.	RAG Pipeline (ingest & query)
+	2.	Function-Calling Orchestration
+	3.	Vision-Based PDF Parsing
+	4.	OpenAI Function Example (generate_manifest)
+
+For each feature you’ll see:
+   •   Server routes & services
+   •   Client API helpers (where relevant)
+   •   Key code snippets to wire up OpenAI
+
+⸻
+
+1. Retrieval-Augmented Generation (RAG)
+
+1.a) Install Dependencies
+
+npm install pinecone-client openai dotenv
+
+1.b) Environment Variables
+
+Create a top-level .env:
+
+OPENAI_API_KEY=…
+PINECONE_API_KEY=…
+PINECONE_ENVIRONMENT=us-west1-gcp
+PINECONE_INDEX=trialsage-guidance
+
+1.c) RAG Service
+
+File: server/services/ragService.js
+
+import fs from 'fs';
+import path from 'path';
+import { OpenAI } from 'openai';
+import { PineconeClient } from '@pinecone-database/pinecone';
+import pdfParse from 'pdf-parse';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const pinecone = new PineconeClient();
+await pinecone.init({
+  apiKey: process.env.PINECONE_API_KEY,
+  environment: process.env.PINECONE_ENVIRONMENT,
+});
+const index = pinecone.Index(process.env.PINECONE_INDEX);
+
+export async function ingestPdfBuffer(buffer, metadata = {}) {
+  // 1) extract text
+  const { text } = await pdfParse(buffer);
+  // 2) chunk text (e.g. 1000-char chunks)
+  const chunks = text.match(/.{1,1000}(\s|$)/g) || [];
+  // 3) embed & upsert
+  const embeds = await Promise.all(chunks.map(c =>
+    openai.embeddings.create({ model:'text-embedding-ada-002', input:c })
+    .then(r=>r.data[0].embedding)
+  ));
+  const vectors = embeds.map((e, i) => ({
+    id: `${metadata.source}#${i}`,
+    values: e,
+    metadata: { ...metadata, chunk: chunks[i] }
+  }));
+  await index.upsert({ upsertRequest:{ vectors } });
+}
+
+export async function queryRAG(query, topK = 5) {
+  const qEmbed = await openai.embeddings.create({
+    model:'text-embedding-ada-002', input: query
+  }).then(r=>r.data[0].embedding);
+
+  const res = await index.query({
+    queryRequest: { topK, vector: qEmbed, includeMetadata: true }
+  });
+  // return the text chunks
+  return res.matches.map(m => m.metadata.chunk);
+}
+
+1.d) RAG Routes
+
+File: server/routes/rag.js
+
+import express from 'express';
+import multer from 'multer';
+import { ingestPdfBuffer, queryRAG } from '../services/ragService.js';
+const router = express.Router();
+const upload = multer();
+
+// POST /api/rag/ingest  (multipart-form PDF)
+router.post('/ingest', upload.single('file'), async (req, res) => {
+  await ingestPdfBuffer(req.file.buffer, { source: req.file.originalname });
+  res.json({ success: true });
+});
+
+// POST /api/rag/query  { query: string }
+router.post('/query', async (req, res) => {
+  const chunks = await queryRAG(req.body.query, 5);
+  res.json({ chunks });
+});
+
+export default router;
+
+Mount in server/server.js:
+
+import ragRoutes from './routes/rag.js';
+app.use('/api/rag', ragRoutes);
+
+1.e) Client Helper
+
+File: client/src/api/rag.js
+
+export async function ingestPdf(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  await fetch('/api/rag/ingest', { method:'POST', body: fd });
+}
+
+export async function queryRAG(query) {
+  const res = await fetch('/api/rag/query', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ query })
+  });
+  const { chunks } = await res.json();
+  return chunks;
+}
+
+
+
+⸻
+
+2. Function-Calling Orchestration
+
+We’ll register internal services as OpenAI Functions and let GPT pick which to invoke.
+
+2.a) Define Function Schemas
+
+File: server/services/openaiFunctions.js
+
+export const functions = [
+  {
+    name: 'generate_manifest',
+    description: 'Generate an eCTD manifest JSON structure for given modules',
+    parameters: {
+      type: 'object',
+      properties: {
+        modules: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'List of CTD module IDs to include'
+        }
+      },
+      required: ['modules']
+    }
+  },
+  {
+    name: 'upload_to_vault',
+    description: 'Upload a document to the secure Vault',
+    parameters: {
+      type: 'object',
+      properties: {
+        documentName: { type: 'string' },
+        contentBase64: { type: 'string' }
+      },
+      required: ['documentName','contentBase64']
+    }
+  },
+  // …add more as needed
+];
+
+2.b) Orchestration Endpoint
+
+File: server/routes/coauthorFunctions.js
+
+import express from 'express';
+import { OpenAI } from 'openai';
+import { functions } from '../services/openaiFunctions.js';
+import { generateManifest } from '../services/manifestService.js';
+import { uploadToVault } from '../services/vaultService.js';
+
+const router = express.Router();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// POST /api/functions/chat
+router.post('/chat', async (req, res) => {
+  const { messages } = req.body;
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',   // or gpt-4-turbo
+    messages,
+    functions,
+    function_call: 'auto'
+  });
+
+  const choice = response.choices[0];
+  if (choice.finish_reason === 'function_call') {
+    const { name, arguments:args } = choice.message.function_call;
+    const parsed = JSON.parse(args);
+    let result;
+    if (name === 'generate_manifest') {
+      result = await generateManifest(parsed.modules);
+    } else if (name === 'upload_to_vault') {
+      result = await uploadToVault(parsed.documentName, parsed.contentBase64);
+    }
+    // send the function result back to the model for a final answer
+    const followup = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        ...messages,
+        choice.message,
+        { role: 'function', name, content: JSON.stringify(result) }
+      ]
+    });
+    return res.json(followup.choices[0].message);
+  }
+
+  res.json(choice.message);
+});
+
+export default router;
+
+Mount it:
+
+import coauthorFunctions from './routes/coauthorFunctions.js';
+app.use('/api/functions', coauthorFunctions);
+
+
+
+⸻
+
+3. Vision-Based PDF Parsing
+
+We’ll accept an image/PDF, send to GPT-4 with vision, and extract interpreted data.
+
+3.a) Vision Route
+
+File: server/routes/vision.js
+
+import express from 'express';
+import multer from 'multer';
+import { OpenAI } from 'openai';
+const router = express.Router();
+const upload = multer();
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// POST /api/vision/parse
+router.post('/parse', upload.single('file'), async (req, res) => {
+  // Convert buffer to base64
+  const b64 = req.file.buffer.toString('base64');
+  // Send image to GPT-4Vision
+  const chatRes = await openai.chat.completions.create({
+    model: 'gpt-4o-mini', // adjust if needed
+    messages: [
+      { role:'user', content:'Extract all table data and key headings from this document.' }
+    ],
+    functions: [],
+    files: [ { name: req.file.originalname, data: b64 } ]
+  });
+  const visionOutput = chatRes.choices[0].message.content;
+  res.json({ text: visionOutput });
+});
+
+export default router;
+
+Mount in server/server.js:
+
+import visionRoutes from './routes/vision.js';
+app.use('/api/vision', visionRoutes);
+
+3.b) Client Helper
+
+File: client/src/api/vision.js
+
+export async function parseVisionFile(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch('/api/vision/parse', { method:'POST', body:fd });
+  const { text } = await res.json();
+  return text;
+}
+
+
+
+⸻
+
+4. OpenAI Function Example: generate_manifest
+
+Finally, here’s a client-side snippet showing how to call our function-orchestration endpoint:
+
+import { OpenAI } from 'openai';
+const openai = new OpenAI({ apiKey: process.env.REACT_APP_OPENAI_API_KEY });
+
+async function askLumenForManifest(modules) {
+  // seed the chat
+  const messages = [
+    { role:'system', content:'You are TrialSage CoAuthor AI.' },
+    { role:'user', content:`Please generate an eCTD manifest for modules ${modules.join(', ')}` }
+  ];
+  // call our function endpoint
+  const res = await fetch('/api/functions/chat', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ messages })
+  });
+  const reply = await res.json();
+  console.log('Lumen replied:', reply.content);
+  // if reply.content is JSON, parse and use it
+}
+
+
+
+⸻
+
+✅ Next Steps
+	1.	Wire the RAG query into your CopilotPanel (e.g. a new “RAG” tab that does queryRAG(userQuery) then prompts GPT-4 with those chunks).
+	2.	Hook the /api/functions/chat into your chat UI instead of the simple /api/coauthor/chat.
+	3.	Allow drag-drop of PDF/image into CoAuthorPage to invoke /api/vision/parse.
+	4.	Test the askLumenForManifest flow by adding a “Generate Manifest” button in the CoAuthorPanel or Dashboard.
+
+This gives you all the cutting-edge AI integrations—RAG, function calling, vision, and orchestration—ready to plugin and extend. Let me know which you’d like to see demoed first in your workspace!
