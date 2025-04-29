@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'wouter';
 import axios from 'axios';
+import { Button } from '@/components/ui/button';
 
 // Import component placeholders (these would be real components in production)
 import ProjectManagerGrid from '../components/ProjectManagerGrid';
@@ -56,16 +57,16 @@ const ClientPortalLanding = () => {
 
   // Module cards for the dashboard
   const moduleCards = [
-    { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/client-portal/ind-wizard' },
+    { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard' },
     { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor' },
-    { id: 'cer', title: 'CER Generator™', description: 'EU MDR 2017/745 Clinical Evaluation Reports', path: '/client-portal/cer-generator' },
-    { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/client-portal/cmc-wizard' },
-    { id: 'csr', title: 'CSR Analyzer™', description: 'AI-powered Clinical Study Report analysis', path: '/client-portal/csr-analyzer' },
-    { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/client-portal/vault' },
+    { id: 'cer', title: 'CER Generator™', description: 'EU MDR 2017/745 Clinical Evaluation Reports', path: '/cerv2' },
+    { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc-wizard' },
+    { id: 'csr', title: 'CSR Analyzer™', description: 'AI-powered Clinical Study Report analysis', path: '/csr-analyzer' },
+    { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault' },
     { id: 'rih', title: 'Regulatory Intelligence Hub™', description: 'AI-powered strategy, timeline, and risk simulation', path: '/regulatory-intelligence-hub', highlight: true },
     { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/regulatory-risk-dashboard' },
-    { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/client-portal/study-architect' },
-    { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/client-portal/analytics' }
+    { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/study-architect' },
+    { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/analytics' }
   ];
   
   return (
@@ -120,7 +121,15 @@ const ClientPortalLanding = () => {
               
               {/* Module Cards */}
               <div className="bg-white rounded-xl shadow-md p-6">
-                <h2 className="text-2xl font-semibold text-indigo-700 mb-4">TrialSage™ Modules</h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-semibold text-indigo-700">TrialSage™ Modules</h2>
+                  <Button 
+                    onClick={() => window.location.href = '/cerv2'}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded"
+                  >
+                    Open CER Generator
+                  </Button>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {moduleCards.map(module => (
                     <Link key={module.id} to={module.path} className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full">

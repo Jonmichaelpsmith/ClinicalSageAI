@@ -14,6 +14,12 @@ export default function ModuleDashboard() {
     { id: '4', title: 'Module 4: Nonclinical',          to:'/coauthor?module=4', progress:  20, risk:'high'},
     { id: '5', title: 'Module 5: Clinical Study Reports',to:'/coauthor?module=5',progress:  0,  risk:'high'},
   ];
+  
+  const trialsageModules = [
+    { id: 'cer', title: 'CER Generator™', to:'/cerv2', progress: 80, risk:'low' },
+    { id: 'ind', title: 'IND Wizard™', to:'/ind-wizard', progress: 65, risk:'med' },
+    { id: 'vault', title: 'TrialSage Vault™', to:'/vault', progress: 90, risk:'low' },
+  ];
 
   return (
     <div className="dashboard-page">
@@ -51,16 +57,43 @@ export default function ModuleDashboard() {
         </div>
       </div>
 
-      <div className="dashboard-grid">
-        {modules.map(mod => (
-          <ModuleCard
-            key={mod.id}
-            title={mod.title}
-            to={mod.to}
-            progress={mod.progress}
-            risk={mod.risk}
-          />
-        ))}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">CTD Module Navigator</h2>
+        <div className="dashboard-grid">
+          {modules.map(mod => (
+            <ModuleCard
+              key={mod.id}
+              title={mod.title}
+              to={mod.to}
+              progress={mod.progress}
+              risk={mod.risk}
+            />
+          ))}
+        </div>
+      </div>
+      
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">TrialSage™ Modules</h2>
+        <div className="dashboard-grid">
+          {trialsageModules.map(mod => (
+            <ModuleCard
+              key={mod.id}
+              title={mod.title}
+              to={mod.to}
+              progress={mod.progress}
+              risk={mod.risk}
+            />
+          ))}
+        </div>
+      </div>
+      
+      <div className="mt-6 text-center">
+        <Button 
+          onClick={() => window.location.href = '/cerv2'}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg text-lg font-semibold"
+        >
+          Go to CER Generator
+        </Button>
       </div>
     </div>
   );

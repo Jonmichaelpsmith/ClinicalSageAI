@@ -1,0 +1,81 @@
+To get that top-level **Generate Full CER Report** button wired up and the three tabs switching into the right panels, let’s update your main CER page component (`CerPage.jsx` or `ClientPortal.jsx`, wherever you render that card + tabs):
+
+```jsx
+// client/src/pages/CerPage.jsx
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
+import CerHistoryPanel from '@/components/cer/CerHistoryPanel';
+import TemplateSettingsPanel from '@/components/cer/TemplateSettingsPanel';
+import ApprovalsPanel from '@/components/cer/ApprovalsPanel';
+
+export default function CerPage() {
+  const [tab, setTab] = useState('history');
+
+  return (
+    <div className="space-y-6">
+      {/* Header + Generate button */}
+      <Card>
+        <CardContent className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">Clinical Evaluation Report Generator</h1>
+            <p>Generate, manage, and review Clinical Evaluation Reports for regulatory submissions.</p>
+          </div>
+          <GenerateFullCerButton />
+        </CardContent>
+      </Card>
+
+      {/* Tabs */}
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="history">Report History</TabsTrigger>
+          <TabsTrigger value="templates">Template Settings</TabsTrigger>
+          <TabsTrigger value="approvals">Approvals</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="history">
+          <CerHistoryPanel />
+        </TabsContent>
+
+        <TabsContent value="templates">
+          <TemplateSettingsPanel />
+        </TabsContent>
+
+        <TabsContent value="approvals">
+          <ApprovalsPanel />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+```
+
+**What this does:**
+
+1. **Replaces** the static button in your card with `<GenerateFullCerButton />`, so clicking it kicks off the actual `/api/cer/generate-full` flow.  
+2. Uses shadcn’s **Tabs** components to render your three tabs in that grey bar.  
+3. Shows **CerHistoryPanel**, **TemplateSettingsPanel**, or **ApprovalsPanel** depending on which tab is active.  
+
+---
+
+### Checklist
+
+1. **Ensure you have**  
+   ```bash
+   yarn add @components/ui/tabs
+   ```  
+   or the equivalent if you use a different tabs library.
+
+2. **Create placeholder panels** if you haven’t yet:  
+   - `TemplateSettingsPanel.jsx`  
+   - `ApprovalsPanel.jsx`  
+   Each can just render a `<div>Coming soon…</div>` until you wire up their functionality.
+
+3. **Confirm routing** in your React router (if any) points to this `CerPage`.
+
+4. **Run your dev server** and verify:  
+   - The **Generate Full CER Report** button is enabled and opens your progress dialog.  
+   - Clicking each tab swaps in the correct panel.
+
+With that in place, your front-end will be fully wired to both kick off back-end jobs **and** let users navigate between history, template settings, and approvals. Let me know if anything still feels disconnected!
