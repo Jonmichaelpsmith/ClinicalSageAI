@@ -46,17 +46,57 @@ export default function GenerateFullCerButton({ onCompletion }) {
     runGenerationProcess();
   };
 
-  const runGenerationProcess = async () => {
-    let currentProgress = 0;
+  // Set up real-time event listeners when the component mounts
+  useEffect(() => {
+    // Set up event listeners for SSE
+    const progressListener = (data) => {
+      console.log('Progress update:', data);
+      setProgress(data.progress);
+      setCurrentStage(data.stage);
+    };
     
-    try {
-      // Initialize OpenAI client with API key from environment
-      const openai = new OpenAI({
-        apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-        dangerouslyAllowBrowser: true // Note: In production, API calls should be made server-side
-      });
+    const sectionListener = (data) => {
+      console.log('Section update:', data);
+      // You could store section data in state if needed
+    };
+    
+    const completeListener = (data) => {
+      console.log('Generation complete:', data);
+      setGenerationComplete(true);
+      setIsGenerating(false);
       
-      // Prepare real device data
+      // Notify parent component
+      if (onCompletion) {
+        onCompletion(data.jobId);
+      }
+    };
+    
+    const errorListener = (data) => {
+      console.error('Generation error:', data);
+      setErrorMessage(`Error generating CER: ${data.message || 'Unknown error'}`);
+      setIsGenerating(false);
+    };
+    
+    // Register listeners
+    realtimeService.addEventListener('progress', progressListener);
+    realtimeService.addEventListener('section', sectionListener);
+    realtimeService.addEventListener('complete', completeListener);
+    realtimeService.addEventListener('error', errorListener);
+    
+    // Clean up when component unmounts
+    return () => {
+      realtimeService.removeEventListener('progress', progressListener);
+      realtimeService.removeEventListener('section', sectionListener);
+      realtimeService.removeEventListener('complete', completeListener);
+      realtimeService.removeEventListener('error', errorListener);
+      realtimeService.disconnect();
+    };
+  }, [onCompletion]);
+  
+  // Start the generation process via API call
+  const runGenerationProcess = async () => {
+    try {
+      // Prepare input data
       const deviceData = {
         deviceId: "DEV-" + Date.now().toString().substring(0, 8),
         deviceName: "Enzymex Forte",
@@ -120,116 +160,36 @@ export default function GenerateFullCerButton({ onCompletion }) {
         includeAppendices: true
       };
       
-      // Progress through stages with real AI calls
-      setCurrentStage(0);
-      await updateProgressForStage(0, 100);
+      // Make API call to start the generation process
+      console.log('Starting CER generation process via API');
+      const response = await fetch('/api/cer/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          deviceData,
+          clinicalData,
+          literature,
+          templateSettings
+        })
+      });
       
-      // Stage 1: Gathering device information
-      setCurrentStage(1);
-      await updateProgressForStage(1, 50);
-      
-      // Use real OpenAI API to analyze device data
-      console.log('Initiating device data analysis with OpenAI');
-      const deviceAnalysisPrompt = `
-        Analyze the following medical device information for a Clinical Evaluation Report:
-        ${JSON.stringify(deviceData, null, 2)}
-        
-        Provide a structured summary of the device characteristics, including:
-        1. Device classification and regulatory context
-        2. Technical specifications
-        3. Intended use and indications
-        4. Market history
-      `;
-      
-      let deviceAnalysis = null;
-      try {
-        // Making an actual API call to OpenAI
-        const deviceResponse = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            { 
-              role: "system", 
-              content: "You are an expert medical device regulatory writer specializing in Clinical Evaluation Reports. Analyze device information and provide structured, professional summaries."
-            },
-            { role: "user", content: deviceAnalysisPrompt }
-          ],
-          temperature: 0.2
-        });
-        
-        deviceAnalysis = deviceResponse.choices[0].message.content;
-        console.log('Successfully analyzed device data with OpenAI');
-      } catch (aiError) {
-        console.error('OpenAI API call failed:', aiError);
-        throw new Error(`OpenAI API call failed: ${aiError.message}`);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
       }
       
-      await updateProgressForStage(1, 100);
+      const data = await response.json();
+      const jobId = data.jobId;
       
-      // Stage 2: Analyzing clinical data
-      setCurrentStage(2);
-      await updateProgressForStage(2, 50);
+      console.log('Generation started with job ID:', jobId);
       
-      // Use real OpenAI API to analyze clinical data
-      console.log('Analyzing clinical data with OpenAI');
-      const clinicalAnalysisPrompt = `
-        Analyze the following clinical data for a medical device Clinical Evaluation Report:
-        ${JSON.stringify(clinicalData, null, 2)}
-        
-        Provide a structured analysis including:
-        1. Study design and methodology assessment
-        2. Key findings and outcomes
-        3. Statistical significance of results
-        4. Post-market surveillance insights
-        5. Identified risks and benefits
-      `;
+      // Connect to real-time updates for this job
+      await realtimeService.connect(jobId);
       
-      let clinicalAnalysis = null;
-      try {
-        const clinicalResponse = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            { 
-              role: "system", 
-              content: "You are an expert clinical data analyst specializing in medical device evaluations. Analyze clinical study data and provide detailed, objective assessments."
-            },
-            { role: "user", content: clinicalAnalysisPrompt }
-          ],
-          temperature: 0.1
-        });
-        
-        clinicalAnalysis = clinicalResponse.choices[0].message.content;
-        console.log('Successfully analyzed clinical data with OpenAI');
-      } catch (aiError) {
-        console.error('OpenAI API call failed:', aiError);
-      }
-      
-      await updateProgressForStage(2, 100);
-      
-      // Stages 3-9: Simulate remaining process while using the real analysis results
-      for (let i = 3; i < stages.length; i++) {
-        setCurrentStage(i);
-        await updateProgressForStage(i, 100);
-      }
-      
-      // Generate a real job ID
-      const jobId = `cer-${Date.now().toString(36)}`;
-      
-      // In a real implementation, we would POST the generated content to the server
-      // Instead, we'll log the generated content to the console
-      console.log('Device Analysis from OpenAI:', deviceAnalysis);
-      console.log('Clinical Analysis from OpenAI:', clinicalAnalysis);
-      
-      // Complete the generation process
-      setGenerationComplete(true);
-      setIsGenerating(false);
-      
-      // Notify parent component that generation is complete with the job ID
-      if (onCompletion) {
-        onCompletion(jobId);
-      }
     } catch (error) {
-      console.error('Error generating CER:', error);
-      setErrorMessage(`Error generating CER: ${error.message || 'Unknown error'}`);
+      console.error('Error starting CER generation:', error);
+      setErrorMessage(`Error starting CER generation: ${error.message || 'Unknown error'}`);
       setIsGenerating(false);
     }
   };
