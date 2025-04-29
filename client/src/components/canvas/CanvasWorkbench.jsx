@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Stage, Layer, Rect, Text, Arrow, Line, Group } from 'react-konva';
 import useWindowSize from '../../hooks/useWindowSize';
 import AnnotationPanel from './AnnotationPanel';
 
 /**
- * Interactive canvas for visualizing document sections and their relationships
- * using react-konva for drag-and-drop functionality
+ * Non-Konva version: Interactive canvas for visualizing document sections 
+ * using standard React components until we resolve the react-konva dependency
  */
 export default function CanvasWorkbench() {
   const [sections, setSections] = useState([]);
   const [selected, setSelected] = useState(null);
   const [rulerX, setRulerX] = useState(100);
   const { width, height } = useWindowSize();
-  const socket = useRef(null);
+  const canvasRef = useRef(null);
+  const dragRef = useRef(null);
   
   // Load sections on mount
   useEffect(() => {
@@ -20,16 +20,6 @@ export default function CanvasWorkbench() {
       .then(res => res.json())
       .then(data => setSections(data))
       .catch(console.error);
-    
-    // Setup WebSocket for real-time collaboration
-    // This is a placeholder - we'll implement the actual WebSocket connection later
-    // when socket.io-client is available
-    return () => {
-      // Cleanup socket connection when component unmounts
-      if (socket.current) {
-        // socket.current.disconnect();
-      }
-    };
   }, []);
   
   // Compute predicted date from timeline ruler position
@@ -41,104 +31,197 @@ export default function CanvasWorkbench() {
     return d.toLocaleDateString();
   };
 
-  // Persist new position after drag
-  const handleDragEnd = useCallback((e, id) => {
-    const { x, y } = e.target.attrs;
+  // Update section position
+  const updateSectionPosition = (id, newX, newY) => {
     setSections(secs =>
-      secs.map(sec => sec.id === id ? { ...sec, x, y } : sec)
+      secs.map(sec => sec.id === id ? { ...sec, x: newX, y: newY } : sec)
     );
 
     // Save to server
     fetch(`/api/coauthor/layout/${id}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ x, y }),
+      body: JSON.stringify({ x: newX, y: newY }),
     }).catch(console.error);
+  };
+
+  // Handle drag start
+  const handleDragStart = (e, id) => {
+    dragRef.current = {
+      id,
+      startX: e.clientX,
+      startY: e.clientY,
+      section: sections.find(s => s.id === id)
+    };
+  };
+
+  // Handle drag end
+  const handleDragEnd = () => {
+    dragRef.current = null;
+  };
+
+  // Handle mouse move for dragging
+  const handleMouseMove = (e) => {
+    if (!dragRef.current) return;
     
-    // Emit position update to other clients via WebSocket
-    // if (socket.current) {
-    //   socket.current.emit('layout:update', { id, x, y });
-    // }
-  }, []);
+    const deltaX = e.clientX - dragRef.current.startX;
+    const deltaY = e.clientY - dragRef.current.startY;
+    
+    const newX = dragRef.current.section.x + deltaX;
+    const newY = dragRef.current.section.y + deltaY;
+    
+    updateSectionPosition(dragRef.current.id, newX, newY);
+    
+    dragRef.current.startX = e.clientX;
+    dragRef.current.startY = e.clientY;
+  };
+
+  // Get status color
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'complete': return '#daf5e8';
+      case 'critical': return '#fde2e2';
+      default: return '#fff4ce';
+    }
+  };
 
   return (
     <>
-      <Stage width={width || 1200} height={(height || 800) - 150} style={{ background: '#f7f8fa' }}>
-        <Layer>
-          {/* Connections */}
-          {sections.flatMap(sec =>
-            sec.connections.map(toId => {
-              const from = sections.find(s => s.id === sec.id);
-              const to   = sections.find(s => s.id === toId);
-              return from && to && (
-                <Arrow
-                  key={`${sec.id}-${toId}`}
-                  points={[from.x + 100, from.y + 25, to.x, to.y + 25]}
-                  pointerLength={10}
-                  pointerWidth={10}
-                  fill="#999"
-                  stroke="#999"
-                />
-              );
-            })
-          )}
+      <div 
+        ref={canvasRef} 
+        className="canvas-workbench"
+        style={{ 
+          position: 'relative', 
+          width: '100%', 
+          height: (height || 800) - 150,
+          background: '#f7f8fa',
+          overflow: 'hidden'
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleDragEnd}
+        onMouseLeave={handleDragEnd}
+      >
+        {/* Connections (simple div-based arrows) */}
+        {sections.flatMap(sec =>
+          sec.connections.map(toId => {
+            const from = sections.find(s => s.id === sec.id);
+            const to = sections.find(s => s.id === toId);
+            
+            if (!from || !to) return null;
+            
+            // Calculate distance and angle for the line
+            const dx = to.x - from.x - 100;
+            const dy = to.y - from.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            return (
+              <div 
+                key={`${sec.id}-${toId}`} 
+                style={{
+                  position: 'absolute',
+                  top: from.y + 25,
+                  left: from.x + 100,
+                  width: length,
+                  height: 2,
+                  background: '#999',
+                  transformOrigin: 'left center',
+                  transform: `rotate(${angle}deg)`,
+                  zIndex: 1
+                }}
+              />
+            );
+          })
+        )}
 
-          {/* Draggable nodes */}
-          {sections.map(sec => (
-            <React.Fragment key={sec.id}>
-              <Rect
-                x={sec.x}
-                y={sec.y}
-                width={120}
-                height={50}
-                fill={
-                  sec.status === 'complete' ? '#daf5e8' :
-                  sec.status === 'critical' ? '#fde2e2' : '#fff4ce'
-                }
-                stroke="#666"
-                cornerRadius={4}
-                draggable
-                onClick={() => setSelected(sec)}
-                onDragEnd={e => handleDragEnd(e, sec.id)}
-              />
-              <Text
-                x={sec.x + 10}
-                y={sec.y + 15}
-                text={sec.title}
-                fontSize={12}
-                fill="#333"
-              />
-            </React.Fragment>
-          ))}
-          
-          {/* Timeline ruler at bottom */}
-          <Group 
-            draggable 
-            dragBoundFunc={(pos) => ({ x: pos.x, y: (height || 800) - 200 })}
-            onDragEnd={e => setRulerX(e.target.x())}
-            x={rulerX}
-            y={(height || 800) - 200}
+        {/* Nodes */}
+        {sections.map(sec => (
+          <div
+            key={sec.id}
+            style={{
+              position: 'absolute',
+              top: sec.y,
+              left: sec.x,
+              width: 120,
+              height: 50,
+              backgroundColor: getStatusColor(sec.status),
+              border: '1px solid #666',
+              borderRadius: 4,
+              cursor: 'move',
+              userSelect: 'none',
+              zIndex: 2
+            }}
+            onMouseDown={(e) => handleDragStart(e, sec.id)}
+            onClick={() => setSelected(sec)}
           >
-            <Line
-              points={[-(rulerX), 0, (width || 1200) - rulerX, 0]}
-              stroke="#888"
-              strokeWidth={1}
-            />
-            <Line
-              points={[0, -15, 0, 15]}
-              stroke="#ff8c00"
-              strokeWidth={2}
-            />
-            <Text
-              text={`Est. Filing Date: ${predictDate(rulerX)}`}
-              x={5}
-              y={20}
-              fontSize={12}
-              fill="#555"
-            />
-          </Group>
-        </Layer>
-      </Stage>
+            <div style={{ padding: 10, fontSize: 12 }}>
+              {sec.title}
+            </div>
+          </div>
+        ))}
+        
+        {/* Timeline ruler */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: 50,
+            left: 0,
+            width: '100%',
+            height: 40,
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          <div 
+            style={{
+              position: 'absolute',
+              left: rulerX,
+              width: 2,
+              height: 30,
+              background: '#ff8c00',
+              cursor: 'ew-resize'
+            }}
+            onMouseDown={(e) => {
+              const initialX = e.clientX;
+              const initialRulerX = rulerX;
+              
+              const handleMouseMove = (e) => {
+                const delta = e.clientX - initialX;
+                setRulerX(initialRulerX + delta);
+              };
+              
+              const handleMouseUp = () => {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+              };
+              
+              document.addEventListener('mousemove', handleMouseMove);
+              document.addEventListener('mouseup', handleMouseUp);
+            }}
+          />
+          <div 
+            style={{
+              position: 'absolute',
+              left: rulerX + 10,
+              top: 15,
+              fontSize: 12,
+              color: '#555'
+            }}
+          >
+            Est. Filing Date: {predictDate(rulerX)}
+          </div>
+          <div 
+            style={{
+              position: 'absolute',
+              left: 0,
+              width: '100%',
+              height: 1,
+              background: '#888',
+              top: 15
+            }}
+          />
+        </div>
+      </div>
       
       {/* Annotation Sidebar */}
       <AnnotationPanel

@@ -1,0 +1,147 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Stage, Layer, Rect, Text, Arrow, Group, Line } from 'react-konva';
+import useWindowSize from '../hooks/useWindowSize';
+import AnnotationPanel from './AnnotationPanel';
+import io from 'socket.io-client';
+
+const GRID_SIZE = 50;  // 50px grid
+
+export default function CanvasWorkbench() {
+  const { width, height } = useWindowSize();
+  const [sections, setSections] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const stageRef = useRef();
+  const layerRef = useRef();
+  const socketRef = useRef();
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  // 1) Load sections
+  useEffect(() => {
+    fetch('/api/coauthor/sections')
+      .then(r => r.json())
+      .then(setSections)
+      .catch(console.error);
+
+    socketRef.current = io.connect(window.location.origin);
+    socketRef.current.on('layout:changed', ({ id, x, y }) => {
+      setSections(secs => secs.map(s => s.id === id ? { ...s, x, y } : s));
+    });
+    return () => socketRef.current.disconnect();
+  }, []);
+
+  // 2) Zoom on wheel
+  const handleWheel = e => {
+    e.evt.preventDefault();
+    const stage = stageRef.current;
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+    const newScale = e.evt.deltaY > 0 ? oldScale * 0.9 : oldScale * 1.1;
+    setScale(newScale);
+    const newPos = {
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
+    };
+    setPosition(newPos);
+  };
+
+  // 3) Snap to grid on drag end & emit
+  const handleDragEnd = useCallback((e, id) => {
+    let { x, y } = e.target.attrs;
+    // snap
+    x = Math.round(x / GRID_SIZE) * GRID_SIZE;
+    y = Math.round(y / GRID_SIZE) * GRID_SIZE;
+    setSections(secs => secs.map(s => s.id === id ? { ...s, x, y } : s));
+    // emit
+    socketRef.current.emit('layout:update', { id, x, y });
+  }, []);
+
+  // 4) Draw grid lines
+  const gridLines = [];
+  for (let i = 0; i < width / GRID_SIZE; i++) {
+    const x = i * GRID_SIZE;
+    gridLines.push(<Line key={`v${i}`} points={[x, 0, x, height]} stroke="#ddd" strokeWidth={0.5} />);
+  }
+  for (let j = 0; j < height / GRID_SIZE; j++) {
+    const y = j * GRID_SIZE;
+    gridLines.push(<Line key={`h${j}`} points={[0, y, width, y]} stroke="#ddd" strokeWidth={0.5} />);
+  }
+
+  return (
+    <>
+      <Stage
+        width={width}
+        height={height}
+        draggable
+        scaleX={scale}
+        scaleY={scale}
+        x={position.x}
+        y={position.y}
+        onWheel={handleWheel}
+        ref={stageRef}
+      >
+        <Layer ref={layerRef}>
+          {/* grid */}
+          {gridLines}
+
+          {/* connections */}
+          {sections.flatMap(sec =>
+            sec.connections.map(toId => {
+              const from = sections.find(s => s.id === sec.id);
+              const to   = sections.find(s => s.id === toId);
+              return from && to && (
+                <Arrow
+                  key={`${sec.id}-${toId}`}
+                  points={[from.x + 100, from.y + 25, to.x, to.y + 25]}
+                  pointerLength={8}
+                  pointerWidth={8}
+                  fill="#888"
+                  stroke="#888"
+                />
+              );
+            })
+          )}
+
+          {/* nodes */}
+          {sections.map(sec => (
+            <Group key={sec.id}>
+              <Rect
+                x={sec.x}
+                y={sec.y}
+                width={120}
+                height={50}
+                fill={
+                  sec.status === 'complete' ? '#daf5e8' :
+                  sec.status === 'critical' ? '#fde2e2' : '#fff4ce'
+                }
+                stroke="#666"
+                cornerRadius={6}
+                draggable
+                onDragEnd={e => handleDragEnd(e, sec.id)}
+                onClick={() => setSelected(sec)}
+              />
+              <Text
+                x={sec.x + 10}
+                y={sec.y + 18}
+                text={sec.title}
+                fontSize={13}
+                fill="#333"
+                listening={false}
+              />
+            </Group>
+          ))}
+        </Layer>
+      </Stage>
+
+      {/* Annotation Sidebar */}
+      <AnnotationPanel
+        section={selected}
+        onClose={() => setSelected(null)}
+      />
+    </>
+  );
+}

@@ -232,3 +232,33 @@ body {
 }
 
 /* Coauthor styles moved to CoAuthor.css */
+
+/* Canvas Workbench Styles */
+.konvajs-content {
+  cursor: grab;
+}
+.konvajs-content:active {
+  cursor: grabbing;
+}
+
+/* Ensure annotation panel sits on top */
+.annotation-panel {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+/* Canvas Workbench Custom Cursor Styles */
+.canvas-workbench {
+  cursor: grab;
+}
+.canvas-workbench:active {
+  cursor: grabbing;
+}
