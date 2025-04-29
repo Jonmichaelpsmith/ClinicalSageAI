@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useWindowSize from '../../hooks/useWindowSize';
-import { CanvasNode } from './CanvasNode';
-import { CanvasSidePanel } from './CanvasSidePanel';
 import NodeDetailPanel from './NodeDetailPanel';
 import { fetchCTDSections, fetchRiskConnections } from '../../api/coauthor';
-import '../../styles/theme.css';
 import './CanvasWorkbenchV2.css';
 
 /**

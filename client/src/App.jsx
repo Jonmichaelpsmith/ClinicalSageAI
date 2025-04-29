@@ -53,7 +53,9 @@ function App() {
   const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
                           location === '/client-portal/regulatory-intel';
   const isCoAuthorPage = location === '/coauthor' || 
-                         location.startsWith('/coauthor/');
+                         location.startsWith('/coauthor/') ||
+                         location === '/canvas' ||
+                         location === '/timeline';
   const isDashboardPage = location === '/dashboard';
                          
   const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
