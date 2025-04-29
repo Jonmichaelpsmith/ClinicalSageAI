@@ -142,12 +142,16 @@ export default function SectionHeader({ sectionId, title, onGenerate }) {
         </div>
       )}
       
-      {/* Standard guidance note (shown when not generating) */}
+      {/* Dynamic guidance note (shown when not generating) */}
       {!isGenerating && (
         <div className="flex items-center text-xs bg-blue-50 text-blue-700 p-2 rounded-md border border-blue-100">
           <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
           <span>
-            <span className="font-medium">Guidance Note:</span> This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.
+            <span className="font-medium">Guidance Note:</span> {
+              sectionId === '2.7' 
+                ? 'This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.'
+                : 'Follow eCTD guidelines for this section. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.'
+            }
           </span>
         </div>
       )}

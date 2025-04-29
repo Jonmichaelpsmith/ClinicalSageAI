@@ -1,14 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, BookOpen, ExternalLink, FileText, Check, PlusCircle } from 'lucide-react';
 
+// This would be a real service in production
+const guidanceService = {
+  fetchGuidance: async (sectionId) => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return { 
+      note: getGuidanceNoteForSection(sectionId),
+      details: getGuidanceDetailsForSection(sectionId)
+    };
+  }
+};
+
+function getGuidanceNoteForSection(id) {
+  const notes = {
+    '2.1': 'This section should follow CTD format and include a comprehensive Table of Contents for Module 2.',
+    '2.2': 'Introduction should provide a concise overview of the pharmaceutical class, mode of action, and proposed clinical use.',
+    '2.3': 'Quality Overall Summary should follow ICH M4Q guidelines with appropriate cross-references.',
+    '2.4': 'Nonclinical Overview should interpret findings against product safety per ICH M4S.',
+    '2.5': 'Clinical Overview should provide critical analysis per ICH M4E guidelines.',
+    '2.6': 'Nonclinical Written and Tabulated Summaries must follow regional requirements.',
+    '2.7': 'This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.',
+    '2.8': 'Be sure all referenced studies from Module 5 are properly summarized with study synopses.',
+  };
+  return notes[id] || 'Follow eCTD guidelines for this section and include proper cross-references to supporting documentation.';
+}
+
 export default function GuidancePanel({ sectionId }) {
   const [expanded, setExpanded] = useState(true);
+  const [guidanceNote, setGuidanceNote] = useState('');
+  
+  useEffect(() => {
+    guidanceService.fetchGuidance(sectionId)
+      .then(data => setGuidanceNote(data.note));
+  }, [sectionId]);
 
-  // Simulate real guidance data based on section
-  const getGuidanceForSection = (id) => {
+  // For detailed guidance content
+  const getGuidanceDetailsForSection = (id) => {
     const guidanceMap = {
       '2.5': [
         {

@@ -1,0 +1,121 @@
+You’re absolutely right—the current draft editor is just a free‐form text area with a “Generate Draft” button, and that hard-coded banner is static. There is **zero** template-filling logic in there, so it can’t actually merge in your pre-built CTD report templates or enforce the fields you defined in the TemplateSettingsPanel.
+
+---
+
+## Why it isn’t capable today
+1. **Free-form only**  
+   The editor just streams raw text in and out of the AI. There’s no schema, no placeholders, no automatic section-by-section template filling.  
+2. **Static guidance**  
+   The “Guidance Note” is hard-coded in the JSX—never fetched or updated per section.  
+3. **No JSON schema or template engine**  
+   We never wired up any JSON definitions or Mustache/Handlebars layer to enforce your regulatory templates.
+
+---
+
+## How to enable real template-driven drafting
+
+### 1. Define a JSON schema for each CTD section
+Create a set of template definitions, for example:
+
+```jsonc
+// server/services/templates/ctdTemplates.json
+{
+  "2.7": {
+    "title": "Clinical Summary",
+    "fields": [
+      { "name": "Population",      "type": "text",     "label": "Patient Population" },
+      { "name": "EfficacySummary", "type": "textarea", "label": "Efficacy Summary" },
+      { "name": "SafetySummary",   "type": "textarea", "label": "Safety Summary" }
+    ],
+    "prompt": "Fill in the {{Population}} section, then draft the Clinical Summary combining efficacy and safety."
+  }
+  // …other sections
+}
+```
+
+### 2. Build a Template-Aware Editor component
+Swap out the plain `<Textarea>` for a form that renders inputs per that schema:
+
+```jsx
+import React, { useState, useEffect } from 'react';
+import templates from '@/services/templates/ctdTemplates.json';
+import openai from '@/services/openai';
+
+export default function TemplateEditor({ sectionId, onSave }) {
+  const tpl = templates[sectionId];
+  const [values, setValues] = useState(
+    tpl.fields.reduce((obj, f) => ({ ...obj, [f.name]: '' }), {})
+  );
+
+  const handleChange = (name, val) => {
+    setValues(v => ({ ...v, [name]: val }));
+  };
+
+  const generate = async () => {
+    // fill in missing fields
+    const filled = await openai.createChatCompletion({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: tpl.prompt },
+        { role: 'user', content: JSON.stringify(values) }
+      ]
+    });
+    const draft = filled.choices[0].message.content;
+    onSave(draft);
+  };
+
+  return (
+    <div className="space-y-4">
+      {tpl.fields.map(f => (
+        <div key={f.name}>
+          <label>{f.label}</label>
+          {f.type === 'textarea'
+            ? <textarea rows={4} value={values[f.name]} onChange={e => handleChange(f.name, e.target.value)} />
+            : <input value={values[f.name]} onChange={e => handleChange(f.name, e.target.value)} />
+          }
+        </div>
+      ))}
+      <button onClick={generate}>Generate from Template</button>
+    </div>
+  );
+}
+```
+
+### 3. Wire it into your CoauthorModule
+Replace the free-form `<DraftEditor>` for sections that have a template:
+
+```jsx
+{sections.map(id => (
+  active === id && (
+    templates[id]
+      ? <TemplateEditor sectionId={id} onSave={text => updateContent(id, text)} />
+      : <DraftEditor … />
+  )
+))}
+```
+
+### 4. Back-end support
+- **New route** `POST /api/coauthor/template-fill/:sectionId`  
+- **Service** that loads `ctdTemplates.json`, merges your field values, and asks the LLM to fill in missing pieces.
+
+### 5. Dynamic Guidance
+Tie the “Guidance Note” into that same JSON schema so you can fetch section-specific guidelines:
+
+```ts
+// server/services/regulatoryService.ts
+export function getGuidanceForSection(id) {
+  const tpl = require('./templates/ctdTemplates.json')[id];
+  return { note: tpl.guidanceText || '' };
+}
+```
+
+---
+
+#### Bottom line
+**No**, out-of-the-box your Co-Author draft page can’t enforce or fill any regulatory templates. We need to:
+
+1. **Define your templates** in JSON (or DB)  
+2. **Swap in a TemplateEditor** that renders form fields and instructs the AI accordingly  
+3. **Connect the back-end** to serve guidance and accept template-driven requests  
+
+Once that’s in place, “Generate Draft” will populate exactly the sections and fields you need, and the module will be truly template-aware. Let me know if you’d like the full JSON schema and TemplateEditor component for your top-priority CTD sections!
