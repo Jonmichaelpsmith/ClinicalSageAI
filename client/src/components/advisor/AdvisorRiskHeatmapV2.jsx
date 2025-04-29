@@ -1,6 +1,7 @@
 // /client/src/components/advisor/AdvisorRiskHeatmapV2.jsx
 
 import React, { useState, useEffect } from 'react';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 export default function AdvisorRiskHeatmapV2({ sidebar = false }) {
   const [missingSections, setMissingSections] = useState([]);
@@ -126,10 +127,7 @@ export default function AdvisorRiskHeatmapV2({ sidebar = false }) {
     return (
       <div className="p-4 bg-white rounded-lg shadow-md space-y-4">
         <h3 className="text-md font-semibold text-gray-700 mb-2">Regulatory Risk Heatmap</h3>
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
-          <span className="ml-2 text-sm text-gray-500">Loading risk data...</span>
-        </div>
+        <LoadingSpinner text="Loading risk data..." />
       </div>
     )
   }
