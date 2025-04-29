@@ -52,6 +52,9 @@ import blueprintRoutes from './routes/blueprint.js';
 import citationRoutes from './routes/citation.js';
 import pubmedRoutes from './routes/pubmed.js';
 import openFDARoutes from './routes/openfda.js';
+import templateRoutes from './routes/template.js';
+import ectdValidatorRoutes from './routes/ectdValidator.js';
+import submissionRoutes from './routes/submission.js';
 
 // Direct test endpoint for coauthor generate
 app.post('/api/coauthor/generate/test', (req, res) => {
@@ -82,6 +85,9 @@ app.use('/api/blueprint', blueprintRoutes);
 app.use('/api/citation', citationRoutes);
 app.use('/api/pubmed', pubmedRoutes);
 app.use('/api/openfda', openFDARoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/ectd', ectdValidatorRoutes);
+app.use('/api/submission', submissionRoutes);
 
 // Import route modules
 import advisorRoutes from './routes/advisor.js';
