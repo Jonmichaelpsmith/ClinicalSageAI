@@ -1471,6 +1471,33 @@ const CERV2Page = () => {
             </div>
           )}
         </TabsContent>
+        
+        {/* History Tab */}
+        <TabsContent value="history" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Report History</CardTitle>
+              <CardDescription>
+                View and manage your previously generated CER reports
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="w-full md:w-1/4">
+                  <DocumentFilterPanel 
+                    filters={docFilters}
+                    onChange={setDocFilters}
+                  />
+                </div>
+                <div className="w-full md:w-3/4">
+                  <ReportHistoryPanel 
+                    filters={docFilters}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );

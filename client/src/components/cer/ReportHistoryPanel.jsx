@@ -3,18 +3,19 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Calendar, User, Tag, Check, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { fetchCERHistory } from '../../services/documentService';
 
-export default function ReportHistoryPanel({ onOpenReport, refreshTrigger }) {
+export default function ReportHistoryPanel({ onOpenReport, refreshTrigger, filters = {} }) {
   const [reports, setReports] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/cer/reports')
-      .then(res => res.json())
+    setLoading(true);
+    fetchCERHistory(filters)
       .then(data => setReports(data))
       .catch(() => setReports([]))
       .finally(() => setLoading(false));
-  }, [refreshTrigger]); // Refresh when trigger changes
+  }, [refreshTrigger, filters]); // Refresh when trigger or filters change
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
