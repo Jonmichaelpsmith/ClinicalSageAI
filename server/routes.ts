@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
+import { generateDraft, retrieveContext, validateSection } from './services/coauthorService.js';
 
 // Import static routes module for solution pages
 // @ts-ignore - Ignore the missing type definitions
@@ -785,24 +786,14 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
   // Direct CoAuthor API endpoints - added for eCTD Co-Author feature
   console.log('🚀 Registering CoAuthor API routes');
   
-  app.post("/api/coauthor/generate", (req: Request, res: Response) => {
+  // POST /api/coauthor/generate - Generate a draft for a CTD section
+  app.post("/api/coauthor/generate", async (req: Request, res: Response) => {
     const { moduleId, sectionId, prompt, context } = req.body;
     console.log('🐙 POST /api/coauthor/generate', { moduleId, sectionId });
     
     try {
-      // Generate simple placeholder response for now
-      const draft = `# Draft for ${moduleId || 'unknown'}, Section ${sectionId || 'unknown'}\n\n` +
-        `## Introduction\n` +
-        `This is a generated draft based on your prompt: "${prompt?.substring(0, 50)}..."\n\n` +
-        `## Background\n` +
-        `Clinical trial data should be presented in accordance with ICH guidelines for Module ${moduleId?.replace('m', '') || '2'}, ` +
-        `with appropriate consideration for study design, endpoints, and statistical analysis.\n\n` +
-        `## Analysis\n` +
-        `The analysis should follow a logical structure with clear presentation of data and conclusions.\n\n` +
-        `## Regulatory Considerations\n` +
-        `All statements must be supported by data and be compliant with regulatory guidance.\n\n` +
-        `## Context Used\n` +
-        `${context && context.length > 0 ? context.join('\n\n') : 'No context was provided for this draft generation.'}`;
+      // Call the service to generate the draft
+      const draft = await generateDraft(moduleId, sectionId, prompt, context);
       
       return res.json({
         success: true,
@@ -818,27 +809,18 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
     }
   });
   
-  app.post("/api/coauthor/validate", (req: Request, res: Response) => {
-    const { sectionText, moduleId, sectionId } = req.body;
+  // POST /api/coauthor/validate - Validate a section against regulatory requirements
+  app.post("/api/coauthor/validate", async (req: Request, res: Response) => {
+    const { section, moduleId, sectionId } = req.body;
     console.log('🔍 POST /api/coauthor/validate', { moduleId, sectionId });
     
     try {
-      // Simple validation logic
-      const valid = true;
-      const issues = [];
-      
-      // Just for demonstration - add a warning if content is brief
-      if (sectionText && sectionText.length < 100) {
-        issues.push({
-          type: 'warning',
-          message: 'Section content may be too brief for regulatory requirements',
-          location: 'content-length'
-        });
-      }
+      // Call the service to validate the section
+      const issues = await validateSection(section, moduleId, sectionId);
       
       return res.json({
         success: true,
-        valid,
+        valid: issues.length === 0,
         issues
       });
     } catch (error) {
@@ -846,6 +828,35 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
       return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to validate section'
+      });
+    }
+  });
+  
+  // GET /api/coauthor/context - Retrieve context based on a search query
+  app.get("/api/coauthor/context", async (req: Request, res: Response) => {
+    const { query } = req.query;
+    console.log('📚 GET /api/coauthor/context', { query });
+    
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Query parameter is required' 
+      });
+    }
+    
+    try {
+      // Call the service to retrieve context
+      const snippets = await retrieveContext(query);
+      
+      return res.json({
+        success: true,
+        snippets
+      });
+    } catch (error) {
+      console.error('Error retrieving context:', error);
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to retrieve context'
       });
     }
   });
