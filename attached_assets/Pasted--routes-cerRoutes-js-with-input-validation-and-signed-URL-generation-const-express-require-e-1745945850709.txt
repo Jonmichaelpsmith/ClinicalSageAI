@@ -1,0 +1,93 @@
+// routes/cerRoutes.js (with input validation and signed URL generation)
+const express = require('express');
+const router = express.Router();
+const Queue = require('bull');
+const { Pool } = require('pg');
+const Joi = require('joi');
+const jwt = require('jsonwebtoken');
+const AWS = require('aws-sdk');
+
+// Initialize S3 (for signed URL storage)
+const s3 = new AWS.S3({
+  region: process.env.AWS_REGION,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+
+// Validation schema for generate-full payload
+const generateSchema = Joi.object({
+  templateId: Joi.string().uuid().optional()
+});
+
+// Bull queue
+const cerQueue = new Queue('cer-generation', {
+  redis: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT },
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5000 }
+  }
+});
+
+// Middleware: authenticate JWT
+router.use((req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'Missing Authorization header' });
+  const token = authHeader.split(' ')[1];
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = payload;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// POST /api/cer/generate-full
+router.post('/generate-full', async (req, res) => {
+  // Validate input
+  const { error, value } = generateSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  try {
+    const userId = req.user.id;
+    let { templateId } = value;
+
+    if (!templateId) {
+      const defaultTpl = await pool.query(
+        `SELECT id FROM templates WHERE is_default = TRUE LIMIT 1`
+      );
+      templateId = defaultTpl.rows[0].id;
+    }
+
+    const job = await cerQueue.add({ userId, templateId });
+    await pool.query(
+      `INSERT INTO cer_jobs(job_id, user_id, template_id) VALUES($1, $2, $3)`,
+      [job.id.toString(), userId, templateId]
+    );
+
+    return res.json({ jobId: job.id });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Could not start report generation' });
+  }
+});
+
+// GET /api/cer/jobs/:id/result (generates signed URL)
+router.get('/jobs/:id/result', async (req, res) => {
+  const jobId = req.params.id;
+  const pdfKey = `cer-job-${jobId}.pdf`;
+  const params = {
+    Bucket: process.env.CER_BUCKET,
+    Key: pdfKey,
+    Expires: 60 // URL valid for 60 seconds
+  };
+  try {
+    const url = s3.getSignedUrl('getObject', params);
+    return res.json({ downloadUrl: url });
+  } catch (err) {
+    console.error('Error generating signed URL', err);
+    return res.status(500).json({ error: 'Could not generate download link' });
+  }
+});
+
+module.exports = router;
