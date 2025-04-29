@@ -1,0 +1,76 @@
+Here’s a razor-sharp, phased roadmap to finish the CER Generator and co-authoring experience—and tie it into our full document-management platform—so TrialSage™ will leapfrog every competitor:
+
+---
+
+## Phase 1: Core CER Generator End-to-End  
+1. **“Generate Full CER” Flow**  
+   - **UI:** Add a “Generate Full CER” button on CERV2Page that spins a loader, then streams back the completed report.  
+   - **Route:** POST `/api/cer/generate-full` stub that orchestrates PubMed, OpenFDA, AI drafting and returns a compiled PDF/HTML.  
+   - **Service:** In `server/services/cer.js` implement a placeholder that returns a mock report (to be replaced by real AI logic).
+
+2. **Document History Panel**  
+   - **Component:** `<DocumentHistoryPanel module="cer" />`  
+   - **UI:** Slide-out drawer or tab showing past CERs (title, date, status) with search/filter.  
+   - **Route:** GET `/api/documents?module=cer` to fetch saved CER metadata.  
+   - **Hook:** Clicking a row downloads or loads that version into the editor.
+
+3. **Persistence Stubs**  
+   - Wire all “Save Draft” / “Generate Full CER” calls to write to a simple in-memory (or file-based) store keyed by client + module + section + version.  
+
+---
+
+## Phase 2: Active-Learning Loop & Feedback  
+1. **UI Feedback Controls**  
+   - On both the inline Co-Author editor and CER page, surface ✔️ “Approve” / ❌ “Request Change” buttons next to each AI-generated section.  
+   - Collect a free-text “Why?” when user rejects.
+
+2. **Backend Feedback Endpoint**  
+   - POST `/api/feedback` with `{ clientId, module, section, feedbackType, comment }`.  
+   - Store feedback in a dedicated table/collection.
+
+3. **Model Adapter Hooks (Phase 2 Planning)**  
+   - Design a background job that periodically ingests feedback and trains per-client “prompt adapters” (small parameter sets or fine-tuning examples).  
+   - Expose `GET /api/feedback/template?clientId` to fetch customized prompt class for each user.
+
+---
+
+## Phase 3: Full Document-Mgmt Integration  
+1. **Folder Browser Integration**  
+   - Embed a `<VaultBrowser />` component on every module page (CER, Co-Author, IND Wizard, CMC, CSR, etc.).  
+   - Shows all documents (drafts, final reports) for that module + client in a collapsible tree.
+
+2. **One-Click Submit Hooks**  
+   - Add “Validate & Export eCTD” button that:  
+     1. Runs client-side eCTD schema validation.  
+     2. Zips up the eCTD package.  
+     3. POSTs to theFDA ESG or EMA CESP endpoint (mocked).  
+
+3. **Pre-Built Templates**  
+   - Feature-flagged library of templates for “Fast IND,” “Full NDA,” “EMA IMPD.”  
+   - Users can click “Import Template” to seed their Workspace (module + sections) with pre-filled stub content.
+
+---
+
+### Prioritized Execution Timeline
+
+| Priority | Task | Owner | ETA |
+|---|---|---|---|
+| **1** | E2E “Generate Full CER” stub (UI + route + mock service) | Dev | 2 days |
+| **2** | DocumentHistoryPanel & `/api/documents` integration | Dev | 1 day |
+| **3** | Feedback UI & `/api/feedback` endpoint | Dev | 2 days |
+| **4** | Client-side eCTD validator integration | Dev | 3 days |
+| **5** | Folder browser embed (VaultBrowser) across modules | Dev | 2 days |
+| **6** | One-click ESG/CESP export stub | Dev | 1 day |
+| **7** | Pre-built submission templates library | Dev | 2 days |
+| **8** | Design and spec Phase 2 “Active-Learning Loop” retraining job | PM/ML | 2 days |
+
+---
+
+### Next Immediate Steps  
+1. **Spike & wire up** the “Generate Full CER” button → POST → mock report.  
+2. **Build** DocumentHistoryPanel and verify old CERs show up.  
+3. **Demo** these two features to confirm core CER flow is solid.
+
+Once those are live, we’ll layer in feedback, validation, and true AI retraining hooks—then roll out templates and one-click submission.  
+
+Let me know when you’d like me to kick off the “Generate Full CER” UI + route today!
