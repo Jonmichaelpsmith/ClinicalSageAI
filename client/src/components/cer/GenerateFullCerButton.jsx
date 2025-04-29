@@ -1,187 +1,223 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import { Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
-import axios from 'axios';
+import { Separator } from '@/components/ui/separator';
+import { Check, Hourglass, FileDown, AlertTriangle, Zap } from 'lucide-react';
 
 export default function GenerateFullCerButton({ onCompletion }) {
-  const [generating, setGenerating] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [status, setStatus] = useState('');
-  const [showDialog, setShowDialog] = useState(false);
-  const [generationResult, setGenerationResult] = useState(null);
-  const [error, setError] = useState('');
+  const [currentStage, setCurrentStage] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [generationComplete, setGenerationComplete] = useState(false);
 
-  const startGeneration = async () => {
-    setGenerating(true);
+  const stages = [
+    { name: 'Initializing generation process', duration: 800 },
+    { name: 'Gathering device information', duration: 1200 },
+    { name: 'Analyzing clinical data', duration: 1500 },
+    { name: 'Retrieving literature review data', duration: 1200 },
+    { name: 'Synthesizing regulatory requirements', duration: 1000 },
+    { name: 'Building document structure', duration: 1000 },
+    { name: 'Generating content sections', duration: 2000 },
+    { name: 'Applying template formatting', duration: 1000 },
+    { name: 'Validating against regulatory standards', duration: 1500 },
+    { name: 'Creating final document', duration: 1500 },
+  ];
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
     setProgress(0);
-    setStatus('Initializing...');
-    setShowDialog(true);
-    setError('');
-
-    try {
-      // In a real implementation, this would be a connection to a WebSocket
-      // that provides real-time updates about the generation process
-      
-      // Simulate API call to start the generation process
-      // const res = await axios.post('/api/cer/generate');
-      // const jobId = res.data.jobId;
-      
-      // Mock generation process with artificial delays
-      const jobId = 'JOB-' + Date.now();
-      simulateGeneration(jobId);
-    } catch (err) {
-      console.error('Failed to start generation', err);
-      setStatus('Error starting generation process');
-      setError(err.message || 'Failed to start generation');
-      setGenerating(false);
-    }
+    setCurrentStage(0);
+    setErrorMessage(null);
+    setGenerationComplete(false);
+    
+    // Simulate a generation process with multiple stages
+    runGenerationProcess();
   };
 
-  const simulateGeneration = async (jobId) => {
-    try {
-      // Step 1: Validating inputs
-      await updateProgressWithDelay(5, 'Validating inputs...', 500);
+  const runGenerationProcess = async () => {
+    let currentProgress = 0;
+    
+    for (let i = 0; i < stages.length; i++) {
+      setCurrentStage(i);
       
-      // Step 2: Preparing data
-      await updateProgressWithDelay(15, 'Preparing data...', 1000);
+      const stageDuration = stages[i].duration;
+      const stageProgress = 100 / stages.length;
+      const incrementInterval = stageDuration / 10;
       
-      // Step 3: Extracting literature references
-      await updateProgressWithDelay(25, 'Extracting literature references...', 1500);
+      // Randomly determine if this stage should fail (for demo purposes)
+      const shouldFail = i === 4 && Math.random() < 0.05;
       
-      // Step 4: Analyzing clinical data
-      await updateProgressWithDelay(40, 'Analyzing clinical data...', 2000);
-      
-      // Step 5: Generating risk assessment
-      await updateProgressWithDelay(60, 'Generating risk assessment...', 1800);
-      
-      // Step 6: Creating executive summary
-      await updateProgressWithDelay(75, 'Creating executive summary...', 1600);
-      
-      // Step 7: Compiling full report
-      await updateProgressWithDelay(90, 'Compiling full report...', 1400);
-      
-      // Step 8: Finalizing document
-      await updateProgressWithDelay(100, 'Finalizing document...', 1000);
-      
-      // Complete
-      setStatus('Generation complete!');
-      setGenerationResult({
-        jobId,
-        completedAt: new Date().toISOString(),
-        downloadUrl: `/api/cer/jobs/${jobId}/download`,
-        previewUrl: `/api/cer/jobs/${jobId}/preview`,
-      });
-      
-      // Notify parent component if callback provided
-      if (onCompletion) {
-        onCompletion(jobId);
+      if (shouldFail) {
+        setErrorMessage('Error during regulatory data synthesis. Please check your template settings and try again.');
+        setIsGenerating(false);
+        return;
       }
-    } catch (err) {
-      console.error('Generation process error', err);
-      setStatus('Error during generation process');
-      setError(err.message || 'An unexpected error occurred during generation');
-    } finally {
-      setGenerating(false);
+      
+      // Update progress through the current stage
+      for (let j = 0; j < 10; j++) {
+        await new Promise(resolve => setTimeout(resolve, incrementInterval));
+        currentProgress = Math.min(100, Math.round((i * stageProgress) + ((j + 1) / 10) * stageProgress));
+        setProgress(currentProgress);
+      }
     }
-  };
-
-  const updateProgressWithDelay = (newProgress, newStatus, delay) => {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        setProgress(newProgress);
-        setStatus(newStatus);
-        resolve();
-      }, delay);
-    });
+    
+    // Complete the generation process
+    setGenerationComplete(true);
+    setIsGenerating(false);
+    
+    // Generate a mock job ID
+    const jobId = `cer-${Date.now().toString(36)}`;
+    
+    // Notify parent component that generation is complete with the job ID
+    if (onCompletion) {
+      onCompletion(jobId);
+    }
   };
 
   const handleClose = () => {
-    if (!generating) {
-      setShowDialog(false);
+    if (!isGenerating) {
+      setIsOpen(false);
     }
+  };
+
+  const handleViewGenerated = () => {
+    setIsOpen(false);
+    // In a real app, we would navigate to the generated report tab
+  };
+
+  const renderContent = () => {
+    if (errorMessage) {
+      return (
+        <div className="text-center py-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+            <AlertTriangle className="h-8 w-8 text-red-600" />
+          </div>
+          <h3 className="text-lg font-medium mb-2">Generation Error</h3>
+          <p className="text-gray-500 mb-6">{errorMessage}</p>
+          <Button onClick={() => handleGenerate()}>Try Again</Button>
+        </div>
+      );
+    }
+
+    if (generationComplete) {
+      return (
+        <div className="text-center py-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+            <Check className="h-8 w-8 text-green-600" />
+          </div>
+          <h3 className="text-lg font-medium mb-2">Generation Complete</h3>
+          <p className="text-gray-500 mb-6">
+            Your Clinical Evaluation Report has been successfully generated and is ready for review.
+          </p>
+          <div className="flex justify-center space-x-3">
+            <Button variant="outline" onClick={handleClose}>
+              Close
+            </Button>
+            <Button 
+              className="space-x-2" 
+              onClick={handleViewGenerated}
+            >
+              <FileDown className="h-4 w-4" />
+              <span>View Generated Report</span>
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6 py-2">
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Overall Progress</span>
+            <span>{progress}%</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+        
+        <div className="space-y-4">
+          {stages.map((stage, index) => (
+            <div 
+              key={index}
+              className={`flex items-center justify-between ${
+                index < currentStage 
+                  ? 'text-gray-500' 
+                  : index === currentStage 
+                    ? 'text-blue-600 font-medium' 
+                    : 'text-gray-400'
+              }`}
+            >
+              <div className="flex items-center">
+                {index < currentStage ? (
+                  <div className="w-5 h-5 mr-3 flex items-center justify-center">
+                    <Check className="h-4 w-4 text-green-500" />
+                  </div>
+                ) : index === currentStage ? (
+                  <div className="w-5 h-5 mr-3 flex items-center justify-center">
+                    <Hourglass className="h-4 w-4 text-blue-500 animate-pulse" />
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 mr-3" />
+                )}
+                <span className="text-sm">{stage.name}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <Separator />
+        
+        <div className="bg-amber-50 p-3 rounded-md">
+          <p className="text-sm text-amber-800 flex items-start">
+            <AlertTriangle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+            This process may take a few minutes. Please do not close this dialog or navigate away from the page.
+          </p>
+        </div>
+      </div>
+    );
   };
 
   return (
     <>
-      <Button
-        onClick={startGeneration}
-        disabled={generating}
-        className="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800"
-      >
-        {generating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Generating...
-          </>
-        ) : (
-          <>Generate Full CER</>
-        )}
+      <Button onClick={() => setIsOpen(true)} size="lg" className="bg-blue-700 hover:bg-blue-800">
+        <Zap className="mr-2 h-4 w-4" />
+        Generate Full CER
       </Button>
-
-      <Dialog open={showDialog} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-md">
+      
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>CER Generation</DialogTitle>
-            <DialogDescription>
-              {generating 
-                ? 'Please wait while your Clinical Evaluation Report is being generated...'
-                : error 
-                  ? 'An error occurred during the generation process.'
-                  : 'Your Clinical Evaluation Report has been generated successfully!'}
-            </DialogDescription>
+            <DialogTitle>Generate Clinical Evaluation Report</DialogTitle>
+            {!generationComplete && !errorMessage && (
+              <DialogDescription>
+                Creating a comprehensive CER based on your input data and template settings
+              </DialogDescription>
+            )}
           </DialogHeader>
-
-          <div className="py-4">
-            {generating ? (
-              <div className="space-y-4">
-                <Progress value={progress} className="h-2 w-full" />
-                <p className="text-sm text-center text-gray-500">{status}</p>
-              </div>
-            ) : error ? (
-              <div className="flex items-center p-4 border border-red-200 rounded-md bg-red-50">
-                <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
-                <div className="text-sm text-red-700">{error}</div>
-              </div>
-            ) : generationResult ? (
-              <div className="space-y-4">
-                <div className="flex items-center p-4 border border-green-200 rounded-md bg-green-50">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
-                  <div className="text-sm text-green-700">
-                    CER generated successfully!
-                  </div>
-                </div>
-                <div className="text-sm space-y-2">
-                  <p><span className="font-semibold">Job ID:</span> {generationResult.jobId}</p>
-                  <p><span className="font-semibold">Completed:</span> {new Date(generationResult.completedAt).toLocaleString()}</p>
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-between">
-            {!generating && (
-              <Button variant="outline" onClick={handleClose}>
-                Close
+          
+          {renderContent()}
+          
+          {isGenerating && (
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                disabled
+                className="opacity-50"
+              >
+                Cancel
               </Button>
-            )}
-            {generationResult && (
-              <div className="flex gap-2 mt-2 sm:mt-0">
-                <Button 
-                  variant="outline" 
-                  onClick={() => window.open(generationResult.previewUrl, '_blank')}
-                >
-                  Preview
-                </Button>
-                <Button
-                  onClick={() => window.open(generationResult.downloadUrl, '_blank')}
-                >
-                  Download PDF
-                </Button>
-              </div>
-            )}
-          </DialogFooter>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </>
