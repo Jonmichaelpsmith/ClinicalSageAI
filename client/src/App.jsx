@@ -140,6 +140,7 @@ function App() {
           <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
           <Route path="/cer" component={CERPage} /> {/* CER Generator page route */}
           <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
+          <Route path="/cerv2" component={CERV2Page} /> {/* Additional lowercase route for Advanced CER Generator */}
           <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
           <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
           <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
