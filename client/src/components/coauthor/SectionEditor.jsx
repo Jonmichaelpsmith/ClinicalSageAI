@@ -14,10 +14,6 @@ export default function SectionEditor() {
   const [moduleId, setModuleId] = useState('2');
   const [sectionId, setSectionId] = useState('2.7');
   
-  // Sample section for demo
-  const sectionTitle = "Section 2.7: Clinical Summary";
-  const sectionSubtitle = "Section Editor";
-  
   const handleContentChange = (e) => {
     setSectionContent(e.target.value);
   };
@@ -95,9 +91,6 @@ export default function SectionEditor() {
   
   return (
     <div className="section-editor-container">
-      <h1 className="text-2xl font-medium text-gray-900 mb-1">{sectionTitle}</h1>
-      <h2 className="text-lg text-gray-600 mb-4">{sectionSubtitle}</h2>
-      
       <div className="flex justify-between items-center mb-2">
         <button 
           onClick={generateDraft}

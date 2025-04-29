@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Loader2, Info } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 
 /**
  * AICopilotPanel
@@ -66,10 +66,8 @@ export default function AICopilotPanel() {
   
   return (
     <div className="ai-copilot-panel">
-      <h2 className="text-xl font-medium mb-4">Risk Heatmap</h2>
-      
       {/* Search box */}
-      <div className="mb-6">
+      <div className="mb-4">
         <label htmlFor="context-search" className="block text-sm font-medium text-gray-700 mb-1">
           Search Regulatory Context
         </label>
@@ -101,7 +99,7 @@ export default function AICopilotPanel() {
       
       {/* Context search results */}
       {contextSnippets.length > 0 && (
-        <div className="mb-6">
+        <div className="mb-4">
           <h3 className="text-sm font-medium text-gray-700 mb-2">
             Found {contextSnippets.length} relevant sources:
           </h3>
@@ -133,36 +131,34 @@ export default function AICopilotPanel() {
         </div>
       )}
       
-      {/* Timeline simulator placeholder */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Timeline Simulator</h3>
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
-          <div className="flex justify-center items-center h-32">
-            <p className="text-gray-500 text-sm">Timeline visualization will appear here</p>
+      {/* Risk analysis visualization */}
+      <div className="border border-gray-200 rounded-md p-3 mt-4">
+        <h3 className="text-sm font-medium mb-2">Section Risk Analysis</h3>
+        <div className="space-y-3">
+          {/* Risk items */}
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+            <span className="text-sm">Missing safety endpoint data</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+            <span className="text-sm">Incomplete efficacy analysis</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <span className="text-sm">Patient demographics well-described</span>
           </div>
         </div>
       </div>
       
-      {/* Ask Lumen AI */}
-      <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Ask Lumen AI</h3>
-        <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
-          <div className="mb-2 flex items-start">
-            <Info className="h-4 w-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
-            <p className="text-xs text-gray-500">
-              Ask Lumen AI questions about regulatory guidelines, submission requirements, or
-              best practices for this section.
-            </p>
-          </div>
-          <textarea 
-            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-            placeholder="Ask a question..."
-            rows={2}
-          />
-          <button className="mt-2 px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors">
-            Ask
-          </button>
-        </div>
+      {/* Regulatory guidance summary */}
+      <div className="border border-gray-200 rounded-md p-3 mt-4">
+        <h3 className="text-sm font-medium mb-2">Key Guidance</h3>
+        <ul className="text-sm space-y-2 list-disc pl-4">
+          <li>Include comprehensive benefit-risk assessment (ICH E3)</li>
+          <li>Summarize all Phase 2-3 studies (FDA, 2023)</li>
+          <li>Address special population considerations (EMA, 2022)</li>
+        </ul>
       </div>
     </div>
   );
