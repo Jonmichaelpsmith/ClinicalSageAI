@@ -1,0 +1,283 @@
+Below is Slice 5: Timeline Simulator. It includes both the backend route to supply timeline data and the front-end components/pages to let users interactively simulate submission dates.
+
+⸻
+
+1. Server: Timeline data endpoint
+
+File: server/routes/timeline.js
+
+import express from 'express';
+const router = express.Router();
+
+/**
+ * GET /api/timeline/info
+ * Returns:
+ *  - readiness: current readiness % 
+ *  - missingDays: estimated days of work remaining
+ *  - reviewDays: estimated FDA review duration
+ */
+router.get('/info', (req, res) => {
+  // In a real implementation, compute readiness & missingDays
+  const readiness = 82;           // e.g. 82% ready
+  const totalMissingWork = 45;    // days if 0% ready
+  const missingDays = Math.round((100 - readiness) / 100 * totalMissingWork);
+  const reviewDays  = 30;         // FDA review period
+  
+  res.json({ readiness, missingDays, reviewDays });
+});
+
+export default router;
+
+Mount it in your server/server.js:
+
+import timelineRoutes from './routes/timeline.js';
+// …
+app.use('/api/timeline', timelineRoutes);
+
+
+
+⸻
+
+2. Client: Timeline Simulator component
+
+File: client/src/components/timeline/TimelineSimulator.jsx
+
+import React, { useState, useEffect } from 'react';
+import './TimelineSimulator.css';
+
+export default function TimelineSimulator() {
+  const [info, setInfo] = useState(null);
+  const [delay, setDelay] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/timeline/info')
+      .then(res => res.json())
+      .then(data => {
+        setInfo(data);
+        setDelay(0);
+      })
+      .catch(console.error);
+  }, []);
+
+  if (!info) {
+    return <div className="ts-loading">Loading timeline data…</div>;
+  }
+
+  const today = new Date();
+  const baselineSubmission = new Date(
+    today.getTime() + info.missingDays * 24 * 60 * 60 * 1000
+  );
+  const predictedSubmission = new Date(
+    baselineSubmission.getTime() + delay * 24 * 60 * 60 * 1000
+  );
+  const reviewCompletion = new Date(
+    predictedSubmission.getTime() + info.reviewDays * 24 * 60 * 60 * 1000
+  );
+
+  const fmt = d => d.toLocaleDateString();
+
+  return (
+    <div className="ts-container">
+      <h2 className="ts-title">Timeline Simulator</h2>
+
+      <div className="ts-stats">
+        <div>
+          <span className="ts-label">Current Readiness:</span>
+          <span className="ts-value">{info.readiness}%</span>
+        </div>
+        <div>
+          <span className="ts-label">Work Remaining:</span>
+          <span className="ts-value">{info.missingDays} days</span>
+        </div>
+        <div>
+          <span className="ts-label">Review Duration:</span>
+          <span className="ts-value">{info.reviewDays} days</span>
+        </div>
+      </div>
+
+      <div className="ts-slider-group">
+        <label htmlFor="delayRange" className="ts-slider-label">
+          Delay submission by <strong>{delay}</strong> day{delay !== 1 && 's'}
+        </label>
+        <input
+          id="delayRange"
+          type="range"
+          min="0"
+          max="90"
+          value={delay}
+          onChange={e => setDelay(Number(e.target.value))}
+          className="ts-slider"
+        />
+      </div>
+
+      <ul className="ts-dates">
+        <li>
+          <span>Earliest possible submission:</span>
+          <strong>{fmt(baselineSubmission)}</strong>
+        </li>
+        <li>
+          <span>Predicted submission date:</span>
+          <strong>{fmt(predictedSubmission)}</strong>
+        </li>
+        <li>
+          <span>Estimated review completion:</span>
+          <strong>{fmt(reviewCompletion)}</strong>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+Styles: client/src/components/timeline/TimelineSimulator.css
+
+.ts-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: var(--color-surface);
+  border-radius: var(--space-sm);
+  box-shadow: var(--elevation-low);
+  font-family: var(--font-base);
+}
+
+.ts-title {
+  margin-bottom: var(--space-md);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.ts-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: var(--space-lg);
+}
+.ts-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+.ts-value {
+  margin-left: var(--space-xs);
+  font-weight: 600;
+}
+
+.ts-slider-group {
+  margin-bottom: var(--space-lg);
+}
+.ts-slider-label {
+  display: block;
+  margin-bottom: var(--space-xs);
+  font-size: var(--text-sm);
+}
+.ts-slider {
+  width: 100%;
+}
+
+.ts-dates {
+  list-style: none;
+  padding: 0;
+  font-size: var(--text-sm);
+}
+.ts-dates li {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-xs) 0;
+  border-top: 1px solid #e0e0e0;
+}
+.ts-dates li:first-child {
+  border-top: none;
+}
+
+.ts-loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-secondary);
+}
+
+
+
+⸻
+
+3. Timeline Page
+
+File: client/src/pages/TimelinePage.jsx
+
+import React from 'react';
+import UnifiedTopNavV5 from '../components/navigation/UnifiedTopNavV5';
+import Breadcrumbs     from '../components/navigation/Breadcrumbs';
+import TimelineSimulator from '../components/timeline/TimelineSimulator';
+import './TimelinePage.css';
+
+export default function TimelinePage() {
+  return (
+    <div className="timeline-page">
+      <UnifiedTopNavV5
+        tabs={[
+          { path: '/dashboard', label: 'Dashboard' },
+          { path: '/coauthor',  label: 'Co-Author'  },
+          { path: '/canvas',    label: 'Canvas'    },
+          { path: '/timeline',  label: 'Timeline'  },
+        ]}
+      />
+
+      <Breadcrumbs items={[
+        { label: 'TrialSage™', to: '/dashboard' },
+        { label: 'Timeline Simulator' }
+      ]}/>
+
+      <main className="timeline-main">
+        <TimelineSimulator />
+      </main>
+    </div>
+  );
+}
+
+Styles: client/src/pages/TimelinePage.css
+
+.timeline-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.timeline-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  background: #f7f8fa;
+}
+
+
+
+⸻
+
+4. Hook into Routes
+
+Edit: client/src/App.jsx
+
+-import CanvasPage       from './pages/CanvasPage';
+-import CoAuthorPage      from './pages/CoAuthorPage';
+-readUsersProc...
++import CanvasPage       from './pages/CanvasPage';
++import CoAuthorPage      from './pages/CoAuthorPage';
++import TimelinePage      from './pages/TimelinePage';
+// …
+<Routes>
+  {/* … */}
+  <Route path="/canvas"    element={<CanvasPage />} />
+  <Route path="/coauthor"  element={<CoAuthorPage />} />
++ <Route path="/timeline"  element={<TimelinePage />} />
+</Routes>
+
+
+
+⸻
+
+✅ Verification
+	1.	Restart your server and client.
+	2.	Visit /timeline.
+	3.	You’ll see Timeline Simulator with:
+      •   Readiness, work-remaining & review stats
+      •   A range slider to simulate delays (0–90 days)
+      •   Dynamic dates for baseline/predicted submission & review completion
+
+That completes Slice 5! Let me know if you’d like refinements (e.g., custom slider styling, playbook presets) or to move on to Slice 6: Package Builder & Export.

@@ -19,6 +19,7 @@ import VaultPage from './pages/VaultPage';
 import VaultTestPage from './pages/VaultTestPage'; // Import the test page
 import ContextDemoPage from './pages/ContextDemoPage'; // Import our new context demo page
 import CoAuthor from './pages/CoAuthor'; // Import our new CoAuthor page
+import ModuleDashboard from './pages/ModuleDashboard'; // Import our Module Dashboard page
 import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import ModuleSectionEditor for co-author page
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
@@ -45,17 +46,19 @@ function App() {
   // Get current location to determine when to show the unified nav
   const [location] = useLocation();
   
-  // Check if we're on the landing page, regulatory hub, or coauthor pages (which have their own navigation)
+  // Check if we're on the landing page, regulatory hub, coauthor pages, or dashboard (which have their own navigation)
   const isLandingPage = location === '/' || location === '/client-portal';
   const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
                           location === '/client-portal/regulatory-intel';
   const isCoAuthorPage = location === '/coauthor' || 
                          location.startsWith('/coauthor/');
-  const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage;
+  const isDashboardPage = location === '/dashboard';
+                         
+  const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
   
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Only show the UnifiedTopNavV3 if we're not on the landing page or regulatory hub */}
+      {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
       {shouldShowNav && (
         <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
       )}
@@ -63,6 +66,7 @@ function App() {
         isLandingPage ? "p-4" : 
         isRegulatoryHub ? "p-0" : 
         isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
+        isDashboardPage ? "p-0" : // No padding for Dashboard page
         "p-4 mt-24"
       }>
         <Switch>
@@ -72,6 +76,9 @@ function App() {
           {/* Client Portal Sub-Pages */}
           <Route path="/client-portal/vault" component={VaultPage} />
           <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
+
+          {/* Module Dashboard */}
+          <Route path="/dashboard" component={ModuleDashboard} />
 
           {/* Advanced IND Wizard - Main Entry Point */}
           <Route path="/ind-wizard" component={INDWizardAdvanced} />
