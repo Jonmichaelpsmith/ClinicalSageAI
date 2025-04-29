@@ -12,6 +12,7 @@ const projectRoutes = require('./routes/projects');
 const actionsRoutes = require('./routes/actions');
 const vaultRoutes = require('./routes/vault');
 const analyticsRoutes = require('./routes/analytics');
+const retrieveRoutes = require('./routes/ai/common/retrieve');
 
 /**
  * Register routes on the Express app
@@ -56,6 +57,9 @@ function registerRoutes(app) {
   
   console.log('Registering analytics routes');
   app.use('/api/analytics', analyticsRoutes);
+  
+  console.log('Registering AI retrieval routes');
+  app.use('/api/ai/retrieve', retrieveRoutes);
   
   // Log all routes for debugging
   app._router.stack.forEach(function(r){

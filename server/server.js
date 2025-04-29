@@ -39,16 +39,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Import AI routes
-import aiRoutes from './routes/ai.js';
-
 // API Routes
 app.use('/api/projects', projectsStatusRoutes);
 app.use('/api/ind', indAssemblerRoutes);
 app.use('/api/ind/wizard', indWizardAPIRoutes);
 app.use('/api/docs', documentsRoutes);
 app.use('/api/vault', vaultUploadRoutes);
-app.use('/api/ai', aiRoutes);
 
 // Import route modules
 import advisorRoutes from './routes/advisor.js';
