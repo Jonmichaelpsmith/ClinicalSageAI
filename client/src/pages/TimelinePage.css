@@ -1,0 +1,47 @@
+.timeline-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.timeline-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  background: #f7f8fa;
+}
+
+/* Additional styling for validation warnings */
+.ts-validation-warning {
+  background: #fff4e5;
+  border: 1px solid #ffd4a0;
+  border-radius: var(--space-sm);
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.ts-validation-warning h3 {
+  color: #e65100;
+  font-size: var(--text-md);
+  margin-top: 0;
+  margin-bottom: var(--space-sm);
+}
+
+.ts-validation-warning ul {
+  margin: 0;
+  padding-left: var(--space-lg);
+}
+
+.ts-validation-warning li {
+  color: #963800;
+  font-size: var(--text-sm);
+}
+
+.ts-invalid-icon {
+  margin-left: var(--space-xs);
+  font-size: var(--text-sm);
+}
+
+.ts-preset-btn.invalid {
+  border-color: #ffcc80;
+  color: #b26500;
+}

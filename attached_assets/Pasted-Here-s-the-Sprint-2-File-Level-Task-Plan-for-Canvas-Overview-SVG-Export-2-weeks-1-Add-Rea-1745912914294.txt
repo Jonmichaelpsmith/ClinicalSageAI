@@ -1,0 +1,84 @@
+Here’s the Sprint 2 File-Level Task Plan for Canvas Overview & SVG Export (≈2 weeks):
+
+⸻
+
+1. Add React Flow Dependency
+
+File	Task
+package.json	Add "react-flow-renderer": "^11.6.5" under dependencies and run npm install.
+
+
+
+⸻
+
+2. Back-end: Canvas Data Endpoints
+
+File	Task
+server/routes/coauthorCanvas.js	Implement:• GET /api/coauthor/sections → returns [ { id, title, status, x, y, connections } ]• GET /api/coauthor/connections → returns [ { from, to, critical } ]
+server/server.js	Mount the above router:import coauthorCanvasRoutes from './routes/coauthorCanvas.js';app.use('/api/coauthor', coauthorCanvasRoutes);
+
+
+
+⸻
+
+3. Client-side API Helpers
+
+File	Task
+client/src/api/coauthor.js	Add:js<br>export function fetchCTDSections() { return fetch('/api/coauthor/sections').then(r=>r.json()); }<br>export function fetchRiskConnections() { return fetch('/api/coauthor/connections').then(r=>r.json()); }<br>
+
+
+
+⸻
+
+4. Canvas Workbench Component
+
+File	Task
+client/src/components/canvas/CanvasWorkbenchV2.jsx	– Import React Flow components– useNodesState & useEdgesState to manage nodes/edges– useEffect to load sections/connections– Handlers: onConnect, onNodeDragStop (persist via Socket or fetch)– onNodeClick prop callback– exportToSvg via reactFlowInstance.toSVG() and file download button– Include <MiniMap>, <Controls>, <Background>
+(inline) Custom Edge	Inside CanvasWorkbenchV2, define CustomEdge with getBezierPath, render <path> + optional <textPath> for labels; register under edgeTypes.
+
+
+
+⸻
+
+5. Node Detail Panel
+
+File	Task
+client/src/components/canvas/NodeDetailPanel.jsx	New side‐panel that:– Fetches /api/coauthor/guidance/:id & /api/coauthor/risk/:id– Displays status, risk level, delay impact, AI guidance– “Suggest Next Section” button stub
+
+
+
+⸻
+
+6. Canvas Page & Routing
+
+File	Task
+client/src/pages/CanvasPage.jsx	Scaffold page:– <UnifiedTopNavV5> with Canvas tab active– <Breadcrumbs>– <CanvasWorkbenchV2 onNodeClick={...}/> 
+client/src/pages/CanvasPage.css	Style full‐viewport flex layout to position workbench
+client/src/App.jsx	Add <Route path="/canvas" element={<CanvasPage />} />
+
+
+
+⸻
+
+7. Styles for Canvas
+
+File	Task
+client/src/components/canvas/FlowCanvas.css (or inline in CanvasWorkbenchV2)	Basic styling:– .flow-wrapper border, shadow– Custom node classes (status borders, hover lifts)
+
+
+
+⸻
+
+8. Verification Steps
+	1.	Restart server & client (npm start).
+	2.	Navigate to /canvas.
+	3.	You should see:
+      •   A React Flow graph with your CTD sections as draggable nodes and animated edges.
+      •   MiniMap, Controls, Background grid.
+      •   Clicking a node opens the NodeDetailPanel on the right.
+      •   Export SVG button in the top-right corner downloads your canvas.
+	4.	Test drag/drop, connect edges, and SVG export to confirm functionality.
+
+⸻
+
+Once Sprint 2 is green, we’ll move to Sprint 3 (Real-time Collaboration & Grid/Snap). Let me know when you’re ready!
