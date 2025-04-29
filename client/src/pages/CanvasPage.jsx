@@ -1,151 +1,134 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'wouter';
 import CanvasWorkbenchV2 from '../components/canvas/CanvasWorkbenchV2';
 import './CanvasPage.css';
 
 /**
- * CanvasPage - Visual editor for CoAuthor module with CTD sections
- * This page provides a drag-and-drop interface for visualizing 
- * and organizing the relationships between sections
+ * CanvasPage - Visual submission planning with interactive node editor
+ * This page provides the Canvas Workbench for visualizing submission components
  */
 export default function CanvasPage() {
-  const [activeTab, setActiveTab] = useState('canvas');
-  const [currentSection, setCurrentSection] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   
-  // Handle node click from the canvas
+  // Handle when a node is clicked in the canvas
   const handleNodeClick = (node) => {
-    console.log('Node clicked:', node);
-    setCurrentSection(node);
-    
-    // If you want to open editor tab on click:
-    // setActiveTab('editor');
+    setSelectedNode(node);
+    setSidebarOpen(true);
   };
-
-  // Handle section editing
-  const handleOpenEditor = () => {
-    if (!currentSection) return;
-    setActiveTab('editor');
-  };
-
+  
   return (
     <div className="canvas-page">
-      {/* Header with navigation tabs */}
+      {/* Header with navigation */}
       <div className="canvas-header">
-        <h1>CoAuthor Workbench</h1>
+        <h1>Submission Canvas</h1>
         
-        <div className="canvas-tabs">
-          <button 
-            className={`tab-button ${activeTab === 'canvas' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('canvas')}
-          >
-            Visual Canvas
+        <div className="canvas-tools">
+          <button className="tool-button">
+            <span className="tool-icon">+</span>
+            Add Section
           </button>
           
-          <button 
-            className={`tab-button ${activeTab === 'editor' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('editor')}
-            disabled={!currentSection}
-          >
-            Section Editor
+          <button className="tool-button export">
+            <span className="tool-icon">↓</span>
+            Export SVG
           </button>
           
-          <button 
-            className={`tab-button ${activeTab === 'ai' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('ai')}
-          >
-            AI Assistant
-          </button>
+          <select className="submission-type-select">
+            <option value="ind">IND</option>
+            <option value="nda">NDA</option>
+            <option value="bla">BLA</option>
+            <option value="maa">MAA</option>
+          </select>
         </div>
         
         <div className="canvas-actions">
+          <Link to="/timeline" className="nav-link">
+            Timeline View
+          </Link>
           <Link to="/module-dashboard" className="back-button">
             Back to Dashboard
           </Link>
         </div>
       </div>
-
-      {/* Main content area */}
+      
       <div className="canvas-content">
-        {activeTab === 'canvas' && (
-          <div className="canvas-workbench-container">
-            <CanvasWorkbenchV2 onNodeClick={handleNodeClick} />
-          </div>
-        )}
+        {/* The main canvas workbench */}
+        <CanvasWorkbenchV2
+          onNodeClick={handleNodeClick}
+        />
         
-        {activeTab === 'editor' && currentSection && (
-          <div className="editor-container">
-            <div className="editor-header">
-              <h2>Editing: {currentSection.title}</h2>
-              <div className="section-meta">
-                <span className={`section-status status-${currentSection.status}`}>
-                  {currentSection.status}
-                </span>
-                <span className="section-id">ID: {currentSection.id}</span>
-              </div>
+        {/* Sidebar - conditionally rendered when a node is selected */}
+        {selectedNode && sidebarOpen && (
+          <div className="canvas-sidebar">
+            <div className="sidebar-header">
+              <h2>Section Details</h2>
+              <button 
+                className="close-button"
+                onClick={() => setSidebarOpen(false)}
+              >
+                ×
+              </button>
             </div>
             
-            <div className="editor-content">
-              {/* In a real implementation, this would be a rich text editor */}
-              <textarea 
-                className="section-textarea"
-                placeholder={`Start writing your content for ${currentSection.title}...`}
-              />
+            <div className="sidebar-content">
+              <div className="section-info">
+                <div className="info-row">
+                  <div className="info-label">ID:</div>
+                  <div className="info-value">{selectedNode.id}</div>
+                </div>
+                
+                <div className="info-row">
+                  <div className="info-label">Title:</div>
+                  <div className="info-value">{selectedNode.title}</div>
+                </div>
+                
+                <div className="info-row">
+                  <div className="info-label">Status:</div>
+                  <div className={`info-value status ${selectedNode.status}`}>
+                    {selectedNode.status === 'complete' ? 'Complete' :
+                     selectedNode.status === 'critical' ? 'Critical' : 'Pending'}
+                  </div>
+                </div>
+                
+                <div className="info-row">
+                  <div className="info-label">Deadline:</div>
+                  <div className="info-value">{selectedNode.deadline || 'Not set'}</div>
+                </div>
+              </div>
               
-              <div className="editor-sidebar">
-                <div className="sidebar-section">
-                  <h3>Section Guidance</h3>
-                  <p>
-                    This section should include detailed information about {currentSection.title.toLowerCase()}.
-                    Reference other documents where applicable.
-                  </p>
-                </div>
-                
-                <div className="sidebar-section">
-                  <h3>Related Sections</h3>
-                  <ul className="related-sections">
-                    <li><a href="#" onClick={(e) => e.preventDefault()}>Section 3.2.1</a></li>
-                    <li><a href="#" onClick={(e) => e.preventDefault()}>Section 5.4</a></li>
-                  </ul>
-                </div>
-                
-                <div className="sidebar-section">
-                  <h3>Templates</h3>
-                  <button className="template-button">Load Template</button>
-                </div>
+              <div className="section-description">
+                <h3>Description</h3>
+                <p>
+                  {selectedNode.description || 
+                   `This section represents ${selectedNode.title} within the submission structure. 
+                   It is currently ${selectedNode.status} with connections to other sections as shown in the canvas.`}
+                </p>
               </div>
-            </div>
-          </div>
-        )}
-        
-        {activeTab === 'ai' && (
-          <div className="ai-assistant-container">
-            <div className="ai-header">
-              <h2>AI Regulatory Assistant</h2>
-            </div>
-            
-            <div className="ai-chat">
-              <div className="chat-messages">
-                <div className="message ai">
-                  <div className="message-content">
-                    <p>Hello! I'm your AI regulatory assistant. How can I help you with your document preparation today?</p>
-                  </div>
-                </div>
-                
-                {currentSection && (
-                  <div className="message ai">
-                    <div className="message-content">
-                      <p>I see you're working on section {currentSection.id}: {currentSection.title}. Would you like guidance on this section?</p>
-                    </div>
-                  </div>
+              
+              <div className="section-connections">
+                <h3>Connected Sections</h3>
+                {selectedNode.connections && selectedNode.connections.length > 0 ? (
+                  <ul className="connections-list">
+                    {selectedNode.connections.map((connId) => (
+                      <li key={connId} className="connection-item">
+                        Section {connId}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="no-connections">No connections to other sections</p>
                 )}
               </div>
               
-              <div className="chat-input">
-                <textarea 
-                  placeholder="Ask the AI assistant for help..."
-                  rows={3}
-                />
-                <button className="send-button">Send</button>
+              <div className="section-actions">
+                <button className="action-button primary">
+                  Edit Section
+                </button>
+                
+                <button className="action-button secondary">
+                  View Documents
+                </button>
               </div>
             </div>
           </div>

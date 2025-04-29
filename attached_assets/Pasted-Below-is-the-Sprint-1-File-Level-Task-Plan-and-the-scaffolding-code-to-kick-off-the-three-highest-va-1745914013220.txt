@@ -1,0 +1,337 @@
+Below is the Sprint 1 File-Level Task Plan and the scaffolding code to kick off the three highest-value features:
+
+Sprint 1 (Weeks 1–2)
+	1.	RAG Pipeline – ingest/query regulatory corpus
+	2.	Function-Calling Orchestration – expose key services as OpenAI Functions
+	3.	Core Co-Author Editor & Copilot v1 – React Quill + RAG & Function Chat tabs
+
+⸻
+
+1. RAG Pipeline
+
+1.1 Create server/services/ragService.js
+
+// server/services/ragService.js
+import pdfParse from 'pdf-parse';
+import { OpenAI } from 'openai';
+import { PineconeClient } from '@pinecone-database/pinecone';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const pinecone = new PineconeClient();
+await pinecone.init({
+  apiKey: process.env.PINECONE_API_KEY,
+  environment: process.env.PINECONE_ENVIRONMENT,
+});
+const index = pinecone.Index(process.env.PINECONE_INDEX);
+
+// Ingest a PDF buffer into your vector store
+export async function ingestPdfBuffer(buffer, metadata = {}) {
+  const { text } = await pdfParse(buffer);
+  const chunks = text.match(/.{1,1000}(\s|$)/g) || [];
+  const embeds = await Promise.all(chunks.map(c =>
+    openai.embeddings.create({ model:'text-embedding-ada-002', input:c })
+      .then(r=>r.data[0].embedding)
+  ));
+  const vectors = embeds.map((values, i) => ({
+    id: `${metadata.source}#${i}`,
+    values,
+    metadata: { ...metadata, chunk: chunks[i] }
+  }));
+  await index.upsert({ upsertRequest:{ vectors } });
+}
+
+// Query RAG: top-k relevant chunks
+export async function queryRAG(query, topK = 5) {
+  const qEmbed = await openai.embeddings.create({
+    model:'text-embedding-ada-002',
+    input: query
+  }).then(r=>r.data[0].embedding);
+
+  const res = await index.query({
+    queryRequest: { vector: qEmbed, topK, includeMetadata:true }
+  });
+  return res.matches.map(m => m.metadata.chunk);
+}
+
+1.2 Create server/routes/rag.js
+
+// server/routes/rag.js
+import express from 'express';
+import multer from 'multer';
+import { ingestPdfBuffer, queryRAG } from '../services/ragService.js';
+import { OpenAI } from 'openai';
+
+const router = express.Router();
+const upload = multer();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Ingest PDF
+router.post('/ingest', upload.single('file'), async (req, res) => {
+  await ingestPdfBuffer(req.file.buffer, { source: req.file.originalname });
+  res.json({ success: true });
+});
+
+// Simple query (just returns chunks)
+router.post('/query', async (req, res) => {
+  const chunks = await queryRAG(req.body.query, 5);
+  res.json({ chunks });
+});
+
+// RAG-augmented “ask” endpoint: retrieves then completes
+router.post('/ask', async (req, res) => {
+  const { query } = req.body;
+  const chunks = await queryRAG(query, 5);
+  const prompt = `
+Use the following regulatory context to answer precisely:
+
+${chunks.join('\n---\n')}
+
+Question: ${query}`;
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4-turbo',
+    messages: [{ role:'user', content: prompt }],
+    temperature: 0.2
+  });
+  res.json({ answer: completion.choices[0].message.content });
+});
+
+export default router;
+
+Mount in server/server.js:
+
+import ragRoutes from './routes/rag.js';
+app.use('/api/rag', ragRoutes);
+
+1.3 Client Helpers: client/src/api/rag.js
+
+// client/src/api/rag.js
+export async function ingestPdf(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  await fetch('/api/rag/ingest', { method:'POST', body: fd });
+}
+
+export async function queryRAG(query) {
+  const res = await fetch('/api/rag/query', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ query })
+  });
+  return (await res.json()).chunks;
+}
+
+export async function askRAG(query) {
+  const res = await fetch('/api/rag/ask', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ query })
+  });
+  return (await res.json()).answer;
+}
+
+
+
+⸻
+
+2. Function-Calling Orchestration
+
+2.1 Define OpenAI Function Schemas: server/services/openaiFunctions.js
+
+// server/services/openaiFunctions.js
+export const functions = [
+  {
+    name: 'generate_manifest',
+    description: 'Generate an eCTD manifest JSON for given modules',
+    parameters: {
+      type: 'object',
+      properties: {
+        modules: {
+          type: 'array',
+          items: { type:'string' }
+        }
+      },
+      required: ['modules']
+    }
+  },
+  {
+    name: 'upload_to_vault',
+    description: 'Upload a document to the secure Vault',
+    parameters: {
+      type: 'object',
+      properties: {
+        documentName: { type:'string' },
+        contentBase64:  { type:'string' }
+      },
+      required: ['documentName','contentBase64']
+    }
+  }
+];
+
+2.2 Orchestration Endpoint: server/routes/coauthorFunctions.js
+
+// server/routes/coauthorFunctions.js
+import express from 'express';
+import { OpenAI } from 'openai';
+import { functions } from '../services/openaiFunctions.js';
+import { generateManifest } from '../services/manifestService.js';
+import { uploadToVault }   from '../services/vaultService.js';
+
+const router = express.Router();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+router.post('/chat', async (req, res) => {
+  const { messages } = req.body;
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4-turbo',
+    messages,
+    functions,
+    function_call: 'auto'
+  });
+
+  const choice = response.choices[0];
+  if (choice.finish_reason === 'function_call') {
+    const { name, arguments:args } = choice.message.function_call;
+    const params = JSON.parse(args);
+    let result;
+    if (name === 'generate_manifest') {
+      result = await generateManifest(params.modules);
+    } else if (name === 'upload_to_vault') {
+      result = await uploadToVault(params.documentName, params.contentBase64);
+    }
+    // send function result back into the conversation
+    const followup = await openai.chat.completions.create({
+      model: 'gpt-4-turbo',
+      messages: [
+        ...messages,
+        choice.message,
+        { role: 'function', name, content: JSON.stringify(result) }
+      ]
+    });
+    return res.json(followup.choices[0].message);
+  }
+
+  res.json(choice.message);
+});
+
+export default router;
+
+Mount in server/server.js:
+
+import coauthorFunctions from './routes/coauthorFunctions.js';
+app.use('/api/functions', coauthorFunctions);
+
+2.3 Client Helper: client/src/api/functions.js
+
+// client/src/api/functions.js
+export async function callFunctionChat(messages) {
+  const res = await fetch('/api/functions/chat', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ messages })
+  });
+  return res.json();  // { role, content, function_call? }
+}
+
+
+
+⸻
+
+3. Core Co-Author Editor & Copilot v1
+
+You’ve already wired up CoAuthorEditor and CopilotPanel. Now we’ll inject:
+
+   •   RAG into a new “RAG” tab
+   •   Function-Calling Chat into your “Chat” tab
+
+3.1 Update CopilotPanel.jsx Tabs
+
+// client/src/components/coauthor/CopilotPanel.jsx
+-import { askRAG } from '../../api/rag';
++import { askRAG } from '../../api/rag';
+ import { callFunctionChat } from '../../api/functions';
++import { parseVisionFile } from '../../api/vision';
+
+ export default function CopilotPanel({...}) {
+   const tabs = ['Guidance','Context','Chat','Actions','RAG','Vision'];
+   // … existing state …
+
++  // RAG & Vision state
++  const [ragQuery, setRagQuery]     = useState('');
++  const [ragAnswer, setRagAnswer]   = useState('');
++  const [loadingRag, setLoadingRag] = useState(false);
+
+   // Replace your existing sendMessage with this:
+   const handleFunctionChat = async (userInput) => {
+     const newMsg = { role:'user', content:userInput };
+     const all = [...messages, newMsg];
+     setMessages(all);
+     setLoadingChat(true);
+     try {
+       const reply = await callFunctionChat(all);
+       setMessages(ms => [...ms, reply]);
+     } catch (e) {
+       console.error(e);
+     } finally {
+       setLoadingChat(false);
+     }
+   };
+
+   return (
+     <div className="copilot-panel">
+       {/* … Playbook & Tabs … */}
+
+       <div className="cp-content">
+         {/* … Guidance, Context, Chat (call handleFunctionChat), Actions … */}
+
++        {active === 'RAG' && (
++          <div className="cp-rag">
++            <textarea
++              placeholder="Ask regulatory context…"
++              value={ragQuery}
++              onChange={e => setRagQuery(e.target.value)}
++            />
++            <button
++              onClick={async () => {
++                setLoadingRag(true);
++                const ans = await askRAG(ragQuery);
++                setRagAnswer(ans);
++                setLoadingRag(false);
++              }}
++              disabled={loadingRag}
++            >
++              {loadingRag? 'Asking…':'Ask with RAG'}
++            </button>
++            {ragAnswer && <div className="cp-rag-answer">{ragAnswer}</div>}
++          </div>
++        )}
+
++        {active === 'Vision' && (
++          <div className="cp-vision">
++            <input
++              type="file"
++              accept=".pdf,image/*"
++              onChange={async e => {
++                const file = e.target.files[0];
++                const text = await parseVisionFile(file);
++                setRagAnswer(text);
++              }}
++            />
++            {ragAnswer && <blockquote>{ragAnswer}</blockquote>}
++          </div>
++        )}
+       </div>
+     </div>
+   );
+}
+
+
+
+⸻
+
+✅ Sprint 1 Verification
+	1.	Restart your server & client.
+	2.	RAG tab in Co-Author should let you ingest a PDF (via /api/rag/ingest) and then ask questions (/api/rag/ask).
+	3.	Chat tab now calls /api/functions/chat and can invoke generate_manifest() or upload_to_vault().
+	4.	Vision tab lets you drop a PDF/image and see GPT-4 Vision’s extracted text.
+
+Once green, we’ll have nailed the three highest-value pillars. Then we can batch up feedback and roll into Sprint 2!

@@ -1,0 +1,246 @@
+Below we’ll wire up the final advanced AI integrations:
+	1.	RAG-powered “Ask Guidance” endpoint and UI
+	2.	Function-calling chat using /api/functions/chat
+	3.	Vision-parse file upload in the Co-Author page
+
+⸻
+
+1. RAG-Powered Summarization Endpoint
+
+File: server/routes/rag.js
+Update your existing RAG router to add an /ask endpoint that retrieves context and then asks GPT-4 for a concise answer.
+
+import express from 'express';
+import { queryRAG } from '../services/ragService.js';
+import { OpenAI } from 'openai';
+const router = express.Router();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// POST /api/rag/ask  { query: string }
+router.post('/ask', async (req, res) => {
+  try {
+    const { query } = req.body;
+    // 1) Retrieve top-5 chunks
+    const chunks = await queryRAG(query, 5);
+    // 2) Compose a system+user prompt 
+    const system = `You are a regulatory expert. Use the context passages to answer precisely.`;
+    const user   = `Context:\n${chunks.join('\n---\n')}\n\nQuestion: ${query}`;
+    // 3) Ask GPT-4 Turbo
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4-turbo',
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user',   content: user   }
+      ],
+      temperature: 0.2
+    });
+    const answer = completion.choices[0].message.content;
+    res.json({ answer });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'RAG ask failed' });
+  }
+});
+
+export default router;
+
+Mount it in server/server.js alongside your other RAG routes:
+
+import ragRoutes from './routes/rag.js';
+app.use('/api/rag', ragRoutes);
+
+
+
+⸻
+
+2. Client API Helper for RAG Ask
+
+File: client/src/api/rag.js
+Add an askRAG function alongside your existing helpers.
+
+export async function askRAG(query) {
+  const res = await fetch('/api/rag/ask', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ query })
+  });
+  const { answer } = await res.json();
+  return answer;
+}
+
+
+
+⸻
+
+3. Update CopilotPanel for RAG & Function-Calling Chat
+
+File: client/src/components/coauthor/CopilotPanel.jsx
+
+import React, { useState, useEffect } from 'react';
+-import './CopilotPanel.css';
++import './CopilotPanel.css';
++import { askRAG } from '../../api/rag';
++import { callFunctionChat } from '../../api/functions'; // helper to wrap /api/functions/chat
+
+export default function CopilotPanel({ moduleId, sectionId, content }) {
+-  const tabs = ['Guidance', 'Context', 'Chat', 'Actions'];
++  const tabs = ['Guidance','Context','Chat','Actions','RAG','Vision'];
+   // … existing state …
+
++  // RAG state
++  const [ragQuery, setRagQuery]   = useState('');
++  const [ragAnswer, setRagAnswer] = useState('');
++  const [loadingRag, setLoadingRag] = useState(false);
+
++  // Function-calling chat wrapper
++  async function handleFunctionChat(userInput) {
++    // use your existing messages state
++    const newMsg = { role:'user', content:userInput };
++    const all = [...messages, newMsg];
++    setMessages(all);
++    setLoadingChat(true);
++    try {
++      const res = await callFunctionChat(all);
++      setMessages(ms => [...ms, res]);
++    } catch (e) {
++      console.error(e);
++      setMessages(ms => [...ms, { role:'assistant', content:'Error in function chat.' }]);
++    } finally {
++      setLoadingChat(false);
++    }
++  }
+
+   return (
+     <div className="copilot-panel">
+       {/* Playbook selector */}
+       <div className="cp-playbook">…</div>
+
+       <div className="cp-tabs">
+         {tabs.map(t => (
+           <button
+             key={t}
+             className={`cp-tab ${active===t? 'active':''}`}
+             onClick={async () => {
+               setActive(t);
+               if (t==='Guidance') fetchGuidance();
+               if (t==='Context')  fetchContext();
+               if (t==='Actions')  fetchActions();
++              if (t==='RAG') { setRagAnswer(''); /* clear */ }
+             }}
+           >{t}</button>
+         ))}
+       </div>
+
+       <div className="cp-content">
+         {/* … Guidance, Context, Chat, Actions … */}
+
++        {active === 'RAG' && (
++          <div className="cp-rag">
++            <textarea
++              placeholder="Enter a regulatory question…"
++              value={ragQuery}
++              onChange={e => setRagQuery(e.target.value)}
++            />
++            <button
++              onClick={async () => {
++                setLoadingContext(true);
++                const ans = await askRAG(ragQuery);
++                setRagAnswer(ans);
++                setLoadingContext(false);
++              }}
++              disabled={loadingRag}
++            >
++              {loadingRag? 'Asking…':'Ask with RAG'}
++            </button>
++            {ragAnswer && (
++              <div className="cp-rag-answer">{ragAnswer}</div>
++            )}
++          </div>
++        )}
+
++        {active === 'Chat' && (
++          <div className="cp-chat">
++            <div className="cp-messages">
++              {messages.map((m,i)=>(
++                <div key={i} className={`cp-msg ${m.role}`}>{m.content}</div>
++              ))}
++            </div>
++            <div className="cp-input">
++              <input
++                placeholder="Ask Lumen..."
++                value={input}
++                onChange={e=>setInput(e.target.value)}
++                onKeyDown={e=>{
++                  if (e.key==='Enter') handleFunctionChat(input);
++                }}
++              />
++              <button onClick={()=>handleFunctionChat(input)} disabled={loadingChat}>
++                {loadingChat? '…':'Send'}
++              </button>
++            </div>
++          </div>
++        )}
+
++        {active === 'Vision' && (
++          <div className="cp-vision">
++            <input
++              type="file"
++              accept=".pdf,image/*"
++              onChange={async e => {
++                const file = e.target.files[0];
++                setLoadingContext(true);
++                const text = await parseVisionFile(file);
++                setRagAnswer(text);
++                setLoadingContext(false);
++              }}
++            />
++            {ragAnswer && (
++              <blockquote className="cp-vision-output">{ragAnswer}</blockquote>
++            )}
++          </div>
++        )}
+       </div>
+     </div>
+   );
+}
+
+Notes:
+   •   askRAG calls /api/rag/ask to retrieve and summarize regulatory guidance.
+   •   handleFunctionChat wraps your /api/functions/chat endpoint, letting GPT autonomously call generate_manifest, upload_to_vault, etc.
+   •   Vision tab uses parseVisionFile to OCR/interpret any PDF/image via GPT-4 Vision.
+
+⸻
+
+4. Client Helpers for Function-Calling & Vision
+
+File: client/src/api/functions.js
+
+export async function callFunctionChat(messages) {
+  const res = await fetch('/api/functions/chat', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ messages })
+  });
+  const msg = await res.json();           // { role, content, function_call? }
+  return msg;
+}
+
+
+
+⸻
+
+5. Install Vision Helper
+
+npm install pdfjs-dist
+
+Add parseVisionFile in client/src/api/vision.js if not already present.
+
+⸻
+
+✅ Verification
+	1.	Restart server & client (to load the new RAG and function routes).
+	2.	In Co-Author:
+      •   Switch to RAG tab, ask “What are the ICH Q3A requirements?” and see a concise AI answer.
+      •   Switch back to Chat tab—your chat now goes via /api/functions/chat, and you can ask “Generate manifest for modules 1,2,5” to see the function call result.
+      •   Switch to Vision tab, upload a PDF of a regulatory guidance—watch GPT-4 Vision extract tables/headings.
+
+That completes the end-to-end cutting-edge AI layer for TrialSage! Let me know how it performs or which piece to polish next.
