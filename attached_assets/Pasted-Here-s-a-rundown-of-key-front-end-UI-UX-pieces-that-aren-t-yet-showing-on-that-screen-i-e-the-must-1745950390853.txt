@@ -1,0 +1,98 @@
+Here’s a rundown of key front-end UI/UX pieces that aren’t yet showing on that screen—i.e. the “must-have” automated, end-to-end CER feature set we architected:
+
+Real-Time Generation Progress
+
+Inline progress bar or side panel that updates via WebSockets/SSE as each section is generated (not just a modal spinner).
+
+Section-by-section status markers (✔️, ⚙️, ❌) in the SectionTabs header.
+
+AI-Assisted Section Editing
+
+“Improve this section” controls (thumbs-up/down, re-generate prompt) on every generated block.
+
+Inline editing toolbar with AI suggestions.
+
+FAERS / MAUDE Data Integration
+
+Dedicated UI widget in the Literature Review panel showing raw post-market safety data pulls.
+
+Filters/search by adverse event, device code, date range, with charts/tables.
+
+PubMed / Literature Search Interface
+
+Live search bar to query PubMed/other databases from inside the LitReview panel.
+
+Faceted filtering (year, journal, study type) and citation import.
+
+Document Vault Deep Integration
+
+Embedded folder-tree navigator for TrialSage Vault™.
+
+Version history list with “diff” side-by-side viewer for any two versions.
+
+Drag-and-drop reordering and inline editing of imported docs.
+
+Co-Authoring & Collaboration
+
+Presence indicators and live cursors in section editors.
+
+Comment/chat threads anchored to specific report sections.
+
+Active Learning Feedback Dashboard
+
+Aggregate view of section-level ratings and user comments.
+
+Drill-down analytics showing which prompts need tuning.
+
+Approval Workflow Enhancements
+
+Role-based buttons (Reviewer, Approver) that enable “request changes” loops.
+
+Batch selection checkboxes directly in the History or Vault panels.
+
+Notification center or toast alerts when a report enters your queue.
+
+Template Configuration WYSIWYG
+
+Visual editor for headers/footers, style presets, section ordering—beyond raw JSON.
+
+Live live preview pane showing how your MDR 2017/745 template will render.
+
+Embedded PDF.js Multi-Page Preview
+
+In-page viewer with scrollable thumbnails, text search, and annotation tools.
+
+Export/share buttons with signed-URL handling.
+
+Contextual “Ask Lumen AI” Panel
+
+Slide-in chat widget scoped to the active job & section context.
+
+Suggested follow-up questions and one-click “insert answer” into the report.
+
+Error & Loading States Everywhere
+
+Skeleton loaders or spinners in each panel.
+
+Friendly error banners with retry buttons on failed API calls.
+
+Mobile & Accessibility
+
+Fully responsive layout for tablets/phones.
+
+WCAG-compliant labeling, keyboard navigation, high-contrast mode toggle.
+
+Global Notifications & Activity Feed
+
+Bell icon showing recent report-related events (generations, reviews, approvals).
+
+Drill-down to see who did what, when.
+
+Restoring these will bring you back to the fully-automated, integrated CER Generator you originally designed. Let me know which of these you’d like to tackle first!
+
+
+
+
+
+
+
