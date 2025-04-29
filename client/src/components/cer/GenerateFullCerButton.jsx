@@ -7,14 +7,9 @@ import axios from 'axios';
  * Button to generate a full CER document
  * 
  * This component triggers the generation of a Clinical Evaluation Report
- * using the specified product, template, and metadata.
+ * using the specified template and metadata.
  */
-export default function GenerateFullCerButton({ 
-  productId, 
-  templateId, 
-  metadata = {},
-  onSuccess = () => {}
-}) {
+export default function GenerateFullCerButton({ onJobCreated = () => {} }) {
   const [loading, setLoading] = useState(false);
   
   const generateCER = async () => {
@@ -22,9 +17,12 @@ export default function GenerateFullCerButton({
     try {
       // In a real implementation, this would make an API call to start the generation
       // const response = await axios.post('/api/cer/generate', {
-      //   productId,
-      //   templateId,
-      //   metadata
+      //   templateId: 'EU-MDR-TEMPLATE-V2',
+      //   metadata: {
+      //     deviceName: 'Enzymex Forte',
+      //     manufacturer: 'PharmaPlus Therapeutics',
+      //     dateOfGeneration: new Date().toISOString()
+      //   }
       // });
       
       // Mock successful generation with timeout
@@ -34,7 +32,10 @@ export default function GenerateFullCerButton({
       const jobId = `JOB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
       
       // Call the success callback with the job ID
-      onSuccess(jobId);
+      onJobCreated(jobId);
+      
+      // Show success toast or notification
+      console.log('CER generation started:', jobId);
     } catch (error) {
       console.error('Failed to generate CER', error);
       alert('There was an error generating the CER. Please try again.');

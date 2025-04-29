@@ -1,177 +1,171 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowDown, FileText, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import axios from 'axios';
 
 export default function DocumentVaultPanel({ jobId }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedVersion1, setSelectedVersion1] = useState('');
-  const [selectedVersion2, setSelectedVersion2] = useState('');
-  const [showDiff, setShowDiff] = useState(false);
-  
-  // Sample vault documents
-  const documents = [
-    { 
-      id: 'doc-001', 
-      name: 'CER_Enzymex_Forte_v1.0.pdf', 
-      version: '1.0',
-      date: '2025-03-10',
-      size: '2.4MB',
-      status: 'approved'
-    },
-    { 
-      id: 'doc-002', 
-      name: 'CER_Enzymex_Forte_v1.1.pdf', 
-      version: '1.1',
-      date: '2025-03-25',
-      size: '2.5MB',
-      status: 'draft'
-    },
-    { 
-      id: 'doc-003', 
-      name: 'CER_Enzymex_Forte_v2.0.pdf', 
-      version: '2.0',
-      date: '2025-04-15',
-      size: '2.7MB',
-      status: 'review'
+  const [versions, setVersions] = useState([]);
+  const [selected, setSelected] = useState({ v1: null, v2: null });
+  const [diffHtml, setDiffHtml] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchVersions = async () => {
+      setLoading(true);
+      try {
+        // This would be a real API call in production
+        // const res = await axios.get(`/api/cer/vault/versions/${jobId || 'all'}`);
+        // setVersions(res.data.versions);
+        
+        // Mock data for demo
+        await new Promise(resolve => setTimeout(resolve, 800));
+        setVersions([
+          { id: 1, version: '1.0.0', name: 'Initial Draft', createdAt: '2025-04-22T14:30:00Z', createdBy: 'John Smith' },
+          { id: 2, version: '1.1.0', name: 'Revision 1', createdAt: '2025-04-23T09:15:00Z', createdBy: 'Sarah Johnson' },
+          { id: 3, version: '1.2.0', name: 'Final Review', createdAt: '2025-04-24T16:45:00Z', createdBy: 'John Smith' },
+          { id: 4, version: '2.0.0', name: 'Published Version', createdAt: '2025-04-25T10:00:00Z', createdBy: 'Michael Chen' }
+        ]);
+      } catch (err) {
+        console.error('Failed to fetch versions', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchVersions();
+  }, [jobId]);
+
+  const computeDiff = async () => {
+    if (!selected.v1 || !selected.v2) return;
+    
+    setLoading(true);
+    try {
+      // This would be a real API call in production
+      // const res = await axios.get(
+      //   `/api/cer/vault/diff/${jobId || 'latest'}?v1=${selected.v1}&v2=${selected.v2}`
+      // );
+      // setDiffHtml(res.data.diff);
+      
+      // Mock data for demo
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setDiffHtml(`
+        <div class="diff-content">
+          <h3>Differences between v${selected.v1} and v${selected.v2}</h3>
+          <p>Document: <strong>Clinical Evaluation Report</strong></p>
+          <div class="diff-section">
+            <h4>Section 1.3: Clinical Background</h4>
+            <p class="diff-removed">The device is intended for use in clinical settings with supervision by qualified healthcare professionals.</p>
+            <p class="diff-added">The device is intended for use in clinical settings with supervision by qualified healthcare professionals and may be used for self-monitoring by patients after proper training.</p>
+          </div>
+          <div class="diff-section">
+            <h4>Section 2.1: Risk Analysis</h4>
+            <p class="diff-removed">Based on the available data, three significant risks were identified.</p>
+            <p class="diff-added">Based on the available data, four significant risks were identified.</p>
+            <p class="diff-added">The additional risk of improper home usage has been added to the risk analysis matrix.</p>
+          </div>
+        </div>
+      `);
+    } catch (err) {
+      console.error('Failed to compute diff', err);
+    } finally {
+      setLoading(false);
     }
-  ];
-  
-  const filteredDocs = documents.filter(doc => 
-    doc.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  const computeDiff = () => {
-    setShowDiff(true);
   };
-  
+
+  const handleDownload = (versionId) => {
+    // In a real implementation, this would download the specified version
+    window.open(`/api/cer/vault/download/${versionId}`, '_blank');
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
-        <CardContent className="p-4 flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search documents..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-          <Button>Upload New</Button>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4">Document History</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Version</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>By</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {versions.map(v => (
+                <TableRow key={v.id}>
+                  <TableCell>{v.version}</TableCell>
+                  <TableCell>{v.name}</TableCell>
+                  <TableCell>{new Date(v.createdAt).toLocaleString()}</TableCell>
+                  <TableCell>{v.createdBy}</TableCell>
+                  <TableCell>
+                    <Button size="sm" onClick={() => handleDownload(v.id)}>Download</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
-      
+
       <Card>
-        <CardContent className="p-4">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Document Name</th>
-                  <th className="text-left p-2">Version</th>
-                  <th className="text-left p-2">Date</th>
-                  <th className="text-left p-2">Size</th>
-                  <th className="text-left p-2">Status</th>
-                  <th className="text-left p-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredDocs.map(doc => (
-                  <tr key={doc.id} className="border-b hover:bg-muted/50">
-                    <td className="p-2 flex items-center gap-2">
-                      <FileText size={16} />
-                      {doc.name}
-                    </td>
-                    <td className="p-2">{doc.version}</td>
-                    <td className="p-2">{doc.date}</td>
-                    <td className="p-2">{doc.size}</td>
-                    <td className="p-2">
-                      <Badge variant={
-                        doc.status === 'approved' ? 'success' : 
-                        doc.status === 'review' ? 'warning' : 
-                        'outline'
-                      }>
-                        {doc.status}
-                      </Badge>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">View</Button>
-                        <Button size="sm" variant="ghost">
-                          <ArrowDown size={14} />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="p-4">
-          <h3 className="font-medium mb-3">Version Comparison</h3>
-          <div className="flex gap-4 mb-4">
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-semibold mb-4">Version Comparison</h3>
+          <div className="flex gap-4 items-end mb-4">
             <div className="flex-1">
-              <select
-                className="w-full p-2 border rounded"
-                value={selectedVersion1}
-                onChange={(e) => setSelectedVersion1(e.target.value)}
+              <Label htmlFor="v1-select">Base Version</Label>
+              <select 
+                id="v1-select"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={e => setSelected({ ...selected, v1: e.target.value })}
+                value={selected.v1 || ""}
               >
                 <option value="">Select base version</option>
-                {documents.map(doc => (
-                  <option key={`v1-${doc.id}`} value={doc.version}>
-                    Version {doc.version} ({doc.date})
-                  </option>
-                ))}
+                {versions.map(v => <option key={v.id} value={v.version}>v{v.version}</option>)}
               </select>
             </div>
             <div className="flex-1">
-              <select
-                className="w-full p-2 border rounded"
-                value={selectedVersion2}
-                onChange={(e) => setSelectedVersion2(e.target.value)}
+              <Label htmlFor="v2-select">Compare Version</Label>
+              <select 
+                id="v2-select"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+                onChange={e => setSelected({ ...selected, v2: e.target.value })}
+                value={selected.v2 || ""}
               >
                 <option value="">Select compare version</option>
-                {documents.map(doc => (
-                  <option key={`v2-${doc.id}`} value={doc.version}>
-                    Version {doc.version} ({doc.date})
-                  </option>
-                ))}
+                {versions.map(v => <option key={v.id} value={v.version}>v{v.version}</option>)}
               </select>
             </div>
             <Button 
-              onClick={computeDiff}
-              disabled={!selectedVersion1 || !selectedVersion2}
+              onClick={computeDiff} 
+              disabled={!selected.v1 || !selected.v2 || loading}
             >
-              Compare
+              {loading ? 'Processing...' : 'Show Diff'}
             </Button>
           </div>
-          
-          {showDiff && (
-            <div className="border p-4 rounded bg-slate-50">
-              <h4 className="font-medium mb-2">Comparison Results</h4>
-              <div className="space-y-2">
-                <div className="bg-green-50 p-2 border-l-4 border-green-500">
-                  <p className="text-sm text-green-800">+ Added new section 4.2.1 - Post-market Clinical Follow-up</p>
-                </div>
-                <div className="bg-red-50 p-2 border-l-4 border-red-500">
-                  <p className="text-sm text-red-800">- Removed outdated reference to ISO 14155:2011</p>
-                </div>
-                <div className="bg-yellow-50 p-2 border-l-4 border-yellow-500">
-                  <p className="text-sm text-yellow-800">~ Updated clinical data summary with latest findings</p>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      {diffHtml && (
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold mb-4">Diff Results</h3>
+            <div 
+              dangerouslySetInnerHTML={{ __html: diffHtml }} 
+              className="prose max-w-none p-4 border rounded"
+              style={{
+                '--diff-removed-color': '#fee2e2',
+                '--diff-added-color': '#dcfce7',
+              }}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
