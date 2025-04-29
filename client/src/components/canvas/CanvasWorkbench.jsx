@@ -1,0 +1,86 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Stage, Layer, Rect, Text, Arrow } from 'react-konva';
+import useWindowSize from '../../hooks/useWindowSize';
+
+/**
+ * Interactive canvas for visualizing document sections and their relationships
+ * using react-konva for drag-and-drop functionality
+ */
+export default function CanvasWorkbench() {
+  const [sections, setSections] = useState([]);
+  const { width, height } = useWindowSize();
+
+  // Load sections on mount
+  useEffect(() => {
+    fetch('/api/coauthor/sections')
+      .then(res => res.json())
+      .then(data => setSections(data))
+      .catch(console.error);
+  }, []);
+
+  // Persist new position after drag
+  const handleDragEnd = useCallback((e, id) => {
+    const { x, y } = e.target.attrs;
+    setSections(secs =>
+      secs.map(sec => sec.id === id ? { ...sec, x, y } : sec)
+    );
+
+    // Save to server
+    fetch(`/api/coauthor/layout/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ x, y }),
+    }).catch(console.error);
+  }, []);
+
+  return (
+    <Stage width={width} height={height - 150} style={{ background: '#f7f8fa' }}>
+      <Layer>
+        {/* Connections */}
+        {sections.flatMap(sec =>
+          sec.connections.map(toId => {
+            const from = sections.find(s => s.id === sec.id);
+            const to   = sections.find(s => s.id === toId);
+            return from && to && (
+              <Arrow
+                key={`${sec.id}-${toId}`}
+                points={[from.x + 100, from.y + 25, to.x, to.y + 25]}
+                pointerLength={10}
+                pointerWidth={10}
+                fill="#999"
+                stroke="#999"
+              />
+            );
+          })
+        )}
+
+        {/* Draggable nodes */}
+        {sections.map(sec => (
+          <React.Fragment key={sec.id}>
+            <Rect
+              x={sec.x}
+              y={sec.y}
+              width={120}
+              height={50}
+              fill={
+                sec.status === 'complete' ? '#daf5e8' :
+                sec.status === 'critical' ? '#fde2e2' : '#fff4ce'
+              }
+              stroke="#666"
+              cornerRadius={4}
+              draggable
+              onDragEnd={e => handleDragEnd(e, sec.id)}
+            />
+            <Text
+              x={sec.x + 10}
+              y={sec.y + 15}
+              text={sec.title}
+              fontSize={12}
+              fill="#333"
+            />
+          </React.Fragment>
+        ))}
+      </Layer>
+    </Stage>
+  );
+}

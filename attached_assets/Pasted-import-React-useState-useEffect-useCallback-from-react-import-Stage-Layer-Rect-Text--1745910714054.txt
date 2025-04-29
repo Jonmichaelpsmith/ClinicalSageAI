@@ -1,0 +1,75 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Stage, Layer, Rect, Text, Arrow } from 'react-konva';
+import useWindowSize from '../hooks/useWindowSize'; // optional hook for responsive
+
+// Sample data model
+const initialSections = [
+  { id: '1.1', title: 'Module 1: Admin', x: 50,  y: 50,  status: 'complete', connections: [] },
+  { id: '2.7', title: 'Module 2.7: Clinical Summary', x: 300, y: 50, status: 'critical', connections: ['1.1'] },
+  // …load from your /api/coauthor/sections endpoint
+];
+
+export default function CanvasWorkbench() {
+  const [sections, setSections] = useState(initialSections);
+  const { width, height } = useWindowSize();
+
+  // Drag handlers
+  const handleDragEnd = useCallback((e, id) => {
+    const { x, y } = e.target.attrs;
+    setSections(secs =>
+      secs.map(sec => sec.id === id ? { ...sec, x, y } : sec)
+    );
+    // TODO: POST new layout to /api/coauthor/layout
+  }, []);
+
+  return (
+    <Stage width={width} height={height - 150} style={{ background: '#f7f8fa' }}>
+      <Layer>
+        {/* Draw connections */}
+        {sections.map(sec =>
+          sec.connections.map(toId => {
+            const from = sections.find(s => s.id === sec.id);
+            const to   = sections.find(s => s.id === toId);
+            return (
+              <Arrow
+                key={`${sec.id}-${toId}`}
+                points={[from.x + 100, from.y + 25, to.x, to.y + 25]}
+                pointerLength={10}
+                pointerWidth={10}
+                fill="#999"
+                stroke="#999"
+              />
+            );
+          })
+        )}
+
+        {/* Draw nodes */}
+        {sections.map(sec => (
+          <React.Fragment key={sec.id}>
+            <Rect
+              x={sec.x}
+              y={sec.y}
+              width={120}
+              height={50}
+              fill={
+                sec.status === 'complete' ? '#daf5e8' :
+                sec.status === 'critical' ? '#fde2e2' : '#fff4ce'
+              }
+              stroke="#666"
+              cornerRadius={4}
+              draggable
+              onDragEnd={e => handleDragEnd(e, sec.id)}
+            />
+            <Text
+              x={sec.x + 10}
+              y={sec.y + 15}
+              text={sec.title}
+              fontSize={12}
+              fill="#333"
+            />
+          </React.Fragment>
+        ))}
+      </Layer>
+    </Stage>
+  );
+}

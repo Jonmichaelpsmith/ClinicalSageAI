@@ -1,0 +1,123 @@
+Great—let’s build an in-house interactive canvas using React Konva. We’ll keep data all on your servers, no external embeds. Here’s the plan and initial scaffold:
+
+⸻
+
+1. Add “Canvas” Tab
+
+In your UnifiedTopNavV3.jsx, add a new tab for Canvas Workbench alongside the others:
+
+// UnifiedTopNavV3.jsx (excerpt)
+const TABS = [
+  { key: 'heatmap', label: 'Risk Heatmap' },
+  { key: 'simulator', label: 'Timeline Simulator' },
+  { key: 'ask', label: 'Ask Lumen AI' },
+  { key: 'canvas', label: 'Canvas Workbench' },  // ← new
+];
+
+Wire the router in App.jsx:
+
+<Route path="/canvas" component={CanvasWorkbench} />
+
+
+
+⸻
+
+2. Scaffold CanvasWorkbench.jsx
+
+Create client/src/components/canvas/CanvasWorkbench.jsx:
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { Stage, Layer, Rect, Text, Arrow } from 'react-konva';
+import useWindowSize from '../hooks/useWindowSize'; // optional hook for responsive
+
+// Sample data model
+const initialSections = [
+  { id: '1.1', title: 'Module 1: Admin', x: 50,  y: 50,  status: 'complete', connections: [] },
+  { id: '2.7', title: 'Module 2.7: Clinical Summary', x: 300, y: 50, status: 'critical', connections: ['1.1'] },
+  // …load from your /api/coauthor/sections endpoint
+];
+
+export default function CanvasWorkbench() {
+  const [sections, setSections] = useState(initialSections);
+  const { width, height } = useWindowSize();
+
+  // Drag handlers
+  const handleDragEnd = useCallback((e, id) => {
+    const { x, y } = e.target.attrs;
+    setSections(secs =>
+      secs.map(sec => sec.id === id ? { ...sec, x, y } : sec)
+    );
+    // TODO: POST new layout to /api/coauthor/layout
+  }, []);
+
+  return (
+    <Stage width={width} height={height - 150} style={{ background: '#f7f8fa' }}>
+      <Layer>
+        {/* Draw connections */}
+        {sections.map(sec =>
+          sec.connections.map(toId => {
+            const from = sections.find(s => s.id === sec.id);
+            const to   = sections.find(s => s.id === toId);
+            return (
+              <Arrow
+                key={`${sec.id}-${toId}`}
+                points={[from.x + 100, from.y + 25, to.x, to.y + 25]}
+                pointerLength={10}
+                pointerWidth={10}
+                fill="#999"
+                stroke="#999"
+              />
+            );
+          })
+        )}
+
+        {/* Draw nodes */}
+        {sections.map(sec => (
+          <React.Fragment key={sec.id}>
+            <Rect
+              x={sec.x}
+              y={sec.y}
+              width={120}
+              height={50}
+              fill={
+                sec.status === 'complete' ? '#daf5e8' :
+                sec.status === 'critical' ? '#fde2e2' : '#fff4ce'
+              }
+              stroke="#666"
+              cornerRadius={4}
+              draggable
+              onDragEnd={e => handleDragEnd(e, sec.id)}
+            />
+            <Text
+              x={sec.x + 10}
+              y={sec.y + 15}
+              text={sec.title}
+              fontSize={12}
+              fill="#333"
+            />
+          </React.Fragment>
+        ))}
+      </Layer>
+    </Stage>
+  );
+}
+
+
+
+⸻
+
+3. Next Steps
+	1.	Data Hook-up
+Replace initialSections with a fetch from your back-end (/api/coauthor/sections).
+	2.	Persistence
+On drag end, POST updated positions to /api/coauthor/layout.
+	3.	Annotations
+On node click, open a side-panel (<AIAnnotationPanel sectionId={…}/>) with compliance tips.
+	4.	Timeline Ruler
+Add a draggable ruler at the bottom that calls your delay calculator and redraws a vertical indicator.
+	5.	Collaboration
+Use WebSockets to broadcast dragged positions so multiple users see it live.
+
+⸻
+
+That gives you a fully interactive, in-house canvas. Let me know if you’d like to iterate on the styling, add snap-to-grid, or wire in the annotation panel next!
