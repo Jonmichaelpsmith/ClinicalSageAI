@@ -55,6 +55,13 @@ import openFDARoutes from './routes/openfda.js';
 import templateRoutes from './routes/template.js';
 import ectdValidatorRoutes from './routes/ectdValidator.js';
 import submissionRoutes from './routes/submission.js';
+import processRoutes from './routes/process.js';
+import doeRoutes from './routes/doe.js';
+import qbdRoutes from './routes/qbd.js';
+import analyticalRoutes from './routes/analytical.js';
+import comparabilityRoutes from './routes/comparability.js';
+import stabilityRoutes from './routes/stability.js';
+import arrheniusRoutes from './routes/arrhenius.js';
 
 // Direct test endpoint for coauthor generate
 app.post('/api/coauthor/generate/test', (req, res) => {
@@ -88,6 +95,19 @@ app.use('/api/openfda', openFDARoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/ectd', ectdValidatorRoutes);
 app.use('/api/submission', submissionRoutes);
+
+// Analytical Control & Method Management Routes
+app.use('/api/analytical', analyticalRoutes);
+app.use('/api/comparability', comparabilityRoutes);
+
+// Process & Formulation Development Routes
+app.use('/api/process', processRoutes);
+app.use('/api/doe', doeRoutes);
+app.use('/api/qbd', qbdRoutes);
+
+// Stability Study Management Routes
+app.use('/api/stability', stabilityRoutes);
+app.use('/api/arrhenius', arrheniusRoutes);
 
 // Import route modules
 import advisorRoutes from './routes/advisor.js';
