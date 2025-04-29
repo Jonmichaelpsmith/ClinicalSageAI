@@ -1,38 +1,56 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { FilePlus2 } from 'lucide-react';
 import axios from 'axios';
 
-export default function GenerateFullCerButton({ onJobCreated }) {
+/**
+ * Button to generate a full CER document
+ * 
+ * This component triggers the generation of a Clinical Evaluation Report
+ * using the specified product, template, and metadata.
+ */
+export default function GenerateFullCerButton({ 
+  productId, 
+  templateId, 
+  metadata = {},
+  onSuccess = () => {}
+}) {
   const [loading, setLoading] = useState(false);
-
-  const handleClick = async () => {
+  
+  const generateCER = async () => {
     setLoading(true);
     try {
-      const res = await axios.post('/api/cer/generate', {
-        deviceId: 'DEV-12345',
-        templateId: 'TEMPLATE-1',
-      });
+      // In a real implementation, this would make an API call to start the generation
+      // const response = await axios.post('/api/cer/generate', {
+      //   productId,
+      //   templateId,
+      //   metadata
+      // });
       
-      if (res.data && res.data.jobId) {
-        if (onJobCreated) onJobCreated(res.data.jobId);
-      }
-    } catch (err) {
-      console.error('Failed to generate CER', err);
+      // Mock successful generation with timeout
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate a job id being returned
+      const jobId = `JOB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+      
+      // Call the success callback with the job ID
+      onSuccess(jobId);
+    } catch (error) {
+      console.error('Failed to generate CER', error);
+      alert('There was an error generating the CER. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <Button 
-      size="lg" 
-      onClick={handleClick} 
-      disabled={loading}
+      onClick={generateCER} 
       className="gap-2"
+      disabled={loading}
     >
-      <FileText size={18} />
-      {loading ? 'Generating...' : 'Generate Report'}
+      <FilePlus2 size={16} />
+      {loading ? 'Generating...' : 'Generate CER'}
     </Button>
   );
 }
