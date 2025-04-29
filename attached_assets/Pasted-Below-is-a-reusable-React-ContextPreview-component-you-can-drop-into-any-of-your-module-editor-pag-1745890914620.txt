@@ -1,0 +1,158 @@
+Below is a reusable React “ContextPreview” component you can drop into any of your module‐editor pages. It will display the retrieved context snippets alongside the AI draft, and can be styled/positioned wherever you need.
+
+1. Create ContextPreview.jsx
+File: client/src/components/ai/ContextPreview.jsx
+
+jsx
+Copy
+Edit
+import React from "react";
+import PropTypes from "prop-types";
+
+/**
+ * Displays a list of context snippets with citations.
+ * Props:
+ *   snippets: [
+ *     { id: string, text: string, source: string },
+ *     …
+ *   ]
+ *   onSnippetClick: fn(snippetId)   // optional callback when user clicks a snippet
+ */
+export default function ContextPreview({ snippets, onSnippetClick }) {
+  if (!snippets?.length) {
+    return (
+      <div className="bg-gray-50 p-4 rounded border border-gray-200 text-gray-500">
+        No context snippets found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {snippets.map(({ id, text, source }, i) => (
+        <div
+          key={id || i}
+          onClick={() => onSnippetClick?.(id)}
+          className={`p-3 rounded border cursor-pointer hover:bg-gray-100 ${
+            onSnippetClick ? "border-blue-200 hover:border-blue-300" : "border-gray-200"
+          }`}
+        >
+          <div className="text-xs text-gray-400 mb-1">
+            Context #{i + 1} {source && `• ${source}`}
+          </div>
+          <div className="text-sm text-gray-700">{text}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+ContextPreview.propTypes = {
+  snippets: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      text: PropTypes.string.isRequired,
+      source: PropTypes.string,
+    })
+  ),
+  onSnippetClick: PropTypes.func,
+};
+
+ContextPreview.defaultProps = {
+  snippets: [],
+  onSnippetClick: null,
+};
+2. Hook It Into Your Section Editor
+Say you have a page ModuleSectionEditor.jsx—after you call /api/ai/draft and receive:
+
+js
+Copy
+Edit
+{ draft: "...", context: [ { id, text, source }, … ] }
+you can render:
+
+jsx
+Copy
+Edit
+import React, { useState } from "react";
+import ContextPreview from "../components/ai/ContextPreview";
+
+export default function ModuleSectionEditor({ sectionKey, templateId }) {
+  const [draft, setDraft] = useState("");
+  const [snippets, setSnippets] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  async function generateDraft() {
+    setLoading(true);
+    const res = await fetch("/api/ai/draft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ templateId, sectionKey, k: 5 }),
+    });
+    const json = await res.json();
+    setLoading(false);
+    if (json.success) {
+      setDraft(json.draft);
+      setSnippets(json.context);
+    } else {
+      alert("Error: " + json.error);
+    }
+  }
+
+  const handleSnippetClick = (id) => {
+    // e.g. scroll draft textarea to where [Context #N] appears,
+    // or open a mini-split to inspect that snippet in detail.
+    console.log("Snippet clicked:", id);
+  };
+
+  return (
+    <div className="space-y-6">
+      <button
+        onClick={generateDraft}
+        className="px-4 py-2 bg-indigo-600 text-white rounded disabled:opacity-50"
+        disabled={loading}
+      >
+        {loading ? "Generating…" : "Generate Draft"}
+      </button>
+
+      {snippets.length > 0 && (
+        <section>
+          <h3 className="text-lg font-semibold mb-2">Context Snippets</h3>
+          <ContextPreview snippets={snippets} onSnippetClick={handleSnippetClick} />
+        </section>
+      )}
+
+      {draft && (
+        <section>
+          <h3 className="text-lg font-semibold mb-2">AI Draft</h3>
+          <textarea
+            className="w-full h-64 p-3 border rounded font-mono text-sm"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        </section>
+      )}
+    </div>
+  );
+}
+3. Make It Globally Available
+Import ContextPreview.jsx into your shared components or module‐editor directory.
+
+Wherever you have a “Draft Section” UI, simply render <ContextPreview /> next to your draft editor.
+
+With this in place, any of your module pages can seamlessly show the AI‐sourced context and let users interact with it—driving true co-authoring across all TrialSage modules.
+
+Once you’ve dropped this in and verified the snippets appear, let me know and we’ll:
+
+Add a two-phase loading spinner (“🔍 Fetching context…”, then “🪄 Drafting…”)
+
+Hook up deep-linking so clicking a snippet scrolls/highlights the matching draft citation.
+
+Polish styling to match your overall design system.
+
+
+
+
+
+
+

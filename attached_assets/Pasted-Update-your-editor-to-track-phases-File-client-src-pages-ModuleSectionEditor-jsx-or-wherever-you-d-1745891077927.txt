@@ -1,0 +1,144 @@
+Update your editor to track phases
+File: client/src/pages/ModuleSectionEditor.jsx (or wherever you dropped the draft UI)
+
+jsx
+Copy
+Edit
+import React, { useState, useRef } from "react";
+import ContextPreview from "../components/ai/ContextPreview";
+
+export default function ModuleSectionEditor({ sectionKey, templateId }) {
+  const [draft, setDraft] = useState("");
+  const [snippets, setSnippets] = useState([]);
+  const [phase, setPhase] = useState("idle"); // "idle" | "fetching" | "drafting"
+  const textareaRef = useRef();
+
+  async function generateDraft() {
+    try {
+      // Phase 1: fetch best context
+      setPhase("fetching");
+      const ctxRes = await fetch("/api/ai/context", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateId, sectionKey, topK: 5 }),
+      });
+      const ctxJson = await ctxRes.json();
+      setSnippets(ctxJson.context || []);
+
+      // Phase 2: generate the draft
+      setPhase("drafting");
+      const draftRes = await fetch("/api/ai/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateId, sectionKey, contextIds: ctxJson.context.map(c=>c.id) }),
+      });
+      const draftJson = await draftRes.json();
+      setDraft(draftJson.draft || "");
+    } catch (e) {
+      console.error(e);
+      alert("Error generating draft: " + e.message);
+    } finally {
+      setPhase("idle");
+    }
+  }
+
+  // Scroll/highlight the matching snippet marker in the draft
+  const handleSnippetClick = (id) => {
+    if (!textareaRef.current) return;
+    const marker = `<!-- snippet:${id} -->`;
+    const idx = draft.indexOf(marker);
+    if (idx !== -1) {
+      const before = draft.slice(0, idx);
+      const row = before.split("\n").length - 1;
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(idx, idx + marker.length);
+      // scroll into view
+      const lineHeight = 20; 
+      textareaRef.current.scrollTop = row * lineHeight;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <button
+        onClick={generateDraft}
+        disabled={phase !== "idle"}
+        className="px-4 py-2 bg-indigo-600 text-white rounded disabled:opacity-50"
+      >
+        {phase === "fetching"
+          ? "🔍 Fetching context…"
+          : phase === "drafting"
+          ? "🪄 Drafting section…"
+          : "Generate Draft"}
+      </button>
+
+      {snippets.length > 0 && (
+        <section>
+          <h3 className="text-lg font-semibold mb-2">Context Snippets</h3>
+          <ContextPreview
+            snippets={snippets}
+            onSnippetClick={handleSnippetClick}
+          />
+        </section>
+      )}
+
+      {draft && (
+        <section>
+          <h3 className="text-lg font-semibold mb-2">AI Draft</h3>
+          <textarea
+            ref={textareaRef}
+            className="w-full h-64 p-3 border rounded font-mono text-sm"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        </section>
+      )}
+    </div>
+  );
+}
+2. New /api/ai/context endpoint (optional)
+If you want a true two‐step fetch, add in server/routes/ai.js:
+
+js
+Copy
+Edit
+import express from "express";
+import { fetchContextForSection, draftSection } from "../../server/regulatory-brain/index.js";
+const router = express.Router();
+
+router.post("/context", async (req, res) => {
+  const { templateId, sectionKey, topK } = req.body;
+  const context = await fetchContextForSection(templateId, sectionKey, topK);
+  res.json({ context });
+});
+
+router.post("/draft", async (req, res) => {
+  const { templateId, sectionKey, contextIds } = req.body;
+  const draft = await draftSection(templateId, sectionKey, contextIds);
+  res.json({ draft });
+});
+
+export default router;
+And then in server/server.js:
+
+js
+Copy
+Edit
+import aiRoutes from "./routes/ai.js";
+app.use("/api/ai", aiRoutes);
+With those two changes you’ll get:
+
+🔍 Fetching context… while we pull the top-K passages
+
+🪄 Drafting section… while we call the LLM
+
+Click any snippet to jump right to its spot in the draft
+
+Feel free to tweak the styling (colors/icons) to match TrialSage’s design system. Let me know once this is hooked up and working, and we can move on to the final polish (keyboard shortcuts, better focus outlines, etc.).
+
+
+
+
+
+
+
