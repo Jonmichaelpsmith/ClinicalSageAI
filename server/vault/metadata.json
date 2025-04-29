@@ -1,24 +1,31 @@
 {
   "documents": [
     {
-      "id": "ich-q2r2-2023",
-      "path": "ICH_Q2(R2)_Guideline_2023_1130.pdf",
-      "title": "ICH Q2(R2) Guideline (2023)",
-      "author": "International Council for Harmonisation",
-      "date": "2023-11-30",
-      "type": "guidance",
-      "category": "CMC",
-      "tags": ["ICH", "quality", "validation", "analytical procedures"]
+      "docId": "doc-1",
+      "title": "ICH E6(R2) Good Clinical Practice",
+      "path": "/vault/docs/ich-e6-r2.pdf",
+      "uploadDate": "2025-04-15T10:00:00Z",
+      "category": "Regulatory Guidance",
+      "source": "ICH",
+      "indexed": true
     },
     {
-      "id": "ich-q3d-r2-2022",
-      "path": "ICH_Q3D(R2)_Step4Presentation_2022_0527.pdf",
-      "title": "ICH Q3D(R2) Step 4 Presentation",
-      "author": "International Council for Harmonisation",
-      "date": "2022-05-27",
-      "type": "presentation",
-      "category": "CMC",
-      "tags": ["ICH", "quality", "elemental impurities", "presentation"]
+      "docId": "doc-2",
+      "title": "FDA Guidance: Investigational New Drug Applications",
+      "path": "/vault/docs/fda-ind-guidance.pdf",
+      "uploadDate": "2025-04-18T14:32:00Z",
+      "category": "Regulatory Guidance",
+      "source": "FDA",
+      "indexed": true
+    },
+    {
+      "docId": "doc-3",
+      "title": "Clinical Safety Data Management: Definitions and Standards for Expedited Reporting",
+      "path": "/vault/docs/ich-e2a.pdf",
+      "uploadDate": "2025-04-20T09:15:00Z",
+      "category": "Regulatory Guidance",
+      "source": "ICH",
+      "indexed": true
     }
   ]
 }

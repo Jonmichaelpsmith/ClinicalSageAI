@@ -1,0 +1,133 @@
+Keyboard Shortcut (Ctrl+Enter → generateDraft)
+File: ModuleSectionEditor.jsx (or wherever your generateDraft lives)
+
+diff
+Copy
+Edit
+import React, { useEffect, useRef, useState } from "react";
+...
+export default function ModuleSectionEditor({ /* props */ }) {
+  const textareaRef = useRef(null);
+  const [error, setError] = useState(null);
+
+  const generateDraft = async () => {
+    setError(null);
+    try {
+      // your existing draft‐generation logic...
+    } catch (err) {
+      setError(err.message || "Failed to generate draft");
+    }
+  };
+
++ useEffect(() => {
++   const handleKey = (e) => {
++     // Ctrl+Enter or Cmd+Enter
++     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
++       e.preventDefault();
++       generateDraft();
++     }
++   };
++
++   document.addEventListener("keydown", handleKey);
++   return () => document.removeEventListener("keydown", handleKey);
++ }, []);
+
+  return (
+    <div>
+      <label htmlFor="draft-area" className="sr-only">Draft input</label>
+      <textarea
+        id="draft-area"
+        ref={textareaRef}
+        className="w-full border rounded p-2"
+        placeholder="Start writing your section..."
+        /* …other props… */
+      />
+
+      <button
+        onClick={generateDraft}
+        aria-label="Generate draft for this section"
+        className="mt-2 bg-indigo-600 text-white rounded px-4 py-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+      >
+        Generate Draft
+      </button>
+
++     {error && (
++       <div role="alert" className="mt-2 text-sm text-red-600">
++         ⚠ {error}
++       </div>
++     )}
+
+      {/* …rest of UI… */}
+    </div>
+  );
+}
+2. Accessibility Polishing
+Buttons now have aria-label.
+
+Focus styles via focus:ring.
+
+Label for the textarea is visually hidden (sr-only) but available to screen‐readers.
+
+3. Error UI
+You can see above we introduced a small <div role="alert"> under the button, which will display any caught errors in red.
+
+4. Unit Tests for ContextPreview
+Install if you haven’t:
+
+bash
+Copy
+Edit
+npm install --save-dev @testing-library/react @testing-library/jest-dom jest
+File: client/src/components/ai/ContextPreview.test.jsx
+
+jsx
+Copy
+Edit
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import ContextPreview from "./ContextPreview";
+
+describe("ContextPreview", () => {
+  const snippets = [
+    { id: "s1", text: "First snippet" },
+    { id: "s2", text: "Second snippet" },
+  ];
+
+  it("renders no‐snippets message when empty", () => {
+    render(<ContextPreview snippets={[]} onSnippetClick={() => {}} />);
+    expect(screen.getByText("No context snippets available.")).toBeInTheDocument();
+  });
+
+  it("renders each snippet and calls callback on click", () => {
+    const handleClick = jest.fn();
+    render(<ContextPreview snippets={snippets} onSnippetClick={handleClick} />);
+
+    // Both bits of text should show
+    expect(screen.getByText("First snippet")).toBeInTheDocument();
+    expect(screen.getByText("Second snippet")).toBeInTheDocument();
+
+    // Buttons should be in the DOM (hidden visually)
+    const buttons = screen.getAllByRole("button", { name: /Use here/i });
+    expect(buttons).toHaveLength(2);
+
+    // Simulate click
+    fireEvent.click(buttons[1]);
+    expect(handleClick).toHaveBeenCalledWith("s2");
+  });
+});
+Next
+Add a small spinner inside your “Generate Draft” button while it’s loading.
+
+Hook up test runner in your CI.
+
+Manually verify the Ctrl+Enter flow, error alerts, and accessibility.
+
+Let me know once you’ve pasted these in or if you hit any snags!
+
+
+
+
+
+
+
