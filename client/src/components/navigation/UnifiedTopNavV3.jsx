@@ -18,8 +18,8 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
     <div className="w-full sticky top-0 z-50 bg-white shadow-md flex flex-col">
 
       {/* Top Row - Navigation and Module Switcher */}
-      <div className="flex justify-between items-center px-4 py-2 border-b">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-2 border-b">
+        <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-0">
           <button
             onClick={() => window.history.back()}
             className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
@@ -61,7 +61,7 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
       </div>
 
       {/* Functional Tabs Row */}
-      <div className="flex justify-center gap-8 border-b border-gray-100 bg-white py-2">
+      <div className="flex justify-center overflow-x-auto whitespace-nowrap gap-4 sm:gap-8 border-b border-gray-100 bg-white py-2 px-1">
         {['RiskHeatmap', 'TimelineSimulator', 'AskLumenAI'].map((tabKey) => (
           <button
             key={tabKey}

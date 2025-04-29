@@ -160,7 +160,7 @@ export default function RegulatoryIntelligenceHub() {
               </Card>
             ) : (
               <FadeTransition>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   {/* Readiness Score Card */}
                   <Card className="transition-all duration-300 hover:shadow-md">
                     <CardHeader className="pb-2">
@@ -169,9 +169,9 @@ export default function RegulatoryIntelligenceHub() {
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center justify-center flex-col">
-                        <div className="relative w-32 h-32 mb-4">
+                        <div className="relative w-28 sm:w-32 h-28 sm:h-32 mb-4">
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-4xl font-bold">{readinessData.readinessScore}%</span>
+                            <span className="text-3xl sm:text-4xl font-bold">{readinessData.readinessScore}%</span>
                           </div>
                           <svg className="w-full h-full" viewBox="0 0 100 100">
                             <circle
@@ -217,11 +217,11 @@ export default function RegulatoryIntelligenceHub() {
                     <CardContent>
                       <div className="flex items-center justify-center flex-col">
                         <div className="flex items-center justify-center mb-4">
-                          <Clock className="h-10 w-10 text-amber-500 mr-2" />
-                          <span className="text-3xl font-bold">{readinessData.delayDays}</span>
-                          <span className="text-lg ml-2">days</span>
+                          <Clock className="h-8 w-8 sm:h-10 sm:w-10 text-amber-500 mr-2" />
+                          <span className="text-2xl sm:text-3xl font-bold">{readinessData.delayDays}</span>
+                          <span className="text-base sm:text-lg ml-2">days</span>
                         </div>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-xs sm:text-sm text-gray-600 text-center">
                           Potential delay if critical gaps are not addressed
                         </span>
                       </div>
@@ -229,17 +229,17 @@ export default function RegulatoryIntelligenceHub() {
                   </Card>
                   
                   {/* Financial Impact Card */}
-                  <Card className="transition-all duration-300 hover:shadow-md">
+                  <Card className="transition-all duration-300 hover:shadow-md sm:col-span-2 md:col-span-1">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg">Financial Impact</CardTitle>
                       <CardDescription>Estimated cost of delays</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center justify-center flex-col">
-                        <span className="text-3xl font-bold text-red-600 mb-4">
+                        <span className="text-2xl sm:text-3xl font-bold text-red-600 mb-4">
                           {formatCurrency(readinessData.financialImpact)}
                         </span>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-xs sm:text-sm text-gray-600 text-center">
                           Potential revenue loss due to market delay
                         </span>
                       </div>

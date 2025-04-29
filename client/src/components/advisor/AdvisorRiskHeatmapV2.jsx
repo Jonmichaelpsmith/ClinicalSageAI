@@ -136,7 +136,7 @@ export default function AdvisorRiskHeatmapV2({ sidebar = false }) {
     <div className="p-4 bg-white rounded-lg shadow-md space-y-4">
       <h3 className="text-md font-semibold text-gray-700 mb-2">Regulatory Risk Heatmap</h3>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {missingSections.map((section, idx) => {
           const { risk, delayDays, financialRisk } = getRiskProfile(section);
           const riskColor =
@@ -156,26 +156,26 @@ export default function AdvisorRiskHeatmapV2({ sidebar = false }) {
                 const modal = document.createElement('div');
                 modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
                 modal.innerHTML = `
-                  <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">${section}</h3>
+                  <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full mx-4 shadow-xl overflow-y-auto max-h-[90vh]">
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">${section}</h3>
                     <div class="mb-4 pb-4 border-b border-gray-200">
                       <div class="flex items-center mt-2">
                         <span class="w-3 h-3 rounded-full ${riskColor} mr-2"></span>
                         <span class="text-gray-700"><strong>${risk} Risk Level</strong></span>
                       </div>
-                      <p class="text-sm text-gray-600 mt-3">
+                      <p class="text-xs sm:text-sm text-gray-600 mt-3">
                         Completing this section is critical to your regulatory submission. 
                         Current delays in this area result in:
                       </p>
-                      <ul class="mt-2 space-y-1 text-sm">
+                      <ul class="mt-2 space-y-1 text-xs sm:text-sm">
                         <li class="flex items-center">
-                          <svg class="w-4 h-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <svg class="w-4 h-4 text-red-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
                           <span><strong>Time Impact:</strong> +${delayDays} days to submission timeline</span>
                         </li>
                         <li class="flex items-center">
-                          <svg class="w-4 h-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <svg class="w-4 h-4 text-red-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
                           <span><strong>Financial Impact:</strong> ~$${(financialRisk/1000).toLocaleString()}k estimated cost</span>
@@ -183,13 +183,13 @@ export default function AdvisorRiskHeatmapV2({ sidebar = false }) {
                       </ul>
                     </div>
                     <div class="flex flex-col space-y-2">
-                      <button id="openDocumentEditor" class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded">
+                      <button id="openDocumentEditor" class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded text-sm sm:text-base">
                         Open Document Editor
                       </button>
-                      <button id="viewAnalysis" class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded">
+                      <button id="viewAnalysis" class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded text-sm sm:text-base">
                         View Detailed Analysis
                       </button>
-                      <button class="closeModal w-full py-2 px-4 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded mt-2">
+                      <button class="closeModal w-full py-2 px-4 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded mt-2 text-sm sm:text-base">
                         Close
                       </button>
                     </div>
