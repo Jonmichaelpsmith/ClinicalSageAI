@@ -1,0 +1,144 @@
+Below is Slice 4: Canvas Overview ↔ Editor Linkage. You’ll get:
+	1.	A CanvasPage under /canvas with our existing React Flow workbench.
+	2.	Clicking a node now navigates to that section’s Co-Author editor.
+	3.	Updates to CanvasWorkbenchV2.jsx to accept an onNodeClick handler.
+
+⸻
+
+1. Update your router
+
+File: client/src/App.jsx
+Add a route for the new CanvasPage:
+
+ import ModuleDashboard from './pages/ModuleDashboard';
++import CanvasPage       from './pages/CanvasPage';
+ import CoAuthorPage      from './pages/CoAuthorPage';
+ // …
+
+ <Routes>
+   <Route path="/dashboard" element={<ModuleDashboard />} />
++  <Route path="/canvas"    element={<CanvasPage />} />
+   <Route path="/coauthor"  element={<CoAuthorPage />} />
+   {/* …other routes… */}
+ </Routes>
+
+
+
+⸻
+
+2. Create CanvasPage.jsx
+
+File: client/src/pages/CanvasPage.jsx
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import UnifiedTopNavV5 from '../components/navigation/UnifiedTopNavV5';
+import Breadcrumbs     from '../components/navigation/Breadcrumbs';
+import CanvasWorkbenchV2 from '../components/canvas/CanvasWorkbenchV2';
+import './CanvasPage.css';
+
+export default function CanvasPage() {
+  const navigate = useNavigate();
+
+  // When a node is clicked, navigate to the Co-Author editor for that module/section
+  const handleNodeClick = (node) => {
+    // Assuming node.id is like "2.7"
+    const [moduleId, sectionId] = node.id.split('.');
+    navigate(`/coauthor?module=${moduleId}&section=${node.id}`);
+  };
+
+  return (
+    <div className="canvas-page">
+      <UnifiedTopNavV5
+        tabs={[
+          { path: '/dashboard', label: 'Dashboard' },
+          { path: '/coauthor',  label: 'Co-Author'  },
+          { path: '/canvas',    label: 'Canvas'    },
+          { path: '/timeline',  label: 'Timeline'  },
+        ]}
+      />
+
+      <Breadcrumbs
+        items={[
+          { label: 'TrialSage™', to: '/dashboard' },
+          { label: 'Canvas Workbench' }
+        ]}
+      />
+
+      <main className="canvas-main">
+        <CanvasWorkbenchV2
+          onNodeClick={handleNodeClick}
+        />
+      </main>
+    </div>
+  );
+}
+
+Styles: client/src/pages/CanvasPage.css
+
+.canvas-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.canvas-main {
+  flex: 1;
+  position: relative;
+}
+
+
+
+⸻
+
+3. Wire the click handler into your workbench
+
+Modify CanvasWorkbenchV2 to accept an onNodeClick prop and call it:
+
+File: client/src/components/canvas/CanvasWorkbenchV2.jsx
+
+--- a/client/src/components/canvas/CanvasWorkbenchV2.jsx
++++ b/client/src/components/canvas/CanvasWorkbenchV2.jsx
+@@ export default function CanvasWorkbenchV2({
+-  // existing signature
+-}) {
++  onNodeClick,   // <— new prop
++}) {
+   // …
+   return (
+     <div ref={containerRef} style={{ width:'100%', height:'100%', position:'relative' }}>
+       <ReactFlow
+         nodes={nodes}
+         edges={edges}
+         onNodesChange={onNodesChange}
+         onEdgesChange={onEdgesChange}
+         onConnect={onConnect}
+         onNodeDragStop={handleDragEnd}
+-        onNodeClick={(_, node) => setSelectedSection(node.id)}
++        onNodeClick={(e, node) => {
++          setSelectedSection(node.id);
++          if (onNodeClick) onNodeClick(node);
++        }}
+         fitView
+       >
+         {/* … rest of your React Flow children … */}
+       </ReactFlow>
+       <NodeDetailPanel
+         sectionId={selectedSection}
+         onClose={() => setSelectedSection(null)}
+       />
+     </div>
+   );
+ }
+
+
+
+⸻
+
+4. Verify
+	1.	Restart both server and client.
+	2.	Navigate to /canvas.
+	3.	Click on any CTD node (e.g. “2.7: Clinical Summary”).
+	4.	You should be redirected to /coauthor?module=2&section=2.7 and see the Co-Author editor for that section.
+
+This closes the loop between your graphical overview and the detailed editor—Slice 4 done! Let me know if you’d like any tweaks or to proceed to Slice 5: Timeline Simulator next.

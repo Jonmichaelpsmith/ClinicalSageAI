@@ -1,0 +1,316 @@
+Below is Slice 2 (“Co-Author Editor Core”) with GA-quality scaffolding. We’re adding a rich-text editor (via React Quill), AI-powered Generate Draft, Validate, and Auto-Save with inline issue display.
+
+⸻
+
+1) Install React Quill
+
+In your client folder, run:
+
+npm install react-quill
+
+
+
+⸻
+
+2) Co-Author Editor Component
+
+<details>
+<summary><code>client/src/components/coauthor/CoAuthorEditor.jsx</code></summary>
+
+
+import React, { useState, useEffect, useCallback } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import './CoAuthorEditor.css';
+import { Button, Spinner } from '@components/ui';
+
+export default function CoAuthorEditor({ moduleId, sectionId, initialContent = '' }) {
+  const [content, setContent]     = useState(initialContent);
+  const [loadingGen, setLoadingGen] = useState(false);
+  const [loadingVal, setLoadingVal] = useState(false);
+  const [issues, setIssues]       = useState([]);
+  const [savedAt, setSavedAt]     = useState(null);
+
+  // Auto-save every 30s
+  useEffect(() => {
+    const iv = setInterval(() => {
+      fetch(`/api/coauthor/save`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ moduleId, sectionId, content }),
+      }).then(() => setSavedAt(new Date()))
+        .catch(console.error);
+    }, 30000);
+    return () => clearInterval(iv);
+  }, [content, moduleId, sectionId]);
+
+  // Generate AI draft
+  const handleGenerate = useCallback(async () => {
+    setLoadingGen(true);
+    try {
+      const res = await fetch('/api/coauthor/generate', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ moduleId, sectionId, currentText: content }),
+      });
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      const { draft } = await res.json();
+      setContent(draft);
+      setIssues([]); // clear old
+    } catch (err) {
+      console.error(err);
+      alert(`Generate failed: ${err.message}`);
+    } finally {
+      setLoadingGen(false);
+    }
+  }, [content, moduleId, sectionId]);
+
+  // Validate draft
+  const handleValidate = useCallback(async () => {
+    setLoadingVal(true);
+    try {
+      const res = await fetch('/api/coauthor/validate', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ moduleId, sectionId, sectionText: content }),
+      });
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      const { issues } = await res.json();
+      setIssues(issues);
+    } catch (err) {
+      console.error(err);
+      alert(`Validation failed: ${err.message}`);
+    } finally {
+      setLoadingVal(false);
+    }
+  }, [content, moduleId, sectionId]);
+
+  return (
+    <div className="ca-editor-container">
+      <div className="ca-editor-toolbar">
+        <Button onClick={handleGenerate} disabled={loadingGen} variant="primary">
+          {loadingGen ? <><Spinner size="sm" /> Generating…</> : 'Generate Draft'}
+        </Button>
+        <Button onClick={handleValidate} disabled={loadingVal} variant="warning">
+          {loadingVal ? <><Spinner size="sm" /> Validating…</> : 'Validate'}
+        </Button>
+        {savedAt && (
+          <span className="ca-save-timestamp">
+            Auto‐saved at {savedAt.toLocaleTimeString()}
+          </span>
+        )}
+      </div>
+
+      <ReactQuill
+        value={content}
+        onChange={setContent}
+        theme="snow"
+        modules={{
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ list: 'ordered'}, { list: 'bullet' }],
+            ['link','image','formula'],
+            ['clean']
+          ]
+        }}
+        formats={[
+          'header','bold','italic','underline',
+          'list','bullet','link','image','formula'
+        ]}
+      />
+
+      {issues.length > 0 && (
+        <div className="ca-issues-panel">
+          <h4>Validation Issues</h4>
+          <ul>
+            {issues.map((i, idx) => (
+              <li key={idx} className="ca-issue-item">{i.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+</details>
+
+
+
+
+⸻
+
+3) Co-Author Editor Styles
+
+<details>
+<summary><code>client/src/components/coauthor/CoAuthorEditor.css</code></summary>
+
+
+.ca-editor-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ca-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ca-save-timestamp {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.ca-issues-panel {
+  background: #fff5f5;
+  border-left: 4px solid var(--color-danger);
+  padding: 0.75rem 1rem;
+  border-radius: var(--space-xs);
+}
+
+.ca-issues-panel h4 {
+  margin: 0 0 0.5rem;
+  color: var(--color-danger);
+}
+
+.ca-issue-item {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  margin-left: 1rem;
+}
+
+</details>
+
+
+
+
+⸻
+
+4) Co-Author Page Layout
+
+<details>
+<summary><code>client/src/pages/CoAuthorPage.jsx</code></summary>
+
+
+import React from 'react';
+import { useSearchParams } from 'react-router-dom';
+import UnifiedTopNavV5 from '../components/navigation/UnifiedTopNavV5';
+import Breadcrumbs       from '../components/navigation/Breadcrumbs';
+import CoAuthorEditor    from '../components/coauthor/CoAuthorEditor';
+import './CoAuthorPage.css';
+
+export default function CoAuthorPage() {
+  const [params] = useSearchParams();
+  const moduleId  = params.get('module') || '1';
+  const sectionId = params.get('section')|| '1.1';
+
+  return (
+    <div className="coauthor-page">
+      <UnifiedTopNavV5
+        tabs={[
+          { path: '/dashboard', label: 'Dashboard' },
+          { path: '/coauthor',  label: 'Co-Author'  },
+          { path: '/canvas',    label: 'Canvas'    },
+          { path: '/timeline',  label: 'Timeline'  },
+        ]}
+      />
+
+      <Breadcrumbs items={[
+        { label: 'TrialSage™',      to: '/dashboard' },
+        { label: 'eCTD Co-Author™', to: '/coauthor'  },
+        { label: `Module ${moduleId}`, to: `/coauthor?module=${moduleId}` },
+        { label: `Section ${sectionId}` },
+      ]}/>
+
+      <main className="coauthor-content">
+        <section className="editor-section">
+          <h2>Module {moduleId} • Section {sectionId}</h2>
+          <CoAuthorEditor
+            moduleId={moduleId}
+            sectionId={sectionId}
+          />
+        </section>
+
+        {/* Right pane (Copilot) will go here in Slice 3 */}
+        <aside className="copilot-placeholder">
+          <p>AI Copilot panel coming next…</p>
+        </aside>
+      </main>
+    </div>
+  );
+}
+
+</details>
+
+
+<details>
+<summary><code>CoAuthorPage.css</code></summary>
+
+
+.coauthor-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.coauthor-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  overflow: auto;
+}
+
+.editor-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.copilot-placeholder {
+  background: var(--color-surface);
+  border: 1px dashed #ccc;
+  padding: var(--space-md);
+  border-radius: var(--space-sm);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+</details>
+
+
+
+
+⸻
+
+5) Route it in App.jsx
+
+// client/src/App.jsx
++import CoAuthorPage from './pages/CoAuthorPage';
+
+<Routes>
+  {/* … */}
+  <Route path="/coauthor" element={<CoAuthorPage />} />
+  {/* … */}
+</Routes>
+
+
+
+⸻
+
+✅ Verify Slice 2
+	1.	Restart your client & server.
+	2.	Navigate to /coauthor?module=2§ion=2.7.
+	3.	You should see:
+      •   UnifiedTopNavV5 + Breadcrumbs
+      •   Rich-text editor (React Quill)
+      •   Generate Draft / Validate buttons with spinners
+      •   Auto-save timestamp updating every 30s
+      •   Inline validation issues panel
+	4.	Editing + clicking Generate should call your stub or real /api/coauthor/generate.
+	5.	Clicking Validate should surface any stubbed issues.
+
+Once Slice 2 is green, we’ll proceed to Slice ３: AI Copilot Panel (Guidance / Context / Chat). Let me know how this works for you!
