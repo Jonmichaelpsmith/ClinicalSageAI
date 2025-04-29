@@ -1,0 +1,126 @@
+Here’s the complete **Generate Draft** wiring in your **CoAuthor.jsx**. This adds a loading state, calls `/api/coauthor/generate`, and replaces the editor content with the AI draft:
+
+```diff
+// client/src/pages/CoAuthor.jsx
+import React, { useState } from 'react';
+import UnifiedTopNavV3 from '../components/navigation/UnifiedTopNavV3';
+import { Button, Input, Textarea } from '@components/ui';
+
+export default function CoAuthor() {
+  const [module, setModule] = useState('Module 2: CTD Summaries');
+  const [section, setSection] = useState('2.7: Clinical Summary');
+  const [content, setContent] = useState(
+    'This is the initial content for your CTD section. You can edit this and use AI to help generate a compliant draft.'
+  );
+
+  const [query, setQuery]       = useState('');
+  const [snippets, setSnippets] = useState([]);
+  const [ctxLoading, setCtxLoading]   = useState(false);
+
+  const [issues, setIssues]     = useState([]);
+  const [valLoading, setValLoading]   = useState(false);
+
++ const [genLoading, setGenLoading]   = useState(false);
++ const [genError, setGenError]       = useState('');
+
+  // … existing fetchContext & handleValidate …
+
++ // 3) AI‐Draft generation
++ const handleGenerate = async () => {
++   setGenError('');
++   setGenLoading(true);
++   try {
++     const res = await fetch('/api/coauthor/generate', {
++       method: 'POST',
++       headers: { 'Content-Type': 'application/json' },
++       body: JSON.stringify({
++         module,
++         section,
++         currentText: content,
++         contextSnippets: snippets
++       })
++     });
++     if (!res.ok) {
++       const text = await res.text();
++       throw new Error(`Server ${res.status}: ${text}`);
++     }
++     const { draft } = await res.json();
++     setContent(draft);
++   } catch (err) {
++     console.error('Generate Draft error:', err);
++     setGenError(err.message || 'Failed to generate draft.');
++   } finally {
++     setGenLoading(false);
++   }
++ };
+
+  return (
+    <div className="p-6 space-y-6">
+      <UnifiedTopNavV3
+        breadcrumbs={['TrialSage™', 'eCTD Co-Author™', module, section]}
+      />
+
+      {/* Section Editor */}
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Section Editor</h2>
+        <Textarea
+          rows={12}
+          value={content}
+          onChange={e => setContent(e.target.value)}
+        />
+        <div className="mt-4 space-x-2">
++          <Button
++            onClick={handleGenerate}
++            loading={genLoading}
++            variant="primary"
++          >
++            {genLoading ? '🛠 Generating…' : '🛠 Generate Draft'}
++          </Button>
+          <Button
+            onClick={handleValidate}
+            loading={valLoading}
+            variant="warning"
+          >
+            {valLoading ? '⏳ Validating…' : '✅ Validate Draft'}
+          </Button>
+        </div>
+
++       {genError && (
++         <div className="mt-2 text-sm text-red-600">⚠️ {genError}</div>
++       )}
+      </div>
+
+      {/* Validation Issues */}
+      {issues.length > 0 && (
+        <div className="p-4 bg-red-50 rounded border border-red-200">
+          <h3 className="font-semibold text-red-700 mb-2">Validation Issues:</h3>
+          <ul className="list-disc list-inside text-red-700">
+            {issues.map((i, idx) => (
+              <li key={idx}>{i.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Context Retrieval */}
+      {/* …unchanged… */}
+    </div>
+  );
+}
+```
+
+**What We’ve Added:**
+- **`genLoading`** & **`genError`** state  
+- **`handleGenerate`**: calls `/api/coauthor/generate`, handles HTTP errors, updates the editor content  
+- **Generate Draft** button shows a spinner via `loading={genLoading}` and toggles its label  
+- Inline error message if generation fails
+
+---
+
+### Next Steps
+
+1. **Reload** your Repl and go to `/coauthor`.  
+2. Click **Generate Draft** → you should see your stub endpoint’s response populate the editor.  
+3. Confirm loading spinner and error display work correctly.
+
+Once this is verified, we can move on to **auto-save/versioning** or **inline Lumen integration**—let me know which you’d like to tackle next!

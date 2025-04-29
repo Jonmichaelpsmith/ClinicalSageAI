@@ -862,22 +862,21 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
   });
   
   // Add backward compatibility endpoint for /api/ai/draft
-  app.post("/api/ai/draft", (req: Request, res: Response) => {
+  app.post("/api/ai/draft", async (req: Request, res: Response) => {
     const { moduleId, sectionId, currentContent, contextIds, query } = req.body;
     console.log('🔄 POST /api/ai/draft [legacy]', { moduleId, sectionId });
     
     try {
-      // Generate simple placeholder response for now
-      const draft = `# AI-Generated Draft for ${moduleId || 'unknown'}, Section ${sectionId || 'unknown'}\n\n` +
-        `## Introduction\n` +
-        `This is a generated draft based on your input: "${currentContent?.substring(0, 50)}..."\n\n` +
-        `## Background\n` +
-        `Clinical trial data should be presented in accordance with ICH guidelines for Module ${moduleId?.replace('m', '') || '2'}, ` +
-        `with appropriate consideration for study design, endpoints, and statistical analysis.\n\n` +
-        `## Analysis\n` +
-        `The analysis should follow a logical structure with clear presentation of data and conclusions.\n\n` +
-        `## Regulatory Considerations\n` +
-        `All statements must be supported by data and be compliant with regulatory guidance.`;
+      // Map the legacy parameters to the new format and call the coauthorService
+      const context = Array.isArray(contextIds) ? contextIds.map(id => `Context reference ${id}`) : [];
+      
+      // Use the new generateDraft function with legacy parameters mapped to new format
+      const draft = await generateDraft(
+        moduleId || 'm2', 
+        sectionId || '2.7', 
+        currentContent || query || 'Generate a regulatory compliant section', 
+        context
+      );
       
       return res.json({
         success: true,
