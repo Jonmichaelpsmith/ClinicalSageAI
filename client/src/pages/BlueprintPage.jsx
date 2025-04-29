@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FolderTree, Download, FileText, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Loader2, FolderTree, Download, FileText, ArrowRight, CheckCircle2, AlertTriangle, Upload, ExternalLink } from "lucide-react";
 
 /**
  * Blueprint Generator - Create folder structures and XML manifest for submission packages
@@ -31,6 +31,15 @@ const BlueprintPage = () => {
   const [folderPreview, setFolderPreview] = useState([]);
   const [xmlPreview, setXmlPreview] = useState('');
   const [activeTab, setActiveTab] = useState('config');
+  
+  // Validation state
+  const [validating, setValidating] = useState(false);
+  const [validationResults, setValidationResults] = useState(null);
+  
+  // Submission state
+  const [submitting, setSubmitting] = useState(false);
+  const [submissionGateway, setSubmissionGateway] = useState(null);
+  const [submissionResults, setSubmissionResults] = useState(null);
   
   // Get predefined templates based on submission type and region
   const getTemplates = () => {
@@ -321,6 +330,127 @@ const BlueprintPage = () => {
       ...prev,
       [module]: !prev[module]
     }));
+  };
+  
+  // Validate eCTD package
+  const handleValidate = async () => {
+    if (!generatedBlueprint) {
+      alert('Please generate a blueprint first');
+      return;
+    }
+    
+    setValidating(true);
+    setValidationResults(null);
+    
+    try {
+      // Request validation from server
+      const response = await fetch(`/api/ectd/validate/${generatedBlueprint.id}`, {
+        method: 'GET'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to validate CTD package');
+      }
+      
+      const data = await response.json();
+      setValidationResults(data);
+    } catch (error) {
+      console.error('Error validating CTD package:', error);
+      setValidationResults({
+        success: false,
+        error: error.message || 'Failed to validate CTD package'
+      });
+    } finally {
+      setValidating(false);
+    }
+  };
+  
+  // Submit to FDA ESG
+  const handleSubmitToFDA = async () => {
+    if (!generatedBlueprint) {
+      alert('Please generate a blueprint first');
+      return;
+    }
+    
+    setSubmitting(true);
+    setSubmissionGateway('FDA ESG');
+    setSubmissionResults(null);
+    
+    try {
+      // Build form data for submission
+      const formData = new FormData();
+      formData.append('submissionType', submissionType);
+      formData.append('applicationType', submissionType.toUpperCase());
+      formData.append('applicationNumber', applicationNumber);
+      formData.append('sponsorName', companyName);
+      formData.append('productName', productName);
+      formData.append('contactEmail', 'regulatory@' + companyName.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com');
+      
+      // Request submission
+      const response = await fetch(`/api/submission/esg?blueprintId=${generatedBlueprint.id}`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit to FDA ESG');
+      }
+      
+      const data = await response.json();
+      setSubmissionResults(data);
+    } catch (error) {
+      console.error('Error submitting to FDA ESG:', error);
+      setSubmissionResults({
+        success: false,
+        error: error.message || 'Failed to submit to FDA ESG'
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  
+  // Submit to EMA CESP
+  const handleSubmitToEMA = async () => {
+    if (!generatedBlueprint) {
+      alert('Please generate a blueprint first');
+      return;
+    }
+    
+    setSubmitting(true);
+    setSubmissionGateway('EMA CESP');
+    setSubmissionResults(null);
+    
+    try {
+      // Build form data for submission
+      const formData = new FormData();
+      formData.append('procedureType', 'Centralised');
+      formData.append('procedureNumber', 'EMEA/H/C/' + applicationNumber.replace(/[^0-9]/g, ''));
+      formData.append('marketingAuthorizationHolder', companyName);
+      formData.append('productName', productName);
+      formData.append('substanceName', productName.split(' ')[0]);
+      formData.append('contactEmail', 'regulatory@' + companyName.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com');
+      
+      // Request submission
+      const response = await fetch(`/api/submission/cesp?blueprintId=${generatedBlueprint.id}`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit to EMA CESP');
+      }
+      
+      const data = await response.json();
+      setSubmissionResults(data);
+    } catch (error) {
+      console.error('Error submitting to EMA CESP:', error);
+      setSubmissionResults({
+        success: false,
+        error: error.message || 'Failed to submit to EMA CESP'
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
   
   return (
@@ -714,20 +844,238 @@ const BlueprintPage = () => {
                 </CardContent>
               </Card>
               
-              <div className="flex justify-between">
-                <Button 
-                  variant="outline"
-                  onClick={() => setActiveTab('config')}
-                >
-                  Configure Another Blueprint
-                </Button>
-                <Button 
-                  onClick={handleDownloadBlueprint}
-                  className="flex items-center"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Blueprint ZIP
-                </Button>
+              {/* Validation Results Section */}
+              {validationResults && (
+                <Card className="mt-6 mb-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      {validationResults.success && validationResults.validation && validationResults.validation.summary.valid ? (
+                        <>
+                          <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" />
+                          Validation Passed
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle className="h-5 w-5 mr-2 text-amber-600" />
+                          Validation Results
+                        </>
+                      )}
+                    </CardTitle>
+                    <CardDescription>
+                      {validationResults.success 
+                        ? 'eCTD package validation results'
+                        : 'There was an error validating your package'
+                      }
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!validationResults.success ? (
+                      <div className="bg-red-50 border border-red-200 rounded p-4 text-red-800">
+                        {validationResults.error || 'Unknown validation error occurred'}
+                      </div>
+                    ) : validationResults.validation?.summary ? (
+                      <div className="space-y-4">
+                        <div className={`border rounded p-4 ${validationResults.validation.summary.valid ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
+                          <h3 className="font-medium mb-2">Validation Summary</h3>
+                          <ul className="space-y-1 text-sm">
+                            <li><span className="font-medium">Status:</span> {validationResults.validation.summary.valid ? 'Valid' : 'Invalid'}</li>
+                            <li><span className="font-medium">Errors:</span> {validationResults.validation.summary.errorCount}</li>
+                            <li><span className="font-medium">Warnings:</span> {validationResults.validation.summary.warningCount}</li>
+                            <li><span className="font-medium">Info:</span> {validationResults.validation.summary.infoCount}</li>
+                            <li><span className="font-medium">Validated At:</span> {new Date(validationResults.validation.summary.validatedAt).toLocaleString()}</li>
+                          </ul>
+                        </div>
+
+                        {validationResults.validation.issues && validationResults.validation.issues.length > 0 && (
+                          <div className="border rounded p-4 bg-white">
+                            <h3 className="font-medium mb-2">Issues Found</h3>
+                            <div className="space-y-3 max-h-60 overflow-y-auto">
+                              {validationResults.validation.issues.map((issue, index) => (
+                                <div 
+                                  key={index} 
+                                  className={`p-3 rounded text-sm ${
+                                    issue.level === 'error' ? 'bg-red-50 border border-red-200 text-red-800' :
+                                    issue.level === 'warning' ? 'bg-amber-50 border border-amber-200 text-amber-800' :
+                                    'bg-blue-50 border border-blue-200 text-blue-800'
+                                  }`}
+                                >
+                                  <div className="font-medium">{issue.code}: {issue.message}</div>
+                                  {issue.location && <div className="mt-1">Location: {issue.location}</div>}
+                                  {issue.details && <div className="mt-1 text-xs">{issue.details}</div>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {validationResults.validation.recommendations && (
+                          <div className="border rounded p-4 bg-blue-50 border-blue-200">
+                            <h3 className="font-medium mb-2 text-blue-800">Recommendations</h3>
+                            <ul className="list-disc pl-5 space-y-1 text-sm text-blue-700">
+                              {validationResults.validation.recommendations.map((rec, index) => (
+                                <li key={index}>{rec}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center p-4 text-gray-500">No validation details available</div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Submission Results Section */}
+              {submissionResults && (
+                <Card className="mt-6 mb-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      {submissionResults.success ? (
+                        <>
+                          <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" />
+                          Submission to {submissionGateway} Successful
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle className="h-5 w-5 mr-2 text-amber-600" />
+                          Submission to {submissionGateway} Failed
+                        </>
+                      )}
+                    </CardTitle>
+                    <CardDescription>
+                      {submissionResults.success 
+                        ? `Your submission has been sent to ${submissionGateway}`
+                        : 'There was an error with your submission'
+                      }
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!submissionResults.success ? (
+                      <div className="bg-red-50 border border-red-200 rounded p-4 text-red-800">
+                        {submissionResults.error || 'Unknown submission error occurred'}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="border rounded p-4 bg-green-50 border-green-200">
+                          <h3 className="font-medium mb-2">Submission Details</h3>
+                          <ul className="space-y-1 text-sm">
+                            <li><span className="font-medium">Submission ID:</span> {submissionResults.submissionId}</li>
+                            <li><span className="font-medium">Gateway:</span> {submissionResults.gateway}</li>
+                            <li><span className="font-medium">Status:</span> {submissionResults.status}</li>
+                            <li><span className="font-medium">Submitted At:</span> {new Date(submissionResults.metadata?.submittedAt).toLocaleString()}</li>
+                            {submissionResults.trackingInfo && (
+                              <>
+                                <li><span className="font-medium">Receipt/Delivery ID:</span> {submissionResults.trackingInfo.receiptId || submissionResults.trackingInfo.deliveryId}</li>
+                                <li><span className="font-medium">Estimated Processing Time:</span> {submissionResults.trackingInfo.estimatedProcessingTime}</li>
+                              </>
+                            )}
+                          </ul>
+                        </div>
+                        
+                        <div className="border rounded p-4 bg-blue-50 border-blue-200">
+                          <h3 className="font-medium mb-2 text-blue-800">Next Steps</h3>
+                          <p className="text-sm text-blue-700 mb-2">
+                            You can check the status of your submission using the following link:
+                          </p>
+                          <Button
+                            variant="outline"
+                            className="text-blue-700 border-blue-300"
+                            onClick={() => window.open(`/api${submissionResults.trackingInfo?.statusCheckUrl}`, '_blank')}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Check Submission Status
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className="space-y-6">
+                {/* Action Buttons Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Left column - Download and Validate */}
+                  <div className="space-y-4">
+                    <Button 
+                      onClick={handleDownloadBlueprint}
+                      className="w-full flex items-center justify-center"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Blueprint ZIP
+                    </Button>
+                    
+                    <Button 
+                      onClick={handleValidate}
+                      variant="outline"
+                      className="w-full flex items-center justify-center"
+                      disabled={validating}
+                    >
+                      {validating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Validating...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Validate CTD
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {/* Right column - Submit buttons */}
+                  <div className="space-y-4">
+                    <Button 
+                      onClick={handleSubmitToFDA}
+                      className="w-full flex items-center justify-center"
+                      disabled={submitting}
+                      variant={region === 'fda' ? 'default' : 'outline'}
+                    >
+                      {submitting && submissionGateway === 'FDA ESG' ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Submitting to FDA...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Submit to FDA ESG
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      onClick={handleSubmitToEMA}
+                      className="w-full flex items-center justify-center"
+                      disabled={submitting}
+                      variant={region === 'ema' ? 'default' : 'outline'}
+                    >
+                      {submitting && submissionGateway === 'EMA CESP' ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Submitting to EMA...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Submit to EMA CESP
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex justify-start">
+                  <Button 
+                    variant="ghost"
+                    onClick={() => setActiveTab('config')}
+                  >
+                    Configure Another Blueprint
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (
