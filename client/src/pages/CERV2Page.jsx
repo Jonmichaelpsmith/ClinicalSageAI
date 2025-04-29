@@ -614,13 +614,13 @@ const CERV2Page = () => {
             <FileText className="h-4 w-4 mr-2" />
             Generated Report
           </TabsTrigger>
-          <TabsTrigger value="library">
-            <FolderOpen className="h-4 w-4 mr-2" />
-            Report Library
-          </TabsTrigger>
           <TabsTrigger value="history">
             <Clock className="h-4 w-4 mr-2" />
             History
+          </TabsTrigger>
+          <TabsTrigger value="library">
+            <FolderOpen className="h-4 w-4 mr-2" />
+            Report Library
           </TabsTrigger>
         </TabsList>
         
@@ -698,6 +698,27 @@ const CERV2Page = () => {
               </Button>
             </CardFooter>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="history" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1">
+              <DocumentFilterPanel 
+                onApplyFilters={handleFilterApply}
+                onResetFilters={() => setDocFilters({})}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <ReportHistoryPanel 
+                onOpenReport={(reportId) => {
+                  // Handle opening the report
+                  console.log(`Opening report: ${reportId}`);
+                  // You could fetch the report data here and show it in a modal or redirect
+                }}
+                refreshTrigger={docFilters} // Refresh when filters change
+              />
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="library" className="mt-6">
