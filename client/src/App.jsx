@@ -17,6 +17,7 @@ import CsrAnalyzer from './modules/CsrAnalyzer';
 import Vault from './modules/Vault';
 import VaultPage from './pages/VaultPage';
 import VaultTestPage from './pages/VaultTestPage'; // Import the test page
+import ContextDemoPage from './pages/ContextDemoPage'; // Import our new context demo page
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
 import Module1AdminPage from './modules/Module1AdminPage';
@@ -92,6 +93,7 @@ function App() {
           <Route path="/vault" component={VaultDocumentViewer} /> {/* Updated to use VaultDocumentViewer directly */}
           <Route path="/vault-page" component={VaultPage} />
           <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
+          <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
