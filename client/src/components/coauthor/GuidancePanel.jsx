@@ -1,53 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, BookOpen, ExternalLink, FileText, Check, PlusCircle } from 'lucide-react';
 import templates from '@/services/templates/ctdTemplates.json';
 
-// This would be a real service in production
-const guidanceService = {
-  fetchGuidance: async (sectionId) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return { 
-      note: getGuidanceNoteForSection(sectionId),
-      details: getGuidanceDetailsForSection(sectionId)
-    };
-  }
-};
-
-function getGuidanceNoteForSection(id) {
-  // First check if we have template guidance
-  if (templates[id] && templates[id].guidanceText) {
-    return templates[id].guidanceText;
-  }
-  
-  // If not, use the static notes
-  const notes = {
-    '2.1': 'This section should follow CTD format and include a comprehensive Table of Contents for Module 2.',
-    '2.2': 'Introduction should provide a concise overview of the pharmaceutical class, mode of action, and proposed clinical use.',
-    '2.3': 'Quality Overall Summary should follow ICH M4Q guidelines with appropriate cross-references.',
-    '2.4': 'Nonclinical Overview should interpret findings against product safety per ICH M4S.',
-    '2.5': 'Clinical Overview should provide critical analysis per ICH M4E guidelines.',
-    '2.6': 'Nonclinical Written and Tabulated Summaries must follow regional requirements.',
-    '2.7': 'This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.',
-    '2.8': 'Be sure all referenced studies from Module 5 are properly summarized with study synopses.',
-  };
-  return notes[id] || 'Follow eCTD guidelines for this section and include proper cross-references to supporting documentation.';
-}
-
 export default function GuidancePanel({ sectionId }) {
   const [expanded, setExpanded] = useState(true);
-  const [guidanceNote, setGuidanceNote] = useState('');
   
-  useEffect(() => {
-    guidanceService.fetchGuidance(sectionId)
-      .then(data => setGuidanceNote(data.note));
-  }, [sectionId]);
+  // Get guidance note for the section
+  const getGuidanceNote = (id) => {
+    // First check if we have template guidance
+    if (templates[id] && templates[id].guidanceText) {
+      return templates[id].guidanceText;
+    }
+    
+    // If not, use the static notes
+    const notes = {
+      '2.1': 'This section should follow CTD format and include a comprehensive Table of Contents for Module 2.',
+      '2.2': 'Introduction should provide a concise overview of the pharmaceutical class, mode of action, and proposed clinical use.',
+      '2.3': 'Quality Overall Summary should follow ICH M4Q guidelines with appropriate cross-references.',
+      '2.4': 'Nonclinical Overview should interpret findings against product safety per ICH M4S.',
+      '2.5': 'Clinical Overview should provide critical analysis per ICH M4E guidelines.',
+      '2.6': 'Nonclinical Written and Tabulated Summaries must follow regional requirements.',
+      '2.7': 'This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.',
+      '2.8': 'Be sure all referenced studies from Module 5 are properly summarized with study synopses.',
+    };
+    return notes[id] || 'Follow eCTD guidelines for this section and include proper cross-references to supporting documentation.';
+  };
 
   // For detailed guidance content
-  const getGuidanceDetailsForSection = (id) => {
+  const getGuidanceDetails = (id) => {
     // First check if we have template data that we can use for guidance
     if (templates[id]) {
       const template = templates[id];
@@ -170,7 +153,9 @@ export default function GuidancePanel({ sectionId }) {
     ];
   };
   
-  const guidance = getGuidanceDetailsForSection(sectionId);
+  // Get guidance for the current section
+  const guidance = getGuidanceDetails(sectionId);
+  const guidanceNote = getGuidanceNote(sectionId);
   
   return (
     <Card className="shadow-sm overflow-hidden">
@@ -189,6 +174,11 @@ export default function GuidancePanel({ sectionId }) {
       
       {expanded && (
         <CardContent className="p-0">
+          <div className="p-3 bg-blue-50 border-b border-blue-100 text-sm text-blue-800">
+            <ExternalLink className="h-4 w-4 inline-block mr-1.5 mb-0.5" />
+            <span className="font-medium">Guidance Note:</span> {guidanceNote}
+          </div>
+          
           <ScrollArea className="h-[220px] p-0">
             <div className="p-3 space-y-4">
               {guidance.map((item, index) => (
