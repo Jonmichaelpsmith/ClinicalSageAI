@@ -70,78 +70,8 @@ export default function ModuleSectionEditor({
     setPhase("drafting");
     
     try {
-      // Get selected context IDs (if any)
-      const contextIds = contextSnippets.map(snippet => snippet.chunkId);
-      
-      // First try using our new coauthor endpoint
-      try {
-        const response = await fetch('/api/coauthor/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            moduleId,
-            sectionId,
-            prompt: content,
-            context: contextSnippets.map(s => s.text)
-          })
-        });
-        
-        if (!response.ok) {
-          console.warn(`/api/coauthor/generate returned ${response.status}. Trying test endpoint...`);
-          throw new Error(`Server returned ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.success && data.draft) {
-          setContent(data.draft);
-          setIsDraftReady(true);
-          return; // Exit if successful
-        } else {
-          throw new Error(data.error || 'Failed to generate draft content');
-        }
-      } catch (coauthorErr) {
-        console.warn('Failed to use coauthor endpoint, trying direct test endpoint:', coauthorErr);
-        
-        // Try the direct test endpoint
-        try {
-          const directResponse = await fetch('/api/coauthor/generate/test', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              moduleId,
-              sectionId,
-              prompt: content,
-              context: contextSnippets.map(s => s.text)
-            })
-          });
-          
-          if (!directResponse.ok) {
-            console.warn(`Direct test endpoint returned ${directResponse.status}. Falling back to /api/ai/draft...`);
-            throw new Error(`Server returned ${directResponse.status} from test endpoint`);
-          }
-          
-          const directData = await directResponse.json();
-          
-          if (directData.success && directData.draft) {
-            setContent(directData.draft);
-            setIsDraftReady(true);
-            return; // Exit if successful
-          } else {
-            throw new Error(directData.error || 'Failed to generate draft content from test endpoint');
-          }
-        } catch (directErr) {
-          console.warn('Failed to use direct test endpoint, falling back to ai/draft:', directErr);
-          // Fall through to legacy endpoint
-        }
-      }
-      
-      // Legacy fallback
-      const response = await fetch('/api/ai/draft', {
+      // Use the CoAuthor endpoint which we confirmed is working
+      const response = await fetch('/api/coauthor/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -149,14 +79,14 @@ export default function ModuleSectionEditor({
         body: JSON.stringify({
           moduleId,
           sectionId,
-          currentContent: content,
-          contextIds,
-          query: contextQuery
+          prompt: content,
+          context: contextSnippets.map(s => s.text)
         })
       });
       
       if (!response.ok) {
-        throw new Error(`Server returned ${response.status} from /api/ai/draft`);
+        const errorText = await response.text();
+        throw new Error(`Draft API returned ${response.status}: ${errorText}`);
       }
       
       const data = await response.json();
@@ -172,6 +102,7 @@ export default function ModuleSectionEditor({
       setError(err.message || 'Failed to generate draft');
     } finally {
       setIsGenerating(false);
+      setPhase("editing");
     }
   };
 
