@@ -29,15 +29,15 @@ import {
   PaginationPrevious 
 } from '@/components/ui/pagination';
 import { 
-  fileText, 
-  clock, 
-  users, 
-  alertCircle, 
-  checkCircle, 
-  filter, 
-  loader, 
-  refreshCw,
-  fileSearch
+  FileText, 
+  Clock, 
+  Users, 
+  AlertCircle, 
+  CheckCircle, 
+  Filter, 
+  Loader, 
+  RefreshCw,
+  FileSearch
 } from 'lucide-react';
 import { handleApiError } from '@/services/errorHandling';
 import { useToast } from '@/hooks/use-toast';
@@ -175,16 +175,16 @@ const CerHistoryPanel = () => {
   const renderStatusIcon = (status) => {
     switch(status) {
       case 'approved':
-        return <checkCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'rejected':
-        return <alertCircle className="h-5 w-5 text-red-500" />;
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
       case 'changes_requested':
       case 'in-review':
-        return <refreshCw className="h-5 w-5 text-yellow-500" />;
+        return <RefreshCw className="h-5 w-5 text-yellow-500" />;
       case 'draft':
-        return <fileText className="h-5 w-5 text-blue-500" />;
+        return <FileText className="h-5 w-5 text-blue-500" />;
       default:
-        return <fileText className="h-5 w-5" />;
+        return <FileText className="h-5 w-5" />;
     }
   };
   
@@ -283,7 +283,7 @@ const CerHistoryPanel = () => {
       <Card className="w-full shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl font-bold flex items-center gap-2">
-            <fileSearch className="h-5 w-5" />
+            <FileSearch className="h-5 w-5" />
             Clinical Evaluation Reports
           </CardTitle>
           <CardDescription>
@@ -317,9 +317,9 @@ const CerHistoryPanel = () => {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <loader className="h-4 w-4 animate-spin" />
+                  <Loader className="h-4 w-4 animate-spin" />
                 ) : (
-                  <refreshCw className="h-4 w-4" />
+                  <RefreshCw className="h-4 w-4" />
                 )}
               </Button>
             </div>

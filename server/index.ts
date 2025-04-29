@@ -8,7 +8,7 @@ dotenv.config();
 
 // Create Express application
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 5000;
 
 // Middleware
 // CORS headers handled manually until cors package is installed
