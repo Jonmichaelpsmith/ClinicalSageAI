@@ -106,6 +106,7 @@ function App() {
           <Route path="/coauthor" component={CoAuthor} /> {/* Add our CoAuthor page */}
           <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
           <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
+          <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />

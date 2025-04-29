@@ -1,0 +1,249 @@
+Below is the next full tranche of functionality for the Canvas Workbench―annotations, a draggable timeline ruler, and live collaboration via WebSockets. Please copy each file into your Replit project.
+
+⸻
+
+1. Annotation Sidebar on Node Click
+
+1.1. Create AnnotationPanel.jsx
+
+// client/src/components/canvas/AnnotationPanel.jsx
+import React, { useState, useEffect } from 'react';
+import { Button, Textarea } from '@components/ui';
+
+export default function AnnotationPanel({ section, onClose }) {
+  const [notes, setNotes] = useState('');
+  const [aiAdvice, setAiAdvice] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Load existing notes if stored
+  useEffect(() => {
+    if (!section) return;
+    fetch(`/api/coauthor/annotation/${section.id}`)
+      .then(r => r.json())
+      .then(data => setNotes(data.notes || ''))
+      .catch(() => {});
+  }, [section]);
+
+  // Request AI guidance
+  const fetchAdvice = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/coauthor/advice', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ sectionId: section.id, text: section.title }),
+      });
+      const { advice } = await res.json();
+      setAiAdvice(advice);
+    } catch (e) {
+      setAiAdvice('Failed to load AI advice.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Save manual notes
+  const saveNotes = () => {
+    fetch(`/api/coauthor/annotation/${section.id}`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ notes }),
+    });
+  };
+
+  if (!section) return null;
+  return (
+    <aside className="annotation-panel">
+      <header>
+        <h2>{section.title}</h2>
+        <button onClick={onClose} aria-label="Close">✕</button>
+      </header>
+      <section>
+        <h3 className="text-sm font-medium">AI Guidance</h3>
+        <Button onClick={fetchAdvice} disabled={loading}>
+          {loading ? 'Thinking…' : 'Ask Lumen for Advice'}
+        </Button>
+        {aiAdvice && <p className="mt-2 text-sm italic">{aiAdvice}</p>}
+      </section>
+      <section className="mt-4">
+        <h3 className="text-sm font-medium">Your Notes</h3>
+        <Textarea
+          rows={4}
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+        />
+        <Button onClick={saveNotes} className="mt-2">Save Notes</Button>
+      </section>
+    </aside>
+  );
+}
+
+1.2. Hook into CanvasWorkbench.jsx
+
+import React, { useState, /*…*/ } from 'react';
++import AnnotationPanel from './AnnotationPanel';
+
+export default function CanvasWorkbench() {
+  const [sections, setSections] = useState([]);
++ const [selected, setSelected] = useState(null);
+
+  // …
+
+  return (
+    <>
+      <Stage /*…*/ >
+        <Layer>
+          {/* connections & nodes */}
+          {sections.map(sec => (
+            <React.Fragment key={sec.id}>
+              <Rect
+                /*…*/
+                onClick={() => setSelected(sec)}
+                /*…*/
+              />
+              <Text /*…*/ />
+            </React.Fragment>
+          ))}
+        </Layer>
+      </Stage>
+
++     {/* Annotation Sidebar */}
++     <AnnotationPanel
++       section={selected}
++       onClose={() => setSelected(null)}
++     />
+    </>
+  );
+}
+
+
+
+⸻
+
+2. Draggable Timeline Ruler
+
+2.1. Extend CanvasWorkbench with a ruler
+
+import { Line, Group } from 'react-konva';
+
+export default function CanvasWorkbench() {
+  const [rulerX, setRulerX] = useState(100);
+  // compute predicted date from position
+  const predictDate = (x) => {
+    // map x→days; customize scale
+    const days = Math.round((x / width) * 365);
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toLocaleDateString();
+  };
+
+  return (
+    <>
+      <Stage /*…*/ >
+        <Layer>
+          {/* existing nodes & connections */}
+
+          {/* Timeline ruler at bottom */}
+          <Group draggable dragBoundFunc={(pos) => ({ x: pos.x, y: height - 80 }) }
+                 onDragEnd={e => setRulerX(e.target.x())}
+          >
+            <Line
+              points={[0, height - 80, width, height - 80]}
+              stroke="#888"
+              strokeWidth={1}
+            />
+            <Line
+              points={[rulerX, height - 85, rulerX, height - 75]}
+              stroke="#ff8c00"
+              strokeWidth={2}
+            />
+            <Text
+              text={`Est. Filing Date: ${predictDate(rulerX)}`}
+              x={rulerX + 5}
+              y={height - 70}
+              fontSize={12}
+              fill="#555"
+            />
+          </Group>
+        </Layer>
+      </Stage>
+      <AnnotationPanel /*…*/ />
+    </>
+  );
+}
+
+
+
+⸻
+
+3. Live Collaboration via WebSockets
+
+3.1. Set up Socket.IO on the server
+
+// server/server.js
+import http from 'http';
+import { Server as IOServer } from 'socket.io';
+import express from 'express';
+
+const app = express();
+const server = http.createServer(app);
+const io = new IOServer(server, {
+  cors: { origin: '*' }
+});
+
+// In-memory store for layout
+let sections = [ /* same as before */ ];
+
+io.on('connection', (socket) => {
+  socket.on('layout:update', ({ id, x, y }) => {
+    sections = sections.map(s => s.id === id ? { ...s, x, y } : s);
+    // broadcast to others
+    socket.broadcast.emit('layout:changed', { id, x, y });
+  });
+});
+
+// Mount your coauthorRoutes as before…
+
+server.listen(process.env.PORT || 3000);
+
+3.2. Connect Socket.IO on the client
+
+npm install socket.io-client
+
+// client/src/components/canvas/CanvasWorkbench.jsx
+import { io } from 'socket.io-client';
+
+export default function CanvasWorkbench() {
+  const [sections, setSections] = useState([]);
+  const socket = useRef(null);
+
+  useEffect(() => {
+    socket.current = io.connect(window.location.origin);
+    socket.current.on('layout:changed', ({ id, x, y }) => {
+      setSections(secs => secs.map(s => s.id === id ? { ...s, x, y } : s));
+    });
+    return () => socket.current.disconnect();
+  }, []);
+
+  const handleDragEnd = useCallback((e, id) => {
+    const { x, y } = e.target.attrs;
+    setSections(secs => secs.map(s => s.id === id ? { ...s, x, y } : s));
+    // emit to server
+    socket.current.emit('layout:update', { id, x, y });
+  }, []);
+
+  // …render Stage & Layer as before…
+}
+
+
+
+⸻
+
+✅ Verification Steps
+	1.	Restart your server (npm run start), ensure no errors.
+	2.	Open two browser windows to /canvas.
+	3.	Drag any node in one – it should move live in the other.
+	4.	Click a node – the Annotation panel opens; ask Lumen for advice.
+	5.	Drag the timeline ruler – you’ll see the “Est. Filing Date” update.
+
+With these three features live, your Canvas Workbench becomes a truly interactive, collaborative, AI-powered command center. Let me know how it performs, and we’ll refine the UI styling and performance next!
