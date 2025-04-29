@@ -1,0 +1,130 @@
+Updated Sprint 2 Backlog
+
+#	Task	Owner	Status
+2.6	Index Vault Documents	Me	In Progress
+– Build a vector index of key PDF sections		
+– Store embeddings in a JSON store		
+2.7	Retrieval API	Me	To Do
+2.8	Draft API Enhancement	Me	To Do
+2.9	UI: Context Preview Panel	Me	To Do
+2.10	Spinner & Fallback	Me	To Do
+🔨 2.6 Vault Indexing: Implementation
+We’ll create a new file at server/brain/vaultIndexer.js that:
+
+Reads your Vault metadata (list of PDFs).
+
+Runs each PDF through pdf-parse to extract text.
+
+Splits text into ~1,000-char chunks.
+
+Feeds each chunk to OpenAI’s Embeddings API.
+
+Dumps an array of { docId, chunkId, text, embedding } to server/brain/embeddings.json.
+
+📋 Canvas #1: Create the directory and indexer file
+bash
+Copy
+Edit
+# In your Replit shell:
+mkdir -p server/brain
+bash
+Copy
+Edit
+# Create vaultIndexer.js
+touch server/brain/vaultIndexer.js
+📄 Canvas #2: server/brain/vaultIndexer.js
+javascript
+Copy
+Edit
+import fs from "fs";
+import path from "path";
+import pdfParse from "pdf-parse";
+import { Configuration, OpenAIApi } from "openai";
+
+// 1) Configure OpenAI
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+// 2) Paths
+const METADATA_FILE = path.join(__dirname, "../vault/metadata.json");
+const OUTPUT_FILE   = path.join(__dirname, "embeddings.json");
+
+// 3) Helpers
+async function chunkText(text, maxLen = 1000) {
+  const chunks = [];
+  let start = 0;
+  while (start < text.length) {
+    let end = Math.min(start + maxLen, text.length);
+    // try to cut at paragraph break
+    const slice = text.slice(start, end);
+    const lastBreak = slice.lastIndexOf("\n\n");
+    if (lastBreak > 200) end = start + lastBreak;
+    chunks.push(text.slice(start, end).trim());
+    start = end;
+  }
+  return chunks;
+}
+
+// 4) Main indexing
+async function buildIndex() {
+  console.log("⏳ Loading metadata...");
+  const metadata = JSON.parse(fs.readFileSync(METADATA_FILE, "utf8"));
+  const embeddings = [];
+
+  for (const doc of metadata.documents) {
+    const filePath = path.join(__dirname, "../vault", doc.path);
+    console.log(`📄 Parsing PDF: ${doc.id} → ${doc.path}`);
+    const dataBuffer = fs.readFileSync(filePath);
+    const { text } = await pdfParse(dataBuffer);
+
+    const chunks = await chunkText(text);
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      process.stdout.write(`  • embedding chunk ${i+1}/${chunks.length}…\r`);
+      const resp = await openai.createEmbedding({
+        model: "text-embedding-ada-002",
+        input: chunk,
+      });
+      embeddings.push({
+        docId: doc.id,
+        chunkId: i,
+        text: chunk,
+        embedding: resp.data.data[0].embedding,
+      });
+    }
+    console.log(`\n✅ Indexed ${chunks.length} chunks for ${doc.id}`);
+  }
+
+  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(embeddings, null, 2));
+  console.log(`🎉 Done! Wrote ${embeddings.length} embeddings to ${OUTPUT_FILE}`);
+}
+
+buildIndex().catch(err => {
+  console.error("❌ Indexing failed:", err);
+  process.exit(1);
+});
+🚀 Next Steps
+Install dependencies
+
+bash
+Copy
+Edit
+npm install pdf-parse openai
+Run the indexer
+
+bash
+Copy
+Edit
+node server/brain/vaultIndexer.js
+Once embeddings.json is ready, we’ll build 2.7: Retrieval API.
+
+Let me know when indexing completes (or if you hit any snags), and we’ll wire up the retrieval endpoint next!
+
+
+
+
+
+
+
