@@ -1,0 +1,165 @@
+Below is the code to implement Sprint 2.8: Draft API Enhancement—we’ll pull in retrieved context chunks and include them in the GPT-4 prompt before drafting.
+
+1. Update your Draft Route
+File: server/routes/ai/draft.js
+
+javascript
+Copy
+Edit
+// server/routes/ai/draft.js
+
+import express from "express";
+import fs from "fs";
+import path from "path";
+import { Configuration, OpenAIApi } from "openai";
+import { retrieveContext } from "../../brain/vaultRetriever.js";
+
+const router = express.Router();
+
+// Configure OpenAI
+const openai = new OpenAIApi(new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+}));
+
+/**
+ * POST /api/ai/draft
+ * Body: {
+ *   templateId?: string,
+ *   sectionKey: string,
+ *   query?: string,
+ *   k?: number
+ * }
+ * Response: { success, draft: string, context: Array }
+ */
+router.post("/", async (req, res) => {
+  try {
+    const { templateId, sectionKey, query, k } = req.body;
+    if (!sectionKey) {
+      return res.status(400).json({ success: false, error: "sectionKey is required" });
+    }
+
+    // 1) Load template outline if provided
+    let template = null;
+    if (templateId) {
+      const tplPath = path.join(__dirname, "../../templates", `${templateId}.json`);
+      if (fs.existsSync(tplPath)) {
+        template = JSON.parse(fs.readFileSync(tplPath, "utf8"));
+      }
+    }
+
+    // 2) Retrieve relevant context from Vault
+    const retrievalQuery = query || sectionKey;
+    const contextChunks = await retrieveContext(retrievalQuery, k || 5);
+
+    // 3) Build prompt messages for GPT-4
+    const systemPrompt = `
+You are TrialSage’s AI co-author specializing in regulatory documents.
+Use the template outline and context snippets to draft a high-quality section.
+Respect regulatory style and compliance requirements.
+    `.trim();
+
+    const templateText = template
+      ? `Template Outline:\n${JSON.stringify(template, null, 2)}`
+      : "No template provided.";
+
+    const contextText = contextChunks
+      .map((c, i) => `—[${i+1}] ${c.text.substring(0, 200)}…`)
+      .join("\n");
+
+    const userPrompt = `
+Draft the section "${sectionKey}" using the outline and context above.
+Insert citations like [Context #1] where relevant.
+    `.trim();
+
+    const messages = [
+      { role: "system", content: systemPrompt },
+      { role: "assistant", content: templateText },
+      { role: "assistant", content: `Context Snippets:\n${contextText}` },
+      { role: "user", content: userPrompt },
+    ];
+
+    // 4) Call OpenAI Chat Completion
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4",
+      messages,
+      temperature: 0.2,
+      max_tokens: 1800,
+    });
+
+    const draft = completion.data.choices[0].message.content.trim();
+
+    // 5) Return draft and context for UI
+    res.json({ success: true, draft, context: contextChunks });
+  } catch (err) {
+    console.error("Error in /api/ai/draft:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+export default router;
+2. Mount the Draft Route in Your Server
+File: server/server.js (or wherever your routes are registered)
+
+Find where you mount your AI routes and add:
+
+diff
+Copy
+Edit
+// At top of file, after other imports:
+-import retrieveRoutes from './routes/ai/retrieve.js';
++import retrieveRoutes from './routes/ai/retrieve.js';
++import draftRoutes    from './routes/ai/draft.js';
+
+ // ...
+
+// API Routes
+-app.use('/api/ai/retrieve', retrieveRoutes);
++app.use('/api/ai/retrieve', retrieveRoutes);
++app.use('/api/ai/draft',     draftRoutes);
+3. Test Your New /api/ai/draft Endpoint
+From your Replit console or via curl:
+
+bash
+Copy
+Edit
+curl -X POST https://<your-repl-url>/api/ai/draft \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templateId":"IND_Module2",
+    "sectionKey":"Quality Overall Summary",
+    "query":"ICH Q6A stability data",
+    "k":3
+  }'
+You should see a JSON response:
+
+json
+Copy
+Edit
+{
+  "success": true,
+  "draft": "Your drafted text here…",
+  "context": [ /* the 3 context chunks returned */ ]
+}
+🚀 Next Up
+Once confirmed this draft API works with real context, our Sprint 2 will include:
+
+2.9 Build the Context Preview Panel in your React editor to display those chunks per section.
+
+2.10 Implement the two-step spinner in the UI (🔍 retrieving… then 🪄 drafting…).
+
+Let me know when /api/ai/draft is live, and we’ll wire up the frontend to call it and preview both context and draft!
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
