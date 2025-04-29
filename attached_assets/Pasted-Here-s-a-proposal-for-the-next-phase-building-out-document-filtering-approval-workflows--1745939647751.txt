@@ -1,0 +1,151 @@
+Here’s a proposal for the **next phase**—building out **document filtering**, **approval workflows**, and **one-click eCTD submissions** (ESG/EMA). I’ve broken it down into **three verticals** with clear milestones, component sketches, and API routes so we can land it quickly and cleanly.
+
+---
+
+## 1. Document Filtering Panel  
+Allow people to instantly find any past report, by module, section, status, date, owner, etc.  
+
+### Components & Pages  
+- **`DocumentFilterPanel.jsx`**  
+  - Multi-select dropdowns: Module, Section, Status (Draft/In Review/Approved), Date range, Owner  
+  - Free-text search (filename, keywords)  
+  - “Reset” & “Apply” buttons  
+
+- **`DocumentList.jsx`**  
+  - Displays vaulted documents in a table or card grid, with pagination  
+  - Columns: Name, Module/Section, Status badge, Last updated, Actions (View / Download / Approve)  
+
+### API Routes  
+```js
+// server/routes/documents.js
+// GET /api/docs?module=&section=&status=&owner=&search=&from=&to=&page=&limit=
+router.get('/', validateQueryFilter, documentController.listFiltered);
+```  
+
+### Milestones  
+1. **Filter UI**: scaffold `DocumentFilterPanel.jsx`, hook up state  
+2. **List UI**: scaffold `DocumentList.jsx`, consume `/api/docs`  
+3. **API**: implement `listFiltered` in `documentController`  
+4. **Wire up**: on filter apply, re-fetch list  
+
+---
+
+## 2. Approval Workflows  
+Let reviewers annotate, comment, and approve documents inline.  
+
+### Components & Pages  
+- **`DocumentReviewPanel.jsx`**  
+  - Side-by-side viewer (PDF preview on left, comments/annotations on right)  
+  - @mentions, threaded comments  
+  - Status actions: “Approve”, “Request Changes”, “Assign Reviewer”  
+
+- **`ReviewList.jsx`** (optional)  
+  - Dashboard of docs **awaiting review**, grouped by due date or priority  
+
+### API Routes  
+```js
+// server/routes/reviews.js
+// GET  /api/reviews/pending
+// POST /api/reviews/:docId/comment    { text }
+// POST /api/reviews/:docId/action     { action: 'approve' | 'request_changes' }
+```
+
+### Milestones  
+1. **Review stubs**: create `reviews.js` router, basic endpoints  
+2. **Review dashboard**: `ReviewList.jsx` shows pending docs  
+3. **Review panel**: `DocumentReviewPanel.jsx` with PDF viewer (e.g. react-pdf) + comments  
+4. **Actions**: wire “Approve” & “Request Changes” → backend update status  
+
+---
+
+## 3. One-Click ESG/EMA Submission Gateway  
+Direct push into FDA’s ESG or EMA’s CESP from inside the app.  
+
+### Components & Pages  
+- **`SubmissionButton.jsx`** (global UI button)  
+  - Only enabled when a document is **Approved**  
+  - Opens a modal: select gateway (ESG vs CESP), confirm metadata (submission date, dossier ID)  
+  - “Submit”  
+
+- **`SubmissionHistory.jsx`**  
+  - Table of past submissions: Date, Gateway, Status, Tracking link  
+
+### API Routes  
+```js
+// server/routes/submissions.js
+// POST   /api/submissions      { docId, gateway, metadata }
+// GET    /api/submissions      list all for this project
+```  
+
+- **Gateway Adapters** (server/services/submission.ts)  
+  - `submitToESG({ docId, metadata })`  
+  - `submitToCESP({ docId, metadata })`  
+  - Handle auth, encryption, callback webhooks  
+
+### Milestones  
+1. **Submission stubs**: router + service adapters with dummy success/fail  
+2. **UI button + modal**: `SubmissionButton.jsx` integrated in `DocumentList` and `DocumentReviewPanel`  
+3. **Submit action**: call `/api/submissions`, show spinner + success/failure toast  
+4. **History**: `SubmissionHistory.jsx` page, route `/submissions`  
+5. **Live gateway**: swap dummy stubs for real ESG/CESP API integration  
+
+---
+
+### Execution Plan & File-Level Deliverables
+
+| Week  | Tasks                                                                                      |
+|-------|--------------------------------------------------------------------------------------------|
+| **Mon** | • Scaffold **DocumentFilterPanel.jsx** & **DocumentList.jsx**<br>• Define filter query API |
+| **Tue** | • Build **listFiltered** endpoint<br>• Wire UI to API (get+display)                      |
+| **Wed** | • Scaffold **reviews.js** routes & **DocumentReviewPanel.jsx**<br>• Basic comment API     |
+| **Thu** | • Annotate PDF + thread UI<br>• Hook up “Approve” / “Request Changes” actions            |
+| **Fri** | • Scaffold **submissions.js** routes & **SubmissionButton.jsx**<br>• Modal + stubs        |
+
+---
+
+### Example: `DocumentFilterPanel.jsx` (Sketch)
+
+```jsx
+import React, { useState } from 'react';
+import { Select, DatePicker, Input, Button } from '@components/ui';
+
+export default function DocumentFilterPanel({ onApply }) {
+  const [filters, setFilters] = useState({
+    module: '', section: '', status: '',
+    owner: '', search: '', dateFrom: null, dateTo: null
+  });
+
+  const handleChange = (field) => (val) =>
+    setFilters(f => ({ ...f, [field]: val }));
+
+  return (
+    <div className="filter-panel">
+      <Select label="Module" options={modules} value={filters.module}
+        onChange={handleChange('module')} />
+      <Select label="Section" options={sections} value={filters.section}
+        onChange={handleChange('section')} />
+      <Select label="Status" options={['Draft','Review','Approved']}
+        value={filters.status} onChange={handleChange('status')} />
+      <Input label="Search" placeholder="Filename or keyword"
+        value={filters.search} onChange={e => handleChange('search')(e.target.value)} />
+      <DatePicker label="From" value={filters.dateFrom}
+        onChange={handleChange('dateFrom')} />
+      <DatePicker label="To" value={filters.dateTo}
+        onChange={handleChange('dateTo')} />
+      <div className="actions">
+        <Button onClick={() => onApply(filters)}>Apply</Button>
+        <Button variant="ghost" onClick={() => setFilters({})}>Reset</Button>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+### Next Steps
+1. Confirm this breakdown & timeline  
+2. I’ll kick off **Day 1** by generating the filter panel + API stub  
+3. We’ll iterate quickly and demo each slice by end of day  
+
+— Let me know if you’d like any adjustments or if you’re ready for me to start coding **Sprint 1: Filtering & Listing**!

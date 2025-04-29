@@ -1,0 +1,146 @@
+Great—let’s supercharge the CER Generator with full report previews and deep vault integration. Here’s our next-up feature set and a high-level dev plan:
+
+---
+
+## 1. New “Sample Report” Generator
+**Why:** Let writers kick off a full-length draft CER in one click.  
+**Features:**
+- **“Generate Sample CER”** button in the header of the CER page.
+- Fires `POST /api/cer/sample` with current device/settings → returns a PDF or rich text draft.
+- Preview panel or modal to review, download, or push into the vault.
+
+### API
+```js
+// server/routes/cer.js
+
+import express from 'express';
+import { generateSampleCER } from '../services/cer-service.js';
+const router = express.Router();
+
+router.post('/sample', async (req, res) => {
+  try {
+    const { deviceInfo, pubmedTerms, adverseEvents } = req.body;
+    const sampleDoc = await generateSampleCER({ deviceInfo, pubmedTerms, adverseEvents });
+    res.json({ url: sampleDoc.url });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+export default router;
+```
+
+### UI (React) Sketch
+```jsx
+// client/src/components/cer/SampleReportButton.jsx
+
+import React, { useState } from 'react';
+import { Button, Modal } from '@components/ui';
+import { fetchJSON } from '@utils/api';
+
+export default function SampleReportButton({ currentSettings }) {
+  const [loading, setLoading] = useState(false);
+  const [sampleUrl, setSampleUrl] = useState(null);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    const { url } = await fetchJSON('/api/cer/sample', { 
+      method: 'POST', 
+      body: JSON.stringify(currentSettings) 
+    });
+    setSampleUrl(url);
+    setLoading(false);
+  };
+
+  return <>
+    <Button onClick={handleGenerate} loading={loading}>
+      Generate Sample CER
+    </Button>
+    {sampleUrl && (
+      <Modal onClose={() => setSampleUrl(null)}>
+        <iframe src={sampleUrl} style={{ width:'100%', height:'80vh' }} />
+        <a href={sampleUrl} download>Download PDF</a>
+      </Modal>
+    )}
+  </>;
+}
+```
+
+---
+
+## 2. “Past Reports” Vault Panel
+**Why:** Writers & execs need one-click access to every CER iteration.  
+**Features:**
+- New **History** tab on the CER page.
+- Fetch via `GET /api/vault/cer-history?deviceId=…` → returns a list of vault documents.
+- Table or cards showing timestamp, version, status, with “Open” / “Revert” actions.
+
+### API
+```js
+// server/routes/vault.js
+
+router.get('/cer-history', async (req, res) => {
+  const { deviceId } = req.query;
+  const docs = await vaultService.listCERs(deviceId);
+  res.json(docs);
+});
+```
+
+### UI (React) Sketch
+```jsx
+// client/src/components/cer/CERHistoryPanel.jsx
+
+import React, { useEffect, useState } from 'react';
+import { Table, Button } from '@components/ui';
+import { fetchJSON } from '@utils/api';
+
+export default function CERHistoryPanel({ deviceId }) {
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    fetchJSON(`/api/vault/cer-history?deviceId=${deviceId}`)
+      .then(setHistory);
+  }, [deviceId]);
+
+  return (
+    <Table
+      columns={['Version', 'Date', 'Status', 'Actions']}
+      data={history.map(doc => ([
+        doc.version,
+        new Date(doc.createdAt).toLocaleString(),
+        doc.status,
+        <Button onClick={()=>window.open(doc.url)}>Open</Button>
+      ]))}
+    />
+  );
+}
+```
+
+---
+
+## 3. Embed FDA’s Client-Side eCTD Validator
+**Why:** Catch schema errors *before* your PDF eCTD export.  
+- Pull in the FDA’s `ectd-validator.js` library (via npm or client-hosted).  
+- Run validation on your assembled eCTD manifest/XML client‐side and surface errors inline.
+
+### UI Integration
+- Add a “Validate eCTD” button next to “Download CER”  
+- On click, run the validator, highlight any schema/manifest errors in a collapsible console panel.
+
+---
+
+## 4. One-Click Submit Hooks (ESG / EMA CESP)
+**Why:** From draft → filing in a single flow.  
+- Build secure server proxies for FDA ESG and EMA CESP APIs.  
+- After validation, show “Submit to FDA ESG” / “Submit to EMA CESP” buttons.  
+- Handle auth, upload via `POST /api/cer/submit?target=fda|ema`.
+
+---
+
+### Next Steps
+1. **Wire up `SampleReportButton`** in the CER page header and test generation modal.  
+2. **Add `CERHistoryPanel`** as the new “History” tab and verify vault listings.  
+3. **Integrate client-side eCTD validator** and surface errors before export.  
+4. **Build submit-to-regulator endpoints** and UI flows for one-click filing.
+
+I’ll start with **Step 1**—adding the Sample Report flow. Let me know if you'd like any tweaks before I code it up!
