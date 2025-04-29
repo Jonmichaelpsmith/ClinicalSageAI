@@ -1,0 +1,142 @@
+Below are the exact steps and code to implement **Sprint 2.7: Retrieval API** for context-powered drafting. Please copy & paste each code snippet into your Replit project.
+
+---
+
+### 📂 Canvas #1: Create Vault Retriever Service
+
+**File:** `server/brain/vaultRetriever.js`
+
+```javascript
+// server/brain/vaultRetriever.js
+
+import fs from "fs";
+import path from "path";
+import { Configuration, OpenAIApi } from "openai";
+
+// Load precomputed embeddings
+const EMBEDDINGS_FILE = path.join(__dirname, "embeddings.json");
+const raw = fs.readFileSync(EMBEDDINGS_FILE, "utf8");
+const embeddingsIndex = JSON.parse(raw);
+
+// Helper: cosine similarity
+function cosineSim(a, b) {
+  const dot = a.reduce((sum, v, i) => sum + v * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, v) => sum + v * v, 0));
+  const magB = Math.sqrt(b.reduce((sum, v) => sum + v * v, 0));
+  return dot / (magA * magB);
+}
+
+// Configure OpenAI
+const openai = new OpenAIApi(new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+}));
+
+/**
+ * retrieveContext(query, k):
+ *  - embeds the query text
+ *  - compares against all vault chunks
+ *  - returns top-k chunks sorted by similarity
+ */
+export async function retrieveContext(query, k = 5) {
+  // 1) Get query embedding
+  const resp = await openai.createEmbedding({
+    model: "text-embedding-ada-002",
+    input: query,
+  });
+  const queryEmb = resp.data.data[0].embedding;
+
+  // 2) Score each chunk
+  const scores = embeddingsIndex.map((item) => {
+    return {
+      docId: item.docId,
+      chunkId: item.chunkId,
+      text: item.text,
+      score: cosineSim(queryEmb, item.embedding),
+    };
+  });
+
+  // 3) Sort and return top-k
+  scores.sort((a, b) => b.score - a.score);
+  return scores.slice(0, k);
+}
+```
+
+---
+
+### 📂 Canvas #2: Create Retrieval Route
+
+**File:** `server/routes/ai/retrieve.js`
+
+```javascript
+// server/routes/ai/retrieve.js
+
+import express from "express";
+import { retrieveContext } from "../../brain/vaultRetriever.js";
+
+const router = express.Router();
+
+/**
+ * POST /api/ai/retrieve
+ * Body: { query: string, k?: number }
+ * Response: [{ docId, chunkId, text, score }, ...]
+ */
+router.post("/", async (req, res) => {
+  try {
+    const { query, k } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: "Query is required" });
+    }
+    const topChunks = await retrieveContext(query, k ?? 5);
+    res.json({ success: true, chunks: topChunks });
+  } catch (err) {
+    console.error("Error in /api/ai/retrieve:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+export default router;
+```
+
+---
+
+### 📂 Canvas #3: Mount the Route in Your Server
+
+**File:** `server/server.js` (or wherever you configure routes)
+
+Find the section where you register `/api/ai` routes and add:
+
+```diff
+// At top, after other imports:
+-import draftRoutes from './routes/ai/draft.js';
++import retrieveRoutes from './routes/ai/retrieve.js';
+
+ // ...
+
+// API Routes
+-app.use('/api/ai/draft', draftRoutes);
++app.use('/api/ai/retrieve', retrieveRoutes);
+```
+
+> If you use a combined `ai.js` router, instead register:
+> ```js
+> app.use('/api/ai/retrieve', retrieveRoutes);
+> ```
+
+---
+
+### 🚀 Next Steps
+
+1. **Install any missing deps** (if not already):
+   ```bash
+   npm install openai
+   ```
+2. **Restart your Replit server** to pick up new files.
+3. **Test the endpoint**:
+   ```bash
+   curl -X POST https://<your-repl-url>/api/ai/retrieve \
+     -H "Content-Type: application/json" \
+     -d '{"query":"CMC stability study","k":3}'
+   ```
+   — You should see a JSON list of top-3 relevant text chunks.
+
+Once this retrieval API is live, we’ll proceed to **2.8: Draft API Enhancement**—augmenting your `/api/ai/draft` endpoint to call `/api/ai/retrieve` first and incorporate the returned context into the GPT prompt. Let me know when `/api/ai/retrieve` is up, or if you hit any issues!
