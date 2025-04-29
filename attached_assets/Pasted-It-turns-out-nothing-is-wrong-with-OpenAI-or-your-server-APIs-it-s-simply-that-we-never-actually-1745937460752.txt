@@ -1,0 +1,113 @@
+It turns out nothing is “wrong” with OpenAI or your server APIs – it’s simply that we never actually mounted a React route for the CER-Generator in your **App.jsx** (and we never added a page component at the URL you’re trying to hit). You’ve been browsing to:
+
+```
+https://…/client-portal/cer-generator
+```
+
+but React has no `<Route>` at that path, so it always falls back to the 404.
+
+Let’s fix it in three quick steps:
+
+---
+
+### 1) Create a CER-Generator page component
+
+In **`client/src/pages/CERGeneratorPage.jsx`** (or `.tsx` if you’re using TypeScript), add:
+
+```jsx
+// client/src/pages/CERGeneratorPage.jsx
+import React from 'react';
+import UnifiedTopNavV5 from '../components/navigation/UnifiedTopNavV5';
+import Breadcrumbs from '../components/navigation/Breadcrumbs';
+import CERGenerator from '../components/cer/CERGenerator'; // <-- your actual generator UI
+
+export default function CERGeneratorPage() {
+  return (
+    <div>
+      {/* Top Nav with our “Client Portal” modules */}
+      <UnifiedTopNavV5
+        tabs={[
+          { path: '/client-portal',       label: 'Dashboard'      },
+          { path: '/client-portal/cer-generator', label: 'CER Generator' },
+          { path: '/coauthor',            label: 'Co-Author'       },
+          /* …other modules… */
+        ]}
+      />
+
+      {/* Breadcrumbs down into the portal */}
+      <Breadcrumbs
+        items={[
+          { label: 'Client Portal', to: '/client-portal' },
+          { label: 'CER Generator'               },
+        ]}
+      />
+
+      <main style={{ padding: '1.5rem' }}>
+        <h1>CER Generator</h1>
+        <p>Automated Clinical Evaluation Report creation with live data feeds.</p>
+
+        {/* This should render your existing CER component */}
+        <CERGenerator />
+      </main>
+    </div>
+  );
+}
+```
+
+If you already have a `CERGenerator.jsx` component under `client/src/components/cer/`, just point the import at it.
+
+---
+
+### 2) Wire up the route in your router
+
+Open **`client/src/App.jsx`** (or wherever your `<Routes>` live) and:
+
+1. **Import** your new page at the top:
+
+   ```js
+   import CERGeneratorPage from './pages/CERGeneratorPage';
+   ```
+
+2. **Add** a `<Route>` for it:
+
+   ```jsx
+   <Routes>
+     {/* …existing routes… */}
+     <Route path="/client-portal" element={<ClientPortal />} />
+
+     {/* NEW: CER Generator */}
+     <Route
+       path="/client-portal/cer-generator"
+       element={<CERGeneratorPage />}
+     />
+
+     {/* finally your 404 fallback */}
+     <Route path="*" element={<NotFound />} />
+   </Routes>
+   ```
+
+---
+
+### 3) Link into your “Client Portal” dashboard
+
+In **`client/src/pages/ClientPortal.jsx`** wherever you render your grid of module tiles, change the CER-Generator tile’s `<Link>` or `<NavLink>` to point at our new path:
+
+```jsx
+// e.g. inside ClientPortal.jsx
+<Link to="/client-portal/cer-generator">
+  <div className="module-tile">
+    <h3>CER Generator™</h3>
+    <p>EU MDR 2017/745 Clinical Evaluation Reports</p>
+  </div>
+</Link>
+```
+
+---
+
+#### Finally:
+
+1. **Save all files**  
+2. **Restart** your dev server / Replit workspace  
+3. Go to **`/client-portal/cer-generator`** and you should see your CER Generator instead of a 404.
+
+Let me know if you hit any other errors or if the page comes up but your CER component isn’t rendering – we’ll then drill into that UI piece.
