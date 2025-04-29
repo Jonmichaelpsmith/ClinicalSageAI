@@ -1,299 +1,514 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Filter, Eye, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertCircle, Calendar, User, Activity, FileText, Download, Search } from "lucide-react";
 
 /**
- * Audit Page - Display API audit logs
+ * Audit Trail Page - Track and review user activities and document changes
  */
 const AuditPage = () => {
-  const [loading, setLoading] = useState(true);
+  // Audit log state
   const [auditLogs, setAuditLogs] = useState([]);
   const [filteredLogs, setFilteredLogs] = useState([]);
-  const [filter, setFilter] = useState({
-    method: '',
-    path: '',
-    user: '',
-    dateFrom: '',
-    dateTo: ''
-  });
-
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [userFilter, setUserFilter] = useState('');
+  const [actionFilter, setActionFilter] = useState('');
+  const [componentFilter, setComponentFilter] = useState('');
+  const [exportFormat, setExportFormat] = useState('csv');
+  const [activeTab, setActiveTab] = useState('activities');
+  
+  // Get unique users from logs for filter dropdown
+  const uniqueUsers = [...new Set(auditLogs.map(log => log.userName))];
+  
+  // Get unique actions from logs for filter dropdown
+  const uniqueActions = [...new Set(auditLogs.map(log => log.action))];
+  
+  // Get unique components from logs for filter dropdown
+  const uniqueComponents = [...new Set(auditLogs.map(log => log.component))];
+  
   // Load audit logs
   useEffect(() => {
     const fetchAuditLogs = async () => {
       setLoading(true);
       try {
         const response = await fetch('/api/audit/logs');
-        const data = await response.json();
-        setAuditLogs(data);
-        setFilteredLogs(data);
+        if (response.ok) {
+          const data = await response.json();
+          setAuditLogs(data.logs || []);
+          setFilteredLogs(data.logs || []);
+        }
       } catch (error) {
         console.error('Error fetching audit logs:', error);
       } finally {
         setLoading(false);
       }
     };
-
+    
     fetchAuditLogs();
   }, []);
-
-  // Apply filters to audit logs
+  
+  // Apply filters whenever filter options change
   useEffect(() => {
+    filterLogs();
+  }, [searchQuery, dateRange, userFilter, actionFilter, componentFilter, auditLogs]);
+  
+  // Filter logs based on search query and filters
+  const filterLogs = () => {
     let filtered = [...auditLogs];
     
-    if (filter.method) {
-      filtered = filtered.filter(log => 
-        log.method.toLowerCase().includes(filter.method.toLowerCase())
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        log => 
+          log.userName.toLowerCase().includes(query) ||
+          log.action.toLowerCase().includes(query) ||
+          log.component.toLowerCase().includes(query) ||
+          log.details.toLowerCase().includes(query)
       );
     }
     
-    if (filter.path) {
-      filtered = filtered.filter(log => 
-        log.path.toLowerCase().includes(filter.path.toLowerCase())
-      );
+    // Filter by date range
+    if (dateRange.start) {
+      const startDate = new Date(dateRange.start);
+      filtered = filtered.filter(log => new Date(log.timestamp) >= startDate);
     }
     
-    if (filter.user) {
-      filtered = filtered.filter(log => 
-        (log.userId || '').toLowerCase().includes(filter.user.toLowerCase()) ||
-        (log.username || '').toLowerCase().includes(filter.user.toLowerCase())
-      );
+    if (dateRange.end) {
+      const endDate = new Date(dateRange.end);
+      endDate.setHours(23, 59, 59, 999); // End of the selected day
+      filtered = filtered.filter(log => new Date(log.timestamp) <= endDate);
     }
     
-    if (filter.dateFrom) {
-      const fromDate = new Date(filter.dateFrom);
-      filtered = filtered.filter(log => {
-        const logDate = new Date(log.timestamp);
-        return logDate >= fromDate;
-      });
+    // Filter by user
+    if (userFilter) {
+      filtered = filtered.filter(log => log.userName === userFilter);
     }
     
-    if (filter.dateTo) {
-      const toDate = new Date(filter.dateTo);
-      toDate.setHours(23, 59, 59, 999); // End of day
-      filtered = filtered.filter(log => {
-        const logDate = new Date(log.timestamp);
-        return logDate <= toDate;
-      });
+    // Filter by action
+    if (actionFilter) {
+      filtered = filtered.filter(log => log.action === actionFilter);
+    }
+    
+    // Filter by component
+    if (componentFilter) {
+      filtered = filtered.filter(log => log.component === componentFilter);
     }
     
     setFilteredLogs(filtered);
-  }, [filter, auditLogs]);
-
-  // Reset filters
-  const resetFilters = () => {
-    setFilter({
-      method: '',
-      path: '',
-      user: '',
-      dateFrom: '',
-      dateTo: ''
+  };
+  
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery('');
+    setDateRange({ start: '', end: '' });
+    setUserFilter('');
+    setActionFilter('');
+    setComponentFilter('');
+  };
+  
+  // Export logs
+  const exportLogs = () => {
+    let exportData;
+    
+    if (exportFormat === 'csv') {
+      // Generate CSV
+      const headers = ['Timestamp', 'User', 'Action', 'Component', 'Details', 'IP Address'];
+      const rows = filteredLogs.map(log => [
+        log.timestamp,
+        log.userName,
+        log.action,
+        log.component,
+        log.details,
+        log.ipAddress
+      ]);
+      
+      exportData = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+      
+      // Download file
+      const blob = new Blob([exportData], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (exportFormat === 'json') {
+      // Generate JSON
+      exportData = JSON.stringify(filteredLogs, null, 2);
+      
+      // Download file
+      const blob = new Blob([exportData], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `audit_logs_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+  
+  // Format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
     });
   };
-
-  // Download logs
-  const downloadAuditLogs = () => {
-    const csvContent = [
-      // Header
-      ['Timestamp', 'Method', 'Path', 'User ID', 'Username', 'IP Address', 'Status', 'Duration (ms)'].join(','),
-      // Data rows
-      ...filteredLogs.map(log => [
-        log.timestamp,
-        log.method,
-        log.path,
-        log.userId || '',
-        log.username || '',
-        log.ipAddress,
-        log.statusCode,
-        log.duration
-      ].join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  
+  // Get action color class based on action type
+  const getActionColorClass = (action) => {
+    switch (action.toLowerCase()) {
+      case 'create':
+        return 'bg-blue-100 text-blue-800';
+      case 'update':
+        return 'bg-green-100 text-green-800';
+      case 'delete':
+        return 'bg-red-100 text-red-800';
+      case 'access':
+        return 'bg-purple-100 text-purple-800';
+      case 'export':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'login':
+        return 'bg-indigo-100 text-indigo-800';
+      case 'logout':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
-
-  // View log details
-  const viewLogDetails = (log) => {
-    alert(JSON.stringify(log, null, 2));
-  };
-
+  
   return (
     <div className="audit-page-container p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Audit Trail</h1>
-        <Button
-          onClick={downloadAuditLogs}
-          disabled={loading || filteredLogs.length === 0}
-          className="flex items-center"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
-      </div>
+      <h1 className="text-2xl font-bold mb-6">Audit Trail</h1>
       
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Filter Logs</CardTitle>
-          <CardDescription>Search and filter audit trail records</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div>
-              <label className="block mb-1 font-medium">HTTP Method</label>
-              <select
-                className="w-full p-2 border rounded"
-                value={filter.method}
-                onChange={(e) => setFilter(prev => ({ ...prev, method: e.target.value }))}
-              >
-                <option value="">All Methods</option>
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-                <option value="PATCH">PATCH</option>
-              </select>
-            </div>
+      <Tabs defaultValue="activities" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="activities">
+            <Activity className="h-4 w-4 mr-2" />
+            User Activities
+          </TabsTrigger>
+          <TabsTrigger value="document">
+            <FileText className="h-4 w-4 mr-2" />
+            Document Changes
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* User Activities Tab */}
+        <TabsContent value="activities">
+          <div className="space-y-6">
+            {/* Filter Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Filters</CardTitle>
+                <CardDescription>Filter audit logs by various criteria</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-l"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by user, action, component, or details"
+                    />
+                    <Button 
+                      className="rounded-l-none"
+                    >
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block mb-1 text-sm">Date Range From</label>
+                      <input
+                        type="date"
+                        className="w-full p-2 border rounded"
+                        value={dateRange.start}
+                        onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block mb-1 text-sm">Date Range To</label>
+                      <input
+                        type="date"
+                        className="w-full p-2 border rounded"
+                        value={dateRange.end}
+                        onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block mb-1 text-sm">User</label>
+                      <select
+                        className="w-full p-2 border rounded"
+                        value={userFilter}
+                        onChange={(e) => setUserFilter(e.target.value)}
+                      >
+                        <option value="">All Users</option>
+                        {uniqueUsers.map((user, index) => (
+                          <option key={index} value={user}>{user}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block mb-1 text-sm">Action</label>
+                      <select
+                        className="w-full p-2 border rounded"
+                        value={actionFilter}
+                        onChange={(e) => setActionFilter(e.target.value)}
+                      >
+                        <option value="">All Actions</option>
+                        {uniqueActions.map((action, index) => (
+                          <option key={index} value={action}>{action}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <Button 
+                      variant="outline"
+                      onClick={clearFilters}
+                    >
+                      Clear Filters
+                    </Button>
+                    
+                    <div className="flex items-center space-x-2">
+                      <select
+                        className="p-2 border rounded"
+                        value={exportFormat}
+                        onChange={(e) => setExportFormat(e.target.value)}
+                      >
+                        <option value="csv">CSV</option>
+                        <option value="json">JSON</option>
+                      </select>
+                      <Button 
+                        onClick={exportLogs}
+                        className="flex items-center"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             
-            <div>
-              <label className="block mb-1 font-medium">API Path</label>
-              <input
-                type="text"
-                className="w-full p-2 border rounded"
-                value={filter.path}
-                onChange={(e) => setFilter(prev => ({ ...prev, path: e.target.value }))}
-                placeholder="e.g., /api/projects"
-              />
-            </div>
-            
-            <div>
-              <label className="block mb-1 font-medium">User ID/Name</label>
-              <input
-                type="text"
-                className="w-full p-2 border rounded"
-                value={filter.user}
-                onChange={(e) => setFilter(prev => ({ ...prev, user: e.target.value }))}
-                placeholder="User identifier"
-              />
-            </div>
-            
-            <div>
-              <label className="block mb-1 font-medium">Date From</label>
-              <input
-                type="date"
-                className="w-full p-2 border rounded"
-                value={filter.dateFrom}
-                onChange={(e) => setFilter(prev => ({ ...prev, dateFrom: e.target.value }))}
-              />
-            </div>
-            
-            <div>
-              <label className="block mb-1 font-medium">Date To</label>
-              <input
-                type="date"
-                className="w-full p-2 border rounded"
-                value={filter.dateTo}
-                onChange={(e) => setFilter(prev => ({ ...prev, dateTo: e.target.value }))}
-              />
-            </div>
-          </div>
-          
-          <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              onClick={resetFilters}
-              className="flex items-center"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Reset Filters
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Audit Log Records</CardTitle>
-          <CardDescription>
-            {loading ? 'Loading audit records...' : `${filteredLogs.length} records found`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center items-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-            </div>
-          ) : filteredLogs.length > 0 ? (
-            <div className="border rounded overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="p-2 border-b text-left">Timestamp</th>
-                    <th className="p-2 border-b text-left">Method</th>
-                    <th className="p-2 border-b text-left">Path</th>
-                    <th className="p-2 border-b text-left">User</th>
-                    <th className="p-2 border-b text-left">IP Address</th>
-                    <th className="p-2 border-b text-center">Status</th>
-                    <th className="p-2 border-b text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredLogs.map((log, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="p-2 border-b">{new Date(log.timestamp).toLocaleString()}</td>
-                      <td className="p-2 border-b">
-                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                          log.method === 'GET' ? 'bg-blue-100 text-blue-800' :
-                          log.method === 'POST' ? 'bg-green-100 text-green-800' :
-                          log.method === 'PUT' ? 'bg-yellow-100 text-yellow-800' :
-                          log.method === 'DELETE' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {log.method}
-                        </span>
-                      </td>
-                      <td className="p-2 border-b font-mono text-xs">{log.path}</td>
-                      <td className="p-2 border-b">{log.username || log.userId || '-'}</td>
-                      <td className="p-2 border-b font-mono text-xs">{log.ipAddress}</td>
-                      <td className="p-2 border-b text-center">
-                        <span className={`inline-block px-2 py-1 rounded text-xs ${
-                          log.statusCode < 300 ? 'bg-green-100 text-green-800' :
-                          log.statusCode < 400 ? 'bg-blue-100 text-blue-800' :
-                          log.statusCode < 500 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {log.statusCode}
-                        </span>
-                      </td>
-                      <td className="p-2 border-b text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => viewLogDetails(log)}
-                          className="h-8 w-8 p-0"
+            {/* Audit Logs Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Audit Logs</CardTitle>
+                <CardDescription>
+                  Showing {filteredLogs.length} of {auditLogs.length} total logs
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded overflow-auto">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-40">
+                      <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+                    </div>
+                  ) : filteredLogs.length > 0 ? (
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="text-left p-3">Timestamp</th>
+                          <th className="text-left p-3">User</th>
+                          <th className="text-left p-3">Action</th>
+                          <th className="text-left p-3">Component</th>
+                          <th className="text-left p-3">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {filteredLogs.map((log, index) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="p-3 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                                {formatDate(log.timestamp)}
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center">
+                                <User className="h-4 w-4 mr-2 text-gray-500" />
+                                {log.userName}
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${getActionColorClass(log.action)}`}>
+                                {log.action}
+                              </span>
+                            </td>
+                            <td className="p-3">{log.component}</td>
+                            <td className="p-3">
+                              <div className="max-w-md truncate" title={log.details}>
+                                {log.details}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-40 text-center p-4">
+                      <AlertCircle className="h-8 w-8 text-gray-400 mb-2" />
+                      <p className="text-gray-500">
+                        {auditLogs.length > 0 
+                          ? 'No logs match your filter criteria. Try adjusting your filters.' 
+                          : 'No audit logs available.'}
+                      </p>
+                      {auditLogs.length > 0 && (
+                        <Button 
+                          variant="link" 
+                          onClick={clearFilters}
+                          className="mt-2"
                         >
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View details</span>
+                          Clear all filters
                         </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center p-8 border rounded bg-gray-50">
-              <p className="text-gray-500">No audit logs found matching your criteria</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        {/* Document Changes Tab */}
+        <TabsContent value="document">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Document Change History</CardTitle>
+                <CardDescription>Track changes made to documents in the system</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <label className="block mb-1 text-sm">Document Type</label>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={componentFilter}
+                      onChange={(e) => setComponentFilter(e.target.value)}
+                    >
+                      <option value="">All Documents</option>
+                      {uniqueComponents.map((component, index) => (
+                        <option key={index} value={component}>{component}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block mb-1 text-sm">Date Range From</label>
+                    <input
+                      type="date"
+                      className="w-full p-2 border rounded"
+                      value={dateRange.start}
+                      onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block mb-1 text-sm">Date Range To</label>
+                    <input
+                      type="date"
+                      className="w-full p-2 border rounded"
+                      value={dateRange.end}
+                      onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                
+                <div className="border rounded overflow-auto">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-40">
+                      <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+                    </div>
+                  ) : filteredLogs.filter(log => ['create', 'update', 'delete'].includes(log.action.toLowerCase())).length > 0 ? (
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="text-left p-3">Document</th>
+                          <th className="text-left p-3">Action</th>
+                          <th className="text-left p-3">User</th>
+                          <th className="text-left p-3">Timestamp</th>
+                          <th className="text-left p-3">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {filteredLogs
+                          .filter(log => ['create', 'update', 'delete'].includes(log.action.toLowerCase()))
+                          .map((log, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="p-3">
+                                <div className="flex items-center">
+                                  <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                                  {log.component}
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${getActionColorClass(log.action)}`}>
+                                  {log.action}
+                                </span>
+                              </td>
+                              <td className="p-3">
+                                <div className="flex items-center">
+                                  <User className="h-4 w-4 mr-2 text-gray-500" />
+                                  {log.userName}
+                                </div>
+                              </td>
+                              <td className="p-3 whitespace-nowrap">{formatDate(log.timestamp)}</td>
+                              <td className="p-3">
+                                <div className="max-w-md truncate" title={log.details}>
+                                  {log.details}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-40 text-center p-4">
+                      <AlertCircle className="h-8 w-8 text-gray-400 mb-2" />
+                      <p className="text-gray-500">
+                        No document change logs found.
+                      </p>
+                      {componentFilter || dateRange.start || dateRange.end ? (
+                        <Button 
+                          variant="link" 
+                          onClick={clearFilters}
+                          className="mt-2"
+                        >
+                          Clear all filters
+                        </Button>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
