@@ -270,7 +270,7 @@ const CanvasWorkbenchV2 = () => {
         >
           {/* Connection lines */}
           {connections.map(conn => (
-            <React.Fragment key={conn.id}>
+            <div key={conn.id}>
               <div
                 className={`connection-line ${conn.isCritical ? 'critical' : ''}`}
                 style={{
@@ -291,7 +291,7 @@ const CanvasWorkbenchV2 = () => {
                   {conn.riskLevel}
                 </div>
               )}
-            </React.Fragment>
+            </div>
           ))}
           
           {/* Section nodes */}

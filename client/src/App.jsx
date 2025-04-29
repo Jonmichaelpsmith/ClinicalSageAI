@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route, useRoute, useLocation } from 'wouter';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 // Import Pages and Modules
 import ClientPortalLanding from './pages/ClientPortalLanding';
@@ -222,7 +223,7 @@ function App() {
                 <h2 className="text-2xl font-bold mb-4 text-red-600">404 - Page Not Found</h2>
                 <p className="mb-4 text-gray-600">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
                 <Button 
-                  onClick={() => navigate('/client-portal')}
+                  onClick={() => window.location.href = '/client-portal'}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
                 >
                   Return to Client Portal
