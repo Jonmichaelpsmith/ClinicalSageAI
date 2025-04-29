@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CerHistoryPanel from '@/components/cer/CerHistoryPanel';
-import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileText, RotateCcw, Sliders, ClipboardCheck } from 'lucide-react';
+import { FileText, Upload, BookOpen, FileDigit, Archive, Settings, ClipboardCheck } from 'lucide-react';
+
+// Import all our restored components
+import InputDataPanel from '@/components/cer/InputDataPanel';
+import LitReviewPanel from '@/components/cer/LitReviewPanel';
+import GeneratedReportPanel from '@/components/cer/GeneratedReportPanel';
+import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
+import TemplateSettingsPanel from '@/components/cer/TemplateSettingsPanel';
+import ApprovalsPanel from '@/components/cer/ApprovalsPanel';
+import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
 
 /**
  * CER Generator V2 Page
  * 
- * This page provides an enhanced interface for managing Clinical Evaluation Reports
- * with multiple tabs for different aspects of CER management.
+ * Enhanced interface for managing Clinical Evaluation Reports with 
+ * comprehensive tabs for different aspects of the CER workflow.
  */
 const CERV2Page = () => {
-  const [activeTab, setActiveTab] = useState('history');
+  const [activeTab, setActiveTab] = useState('input');
+  const [selectedJobId, setSelectedJobId] = useState('JOB-20250429-001');
   
-  // Mock product data - in a real application this would come from API or context
+  // Product data - in production this would come from API or context
   const productData = {
     id: 'PROD-12345',
     name: 'Enzymex Forte',
@@ -28,6 +36,7 @@ const CERV2Page = () => {
   
   return (
     <div className="container py-6 max-w-7xl mx-auto">
+      {/* Header Section */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight mb-2 flex items-center gap-2">
           <FileText className="h-8 w-8" />
@@ -38,6 +47,7 @@ const CERV2Page = () => {
         </p>
       </div>
       
+      {/* Active Product Card */}
       <div className="grid grid-cols-1 gap-8 mb-8">
         <Card className="shadow-md">
           <CardHeader className="p-6">
@@ -51,7 +61,8 @@ const CERV2Page = () => {
                 templateId={productData.templateId}
                 metadata={productData.metadata}
                 onSuccess={(jobId) => {
-                  setActiveTab('history');
+                  setSelectedJobId(jobId);
+                  setActiveTab('report');
                 }}
               />
             </div>
@@ -59,14 +70,27 @@ const CERV2Page = () => {
         </Card>
       </div>
       
+      {/* Main Navigation Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
-          <TabsTrigger value="history" className="flex items-center gap-2">
-            <RotateCcw className="h-4 w-4" />
-            Report History
+        <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsTrigger value="input" className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Input Data
+          </TabsTrigger>
+          <TabsTrigger value="litreview" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Literature Review
+          </TabsTrigger>
+          <TabsTrigger value="report" className="flex items-center gap-2">
+            <FileDigit className="h-4 w-4" />
+            Generated Report
+          </TabsTrigger>
+          <TabsTrigger value="vault" className="flex items-center gap-2">
+            <Archive className="h-4 w-4" />
+            Document Vault
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Sliders className="h-4 w-4" />
+            <Settings className="h-4 w-4" />
             Template Settings
           </TabsTrigger>
           <TabsTrigger value="approvals" className="flex items-center gap-2">
@@ -75,46 +99,34 @@ const CERV2Page = () => {
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="history" className="mt-0">
-          <CerHistoryPanel />
+        {/* Input Data Tab */}
+        <TabsContent value="input" className="mt-0">
+          <InputDataPanel />
         </TabsContent>
         
+        {/* Literature Review Tab */}
+        <TabsContent value="litreview" className="mt-0">
+          <LitReviewPanel />
+        </TabsContent>
+        
+        {/* Generated Report Tab */}
+        <TabsContent value="report" className="mt-0">
+          <GeneratedReportPanel jobId={selectedJobId} />
+        </TabsContent>
+        
+        {/* Document Vault Tab */}
+        <TabsContent value="vault" className="mt-0">
+          <DocumentVaultPanel jobId={selectedJobId} />
+        </TabsContent>
+        
+        {/* Template Settings Tab */}
         <TabsContent value="settings" className="mt-0">
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sliders className="h-5 w-5" />
-                Template Settings
-              </CardTitle>
-              <CardDescription>
-                Configure your CER templates and generation settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-center h-64 text-muted-foreground">
-                Template settings to be implemented
-              </div>
-            </CardContent>
-          </Card>
+          <TemplateSettingsPanel />
         </TabsContent>
         
+        {/* Approvals Tab */}
         <TabsContent value="approvals" className="mt-0">
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardCheck className="h-5 w-5" />
-                My Approval Requests
-              </CardTitle>
-              <CardDescription>
-                Review reports pending your approval
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-center h-64 text-muted-foreground">
-                Dedicated approvals dashboard to be implemented
-              </div>
-            </CardContent>
-          </Card>
+          <ApprovalsPanel />
         </TabsContent>
       </Tabs>
     </div>
