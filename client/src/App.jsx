@@ -26,7 +26,7 @@ import TimelinePage from './pages/TimelinePage'; // Import our Timeline page
 import ProtocolDesignerPage from './pages/ProtocolDesignerPage'; // Import Protocol Designer page
 import CSRPage from './pages/CSRPage'; // Import CSR Deep Intelligence page
 import CMCPage from './pages/CMCPage'; // Import CMC Module page
-import CERPage from './pages/CERPage'; // Import CER Generator page
+import CERPage from './pages/CerPage'; // Import CER Generator page
 import CERV2Page from './pages/CERV2Page'; // Import Advanced CER Generator page
 import BlueprintPage from './pages/BlueprintPage'; // Import Blueprint Generator page
 import CitationManagerPage from './pages/CitationManagerPage'; // Import Citation Manager page
