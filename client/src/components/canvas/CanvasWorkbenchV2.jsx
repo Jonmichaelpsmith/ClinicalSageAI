@@ -8,7 +8,7 @@ import './CanvasWorkbenchV2.css';
 /**
  * Enhanced Canvas Workbench with better styling and interactions
  */
-export default function CanvasWorkbenchV2() {
+export default function CanvasWorkbenchV2({ onNodeClick }) {
   const [sections, setSections] = useState([]);
   const [selected, setSelected] = useState(null);
   const [guidance, setGuidance] = useState('');
@@ -140,6 +140,11 @@ export default function CanvasWorkbenchV2() {
       // Otherwise just select this section
       setSelected(section);
       setSelection([section.id]);
+      
+      // Call the onNodeClick handler if provided
+      if (onNodeClick) {
+        onNodeClick(section);
+      }
     }
   };
 

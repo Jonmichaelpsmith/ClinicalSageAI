@@ -1,0 +1,10 @@
+.canvas-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.canvas-main {
+  flex: 1;
+  position: relative;
+}
