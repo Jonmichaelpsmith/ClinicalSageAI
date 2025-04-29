@@ -1,12 +1,36 @@
 import React from 'react';
-import './CanvasNode.css';
 
-export function CanvasNode({ id, title, status, onClick }) {
-  // status: "complete" | "pending" | "critical"
+/**
+ * CanvasNode component for rendering a draggable node in the canvas
+ */
+export const CanvasNode = ({ section, isSelected, onClick, onDragStart }) => {
+  const statusClass = section.status || 'pending';
+  
+  const handleMouseDown = (e) => {
+    if (onDragStart) {
+      onDragStart(e, section);
+    }
+  };
+  
+  const handleClick = (e) => {
+    if (onClick) {
+      onClick(section, e);
+    }
+  };
+
   return (
-    <div className={`canvas-node ${status}`} onClick={onClick}>
-      <div className="node-badge">{id}</div>
-      <div className="node-label">{title}</div>
+    <div 
+      className={`node node-${statusClass} ${isSelected ? 'selected' : ''}`}
+      onMouseDown={handleMouseDown}
+      onClick={handleClick}
+    >
+      <div className="node-badge">{section.id}</div>
+      <div className="node-content">
+        <div className="node-title">{section.title}</div>
+        {section.subtitle && (
+          <div className="node-subtitle">{section.subtitle}</div>
+        )}
+      </div>
     </div>
   );
-}
+};
