@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CerHistoryPanel from '@/components/cer/CerHistoryPanel';
 import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
-import DocuShareIntegration from '@/components/document-management/DocuShareIntegration';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileText, RotateCcw, Sliders, ClipboardCheck, Database } from 'lucide-react';
+import { FileText, RotateCcw, Sliders, ClipboardCheck } from 'lucide-react';
 
 /**
  * CER Generator V2 Page
@@ -60,104 +59,64 @@ const CERV2Page = () => {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
-        <div className="lg:col-span-3">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-8">
-              <TabsTrigger value="history" className="flex items-center gap-2">
-                <RotateCcw className="h-4 w-4" />
-                Report History
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Sliders className="h-4 w-4" />
-                Template Settings
-              </TabsTrigger>
-              <TabsTrigger value="approvals" className="flex items-center gap-2">
-                <ClipboardCheck className="h-4 w-4" />
-                Approvals
-              </TabsTrigger>
-              <TabsTrigger value="documents" className="flex items-center gap-2">
-                <Database className="h-4 w-4" />
-                Documents
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="history" className="mt-0">
-              <CerHistoryPanel />
-            </TabsContent>
-            
-            <TabsContent value="settings" className="mt-0">
-              <Card className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sliders className="h-5 w-5" />
-                    Template Settings
-                  </CardTitle>
-                  <CardDescription>
-                    Configure your CER templates and generation settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    Template settings to be implemented
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="approvals" className="mt-0">
-              <Card className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ClipboardCheck className="h-5 w-5" />
-                    My Approval Requests
-                  </CardTitle>
-                  <CardDescription>
-                    Review reports pending your approval
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    Dedicated approvals dashboard to be implemented
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="documents" className="mt-0">
-              <DocuShareIntegration 
-                moduleName="cer"
-                moduleLabel="CER Documents"
-                allowDelete={true}
-                hidePreview={false}
-              />
-            </TabsContent>
-          </Tabs>
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsTrigger value="history" className="flex items-center gap-2">
+            <RotateCcw className="h-4 w-4" />
+            Report History
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Sliders className="h-4 w-4" />
+            Template Settings
+          </TabsTrigger>
+          <TabsTrigger value="approvals" className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4" />
+            Approvals
+          </TabsTrigger>
+        </TabsList>
         
-        <div className="lg:col-span-1">
-          <Card className="shadow-md h-full">
+        <TabsContent value="history" className="mt-0">
+          <CerHistoryPanel />
+        </TabsContent>
+        
+        <TabsContent value="settings" className="mt-0">
+          <Card className="shadow-md">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                Document Repository
+              <CardTitle className="flex items-center gap-2">
+                <Sliders className="h-5 w-5" />
+                Template Settings
               </CardTitle>
               <CardDescription>
-                Manage your CER documents
+                Configure your CER templates and generation settings
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4">
-              <DocuShareIntegration 
-                moduleName="cer"
-                moduleLabel="Quick Access"
-                compact={true}
-                hideMetadata={true}
-                className="h-[500px]"
-              />
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center h-64 text-muted-foreground">
+                Template settings to be implemented
+              </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="approvals" className="mt-0">
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5" />
+                My Approval Requests
+              </CardTitle>
+              <CardDescription>
+                Review reports pending your approval
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center h-64 text-muted-foreground">
+                Dedicated approvals dashboard to be implemented
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
