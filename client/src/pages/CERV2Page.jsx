@@ -14,6 +14,7 @@ import { fetchAllCERs, generateFullCER, generateSampleCER } from "../services/ce
 import { fetchDocuments, approveDocument, fetchCERHistory } from "../services/documentService";
 import DocumentFilterPanel from "../components/documents/DocumentFilterPanel";
 import DocumentList from "../components/documents/DocumentList";
+import ReportHistoryPanel from "../components/cer/ReportHistoryPanel";
 import { 
   FileText, Search, Download, Upload, FileSpreadsheet, 
   Book, Database, Layers, Settings, Microscope, BarChart4, 
