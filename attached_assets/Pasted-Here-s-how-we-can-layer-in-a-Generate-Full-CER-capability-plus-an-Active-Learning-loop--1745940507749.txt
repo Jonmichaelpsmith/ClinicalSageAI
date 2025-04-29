@@ -1,0 +1,151 @@
+Here’s how we can layer in a **“Generate Full CER”** capability **plus** an **Active-Learning loop** without blowing our sprint scope—and lay the groundwork for truly differentiated value:
+
+---
+
+## 1. “Generate Full CER” Button & Flow
+
+### UI Changes (CERV2Page.jsx)
+
+1. **Header Button**  
+   Add a “Generate Full CER” button next to the existing tabs.  
+   ```jsx
+   <div className="cer-header">
+     <Tabs … />
+     <Button
+       variant="primary"
+       onClick={handleGenerateFullCER}
+       disabled={isGenerating}
+     >
+       {isGenerating ? <Spinner size="sm" /> : "Generate Full CER"}
+     </Button>
+   </div>
+   ```
+2. **Handler Logic**  
+   ```js
+   const handleGenerateFullCER = async () => {
+     setIsGenerating(true);
+     try {
+       const res = await fetch('/api/cer/generate-full', { method: 'POST' });
+       const { reportUrl } = await res.json();
+       window.open(reportUrl, '_blank');      // open PDF in new tab
+       // optionally, refresh history panel:
+       fetchHistory();
+     } catch (err) {
+       toast.error("Failed to generate report.");
+     } finally {
+       setIsGenerating(false);
+     }
+   };
+   ```
+
+### Server Route & Service
+
+1. **Route** (`server/routes/cer.js`):
+   ```js
+   router.post('/generate-full', async (req, res) => {
+     // kick off full-CER generation, passing in all device + context data
+     const pdfBuffer = await cerService.buildFullReport(req.user, /* payload */);
+     // save to disk or object storage, record in DB
+     const url = await cerService.saveAndRecord(pdfBuffer, req.user);
+     res.json({ reportUrl: url });
+   });
+   ```
+2. **Service** (`server/services/cerService.js`):
+   - Fetch all relevant inputs (PubMed, FDA, device info, comparability, stability, etc.)
+   - Call OpenAI (or specialized LLM chain) to draft each CER section
+   - Stitch into a single PDF (e.g. with PDFKit or Puppeteer)
+   - Return Buffer
+
+---
+
+## 2. Report History Sidebar
+
+On **every** module page—Risk Heatmap, Timeline, Co-Author, CER, etc.—we’ll embed a collapsible “My Documents” panel:
+
+```jsx
+// DocumentHistoryPanel.jsx
+export function DocumentHistoryPanel({ module, section }) {
+  const [history, setHistory] = useState([]);
+  useEffect(fetchHistory, [module, section]);
+  async function fetchHistory() {
+    const res = await fetch(`/api/documents?module=${module}&section=${section}`);
+    setHistory(await res.json());
+  }
+  return (
+    <aside className="doc-history">
+      <h4>Past Reports</h4>
+      {history.map(doc => (
+        <a key={doc.id} href={doc.url} target="_blank">
+          {formatDate(doc.createdAt)} – {doc.name}
+        </a>
+      ))}
+    </aside>
+  );
+}
+```
+
+Mount it in **CERV2Page**, **CoAuthor**, **RegulatoryDashboard**, etc.
+
+---
+
+## 3. Active-Learning Loop
+
+### UI: Approve / Revise Buttons
+
+Below each AI-drafted section (CoAuthor or CER generator), show:
+
+```jsx
+<div className="section-feedback">
+  <Button variant="success" onClick={() => sendFeedback('approve', sectionId)}>
+    👍 Approve
+  </Button>
+  <Button variant="danger" onClick={() => sendFeedback('revise', sectionId)}>
+    ✍️ Revise
+  </Button>
+</div>
+```
+
+### Client Logic
+
+```js
+async function sendFeedback(action, sectionId) {
+  await fetch('/api/cer/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ sectionId, action, corrections: /* diff or newText */ })
+  });
+  toast.info(`Feedback recorded: ${action}`);
+}
+```
+
+### Server: Feedback Endpoint
+
+```js
+// server/routes/cer.js
+router.post('/feedback', async (req, res) => {
+  const { sectionId, action, corrections } = req.body;
+  await cerService.recordFeedback(req.user.id, sectionId, action, corrections);
+  res.sendStatus(204);
+});
+```
+
+In **cerService.recordFeedback**, we store each user decision in a feedback table. Later we can fine-tune custom models on that feedback, or dynamically adjust prompts to reduce “hallucinations” for that client.
+
+---
+
+## 4. Next Steps & Prioritization
+
+1. **Implement “Generate Full CER”** end-to-end (UI + route + service stub).  
+2. **Build DocumentHistoryPanel** and wire up `/api/documents` to fetch saved CERs.  
+3. **Add Active-Learning UI** in CoAuthor & CER screens and backend `/feedback`.  
+4. **Hook into model retraining** (Phase 2)—use stored feedback to create per-client prompt adapters.  
+
+---
+
+With this in place, you get:
+
+- **One-click full report** generation  
+- **Audit trail** & easy re-runs via history panel  
+- **Continuous improvement** via user feedback  
+
+This positions us well ahead of competitors by closing the loop between AI output and user validation, and turning every correction into a stronger model for that client. Let me know which piece you’d like to tackle first!
