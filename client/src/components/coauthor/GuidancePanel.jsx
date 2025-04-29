@@ -48,6 +48,33 @@ export default function GuidancePanel({ sectionId }) {
 
   // For detailed guidance content
   const getGuidanceDetailsForSection = (id) => {
+    // First check if we have template data that we can use for guidance
+    if (templates[id]) {
+      const template = templates[id];
+      
+      // Create a template-specific guidance item
+      const templateGuidance = {
+        title: `${template.title} Template Guidance`,
+        source: 'TrialSage™ Templates',
+        link: 'javascript:void(0)',  // No external link for template guidance
+        key_points: [
+          template.description,
+          // Add field-specific guidance points
+          ...(template.fields || []).map(field => `Include information about ${field.label.toLowerCase()}`)
+        ]
+      };
+      
+      // Add template guidance to the list of guidance items
+      const standardGuidance = getStandardGuidance(id);
+      return [templateGuidance, ...standardGuidance];
+    }
+    
+    // If no template, return standard guidance
+    return getStandardGuidance(id);
+  };
+  
+  // Standard guidance items from regulatory sources
+  const getStandardGuidance = (id) => {
     const guidanceMap = {
       '2.5': [
         {
@@ -103,49 +130,27 @@ export default function GuidancePanel({ sectionId }) {
           ]
         }
       ],
-      '3.2.P': [
+      '2.2': [
         {
-          title: 'ICH M4Q Quality Overall Summary',
+          title: 'ICH M4E Introduction Guidance',
           source: 'ICH Guidelines',
-          link: 'https://database.ich.org/sites/default/files/M4Q_R1_Guideline.pdf',
+          link: 'https://database.ich.org/sites/default/files/M4E_R2_Guideline.pdf',
           key_points: [
-            'Summarize information on drug substance and drug product',
-            'Include critical quality attributes',
-            'Describe pharmaceutical development and manufacturing process'
+            'Provide a concise overview of the product',
+            'Include the pharmaceutical class',
+            'Describe proposed clinical indication'
           ]
         }
       ],
-      '4.2.1': [
+      '2.1': [
         {
-          title: 'ICH M4S Nonclinical Overview and Summaries',
+          title: 'ICH M4 Common Technical Document',
           source: 'ICH Guidelines',
-          link: 'https://database.ich.org/sites/default/files/M4S_R2_Guideline.pdf',
+          link: 'https://database.ich.org/sites/default/files/M4_R4_Guideline.pdf',
           key_points: [
-            'Summarize pharmacology studies and their relation to proposed indication',
-            'Describe pharmacokinetic and toxicology findings',
-            'Discuss relevance of animal models to humans'
-          ]
-        }
-      ],
-      '5.3.5': [
-        {
-          title: 'FDA Guidance on Clinical Efficacy',
-          source: 'FDA',
-          link: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents',
-          key_points: [
-            'Present data from controlled clinical trials',
-            'Discuss strengths and limitations of evidence',
-            'Address differences in efficacy across subgroups'
-          ]
-        },
-        {
-          title: 'ICH E9 Statistical Principles for Clinical Trials',
-          source: 'ICH Guidelines',
-          link: 'https://database.ich.org/sites/default/files/E9_Guideline.pdf',
-          key_points: [
-            'Follow proper statistical methodology',
-            'Address multiplicity issues',
-            'Describe primary and secondary endpoints with justification'
+            'Include all Module 2 sections in TOC',
+            'Follow the proper section numbering convention',
+            'Use consistent document formatting'
           ]
         }
       ]
@@ -165,7 +170,7 @@ export default function GuidancePanel({ sectionId }) {
     ];
   };
   
-  const guidance = getGuidanceForSection(sectionId);
+  const guidance = getGuidanceDetailsForSection(sectionId);
   
   return (
     <Card className="shadow-sm overflow-hidden">
