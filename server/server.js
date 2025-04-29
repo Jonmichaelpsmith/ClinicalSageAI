@@ -114,7 +114,6 @@ app.use('/api/arrhenius', arrheniusRoutes);
 
 // Import route modules
 import advisorRoutes from './routes/advisor.js';
-import documentsRoutes from './routes/documents.js';
 import { registerDiagnostics } from './diagnostics.js';
 
 // Register diagnostics routes first (for troubleshooting)
