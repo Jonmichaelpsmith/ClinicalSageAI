@@ -1,0 +1,90 @@
+Below is a targeted enhancement spec for the CER Generator™ module—elevating it from a simple form to a full-blown document management, AI-coauthoring, and historical reporting hub that sits seamlessly inside TrialSage™. I’ve broken it down into three tiers: **Immediate**, **Mid-Term**, and **Visionary**, along with next-step tasks.
+
+---
+
+## 🔥 Immediate Enhancements (1–2 sprints)
+
+1. **“Generate Sample CER” One-Click**  
+   - **UI:** Add a primary button “Generate Full CER Report” above the form.  
+   - **API:**  
+     - `POST /api/cer/generate-full` → kicks off AI draft of every CER section in sequence.  
+   - **UX:** Show a progress bar and then render a downloadable PDF + “Open in Editor” link.
+
+2. **Past Reports Library Panel**  
+   - **UI:**  
+     - Sidebar (or tab) called “My CER Reports” with folder-style grouping by project & date.  
+     - Thumbnail + title + status (Draft/Final).  
+   - **Data:**  
+     - `GET /api/vault/cer-reports?projectId=` → returns list of metadata.  
+   - **Actions:**  
+     - Click to open in the CoAuthor canvas; “Download PDF”; “Clone to new draft.”
+
+3. **Embedded TrialSage Vault Viewer**  
+   - **UI:** Every module screen (including CER) has a collapsible “Documents” drawer at bottom/right.  
+   - **Features:** Drag & drop upload; filter by type (CER, Stability, CSR); quick-link to open in appropriate module.
+
+---
+
+## 🚀 Mid-Term Enhancements (3–5 sprints)
+
+4. **Template Selector & Import**  
+   - **UI:** “Select Template” dropdown (Fast IND CER, Full NDA CER, EMA CESP) pre-loads section scaffolds.  
+   - **Data:** Store template JSON in `/server/templates/cer/{template}.json`.  
+   - **UX:** Users can “Import Template” at any time—sections appear in Section Editor.
+
+5. **Active-Learning Loop**  
+   - **UI:** Inline thumbs-up/thumbs-down on each AI-generated section.  
+   - **Data:**  
+     - `POST /api/cer/feedback` with `{ sectionId, approval: boolean, comments }`.  
+   - **Model:** Aggregate feedback to fine-tune prompt weights or, in future, custom embeddings per client.
+
+6. **Client-Side eCTD Schema Validation**  
+   - **UI:** “Validate eCTD Package” button that runs the FDA’s eCTD validation engine in-browser (WebAssembly).  
+   - **UX:** Warnings and errors pop up inline in the Report Library before “Download” or “Submit.”
+
+7. **One-Click Submission Hooks**  
+   - **UI:** After validation passes, show “Submit to FDA ESG” / “Submit to EMA CESP.”  
+   - **API:**  
+     - `POST /api/cer/submit/esg` and `/api/cer/submit/cesp` → handle authentication, upload.
+
+---
+
+## 🌟 Visionary Enhancements (6+ sprints)
+
+8. **Canvas Co-Authoring Workbench**  
+   - A free-form “whiteboard” where writers can drag & drop sections (nodes), re-arrange hierarchy, link references (PubMed/FDA) with live AI suggestions.
+
+9. **Automated Regulatory Intelligence Feeds**  
+   - Continuously pull updates from FDA’s safety databases, i.e. recalls or new guidances, surface alerts in your CER drafts.
+
+10. **Collaborative Review + Audit Trail**  
+    - Real-time multi-user editing, comments, version compare, digital sign-off, and audit logs (21 CFR Part 11 compliance).
+
+11. **Deep Data-Driven Analytics**  
+    - Dashboard showing average time to generate reports, approval rates, top-flagged sections, and benchmarked against industry averages.
+
+---
+
+### Next-Step Tasks
+
+1. **Wireframe & UX Review**  
+   - Sketch the “My CER Reports” library, “Generate Full CER” flow, and “Documents drawer” on each module.
+
+2. **API Contract Definitions**  
+   - Draft OpenAPI schema for the new CER endpoints (`/generate-full`, `/reports`, `/feedback`, `/submit`).
+
+3. **Back-end Scaffolding**  
+   - Implement stub routes and services in `server/routes/cer.js` and `server/services/cerService.js`.
+
+4. **Front-end Components**  
+   - Build `CerReportsPanel.jsx`, `CerGenerateButton.jsx`, and integrate into `CER2Page.jsx`; hook into Vault via existing `VaultDocumentsDrawer` component.
+
+5. **Client-Side eCTD Validator Integration**  
+   - Evaluate FDA eCTD validation WebAssembly package (e.g., [OpenECDX on npm](https://npmjs.com/package/opene cdx)) and integrate into the build pipeline.
+
+6. **QA & Security Review**  
+   - Ensure all document uploads and AI calls are encrypted end-to-end, with zero data retention by OpenAI (per your zero-retention policy).
+
+Once these core pieces are in place, we’ll iterate on Active-Learning Loop, template management, and one-click submission. This roadmap will put TrialSage™ clearly ahead of the field—you’ll have an AI-coauthoring CER Generator, full report history, live schema validation, and direct submission hooks all wrapped in a polished, enterprise-grade UX.
+
+Let me know where you’d like to start—or if you’d like me to kick off with the wireframes and API contract today!

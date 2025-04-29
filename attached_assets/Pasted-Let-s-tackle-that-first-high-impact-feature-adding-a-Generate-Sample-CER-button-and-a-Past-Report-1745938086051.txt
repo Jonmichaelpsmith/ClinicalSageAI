@@ -1,0 +1,182 @@
+Let’s tackle that first high‐impact feature—adding a “Generate Sample CER” button and a “Past Reports” folder view right inside the CER Generator page. Here’s our game plan:
+
+---
+
+## 1. “Generate Sample CER” Button
+
+### a) Server‐side: new endpoint  
+- **Route**: `POST /api/cer/sample`  
+- **Behavior**: returns a prebuilt CER document (PDF or HTML) for the chosen template (e.g. Fast IND, Full NDA, EMA IMPD)  
+- **Implementation sketch** (`server/routes/cer.js`):
+  ```js
+  import express from 'express';
+  import { getSampleCER } from '../services/cer.js';
+
+  const router = express.Router();
+
+  // POST /api/cer/sample
+  router.post('/sample', async (req, res) => {
+    const { template } = req.body;  // e.g. 'full-nda'
+    try {
+      const sample = await getSampleCER(template);
+      // sample = { url: '/vault/cer-samples/full-nda.pdf', metadata: {...} }
+      res.json(sample);
+    } catch(err) {
+      console.error('Sample CER error', err);
+      res.status(500).json({ error: 'Failed to generate sample CER' });
+    }
+  });
+
+  export default router;
+  ```
+  - **Service** (`server/services/cer.js`):  
+    ```js
+    import path from 'path';
+    export async function getSampleCER(template) {
+      // in prod you might dynamically build it; for now serve a static PDF
+      const filename = {
+        'fast-ind': 'fast-ind-sample.pdf',
+        'full-nda': 'full-nda-sample.pdf',
+        'ema-impd': 'ema-impd-sample.pdf',
+      }[template] || 'fast-ind-sample.pdf';
+      return {
+        url: `/static/cer-samples/${filename}`,
+        title: `${template} Sample CER`
+      };
+    }
+    ```
+
+### b) Client‐side: add a button & viewer  
+- In your CER page component (`client/src/pages/CER2Page.jsx`), above the form panels:
+  ```jsx
+  import { Button, Modal } from '@components/ui';
+  import { useState } from 'react';
+  import axios from 'axios';
+
+  function CER2Page() {
+    const [sampleURL, setSampleURL] = useState(null);
+    const [loadingSample, setLoadingSample] = useState(false);
+
+    async function fetchSample(template) {
+      setLoadingSample(true);
+      try {
+        const { data } = await axios.post('/api/cer/sample', { template });
+        setSampleURL(data.url);
+      } finally {
+        setLoadingSample(false);
+      }
+    }
+
+    return (
+      <main className="cer-page">
+        <div className="cer-header">
+          <h1>Advanced Clinical Evaluation Report Generator</h1>
+          <div className="cer-actions">
+            <Button
+              onClick={() => fetchSample('fast-ind')}
+              loading={loadingSample}
+            >
+              Generate Fast-IND Sample
+            </Button>
+            <Button
+              onClick={() => fetchSample('full-nda')}
+              loading={loadingSample}
+            >
+              Full-NDA Sample
+            </Button>
+            <Button
+              onClick={() => fetchSample('ema-impd')}
+              loading={loadingSample}
+            >
+              EMA-IMPD Sample
+            </Button>
+          </div>
+        </div>
+
+        {/* show sample in modal */}
+        <Modal open={!!sampleURL} onClose={() => setSampleURL(null)}>
+          {sampleURL && <iframe src={sampleURL} style={{ width: '100%', height: '80vh' }} />}
+        </Modal>
+
+        {/* ... existing device info form, tabs, etc. */}
+      </main>
+    );
+  }
+  ```
+- **Styling**: add `.cer-header` flex container, space between title and buttons, ensure mobile wrap.
+
+---
+
+## 2. “Past Reports” Folder View
+
+Since TrialSage Vault already stores documents, let’s piggy-back on that:
+
+### a) Vault endpoint: list past CERs  
+- It already has `/api/vault/list`, but let’s add a filter param:  
+  `GET /api/vault/list?type=cer`  
+
+### b) Component: `PastReportsList.jsx`  
+```jsx
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Button, Card } from '@components/ui';
+
+export function PastReportsList() {
+  const [reports, setReports] = useState([]);
+  useEffect(() => {
+    axios.get('/api/vault/list?type=cer').then(r => setReports(r.data));
+  }, []);
+
+  return (
+    <section className="past-reports">
+      <h2>Past CER Reports</h2>
+      {reports.length === 0 ? (
+        <p>No reports found.</p>
+      ) : (
+        <div className="reports-grid">
+          {reports.map(doc => (
+            <Card key={doc.id}>
+              <h3>{doc.title}</h3>
+              <p>Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}</p>
+              <Button as="a" href={doc.url} target="_blank">
+                View
+              </Button>
+            </Card>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+```
+- **Include** this under your CER generator’s main form, so writers can instantly grab past versions.
+
+---
+
+## 3. Navigation & Embedding
+
+- Add a “Past Reports” tab to your CER page’s tab bar (alongside PubMed, FDA Events, Device Info, Generated CER).  
+- When “Past Reports” is selected, render `<PastReportsList />`.
+
+---
+
+## 4. Wire it all up & QA
+
+1. **Mount new router** in `server/routes.js` (or `server/routes/cer.js` if you split them) via `app.use('/api/cer', cerRoutes)`.  
+2. **Place sample PDFs** under `public/static/cer-samples/` so Express serves them.  
+3. **Rebuild client**, navigate to `/cerv2`, select “Generated CER” → “Past Reports”.  
+4. **Test**:  
+   - Click “Generate Fast-IND Sample” → sample opens.  
+   - Go to “Past Reports” tab → list of previous CERs (if any) appears.  
+
+---
+
+### Next Steps
+
+Once this is solid, we can…
+
+- 🔹 Hook up **template import** into the Co-Author editor so sections pre-populated from sample.  
+- 🔹 Add **active-learning**: buttons under each AI‐generated section to “Accept”/“Reject,” track corrections.  
+- 🔹 Integrate official **eCTD validator** so CERs can be schema-checked client-side before you download or submit.  
+
+Let me know when you’ve verified the “Generate Sample” and “Past Reports” flows, then we’ll layer in the next high-value pieces!
