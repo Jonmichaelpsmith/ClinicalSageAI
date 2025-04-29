@@ -95,6 +95,11 @@ function App() {
           {/* Client Portal Sub-Pages */}
           <Route path="/client-portal/vault" component={VaultPage} />
           <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
+          <Route path="/client-portal/cer-generator" component={CERV2Page} />
+          <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
+          <Route path="/client-portal/csr-analyzer" component={CsrAnalyzer} />
+          <Route path="/client-portal/study-architect" component={StudyArchitect} />
+          <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
 
           {/* Module Dashboard */}
           <Route path="/dashboard" component={ModuleDashboard} />
