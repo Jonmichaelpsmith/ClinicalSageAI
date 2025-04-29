@@ -1,8 +1,64 @@
-import React from 'react';
-import { ArrowLeft, Sparkles, ExternalLink, Calendar, BookOpen, History, Settings } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Sparkles, ExternalLink, Calendar, BookOpen, History, Settings, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 export default function SectionHeader({ sectionId, title, onGenerate }) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState('');
+  const [generationProgress, setGenerationProgress] = useState(0);
+  
+  // Simulate generation steps for demo purposes
+  const simulateGeneration = () => {
+    setIsGenerating(true);
+    setGenerationProgress(0);
+    setGenerationStep('Initializing AI model...');
+    
+    const steps = [
+      { progress: 10, message: 'Loading clinical templates...' },
+      { progress: 20, message: 'Analyzing ICH E3 guidelines...' },
+      { progress: 35, message: 'Retrieving clinical study data...' },
+      { progress: 50, message: 'Structuring section content...' },
+      { progress: 65, message: 'Generating summary tables...' },
+      { progress: 80, message: 'Applying regulatory compliance checks...' },
+      { progress: 95, message: 'Finalizing document formatting...' },
+      { progress: 100, message: 'Draft generation complete!' }
+    ];
+    
+    // Simulate progress updates with realistic timing
+    let stepIndex = 0;
+    const interval = setInterval(() => {
+      if (stepIndex < steps.length) {
+        const { progress, message } = steps[stepIndex];
+        setGenerationProgress(progress);
+        setGenerationStep(message);
+        stepIndex++;
+      } else {
+        clearInterval(interval);
+        // Wait a moment at 100% before finishing
+        setTimeout(() => {
+          setIsGenerating(false);
+          // Invoke the callback from parent
+          onGenerate && onGenerate();
+        }, 1000);
+      }
+    }, 1200); // 1.2 seconds between updates
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(interval);
+  };
+  
+  // WebSocket-driven progress updates (mocked for demo)
+  useEffect(() => {
+    // In a real implementation, this would connect to WebSocket
+    // and listen for progress events for this specific section
+    
+    // Clean up listener on unmount
+    return () => {
+      // socket.off('progress:update', handleProgressUpdate);
+    };
+  }, [sectionId]);
+  
   return (
     <div className="flex flex-col space-y-4 mb-6">
       <div className="flex items-center gap-2">
@@ -49,20 +105,47 @@ export default function SectionHeader({ sectionId, title, onGenerate }) {
           
           <Button 
             className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white gap-1.5"
-            onClick={onGenerate}
+            onClick={simulateGeneration}
+            disabled={isGenerating}
           >
-            <Sparkles className="h-4 w-4" />
-            <span>Generate Draft</span>
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                <span>Generate Draft</span>
+              </>
+            )}
           </Button>
         </div>
       </div>
       
-      <div className="flex items-center text-xs bg-blue-50 text-blue-700 p-2 rounded-md border border-blue-100">
-        <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-        <span>
-          <span className="font-medium">Guidance Note:</span> This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.
-        </span>
-      </div>
+      {/* Real-time generation progress indicator */}
+      {isGenerating && (
+        <div className="bg-blue-50 p-3 rounded-md border border-blue-100 animate-pulse">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center text-blue-700 text-sm font-medium">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <span>{generationStep}</span>
+            </div>
+            <span className="text-blue-600 text-sm font-medium">{generationProgress}%</span>
+          </div>
+          <Progress value={generationProgress} className="h-2" />
+        </div>
+      )}
+      
+      {/* Standard guidance note (shown when not generating) */}
+      {!isGenerating && (
+        <div className="flex items-center text-xs bg-blue-50 text-blue-700 p-2 rounded-md border border-blue-100">
+          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+          <span>
+            <span className="font-medium">Guidance Note:</span> This section should follow ICH E3 guidelines. Use Ctrl+Enter or Cmd+Enter to generate section content with AI assistance.
+          </span>
+        </div>
+      )}
     </div>
   );
 }
