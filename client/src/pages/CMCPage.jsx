@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Upload, FileText, Beaker, Award } from "lucide-react";
 import { 
