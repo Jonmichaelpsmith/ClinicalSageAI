@@ -73,6 +73,41 @@ export default function ModuleSectionEditor({
       // Get selected context IDs (if any)
       const contextIds = contextSnippets.map(snippet => snippet.chunkId);
       
+      // First try using our new coauthor endpoint
+      try {
+        const response = await fetch('/api/coauthor/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            moduleId,
+            sectionId,
+            prompt: content,
+            context: contextSnippets.map(s => s.text)
+          })
+        });
+        
+        if (!response.ok) {
+          console.warn(`/api/coauthor/generate returned ${response.status}. Falling back to /api/ai/draft...`);
+          throw new Error(`Server returned ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.draft) {
+          setContent(data.draft);
+          setIsDraftReady(true);
+          return; // Exit if successful
+        } else {
+          throw new Error(data.error || 'Failed to generate draft content');
+        }
+      } catch (coauthorErr) {
+        console.warn('Failed to use coauthor endpoint, falling back to ai/draft:', coauthorErr);
+        // Fall through to legacy endpoint
+      }
+      
+      // Legacy fallback
       const response = await fetch('/api/ai/draft', {
         method: 'POST',
         headers: {
@@ -88,7 +123,7 @@ export default function ModuleSectionEditor({
       });
       
       if (!response.ok) {
-        throw new Error('Failed to generate draft');
+        throw new Error(`Server returned ${response.status} from /api/ai/draft`);
       }
       
       const data = await response.json();

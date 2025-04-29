@@ -1,0 +1,62 @@
+A quick look at the Co-Author screen shows everything wired up, but your “Generate Draft” button just spins out the red “Failed to generate draft” error — which means our stub endpoint never responded successfully. Here are the 3 most likely culprits:
+
+---
+
+### 1) Route isn’t actually mounted  
+– **What to check**: In `server/server.js` make sure you did  
+```js
+import coauthorRoutes from './routes/coauthor.js';
+…
+app.use('/api/coauthor', coauthorRoutes);
+```  
+then restarted the server.  
+– **How to verify**: In your Repl console look for a log line like  
+```
+[API] POST /api/coauthor/generate
+```  
+If you don’t see it, the router never got wired.
+
+---
+
+### 2) Path mismatch in the client fetch  
+– **What to check**: In `CoAuthor.jsx` we fetch `'/api/coauthor/generate'`.  
+  - If your client is served from `/client-portal`, you may need to prefix with the full base (e.g. `fetch('/client-portal/api/coauthor/generate', …)`) or configure a proxy.  
+– **How to verify**: Open DevTools Network tab, click “Generate Draft” and see what request actually went out and what response code you get (404 vs 500 vs CORS).  
+
+---
+
+### 3) Missing error‐handling in the client stub  
+Right now our client code only does:
+```js
+const resp = await fetch(...);
+const data = await resp.json();
+setDraft(data.draft);
+```
+If the fetch fails (non-2xx) or JSON parsing errors, we’ll hit our generic “Failed to generate draft.”
+
+**Quick fix**:
+```jsx
+const generateDraft = async () => {
+  try {
+    const resp = await fetch('/api/coauthor/generate', { … });
+    if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+    const { draft } = await resp.json();
+    setDraft(draft);
+    setError('');
+  } catch (err) {
+    console.error('CoAuthor generate error:', err);
+    setError(err.message || 'Unknown error');
+  }
+};
+```
+And render `error` in the UI so you see exactly what went wrong.
+
+---
+
+#### Next Steps
+
+1. **Check your server logs** to confirm the route is mounted.  
+2. **Inspect the Network tab** to see the actual request URL and response code.  
+3. **Add the try/catch + status check** above so the UI surfaces the real error.  
+
+Once we can see the actual error (404 vs CORS vs 500), we’ll know exactly what to fix next. Let me know what you find!
