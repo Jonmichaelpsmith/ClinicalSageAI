@@ -1,0 +1,23 @@
+apiVersion: v2
+name: trialsage-cer
+description: Helm chart for TrialSage CER Generator module
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+maintainers:
+  - name: TrialSage Team
+    email: support@trialsage.com
+keywords:
+  - clinical-evaluation-report
+  - regulatory-writing
+  - medical-device
+  - pdf-generator
+dependencies:
+  - name: postgresql
+    version: "~11.9.0"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: "~17.8.0"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled

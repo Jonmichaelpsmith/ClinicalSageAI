@@ -1,0 +1,90 @@
+// tests/cerRoutes.test.ts
+import request from 'supertest';
+import express from 'express';
+import cerRoutes from '../routes/cerRoutes';
+import jwt from 'jsonwebtoken';
+import AWS from 'aws-sdk';
+import { Pool } from 'pg';
+
+jest.mock('bull', () => {
+  return {
+    Queue: jest.fn().mockImplementation(() => ({
+      add: jest.fn().mockResolvedValue({ id: 'test-job-id' }),
+    })),
+  };
+});
+
+jest.mock('pg', () => {
+  const mPool = { query: jest.fn() };
+  return { Pool: jest.fn(() => mPool) };
+});
+
+jest.mock('aws-sdk', () => {
+  const S3 = jest.fn(() => ({ getSignedUrl: (_: string, params: any) => `https://signed-url/${params.Key}` }));
+  return { S3 };
+});
+
+const app = express();
+app.use(express.json());
+app.use('/api/cer', cerRoutes);
+
+// Helper to generate valid JWT
+const validToken = jwt.sign({ id: 'user-123' }, process.env.JWT_SECRET || 'test-secret');
+
+describe('CER Routes', () => {
+  describe('POST /api/cer/generate-full', () => {
+    it('should return 401 if no auth header', async () => {
+      const res = await request(app).post('/api/cer/generate-full').send({});
+      expect(res.status).toBe(401);
+      expect(res.body.error).toMatch(/Missing Authorization/);
+    });
+
+    it('should enqueue job and return jobId', async () => {
+      // Mock default template query
+      const mPool = (Pool as jest.Mock).mock.results[0].value;
+      mPool.query.mockResolvedValueOnce({ rows: [{ id: 'default-tpl-id' }] });
+
+      const res = await request(app)
+        .post('/api/cer/generate-full')
+        .set('Authorization', `Bearer ${validToken}`)
+        .send({});
+
+      expect(res.status).toBe(202);
+      expect(res.body.jobId).toBe('test-job-id');
+    });
+
+    it('should validate payload and reject invalid templateId', async () => {
+      const res = await request(app)
+        .post('/api/cer/generate-full')
+        .set('Authorization', `Bearer ${validToken}`)
+        .send({ templateId: 'not-a-uuid' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/must be a valid GUID/);
+    });
+  });
+
+  describe('GET /api/cer/jobs/:id/result', () => {
+    it('should return signed URL for PDF', async () => {
+      const res = await request(app)
+        .get('/api/cer/jobs/test-job-id/result')
+        .set('Authorization', `Bearer ${validToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.downloadUrl).toBe('https://signed-url/cer-job-test-job-id.pdf');
+    });
+
+    it('should return 500 if S3 throws error', async () => {
+      // Override S3 to throw
+      const S3Mock = (AWS.S3 as jest.Mock).mock.instances[0];
+      S3Mock.getSignedUrl = () => { throw new Error('S3 fail'); };
+
+      const res = await request(app)
+        .get('/api/cer/jobs/test-job-id/result')
+        .set('Authorization', `Bearer ${validToken}`);
+
+      expect(res.status).toBe(500);
+      expect(res.body.error).toMatch(/Could not generate download link/);
+    });
+  });
+});

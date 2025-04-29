@@ -1,0 +1,138 @@
+// 1. SQL Migrations (PostgreSQL)
+-- migrations/20250502_add_status_and_approvals.sql
+ALTER TABLE cer_jobs
+  ADD COLUMN status TEXT NOT NULL DEFAULT 'draft';
+
+CREATE TABLE cer_approvals (
+  id SERIAL PRIMARY KEY,
+  job_id TEXT REFERENCES cer_jobs(job_id) ON DELETE CASCADE,
+  reviewer_id UUID NOT NULL,
+  decision TEXT NOT NULL CHECK (decision IN ('approved','rejected','changes_requested')),
+  comments TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index for filtering by status
+CREATE INDEX idx_cer_jobs_status ON cer_jobs(status);
+
+// 2. Backend Routes (Express + TypeScript)
+// routes/approvalRoutes.ts
+import express, { Request, Response } from 'express';
+import { Pool } from 'pg';
+import { authenticate } from './middleware/auth';
+
+const router = express.Router();
+const pool = new Pool();
+
+// List jobs with filtering by status
+router.get('/cer/jobs', authenticate, async (req: Request, res: Response) => {
+  const { status, reviewer, page = 1, limit = 20 } = req.query;
+  const filters = [];
+  const values: any[] = [];
+  let idx = 1;
+
+  if (status) { filters.push(`status = $${idx++}`); values.push(status); }
+  if (reviewer) { filters.push(`EXISTS (SELECT 1 FROM cer_approvals a WHERE a.job_id = cj.job_id AND a.reviewer_id = $${idx++})`); values.push(reviewer); }
+
+  const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
+  const offset = (Number(page) - 1) * Number(limit);
+
+  const query = `SELECT cj.*, COUNT(a.*) AS approvals_count
+    FROM cer_jobs cj
+    LEFT JOIN cer_approvals a ON a.job_id = cj.job_id
+    ${where}
+    GROUP BY cj.job_id
+    ORDER BY cj.updated_at DESC
+    LIMIT $${idx++} OFFSET $${idx++}`;
+  values.push(limit, offset);
+
+  const { rows } = await pool.query(query, values);
+  res.json({ data: rows });
+});
+
+// Review a CER (approve/reject/request changes)
+router.post('/cer/jobs/:id/review', authenticate, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { decision, comments } = req.body; // decision in 'approved','rejected','changes_requested'
+  const reviewerId = req.user!.id;
+
+  await pool.query(`
+    INSERT INTO cer_approvals(job_id, reviewer_id, decision, comments)
+    VALUES($1, $2, $3, $4)
+  `, [id, reviewerId, decision, comments]);
+
+  // Update job status
+  await pool.query(`UPDATE cer_jobs SET status = $1 WHERE job_id = $2`, [
+    decision === 'approved' ? 'approved' : (decision === 'changes_requested' ? 'in-review' : 'rejected'), id
+  ]);
+
+  // TODO: send notification email to job owner if desired
+  res.status(200).json({ message: 'Review recorded' });
+});
+
+export default router;
+
+// 3. Frontend: React Filtering UI (TypeScript + React)
+// components/CerHistoryPanel.tsx
+import React, { useState, useEffect } from 'react';
+import { Select, MenuItem, Button, Badge } from '@/components/ui';
+import axios from 'axios';
+
+export default function CerHistoryPanel() {
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [jobs, setJobs] = useState<any[]>([]);
+
+  const fetchJobs = async () => {
+    const params: any = {};
+    if (statusFilter !== 'all') params.status = statusFilter;
+    const res = await axios.get('/api/cer/jobs', { params });
+    setJobs(res.data.data);
+  };
+
+  useEffect(() => { fetchJobs(); }, [statusFilter]);
+
+  return (
+    <div>
+      <div className="flex items-center space-x-2 mb-4">
+        <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <MenuItem value="all">All</MenuItem>
+          <MenuItem value="draft">Draft</MenuItem>
+          <MenuItem value="in-review">In Review</MenuItem>
+          <MenuItem value="approved">Approved</MenuItem>
+          <MenuItem value="rejected">Rejected</MenuItem>
+        </Select>
+        <Button onClick={fetchJobs}>Filter</Button>
+      </div>
+
+      <ul className="space-y-2">
+        {jobs.map(job => (
+          <li key={job.job_id} className="p-2 border rounded flex justify-between">
+            <div>
+              <p><strong>{job.job_id}</strong> — {job.status}</p>
+              <p>Approvals: <Badge>{job.approvals_count}</Badge></p>
+            </div>
+            <Button onClick={() => {/* open review drawer */}}>Review</Button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// 4. Notification Stub (Node Mailer)
+// services/notificationService.ts
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+});
+
+export async function notifyOwnerOnReview(jobOwnerEmail: string, jobId: string, decision: string) {
+  await transporter.sendMail({
+    to: jobOwnerEmail,
+    subject: `Your CER ${jobId} was ${decision}`,
+    text: `Your Clinical Evaluation Report (ID: ${jobId}) has been ${decision}.`
+  });
+}

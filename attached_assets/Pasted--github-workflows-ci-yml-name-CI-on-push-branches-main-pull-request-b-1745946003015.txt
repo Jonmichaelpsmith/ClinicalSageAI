@@ -1,0 +1,110 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: trialsage
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgres://postgres:password@localhost:5432/trialsage
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      JWT_SECRET: test-secret
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      CER_BUCKET: test-bucket
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: yarn install --frozen-lockfile
+      - name: Wait for Postgres
+        run: |
+          until pg_isready -h localhost -p 5432; do echo "Waiting for Postgres..."; sleep 1; done
+      - name: Run Migrations
+        run: yarn migrate
+      - name: Run Tests
+        run: yarn test --runInBand
+
+---
+# tests/cerWorker.test.ts
+import { Pool } from 'pg';
+import { Cluster } from 'puppeteer-cluster';
+import AWS from 'aws-sdk';
+import { cerQueue } from '../services/cerQueue';
+import '../worker/cerWorker'; // registers the processor
+
+describe('CER Worker E2E', () => {
+  let pool: Pool;
+  let s3: AWS.S3;
+
+  beforeAll(() => {
+    pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    s3 = new AWS.S3();
+
+    // Mock FAERS sections and template
+    jest.spyOn(pool, 'query').mockImplementation((text) => {
+      if (text.includes('SELECT id FROM templates')) {
+        return Promise.resolve({ rows: [{ id: 'default-tpl-id' }] });
+      }
+      if (text.includes('INSERT INTO cer_jobs')) {
+        return Promise.resolve();
+      }
+      return Promise.resolve({ rows: [] });
+    });
+
+    // Mock S3 upload
+    jest.spyOn(s3, 'getSignedUrl').mockImplementation((_, params) => Promise.resolve(`https://signed-url/${params.Key}`));
+
+    // Mock section generation service
+    jest.mock('../services/cerGenerator', () => ({
+      generateCerSections: jest.fn(async () => [{ render: async () => '<p>Test Section</p>' }]),
+      assembleHtml: jest.fn((html) => html),
+    }));
+  });
+
+  it('should process a job end-to-end and produce a signed URL', async () => {
+    const job = await cerQueue.add({ userId: 'user-123', templateId: 'default-tpl-id' });
+    // Poll for job completion
+    let status;
+    do {
+      await new Promise((r) => setTimeout(r, 500));
+      const res = await pool.query('SELECT status, progress FROM cer_jobs WHERE job_id = $1', [job.id.toString()]);
+      status = res.rows[0].status;
+    } while (status !== 'completed');
+
+    // Now fetch the signed URL via AWS SDK
+    const url = await s3.getSignedUrl('getObject', { Bucket: process.env.CER_BUCKET!, Key: `cer-job-${job.id}.pdf` });
+    expect(url).toContain(`cer-job-${job.id}.pdf`);
+  });
+});

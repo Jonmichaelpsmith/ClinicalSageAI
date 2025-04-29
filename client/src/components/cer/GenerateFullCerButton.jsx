@@ -1,229 +1,282 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { AlertCircle, CheckCircle, Download, FileText, Loader2 } from 'lucide-react';
-import { generateFullCER } from '../../services/cerService';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { 
+  Dialog, 
+  DialogTrigger,
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
+import { FileText, ArrowRight, Settings, CheckCircle, Loader, AlertCircle } from 'lucide-react';
+import { handleApiError } from '@/services/errorHandling';
+import { useToast } from '@/hooks/use-toast';
 
 /**
- * Generate Full CER Button Component
+ * Generate Full CER Button component
  * 
- * This component handles the full generation of Clinical Evaluation Reports
- * with real-time progress tracking, error handling, and PDF preview.
+ * This component provides a button to generate a full Clinical Evaluation Report,
+ * with a confirmation dialog and progress tracking.
  */
-const GenerateFullCerButton = ({ deviceInfo, literature = [], fdaData = [], templateId = '' }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const GenerateFullCerButton = ({ productId, templateId, metadata = {}, disabled = false, onSuccess, className }) => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [progressValue, setProgressValue] = useState(0);
-  const [currentStep, setCurrentStep] = useState('');
+  const [progress, setProgress] = useState(0);
   const [jobId, setJobId] = useState(null);
-  const [resultUrl, setResultUrl] = useState(null);
   const [error, setError] = useState(null);
-  const [polling, setPolling] = useState(false);
-
+  const [progressCheckInterval, setProgressCheckInterval] = useState(null);
+  
+  const { toast } = useToast();
+  
   // Start the generation process
-  const handleGenerateClick = async () => {
-    setIsModalOpen(true);
+  const handleGenerate = async () => {
     setIsGenerating(true);
-    setProgressValue(0);
-    setCurrentStep('Initializing CER generation...');
-    setJobId(null);
-    setResultUrl(null);
+    setProgress(0);
     setError(null);
-    setPolling(false);
-
+    setJobId(null);
+    
     try {
-      // Start the job by calling the API
-      const result = await generateFullCER({
-        deviceInfo,
-        literature,
-        fdaData,
-        templateId
+      const response = await fetch('/api/cer/generate-full', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          template_id: templateId,
+          metadata,
+        }),
       });
-
-      if (result.jobId) {
-        setJobId(result.jobId);
-        setPolling(true);
-      } else if (result.error) {
-        throw new Error(result.error);
-      } else {
-        throw new Error('Unknown error starting CER generation');
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to start CER generation');
       }
-    } catch (err) {
-      console.error('Failed to start CER generation:', err);
-      setError(err.message || 'Failed to start CER generation');
+      
+      const data = await response.json();
+      setJobId(data.job_id);
+      
+      // Start checking progress
+      const intervalId = setInterval(() => {
+        checkProgress(data.job_id);
+      }, 3000);
+      
+      setProgressCheckInterval(intervalId);
+    } catch (error) {
+      setError(handleApiError(error, {
+        context: 'CER Generation',
+        endpoint: '/api/cer/generate-full',
+        toast,
+      }));
       setIsGenerating(false);
     }
   };
-
-  // Poll for job status
-  useEffect(() => {
-    if (!jobId || !polling) return;
-
-    const pollInterval = setInterval(async () => {
-      try {
-        const response = await fetch(`/api/cer/jobs/${jobId}/status`);
-        
-        if (!response.ok) {
-          throw new Error(`Failed to check job status: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        
-        // Update the UI with progress information
-        setProgressValue(data.progress || 0);
-        if (data.step) setCurrentStep(data.step);
-        
-        // Check if the job is complete
-        if (data.status === 'completed') {
-          setPolling(false);
-          setIsGenerating(false);
-          setResultUrl(`/api/cer/jobs/${jobId}/result`);
-        } 
-        // Check if the job failed
-        else if (data.status === 'failed') {
-          setPolling(false);
-          setIsGenerating(false);
-          setError('CER generation failed. Please try again.');
-        }
-      } catch (err) {
-        console.error('Error polling job status:', err);
-        // Don't stop polling on temporary network errors
+  
+  // Check the progress of a running job
+  const checkProgress = async (id) => {
+    try {
+      const response = await fetch(`/api/cer/jobs/${id}/status`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to check job progress');
       }
-    }, 2000); // Poll every 2 seconds
-
-    return () => clearInterval(pollInterval);
-  }, [jobId, polling]);
-
-  // Close the modal and reset the state
-  const handleClose = () => {
-    setIsModalOpen(false);
-    setPolling(false);
-    
-    // If we're still generating, keep the job running in the background
-    if (isGenerating) {
-      // Maybe show a toast notification that the job continues in the background
+      
+      const data = await response.json();
+      setProgress(data.progress);
+      
+      // If complete or failed, stop checking
+      if (data.progress >= 100 || data.status === 'failed') {
+        if (progressCheckInterval) {
+          clearInterval(progressCheckInterval);
+          setProgressCheckInterval(null);
+        }
+        
+        setIsGenerating(false);
+        
+        if (data.status === 'failed') {
+          setError(data.error || 'CER generation failed');
+          toast({
+            title: 'Generation Failed',
+            description: data.error || 'Failed to generate the CER report',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'CER Generated',
+            description: 'The Clinical Evaluation Report has been successfully generated',
+          });
+          
+          // Call success callback with job ID
+          if (onSuccess) {
+            onSuccess(id, data);
+          }
+          
+          // Close dialog after a delay
+          setTimeout(() => {
+            setIsOpen(false);
+          }, 1500);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking progress:', error);
+      // Don't stop checking on transient errors
     }
   };
-
+  
+  // Clean up interval when dialog is closed
+  const handleOpenChange = (open) => {
+    setIsOpen(open);
+    
+    if (!open && progressCheckInterval) {
+      clearInterval(progressCheckInterval);
+      setProgressCheckInterval(null);
+      setIsGenerating(false);
+    }
+  };
+  
+  // Determine what to display in the dialog
+  const renderContent = () => {
+    if (error) {
+      return (
+        <div className="flex flex-col items-center justify-center p-6 text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Generation Failed</h3>
+          <p className="text-sm text-muted-foreground mb-6">
+            {error}
+          </p>
+          <Button onClick={() => handleGenerate()}>
+            Try Again
+          </Button>
+        </div>
+      );
+    }
+    
+    if (isGenerating) {
+      return (
+        <div className="flex flex-col items-center justify-center p-6 text-center">
+          {progress >= 100 ? (
+            <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
+          ) : (
+            <Loader className="h-12 w-12 mb-4 animate-spin" />
+          )}
+          
+          <h3 className="text-lg font-semibold mb-2">
+            {progress >= 100 ? 'Generation Complete' : 'Generating Report'}
+          </h3>
+          
+          <p className="text-sm text-muted-foreground mb-6">
+            {progress >= 100 
+              ? 'Your Clinical Evaluation Report has been successfully generated' 
+              : 'This may take several minutes. Please do not close this window.'}
+          </p>
+          
+          <div className="w-full mb-4">
+            <Progress value={progress} max={100} className="h-2" />
+            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+              <span>0%</span>
+              <span>{Math.round(progress)}%</span>
+              <span>100%</span>
+            </div>
+          </div>
+          
+          {jobId && (
+            <p className="text-xs text-muted-foreground">
+              Job ID: {jobId}
+            </p>
+          )}
+        </div>
+      );
+    }
+    
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <fileText className="h-5 w-5" />
+            Generate Full CER Report
+          </DialogTitle>
+          <DialogDescription>
+            This will generate a complete Clinical Evaluation Report using the selected template.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="py-6">
+          <div className="space-y-4">
+            <div className="flex items-start gap-4 p-4 rounded-lg border bg-muted/50">
+              <settings className="h-6 w-6 mt-0.5 text-muted-foreground" />
+              <div>
+                <h4 className="font-medium mb-1">Report Generation Details</h4>
+                <div className="text-sm space-y-2">
+                  <p className="flex justify-between">
+                    <span className="text-muted-foreground">Product ID:</span>
+                    <span className="font-mono">{productId}</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span className="text-muted-foreground">Template:</span>
+                    <span>{templateId}</span>
+                  </p>
+                  {Object.entries(metadata).map(([key, value]) => (
+                    <p key={key} className="flex justify-between">
+                      <span className="text-muted-foreground">{key}:</span>
+                      <span>{value}</span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-sm text-muted-foreground">
+              <p className="mb-2">
+                The generation process will:
+              </p>
+              <ul className="space-y-1 list-disc pl-5">
+                <li>Extract all relevant clinical data</li>
+                <li>Analyze safety and performance data</li>
+                <li>Apply the ICH E3 structure to the report</li>
+                <li>Generate comprehensive tables and figures</li>
+                <li>Format to regulatory requirements</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button onClick={handleGenerate} className="gap-2">
+            <span>Generate Report</span>
+            <arrowRight className="h-4 w-4" />
+          </Button>
+        </DialogFooter>
+      </>
+    );
+  };
+  
   return (
     <>
-      <Button 
-        onClick={handleGenerateClick} 
-        className="bg-indigo-600 hover:bg-indigo-700 text-white"
-        disabled={isGenerating}
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Generating...
-          </>
-        ) : (
-          <>
-            <FileText className="mr-2 h-4 w-4" />
-            Generate Full CER Report
-          </>
-        )}
-      </Button>
-
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
-                  Generating Clinical Evaluation Report
-                </>
-              ) : error ? (
-                <>
-                  <AlertCircle className="h-5 w-5 text-red-500" />
-                  Error Generating Report
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  Report Generation Complete
-                </>
-              )}
-            </DialogTitle>
-            <DialogDescription>
-              {isGenerating 
-                ? "Please wait while we generate your comprehensive Clinical Evaluation Report. This may take a few minutes." 
-                : error 
-                  ? "We encountered an error while generating your report."
-                  : "Your Clinical Evaluation Report has been generated successfully and is ready to view or download."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            {/* Progress indicator */}
-            {isGenerating && (
-              <div className="space-y-4">
-                <Progress value={progressValue} className="h-2" />
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>{Math.round(progressValue)}% complete</span>
-                  <Badge variant="outline" className="font-normal">
-                    {currentStep}
-                  </Badge>
-                </div>
-              </div>
-            )}
-
-            {/* Error display */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-4 my-4">
-                <div className="flex">
-                  <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-                  <div>
-                    <h3 className="text-sm font-medium text-red-800">Generation Failed</h3>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                  </div>
-                </div>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={handleGenerateClick}
-                >
-                  Try Again
-                </Button>
-              </div>
-            )}
-
-            {/* PDF Preview */}
-            {!isGenerating && resultUrl && (
-              <div className="space-y-4">
-                <div className="border-t border-b border-gray-100 py-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Preview</h3>
-                  <div className="bg-gray-50 rounded-md overflow-hidden">
-                    <iframe
-                      src={resultUrl}
-                      className="w-full h-[400px] border"
-                      title="CER Preview"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="flex justify-between items-center">
-            {!isGenerating && resultUrl && (
-              <a
-                href={resultUrl}
-                download="ClinicalEvaluationReport.pdf"
-                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download PDF
-              </a>
-            )}
-            
-            <Button variant="outline" onClick={handleClose}>
-              {resultUrl ? "Close" : (isGenerating ? "Continue in Background" : "Close")}
-            </Button>
-          </DialogFooter>
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>
+          <Button 
+            onClick={() => setIsOpen(true)} 
+            className={`gap-2 ${className || ''}`}
+            disabled={disabled}
+          >
+            <fileText className="h-4 w-4" />
+            <span>Generate Full CER Report</span>
+          </Button>
+        </DialogTrigger>
+        
+        <DialogContent className="max-w-md">
+          {renderContent()}
         </DialogContent>
       </Dialog>
     </>

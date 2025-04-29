@@ -1,0 +1,94 @@
+// client/src/components/cer/GenerateFullCerButton.jsx
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
+import { XCircle, CheckCircle } from 'lucide-react';
+
+export default function GenerateFullCerButton() {
+  const [jobId, setJobId] = useState(null);
+  const [status, setStatus] = useState({ progress: 0, step: '' });
+  const [resultUrl, setResultUrl] = useState('');
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [polling, setPolling] = useState(false);
+
+  const startGeneration = async () => {
+    setDialogOpen(true);
+    const res = await fetch('/api/cer/generate-full', { method: 'POST' });
+    const data = await res.json();
+    if (res.status === 202) {
+      setJobId(data.jobId);
+      setPolling(true);
+    } else {
+      setStatus({ progress: 0, step: data.error || 'Generation failed' });
+    }
+  };
+
+  useEffect(() => {
+    let timer;
+    if (polling && jobId) {
+      timer = setInterval(async () => {
+        const res = await fetch(`/api/cer/jobs/${jobId}/status`);
+        const stat = await res.json();
+        setStatus({ progress: stat.progress, step: stat.step });
+        if (stat.status === 'completed') {
+          clearInterval(timer);
+          setPolling(false);
+          const resultRes = await fetch(`/api/cer/jobs/${jobId}/result`);
+          const { downloadUrl } = await resultRes.json();
+          setResultUrl(downloadUrl);
+        }
+        if (stat.status === 'failed') {
+          clearInterval(timer);
+          setPolling(false);
+          setStatus({ progress: stat.progress, step: stat.last_error });
+        }
+      }, 2000);
+    }
+    return () => clearInterval(timer);
+  }, [polling, jobId]);
+
+  return (
+    <>
+      <Button onClick={startGeneration} disabled={polling}>
+        {polling ? <Loader2 className="animate-spin" /> : 'Generate Full CER'}
+      </Button>
+
+      <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-md">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Full CER Generation</h3>
+            <Button variant="ghost" onClick={() => setDialogOpen(false)}>
+              <XCircle />
+            </Button>
+          </div>
+
+          {polling ? (
+            <div className="space-y-2">
+              <p className="font-medium">{status.step || 'Initializing...'}</p>
+              <Progress value={status.progress} max={100}>{status.progress}%</Progress>
+            </div>
+          ) : resultUrl ? (
+            <div className="space-y-4">
+              <p className="font-medium text-green-600">
+                <CheckCircle className="inline mr-2" />Report Ready!
+              </p>
+              <iframe
+                src={resultUrl}
+                title="CER Preview"
+                className="w-full h-80 border"
+              />
+              <Button asChild>
+                <a href={resultUrl} target="_blank" rel="noopener noreferrer">
+                  Download PDF
+                </a>
+              </Button>
+            </div>
+          ) : (
+            <p className="text-red-600">{status.step || 'No report generated yet.'}</p>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

@@ -1,0 +1,297 @@
+# charts/trialsage-cer/Chart.yaml
+apiVersion: v2
+name: trialsage-cer
+description: Helm chart for TrialSage CER Generator (API + Worker)
+version: 0.1.0
+appVersion: "1.0.0"
+
+# charts/trialsage-cer/values.yaml
+# ----------------------
+# Default configuration values for trialsage-cer chart
+replicaCountApi: 2
+replicaCountWorker: 2
+
+image:
+  repository: your-registry/trialsage-cer
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+service:
+  api:
+    type: ClusterIP
+    port: 4000
+  redis:
+    host: redis-service
+    port: 6379
+  postgres:
+    host: postgres-service
+    port: 5432
+
+env:
+  DATABASE_URL: "postgres://user:pass@{{ .Values.service.postgres.host }}:{{ .Values.service.postgres.port }}/trialsage"
+  REDIS_HOST: "{{ .Values.service.redis.host }}"
+  REDIS_PORT: "{{ .Values.service.redis.port }}"
+
+---
+# namespace-global.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trialsage-cer
+
+---
+# helmfile.yaml
+repositories:
+  - name: local-trialsage
+    url: "file://./charts/trialsage-cer"
+
+releases:
+  - name: trialsage-cer-api
+    namespace: trialsage-cer
+    chart: local-trialsage/trialsage-cer
+    version: "0.1.0"
+    values:
+      - values.yaml
+
+  - name: trialsage-cer-worker
+    namespace: trialsage-cer
+    chart: local-trialsage/trialsage-cer
+    version: "0.1.0"
+    values:
+      - values.yaml
+
+---
+# charts/trialsage-cer/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+
+---
+# charts/trialsage-cer/templates/service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: trialsage-cer-serviceaccount
+  namespace: {{ .Release.Namespace }}
+
+---
+# charts/trialsage-cer/templates/clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: trialsage-cer-clusterrole
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list"]
+
+---
+# charts/trialsage-cer/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: trialsage-cer-crb
+subjects:
+  - kind: ServiceAccount
+    name: trialsage-cer-serviceaccount
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: trialsage-cer-clusterrole
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# charts/trialsage-cer/templates/ingress-api.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: trialsage-cer-api-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+    - host: cer.example.com
+      http:
+        paths:
+          - path: /api/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: trialsage-cer-api
+                port:
+                  number: {{ .Values.service.api.port }}
+
+---
+# charts/trialsage-cer/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: trialsage-cer-secrets
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+stringData:
+  POSTGRES_USER: "user"
+  POSTGRES_PASSWORD: "pass"
+  REDIS_PASSWORD: ""
+
+---
+# charts/trialsage-cer/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trialsage-cer-config
+  namespace: {{ .Release.Namespace }}
+data:
+  REDIS_HOST: {{ .Values.env.REDIS_HOST }}
+  REDIS_PORT: {{ .Values.env.REDIS_PORT }}
+  DATABASE_URL: {{ .Values.env.DATABASE_URL }}
+
+---
+# charts/trialsage-cer/templates/service-api.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: trialsage-cer-api
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.service.api.type }}
+  ports:
+    - port: {{ .Values.service.api.port }}
+      targetPort: 4000
+      protocol: TCP
+      name: http
+  selector:
+    app: trialsage-cer-api
+
+---
+# charts/trialsage-cer/templates/deployment-api.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trialsage-cer-api
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: trialsage-cer-api
+spec:
+  replicas: {{ .Values.replicaCountApi }}
+  selector:
+    matchLabels:
+      app: trialsage-cer-api
+  template:
+    metadata:
+      labels:
+        app: trialsage-cer-api
+    spec:
+      serviceAccountName: trialsage-cer-serviceaccount
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}-api:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: trialsage-cer-config
+            - secretRef:
+                name: trialsage-cer-secrets
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+
+---
+# charts/trialsage-cer/templates/deployment-worker.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trialsage-cer-worker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: trialsage-cer-worker
+spec:
+  replicas: {{ .Values.replicaCountWorker }}
+  selector:
+    matchLabels:
+      app: trialsage-cer-worker
+  template:
+    metadata:
+      labels:
+        app: trialsage-cer-worker
+    spec:
+      serviceAccountName: trialsage-cer-serviceaccount
+      containers:
+        - name: worker
+          image: "{{ .Values.image.repository }}-worker:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: trialsage-cer-config
+            - secretRef:
+                name: trialsage-cer-secrets
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+
+---
+# charts/trialsage-cer/templates/hpa-api.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: trialsage-cer-api-hpa
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: trialsage-cer-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+
+---
+# charts/trialsage-cer/templates/hpa-worker.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: trialsage-cer-worker-hpa
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: trialsage-cer-worker
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
