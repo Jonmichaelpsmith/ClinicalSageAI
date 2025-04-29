@@ -1,0 +1,226 @@
+Here’s the code to get Sprint 2 Part 1 up and running—your Canvas Workbench foundation with React Flow and data endpoints.
+
+⸻
+
+1. Install React Flow
+
+In your Replit shell:
+
+npm install react-flow-renderer
+
+
+
+⸻
+
+2. Back-end: Canvas Data Endpoints
+
+Create server/routes/coauthorCanvas.js:
+
+import express from 'express';
+const router = express.Router();
+
+// Dummy in‐memory CTD sections
+let sections = [
+  { id: '1.1', title: 'Module 1: Administrative', status: 'complete', x: 50,  y: 50 },
+  { id: '2.7', title: 'Module 2.7: Clinical Summary', status: 'critical', x: 300, y: 50 },
+  { id: '4.1', title: 'Module 4.1: Nonclinical Studies', status: 'warning',  x: 300, y: 200 },
+  { id: '5.1', title: 'Module 5.1: Study Listings', status: 'warning',  x: 50,  y: 200 },
+];
+
+// Dummy connections between sections
+let connections = [
+  { from: '1.1', to: '2.7', critical: true },
+  { from: '1.1', to: '4.1', critical: false },
+  { from: '1.1', to: '5.1', critical: false },
+];
+
+/** GET all sections */
+router.get('/sections', (req, res) => {
+  res.json(sections);
+});
+
+/** GET all connections */
+router.get('/connections', (req, res) => {
+  res.json(connections);
+});
+
+export default router;
+
+Mount it in server/server.js (alongside your other routes):
+
+import coauthorCanvasRoutes from './routes/coauthorCanvas.js';
+// …
+app.use('/api/coauthor', coauthorCanvasRoutes);
+
+Restart your server so you can GET /api/coauthor/sections and /api/coauthor/connections live.
+
+⸻
+
+3. Client-side API Helpers
+
+Add these to client/src/api/coauthor.js:
+
+/** Fetch the list of CTD sections (with positions + status) */
+export async function fetchCTDSections() {
+  const res = await fetch('/api/coauthor/sections');
+  return res.json();
+}
+
+/** Fetch the list of connections (edges) */
+export async function fetchRiskConnections() {
+  const res = await fetch('/api/coauthor/connections');
+  return res.json();
+}
+
+
+
+⸻
+
+4. Canvas Workbench Component
+
+Create client/src/components/canvas/CanvasWorkbenchV2.jsx:
+
+import React, { useState, useEffect, useCallback } from 'react';
+import ReactFlow, {
+  MiniMap,
+  Controls,
+  Background,
+  addEdge,
+  useNodesState,
+  useEdgesState
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import { fetchCTDSections, fetchRiskConnections } from '../../api/coauthor';
+
+export default function CanvasWorkbenchV2({ onNodeClick }) {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  // Load nodes & edges on mount
+  useEffect(() => {
+    fetchCTDSections()
+      .then(data =>
+        setNodes(data.map(sec => ({
+          id: sec.id,
+          type: 'default',
+          position: { x: sec.x, y: sec.y },
+          data: { label: sec.title, status: sec.status }
+        })))
+      )
+      .catch(console.error);
+
+    fetchRiskConnections()
+      .then(data =>
+        setEdges(data.map(c => ({
+          id: `e${c.from}-${c.to}`,
+          source: c.from,
+          target: c.to,
+          animated: c.critical,
+          style: { stroke: c.critical ? '#e74c3c' : '#888', strokeWidth: 2 }
+        })))
+      )
+      .catch(console.error);
+  }, [setNodes, setEdges]);
+
+  // Handle new connections created via drag-and-drop
+  const onConnect = useCallback(params => {
+    setEdges(es => addEdge({ ...params, animated: true, style: { stroke: '#555', strokeWidth: 2 } }, es));
+  }, [setEdges]);
+
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        fitView
+        onNodeClick={(e, node) => onNodeClick?.(node)}
+      >
+        <MiniMap
+          nodeStrokeColor={n => (n.data.status === 'complete' ? '#28a745' : n.data.status === 'warning' ? '#ffc107' : '#dc3545')}
+          nodeColor={n => '#fff'}
+          maskColor="rgba(0,0,0,0.1)"
+        />
+        <Controls />
+        <Background gap={20} />
+      </ReactFlow>
+    </div>
+  );
+}
+
+
+
+⸻
+
+5. Hook into a Canvas Page
+
+Create client/src/pages/CanvasPage.jsx:
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import UnifiedTopNavV5 from '../components/navigation/UnifiedTopNavV5';
+import Breadcrumbs     from '../components/navigation/Breadcrumbs';
+import CanvasWorkbenchV2 from '../components/canvas/CanvasWorkbenchV2';
+import './CanvasPage.css';
+
+export default function CanvasPage() {
+  const navigate = useNavigate();
+  const handleNodeClick = node => {
+    const [moduleId] = node.id.split('.');
+    navigate(`/coauthor?module=${moduleId}&section=${node.id}`);
+  };
+
+  return (
+    <div className="canvas-page">
+      <UnifiedTopNavV5 tabs={[
+        { path: '/dashboard', label: 'Dashboard' },
+        { path: '/coauthor',  label: 'Co-Author' },
+        { path: '/canvas',    label: 'Canvas'   },
+        { path: '/timeline',  label: 'Timeline' }
+      ]}/>
+      <Breadcrumbs items={[
+        { label: 'TrialSage™', to: '/dashboard' },
+        { label: 'Canvas Workbench' }
+      ]}/>
+      <main className="canvas-main">
+        <CanvasWorkbenchV2 onNodeClick={handleNodeClick} />
+      </main>
+    </div>
+  );
+}
+
+Style it in client/src/pages/CanvasPage.css:
+
+.canvas-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.canvas-main {
+  flex: 1;
+  position: relative;
+}
+
+And in client/src/App.jsx add the route:
+
+import CanvasPage from './pages/CanvasPage';
+// …
+<Routes>
+  {/* … */}
+  <Route path="/canvas" element={<CanvasPage />} />
+</Routes>
+
+
+
+⸻
+
+▶️ Verification
+	1.	Restart your server & client.
+	2.	Navigate to /canvas.
+	3.	You should see a draggable graph of your CTD sections with colored edges.
+	4.	MiniMap, Controls and Background grid are present.
+	5.	Clicking any node fires the onNodeClick callback and will later link to your editor.
+
+Once this is confirmed, we’ll add the NodeDetailPanel (AI guidance/risk) and the Export-SVG button in Sprint 2 Part 2.
