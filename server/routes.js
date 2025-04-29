@@ -14,6 +14,8 @@ const vaultRoutes = require('./routes/vault');
 const analyticsRoutes = require('./routes/analytics');
 const retrieveRoutes = require('./routes/ai/common/retrieve');
 const documentRoutes = require('./routes/documentRoutes');
+const { router: sseRoutes, sendEventToJob } = require('./routes/sseRoutes');
+const cerGenerationRoutes = require('./routes/cerGenerationRoutes');
 
 /**
  * Register routes on the Express app
@@ -64,6 +66,12 @@ function registerRoutes(app) {
   
   console.log('Registering document management routes');
   app.use('/api/documents', documentRoutes);
+  
+  console.log('Registering SSE routes for real-time updates');
+  app.use('/api', sseRoutes);
+  
+  console.log('Registering CER generation routes');
+  app.use('/api/cer', cerGenerationRoutes);
   
   // Log all routes for debugging
   app._router.stack.forEach(function(r){
@@ -189,5 +197,6 @@ function registerRoutes(app) {
 }
 
 module.exports = {
-  registerRoutes
+  registerRoutes,
+  sendEventToJob
 };
