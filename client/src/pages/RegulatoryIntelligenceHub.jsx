@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import UnifiedTopNavV3 from "../components/navigation/UnifiedTopNavV3";
+import FadeTransition from "../components/common/FadeTransition";
 import { AlertTriangle, CheckCircle, RefreshCcw, Clock, FileText, AlertCircle } from "lucide-react";
 
 export default function RegulatoryIntelligenceHub() {
@@ -156,7 +157,7 @@ export default function RegulatoryIntelligenceHub() {
                 </CardContent>
               </Card>
             ) : (
-              <>
+              <FadeTransition>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Readiness Score Card */}
                   <Card className="transition-all duration-300 hover:shadow-md">
