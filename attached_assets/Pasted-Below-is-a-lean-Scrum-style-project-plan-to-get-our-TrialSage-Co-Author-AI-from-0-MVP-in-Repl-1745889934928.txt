@@ -1,0 +1,94 @@
+Below is a lean, Scrum-style project plan to get our **TrialSage Co-Author AI** from 0 → MVP in Replit, broken into epics, sprints, and individual tasks. We’ll track where we are, what’s next, and who (you or I) owns each step.
+
+---
+
+## 🚀 Project Charter  
+**Goal**: Build an end-to-end AI co-authoring engine in TrialSage—drafting, gap-analysis, compliance checks, packaging—hosted on Replit, with a slick UI and secure backend.
+
+---
+
+# 📆 High-Level Roadmap  
+
+| Epic | Description | Target Delivery |
+|---|---|:-:|
+| 1. Foundation & Scaffolding | Replit setup, repo, folder structure, base UI & API | Day 1–2 |
+| 2. Document Composer Core | “AutoDraft” service + templates + basic chat UI | Day 3–5 |
+| 3. Regulatory Brain & Gap Checker | Encode CTD/IND rules + live gap analysis API | Day 6–8 |
+| 4. Vault & RAG Integration | Vector-DB of past submissions + retrieval layer | Day 9–11 |
+| 5. Smart Reviewers & QA | AI-driven peer-review module + style checks | Day 12–14 |
+| 6. eCTD Packaging & Export | XML backbone + PDF generation + download API | Day 15–17 |
+| 7. Polishing & Hardening | Security, performance, responsive UI, final QA | Day 18–20 |
+
+---
+
+# 🏁 Sprint 1 (Days 1–2): Foundation & Scaffolding
+
+### **Sprint Goal**  
+Have a functioning Replit workspace with a React frontend + Express backend talking to one dummy AI endpoint. Folder structure committed, env configured.
+
+### **Backlog & Status**
+
+| # | Task | Owner | Status | Notes |
+|:-:|-----|:-----:|:-----:|:-----|
+|1.1| **Initialize Replit**: Create new repl, link GitHub repo, enable Secrets for OPENAI_KEY | You | ✅ Done | Repo created “trialsage-coauthor” |
+|1.2| **Folder skeleton**:  
+```
+/client    ← React app  
+  /src  
+    /pages  
+    /components  
+    /navigation  
+/backend  ← Express server  
+  /routes  
+  /services  
+  /regulatory-brain  
+  /vault  
+  /ai  
+``` | Me | ✅ Done | Branch `scaffold` pushed |
+|1.3| **Basic React App**: `create-react-app`, route to `/coauthor` page with placeholder | Me | ✅ Done | Can visit `/coauthor` |
+|1.4| **Basic Express App**: `express.json()`, single route `POST /api/ai/draft` returns `{ draft: "hello world" }` | Me | ✅ Done | Can curl backend |
+|1.5| **Proxy Setup**: Configure React’s `package.json` proxy to `http://localhost:3000` for easy API calls | Me | ✅ Done | Frontend can call `/api/ai/draft` |
+|1.6| **Environment config**:  
+– `OPENAI_API_KEY` in Replit Secrets  
+– `PORT` set for Express | You | ✅ Done | Verified `process.env.OPENAI_API_KEY` |
+
+**✅ Sprint 1 Complete.** We have the skeleton in place.
+
+---
+
+## 🔜 Next Up: Sprint 2 (Days 3–5): Document Composer Core
+
+**Sprint Goal:**  
+Wire up the first real “AutoDraft” AI call using GPT-4 to generate a Section draft from a blank template, and display it in the React editor.
+
+### 📋 Sprint 2 Backlog
+
+| # | Task | Owner | Status | Notes |
+|:-:|-----|:-----:|:-----:|:-----|
+|2.1| **Template Loader**: Create a JSON outline for IND Module 2 Summary (CTD Summaries) | Me | 🔲 To Do | Define sections & placeholders |
+|2.2| **Draft API**: Extend `POST /api/ai/draft` to accept `{ templateId, context }`, call OpenAI, return generated text | Me | 🔲 To Do | Use GPT-4 with system prompt “Fill this template” |
+|2.3| **React Editor Integration**:  
+– Install a simple rich-text editor (e.g. Slate or React-Quill)  
+– On `/coauthor`, load template outline and render sections as editable fields | Me | 🔲 To Do | Stub in placeholders |
+|2.4| **Draft Button**: Add “🪄 Auto-Draft This Section” button per section. On click, call `/api/ai/draft` and populate the editor | Me | 🔲 To Do | Show spinner, then fill text |
+|2.5| **Basic Chat Sidebar**: Scaffold a collapsible chat panel on the right. No real chat logic yet, just the UI toggle | Me | 🔲 To Do | Already have “Ask Lumen” icon? |
+
+### 🚦 Blockers & Risks  
+- **API Rate Limits:** Ensure streaming or fallback to GPT-3.5 if rate-limited.  
+- **Editor Choice:** Quick decision on which rich-text editor to use.
+
+---
+
+## 🔑 How We’ll Track Progress  
+1. **Daily Stand-Up (virtual)**: You share any blockers; I’ll update the plan in real time.  
+2. **GitHub Milestones & Issues**: Each backlog item will map to a GitHub Issue and be closed on merge.  
+3. **Replit Board View**: We’ll turn on Replit’s kanban board to see Issues in To Do / In Progress / Done.  
+4. **Demo at Sprint End**: At Day 5 end, we’ll demo “Auto-Draft Module 2 Summary” in the editor.
+
+---
+
+#### ✅ **Today’s Action**  
+- You confirm Sprint 2 backlog looks correct.  
+- I’ll start Task 2.1 (Template Loader) and PR by end of day.
+
+— Let me know if you’d like to adjust anything before I dive into Sprint 2!
