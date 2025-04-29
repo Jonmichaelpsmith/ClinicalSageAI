@@ -16,7 +16,7 @@ export default function ModuleSectionEditor({
 }) {
   const [content, setContent] = useState(initialContent);
   const [contextQuery, setContextQuery] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false); // Controls the loading state for draft generation
   const [isDraftReady, setIsDraftReady] = useState(false);
   const [isFetchingContext, setIsFetchingContext] = useState(false);
   const [contextSnippets, setContextSnippets] = useState([]);
