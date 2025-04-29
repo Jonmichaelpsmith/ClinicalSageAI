@@ -41,6 +41,12 @@ import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
 import Module5ClinicalPage from './modules/Module5ClinicalPage';
 import VaultDocumentViewer from './components/vault/VaultDocumentViewer'; // Import VaultDocumentViewer
 
+// Import new Analytical & Stability modules
+import AnalyticalMethodsPage from './pages/AnalyticalMethodsPage'; // Import Analytical Methods page
+import ComparabilityStudiesPage from './pages/ComparabilityStudiesPage'; // Import Comparability Studies page
+import StabilityStudiesPage from './pages/StabilityStudiesPage'; // Import Stability Studies page
+import ShelfLifePredictorPage from './pages/ShelfLifePredictorPage'; // Import Shelf Life Predictor page
+
 // Import Global Navigation
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
 
@@ -164,6 +170,14 @@ function App() {
             <Module3QualityPage />
           </Route>
           <Route path="/ind-wizard/module-4" component={Module4NonclinicalPage} />
+          
+          {/* Analytical Control & Method Management Routes */}
+          <Route path="/analytical" component={AnalyticalMethodsPage} />
+          <Route path="/comparability" component={ComparabilityStudiesPage} />
+          
+          {/* Stability Study Management Routes */}
+          <Route path="/stability" component={StabilityStudiesPage} />
+          <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorPage} />
 
           {/* Default Redirect */}
           <Route>404 - Page Not Found</Route>
