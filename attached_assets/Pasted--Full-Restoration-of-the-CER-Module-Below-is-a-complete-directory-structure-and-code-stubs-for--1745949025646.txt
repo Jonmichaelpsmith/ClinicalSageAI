@@ -1,0 +1,187 @@
+# Full Restoration of the CER Module
+
+Below is a complete directory structure and code stubs for **all** features we previously built. Copy these into your project to bring back:
+
+```
+├── client/
+│   ├── src/
+│   │   ├── pages/
+│   │   │   └── CerPage.jsx
+│   │   ├── components/
+│   │   │   └── cer/
+│   │   │       ├── GenerateFullCerButton.jsx
+│   │   │       ├── SectionTabs.jsx
+│   │   │       ├── InputDataPanel.jsx
+│   │   │       ├── LitReviewPanel.jsx
+│   │   │       ├── GeneratedReportPanel.jsx
+│   │   │       ├── DocumentVaultPanel.jsx
+│   │   │       ├── CerHistoryPanel.jsx
+│   │   │       ├── TemplateSettingsPanel.jsx
+│   │   │       ├── ApprovalsPanel.jsx
+│   │   │       └── ReviewDrawer.jsx
+│   │   └── services/
+│   │       └── aiService.js
+│   └── vite.config.js
+├── server/
+│   ├── index.ts
+│   ├── routes/
+│   │   ├── cerRoutes.ts
+│   │   ├── vaultRoutes.ts
+│   │   └── approvalRoutes.ts
+│   ├── services/
+│   │   ├── cerGenerator.ts
+│   │   ├── vaultService.ts
+│   │   └── diffService.ts
+│   ├── websocket.ts
+│   └── migrations/
+│       ├── 20250501_create_cer_jobs_table.sql
+│       ├── 20250502_add_vault_tables.sql
+│       └── 20250503_add_approvals.sql
+└── worker/
+    ├── Dockerfile
+    └── cerWorker.ts
+```
+
+---
+## client/src/pages/CerPage.jsx
+```jsx
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import SectionTabs from '@/components/cer/SectionTabs';
+import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
+
+export default function CerPage() {
+  return (
+    <div className="p-6 space-y-6">
+      <Card><CardContent className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">CER Generator</h1>
+          <p>Full-featured Clinical Evaluation Report workflow</p>
+        </div>
+        <GenerateFullCerButton />
+      </CardContent></Card>
+
+      <SectionTabs />
+    </div>
+  );
+}
+```
+
+---
+## client/src/components/cer/SectionTabs.jsx
+```jsx
+import React, { useState } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import InputDataPanel from './InputDataPanel';
+import LitReviewPanel from './LitReviewPanel';
+import GeneratedReportPanel from './GeneratedReportPanel';
+import DocumentVaultPanel from './DocumentVaultPanel';
+import ApprovalsPanel from './ApprovalsPanel';
+
+export default function SectionTabs() {
+  const [tab, setTab] = useState('input');
+
+  return (
+    <Tabs value={tab} onValueChange={setTab} className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="input">Input Data</TabsTrigger>
+        <TabsTrigger value="litreview">Literature Review</TabsTrigger>
+        <TabsTrigger value="report">Generated Report</TabsTrigger>
+        <TabsTrigger value="vault">Document Vault</TabsTrigger>
+        <TabsTrigger value="approvals">Approvals</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="input"><InputDataPanel /></TabsContent>
+      <TabsContent value="litreview"><LitReviewPanel /></TabsContent>
+      <TabsContent value="report"><GeneratedReportPanel /></TabsContent>
+      <TabsContent value="vault"><DocumentVaultPanel /></TabsContent>
+      <TabsContent value="approvals"><ApprovalsPanel /></TabsContent>
+    </Tabs>
+  );
+}
+```
+
+---
+## client/src/components/cer/InputDataPanel.jsx
+```jsx
+import React from 'react';
+export default function InputDataPanel() {
+  return <div>/* Device info form & eCTD imports */</div>;
+}
+```
+
+---
+## client/src/components/cer/LitReviewPanel.jsx
+```jsx
+import React, { useEffect, useState } from 'react';
+import aiService from '@/services/aiService';
+export default function LitReviewPanel() {
+  const [papers, setPapers] = useState([]);
+  useEffect(() => {
+    aiService.fetchLiterature().then(setPapers);
+  }, []);
+  return <div>/* Render fetched papers with summaries */</div>;
+}
+```
+
+---
+## client/src/components/cer/GeneratedReportPanel.jsx
+```jsx
+import React from 'react';
+export default function GeneratedReportPanel() {
+  return <div>/* PDF.js viewer and inline edits */</div>;
+}
+```
+
+---
+## client/src/components/cer/DocumentVaultPanel.jsx
+```jsx
+import React from 'react';
+export default function DocumentVaultPanel() {
+  return <div>/* Vault import/export and diff UI */</div>;
+}
+```
+
+---
+## server/routes/cerRoutes.ts
+```ts
+import express from 'express';
+import { authenticate } from '../middleware/auth.js';
+import cerController from '../controllers/cerController.js';
+
+const router = express.Router();
+router.use(authenticate);
+router.post('/generate-full', cerController.enqueue);
+router.get('/jobs/:id/status', cerController.status);
+router.get('/jobs/:id/result', cerController.result);
+
+export default router;
+```
+
+---
+## server/websocket.ts
+```ts
+import { Server } from 'socket.io';
+export function setupWebsocket(httpServer) {
+  const io = new Server(httpServer, { path: '/socket' });
+  io.on('connection', socket => {
+    socket.on('subscribe', jobId => {
+      // join room and emit progress events
+    });
+  });
+  return io;
+}
+```
+
+---
+## worker/cerWorker.ts
+```ts
+import { setupWorkers } from './services/cerGenerator.js';
+import { Pool } from 'pg';
+const pool = new Pool();
+setupWorkers(pool, /* redis config */, /* io instance */);
+```
+
+---
+**Next:** Replace each stub with the full code from our previous canvases: `cerGeneratorService`, `vaultRoutes`, `diffService`, `vaultService`, UI panels and AI integration. This complete skeleton will resurrect the rich CER experience we built. Let me know which file you want to fill in first!  
+
