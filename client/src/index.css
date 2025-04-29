@@ -73,7 +73,8 @@ body {
   vertical-align: middle;
 }
 
-/* CoAuthor Page Styles */
+/* Legacy CoAuthor styles - no longer needed */
+/*
 .coauthor-page {
   background: #f7f7f7;
   min-height: 100vh;
@@ -90,10 +91,10 @@ body {
   margin-top: 1rem;
 }
 
-/* Tweak UnifiedTopNavV3 to remove its bottom margin */
 .unified-top-nav {
   margin-bottom: 0;
 }
+*/
 
 /* CoAuthor Two-Pane Layout */
 .coauthor-content {
