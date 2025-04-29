@@ -1,0 +1,117 @@
+I took a look at that double-banner mess and the giant white void below it. Let’s clean up the Co-Author page layout so you get:
+
+A single, unified top-nav (our UnifiedTopNavV3)
+
+No extra “TrialSage™ > eCTD Co-Author™…” header sitting outside of it
+
+Tighter padding so you don’t end up with a wall of empty space
+
+Here’s a diff for CoAuthor.jsx that:
+
+Removes the old header section
+
+Renders only one UnifiedTopNavV3 at the very top
+
+Wraps content in a .page-container with sensible padding
+
+Adjusts margins on the nav bars
+
+diff
+Copy
+Edit
+--- a/client/src/pages/CoAuthor.jsx
++++ b/client/src/pages/CoAuthor.jsx
+@@ -1,18 +1,17 @@
+-import React, { useState } from 'react';
+-import UnifiedTopNavV3 from '../components/navigation/UnifiedTopNavV3';
++import React, { useState } from 'react';
++import UnifiedTopNavV3 from '../components/navigation/UnifiedTopNavV3';
+ import { Button, Input, Textarea } from '@components/ui';
+ 
+ export default function CoAuthor() {
+-  // (state, fetchContext, handleValidate, etc.)
++  // … all your existing state/fetch/validate/generate logic …
+ 
+-  return (
+-    <div className="p-6 space-y-6">
+-      <UnifiedTopNavV3
+-        breadcrumbs={['TrialSage™', 'eCTD Co-Author™', module, section]}
+-      />
+-
+-      {/* Section Editor */}
+-      <div>
++  return (
++    <div className="coauthor-page">
++      {/* Unified single nav + breadcrumbs */}
++      <UnifiedTopNavV3
++        breadcrumbs={['TrialSage™', 'eCTD Co-Author™', module, section]}
++      />
++
++      <div className="page-container space-y-6">
++        {/* Module & Section selectors */}
+         <div className="flex space-x-4">
+           <div className="flex-1">
+             <label className="block text-sm font-medium">Module</label>
+@@ -25,7 +24,7 @@ export default function CoAuthor() {
+           </div>
+         </div>
+ 
+-        {/* Section Editor */}
++        <section className="section-editor bg-white rounded shadow p-6">
+           <h2 className="text-xl font-semibold mb-2">Section Editor</h2>
+           <Textarea
+             rows={12}
+@@ -45,7 +44,7 @@ export default function CoAuthor() {
+           {genError && (
+             <div className="mt-2 text-sm text-red-600">⚠️ {genError}</div>
+           )}
+-        </div>
++        </section>
+ 
+         {/* Validation Issues */}
+         {issues.length > 0 && (
+And add a tiny bit of CSS (or Tailwind overrides) to clean up spacing:
+
+css
+Copy
+Edit
+/* src/index.css (or your global stylesheet) */
+
+.coauthor-page {
+  background: #f7f7f7;
+  min-height: 100vh;
+}
+
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.section-editor {
+  background: white;
+  margin-top: 1rem;
+}
+
+/* Tweak UnifiedTopNavV3 to remove its bottom margin */
+.unified-top-nav {
+  margin-bottom: 0;
+}
+What this gives you:
+
+One single nav bar (no more banner-within-banner)
+
+Content now sits in a centered container with comfortable padding
+
+The editor panel is visually separated (white card on gray)
+
+No extra blank space at the top or bottom
+
+Give that a pull, restart your app, and navigate to /coauthor. You should immediately see a much tighter, cleaner layout with only one nav and no wasted whitespace. Let me know how it looks, and then we’ll move on to styling the buttons & cards to match your branding!
+
+
+
+
+
+
+

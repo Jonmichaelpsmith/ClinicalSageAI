@@ -1,0 +1,135 @@
+Great—let’s implement the backend to power those new UI panels. We’ll create an Express router with three endpoints:
+
+POST /api/coauthor/context – retrieve relevant context snippets
+
+POST /api/coauthor/generate – generate a compliant draft (you may already have this wired)
+
+POST /api/coauthor/validate – check the draft for regulatory compliance gaps
+
+1. Create server/routes/coauthor.js
+js
+Copy
+Edit
+// server/routes/coauthor.js
+import express from 'express';
+import { Configuration, OpenAIApi } from 'openai';
+import { retrieveContext, validateCompliance } from '../services/coauthor.js';
+
+const router = express.Router();
+const openai = new OpenAIApi(new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+}));
+
+// 1. Context Retrieval
+router.post('/context', async (req, res) => {
+  try {
+    const { terms } = req.body;
+    // retrieveContext can fetch from your document store / embeddings
+    const snippets = await retrieveContext(terms);
+    return res.json({ snippets });
+  } catch (err) {
+    console.error('Context Retrieval Error:', err);
+    return res.status(500).json({ error: 'Failed to retrieve context' });
+  }
+});
+
+// 2. Draft Generation
+router.post('/generate', async (req, res) => {
+  try {
+    const { module, section, text } = req.body;
+    const prompt = `
+You are an expert regulatory medical writer. 
+Please draft the following CTD section (“${section}” of “${module}”) based on this content:
+---
+${text}
+---
+Provide a compliant, structured draft.
+`;
+    const completion = await openai.createChatCompletion({
+      model: 'gpt-4',
+      messages: [{ role: 'system', content: prompt }],
+      temperature: 0.2,
+    });
+    const draft = completion.data.choices[0].message.content.trim();
+
+    // Optionally run initial compliance check & context lookup
+    const issues = await validateCompliance(draft);
+    const snippets = await retrieveContext(section);
+
+    return res.json({ draft, issues, snippets });
+  } catch (err) {
+    console.error('Generate Draft Error:', err);
+    return res.status(500).json({ error: 'Draft generation failed' });
+  }
+});
+
+// 3. Draft Validation
+router.post('/validate', async (req, res) => {
+  try {
+    const { text } = req.body;
+    const issues = await validateCompliance(text);
+    return res.json({ issues });
+  } catch (err) {
+    console.error('Validation Error:', err);
+    return res.status(500).json({ error: 'Validation failed' });
+  }
+});
+
+export default router;
+2. Wire it into your server (server/server.js or routes.ts)
+js
+Copy
+Edit
+import coauthorRoutes from './routes/coauthor.js';
+// …
+app.use('/api/coauthor', coauthorRoutes);
+3. Implement helper service functions (server/services/coauthor.js)
+js
+Copy
+Edit
+// server/services/coauthor.js
+import { openAIDocumentSearch, openAIComplianceCheck } from './openai-utils.js';
+
+export async function retrieveContext(terms) {
+  // Use your existing embedding/index search to return top-5 snippets
+  const results = await openAIDocumentSearch(terms, 5);
+  return results.map(r => r.text);
+}
+
+export async function validateCompliance(text) {
+  // Ask the model to list any missing regulatory items
+  const prompt = `
+You are a regulatory compliance checker for FDA IND/NDA CTD submissions.
+List any missing critical items or non-compliant statements in this draft:
+---
+${text}
+---
+Return each as a single bullet point.`;
+  const resp = await openAIComplianceCheck(prompt);
+  return resp.split('\n').filter(l => l.trim());
+}
+(Ensure openAIDocumentSearch and openAIComplianceCheck wrap your OpenAI calls or your bespoke AI services.)
+
+4. Restart & Test
+Restart your server:
+
+bash
+Copy
+Edit
+cd server && npm run start
+On the Co-Author page:
+
+Enter a term → Search → see snippets populate
+
+Click Generate Draft → draft appears, context list updates, issues panel populates
+
+Click Validate Draft → compliance issues refresh
+
+Once you confirm these endpoints work end-to-end, we can polish error handling, loading states, and styling. Let me know how the tests go!
+
+
+
+
+
+
+

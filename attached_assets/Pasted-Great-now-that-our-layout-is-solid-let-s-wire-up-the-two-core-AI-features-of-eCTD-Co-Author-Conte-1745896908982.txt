@@ -1,0 +1,180 @@
+Great—now that our layout is solid, let’s wire up the two core AI features of eCTD Co-Author:
+
+Context Retrieval: Query the /api/coauthor/context endpoint and surface the returned snippets below the editor.
+
+Draft Validation: Call /api/coauthor/validate after a draft is generated (or on-demand) and show any compliance issues in a dedicated panel.
+
+1. Update CoAuthor.jsx to include the two panels
+diff
+Copy
+Edit
+diff --git a/client/src/pages/CoAuthor.jsx b/client/src/pages/CoAuthor.jsx
+index abc1234..def5678 100644
+--- a/client/src/pages/CoAuthor.jsx
++++ b/client/src/pages/CoAuthor.jsx
+@@ -1,6 +1,7 @@
+ import React, { useState } from 'react';
+ import UnifiedTopNavV3 from '../components/navigation/UnifiedTopNavV3';
++import ContextRetrieval from '../components/coauthor/ContextRetrieval';
+ import ValidationIssues from '../components/coauthor/ValidationIssues';
+ import { Button, Select, Textarea } from '@components/ui';
+ 
+@@ export default function CoAuthor() {
+   const [module, setModule]       = useState('Module 2: CTD Summaries');
+   const [section, setSection]     = useState('2.7: Clinical Summary');
+@@
+-  const [editorContent, setEditorContent] = useState(
+-    'This is the initial content for your CTD section...'
+-  );
++  const [editorContent, setEditorContent] = useState('');
++  const [contextTerms,    setContextTerms]    = useState('');
++  const [contextSnippets, setContextSnippets] = useState([]);
++  const [validationIssues,setValidationIssues]= useState([]);
+ 
+   // existing: handleGenerateDraft(), handleSave(), etc.
+ 
+@@
+       <section className="section-editor bg-white rounded shadow p-6">
+         <h2 className="text-xl font-semibold mb-2">Section Editor</h2>
+         <Textarea
+@@
+           onChange={(e) => setEditorContent(e.target.value)}
+         />
+ 
++        {/* Context Retrieval Panel */}
++        <ContextRetrieval
++          terms={contextTerms}
++          onTermsChange={setContextTerms}
++          onSearch={(snippets) => setContextSnippets(snippets)}
++          snippets={contextSnippets}
++        />
++
+         {/* Action Buttons */}
+         <div className="mt-4 flex space-x-2">
+           <Button onClick={handleSave} variant="solid">Save Changes</Button>
+           <Button onClick={handleGenerateDraft} variant="primary">Generate Draft</Button>
++          <Button onClick={handleValidate} variant="outline">Validate Draft</Button>
+         </div>
+       </section>
+ 
++      {/* Validation Issues Panel */}
++      <ValidationIssues issues={validationIssues} />
+     </div>
+   </div>
+ );
+2. Create ContextRetrieval.jsx
+jsx
+Copy
+Edit
+// client/src/components/coauthor/ContextRetrieval.jsx
+import React from 'react';
+import { Input, Button } from '@components/ui';
+
+export default function ContextRetrieval({
+  terms, onTermsChange, onSearch, snippets
+}) {
+  const fetchContext = async () => {
+    const res = await fetch('/api/coauthor/context', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ terms })
+    });
+    const { snippets } = await res.json();
+    onSearch(snippets);
+  };
+
+  return (
+    <div className="mt-6 border-t pt-4">
+      <h3 className="font-medium mb-2">Context Retrieval</h3>
+      <div className="flex space-x-2">
+        <Input
+          placeholder="e.g., clinical safety data"
+          value={terms}
+          onChange={(e) => onTermsChange(e.target.value)}
+        />
+        <Button onClick={fetchContext}>Search</Button>
+      </div>
+      {snippets.length > 0 && (
+        <ul className="mt-3 space-y-2 list-disc list-inside text-sm">
+          {snippets.map((s, i) => (
+            <li key={i} className="bg-gray-50 p-2 rounded">
+              {s}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+3. Create ValidationIssues.jsx
+jsx
+Copy
+Edit
+// client/src/components/coauthor/ValidationIssues.jsx
+import React from 'react';
+
+export default function ValidationIssues({ issues }) {
+  if (!issues.length) return null;
+
+  return (
+    <section className="mt-6 bg-red-50 border border-red-200 rounded p-4">
+      <h3 className="text-red-700 font-medium mb-2">Compliance Issues</h3>
+      <ul className="list-disc list-inside text-sm space-y-1 text-red-600">
+        {issues.map((issue, idx) => (
+          <li key={idx}>{issue}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+4. Hook up your handlers in CoAuthor.jsx
+Inside your component:
+
+js
+Copy
+Edit
+async function handleGenerateDraft() {
+  // … existing code to call `/api/coauthor/generate` …
+  // assume API returns { draft, issues: [], snippets: [] }
+  setEditorContent(draft);
+  setValidationIssues([]);             // clear old
+  setContextSnippets(snippets);        // populate any returned context
+}
+
+async function handleValidate() {
+  const res = await fetch('/api/coauthor/validate', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ text: editorContent })
+  });
+  const { issues } = await res.json();
+  setValidationIssues(issues);
+}
+Next Steps
+Implement those server endpoints in server/routes/coauthor.js (or .ts).
+
+Restart and test the Co-Author page:
+
+Enter a query in Context Retrieval → see snippets.
+
+Click Generate Draft → draft appears, context list updates.
+
+Click Validate Draft → compliance issues appear below.
+
+Visual polish: style the panels, tweak spacing, add icons/colors.
+
+Once those pieces are wired, we’ll have a fully interactive AI co-authoring canvas—context, drafting, validation—all in one clean UI. Let me know when you’ve got this wired up, and we can fine-tune the UX!
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep resear

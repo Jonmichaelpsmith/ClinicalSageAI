@@ -202,21 +202,16 @@ export default function CoAuthor() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="coauthor-page min-h-screen bg-gray-50">
+      {/* Unified single nav + breadcrumbs */}
       <UnifiedTopNavV3 
         activeTab={activeTab}
         onTabChange={handleTabChange}
         breadcrumbs={breadcrumbs}
+        className="unified-top-nav"
       />
 
-      <main className="max-w-7xl mx-auto p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">eCTD Co-Author™</h1>
-          <p className="text-gray-600">
-            AI-assisted co-authoring of CTD submission sections with regulatory compliance guidance.
-          </p>
-        </div>
-
+      <div className="page-container max-w-7xl mx-auto p-6 pt-4">
         {/* Module/Section Selector */}
         <div className="mb-6 p-4 bg-white rounded-lg shadow-sm border">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -275,7 +270,7 @@ export default function CoAuthor() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Column - Editor Component */}
           <div className="lg:col-span-2">
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <section className="section-editor bg-white p-6 rounded-lg shadow-sm border">
               <ModuleSectionEditor 
                 initialContent={initialContent}
                 moduleId={moduleId}
@@ -323,7 +318,7 @@ export default function CoAuthor() {
                   )}
                 </button>
               </div>
-            </div>
+            </section>
             
             {/* Validation Issues */}
             {validationIssues && validationIssues.length > 0 && (
@@ -448,7 +443,7 @@ export default function CoAuthor() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
