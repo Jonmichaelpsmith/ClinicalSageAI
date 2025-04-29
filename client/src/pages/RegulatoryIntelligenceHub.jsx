@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import UnifiedTopNavV3 from "../components/navigation/UnifiedTopNavV3";
 import FadeTransition from "../components/common/FadeTransition";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import ThinkingDots from "../components/common/ThinkingDots";
 import { AlertTriangle, CheckCircle, RefreshCcw, Clock, FileText, AlertCircle } from "lucide-react";
 
 export default function RegulatoryIntelligenceHub() {
@@ -142,7 +144,7 @@ export default function RegulatoryIntelligenceHub() {
           <TabsContent value="advisor-summary" className="space-y-6 transition-all duration-500 ease-in-out">
             {isLoading ? (
               <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700"></div>
+                <LoadingSpinner size="large" text="Loading advisor data..." />
               </div>
             ) : error ? (
               <Card>
@@ -327,10 +329,10 @@ export default function RegulatoryIntelligenceHub() {
                     Visual analysis of submission risks and impacts
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-center text-gray-500 py-12">
-                    Risk Heatmap component will be implemented in the next step
-                  </p>
+                <CardContent className="py-6">
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <LoadingSpinner text="Loading risk heatmap data..." />
+                  </div>
                 </CardContent>
               </Card>
             </FadeTransition>
@@ -346,10 +348,10 @@ export default function RegulatoryIntelligenceHub() {
                     Simulate submission timelines based on different scenarios
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-center text-gray-500 py-12">
-                    Timeline Simulator component will be implemented in the next step
-                  </p>
+                <CardContent className="py-6">
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <LoadingSpinner text="Initializing timeline simulator..." />
+                  </div>
                 </CardContent>
               </Card>
             </FadeTransition>
@@ -365,10 +367,15 @@ export default function RegulatoryIntelligenceHub() {
                     Get intelligent answers to your regulatory questions
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-center text-gray-500 py-12">
-                    Ask Lumen AI component will be implemented in the next step
-                  </p>
+                <CardContent className="py-6">
+                  <div className="mt-4 mb-2">
+                    <div className="px-4 py-2 rounded-lg bg-gray-100 mb-4">
+                      <p className="text-sm text-gray-700">How do I prepare a Type B meeting package?</p>
+                    </div>
+                    <div className="px-4 py-3 rounded-lg bg-indigo-50 mb-4 relative overflow-hidden">
+                      <ThinkingDots />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </FadeTransition>

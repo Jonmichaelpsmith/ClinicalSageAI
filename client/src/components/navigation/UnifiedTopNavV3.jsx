@@ -66,11 +66,11 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
           <button
             key={tabKey}
             onClick={() => onTabChange(tabKey)}
-            className={`text-sm font-semibold px-2 ${
+            className={`text-sm font-semibold px-3 py-1 rounded ${
               activeTab === tabKey
                 ? 'text-indigo-600 border-b-2 border-indigo-600'
-                : 'text-gray-600 hover:text-indigo-600'
-            } transition duration-200`}
+                : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
+            } transition-all duration-200 ease-in-out focus:ring-2 focus:ring-indigo-300 active:scale-95`}
           >
             {formatTabName(tabKey)}
           </button>
