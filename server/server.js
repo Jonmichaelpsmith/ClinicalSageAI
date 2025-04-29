@@ -114,6 +114,7 @@ app.use('/api/arrhenius', arrheniusRoutes);
 
 // Import route modules
 import advisorRoutes from './routes/advisor.js';
+import documentsRoutes from './routes/documents.js';
 import { registerDiagnostics } from './diagnostics.js';
 
 // Register diagnostics routes first (for troubleshooting)
@@ -123,6 +124,11 @@ registerDiagnostics(app);
 console.log('✅ Preparing to mount advisor routes at /api/advisor');
 app.use('/api/advisor', advisorRoutes);
 console.log('✅ Advisor routes imported and mounted at /api/advisor');
+
+// Mount documents routes
+console.log('✅ Mounting documents routes at /api/docs');
+app.use('/api/docs', documentsRoutes);
+console.log('✅ Documents routes mounted at /api/docs');
 
 // Serve React App
 const clientBuildPath = path.join(__dirname, '../client/build');
