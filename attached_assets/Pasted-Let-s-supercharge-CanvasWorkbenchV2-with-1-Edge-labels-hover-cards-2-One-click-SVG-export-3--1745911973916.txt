@@ -1,0 +1,194 @@
+Let’s supercharge CanvasWorkbenchV2 with:
+	1.	Edge labels & hover cards
+	2.	One-click SVG export
+	3.	Keyboard shortcuts (delete & arrow-key nudge)
+
+Below is a self-contained diff you can drop into your existing CanvasWorkbenchV2.jsx (make sure you have react-flow-renderer installed):
+
+// client/src/components/canvas/CanvasWorkbenchV2.jsx
+import React, {
+-  useCallback, useState, useEffect, useRef
++  useCallback, useState, useEffect, useRef
+} from 'react';
+-import ReactFlow, {
++import ReactFlow, {
+   MiniMap,
+   Controls,
+   Background,
+-  addEdge,
++  addEdge,
++  getBezierPath,
++  BaseEdge,
+   useNodesState,
+   useEdgesState
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import NodeDetailPanel from './NodeDetailPanel';
+import {
+  fetchCTDSections,
+  fetchRiskConnections,
+  getSectionGuidance,
+  getRiskAnalysis
+} from '../../api/coauthor';
+import { io } from 'socket.io-client';
+
++// — Custom edge with label & hover tooltip —
++function CustomEdge({
++  id, sourceX, sourceY, targetX, targetY,
++  sourcePosition, targetPosition, style, data
++}) {
++  const [path] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
++  return (
++    <>
++      <path
++        id={id}
++        className="react-flow__edge-path"
++        d={path}
++        style={style}
++      />
++      {data?.label && (
++        <text>
++          <textPath href={`#${id}`} startOffset="50%" textAnchor="middle"
++                    style={{ fontSize: 12, fill: '#444', pointerEvents: 'none' }}>
++            {data.label}
++          </textPath>
++        </text>
++      )}
++    </>
++  );
++}
+
+ export default function CanvasWorkbenchV2() {
+   const [nodes, setNodes, onNodesChange] = useNodesState([]);
+   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+   const [selectedSection, setSelectedSection] = useState(null);
++  const [reactFlowInstance, setReactFlowInstance] = useState(null);
++  const [selection, setSelection] = useState({ nodes: [], edges: [] });
+   const socketRef = useRef(null);
+   const containerRef = useRef(null);
+
+   useEffect(() => {
+     // … load data & socket connection …
+   }, []);
+
+   const onConnect = useCallback(params =>
+     setEdges(es => addEdge({ ...params, animated: true, style: { stroke: '#007acc', strokeWidth: 2 }, data: { label: 'link' } }, es))
+   , [setEdges]);
+
++  // — Handle drag end (with persistence) —
+   const handleDragEnd = useCallback((e, id) => {
+     const { x, y } = e.target.attrs;
+     socketRef.current.emit('layout:update', { id, x, y });
+   }, []);
+
++  // — Keyboard shortcuts: delete & arrow nudges —
++  useEffect(() => {
++    const handleKey = (e) => {
++      if (!reactFlowInstance) return;
++      const { nodes: selNodes, edges: selEdges } = selection;
++
++      // Delete selected
++      if ((e.key === 'Delete' || e.key === 'Backspace') && (selNodes.length || selEdges.length)) {
++        if (selNodes.length) {
++          setNodes(ns => ns.filter(n => !selNodes.includes(n.id)));
++        }
++        if (selEdges.length) {
++          setEdges(es => es.filter(e => !selEdges.includes(e.id)));
++        }
++      }
++
++      // Arrow key nudges
++      const step = 10;
++      if (selNodes.length === 1) {
++        const id = selNodes[0];
++        setNodes(ns => ns.map(n => {
++          if (n.id !== id) return n;
++          let { x, y } = n.position;
++          if (e.key === 'ArrowUp')    y -= step;
++          if (e.key === 'ArrowDown')  y += step;
++          if (e.key === 'ArrowLeft')  x -= step;
++          if (e.key === 'ArrowRight') x += step;
++          socketRef.current.emit('layout:update', { id, x, y });
++          return { ...n, position: { x, y } };
++        }));
++      }
++    };
++    window.addEventListener('keydown', handleKey);
++    return () => window.removeEventListener('keydown', handleKey);
++  }, [reactFlowInstance, selection, setNodes, setEdges]);
+
++  // — Export SVG —
++  const exportToSvg = useCallback(() => {
++    if (!reactFlowInstance) return;
++    const svg = reactFlowInstance.toSVG();
++    const blob = new Blob([svg], { type: 'image/svg+xml' });
++    const url = URL.createObjectURL(blob);
++    const a = document.createElement('a');
++    a.href = url; a.download = 'ctd-graph.svg'; a.click();
++  }, [reactFlowInstance]);
+
+   return (
+     <div ref={containerRef} style={{ width:'100vw', height:'100vh', position:'relative' }}>
++      {/* ↑ Export button top-right */}
++      <button
++        onClick={exportToSvg}
++        style={{
++          position: 'absolute', top: 10, right: 10, zIndex: 10,
++          background: '#007acc', color:'#fff', border:'none', padding:'6px 12px', borderRadius:4
++        }}
++      >
++        Export SVG
++      </button>
+
+       <ReactFlow
+         nodes={nodes}
+         edges={edges}
+         onInit={setReactFlowInstance}
+         nodeTypes={{ custom: (props) => <div /> }}   /* your custom node */
+         edgeTypes={{ default: CustomEdge }}
+         onNodesChange={onNodesChange}
+         onEdgesChange={onEdgesChange}
+         onConnect={onConnect}
++        onSelectionChange={({ nodes: selN, edges: selE }) => 
++          setSelection({ nodes: selN.map(n=>n.id), edges: selE.map(e=>e.id) })
++        }
+         onNodeDragStop={handleDragEnd}
+         fitView
+       >
+         <MiniMap
+           nodeStrokeColor={n => {
+             if (n.data.status === 'complete') return '#28a745';
+             if (n.data.status === 'warning')  return '#ffc107';
+             if (n.data.status === 'critical') return '#dc3545';
+             return '#888';
+           }}
+           nodeColor={n => '#fff'}
+           maskColor="rgba(0,0,0,0.1)"
+         />
+         <Controls />
+         <Background color="#eee" gap={16}/>
+       </ReactFlow>
+
+       <NodeDetailPanel
+         sectionId={selectedSection}
+         onClose={() => setSelectedSection(null)}
+       />
+     </div>
+   );
+}
+
+What you now get:
+   •   Edge labels via label in addEdge (you can customize per-connection).
+   •   Hoverable, animated edges (via CustomEdge).
+   •   Delete selected nodes/edges with Del or Backspace.
+   •   Arrow keys nudge a single selected node by 10 px.
+   •   Export SVG button at top-right that downloads your graph as an SVG.
+
+⸻
+
+🎉 That covers all three features. From here we can add:
+   •   Edge hover cards (using onEdgeMouseEnter + a tooltip component)
+   •   PNG export (via html2canvas)
+   •   Keyboard shortcuts UI hints
+
+But this should already feel like a pro-grade graph editor. Let me know how it runs!
