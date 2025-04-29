@@ -22,19 +22,19 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
         <div className="flex items-center gap-2">
           <button
             onClick={() => window.history.back()}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200 transition"
+            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
           >
             ← Back
           </button>
           <button
             onClick={() => window.history.forward()}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded hover:bg-gray-200 transition"
+            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
           >
             → Forward
           </button>
           <button
             onClick={() => navigate('/client-portal')}
-            className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+            className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
           >
             🏠 Client Portal
           </button>
@@ -43,7 +43,7 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
         <div>
           <button
             onClick={() => navigate('/switch-module')}
-            className="px-4 py-1 text-xs font-medium bg-indigo-50 rounded hover:bg-indigo-100 text-indigo-600 transition"
+            className="px-4 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
           >
             🔍 Switch Module
           </button>

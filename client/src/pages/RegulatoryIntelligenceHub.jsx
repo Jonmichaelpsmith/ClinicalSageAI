@@ -313,59 +313,65 @@ export default function RegulatoryIntelligenceHub() {
                     </ol>
                   </CardContent>
                 </Card>
-              </>
+              </FadeTransition>
             )}
           </TabsContent>
           
           {/* Risk Heatmap Tab */}
           <TabsContent value="risk-heatmap" className="space-y-6 transition-all duration-500 ease-in-out">
-            <Card>
-              <CardHeader>
-                <CardTitle>Risk Heatmap</CardTitle>
-                <CardDescription>
-                  Visual analysis of submission risks and impacts
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center text-gray-500 py-12">
-                  Risk Heatmap component will be implemented in the next step
-                </p>
-              </CardContent>
-            </Card>
+            <FadeTransition>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Risk Heatmap</CardTitle>
+                  <CardDescription>
+                    Visual analysis of submission risks and impacts
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-center text-gray-500 py-12">
+                    Risk Heatmap component will be implemented in the next step
+                  </p>
+                </CardContent>
+              </Card>
+            </FadeTransition>
           </TabsContent>
           
           {/* Timeline Simulator Tab */}
           <TabsContent value="timeline-simulator" className="space-y-6 transition-all duration-500 ease-in-out">
-            <Card>
-              <CardHeader>
-                <CardTitle>Timeline Simulator</CardTitle>
-                <CardDescription>
-                  Simulate submission timelines based on different scenarios
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center text-gray-500 py-12">
-                  Timeline Simulator component will be implemented in the next step
-                </p>
-              </CardContent>
-            </Card>
+            <FadeTransition>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Timeline Simulator</CardTitle>
+                  <CardDescription>
+                    Simulate submission timelines based on different scenarios
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-center text-gray-500 py-12">
+                    Timeline Simulator component will be implemented in the next step
+                  </p>
+                </CardContent>
+              </Card>
+            </FadeTransition>
           </TabsContent>
           
           {/* Ask Lumen AI Tab */}
           <TabsContent value="ask-lumen" className="space-y-6 transition-all duration-500 ease-in-out">
-            <Card>
-              <CardHeader>
-                <CardTitle>Ask Lumen AI</CardTitle>
-                <CardDescription>
-                  Get intelligent answers to your regulatory questions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center text-gray-500 py-12">
-                  Ask Lumen AI component will be implemented in the next step
-                </p>
-              </CardContent>
-            </Card>
+            <FadeTransition>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ask Lumen AI</CardTitle>
+                  <CardDescription>
+                    Get intelligent answers to your regulatory questions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-center text-gray-500 py-12">
+                    Ask Lumen AI component will be implemented in the next step
+                  </p>
+                </CardContent>
+              </Card>
+            </FadeTransition>
           </TabsContent>
         </Tabs>
       </main>
