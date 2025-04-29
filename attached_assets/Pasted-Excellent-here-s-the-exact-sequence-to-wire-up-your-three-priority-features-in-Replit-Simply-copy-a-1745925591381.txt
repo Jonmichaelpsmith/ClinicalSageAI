@@ -1,0 +1,130 @@
+Excellent—here’s the exact sequence to wire up your three priority features in Replit. Simply copy-and-paste each snippet into the indicated file, then restart your workspace.
+
+⸻
+
+1. Playbook Templates
+
+a) Install (none—you’re all set if you’ve already added templateService.js/routes)
+
+b) Mount routes in server/server.js
+
+// At the top, alongside your other route imports
+import templateRoutes from './routes/template.js';
+
+// … later, after your other app.use(...) calls:
+app.use('/api/templates', templateRoutes);
+
+c) Expose the UI page and Co-Author tab
+	1.	Add page route in client/src/App.jsx
+
+import TemplateSelectorPage from './pages/TemplateSelectorPage';
+// …
+<Routes>
+  {/* …existing routes */}
+  <Route path="/templates" element={<TemplateSelectorPage />} />
+</Routes>
+
+
+	2.	Create client/src/pages/TemplateSelectorPage.jsx (if you haven’t already) that simply renders your <TemplateSelector onImport={…} /> and then wires the imported modules into your CTD map or Co-Author flow.
+	3.	Optionally drop <TemplateSelector> into your Co-Author panel as a new “Playbooks” tab.
+
+⸻
+
+2. eCTD Validator
+
+a) Install the CLI tool
+
+In the Replit shell:
+
+# If you haven’t yet installed the validator CLI:
+# This is illustrative—use whichever npm/yarn command the eCTD validator requires
+npm install -g ectd-validator
+
+b) Mount validator route in server/server.js
+
+import ectdValidatorRoutes from './routes/ectdValidator.js';
+// …
+app.use('/api/ectd', ectdValidatorRoutes);
+
+c) Expose the Validator UI
+	1.	Add page route in client/src/App.jsx
+
+import EctdValidatorPage from './pages/EctdValidatorPage';
+// …
+<Route path="/ectd-validate" element={<EctdValidatorPage />} />
+
+
+	2.	Create client/src/pages/EctdValidatorPage.jsx:
+
+import React from 'react';
+import EctdValidator from '../components/ectd/EctdValidator';
+export default function EctdValidatorPage() {
+  return <EctdValidator />;
+}
+
+
+	3.	Navigate to /ectd-validate and upload a ZIP to see the JSON report.
+
+⸻
+
+3. One-Click Gateway Submission
+
+a) Mount submission routes in server/server.js
+
+import submissionRoutes from './routes/submission.js';
+// …
+app.use('/api/submission', submissionRoutes);
+
+b) Expose Submit buttons in your export workflow page (e.g. Blueprint or Dashboard)
+
+In whichever page/component you let users download or export their final ZIP/XML, import and render:
+
+import SubmitButtons from '../components/submission/SubmitButtons';
+
+// Suppose you have `finalZipFile` and `metadata` in scope:
+<SubmitButtons file={finalZipFile} metadata={metadata} />
+
+This will give you “Submit to FDA ESG” and “Submit to EMA CESP” buttons.
+
+⸻
+
+4. Active-Learning Loop (Feedback)
+
+a) Mount feedback routes in server/server.js
+
+import feedbackRoutes from './routes/feedback.js';
+// …
+app.use('/api/feedback', feedbackRoutes);
+
+b) Wire into your Co-Author Chat
+
+In client/src/components/coauthor/CopilotPanel.jsx, locate where you render each assistant message:
+
+ import FeedbackButtons from '../feedback/FeedbackButtons';
+ 
+ // …
+ <div className={`cp-msg ${m.role}`}>
+   {m.content}
++  {m.role === 'assistant' && (
++    <FeedbackButtons
++      messageId={m.id}
++      originalText={m.content}
++      onFeedback={() => /* optional: refresh or mark UI */}
++    />
++  )}
+ </div>
+
+
+
+⸻
+
+Final Steps
+	1.	Save all files.
+	2.	Restart your Replit server & client.
+	3.	Test each feature in turn:
+      •   /templates → import “Fast IND” etc.
+      •   /ectd-validate → upload ZIP, view validation JSON.
+      •   On your export page → click “Submit to ESG” / “Submit to CESP.”
+      •   In Co-Author Chat → Approve / Reject an AI message and confirm it records feedback (/api/feedback).
+
+Once everything is green, your Playbooks, eCTD validation, gateway hooks, and active-learning loop will be fully operational. Let me know how the tests go!
