@@ -2,6 +2,7 @@ import React from 'react';
 import UnifiedTopNavV5 from '../components/navigation/UnifiedTopNavV5';
 import Breadcrumbs from '../components/navigation/Breadcrumbs';
 import ModuleCard from '../components/dashboard/ModuleCard';
+import { Button } from '@/components/ui/button';
 import './ModuleDashboard.css';
 
 export default function ModuleDashboard() {
@@ -27,11 +28,28 @@ export default function ModuleDashboard() {
 
       <Breadcrumbs items={[
         { label:'TrialSage™',        to:'/'        },
+        { label:'Client Portal',      to:'/client-portal' },
         { label:'eCTD Co-Author™',   to:'/coauthor'},
         { label:'Dashboard' }
       ]}/>
 
-      <h1 className="dashboard-title">CTD Module Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="dashboard-title">CTD Module Dashboard</h1>
+        <div className="space-x-4">
+          <Button 
+            onClick={() => window.location.href = '/'}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+          >
+            Home
+          </Button>
+          <Button 
+            onClick={() => window.location.href = '/client-portal'}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+          >
+            Go to Client Portal
+          </Button>
+        </div>
+      </div>
 
       <div className="dashboard-grid">
         {modules.map(mod => (
