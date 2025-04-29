@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export default function SponsorInfoForm({ formData = {}, updateFormData }) {
+export default function SponsorInfoForm({ formData = {}, onFormUpdate }) {
+  // Create a safety wrapper for the update function to prevent errors
+  const updateFormData = onFormUpdate || (() => {});
   const [sponsor, setSponsor] = useState({
     sponsorName: "",
     address: "",
