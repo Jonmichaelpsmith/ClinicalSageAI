@@ -1,200 +1,330 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckSquare, Filter, FileText, UserCheck } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
+import axios from 'axios';
 
 export default function ApprovalsPanel() {
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedItems, setSelectedItems] = useState([]);
-  
-  // Sample approvals data
-  const approvals = [
-    {
-      id: 'apr-001',
-      document: 'CER_Enzymex_Forte_v2.0.pdf',
-      requestedBy: 'Emily Chen',
-      requestedOn: 'April 15, 2025',
-      deadline: 'April 22, 2025',
-      status: 'pending'
-    },
-    {
-      id: 'apr-002',
-      document: 'CER_CardioFlow_v3.1.pdf',
-      requestedBy: 'Michael Rodriguez',
-      requestedOn: 'April 10, 2025',
-      deadline: 'April 17, 2025',
-      status: 'approved'
-    },
-    {
-      id: 'apr-003',
-      document: 'CER_GlucoGuard_v1.5.pdf',
-      requestedBy: 'Sarah Johnson',
-      requestedOn: 'April 14, 2025',
-      deadline: 'April 21, 2025',
-      status: 'pending'
-    },
-    {
-      id: 'apr-004',
-      document: 'CER_NeuroStim_v2.3.pdf',
-      requestedBy: 'David Kim',
-      requestedOn: 'April 08, 2025',
-      deadline: 'April 15, 2025',
-      status: 'rejected'
-    }
-  ];
-  
-  const filteredApprovals = selectedStatus === 'all' 
-    ? approvals 
-    : approvals.filter(a => a.status === selectedStatus);
-  
-  const handleItemSelect = (id) => {
-    if (selectedItems.includes(id)) {
-      setSelectedItems(selectedItems.filter(item => item !== id));
-    } else {
-      setSelectedItems([...selectedItems, id]);
+  const [jobs, setJobs] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('in-review');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const fetchJobs = async () => {
+    setLoading(true);
+    try {
+      // This would be a real API call in production
+      // const res = await axios.get('/api/cer/jobs', { params: { status: statusFilter } });
+      // setJobs(res.data.data);
+      
+      // Mock data for demo
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Different data based on status filter
+      if (statusFilter === 'in-review') {
+        setJobs([
+          { 
+            job_id: 'JOB-20250428-001', 
+            title: 'Enzymex Forte CER', 
+            status: 'in-review', 
+            created_at: '2025-04-28T09:15:00Z',
+            submitter: 'Michael Chen',
+            type: 'EU MDR',
+            selected: false
+          },
+          { 
+            job_id: 'JOB-20250428-002', 
+            title: 'SI-456 Monitor CER', 
+            status: 'in-review', 
+            created_at: '2025-04-28T11:30:00Z',
+            submitter: 'Sarah Johnson',
+            type: 'ISO 14155',
+            selected: false
+          },
+          { 
+            job_id: 'JOB-20250428-003', 
+            title: 'DiagnoScan X1 CER', 
+            status: 'in-review', 
+            created_at: '2025-04-28T14:45:00Z',
+            submitter: 'John Smith',
+            type: 'EU MDR',
+            selected: false
+          }
+        ]);
+      } else if (statusFilter === 'pending') {
+        setJobs([
+          { 
+            job_id: 'JOB-20250427-005', 
+            title: 'Enzymex Forte Supplemental', 
+            status: 'pending', 
+            created_at: '2025-04-27T16:20:00Z',
+            submitter: 'Michael Chen',
+            type: 'EU MDR',
+            selected: false
+          },
+          { 
+            job_id: 'JOB-20250427-008', 
+            title: 'CardioCare Device CER', 
+            status: 'pending', 
+            created_at: '2025-04-27T17:15:00Z',
+            submitter: 'Sarah Johnson',
+            type: 'FDA 510(k)',
+            selected: false
+          }
+        ]);
+      } else if (statusFilter === 'approved') {
+        setJobs([
+          { 
+            job_id: 'JOB-20250426-002', 
+            title: 'Enzymex Forte CER', 
+            status: 'approved', 
+            created_at: '2025-04-26T10:15:00Z',
+            approved_at: '2025-04-26T14:30:00Z',
+            submitter: 'John Smith',
+            reviewer: 'Sarah Johnson',
+            type: 'EU MDR',
+            selected: false
+          },
+          { 
+            job_id: 'JOB-20250425-003', 
+            title: 'DiagnoScan X1 CER', 
+            status: 'approved', 
+            created_at: '2025-04-25T09:30:00Z',
+            approved_at: '2025-04-25T11:45:00Z',
+            submitter: 'Michael Chen',
+            reviewer: 'John Smith',
+            type: 'EU MDR',
+            selected: false
+          }
+        ]);
+      } else if (statusFilter === 'rejected') {
+        setJobs([
+          { 
+            job_id: 'JOB-20250424-001', 
+            title: 'SI-456 Monitor CER', 
+            status: 'rejected', 
+            created_at: '2025-04-24T15:00:00Z',
+            rejected_at: '2025-04-24T16:30:00Z',
+            submitter: 'Sarah Johnson',
+            reviewer: 'John Smith',
+            rejection_reason: 'Incomplete risk analysis section and missing clinical data references',
+            type: 'ISO 14155',
+            selected: false
+          }
+        ]);
+      }
+    } catch (err) {
+      console.error('Failed to load approvals', err);
+      setError('Failed to load approval requests');
+    } finally {
+      setLoading(false);
     }
   };
-  
-  const handleSelectAll = () => {
-    if (selectedItems.length === filteredApprovals.length) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(filteredApprovals.map(a => a.id));
+
+  useEffect(() => { fetchJobs(); }, [statusFilter]);
+
+  const handleBatchAction = async (action) => {
+    const selectedIds = jobs.filter(j => j.selected).map(j => j.job_id);
+    if (!selectedIds.length) {
+      alert('Please select at least one report to process');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // This would be a real API call in production
+      // await axios.post('/api/cer/jobs/batch-review', { ids: selectedIds, decision: action });
+      
+      // Mock success for demo
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log(`Batch ${action} for jobs:`, selectedIds);
+      alert(`Successfully ${action === 'approved' ? 'approved' : 'rejected'} ${selectedIds.length} report(s)`);
+      fetchJobs();
+    } catch (err) {
+      console.error('Batch action failed', err);
+      setError(`Failed to ${action} selected reports`);
+    } finally {
+      setLoading(false);
     }
   };
-  
-  const handleBatchAction = (action) => {
-    console.log(`Batch ${action} for:`, selectedItems);
-    // In a real implementation, this would send a request to the API
+
+  const toggleSelect = (id) => {
+    setJobs(jobs.map(j => j.job_id === id ? { ...j, selected: !j.selected } : j));
   };
-  
+
+  const toggleSelectAll = () => {
+    const allSelected = jobs.every(j => j.selected);
+    setJobs(jobs.map(j => ({ ...j, selected: !allSelected })));
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'in-review':
+        return <Badge className="bg-blue-100 text-blue-800">In Review</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+      case 'approved':
+        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>;
+      default:
+        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
+    }
+  };
+
+  if (loading) return (
+    <div className="flex justify-center items-center p-12">
+      <div className="w-full max-w-md">
+        <p className="text-center mb-4">Loading approval requests...</p>
+        <Progress value={60} className="w-full" />
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="p-4 border border-red-300 bg-red-50 rounded-md text-red-800">
+          <h3 className="font-semibold mb-2">Error</h3>
+          <p>{error}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
-        <CardContent className="p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Filter size={16} />
-            <div className="flex space-x-1">
-              <Button
-                variant={selectedStatus === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStatus('all')}
+        <CardContent className="pt-6">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4">
+            <h3 className="text-lg font-semibold">Approval Requests</h3>
+            <div className="flex gap-2">
+              <select 
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                All
-              </Button>
-              <Button
-                variant={selectedStatus === 'pending' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStatus('pending')}
-              >
-                Pending
-              </Button>
-              <Button
-                variant={selectedStatus === 'approved' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStatus('approved')}
-              >
-                Approved
-              </Button>
-              <Button
-                variant={selectedStatus === 'rejected' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStatus('rejected')}
-              >
-                Rejected
-              </Button>
+                <option value="in-review">In Review</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              {(statusFilter === 'in-review' || statusFilter === 'pending') && (
+                <>
+                  <Button 
+                    onClick={() => handleBatchAction('approved')} 
+                    variant="default"
+                    className="bg-green-600 hover:bg-green-700"
+                    disabled={loading || !jobs.some(j => j.selected)}
+                  >
+                    Batch Approve
+                  </Button>
+                  <Button 
+                    onClick={() => handleBatchAction('rejected')} 
+                    variant="destructive"
+                    disabled={loading || !jobs.some(j => j.selected)}
+                  >
+                    Batch Reject
+                  </Button>
+                </>
+              )}
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={selectedItems.length === 0}
-              onClick={() => handleBatchAction('approve')}
-              className="gap-1"
-            >
-              <CheckSquare size={14} />
-              Batch Approve
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={selectedItems.length === 0}
-              onClick={() => handleBatchAction('reject')}
-              className="gap-1"
-            >
-              Batch Reject
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="p-4">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="p-2 text-left">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedItems.length === filteredApprovals.length && filteredApprovals.length > 0}
-                      onChange={handleSelectAll}
-                      className="rounded"
-                    />
-                  </th>
-                  <th className="p-2 text-left">Document</th>
-                  <th className="p-2 text-left">Requested By</th>
-                  <th className="p-2 text-left">Requested On</th>
-                  <th className="p-2 text-left">Deadline</th>
-                  <th className="p-2 text-left">Status</th>
-                  <th className="p-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredApprovals.map(approval => (
-                  <tr key={approval.id} className="border-b hover:bg-muted/50">
-                    <td className="p-2">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedItems.includes(approval.id)}
-                        onChange={() => handleItemSelect(approval.id)}
-                        className="rounded"
+          {jobs.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No reports found with status "{statusFilter}"
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {(statusFilter === 'in-review' || statusFilter === 'pending') && (
+                    <TableHead className="w-12">
+                      <Checkbox 
+                        checked={jobs.length > 0 && jobs.every(j => j.selected)} 
+                        onCheckedChange={toggleSelectAll}
                       />
-                    </td>
-                    <td className="p-2 flex items-center gap-2">
-                      <FileText size={16} />
-                      {approval.document}
-                    </td>
-                    <td className="p-2 flex items-center gap-1">
-                      <UserCheck size={14} />
-                      {approval.requestedBy}
-                    </td>
-                    <td className="p-2">{approval.requestedOn}</td>
-                    <td className="p-2">{approval.deadline}</td>
-                    <td className="p-2">
-                      <Badge variant={
-                        approval.status === 'approved' ? 'success' : 
-                        approval.status === 'rejected' ? 'destructive' : 
-                        'warning'
-                      }>
-                        {approval.status}
-                      </Badge>
-                    </td>
-                    <td className="p-2">
-                      <div className="flex gap-2">
-                        <Button size="sm">Review</Button>
-                        <Button size="sm" variant="outline">View</Button>
+                    </TableHead>
+                  )}
+                  <TableHead>ID</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Submitter</TableHead>
+                  {(statusFilter === 'approved' || statusFilter === 'rejected') && (
+                    <TableHead>Reviewer</TableHead>
+                  )}
+                  <TableHead>Submitted</TableHead>
+                  {statusFilter === 'rejected' && (
+                    <TableHead>Reason</TableHead>
+                  )}
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {jobs.map(job => (
+                  <TableRow key={job.job_id}>
+                    {(statusFilter === 'in-review' || statusFilter === 'pending') && (
+                      <TableCell>
+                        <Checkbox 
+                          checked={job.selected} 
+                          onCheckedChange={() => toggleSelect(job.job_id)}
+                        />
+                      </TableCell>
+                    )}
+                    <TableCell className="font-mono text-xs">{job.job_id}</TableCell>
+                    <TableCell>{job.title}</TableCell>
+                    <TableCell>{job.type}</TableCell>
+                    <TableCell>{getStatusBadge(job.status)}</TableCell>
+                    <TableCell>{job.submitter}</TableCell>
+                    {(statusFilter === 'approved' || statusFilter === 'rejected') && (
+                      <TableCell>{job.reviewer}</TableCell>
+                    )}
+                    <TableCell>{new Date(job.created_at).toLocaleString()}</TableCell>
+                    {statusFilter === 'rejected' && (
+                      <TableCell className="max-w-[200px] truncate" title={job.rejection_reason}>
+                        {job.rejection_reason}
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline" onClick={() => window.open(`/api/cer/jobs/${job.job_id}/view`, '_blank')}>
+                          View
+                        </Button>
+                        {(statusFilter === 'in-review' || statusFilter === 'pending') && (
+                          <>
+                            <Button 
+                              size="sm" 
+                              className="bg-green-600 hover:bg-green-700"
+                              onClick={() => handleBatchAction('approved', [job.job_id])}
+                            >
+                              Approve
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => {
+                                const reason = prompt('Enter rejection reason:');
+                                if (reason) {
+                                  handleBatchAction('rejected', [job.job_id], reason);
+                                }
+                              }}
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        )}
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
