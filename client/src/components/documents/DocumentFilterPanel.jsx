@@ -90,7 +90,11 @@ const DocumentFilterPanel = ({
         return acc;
       }, {});
       
-    onApply(cleanFilters);
+    if (onApply) {
+      onApply(cleanFilters);
+    } else if (onChange) {
+      onChange(cleanFilters);
+    }
   };
 
   return (
