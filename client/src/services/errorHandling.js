@@ -1,85 +1,112 @@
 /**
  * Error Handling Service
  * 
- * This module provides standardized error handling for API calls
- * and UI components throughout the application.
+ * This service provides consistent error handling for API requests
+ * with appropriate logging and toast notifications.
  */
 
 /**
- * Handle API errors with standardized approach
+ * Handle API errors consistently across the application
  * 
  * @param {Error} error - The error object
- * @param {Object} options - Options for error handling
- * @param {string} options.context - Context where the error occurred (component/feature name)
- * @param {string} options.endpoint - API endpoint that failed
- * @param {Function} options.toast - Optional toast function for UI notification
- * @param {Function} options.onError - Optional callback for custom error handling
+ * @param {Object} options - Configuration options
+ * @param {string} options.context - The context where the error occurred (e.g., 'CER History')
+ * @param {string} options.endpoint - The API endpoint that was called
+ * @param {Function} options.toast - The toast function from useToast hook
+ * @param {Function} options.onError - Optional callback for additional error handling
  */
-export const handleApiError = (error, { context, endpoint, toast, onError } = {}) => {
-  // Log errors to console with useful context
-  console.error(`API Error [${context || 'Unknown'}] ${endpoint || ''}:`, error);
+export function handleApiError(error, { context, endpoint, toast, onError }) {
+  console.error(`API Error in ${context} (${endpoint}):`, error);
   
-  // Determine error message to display
-  let errorMessage = 'An unexpected error occurred';
+  let errorMessage = 'An unexpected error occurred.';
   
+  // Parse error response if available
   if (error.response) {
-    // Server responded with error status
-    const status = error.response.status;
-    const serverMessage = 
-      error.response.data?.error || 
-      error.response.data?.message || 
-      error.response.statusText;
-    
-    if (status === 401 || status === 403) {
-      errorMessage = 'Authentication error: Please log in again';
-    } else if (status === 404) {
-      errorMessage = 'Resource not found';
-    } else if (status === 400) {
-      errorMessage = `Bad request: ${serverMessage}`;
-    } else if (status >= 500) {
-      errorMessage = `Server error (${status}): ${serverMessage}`;
-    } else {
-      errorMessage = serverMessage || errorMessage;
+    try {
+      const responseData = error.response.data;
+      if (typeof responseData === 'string') {
+        errorMessage = responseData;
+      } else if (responseData.message) {
+        errorMessage = responseData.message;
+      } else if (responseData.error) {
+        errorMessage = responseData.error;
+      }
+    } catch (e) {
+      console.error('Error parsing error response:', e);
     }
-  } else if (error.request) {
-    // Request was made but no response
-    errorMessage = 'No response from server. Please check your connection.';
   } else if (error.message) {
-    // Something else caused the error
     errorMessage = error.message;
   }
   
-  // Display toast notification if available
+  // Show toast notification
   if (toast) {
     toast({
-      title: `Error in ${context || 'API Call'}`,
+      title: `${context} Error`,
       description: errorMessage,
-      variant: "destructive",
+      variant: 'destructive',
     });
   }
   
-  // Call custom error handler if provided
+  // Call additional error handler if provided
   if (onError && typeof onError === 'function') {
-    onError(errorMessage, error);
+    onError(error, errorMessage);
   }
   
   return errorMessage;
-};
+}
 
 /**
- * Format error details for display
+ * Format API validation errors from server
  * 
- * @param {Error} error - The error object
- * @returns {string} Formatted error message
+ * @param {Object} errors - Validation errors object from server
+ * @returns {string} - Formatted error message
  */
-export const formatErrorMessage = (error) => {
-  if (!error) return 'Unknown error';
+export function formatValidationErrors(errors) {
+  if (!errors) return 'Validation failed';
   
-  if (typeof error === 'string') return error;
+  // If errors is already a string, return it
+  if (typeof errors === 'string') return errors;
   
-  if (error.response?.data?.error) return error.response.data.error;
-  if (error.response?.data?.message) return error.response.data.message;
-  if (error.message) return error.message;
+  // If errors is an array of strings, join them
+  if (Array.isArray(errors)) {
+    return errors.join(', ');
+  }
   
-  return JSON.stringify(error);
-};
+  // If errors is an object with field-specific errors
+  if (typeof errors === 'object') {
+    return Object.entries(errors)
+      .map(([field, message]) => `${field}: ${message}`)
+      .join(', ');
+  }
+  
+  return 'Validation failed';
+}
+
+/**
+ * Check if an error is a network error
+ * 
+ * @param {Error} error - The error to check
+ * @returns {boolean} - True if it's a network error
+ */
+export function isNetworkError(error) {
+  return (
+    error.message === 'Network Error' ||
+    (error.request && !error.response) ||
+    error.message.includes('Failed to fetch')
+  );
+}
+
+/**
+ * Check if an error is an authentication error
+ * 
+ * @param {Error} error - The error to check
+ * @returns {boolean} - True if it's an authentication error
+ */
+export function isAuthError(error) {
+  return (
+    error.response?.status === 401 ||
+    error.response?.status === 403 ||
+    error.message?.toLowerCase().includes('unauthorized') ||
+    error.message?.toLowerCase().includes('forbidden')
+  );
+}

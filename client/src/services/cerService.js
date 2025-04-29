@@ -1,212 +1,209 @@
 /**
  * CER Service
- * Provides client-side methods for interacting with CER API endpoints with
- * enhanced error handling and fallback strategies for SLA reliability.
+ * 
+ * This service handles interactions with the CER API endpoints,
+ * providing methods for generating and retrieving CER data.
  */
-
-import { handleApiError, retryApiCall, withRetry } from './errorHandling';
-
-// Fallback CER templates that can be used when API is unavailable
-const FALLBACK_TEMPLATES = {
-  'template_mdr_full': { templateId: 'template_mdr_full', name: 'EU MDR 2017/745 Full Template' },
-  'template_mdr_lite': { templateId: 'template_mdr_lite', name: 'EU MDR Simplified Template' },
-  'template_meddev': { templateId: 'template_meddev', name: 'MEDDEV 2.7/1 Rev 4 Template' }
-};
 
 /**
- * Generate a full CER (Clinical Evaluation Report)
- * @param {Object} params - Parameters for CER generation
- * @param {Object} params.deviceInfo - Device information (name, type, manufacturer)
- * @param {Array} params.literature - Selected literature references
- * @param {Array} params.fdaData - FDA adverse event data
- * @param {string} params.templateId - Template identifier
- * @returns {Promise<Object>} Generated CER data
+ * Generate a full CER report
+ * 
+ * @param {Object} options - Generation options
+ * @param {string} options.ndc_code - The NDC code for the product
+ * @param {string} options.product_name - The product name
+ * @param {string} options.manufacturer - The manufacturer name
+ * @param {Object} options.additional_params - Additional parameters for the report
+ * @returns {Promise<Object>} - The job data with ID for tracking
  */
-export async function generateFullCER(params) {
-  const endpoint = '/api/cer/generate-full';
+export async function generateFullCER(options) {
+  const response = await fetch('/api/cer/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+    },
+    body: JSON.stringify({
+      ndc_code: options.ndc_code,
+      product_name: options.product_name,
+      manufacturer: options.manufacturer,
+      ...options.additional_params,
+    }),
+  });
   
-  try {
-    // Use retry mechanism with exponential backoff
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(params)
-      });
-      
-      if (!res.ok) {
-        throw new Error(`Failed to generate CER: ${res.statusText}`);
-      }
-      
-      return res;
-    }, [], { maxRetries: 2, baseDelay: 1000 });
-    
-    return await response.json();
-  } catch (error) {
-    // Advanced error handling with context
-    const enhancedError = handleApiError('CER Generation', error, endpoint, () => {
-      // Create a basic placeholder response when all retries fail
-      // This prevents the UI from crashing, letting users try again later
-      return {
-        id: `error-${Date.now()}`,
-        status: 'error',
-        message: 'Failed to generate CER. Please try again later.',
-        error: error.message,
-        timestamp: new Date().toISOString()
-      };
-    });
-    
-    // Only throw if we don't have a fallback response
-    if (!enhancedError.id) {
-      throw enhancedError;
+  if (!response.ok) {
+    throw new Error(`Failed to start CER generation: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
+ * Check the status of a CER generation job
+ * 
+ * @param {string} jobId - The job ID to check
+ * @returns {Promise<Object>} - The job status data
+ */
+export async function checkCERJobStatus(jobId) {
+  const response = await fetch(`/api/cer/status/${jobId}`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to check job status: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
+ * Get CER job list with pagination and filtering
+ * 
+ * @param {Object} options - Query options
+ * @param {number} options.page - The page number (1-based)
+ * @param {number} options.limit - The number of items per page
+ * @param {string} options.status - Optional status filter
+ * @returns {Promise<Object>} - The paginated job list
+ */
+export async function getCERJobs({ page = 1, limit = 10, status = null }) {
+  const params = new URLSearchParams();
+  params.append('page', page);
+  params.append('limit', limit);
+  
+  if (status && status !== 'all') {
+    params.append('status', status);
+  }
+  
+  const response = await fetch(`/api/cer/jobs?${params.toString()}`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch CER jobs: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
+ * Get detailed information about a specific CER job
+ * 
+ * @param {string} jobId - The job ID to retrieve
+ * @returns {Promise<Object>} - The job details
+ */
+export async function getCERJobDetails(jobId) {
+  const response = await fetch(`/api/cer/jobs/${jobId}`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch job details: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
+ * Submit a review for a CER job
+ * 
+ * @param {Object} review - The review data
+ * @param {string} review.job_id - The job ID to review
+ * @param {string} review.decision - The review decision (approved, rejected, changes_requested)
+ * @param {string} review.comment - Optional review comment
+ * @returns {Promise<Object>} - The review submission result
+ */
+export async function submitCERReview(review) {
+  const response = await fetch('/api/cer/reviews', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+    },
+    body: JSON.stringify(review),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to submit review: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
+ * Poll a CER job status with retry logic
+ * 
+ * @param {string} jobId - The job ID to poll
+ * @param {Object} options - Polling options
+ * @param {number} options.interval - The polling interval in milliseconds
+ * @param {number} options.maxAttempts - Maximum number of polling attempts
+ * @param {Function} options.onStatusChange - Callback for status changes
+ * @param {Function} options.onComplete - Callback for job completion
+ * @param {Function} options.onError - Callback for polling errors
+ * @returns {Object} - The polling controller with a stop method
+ */
+export function pollCERJobStatus(jobId, options = {}) {
+  const {
+    interval = 3000,
+    maxAttempts = 100,
+    onStatusChange = () => {},
+    onComplete = () => {},
+    onError = () => {},
+  } = options;
+  
+  let attempts = 0;
+  let timerId = null;
+  let stopped = false;
+  let lastStatus = null;
+  
+  const poll = async () => {
+    if (stopped || attempts >= maxAttempts) {
+      return;
     }
     
-    return enhancedError;
-  }
-}
-
-/**
- * Fetch all CER reports for the current user
- * @returns {Promise<Array>} List of CER reports
- */
-export async function fetchAllCERs() {
-  const endpoint = '/api/cer/reports';
-  
-  try {
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint);
+    attempts++;
+    
+    try {
+      const jobData = await checkCERJobStatus(jobId);
       
-      if (!res.ok) {
-        throw new Error(`Failed to fetch CER reports: ${res.statusText}`);
+      // Only trigger statusChange if the status has actually changed
+      if (lastStatus !== jobData.status) {
+        lastStatus = jobData.status;
+        onStatusChange(jobData);
       }
       
-      return res;
-    }, [], { maxRetries: 2 });
-    
-    return await response.json();
-  } catch (error) {
-    // Enhanced error handling with fallback data
-    handleApiError('Fetch CER Reports', error, endpoint, () => {
-      // Return an empty array with an error flag when all retries fail
-      // This prevents the UI from crashing
-      return [];
-    });
-    
-    // Return empty array to prevent UI crashes
-    return [];
-  }
-}
-
-/**
- * Fetch a specific CER report by ID
- * @param {string} id - Report ID
- * @returns {Promise<Object>} CER report data
- */
-export async function fetchCERReport(id) {
-  const endpoint = `/api/cer/report/${id}`;
-  
-  try {
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint);
-      
-      if (!res.ok) {
-        throw new Error(`Failed to fetch CER report: ${res.statusText}`);
+      if (['completed', 'failed', 'error'].includes(jobData.status)) {
+        stopped = true;
+        onComplete(jobData);
+        return;
       }
       
-      return res;
-    }, [], { maxRetries: 2 });
-    
-    return await response.json();
-  } catch (error) {
-    // Enhanced error handling with context
-    handleApiError('Fetch CER Report', error, endpoint);
-    
-    // Return error object that can be handled by the UI
-    return {
-      id,
-      status: 'error',
-      message: `Could not retrieve report ${id}. Please try again later.`,
-      error: error.message,
-      timestamp: new Date().toISOString()
-    };
-  }
-}
-
-/**
- * Generate a sample CER based on a template
- * @param {string} template - Template identifier
- * @returns {Promise<Object>} Sample CER data with URL
- */
-export async function generateSampleCER(template) {
-  const endpoint = '/api/cer/sample';
-  
-  try {
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ template })
-      });
+      // Continue polling
+      timerId = setTimeout(poll, interval);
+    } catch (error) {
+      onError(error);
       
-      if (!res.ok) {
-        throw new Error(`Failed to generate sample CER: ${res.statusText}`);
-      }
-      
-      return res;
-    }, [], { maxRetries: 2 });
-    
-    return await response.json();
-  } catch (error) {
-    // Enhanced error handling with fallback
-    handleApiError('Generate Sample CER', error, endpoint);
-    
-    // Return fallback path to a static sample file to prevent UI crashes
-    return {
-      url: `/samples/fallback-${template}-sample.pdf`,
-      success: false,
-      error: error.message
-    };
-  }
-}
-
-/**
- * Get available CER templates with fallback
- * @returns {Promise<Array>} List of available templates
- */
-export async function getCERTemplates() {
-  const endpoint = '/api/cer/templates';
-  
-  try {
-    const response = await fetch(endpoint);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch CER templates: ${response.statusText}`);
+      // Continue polling even after error, but with exponential backoff
+      const backoffInterval = Math.min(interval * Math.pow(1.5, Math.min(attempts / 5, 5)), 30000);
+      timerId = setTimeout(poll, backoffInterval);
     }
-    
-    return await response.json();
-  } catch (error) {
-    // Enhanced error handling with context
-    handleApiError('Fetch CER Templates', error, endpoint);
-    
-    // Return fallback templates to prevent UI crashes
-    return Object.values(FALLBACK_TEMPLATES);
-  }
-}
-
-/**
- * Check if CER services are available
- * @returns {Promise<boolean>} Whether services are available
- */
-export async function checkCERServicesHealth() {
-  try {
-    const response = await fetch('/api/cer/health');
-    return response.ok;
-  } catch (error) {
-    console.error('CER services health check failed:', error);
-    return false;
-  }
+  };
+  
+  // Start polling
+  poll();
+  
+  // Return controller object
+  return {
+    stop: () => {
+      stopped = true;
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    },
+    getAttempts: () => attempts,
+  };
 }

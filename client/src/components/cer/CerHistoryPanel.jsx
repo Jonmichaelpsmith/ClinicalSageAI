@@ -331,7 +331,7 @@ const CerHistoryPanel = () => {
           
           {isError ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
-              <alertCircle className="h-10 w-10 text-red-500 mb-4" />
+              <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
               <h3 className="text-lg font-medium">Failed to load reports</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 There was an error loading the CER reports.
@@ -342,12 +342,12 @@ const CerHistoryPanel = () => {
             </div>
           ) : isLoading && jobs.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8">
-              <loader className="h-10 w-10 animate-spin mb-4" />
+              <Loader className="h-10 w-10 animate-spin mb-4" />
               <p className="text-sm text-muted-foreground">Loading reports...</p>
             </div>
           ) : jobs.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
-              <fileText className="h-10 w-10 text-muted-foreground mb-4" />
+              <FileText className="h-10 w-10 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium">No reports found</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 {statusFilter === 'all' 
@@ -378,11 +378,11 @@ const CerHistoryPanel = () => {
                             </h4>
                             <div className="mt-1 text-sm text-muted-foreground flex flex-col gap-1">
                               <div className="flex items-center gap-1">
-                                <clock className="h-3.5 w-3.5" />
+                                <Clock className="h-3.5 w-3.5" />
                                 Created: {formatDate(job.created_at)}
                               </div>
                               <div className="flex items-center gap-1">
-                                <users className="h-3.5 w-3.5" />
+                                <Users className="h-3.5 w-3.5" />
                                 Reviews: {job.approvals_count || 0}
                               </div>
                             </div>

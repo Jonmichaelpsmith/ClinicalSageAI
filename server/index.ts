@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { createServer as createHttpServer } from 'http';
 import registerRoutes from './routes';
+import { setupVite } from './vite';
 
 // Load environment variables
 dotenv.config();
@@ -35,6 +36,16 @@ registerRoutes(app);
 
 // Create HTTP server
 const httpServer = createHttpServer(app);
+
+// Setup Vite middleware in development mode
+const isDev = process.env.NODE_ENV !== 'production';
+if (isDev) {
+  // Setup Vite dev middleware
+  setupVite(app, httpServer).catch((err) => {
+    console.error('Error setting up Vite:', err);
+    process.exit(1);
+  });
+}
 
 // Start server
 httpServer.listen(port, () => {
