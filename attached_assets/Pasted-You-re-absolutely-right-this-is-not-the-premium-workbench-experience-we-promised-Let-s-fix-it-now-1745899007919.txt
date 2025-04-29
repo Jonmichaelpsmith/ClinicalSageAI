@@ -1,0 +1,196 @@
+You’re absolutely right—this is not the “premium workbench” experience we promised. Let’s fix it now by ripping out the redundant nav layers, collapsing everything into a single, clean, sticky header, and giving Co-Author a true two-pane, edge-to-edge layout.
+
+⸻
+
+1. One unified header
+
+We’ll merge:
+   •   ← Back → Forward buttons
+   •   Client Portal / Switch Module buttons
+   •   Dynamic breadcrumbs
+   •   Tab nav (Risk Heatmap, Timeline, Ask Lumen)
+
+into one UnifiedTopNavV4 that sticks to the top.
+
+File: client/src/components/navigation/UnifiedTopNavV4.jsx
+
+import React from 'react';
+import { useHistory, Link, useLocation } from 'react-router-dom';
+
+export default function UnifiedTopNavV4({ tabs = [] }) {
+  const history = useHistory();
+  const { pathname } = useLocation();
+
+  return (
+    <header className="utnv4-header">
+      <div className="utnv4-controls">
+        <button onClick={() => history.goBack()} aria-label="Back">← Back</button>
+        <button onClick={() => history.goForward()} aria-label="Forward">→ Forward</button>
+        <Link to="/client-portal" className="utnv4-home">🏠 Client Portal</Link>
+        <Link to="/switch-module" className="utnv4-switch">🔍 Switch Module</Link>
+      </div>
+
+      <nav className="utnv4-breadcrumbs">
+        {/* You could generate these dynamically from pathname */}
+        <Link to="/">TrialSage™</Link> ›
+        <Link to="/coauthor">eCTD Co-Author™</Link> ›
+        <Link to="/coauthor?module=2">Module 2</Link> ›
+        <span>Section 2.7</span>
+      </nav>
+
+      <ul className="utnv4-tabs">
+        {tabs.map(t => (
+          <li key={t.path} className={pathname === t.path ? 'active' : ''}>
+            <Link to={t.path}>{t.label}</Link>
+          </li>
+        ))}
+      </ul>
+    </header>
+  );
+}
+
+Tabs injection
+
+When you render CoAuthor, pass in the three tabs:
+
+import UnifiedTopNavV4 from '../navigation/UnifiedTopNavV4';
+
+// …
+
+<UnifiedTopNavV4
+  tabs={[
+    { path: '/coauthor',         label: 'Risk Heatmap'       },
+    { path: '/coauthor/timeline',label: 'Timeline Simulator' },
+    { path: '/coauthor/ask-lumen',label: 'Ask Lumen AI'       }
+  ]}
+/>
+
+
+
+⸻
+
+2. Shrink the whitespace, edge-to-edge panes
+
+Global CSS (e.g. index.css):
+
+/* HEADER */
+.utnv4-header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 8px 16px;
+  z-index: 100;
+}
+.utnv4-controls button,
+.utnv4-controls .utnv4-home,
+.utnv4-controls .utnv4-switch {
+  margin-right: 12px;
+}
+.utnv4-breadcrumbs {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 4px 0;
+}
+.utnv4-breadcrumbs a {
+  color: #0078d4;
+  text-decoration: none;
+}
+.utnv4-tabs {
+  display: flex;
+  gap: 16px;
+  border-top: 1px solid #eee;
+  margin-top: 8px;
+}
+.utnv4-tabs li {
+  list-style: none;
+}
+.utnv4-tabs a {
+  padding: 8px 0;
+  display: block;
+  color: #444;
+  text-decoration: none;
+  font-weight: 500;
+}
+.utnv4-tabs .active a {
+  border-bottom: 2px solid #0078d4;
+  color: #0078d4;
+}
+
+/* TWO-PANE WORKBENCH */
+.coauthor-content {
+  display: flex;
+  gap: 24px;
+  margin: 24px 16px 0;
+}
+.editor-pane {
+  flex: 2;
+  background: #fff;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  padding: 16px;
+}
+.copilot-pane {
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+
+
+⸻
+
+3. Update your CoAuthor page
+
+File: client/src/pages/CoAuthor.jsx
+
+-import CoAuthorLayout from '../components/coauthor/CoAuthorLayout';
+-import AICopilotPanel  from '../components/coauthor/AICopilotPanel';
++import UnifiedTopNavV4  from '../components/navigation/UnifiedTopNavV4';
+ import SectionEditor  from '../components/coauthor/SectionEditor';
+ import AICopilotPanel from '../components/coauthor/AICopilotPanel';
+
+ export default function CoAuthor() {
+-  return (
+-    <CoAuthorLayout copilot={<AICopilotPanel />}>
+-      <SectionEditor />
+-    </CoAuthorLayout>
+-  );
++  return (
++    <>
++      <UnifiedTopNavV4
++        tabs={[
++          { path: '/coauthor',           label: 'Risk Heatmap'       },
++          { path: '/coauthor/timeline',  label: 'Timeline Simulator' },
++          { path: '/coauthor/ask-lumen', label: 'Ask Lumen AI'       },
++        ]}
++      />
++
++      <div className="coauthor-content">
++        <div className="editor-pane">
++          <h1>Section 2.7: Clinical Summary</h1>
++          <SectionEditor />
++        </div>
++        <aside className="copilot-pane">
++          <AICopilotPanel />
++        </aside>
++      </div>
++    </>
++  );
+ }
+
+
+
+⸻
+
+✅ Try it now
+	1.	Restart your React app.
+	2.	Navigate to /coauthor.
+	3.	You should now see:
+      •   One sticky header with back/forward, home, switch, breadcrumbs, and tabs.
+      •   A clean, responsive 2-pane editor + copilot.
+      •   No extra white bars or duplicate controls.
+
+Once confirmed, we’ll swap in your real AI‐driven components, apply your brand tokens (colors, fonts), and elevate the Copilot with live regulatory context, validation checks, and next-best-action buttons. Let me know how this update looks, and we’ll take it to Microsoft-grade polish next!

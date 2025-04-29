@@ -157,3 +157,94 @@ body {
     width: 100%;
   }
 }
+
+/* UNIFIED TOP NAV V4 STYLES */
+/* HEADER */
+.utnv4-header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 8px 16px;
+  z-index: 100;
+}
+.utnv4-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.utnv4-controls button,
+.utnv4-controls .utnv4-home,
+.utnv4-controls .utnv4-switch {
+  margin-right: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: #444;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+}
+.utnv4-controls button:hover,
+.utnv4-controls .utnv4-home:hover,
+.utnv4-controls .utnv4-switch:hover {
+  background: #e9e9e9;
+}
+.utnv4-breadcrumbs {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 8px 0;
+}
+.utnv4-breadcrumbs a {
+  color: #0078d4;
+  text-decoration: none;
+  margin: 0 3px;
+}
+.utnv4-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+.utnv4-tabs {
+  display: flex;
+  gap: 16px;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid #eee;
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.utnv4-tabs li {
+  list-style: none;
+}
+.utnv4-tabs a {
+  padding: 8px 0;
+  display: block;
+  color: #444;
+  text-decoration: none;
+  font-weight: 500;
+}
+.utnv4-tabs .active a {
+  border-bottom: 2px solid #0078d4;
+  color: #0078d4;
+}
+
+/* TWO-PANE WORKBENCH - UPDATED */
+.coauthor-content {
+  display: flex;
+  gap: 24px;
+  margin: 24px 16px 0;
+  min-height: calc(100vh - 150px); /* Account for header height */
+}
+.editor-pane {
+  flex: 2;
+  background: #fff;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  padding: 16px;
+}
+.copilot-pane {
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  padding: 16px;
+}

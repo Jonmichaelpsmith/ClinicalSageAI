@@ -1,5 +1,5 @@
 import React from 'react';
-import CoAuthorLayout from '../components/coauthor/CoAuthorLayout';
+import UnifiedTopNavV4 from '../components/navigation/UnifiedTopNavV4';
 import SectionEditor from '../components/coauthor/SectionEditor';
 import AICopilotPanel from '../components/coauthor/AICopilotPanel';
 
@@ -11,8 +11,24 @@ import AICopilotPanel from '../components/coauthor/AICopilotPanel';
  */
 export default function CoAuthor() {
   return (
-    <CoAuthorLayout copilot={<AICopilotPanel />}>
-      <SectionEditor />
-    </CoAuthorLayout>
+    <>
+      <UnifiedTopNavV4
+        tabs={[
+          { path: '/coauthor',          label: 'Risk Heatmap'       },
+          { path: '/coauthor/timeline', label: 'Timeline Simulator' },
+          { path: '/coauthor/ask-lumen', label: 'Ask Lumen AI'      },
+        ]}
+      />
+      
+      <div className="coauthor-content">
+        <div className="editor-pane">
+          <h1 className="text-2xl font-medium text-gray-900 mb-4">Section 2.7: Clinical Summary</h1>
+          <SectionEditor />
+        </div>
+        <aside className="copilot-pane">
+          <AICopilotPanel />
+        </aside>
+      </div>
+    </>
   );
 }
