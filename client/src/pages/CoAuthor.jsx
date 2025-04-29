@@ -21,7 +21,7 @@ import '../styles/theme.css';
  * - Lumen AI chat assistance
  */
 export default function CoAuthor() {
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
   const [selectedDocument, setSelectedDocument] = useState(null);
   
   // Determine which content to render based on the current path
