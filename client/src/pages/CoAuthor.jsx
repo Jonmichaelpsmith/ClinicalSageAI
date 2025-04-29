@@ -94,7 +94,7 @@ export default function CoAuthor() {
     }
   };
 
-  // Generate Draft
+  // Generate Draft - Updated to better align with reference implementation
   const handleGenerateDraft = async () => {
     setGeneratingDraft(true);
     setValidationIssues(null); // Clear any existing validation issues
@@ -103,14 +103,25 @@ export default function CoAuthor() {
       console.log('Generating draft for', { moduleId, sectionId });
       console.log('Using context snippets:', selectedContext.length);
       
-      const { data } = await axios.post('/api/coauthor/generate', {
-        moduleId,
-        sectionId,
-        prompt: sectionText,
-        context: selectedContext.map(s => s.text || s)
+      const res = await fetch('/api/coauthor/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          module: moduleId,
+          section: sectionId,
+          currentText: sectionText,
+          contextSnippets: selectedContext.map(s => s.text || s)
+        })
       });
       
-      if (data.success && data.draft) {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Server ${res.status}: ${text}`);
+      }
+      
+      const data = await res.json();
+      
+      if (data.draft) {
         console.log('Draft generated successfully');
         setSectionText(data.draft);
         
@@ -120,17 +131,13 @@ export default function CoAuthor() {
           message: 'Draft generated successfully. You can now edit or further refine it.'
         }]);
       } else {
-        console.error('Draft generation returned error', data);
-        setValidationIssues([{ 
-          type: 'error', 
-          message: data.error || 'Failed to generate draft content' 
-        }]);
+        throw new Error(data.error || 'Failed to generate draft content');
       }
     } catch (err) {
-      console.error('Draft generation error', err);
+      console.error('Generate Draft error:', err);
       setValidationIssues([{ 
         type: 'error', 
-        message: 'Server error during draft generation. Please try again.' 
+        message: err.message || 'Server error during draft generation. Please try again.' 
       }]);
     } finally {
       setGeneratingDraft(false);
