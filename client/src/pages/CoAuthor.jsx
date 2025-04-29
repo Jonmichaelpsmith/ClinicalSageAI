@@ -100,15 +100,20 @@ export default function CoAuthor() {
     setValidationIssues(null); // Clear any existing validation issues
     
     try {
+      console.log('Generating draft for', { moduleId, sectionId });
+      console.log('Using context snippets:', selectedContext.length);
+      
       const { data } = await axios.post('/api/coauthor/generate', {
         moduleId,
         sectionId,
         prompt: sectionText,
-        context: selectedContext.map(s => s.text)
+        context: selectedContext.map(s => s.text || s)
       });
       
       if (data.success && data.draft) {
+        console.log('Draft generated successfully');
         setSectionText(data.draft);
+        
         // Show a temporary success message
         setValidationIssues([{
           type: 'info',

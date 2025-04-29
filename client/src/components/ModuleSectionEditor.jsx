@@ -34,6 +34,15 @@ export default function ModuleSectionEditor({
     }
   }
   
+  // Sync with initialContent when it changes from parent
+  useEffect(() => {
+    // Only update if it's different to avoid unnecessary re-renders
+    if (initialContent !== content) {
+      setContentInternal(initialContent);
+      console.log('ModuleSectionEditor: Content updated from parent');
+    }
+  }, [initialContent]);
+  
   // Update contextSnippets when externalContextSnippets changes
   useEffect(() => {
     if (externalContextSnippets && externalContextSnippets.length > 0) {
