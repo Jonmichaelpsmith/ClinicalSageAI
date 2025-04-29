@@ -1,6 +1,9 @@
-// This script forces an immediate redirect to the dashboard
-// It runs before React even loads to ensure you always get to the dashboard
+// This script provides direct access to modules
+// It only redirects if you're on the root path '/'
 (function() {
-  // Redirect to dashboard immediately
-  window.location.href = '/dashboard';
+  // Only redirect if we're at the root path
+  if (window.location.pathname === '/') {
+    // Redirect to client portal instead of dashboard
+    window.location.href = '/client-portal';
+  }
 })();
