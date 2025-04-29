@@ -72,3 +72,25 @@ body {
   animation: spin 0.6s linear infinite;
   vertical-align: middle;
 }
+
+/* CoAuthor Page Styles */
+.coauthor-page {
+  background: #f7f7f7;
+  min-height: 100vh;
+}
+
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.section-editor {
+  background: white;
+  margin-top: 1rem;
+}
+
+/* Tweak UnifiedTopNavV3 to remove its bottom margin */
+.unified-top-nav {
+  margin-bottom: 0;
+}
