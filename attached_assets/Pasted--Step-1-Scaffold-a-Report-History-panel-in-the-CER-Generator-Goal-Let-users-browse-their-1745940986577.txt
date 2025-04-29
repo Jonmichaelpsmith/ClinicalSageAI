@@ -1,0 +1,139 @@
+**Step 1: Scaffold a “Report History” panel in the CER Generator**  
+*Goal:* Let users browse their past CERs in a folder-like UI, directly from the CER Generator screen.
+
+---
+
+### 1.1 Create the ReportHistoryPanel component
+
+Create a new file at `client/src/components/cer/ReportHistoryPanel.jsx`:
+
+```jsx
+import React, { useEffect, useState } from 'react'
+import { Card, Button, Spinner } from '@components/ui'  // your design system
+
+export default function ReportHistoryPanel({ onOpenReport }) {
+  const [reports, setReports] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/cer/reports')
+      .then(res => res.json())
+      .then(data => setReports(data))
+      .catch(() => setReports([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <Spinner />
+
+  return (
+    <div className="cer-report-history">
+      <h2>Your Past CERs</h2>
+      {reports.length === 0
+        ? <p>No previous reports found.</p>
+        : reports.map(r => (
+            <Card key={r.id} className="mb-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <strong>{r.title}</strong>
+                  <div className="text-sm text-gray-500">{new Date(r.createdAt).toLocaleDateString()}</div>
+                </div>
+                <Button size="small" variant="outline" onClick={() => onOpenReport(r.id)}>
+                  Open
+                </Button>
+              </div>
+            </Card>
+          ))
+      }
+    </div>
+  )
+}
+```
+
+---
+
+### 1.2 Stub out the server-side reports endpoint
+
+In `server/routes/cer.js` (or your CER router file), add:
+
+```js
+// GET /api/cer/reports
+router.get('/reports', async (req, res) => {
+  // TODO: Replace with real DB lookup
+  const sample = [
+    { id: 'abc123', title: 'CER—CardioPacemaker v1', createdAt: '2025-03-10T14:23:00Z' },
+    { id: 'def456', title: 'CER—NeuroStimulator v2',  createdAt: '2025-04-02T09:45:00Z' },
+  ]
+  res.json(sample)
+})
+```
+
+Ensure this router is mounted in `server/server.js`:
+
+```diff
+// in server.js
+// ...
+import cerRoutes from './routes/cer.js'
+app.use('/api/cer', cerRoutes)
+// ...
+```
+
+---
+
+### 1.3 Integrate ReportHistoryPanel into your CER UI
+
+In your page component `client/src/pages/CERV2Page.jsx` (or wherever you build the CER screen), import and render it alongside the form:
+
+```jsx
+import React, { useState } from 'react'
+import ReportHistoryPanel from '@components/cer/ReportHistoryPanel'
+import CERFormPanel from '@components/cer/CERFormPanel'  // your existing form
+
+export default function CERV2Page() {
+  const [activeReportId, setActiveReportId] = useState(null)
+
+  return (
+    <div className="cer-generator-grid grid lg:grid-cols-3 gap-6">
+      {/* Left: Report history */}
+      <div className="col-span-1">
+        <ReportHistoryPanel onOpenReport={setActiveReportId} />
+      </div>
+
+      {/* Center & Right: Form + Preview */}
+      <div className="col-span-2 space-y-6">
+        <CERFormPanel reportId={activeReportId} />
+        {/* You could also add a preview panel here */}
+      </div>
+    </div>
+  )
+}
+```
+
+Add simple CSS (e.g. in `client/src/index.css`) to ensure the grid layout and spacing look clean:
+
+```css
+.cer-generator-grid {
+  padding: 1rem;
+}
+.cer-report-history h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+```
+
+---
+
+### 1.4 Smoke­test the new panel
+
+1. **Restart** your backend and frontend.  
+2. Navigate to **CER Generator** (`/cerV2`).  
+3. You should see a **“Your Past CERs”** panel listing your stub reports.  
+4. Clicking **Open** should set `activeReportId` (we’ll wire that to load the report content next).
+
+---
+
+❓ **Does the history panel appear as expected?**  
+Once confirmed, we’ll move on to:
+
+- **Step 2**: Wire `activeReportId` → load and display that CER’s data in the form.  
+- **Step 3**: Add a **“Generate Sample CER”** button that spins up a full example draft.  
+- **Step 4**: Style the two‐pane layout for a polished, enterprise-grade look.

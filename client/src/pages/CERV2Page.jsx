@@ -45,6 +45,7 @@ const CERV2Page = () => {
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [fdaData, setFdaData] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingFull, setIsGeneratingFull] = useState(false);
   const [reportStatus, setReportStatus] = useState(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState('');
@@ -310,7 +311,7 @@ const CERV2Page = () => {
     }
   }, [activeTab]);
   
-  // Generate CER report
+  // Generate sample CER report (quick preview)
   const generateCERReport = () => {
     if (!deviceName || !deviceType || !manufacturer || !selectedTemplate) {
       return;
@@ -337,6 +338,63 @@ const CERV2Page = () => {
       setIsGenerating(false);
       setActiveTab('report');
     }, 3000);
+  };
+  
+  // Generate full CER report (comprehensive AI-assisted generation)
+  const generateFullCERReport = async () => {
+    if (!deviceName || !deviceType || !manufacturer || !selectedTemplate) {
+      return;
+    }
+    
+    setIsGeneratingFull(true);
+    
+    try {
+      // Prepare device info object
+      const deviceInfo = {
+        name: deviceName,
+        type: deviceTypes.find(t => t.value === deviceType)?.label || deviceType,
+        manufacturer: manufacturer
+      };
+      
+      // Call our API to generate the full CER
+      const result = await generateFullCER({
+        deviceInfo,
+        literature: selectedArticles,
+        fdaData: fdaData?.results || [],
+        templateId: selectedTemplate
+      });
+      
+      // Update UI with the generated report
+      setReportStatus({
+        id: result.id,
+        status: 'completed',
+        generatedAt: result.createdAt || new Date().toISOString(),
+        templateUsed: templateOptions.find(t => t.value === selectedTemplate)?.label,
+        deviceName,
+        deviceType: deviceTypes.find(t => t.value === deviceType)?.label,
+        manufacturer,
+        includedArticles: selectedArticles.length,
+        includedFDAEvents: fdaData?.results?.length || 0,
+        pageCount: result.pageCount,
+        wordCount: result.wordCount
+      });
+      
+      // Open report in new tab if URL is available
+      if (result.downloadUrl) {
+        window.open(result.downloadUrl, '_blank');
+      }
+      
+      // Refresh document history to include the new report
+      loadDocuments(docFilters, 1);
+      
+      // Switch to report tab
+      setActiveTab('report');
+    } catch (error) {
+      console.error('Error generating full CER:', error);
+      alert('Failed to generate full CER. Please try again.');
+    } finally {
+      setIsGeneratingFull(false);
+    }
   };
   
   return (
