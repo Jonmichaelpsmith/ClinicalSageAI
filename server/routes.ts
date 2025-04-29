@@ -68,6 +68,8 @@ import { registerAdvisorRoutes } from './advisor-routes.js';
 
 // Import regulatory brain routes
 import regulatoryBrainRoutes from './regulatory-brain-routes.js';
+// Import CoAuthor routes
+import coauthorRouter from './routes/coauthor.js';
 
 // Create circuit breakers for critical services
 const openaiCircuitBreaker = createCircuitBreakerMiddleware('openai', {
@@ -271,6 +273,11 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
   console.log('[API] Setting up Regulatory Brain routes');
   app.use(regulatoryBrainRoutes);
   console.log('[API] Regulatory Brain routes registered successfully');
+  
+  // Register CoAuthor routes for eCTD Co-Author features
+  console.log('[API] Setting up CoAuthor routes');
+  app.use('/api/coauthor', coauthorRouter);
+  console.log('[API] CoAuthor routes registered successfully');
   
   // Directly implement projects status API routes
   console.log('[API] Setting up project status routes directly');
