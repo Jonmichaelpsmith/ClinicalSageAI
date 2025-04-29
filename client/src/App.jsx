@@ -45,11 +45,13 @@ function App() {
   // Get current location to determine when to show the unified nav
   const [location] = useLocation();
   
-  // Check if we're on the landing page or regulatory hub (which has its own navigation)
+  // Check if we're on the landing page, regulatory hub, or coauthor pages (which have their own navigation)
   const isLandingPage = location === '/' || location === '/client-portal';
   const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
                           location === '/client-portal/regulatory-intel';
-  const shouldShowNav = !isLandingPage && !isRegulatoryHub;
+  const isCoAuthorPage = location === '/coauthor' || 
+                         location.startsWith('/coauthor/');
+  const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage;
   
   return (
     <QueryClientProvider client={queryClient}>
@@ -57,7 +59,12 @@ function App() {
       {shouldShowNav && (
         <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
       )}
-      <div className={isLandingPage ? "p-4" : (isRegulatoryHub ? "p-0" : "p-4 mt-24")}>
+      <div className={
+        isLandingPage ? "p-4" : 
+        isRegulatoryHub ? "p-0" : 
+        isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
+        "p-4 mt-24"
+      }>
         <Switch>
           {/* Main Portal Landing Page */}
           <Route path="/client-portal" component={ClientPortalLanding} />
@@ -97,6 +104,8 @@ function App() {
           <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
           <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
           <Route path="/coauthor" component={CoAuthor} /> {/* Add our CoAuthor page */}
+          <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
+          <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
