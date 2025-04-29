@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Stage, Layer, Rect, Text, Arrow } from 'react-konva';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Stage, Layer, Rect, Text, Arrow, Line, Group } from 'react-konva';
 import useWindowSize from '../../hooks/useWindowSize';
+import AnnotationPanel from './AnnotationPanel';
 
 /**
  * Interactive canvas for visualizing document sections and their relationships
@@ -8,15 +9,37 @@ import useWindowSize from '../../hooks/useWindowSize';
  */
 export default function CanvasWorkbench() {
   const [sections, setSections] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [rulerX, setRulerX] = useState(100);
   const { width, height } = useWindowSize();
-
+  const socket = useRef(null);
+  
   // Load sections on mount
   useEffect(() => {
     fetch('/api/coauthor/sections')
       .then(res => res.json())
       .then(data => setSections(data))
       .catch(console.error);
+    
+    // Setup WebSocket for real-time collaboration
+    // This is a placeholder - we'll implement the actual WebSocket connection later
+    // when socket.io-client is available
+    return () => {
+      // Cleanup socket connection when component unmounts
+      if (socket.current) {
+        // socket.current.disconnect();
+      }
+    };
   }, []);
+  
+  // Compute predicted date from timeline ruler position
+  const predictDate = (x) => {
+    // Map x position to days; customize scale
+    const days = Math.round((x / (width || 1200)) * 365);
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toLocaleDateString();
+  };
 
   // Persist new position after drag
   const handleDragEnd = useCallback((e, id) => {
@@ -31,56 +54,97 @@ export default function CanvasWorkbench() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ x, y }),
     }).catch(console.error);
+    
+    // Emit position update to other clients via WebSocket
+    // if (socket.current) {
+    //   socket.current.emit('layout:update', { id, x, y });
+    // }
   }, []);
 
   return (
-    <Stage width={width} height={height - 150} style={{ background: '#f7f8fa' }}>
-      <Layer>
-        {/* Connections */}
-        {sections.flatMap(sec =>
-          sec.connections.map(toId => {
-            const from = sections.find(s => s.id === sec.id);
-            const to   = sections.find(s => s.id === toId);
-            return from && to && (
-              <Arrow
-                key={`${sec.id}-${toId}`}
-                points={[from.x + 100, from.y + 25, to.x, to.y + 25]}
-                pointerLength={10}
-                pointerWidth={10}
-                fill="#999"
-                stroke="#999"
-              />
-            );
-          })
-        )}
+    <>
+      <Stage width={width || 1200} height={(height || 800) - 150} style={{ background: '#f7f8fa' }}>
+        <Layer>
+          {/* Connections */}
+          {sections.flatMap(sec =>
+            sec.connections.map(toId => {
+              const from = sections.find(s => s.id === sec.id);
+              const to   = sections.find(s => s.id === toId);
+              return from && to && (
+                <Arrow
+                  key={`${sec.id}-${toId}`}
+                  points={[from.x + 100, from.y + 25, to.x, to.y + 25]}
+                  pointerLength={10}
+                  pointerWidth={10}
+                  fill="#999"
+                  stroke="#999"
+                />
+              );
+            })
+          )}
 
-        {/* Draggable nodes */}
-        {sections.map(sec => (
-          <React.Fragment key={sec.id}>
-            <Rect
-              x={sec.x}
-              y={sec.y}
-              width={120}
-              height={50}
-              fill={
-                sec.status === 'complete' ? '#daf5e8' :
-                sec.status === 'critical' ? '#fde2e2' : '#fff4ce'
-              }
-              stroke="#666"
-              cornerRadius={4}
-              draggable
-              onDragEnd={e => handleDragEnd(e, sec.id)}
+          {/* Draggable nodes */}
+          {sections.map(sec => (
+            <React.Fragment key={sec.id}>
+              <Rect
+                x={sec.x}
+                y={sec.y}
+                width={120}
+                height={50}
+                fill={
+                  sec.status === 'complete' ? '#daf5e8' :
+                  sec.status === 'critical' ? '#fde2e2' : '#fff4ce'
+                }
+                stroke="#666"
+                cornerRadius={4}
+                draggable
+                onClick={() => setSelected(sec)}
+                onDragEnd={e => handleDragEnd(e, sec.id)}
+              />
+              <Text
+                x={sec.x + 10}
+                y={sec.y + 15}
+                text={sec.title}
+                fontSize={12}
+                fill="#333"
+              />
+            </React.Fragment>
+          ))}
+          
+          {/* Timeline ruler at bottom */}
+          <Group 
+            draggable 
+            dragBoundFunc={(pos) => ({ x: pos.x, y: (height || 800) - 200 })}
+            onDragEnd={e => setRulerX(e.target.x())}
+            x={rulerX}
+            y={(height || 800) - 200}
+          >
+            <Line
+              points={[-(rulerX), 0, (width || 1200) - rulerX, 0]}
+              stroke="#888"
+              strokeWidth={1}
+            />
+            <Line
+              points={[0, -15, 0, 15]}
+              stroke="#ff8c00"
+              strokeWidth={2}
             />
             <Text
-              x={sec.x + 10}
-              y={sec.y + 15}
-              text={sec.title}
+              text={`Est. Filing Date: ${predictDate(rulerX)}`}
+              x={5}
+              y={20}
               fontSize={12}
-              fill="#333"
+              fill="#555"
             />
-          </React.Fragment>
-        ))}
-      </Layer>
-    </Stage>
+          </Group>
+        </Layer>
+      </Stage>
+      
+      {/* Annotation Sidebar */}
+      <AnnotationPanel
+        section={selected}
+        onClose={() => setSelected(null)}
+      />
+    </>
   );
 }
