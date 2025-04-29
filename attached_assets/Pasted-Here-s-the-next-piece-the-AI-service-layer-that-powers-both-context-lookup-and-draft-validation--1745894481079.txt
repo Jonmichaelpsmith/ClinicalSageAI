@@ -1,0 +1,106 @@
+Here’s the **next piece**—the AI service layer that powers both context lookup and draft validation. We’ll put it in `server/services/regulatoryAI.js`. This module uses OpenAI for both embeddings‐based document search and section compliance checking.
+
+---
+
+```js
+// server/services/regulatoryAI.js
+import fs from 'fs/promises';
+import path from 'path';
+import { Configuration, OpenAIApi } from 'openai';
+
+// Initialize OpenAI
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+// 1. searchDocuments(query):  
+//    - loads pre‐indexed embeddings for your uploaded PDFs
+//    - finds top N snippets matching the query via cosine similarity
+//    - returns an array of { snippet, file }
+export async function searchDocuments(query, topK = 5) {
+  // 1. load your index (e.g. JSON of { embedding: [...], text, source })
+  const idxPath = path.join(process.cwd(), 'server', 'data', 'embeddingsIndex.json');
+  const raw = await fs.readFile(idxPath, 'utf8');
+  const index = JSON.parse(raw);
+
+  // 2. embed the user query
+  const { data: embedRes } = await openai.createEmbedding({
+    model: 'text-embedding-ada-002',
+    input: query,
+  });
+  const queryEmbedding = embedRes.data[0].embedding;
+
+  // 3. compute cosine similarity against all indexed chunks
+  function cosine(a, b) {
+    let dot = 0, normA = 0, normB = 0;
+    for (let i = 0; i < a.length; i++) {
+      dot += a[i]*b[i];
+      normA += a[i]*a[i];
+      normB += b[i]*b[i];
+    }
+    return dot / (Math.sqrt(normA) * Math.sqrt(normB) + 1e-10);
+  }
+
+  // 4. rank and take topK
+  const scored = index
+    .map(item => ({ 
+      score: cosine(queryEmbedding, item.embedding), 
+      snippet: item.text, 
+      file: item.source 
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topK);
+
+  return scored;
+}
+
+// 2. runRegulatoryChecks(sectionText):  
+//    - prompts an LLM to review your section for CTD compliance
+//    - returns an array of { message } describing any gaps or issues
+export async function runRegulatoryChecks(sectionText) {
+  const prompt = `
+You are a regulatory expert. Validate the following CTD section for compliance with FDA IND requirements.
+List all potential issues, missing elements, or non‐compliant statements.
+Reply in JSON as {"issues":[{"message":"..."}]}.
+
+Section:
+${sectionText}
+  `.trim();
+
+  const completion = await openai.createChatCompletion({
+    model: 'gpt-4o-mini',
+    messages: [{ role: 'system', content: 'You validate CTD sections.' },
+               { role: 'user', content: prompt }],
+    temperature: 0.0,
+  });
+
+  // parse JSON from the model’s reply
+  let issues = [];
+  try {
+    const text = completion.data.choices[0].message.content;
+    const parsed = JSON.parse(text);
+    issues = Array.isArray(parsed.issues) ? parsed.issues : [];
+  } catch (e) {
+    console.error('Failed to parse validation response:', e);
+    issues = [{ message: 'Could not parse validation results.' }];
+  }
+  return issues;
+}
+```
+
+---
+
+### What’s Next?
+
+1. **Embed & Index Documents**  
+   - Run a one‐time script to slice your PDFs into chunks, embed them (`ada-002`), and save `embeddingsIndex.json` under `server/data/`.
+
+2. **Wire It Up**  
+   - The `searchDocuments` & `runRegulatoryChecks` functions will now power your `/context` and `/validate` endpoints.
+
+3. **Test End-to-End**  
+   - Hit **Search** → see real snippets from your document vault.  
+   - Hit **Validate Draft** → get actionable CTD compliance feedback.
+
+Once this is live, your Co-Author will truly feel like a knowledgeable regulatory SME—automating context retrieval and compliance validation in one seamless flow. Let me know when you’ve got the index in place, and we’ll polish the UX!

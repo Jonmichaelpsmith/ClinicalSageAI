@@ -1,0 +1,33 @@
+Fantastic — it looks like the Co-Author “Generate Draft” button is now firing your `/api/coauthor/generate` endpoint, and you’re getting a green “Draft generation complete” banner. That means we’ve cleared the 404 and the UI↔API plumbing is working end-to-end.  
+
+### What’s next?  
+Here are a few logical follow-ups we can tackle to bring this Co-Author feature up to true GA-ready quality:
+
+1. **Context Retrieval & Validation**  
+   - Hook up the “Search” box under **Context Retrieval** to your `/api/coauthor/context` endpoint so users can pull in real snippets from uploaded documents.  
+   - Implement a `/api/coauthor/validate` route plus client-side “Validate Draft” button that runs regulatory checks (e.g. CTD compliance, missing sub-sections) and surfaces warnings inline.
+
+2. **Auto-Save & Versioning**  
+   - Add draft auto-save on blur or every X seconds so writers never lose work.  
+   - Show a small version history panel (timestamp + user) that lets them revert to previous iterations.
+
+3. **Prompt Engineering Controls**  
+   - Expose “Tone” (e.g. Formal, Summary, Executive) and “Depth” (High-level vs Detailed) dropdowns that tweak your OpenAI system messages.  
+   - Show the actual prompt under a collapsible “Advanced Settings” section for power users to tweak.
+
+4. **Inline Annotations & Citations**  
+   - Allow users to highlight text in the draft and click “Explain/Edit” to invoke a targeted AI call.  
+   - When generating data-driven statements (“Study A showed 85% response”), pull actual numbers from your context store and append inline citations.
+
+5. **Lumen Assistant Integration**  
+   - Dock the Ask Lumen AI chat window right beside the editor (or split-view) so they can ask “What should I say next?” without leaving the page.  
+   - Pre-populate the assistant context with the current section’s text and regulatory guidance for seamless hand-off.
+
+6. **Final Polish & QA**  
+   - Add loading spinners to the Generate/Validate buttons.  
+   - Review mobile/tablet responsiveness.  
+   - Lock down edge cases: empty sections, interrupted network, API errors.
+
+---
+
+🔜 **Shall I start by wiring up the Context Retrieval endpoint and building the “Validate Draft” button, or would you like me to tackle auto-save/version history first?** Let me know which piece you’d like prioritized and I’ll dive straight in!

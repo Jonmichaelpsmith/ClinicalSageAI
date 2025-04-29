@@ -1,0 +1,214 @@
+Great! Let’s supercharge the Co-Author module by first wiring up **Context Retrieval** and adding a **Validate Draft** action. Here’s the plan:
+
+---
+
+## 1. Client-Side: CoAuthor.jsx
+
+### a) State & Handler for Context Retrieval
+
+```jsx
+// src/pages/CoAuthor.jsx  (or wherever your component lives)
+import { useState } from 'react';
+import axios from 'axios';
+
+export default function CoAuthor() {
+  const [sectionText, setSectionText] = useState('');
+  const [contextQuery, setContextQuery] = useState('');
+  const [contextSnippets, setContextSnippets] = useState([]);
+  const [validationIssues, setValidationIssues] = useState(null);
+  const [loadingContext, setLoadingContext] = useState(false);
+  const [validating, setValidating] = useState(false);
+
+  // … existing code …
+
+  // 1. Context Retrieval
+  const fetchContext = async () => {
+    if (!contextQuery.trim()) return;
+    setLoadingContext(true);
+    try {
+      const { data } = await axios.get('/api/coauthor/context', {
+        params: { query: contextQuery }
+      });
+      setContextSnippets(data.snippets || []);
+    } catch (err) {
+      console.error('Context fetch error', err);
+    } finally {
+      setLoadingContext(false);
+    }
+  };
+
+  // 2. Validate Draft
+  const validateDraft = async () => {
+    setValidating(true);
+    try {
+      const { data } = await axios.post('/api/coauthor/validate', {
+        section: sectionText
+      });
+      setValidationIssues(data.issues || []);
+    } catch (err) {
+      console.error('Validation error', err);
+      setValidationIssues([{ message: 'Server error during validation.' }]);
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  return (
+    <div className="coauthor-page">
+      {/* … your UnifiedTopNavV3 breadcrumbs … */}
+
+      {/* Section Editor */}
+      <textarea
+        value={sectionText}
+        onChange={e => setSectionText(e.target.value)}
+        placeholder="Edit your section here…"
+        rows={15}
+        className="w-full border rounded p-2"
+      />
+
+      <div className="mt-4 space-x-2">
+        <button
+          onClick={validateDraft}
+          disabled={validating}
+          className="px-4 py-2 bg-yellow-600 text-white rounded"
+        >
+          {validating ? 'Validating…' : 'Validate Draft'}
+        </button>
+        <button
+          onClick={() => {/* existing generate logic */}}
+          className="px-4 py-2 bg-indigo-600 text-white rounded"
+        >
+          Generate Draft
+        </button>
+      </div>
+
+      {/* Validation Issues */}
+      {validationIssues && validationIssues.length > 0 && (
+        <div className="mt-4 bg-red-50 border border-red-200 p-3 rounded">
+          <strong className="text-red-700">Validation Issues:</strong>
+          <ul className="list-disc ml-5">
+            {validationIssues.map((issue, i) => (
+              <li key={i} className="text-red-600">{issue.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Context Retrieval */}
+      <div className="mt-6">
+        <label htmlFor="contextSearch" className="block font-medium">Context Retrieval</label>
+        <div className="flex space-x-2 mt-1">
+          <input
+            id="contextSearch"
+            type="text"
+            value={contextQuery}
+            onChange={e => setContextQuery(e.target.value)}
+            placeholder="e.g., stability study results"
+            className="flex-1 border rounded px-2 py-1"
+          />
+          <button
+            onClick={fetchContext}
+            disabled={loadingContext}
+            className="px-4 py-1 bg-green-600 text-white rounded"
+          >
+            {loadingContext ? 'Searching…' : 'Search'}
+          </button>
+        </div>
+        {contextSnippets.length > 0 && (
+          <div className="mt-3 space-y-2 max-h-40 overflow-y-auto border p-3 rounded bg-gray-50">
+            {contextSnippets.map((snip, i) => (
+              <blockquote key={i} className="text-sm italic text-gray-700">
+                “{snip.text}”
+                <div className="text-xs text-gray-500 mt-1">— from {snip.source}</div>
+              </blockquote>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## 2. Server-Side: coauthor.js Routes
+
+### a) Context Endpoint
+
+```js
+// server/routes/coauthor.js
+import express from 'express';
+import { retrieveContext, validateSection } from '../services/coauthorService.js';
+const router = express.Router();
+
+console.log('🚀 CoAuthor API routes initialized');
+
+// GET /api/coauthor/context?query=…
+router.get('/context', async (req, res) => {
+  try {
+    const { query } = req.query;
+    const snippets = await retrieveContext(query); 
+    res.json({ snippets });
+  } catch (err) {
+    console.error('Context retrieval error:', err);
+    res.status(500).json({ error: 'Failed to retrieve context' });
+  }
+});
+
+// POST /api/coauthor/validate
+router.post('/validate', async (req, res) => {
+  try {
+    const { section } = req.body;
+    const issues = await validateSection(section);
+    res.json({ issues });
+  } catch (err) {
+    console.error('Validation error:', err);
+    res.status(500).json({ error: 'Validation failed' });
+  }
+});
+
+export default router;
+```
+
+### b) Wire into server.js
+
+```js
+// server/server.js
+import coauthorRoutes from './routes/coauthor.js';
+app.use('/api/coauthor', coauthorRoutes);
+```
+
+---
+
+## 3. Service Layer Stubs
+
+You’ll need to implement the core logic in `retrieveContext` and `validateSection`:
+
+```js
+// server/services/coauthorService.js
+import { searchDocuments, runRegulatoryChecks } from './regulatoryAI.js';
+
+export async function retrieveContext(query) {
+  // Example: fuzzy-search the document store for query terms
+  const rawSnips = await searchDocuments(query);
+  return rawSnips.map(s => ({ text: s.snippet, source: s.file }));
+}
+
+export async function validateSection(sectionText) {
+  // Example: call OpenAI with a prompt like “Check this section for CTD compliance…”
+  return await runRegulatoryChecks(sectionText);
+}
+```
+
+---
+
+### ✅ Next Steps
+
+1. Drop in the above client- and server-side code.  
+2. Implement `searchDocuments` & `runRegulatoryChecks` using your chosen AI/DB logic.  
+3. Test end-to-end:
+   - Enter a query → see real context snippets below the search box.  
+   - Click **Validate Draft** → see regulatory issues pop up.  
+
+Once that’s live, we’ll have a truly interactive, AI-powered Co-Author experience — a huge leap toward an award-winning platform. Ready for these changes to roll out?
