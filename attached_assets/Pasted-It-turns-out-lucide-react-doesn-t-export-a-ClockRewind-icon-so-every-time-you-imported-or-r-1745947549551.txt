@@ -1,0 +1,80 @@
+It turns out **`lucide-react` doesn’t export a `ClockRewind` icon**, so every time you imported or rendered `<ClockRewind />` you got that Vite HMR error. Here’s how to fix it:
+
+---
+
+## 1. Swap out `ClockRewind` for a valid icon
+
+In any component where you did:
+
+```js
+import { ClockRewind } from 'lucide-react';
+```
+
+Replace with one of the available “rewind” icons—e.g. `RotateCcw`:
+
+```diff
+-import { ClockRewind, XCircle } from 'lucide-react';
++import { RotateCcw, XCircle } from 'lucide-react';
+```
+
+Then update your JSX:
+
+```diff jsx
+- <Button onClick={startGeneration} disabled={polling}>
+-   {polling ? <ClockRewind className="animate-spin" /> : 'Generate Full CER'}
+- </Button>
++ <Button onClick={startGeneration} disabled={polling}>
++   {polling ? <RotateCcw className="animate-spin" /> : 'Generate Full CER'}
++ </Button>
+```
+
+---
+
+## 2. Fix in **GenerateFullCerButton.jsx**
+
+```diff
+// client/src/components/cer/GenerateFullCerButton.jsx
+-import { XCircle, CheckCircle, ClockRewind } from 'lucide-react';
++import { XCircle, CheckCircle, RotateCcw } from 'lucide-react';
+…
+<Button onClick={startGeneration} disabled={polling}>
+- {polling ? <ClockRewind className="animate-spin" /> : 'Generate Full CER'}
++ {polling ? <RotateCcw className="animate-spin" /> : 'Generate Full CER'}
+</Button>
+```
+
+---
+
+## 3. Fix in **CerHistoryPanel.jsx** (if you had `ClockRewind` there too)
+
+```diff
+// client/src/components/cer/CerHistoryPanel.jsx
+-import { Eye, CheckCircle, XCircle, ClockRewind } from 'lucide-react';
++import { Eye, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+```
+
+Use `<RotateCcw />` anywhere you meant “rewind” in that panel.
+
+---
+
+## 4. Verify your `index.html` script tag
+
+If Vite still can’t find your entry, open `client/index.html` (or wherever you reference your bundle) and ensure:
+
+```html
+<script type="module" src="/src/main.jsx"></script>
+```
+
+matches your file structure exactly.
+
+---
+
+Once you’ve made those changes:
+
+1. **Restart** the dev server:  
+   ```bash
+   npm run dev   # or yarn dev
+   ```
+2. **Confirm** the error is gone and your spinner now shows correctly.
+
+Let me know if any other missing exports pop up, or if you want to continue with the worker deployment templates next!
