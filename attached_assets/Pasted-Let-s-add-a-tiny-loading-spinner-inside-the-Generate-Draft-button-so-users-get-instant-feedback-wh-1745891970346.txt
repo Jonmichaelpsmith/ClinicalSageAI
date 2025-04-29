@@ -1,0 +1,111 @@
+Let’s add a tiny loading spinner inside the “Generate Draft” button so users get instant feedback when they hit Ctrl+Enter (or click). We’ll:
+
+1. Introduce a `loading` state.  
+2. Disable the button while loading.  
+3. Swap the button text for a spinner icon + “Generating…”  
+
+---
+
+### 1. Install a spinner icon (optional)
+
+If you don’t already have one, let’s grab a simple CSS spinner. No extra deps needed:
+
+```css
+/* In your global CSS (e.g. index.css) */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+```
+
+---
+
+### 2. Update `ModuleSectionEditor.jsx`
+
+```diff jsx
+import React, { useEffect, useRef, useState } from "react";
+
+export default function ModuleSectionEditor(/* props */) {
+  const textareaRef = useRef(null);
+- const [error, setError] = useState(null);
++ const [error, setError] = useState(null);
++ const [loading, setLoading] = useState(false);
+
+  const generateDraft = async () => {
+    setError(null);
++   setLoading(true);
+    try {
+      // …your existing fetch / AI call…
+    } catch (err) {
+      setError(err.message || "Failed to generate draft");
+    } finally {
++     setLoading(false);
+    }
+  };
+
+  // existing Ctrl+Enter handler here…
+
+  return (
+    <div>
+      {/* …textarea… */}
+
+      <button
+        onClick={generateDraft}
++       disabled={loading}
+        aria-label="Generate draft for this section"
+-       className="mt-2 bg-indigo-600 text-white rounded px-4 py-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
++       className={`mt-2 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400
++         ${loading ? "bg-indigo-300 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 text-white"}`}
+      >
++       {loading ? (
++         <>
++           <span className="spinner mr-2" aria-hidden="true" />
++           Generating…
++         </>
++       ) : (
++         "Generate Draft"
++       )}
+      </button>
+
+      {error && (
+        <div role="alert" className="mt-2 text-sm text-red-600">
+          ⚠ {error}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+**What this does:**
+- While awaiting the AI response, the button shows a rotating spinner and “Generating…”.  
+- The button is visually disabled (lighter, no hover) and blocked from re-click.  
+- Once done (or on error), it re-enables itself.  
+
+---
+
+### 3. Manual Test
+
+1. Focus the textarea and press **Ctrl+Enter**.  
+2. Verify the button changes to “Generating…” + spinner.  
+3. Confirm you cannot click it again during loading.  
+4. Once the draft returns (or errors), ensure the spinner disappears and the button re-enables.  
+
+---
+
+#### After that…
+
+- Hook this into your CI to run your new unit tests.  
+- Then we can move on to the next polish: e2e scripting or global toast notifications.  
+
+Let me know how this behaves on your end!
