@@ -68,8 +68,21 @@ import { registerAdvisorRoutes } from './advisor-routes.js';
 
 // Import regulatory brain routes
 import regulatoryBrainRoutes from './regulatory-brain-routes.js';
-// Import CoAuthor routes
-import coauthorRouter from './routes/coauthor.js';
+
+// Import CoAuthor routes through dynamic import
+let coauthorRouter: any = null;
+
+// Use dynamic import to load the CoAuthor router
+try {
+  import('./routes/coauthor.js').then(module => {
+    coauthorRouter = module.default;
+    console.log('[API] CoAuthor router loaded successfully via dynamic import');
+  }).catch(error => {
+    console.error('[API] Error loading CoAuthor router:', error);
+  });
+} catch (error) {
+  console.error('[API] Error setting up CoAuthor router import:', error);
+}
 
 // Create circuit breakers for critical services
 const openaiCircuitBreaker = createCircuitBreakerMiddleware('openai', {
@@ -276,8 +289,36 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
   
   // Register CoAuthor routes for eCTD Co-Author features
   console.log('[API] Setting up CoAuthor routes');
-  app.use('/api/coauthor', coauthorRouter);
-  console.log('[API] CoAuthor routes registered successfully');
+  if (coauthorRouter) {
+    app.use('/api/coauthor', coauthorRouter);
+    console.log('[API] CoAuthor routes registered successfully');
+  } else {
+    console.log('[API] Waiting for CoAuthor router to load...');
+    
+    // Set up a simple fallback route in the meantime
+    app.use('/api/coauthor', (req, res, next) => {
+      if (coauthorRouter) {
+        // If the router has loaded by now, use it
+        coauthorRouter(req, res, next);
+      } else {
+        // Respond with a temporary unavailable message
+        res.status(503).json({
+          success: false,
+          error: 'CoAuthor service is initializing. Please try again in a moment.'
+        });
+      }
+    });
+    
+    // Try to register the router once it's loaded
+    import('./routes/coauthor.js')
+      .then(module => {
+        coauthorRouter = module.default;
+        console.log('[API] CoAuthor router loaded and registered successfully');
+      })
+      .catch(error => {
+        console.error('[API] Failed to load CoAuthor router:', error);
+      });
+  }
   
   // Directly implement projects status API routes
   console.log('[API] Setting up project status routes directly');
