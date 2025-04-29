@@ -1,0 +1,99 @@
+It turns out your client is posting to `/api/ai/draft` but your Co-Author router lives under `/api/coauthor`.  That 404 is simply “no route here.”  Let’s fix it in three quick steps:
+
+---
+
+## 1) Confirm your server is mounting the CoAuthor router
+
+In your **server/server.js** you should have something like:
+
+```js
+import coauthorRoutes from './routes/coauthor.js'
+…
+app.use('/api/coauthor', coauthorRoutes)
+```
+
+And in **server/routes/coauthor.js** at the very top:
+
+```js
+import express from 'express'
+const router = express.Router()
+
+console.log('🚀 CoAuthor API routes initialized')      // ADD THIS LINE
+
+router.post('/generate', (req, res) => {
+  console.log('🐙  POST /api/coauthor/generate', req.body) // ADD THIS LINE
+  // your logic…
+})
+```
+
+Restart your server and watch the console.  You should see:
+
+```
+🚀 CoAuthor API routes initialized
+```
+
+and, when you hit “Generate Draft,”:
+
+```
+🐙  POST /api/coauthor/generate { section: 'Module 2 / Sec 2.7', content: '…' }
+```
+
+If you don’t see those logs, the router isn’t being loaded or you’ve mis-spelled your import path.
+
+---
+
+## 2) Correct your client’s fetch URL
+
+In your **CoAuthor.jsx** (or wherever you do the `fetch`), change:
+
+```diff
+- await fetch('/api/ai/draft', { … })
++ await fetch('/api/coauthor/generate', {
++   method: 'POST',
++   headers: { 'Content-Type': 'application/json' },
++   body: JSON.stringify({ section, content }),
++ })
+```
+
+This must exactly match the path you mounted in `server.js`.
+
+---
+
+## 3) Surface the real error in the UI
+
+Wrap your fetch in a try/catch and check `resp.ok` so you get a precise message instead of the generic 404:
+
+```jsx
+async function generateDraft() {
+  try {
+    const resp = await fetch('/api/coauthor/generate', { … })
+    if (!resp.ok) {
+      const text = await resp.text()
+      throw new Error(`Draft API returned ${resp.status}: ${text}`)
+    }
+    const { draft } = await resp.json()
+    setDraft(draft)
+    setError(null)
+  } catch (err) {
+    console.error('CoAuthor error:', err)
+    setError(err.message)
+  }
+}
+```
+
+And in your render:
+
+```jsx
+{error && <div className="text-red-600">⚠️ {error}</div>}
+```
+
+---
+
+### Once you’ve done that:
+
+1. **Restart** your server  
+2. **Click “Generate Draft”** again  
+3. **Watch the console** for the `🚀` and `🐙` messages  
+4. **Check the UI** – it should now show you either the AI-generated text or a precise error description  
+
+That will unblock us and let us iterate on the actual AI logic rather than wrestling 404s. Let me know what you see!

@@ -782,6 +782,106 @@ export async function setupRoutes(app: express.Application): Promise<http.Server
     });
   }
   
+  // Direct CoAuthor API endpoints - added for eCTD Co-Author feature
+  console.log('🚀 Registering CoAuthor API routes');
+  
+  app.post("/api/coauthor/generate", (req: Request, res: Response) => {
+    const { moduleId, sectionId, prompt, context } = req.body;
+    console.log('🐙 POST /api/coauthor/generate', { moduleId, sectionId });
+    
+    try {
+      // Generate simple placeholder response for now
+      const draft = `# Draft for ${moduleId || 'unknown'}, Section ${sectionId || 'unknown'}\n\n` +
+        `## Introduction\n` +
+        `This is a generated draft based on your prompt: "${prompt?.substring(0, 50)}..."\n\n` +
+        `## Background\n` +
+        `Clinical trial data should be presented in accordance with ICH guidelines for Module ${moduleId?.replace('m', '') || '2'}, ` +
+        `with appropriate consideration for study design, endpoints, and statistical analysis.\n\n` +
+        `## Analysis\n` +
+        `The analysis should follow a logical structure with clear presentation of data and conclusions.\n\n` +
+        `## Regulatory Considerations\n` +
+        `All statements must be supported by data and be compliant with regulatory guidance.\n\n` +
+        `## Context Used\n` +
+        `${context && context.length > 0 ? context.join('\n\n') : 'No context was provided for this draft generation.'}`;
+      
+      return res.json({
+        success: true,
+        draft,
+        contextUsed: context || []
+      });
+    } catch (error) {
+      console.error('Error generating draft:', error);
+      return res.status(500).json({
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to generate draft'
+      });
+    }
+  });
+  
+  app.post("/api/coauthor/validate", (req: Request, res: Response) => {
+    const { sectionText, moduleId, sectionId } = req.body;
+    console.log('🔍 POST /api/coauthor/validate', { moduleId, sectionId });
+    
+    try {
+      // Simple validation logic
+      const valid = true;
+      const issues = [];
+      
+      // Just for demonstration - add a warning if content is brief
+      if (sectionText && sectionText.length < 100) {
+        issues.push({
+          type: 'warning',
+          message: 'Section content may be too brief for regulatory requirements',
+          location: 'content-length'
+        });
+      }
+      
+      return res.json({
+        success: true,
+        valid,
+        issues
+      });
+    } catch (error) {
+      console.error('Error validating section:', error);
+      return res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to validate section'
+      });
+    }
+  });
+  
+  // Add backward compatibility endpoint for /api/ai/draft
+  app.post("/api/ai/draft", (req: Request, res: Response) => {
+    const { moduleId, sectionId, currentContent, contextIds, query } = req.body;
+    console.log('🔄 POST /api/ai/draft [legacy]', { moduleId, sectionId });
+    
+    try {
+      // Generate simple placeholder response for now
+      const draft = `# AI-Generated Draft for ${moduleId || 'unknown'}, Section ${sectionId || 'unknown'}\n\n` +
+        `## Introduction\n` +
+        `This is a generated draft based on your input: "${currentContent?.substring(0, 50)}..."\n\n` +
+        `## Background\n` +
+        `Clinical trial data should be presented in accordance with ICH guidelines for Module ${moduleId?.replace('m', '') || '2'}, ` +
+        `with appropriate consideration for study design, endpoints, and statistical analysis.\n\n` +
+        `## Analysis\n` +
+        `The analysis should follow a logical structure with clear presentation of data and conclusions.\n\n` +
+        `## Regulatory Considerations\n` +
+        `All statements must be supported by data and be compliant with regulatory guidance.`;
+      
+      return res.json({
+        success: true,
+        draft,
+        contextIds: contextIds || []
+      });
+    } catch (error) {
+      console.error('Error generating draft:', error);
+      return res.status(500).json({
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to generate draft'
+      });
+    }
+  });
+  
   // Return 404 for undefined API routes - simpler version for now
   app.use("/api/*", (req: Request, res: Response) => {
     res.status(404).json({ error: "API endpoint not found" });
