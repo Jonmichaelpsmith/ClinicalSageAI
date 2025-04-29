@@ -1,449 +1,342 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import useWindowSize from '../../hooks/useWindowSize';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ZoomIn, ZoomOut, RefreshCw, Download } from 'lucide-react';
+import CanvasNode from './CanvasNode';
 import NodeDetailPanel from './NodeDetailPanel';
-import { CanvasNode } from './CanvasNode';
-import { fetchCTDSections, fetchRiskConnections } from '../../api/coauthor';
+import CanvasSidePanel from './CanvasSidePanel';
+import useWindowSize from '../../hooks/useWindowSize';
+import { fetchCTDSections, fetchRiskConnections, updateSectionPosition } from '../../api/coauthor';
 import './CanvasWorkbenchV2.css';
 
 /**
- * Enhanced Canvas Workbench with better styling and interactions
+ * Enhanced Canvas Workbench for TrialSage
+ * Provides a visual workspace for viewing and arranging CTD sections,
+ * with interactive nodes, connection lines, and detailed section information
  */
-export default function CanvasWorkbenchV2({ onNodeClick }) {
+const CanvasWorkbenchV2 = () => {
   const [sections, setSections] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [guidance, setGuidance] = useState('');
-  const [snippets, setSnippets] = useState([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [selection, setSelection] = useState([]);
-  const { width, height } = useWindowSize();
+  const [riskConnections, setRiskConnections] = useState([]);
+  const [selectedSection, setSelectedSection] = useState(null);
+  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
+  const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [zoomLevel, setZoomLevel] = useState(1);
+  
   const canvasRef = useRef(null);
-  const dragRef = useRef(null);
-
-  // Load sections data
+  const { width, height } = useWindowSize();
+  
+  // Load sections and risk connections when component mounts
   useEffect(() => {
-    fetchCTDSections()
-      .then(data => setSections(data))
-      .catch(console.error);
-  }, []);
-
-  // Handle drag start
-  const handleDragStart = (e, section) => {
-    e.preventDefault();
-    setIsDragging(true);
-    dragRef.current = {
-      id: section.id,
-      startX: e.clientX,
-      startY: e.clientY,
-      section
+    const loadData = async () => {
+      try {
+        const sectionsData = await fetchCTDSections();
+        setSections(sectionsData);
+        
+        const risksData = await fetchRiskConnections();
+        setRiskConnections(risksData);
+      } catch (error) {
+        console.error('Error loading canvas data:', error);
+      }
     };
     
-    // Add event listeners to handle drag on the whole document
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleDragEnd);
-  };
-
-  // Handle mouse move during drag
-  const handleMouseMove = useCallback((e) => {
-    if (!dragRef.current) return;
-    
-    const deltaX = e.clientX - dragRef.current.startX;
-    const deltaY = e.clientY - dragRef.current.startY;
-    
-    const newX = dragRef.current.section.x + deltaX;
-    const newY = dragRef.current.section.y + deltaY;
-    
-    // Update section position locally
-    setSections(prevSections => 
-      prevSections.map(sec => 
-        sec.id === dragRef.current.id ? { ...sec, x: newX, y: newY } : sec
+    loadData();
+  }, []);
+  
+  // Find a section by its ID
+  const findSection = useCallback((id) => {
+    return sections.find(s => s.id === id);
+  }, [sections]);
+  
+  // Handle section selection
+  const handleSelectSection = useCallback((id) => {
+    const section = findSection(id);
+    setSelectedSection(section);
+  }, [findSection]);
+  
+  // Close the detail panel
+  const handleCloseDetailPanel = useCallback(() => {
+    setSelectedSection(null);
+  }, []);
+  
+  // Handle section drag
+  const handleSectionDrag = useCallback((id, x, y) => {
+    setSections(prevSections =>
+      prevSections.map(section =>
+        section.id === id ? { ...section, x, y } : section
       )
     );
-    
-    dragRef.current.startX = e.clientX;
-    dragRef.current.startY = e.clientY;
   }, []);
-
-  // Handle drag end
-  const handleDragEnd = useCallback(() => {
-    if (!dragRef.current) return;
-    
-    // Save final position to server
-    const { id } = dragRef.current;
-    const section = sections.find(s => s.id === id);
-    
-    if (section) {
-      fetch(`/api/coauthor/layout/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ x: section.x, y: section.y }),
-      }).catch(console.error);
+  
+  // Handle section drag end - save position
+  const handleSectionDragEnd = useCallback(async (id, x, y) => {
+    try {
+      await updateSectionPosition(id, x, y);
+    } catch (error) {
+      console.error('Error updating section position:', error);
     }
+  }, []);
+  
+  // Handle canvas drag start
+  const handleCanvasMouseDown = useCallback((e) => {
+    // Only start dragging if left mouse button is pressed and no section is clicked
+    if (e.button !== 0 || e.target !== canvasRef.current) return;
     
-    // Clean up
-    setIsDragging(false);
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleDragEnd);
-    dragRef.current = null;
-  }, [sections, handleMouseMove]);
-
-  // Handle section click
-  const handleSectionClick = (section, e) => {
-    // If Ctrl/Cmd key is pressed, add to selection
-    if (e && (e.ctrlKey || e.metaKey)) {
-      if (selection.includes(section.id)) {
-        setSelection(selection.filter(id => id !== section.id));
-      } else {
-        setSelection([...selection, section.id]);
-      }
-    } else {
-      // Otherwise just select this section
-      setSelected(section);
-      setSelection([section.id]);
-      
-      // Call the onNodeClick handler if provided
-      if (onNodeClick) {
-        onNodeClick(section);
-      }
-    }
-  };
-
-  // Handle keyboard shortcuts
+    setIsDraggingCanvas(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  }, []);
+  
+  // Handle canvas drag
+  const handleCanvasMouseMove = useCallback((e) => {
+    if (!isDraggingCanvas) return;
+    
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    
+    setCanvasOffset(prev => ({
+      x: prev.x + dx,
+      y: prev.y + dy
+    }));
+    
+    setDragStart({ x: e.clientX, y: e.clientY });
+  }, [isDraggingCanvas, dragStart]);
+  
+  // Handle canvas drag end
+  const handleCanvasMouseUp = useCallback(() => {
+    setIsDraggingCanvas(false);
+  }, []);
+  
+  // Register mouse events for canvas dragging
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Delete selected
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selection.length > 0) {
-        // This is just a UI deletion, not affecting the server data in this demo
-        setSections(sections.filter(s => !selection.includes(s.id)));
-        setSelection([]);
-        setSelected(null);
-      }
-      
-      // Arrow key nudging for selected node
-      if (selection.length === 1) {
-        const step = 10;
-        const sectionId = selection[0];
-        
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-          e.preventDefault();
-          
-          setSections(sections.map(section => {
-            if (section.id !== sectionId) return section;
-            
-            let { x, y } = section;
-            if (e.key === 'ArrowUp') y -= step;
-            if (e.key === 'ArrowDown') y += step;
-            if (e.key === 'ArrowLeft') x -= step;
-            if (e.key === 'ArrowRight') x += step;
-            
-            // Update on server
-            fetch(`/api/coauthor/layout/${sectionId}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ x, y }),
-            }).catch(console.error);
-            
-            return { ...section, x, y };
-          }));
-        }
-      }
+    if (isDraggingCanvas) {
+      window.addEventListener('mousemove', handleCanvasMouseMove);
+      window.addEventListener('mouseup', handleCanvasMouseUp);
+    }
+    
+    return () => {
+      window.removeEventListener('mousemove', handleCanvasMouseMove);
+      window.removeEventListener('mouseup', handleCanvasMouseUp);
     };
+  }, [isDraggingCanvas, handleCanvasMouseMove, handleCanvasMouseUp]);
+  
+  // Handle zooming
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel(prev => Math.min(prev + 0.1, 2));
+  }, []);
+  
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel(prev => Math.max(prev - 0.1, 0.5));
+  }, []);
+  
+  const handleResetView = useCallback(() => {
+    setCanvasOffset({ x: 0, y: 0 });
+    setZoomLevel(1);
+  }, []);
+  
+  // Handle SVG export
+  const handleExportSVG = useCallback(() => {
+    // Create an SVG representation of the canvas
+    const svgWidth = width;
+    const svgHeight = height;
     
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [sections, selection]);
-
-  // Handle chat open
-  const handleChatOpen = () => {
-    alert('Open Ask Lumen AI chat with context from this section');
-    // In a real implementation, this would open your chat component
-  };
-
-  // Close the side panel
-  const handleCloseSidePanel = () => {
-    setSelected(null);
-  };
-
-  // Export canvas as SVG
-  const exportToSVG = () => {
-    if (!canvasRef.current) return;
+    let svgContent = `<svg width="${svgWidth}" height="${svgHeight}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#f7f8fa" />`;
     
-    // Create an SVG element
-    const ns = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(ns, "svg");
-    
-    // Set SVG attributes - get size from canvas
-    const rect = canvasRef.current.getBoundingClientRect();
-    svg.setAttribute("width", rect.width.toString());
-    svg.setAttribute("height", rect.height.toString());
-    svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
-    
-    // Add background
-    const bg = document.createElementNS(ns, "rect");
-    bg.setAttribute("width", "100%");
-    bg.setAttribute("height", "100%");
-    bg.setAttribute("fill", "#f7f8fa");
-    svg.appendChild(bg);
-    
-    // Add grid (simplified)
-    for (let x = 0; x < rect.width; x += 50) {
-      const line = document.createElementNS(ns, "line");
-      line.setAttribute("x1", x.toString());
-      line.setAttribute("y1", "0");
-      line.setAttribute("x2", x.toString());
-      line.setAttribute("y2", rect.height.toString());
-      line.setAttribute("stroke", "rgba(0,0,0,0.05)");
-      line.setAttribute("stroke-width", "1");
-      svg.appendChild(line);
-    }
-    
-    for (let y = 0; y < rect.height; y += 50) {
-      const line = document.createElementNS(ns, "line");
-      line.setAttribute("x1", "0");
-      line.setAttribute("y1", y.toString());
-      line.setAttribute("x2", rect.width.toString());
-      line.setAttribute("y2", y.toString());
-      line.setAttribute("stroke", "rgba(0,0,0,0.05)");
-      line.setAttribute("stroke-width", "1");
-      svg.appendChild(line);
-    }
-    
-    // Add connections as lines
-    sections.forEach(sec => {
-      if (!sec.connections || sec.connections.length === 0) return;
-      
-      sec.connections.forEach(toId => {
-        const from = sections.find(s => s.id === sec.id);
-        const to = sections.find(s => s.id === toId);
-        
-        if (!from || !to) return;
-        
-        const fromX = from.x + 120; // Node width
-        const fromY = from.y + 25;  // Node height / 2
-        const toX = to.x;
-        const toY = to.y + 25;
-        
-        // Create line
-        const line = document.createElementNS(ns, "line");
-        line.setAttribute("x1", fromX.toString());
-        line.setAttribute("y1", fromY.toString());
-        line.setAttribute("x2", toX.toString());
-        line.setAttribute("y2", toY.toString());
-        line.setAttribute("stroke", sec.status === 'critical' ? "#dc3545" : "#888");
-        line.setAttribute("stroke-width", sec.status === 'critical' ? "3" : "2");
-        
-        // Add to SVG
-        svg.appendChild(line);
-        
-        // Add label in middle
-        const midX = (fromX + toX) / 2;
-        const midY = (fromY + toY) / 2;
-        
-        const label = document.createElementNS(ns, "text");
-        label.setAttribute("x", midX.toString());
-        label.setAttribute("y", midY.toString());
-        label.setAttribute("text-anchor", "middle");
-        label.setAttribute("fill", "#444");
-        label.setAttribute("font-size", "12");
-        label.textContent = "Dependency";
-        
-        // Add to SVG
-        svg.appendChild(label);
-      });
-    });
-    
-    // Add nodes as rectangles with text
+    // Add connection lines
     sections.forEach(section => {
-      // Create group for node
-      const g = document.createElementNS(ns, "g");
-      g.setAttribute("transform", `translate(${section.x}, ${section.y})`);
-      
-      // Create node rectangle
-      const rect = document.createElementNS(ns, "rect");
-      rect.setAttribute("width", "120");
-      rect.setAttribute("height", "50");
-      rect.setAttribute("rx", "4");
-      
-      // Set fill based on status
-      let fill = "#fff4ce"; // default (pending)
-      if (section.status === 'complete') fill = "#daf5e8";
-      if (section.status === 'critical') fill = "#fde2e2";
-      rect.setAttribute("fill", fill);
-      
-      // Add border
-      rect.setAttribute("stroke", "#666");
-      rect.setAttribute("stroke-width", "1");
-      
-      // Add left border based on status
-      const leftBorder = document.createElementNS(ns, "rect");
-      leftBorder.setAttribute("width", "4");
-      leftBorder.setAttribute("height", "50");
-      
-      // Set color based on status
-      let borderColor = "#ffc107"; // default (pending)
-      if (section.status === 'complete') borderColor = "#28a745";
-      if (section.status === 'critical') borderColor = "#dc3545";
-      leftBorder.setAttribute("fill", borderColor);
-      
-      // Create badge with ID
-      const badge = document.createElementNS(ns, "g");
-      
-      const badgeRect = document.createElementNS(ns, "rect");
-      badgeRect.setAttribute("x", "-5");
-      badgeRect.setAttribute("y", "-5");
-      badgeRect.setAttribute("width", "30");
-      badgeRect.setAttribute("height", "20");
-      badgeRect.setAttribute("rx", "4");
-      badgeRect.setAttribute("fill", "var(--color-primary, #5c4dff)");
-      
-      const badgeText = document.createElementNS(ns, "text");
-      badgeText.setAttribute("x", "10");
-      badgeText.setAttribute("y", "8");
-      badgeText.setAttribute("text-anchor", "middle");
-      badgeText.setAttribute("font-size", "10");
-      badgeText.setAttribute("fill", "#fff");
-      badgeText.textContent = section.id;
-      
-      badge.appendChild(badgeRect);
-      badge.appendChild(badgeText);
-      
-      // Create label text
-      const text = document.createElementNS(ns, "text");
-      text.setAttribute("x", "30");
-      text.setAttribute("y", "30");
-      text.setAttribute("font-size", "12");
-      text.setAttribute("fill", "#333");
-      text.textContent = section.title;
-      
-      // Add all elements to group
-      g.appendChild(rect);
-      g.appendChild(leftBorder);
-      g.appendChild(badge);
-      g.appendChild(text);
-      
-      // Add group to SVG
-      svg.appendChild(g);
+      if (section.connections) {
+        section.connections.forEach(targetId => {
+          const targetSection = findSection(targetId);
+          if (targetSection) {
+            // Draw a line from section to targetSection
+            const fromX = section.x + 60; // middle of the node
+            const fromY = section.y + 25;
+            const toX = targetSection.x + 60;
+            const toY = targetSection.y + 25;
+            
+            // Check if this is a critical connection
+            const isRiskConnection = riskConnections.some(
+              rc => (rc.source === section.id && rc.target === targetId) || 
+                   (rc.source === targetId && rc.target === section.id)
+            );
+            
+            const lineColor = isRiskConnection ? '#dc3545' : '#888';
+            const lineWidth = isRiskConnection ? 3 : 2;
+            
+            svgContent += `<line x1="${fromX}" y1="${fromY}" x2="${toX}" y2="${toY}" stroke="${lineColor}" stroke-width="${lineWidth}" />`;
+          }
+        });
+      }
     });
     
-    // Convert to string and create download link
-    const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svg);
-    
-    const blob = new Blob([svgString], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ctd-canvas.svg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  return (
-    <div className="canvas-workbench-v2">
-      {/* Export button */}
-      <button 
-        className="export-button" 
-        onClick={exportToSVG}
-        title="Export as SVG"
-      >
-        Export SVG
-      </button>
+    // Add nodes
+    sections.forEach(section => {
+      const nodeColor = section.status === 'critical' ? '#fde2e2' : 
+                        section.status === 'pending' ? '#fff4ce' : '#daf5e8';
+      const borderColor = section.status === 'critical' ? '#dc3545' : 
+                          section.status === 'pending' ? '#ffc107' : '#28a745';
       
-      <div className="canvas-container">
-        <div 
-          ref={canvasRef}
-          className={`nodes-area ${isDragging ? 'dragging' : ''}`}
+      svgContent += `
+      <g>
+        <rect x="${section.x}" y="${section.y}" width="120" height="50" rx="4" ry="4" 
+            fill="${nodeColor}" stroke="#666" stroke-width="1" />
+        <rect x="${section.x}" y="${section.y}" width="4" height="50" fill="${borderColor}" />
+        <text x="${section.x + 10}" y="${section.y + 25}" font-family="Arial" font-size="12" fill="#333">${section.title}</text>
+        <rect x="${section.x - 5}" y="${section.y - 5}" width="20" height="15" rx="4" ry="4" fill="#5c4dff" />
+        <text x="${section.x}" y="${section.y + 5}" font-family="Arial" font-size="10" fill="white" font-weight="bold">${section.id}</text>
+      </g>`;
+    });
+    
+    svgContent += '</svg>';
+    
+    // Create a blob URL and trigger download
+    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'trialsage-canvas.svg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [sections, riskConnections, findSection, width, height]);
+  
+  // Calculate connections between nodes
+  const connections = React.useMemo(() => {
+    const lines = [];
+    
+    sections.forEach(section => {
+      if (section.connections) {
+        section.connections.forEach(targetId => {
+          const targetSection = findSection(targetId);
+          if (targetSection) {
+            // Calculate line endpoints
+            const fromX = section.x + 60; // middle of the node
+            const fromY = section.y + 25;
+            const toX = targetSection.x + 60;
+            const toY = targetSection.y + 25;
+            
+            // Calculate line length and angle
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            // Check if this is a critical connection
+            const isRiskConnection = riskConnections.some(
+              rc => (rc.source === section.id && rc.target === targetId) || 
+                   (rc.source === targetId && rc.target === section.id)
+            );
+            
+            // Get risk level if exists
+            const riskConnection = riskConnections.find(
+              rc => (rc.source === section.id && rc.target === targetId) || 
+                   (rc.source === targetId && rc.target === section.id)
+            );
+            
+            lines.push({
+              id: `${section.id}-${targetId}`,
+              fromX,
+              fromY,
+              length,
+              angle,
+              isCritical: isRiskConnection,
+              riskLevel: riskConnection?.riskLevel,
+              midX: fromX + (dx / 2),
+              midY: fromY + (dy / 2)
+            });
+          }
+        });
+      }
+    });
+    
+    return lines;
+  }, [sections, riskConnections, findSection]);
+  
+  return (
+    <div className="canvas-workbench">
+      <CanvasSidePanel sections={sections} />
+      
+      <div
+        className="canvas-container"
+        onMouseDown={handleCanvasMouseDown}
+        ref={canvasRef}
+        style={{ cursor: isDraggingCanvas ? 'grabbing' : 'grab' }}
+      >
+        <div
+          className="canvas-grid"
+          style={{
+            transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px) scale(${zoomLevel})`,
+            transformOrigin: '0 0'
+          }}
         >
-          {/* Connections (simple div-based arrows) */}
-          {sections.flatMap(sec =>
-            sec.connections?.map(toId => {
-              const from = sections.find(s => s.id === sec.id);
-              const to = sections.find(s => s.id === toId);
-              
-              if (!from || !to) return null;
-              
-              // Calculate distance and angle for the line
-              const fromX = from.x + 120; // Node width
-              const fromY = from.y + 25;  // Node height / 2
-              const toX = to.x;
-              const toY = to.y + 25; 
-              
-              const dx = toX - fromX;
-              const dy = toY - fromY;
-              const length = Math.sqrt(dx * dx + dy * dy);
-              const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-              
-              // Calculate midpoint for label
-              const midX = fromX + (dx / 2);
-              const midY = fromY + (dy / 2);
-              
-              return (
-                <React.Fragment key={`${sec.id}-${toId}`}>
-                  <div 
-                    className={`connection-line ${sec.status === 'critical' ? 'critical' : ''}`}
-                    style={{
-                      position: 'absolute',
-                      top: fromY,
-                      left: fromX,
-                      width: length,
-                      transformOrigin: 'left center',
-                      transform: `rotate(${angle}deg)`,
-                      zIndex: 0
-                    }}
-                  />
-                  <div 
-                    className="connection-label"
-                    style={{
-                      position: 'absolute',
-                      top: midY - 10,
-                      left: midX,
-                      transform: 'translate(-50%, -50%)',
-                      zIndex: 1
-                    }}
-                  >
-                    Dependency
-                  </div>
-                </React.Fragment>
-              );
-            }) || []
-          )}
-          
-          {/* Nodes */}
-          {sections.map(section => (
-            <div
-              key={section.id}
-              className={`node-wrapper ${selection.includes(section.id) ? 'selected' : ''}`}
-              style={{
-                transform: `translate(${section.x}px, ${section.y}px)`
-              }}
-              onMouseDown={e => handleDragStart(e, section)}
-              onClick={e => handleSectionClick(section, e)}
-            >
-              <div className={`node node-${section.status || 'pending'}`}>
-                <div className="node-badge">{section.id}</div>
-                <div className="node-content">
-                  <div className="node-title">{section.title}</div>
+          {/* Connection lines */}
+          {connections.map(conn => (
+            <React.Fragment key={conn.id}>
+              <div
+                className={`connection-line ${conn.isCritical ? 'critical' : ''}`}
+                style={{
+                  left: `${conn.fromX}px`,
+                  top: `${conn.fromY}px`,
+                  width: `${conn.length}px`,
+                  transform: `rotate(${conn.angle}deg)`
+                }}
+              />
+              {conn.riskLevel && (
+                <div
+                  className="connection-label"
+                  style={{
+                    left: `${conn.midX}px`,
+                    top: `${conn.midY}px`
+                  }}
+                >
+                  {conn.riskLevel}
                 </div>
-              </div>
-            </div>
+              )}
+            </React.Fragment>
+          ))}
+          
+          {/* Section nodes */}
+          {sections.map(section => (
+            <CanvasNode
+              key={section.id}
+              id={section.id}
+              title={section.title}
+              status={section.status}
+              x={section.x}
+              y={section.y}
+              isSelected={selectedSection && selectedSection.id === section.id}
+              onSelect={handleSelectSection}
+              onDrag={handleSectionDrag}
+              onDragEnd={handleSectionDragEnd}
+            />
           ))}
         </div>
         
-        {/* Selection indicators */}
-        {selection.length > 0 && (
-          <div className="selection-count">
-            {selection.length} selected
-          </div>
+        {/* Detail panel */}
+        {selectedSection && (
+          <NodeDetailPanel
+            section={selectedSection}
+            onClose={handleCloseDetailPanel}
+          />
         )}
         
-        {/* Side panel when a section is selected */}
-        <NodeDetailPanel 
-          sectionId={selected?.id}
-          onClose={handleCloseSidePanel}
-        />
+        {/* Canvas actions */}
+        <div className="canvas-actions">
+          <button onClick={handleZoomIn} title="Zoom in">
+            <ZoomIn size={16} />
+          </button>
+          <button onClick={handleZoomOut} title="Zoom out">
+            <ZoomOut size={16} />
+          </button>
+          <button onClick={handleResetView} title="Reset view">
+            <RefreshCw size={16} />
+          </button>
+          <button onClick={handleExportSVG} title="Export as SVG">
+            <Download size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default CanvasWorkbenchV2;
