@@ -557,14 +557,14 @@ export default function INDWizardContainer({ projectId = '12345' }) {
     queryFn: async () => {
       try {
         // Try fetching from the new API first
-        const wizardResponse = await apiRequest('GET', `/api/ind/wizard/${projectId}`);
+        const wizardResponse = await apiRequest('GET', `/api/ind-wizard/${projectId}`);
         if (wizardResponse.ok) {
           const data = await wizardResponse.json();
           return data;
         }
         
         // If that fails, try the regular API
-        const response = await apiRequest('GET', `/api/ind/${projectId}`);
+        const response = await apiRequest('GET', `/api/ind-wizard/projects/${projectId}`);
         if (!response.ok) throw new Error('Failed to fetch project data');
         return response.json();
       } catch (error) {
