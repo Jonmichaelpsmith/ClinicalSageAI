@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SectionHeader from './SectionHeader';
 import DraftEditor from './DraftEditor';
+import TemplateEditor from './TemplateEditor';
 import RegulatorySearch from './RegulatorySearch';
 import RiskAnalysisWidget from './RiskAnalysisWidget';
 import GuidancePanel from './GuidancePanel';
@@ -10,6 +11,7 @@ import TimelineSimulator from './TimelineSimulator';
 import CanvasWorkbenchModule from './CanvasWorkbenchModule';
 import { FileText, Layout } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import templates from '@/services/templates/ctdTemplates.json';
 
 export default function CoauthorModule() {
   const sections = [
@@ -86,11 +88,20 @@ export default function CoauthorModule() {
         <TabsContent value="editor" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-4">
-              <DraftEditor
-                content={contentMap[activeSection]}
-                onChange={handleChange}
-                onGenerateDraft={handleGenerate}
-              />
+              {templates[activeSection] ? (
+                <TemplateEditor
+                  sectionId={activeSection}
+                  content={contentMap[activeSection]}
+                  onChange={handleChange}
+                  onGenerateDraft={handleGenerate}
+                />
+              ) : (
+                <DraftEditor
+                  content={contentMap[activeSection]}
+                  onChange={handleChange}
+                  onGenerateDraft={handleGenerate}
+                />
+              )}
             </div>
 
             <aside className="space-y-4">
