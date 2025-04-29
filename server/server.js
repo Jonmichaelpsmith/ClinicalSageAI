@@ -44,6 +44,9 @@ import aiRoutes from './routes/ai-routes.js';
 import coauthorRoutes from './routes/coauthor.js';
 import timelineRoutes from './routes/timeline.js';
 import coauthorCanvasRoutes from './routes/coauthorCanvas.js';
+import protocolRoutes from './routes/protocol.js';
+import csrRoutes from './routes/csr.js';
+import cmcRoutes from './routes/cmc.js';
 
 // Direct test endpoint for coauthor generate
 app.post('/api/coauthor/generate/test', (req, res) => {
@@ -66,6 +69,9 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/coauthor', coauthorRoutes);
 app.use('/api/coauthor/canvas', coauthorCanvasRoutes);
 app.use('/api/timeline', timelineRoutes);
+app.use('/api/protocol', protocolRoutes);
+app.use('/api/csr', csrRoutes);
+app.use('/api/cmc', cmcRoutes);
 
 // Import route modules
 import advisorRoutes from './routes/advisor.js';
