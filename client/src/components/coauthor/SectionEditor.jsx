@@ -1,34 +1,40 @@
-import React from 'react';
-import ModuleSectionEditor from '../ModuleSectionEditor';
+import React, { useState } from 'react';
 
+/**
+ * SectionEditor
+ * 
+ * Main editor component for CTD sections with rich text editing capabilities
+ */
 export default function SectionEditor() {
-  const initialContent = 'This is the initial content for your CTD section. You can edit this and use AI to help generate a compliant draft.';
+  const [sectionContent, setSectionContent] = useState(
+    'This is the initial content for your CTD section. You can edit this and use AI to help generate a compliant draft.'
+  );
   
-  // Placeholder handlers
-  const handleSave = () => {
-    console.log('Saving section content...');
-  };
+  // Sample section for demo
+  const sectionTitle = "Section 2.7: Clinical Summary";
+  const sectionSubtitle = "Section Editor";
   
-  const handleCancel = () => {
-    console.log('Cancelling edit...');
-  };
-  
-  const handleContentChange = (content) => {
-    console.log('Content updated:', content.substring(0, 50) + '...');
+  const handleContentChange = (e) => {
+    setSectionContent(e.target.value);
   };
   
   return (
-    <div className="section-editor">
-      <h2 className="text-xl font-semibold mb-4">Section 2.7: Clinical Summary</h2>
+    <div className="section-editor-container">
+      <h1 className="text-2xl font-medium text-gray-900 mb-1">{sectionTitle}</h1>
+      <h2 className="text-lg text-gray-600 mb-4">{sectionSubtitle}</h2>
       
-      <ModuleSectionEditor 
-        initialContent={initialContent}
-        moduleId="m2"
-        sectionId="2.7"
-        onSave={handleSave}
-        onCancel={handleCancel}
-        onContentChange={handleContentChange}
-      />
+      <div className="text-sm text-right text-gray-500 mb-1">
+        Press <kbd className="px-1 py-0.5 bg-gray-100 border border-gray-300 rounded">Ctrl+Enter</kbd> to generate
+      </div>
+      
+      <div className="editor-area border border-gray-300 rounded-md p-4 min-h-[400px] bg-white">
+        <textarea
+          className="w-full h-full min-h-[350px] focus:outline-none resize-none"
+          value={sectionContent}
+          onChange={handleContentChange}
+          placeholder="Enter your section content here..."
+        />
+      </div>
     </div>
   );
 }
