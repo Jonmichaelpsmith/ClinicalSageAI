@@ -36,6 +36,7 @@ import {
  */
 const CERV2Page = () => {
   const [activeTab, setActiveTab] = useState('input');
+  const [docFilters, setDocFilters] = useState({});
   const [deviceName, setDeviceName] = useState('');
   const [deviceType, setDeviceType] = useState('');
   const [manufacturer, setManufacturer] = useState('');
@@ -56,7 +57,6 @@ const CERV2Page = () => {
   const [selectedSampleTemplate, setSelectedSampleTemplate] = useState('mdr-full');
   
   // Document filter state
-  const [docFilters, setDocFilters] = useState({});
   const [documents, setDocuments] = useState([]);
   const [docsLoading, setDocsLoading] = useState(false);
   const [docsPagination, setDocsPagination] = useState({ page: 1, totalPages: 1 });
