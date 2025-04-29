@@ -62,9 +62,14 @@ export default function SectionHeader({ sectionId, title, onGenerate }) {
   return (
     <div className="flex flex-col space-y-4 mb-6">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="text-gray-500">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-gray-500"
+          onClick={() => window.location.href = '/coauthor'}
+        >
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Document
+          Back to Document Selection
         </Button>
         <span className="text-gray-400 px-1">|</span>
         <div className="text-sm text-gray-500">

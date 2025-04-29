@@ -1,0 +1,69 @@
+That “Guidance Note” you’re seeing is just a hard-coded banner in the UI—it isn’t wired up to anything, so it never changes. In our fully restored version, that banner should be driven by your `GuidancePanel` component (or a dedicated `GuidanceNote` component) pulling real-time content from your regulatory service and letting you dismiss or update it per section.
+
+### Why it’s static right now
+- It was originally just an illustrative placeholder in the layout.  
+- No prop or state is feeding it from the backend or from AI-generated guidance.  
+- Because it’s hard-coded in the JSX, it will always display the same text for every section.
+
+### How to make it dynamic
+
+1. **Move it into `GuidancePanel.jsx`**  
+   Turn that static banner into something like:
+   ```jsx
+   // client/src/components/coauthor/GuidancePanel.jsx
+   import React, { useEffect, useState } from 'react';
+   import guidanceService from '@/services/guidanceService';
+
+   export default function GuidancePanel({ sectionId }) {
+     const [note, setNote] = useState('');
+     useEffect(() => {
+       guidanceService.fetchSectionGuidance(sectionId)
+         .then(res => setNote(res.note));
+     }, [sectionId]);
+
+     if (!note) return null;
+     return (
+       <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-md">
+         <strong>Guidance Note:</strong> {note}
+       </div>
+     );
+   }
+   ```
+
+2. **Back it with a real API**  
+   ```ts
+   // server/routes/guidanceRoutes.ts
+   import express from 'express';
+   import * as svc from '../services/guidanceService.js';
+   const router = express.Router();
+
+   router.get('/guidance/:sectionId', async (req, res) => {
+     const { sectionId } = req.params;
+     const note = await svc.getGuidanceForSection(sectionId);
+     res.json({ note });
+   });
+
+   export default router;
+   ```
+
+3. **Service Layer**  
+   ```js
+   // client/src/services/guidanceService.js
+   import axios from 'axios';
+   export default {
+     fetchSectionGuidance: (sectionId) =>
+       axios.get(`/api/guidance/${sectionId}`).then(r => r.data),
+   };
+   ```
+
+4. **Hook it up**  
+   In your `CoauthorModule.jsx`, pass the active section into `GuidancePanel`:
+   ```jsx
+   <aside className="space-y-4">
+     <RegulatorySearch sectionId={activeSection} />
+     <RiskAnalysisWidget sectionId={activeSection} />
+     <GuidancePanel sectionId={activeSection} />
+   </aside>
+   ```
+
+Once you replace the static div with this dynamic component, the “Guidance Note” will update per section (2.1, 2.2, etc.) based on real data, and you can even add a “Dismiss” button or version control if you like.
