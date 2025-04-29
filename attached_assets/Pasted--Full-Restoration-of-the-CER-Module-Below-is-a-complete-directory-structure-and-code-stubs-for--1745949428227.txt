@@ -1,0 +1,489 @@
+# Full Restoration of the CER Module
+
+Below is a complete directory structure and code stubs for **all** features we previously built. Copy these into your project to bring back:
+
+```
+├── client/
+│   ├── src/
+│   │   ├── pages/
+│   │   │   └── CerPage.jsx
+│   │   ├── components/
+│   │   │   └── cer/
+│   │   │       ├── GenerateFullCerButton.jsx
+│   │   │       ├── SectionTabs.jsx
+│   │   │       ├── InputDataPanel.jsx
+│   │   │       ├── LitReviewPanel.jsx
+│   │   │       ├── GeneratedReportPanel.jsx
+│   │   │       ├── DocumentVaultPanel.jsx
+│   │   │       ├── CerHistoryPanel.jsx
+│   │   │       ├── TemplateSettingsPanel.jsx
+│   │   │       ├── ApprovalsPanel.jsx
+│   │   │       └── ReviewDrawer.jsx
+│   │   └── services/
+│   │       └── aiService.js
+│   └── vite.config.js
+├── server/
+│   ├── index.ts
+│   ├── routes/
+│   │   ├── cerRoutes.ts
+│   │   ├── vaultRoutes.ts
+│   │   └── approvalRoutes.ts
+│   ├── services/
+│   │   ├── cerGenerator.ts
+│   │   ├── vaultService.ts
+│   │   └── diffService.ts
+│   ├── websocket.ts
+│   └── migrations/
+│       ├── 20250501_create_cer_jobs_table.sql
+│       ├── 20250502_add_vault_tables.sql
+│       └── 20250503_add_approvals.sql
+└── worker/
+    ├── Dockerfile
+    └── cerWorker.ts
+```
+
+---
+## client/src/pages/CerPage.jsx
+```jsx
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import SectionTabs from '@/components/cer/SectionTabs';
+import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
+
+export default function CerPage() {
+  return (
+    <div className="p-6 space-y-6">
+      <Card><CardContent className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">CER Generator</h1>
+          <p>Full-featured Clinical Evaluation Report workflow</p>
+        </div>
+        <GenerateFullCerButton />
+      </CardContent></Card>
+
+      <SectionTabs />
+    </div>
+  );
+}
+```
+
+---
+## client/src/components/cer/SectionTabs.jsx
+```jsx
+import React, { useState } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import InputDataPanel from './InputDataPanel';
+import LitReviewPanel from './LitReviewPanel';
+import GeneratedReportPanel from './GeneratedReportPanel';
+import DocumentVaultPanel from './DocumentVaultPanel';
+import ApprovalsPanel from './ApprovalsPanel';
+
+export default function SectionTabs() {
+  const [tab, setTab] = useState('input');
+
+  return (
+    <Tabs value={tab} onValueChange={setTab} className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="input">Input Data</TabsTrigger>
+        <TabsTrigger value="litreview">Literature Review</TabsTrigger>
+        <TabsTrigger value="report">Generated Report</TabsTrigger>
+        <TabsTrigger value="vault">Document Vault</TabsTrigger>
+        <TabsTrigger value="approvals">Approvals</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="input"><InputDataPanel /></TabsContent>
+      <TabsContent value="litreview"><LitReviewPanel /></TabsContent>
+      <TabsContent value="report"><GeneratedReportPanel /></TabsContent>
+      <TabsContent value="vault"><DocumentVaultPanel /></TabsContent>
+      <TabsContent value="approvals"><ApprovalsPanel /></TabsContent>
+    </Tabs>
+  );
+}
+```
+
+---
+## client/src/components/cer/InputDataPanel.jsx
+```jsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import axios from 'axios';
+
+export default function InputDataPanel() {
+  const [metadata, setMetadata] = useState({ deviceName: '', lotNumber: '' });
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  // Fetch existing uploaded files
+  const fetchFiles = useCallback(async () => {
+    try {
+      const res = await axios.get('/api/cer/vault/list');
+      setFiles(res.data.files);
+    } catch (err) {
+      console.error('Failed to load vault files', err);
+    }
+  }, []);
+
+  useEffect(() => { fetchFiles(); }, [fetchFiles]);
+
+  // Dropzone setup
+  const onDrop = useCallback(async acceptedFiles => {
+    const form = new FormData();
+    acceptedFiles.forEach(f => form.append('documents', f));
+    setUploading(true);
+    try {
+      await axios.post('/api/cer/vault/import', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      fetchFiles();
+    } catch (err) {
+      console.error('Upload error', err);
+    } finally {
+      setUploading(false);
+    }
+  }, [fetchFiles]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  // Save metadata
+  const saveMetadata = async () => {
+    try {
+      await axios.post('/api/cer/metadata', metadata);
+    } catch (err) {
+      console.error('Metadata save error', err);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Metadata Form */}
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mb-4">Device Metadata</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="deviceName">Device Name</Label>
+              <Input
+                id="deviceName"
+                value={metadata.deviceName}
+                onChange={e => setMetadata({ ...metadata, deviceName: e.target.value })}
+                placeholder="e.g., SI-123 Analyzer"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lotNumber">Lot Number</Label>
+              <Input
+                id="lotNumber"
+                value={metadata.lotNumber}
+                onChange={e => setMetadata({ ...metadata, lotNumber: e.target.value })}
+                placeholder="e.g., LOT-456789"
+              />
+            </div>
+          </div>
+          <Button className="mt-4" onClick={saveMetadata}>Save Metadata</Button>
+        </CardContent>
+      </Card>
+
+      {/* File Upload */}
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mb-4">Upload Documents</h3>
+          <div
+            {...getRootProps()}
+            className={`p-6 border-dashed rounded-md cursor-pointer text-center ${
+              isDragActive ? 'border-blue-500' : 'border-gray-300'
+            } border-2`}
+          >
+            <input {...getInputProps()} />
+            {uploading ? (
+              <p>Uploading...</p>
+            ) : isDragActive ? (
+              <p>Drop files here...</p>
+            ) : (
+              <p>Drag & drop files, or click to select documents</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Uploaded Files List */}
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mb-4">Vault Documents</h3>
+          <ul className="space-y-2">
+            {files.map(f => (
+              <li key={f.id} className="flex justify-between items-center">
+                <span>{f.name}</span>
+                <div className="space-x-2">
+                  <Button size="sm" onClick={() => window.open(f.downloadUrl, '_blank')}>Download</Button>
+                  <Button size="sm" variant="outline" onClick={() => {/* diff action */}}>Diff</Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+```
+
+This restores:
+- **Metadata form** for device info
+- **Drag‑and‑drop upload** into the TrialSage Vault
+- **List of vault documents** with Download & Diff controls
+
+**LitReviewPanel** restored:
+```jsx
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import aiService from '@/services/aiService';
+
+export default function LitReviewPanel() {
+  const [papers, setPapers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const res = await aiService.fetchLiterature({ query: 'EU MDR 2017/745 clinical evaluation' });
+        setPapers(res);
+      } catch (err) {
+        setError('Error fetching literature.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
+
+  if (loading) return <Progress className="w-full" />;
+  if (error) return <p className="text-red-600">{error}</p>;
+
+  return (
+    <div className="space-y-4">
+      {papers.map(paper => (
+        <Card key={paper.id} className="border">
+          <CardContent>
+            <h4 className="text-lg font-bold">{paper.title}</h4>
+            <p className="text-sm italic">{paper.authors.join(', ')} ({paper.year})</p>
+            <p className="mt-2 line-clamp-3">{paper.summary}</p>
+            <div className="mt-3 flex space-x-2 justify-end">
+              <Button size="sm" onClick={() => window.open(paper.link, '_blank')}>Read Source</Button>
+              <Button size="sm" variant="outline" onClick={() => {/* insert into report */}}>Add to Report</Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+```
+
+**GeneratedReportPanel** implementation:
+```jsx
+// client/src/components/cer/GeneratedReportPanel.jsx
+import React, { useEffect, useRef, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import PDFJS from 'pdfjs-dist';
+
+PDFJS.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+
+export default function GeneratedReportPanel({ jobId }) {
+  const canvasRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadPdf = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/cer/jobs/${jobId}/result`);
+        const { downloadUrl } = await res.json();
+        const pdf = await PDFJS.getDocument(downloadUrl).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 1.2 });
+        const canvas = canvasRef.current;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+      } catch (err) {
+        console.error('PDF load error', err);
+        setError('Failed to load report preview.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPdf();
+  }, [jobId]);
+
+  if (loading) return <Progress className="w-full" />;
+  if (error) return <p className="text-red-600">{error}</p>;
+
+  return (
+    <Card>
+      <CardContent>
+        <h3 className="text-lg font-semibold mb-2">Report Preview</h3>
+        <canvas ref={canvasRef} className="border" />
+        <div className="mt-4">
+          <Button onClick={() => window.open(`/api/cer/jobs/${jobId}/result`, '_blank')}>Download Full PDF</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+**DocumentVaultPanel** implementation:
+```jsx
+// client/src/components/cer/DocumentVaultPanel.jsx
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import axios from 'axios';
+
+export default function DocumentVaultPanel({ jobId }) {
+  const [versions, setVersions] = useState([]);
+  const [selected, setSelected] = useState({ v1: null, v2: null });
+  const [diffHtml, setDiffHtml] = useState('');
+
+  useEffect(() => {
+    const fetchVersions = async () => {
+      const res = await axios.get(`/api/cer/vault/versions/${jobId}`);
+      setVersions(res.data.versions);
+    };
+    fetchVersions();
+  }, [jobId]);
+
+  const computeDiff = async () => {
+    if (selected.v1 && selected.v2) {
+      const res = await axios.get(
+        `/api/cer/vault/diff/${jobId}?v1=${selected.v1}&v2=${selected.v2}`
+      );
+      setDiffHtml(res.data.diff);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="flex space-x-2 items-center">
+          <select onChange={e => setSelected({ ...selected, v1: e.target.value })}>
+            <option value="">Base Version</option>
+            {versions.map(v => <option key={v.version} value={v.version}>v{v.version}</option>)}
+          </select>
+          <select onChange={e => setSelected({ ...selected, v2: e.target.value })}>
+            <option value="">Compare Version</option>
+            {versions.map(v => <option key={v.version} value={v.version}>v{v.version}</option>)}
+          </select>
+          <Button onClick={computeDiff} disabled={!selected.v1 || !selected.v2}>Show Diff</Button>
+        </CardContent>
+      </Card>
+
+      {diffHtml && (
+        <Card>
+          <CardContent>
+            <h3 className="text-lg font-semibold mb-2">Version Diff</h3>
+            <div dangerouslySetInnerHTML={{ __html: diffHtml }} className="prose max-w-none" />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+```
+
+**ApprovalsPanel** implementation:
+```jsx
+// client/src/components/cer/ApprovalsPanel.jsx
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, MenuItem } from '@/components/ui/select';
+import axios from 'axios';
+
+export default function ApprovalsPanel() {
+  const [jobs, setJobs] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('in-review');
+  const [loading, setLoading] = useState(false);
+
+  const fetchJobs = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('/api/cer/jobs', { params: { status: statusFilter } });
+      setJobs(res.data.data);
+    } catch (err) {
+      console.error('Failed to load approvals', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchJobs(); }, [statusFilter]);
+
+  const handleBatchAction = async (action) => {
+    const ids = jobs.filter(j => j.selected).map(j => j.job_id);
+    if (!ids.length) return;
+    try {
+      await axios.post('/api/cer/jobs/batch-review', { ids, decision: action });
+      fetchJobs();
+    } catch (err) {
+      console.error('Batch action failed', err);
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setJobs(jobs.map(j => j.job_id === id ? { ...j, selected: !j.selected } : j));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center space-x-4">
+        <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <MenuItem value="in-review">In Review</MenuItem>
+          <MenuItem value="pending">Pending</MenuItem>
+          <MenuItem value="approved">Approved</MenuItem>
+          <MenuItem value="rejected">Rejected</MenuItem>
+        </Select>
+        <Button onClick={() => handleBatchAction('approved')} disabled={loading}>Batch Approve</Button>
+        <Button onClick={() => handleBatchAction('rejected')} disabled={loading}>Batch Reject</Button>
+      </div>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <ul className="space-y-2">
+          {jobs.map(job => (
+            <li key={job.job_id} className="p-4 border rounded flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  checked={job.selected || false}
+                  onChange={() => toggleSelect(job.job_id)}
+                />
+                <div>
+                  <p className="font-semibold">{job.job_id}</p>
+                  <p>Status: <Badge>{job.status}</Badge></p>
+                </div>
+              </div>
+              <Button size="sm" onClick={() => window.location.href = `/cer?job=${job.job_id}`}>Review</Button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+
