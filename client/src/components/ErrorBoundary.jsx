@@ -1,71 +1,122 @@
 import React from 'react';
+import { useLocation } from 'wouter';
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Home, RefreshCw } from 'lucide-react';
 
 /**
- * Global error boundary to prevent app-wide crashes
- * Catches JavaScript errors in children components and displays a fallback UI
+ * Error Boundary Component
+ * 
+ * This component provides a standardized way to handle errors across the application.
+ * It provides a user-friendly UI for unexpected errors and navigation options to recover.
+ * 
+ * Usage:
+ * <ErrorBoundary>
+ *   <YourComponentThatMightError />
+ * </ErrorBoundary>
  */
-class ErrorBoundary extends React.Component {
+class ErrorBoundaryFallback extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { 
-      hasError: false,
-      error: null,
-      errorInfo: null 
-    };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI.
     return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    // You can log the error to an error reporting service
-    console.error("Application Error:", error);
-    console.error("Error Details:", errorInfo);
+    // Log error to monitoring service
+    console.error("Error boundary caught an error:", error, errorInfo);
     this.setState({ errorInfo });
+    
+    // Report to monitoring/analytics service if available
+    if (window.analytics && typeof window.analytics.track === 'function') {
+      window.analytics.track('Error Boundary Triggered', {
+        error: error.toString(),
+        componentStack: errorInfo.componentStack,
+        url: window.location.href
+      });
+    }
   }
 
   render() {
     if (this.state.hasError) {
-      const { fallback } = this.props;
-      
-      // If a custom fallback is provided, use it
-      if (fallback) {
-        return typeof fallback === 'function' 
-          ? fallback(this.state.error, this.state.errorInfo)
-          : fallback;
-      }
-      
-      // Default fallback UI
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-white p-4">
-          <div className="max-w-md mx-auto bg-white p-8 rounded shadow-md border border-gray-200">
-            <h1 className="text-xl font-semibold text-[#003057] mb-4 text-center">Component Error</h1>
-            <p className="text-[#666] mb-6 text-center">
-              Something went wrong with this component. Please try again.
-            </p>
-            <div className="flex justify-center">
-              <button 
-                onClick={() => window.location.reload()} 
-                className="bg-[#0078d4] hover:bg-[#005fa6] text-white px-5 py-2.5 rounded text-sm font-medium"
-              >
-                Refresh Page
-              </button>
-            </div>
-            {process.env.NODE_ENV !== 'production' && this.state.error && (
-              <div className="mt-6 p-4 bg-gray-50 rounded text-xs overflow-auto">
-                <h3 className="font-medium mb-2">Error Details (Development Only):</h3>
-                <pre>{this.state.error.toString()}</pre>
-              </div>
-            )}
-          </div>
-        </div>
-      );
+      return <ErrorUI error={this.state.error} errorInfo={this.state.errorInfo} />;
     }
 
-    return this.props.children; 
+    return this.props.children;
   }
 }
 
-export default ErrorBoundary;
+// Functional component for the error UI
+function ErrorUI({ error, errorInfo }) {
+  const [, navigate] = useLocation();
+  
+  const handleReload = () => {
+    window.location.reload();
+  };
+
+  const handleNavigateHome = () => {
+    navigate('/client-portal');
+  };
+
+  return (
+    <div className="min-h-[600px] flex items-center justify-center p-6">
+      <div className="bg-red-50 border border-red-200 rounded-lg shadow-lg p-8 max-w-2xl w-full">
+        <div className="flex flex-col items-center text-center">
+          <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
+          <h2 className="text-2xl font-bold text-red-700 mb-4">
+            Something went wrong
+          </h2>
+          <p className="text-gray-700 mb-6">
+            We're sorry, but an unexpected error has occurred in the application. 
+            Our team has been notified and is working to resolve the issue.
+          </p>
+          
+          {process.env.NODE_ENV !== 'production' && (
+            <div className="bg-gray-100 p-4 rounded-md mb-6 text-left w-full overflow-auto max-h-[200px] text-xs">
+              <p className="font-mono text-red-600 mb-2">{error?.toString()}</p>
+              {errorInfo && (
+                <pre className="font-mono text-gray-700">
+                  {errorInfo.componentStack}
+                </pre>
+              )}
+            </div>
+          )}
+          
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2" 
+              onClick={handleReload}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Reload Page
+            </Button>
+            <Button 
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+              onClick={handleNavigateHome}
+            >
+              <Home className="h-4 w-4" />
+              Return to Home
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// For direct usage in JSX
+export default ErrorBoundaryFallback;
+
+// For Higher Order Component usage
+export function withErrorBoundary(Component) {
+  return function WithErrorBoundary(props) {
+    return (
+      <ErrorBoundaryFallback>
+        <Component {...props} />
+      </ErrorBoundaryFallback>
+    );
+  };
+}
