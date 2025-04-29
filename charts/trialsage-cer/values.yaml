@@ -1,217 +1,194 @@
-# Default values for trialsage-cer Helm chart
+# Default values for trialsage-cer chart
 # This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
 
-# Global settings
-global:
-  nameOverride: ""
-  fullnameOverride: ""
-  environment: production
-  
-  # Security contexts
-  securityContext:
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+nameOverride: ""
+fullnameOverride: ""
+namespaceOverride: ""
 
-# API Server configuration
+# Pod-level security settings
+podSecurityContext: {}
+
+# Container-level security settings
+securityContext: {}
+
+# Service account configuration
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# RBAC configuration
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+# API component configuration
 api:
+  # Controls whether the API component is enabled
   enabled: true
-  replicaCount: 2
+  # Number of replicas (ignored if autoscaling is enabled)
+  replicaCount: 1
+  
   image:
     repository: trialsage/cer-api
-    tag: "latest"
-    pullPolicy: Always
+    tag: "latest"  # Will default to Chart.AppVersion if not specified
+    pullPolicy: IfNotPresent
   
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 250m
-      memory: 256Mi
-  
-  autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 10
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-  
-  containerPorts:
-    http: 4000
-    metrics: 9090
-  
-  serviceAccount:
-    create: true
-    annotations: {}
-    name: ""
+  env:
+    NODE_ENV: "production"
+    PORT: "4000"
+    METRICS_PORT: "9090"
+    AWS_ENABLED: false
+    AWS_S3_BUCKET: ""
+    AWS_REGION: "us-east-1"
+    OPENAI_API_KEY: ""
+    # Additional custom environment variables
+    custom: {}
   
   service:
     type: ClusterIP
     port: 80
     metricsPort: 9090
+    annotations: {}
   
   ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+    enabled: false
+    className: ""
+    annotations: {}
     hosts:
-      - host: cer.trialsage.com
+      - host: chart-example.local
         paths:
           - path: /
-            pathType: Prefix
-    tls:
-      - secretName: cer-tls
-        hosts:
-          - cer.trialsage.com
-  
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9090"
-    prometheus.io/path: "/metrics"
-
-# Worker configuration
-worker:
-  enabled: true
-  replicaCount: 2
-  image:
-    repository: trialsage/cer-worker
-    tag: "latest"
-    pullPolicy: Always
+            pathType: ImplementationSpecific
+    tls: []
   
   resources:
     limits:
       cpu: 1000m
-      memory: 1024Mi
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+  
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Worker component configuration
+worker:
+  # Controls whether the Worker component is enabled
+  enabled: true
+  # Number of replicas (ignored if autoscaling is enabled)
+  replicaCount: 1
+  
+  image:
+    repository: trialsage/cer-worker
+    tag: "latest"  # Will default to Chart.AppVersion if not specified
+    pullPolicy: IfNotPresent
+  
+  env:
+    NODE_ENV: "production"
+    PORT: "8080"
+    METRICS_PORT: "9090"
+    CONCURRENCY: "2"
+    MAX_MEMORY_RESTART: "2G"
+    AWS_ENABLED: false
+    AWS_S3_BUCKET: ""
+    AWS_REGION: "us-east-1"
+    OPENAI_API_KEY: ""
+    # Additional custom environment variables
+    custom: {}
+  
+  service:
+    type: ClusterIP
+    port: 80
+    metricsPort: 9090
+    annotations: {}
+  
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
     requests:
       cpu: 500m
       memory: 512Mi
   
   autoscaling:
     enabled: true
-    minReplicas: 2
-    maxReplicas: 8
+    minReplicas: 1
+    maxReplicas: 10
     targetCPUUtilizationPercentage: 70
     targetMemoryUtilizationPercentage: 70
   
-  containerPorts:
-    http: 3001
-    metrics: 9091
-  
-  serviceAccount:
-    create: true
-    annotations: {}
-    name: ""
-  
-  service:
-    type: ClusterIP
-    port: 3001
-    metricsPort: 9091
-  
-  podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "9091"
-    prometheus.io/path: "/metrics"
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
-# PostgreSQL configuration
-postgresql:
-  enabled: true
-  auth:
-    username: trialsage
-    password: ""  # Will be auto-generated if not provided
-    database: cer
-  primary:
-    persistence:
-      enabled: true
-      size: 10Gi
-  metrics:
-    enabled: true
-    serviceMonitor:
-      enabled: true
-
-# Redis configuration
-redis:
-  enabled: true
-  auth:
-    password: ""  # Will be auto-generated if not provided
-  master:
-    persistence:
-      enabled: true
-      size: 8Gi
-  metrics:
-    enabled: true
-    serviceMonitor:
-      enabled: true
-
-# Storage for PDF files
+# Storage configuration
 storage:
   enabled: true
-  provider: s3  # s3, azure, gcp
   persistentVolume:
-    enabled: false
-    size: 50Gi
+    enabled: true
     storageClass: ""
-  s3:
-    bucket: trialsage-cer-pdfs
-    region: us-east-1
-  
-# Monitoring and observability
+    size: 10Gi
+
+# Configuration maps
+configMaps:
+  app:
+    create: true
+    data:
+      LOG_LEVEL: "info"
+      ENABLE_METRICS: "true"
+
+# Secrets configuration
+secrets:
+  create: true
+  annotations: {}
+  stringData:
+    # These will be auto-generated if not provided
+    jwt_secret: ""
+    # These should be provided
+    database_url: ""
+    redis_url: ""
+    aws_access_key: ""
+    aws_secret_key: ""
+    openai_api_key: ""
+
+# Monitoring configuration
 monitoring:
   enabled: true
   serviceMonitor:
     enabled: true
     selector:
       release: prometheus
-  prometheusRules:
-    enabled: true
-    rules:
-      - alert: HighErrorRate
-        expr: sum(rate(trialsage_cer_job_errors_total[5m])) / sum(rate(trialsage_cer_jobs_total[5m])) > 0.1
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High error rate in CER jobs"
-          description: "Error rate is above 10% for CER job processing"
-      - alert: LongRunningJobs
-        expr: max(trialsage_cer_job_duration_seconds) > 1800
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Jobs taking too long to complete"
-          description: "CER jobs are taking more than 30 minutes to complete"
 
-# Security and RBAC settings
-rbac:
-  create: true
-  rules:
-    - apiGroups: [""]
-      resources: ["pods", "services", "configmaps", "secrets"]
-      verbs: ["get", "list", "watch"]
-    - apiGroups: ["batch"]
-      resources: ["jobs"]
-      verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# PostgreSQL dependency configuration
+postgresql:
+  enabled: false
+  auth:
+    username: "trialsage"
+    password: ""
+    database: "cer"
+  primary:
+    service:
+      ports:
+        postgresql: 5432
 
-# Secrets management
-secrets:
-  create: true
-  annotations:
-    example.com/key: value
-  stringData:
-    jwt_secret: ""  # Will be auto-generated if not provided
-    aws_access_key: ""
-    aws_secret_key: ""
-
-# ConfigMap for application configuration
-configMaps:
-  app:
-    create: true
-    data:
-      NODE_ENV: "production"
-      LOG_LEVEL: "info"
-      API_BASE_URL: "https://cer.trialsage.com"
-      MAX_BROWSER_INSTANCES: "2"
+# Redis dependency configuration
+redis:
+  enabled: false
+  master:
+    service:
+      port: 6379

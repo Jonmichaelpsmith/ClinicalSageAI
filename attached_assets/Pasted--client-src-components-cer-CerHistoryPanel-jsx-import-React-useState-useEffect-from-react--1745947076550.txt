@@ -1,0 +1,80 @@
+// client/src/components/cer/CerHistoryPanel.jsx
+import React, { useState, useEffect } from 'react';
+import { Select, MenuItem, Button, Badge } from '@/components/ui';
+import { Eye, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import axios from 'axios';
+import ReviewDrawer from './ReviewDrawer';
+
+export default function CerHistoryPanel() {
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [jobs, setJobs] = useState([]);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchJobs = async () => {
+    setLoading(true);
+    try {
+      const params = {};
+      if (statusFilter !== 'all') params.status = statusFilter;
+      const res = await axios.get('/api/cer/jobs', { params });
+      setJobs(res.data.data);
+    } catch (err) {
+      console.error('Failed to fetch jobs', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchJobs(); }, [statusFilter]);
+
+  const openReview = (jobId) => {
+    setSelectedJob(jobId);
+    setDrawerOpen(true);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center space-x-2 mb-4">
+        <Select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+          <MenuItem value="all">All</MenuItem>
+          <MenuItem value="draft">Draft</MenuItem>
+          <MenuItem value="in-review">In Review</MenuItem>
+          <MenuItem value="approved">Approved</MenuItem>
+          <MenuItem value="rejected">Rejected</MenuItem>
+        </Select>
+        <Button onClick={fetchJobs} disabled={loading}>
+          {loading ? <Loader2 className="animate-spin" /> : 'Filter'}
+        </Button>
+      </div>
+
+      <ul className="space-y-2">
+        {jobs.map(job => (
+          <li key={job.job_id} className="p-4 border rounded flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <Eye className="text-gray-500" />
+              <div>
+                <p className="font-semibold">{job.job_id}</p>
+                <p>Status: <Badge>{job.status}</Badge></p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              {job.status === 'approved' && <CheckCircle className="text-green-500" />}
+              {job.status === 'rejected' && <XCircle className="text-red-500" />}
+              <Button onClick={() => openReview(job.job_id)}>Review</Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {selectedJob && (
+        <ReviewDrawer
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          jobId={selectedJob}
+          onReviewed={fetchJobs}
+        />
+      )}
+    </div>
+  );
+}

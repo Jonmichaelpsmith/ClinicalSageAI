@@ -1,0 +1,137 @@
+# k8s/cer-worker-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trialsage-cer-worker
+---
+# k8s/cer-worker-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cer-worker-sa
+  namespace: trialsage-cer-worker
+---
+# k8s/cer-worker-clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cer-worker-cr
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch", "batch/v1"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list"]
+---
+# k8s/cer-worker-clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cer-worker-crb
+subjects:
+  - kind: ServiceAccount
+    name: cer-worker-sa
+    namespace: trialsage-cer-worker
+roleRef:
+  kind: ClusterRole
+  name: cer-worker-cr
+  apiGroup: rbac.authorization.k8s.io
+---
+# k8s/cer-worker-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cer-worker-config
+  namespace: trialsage-cer-worker
+data:
+  REDIS_HOST: "redis-service.trialsage.svc.cluster.local"
+  REDIS_PORT: "6379"
+  DATABASE_URL: "postgres://user:pass@postgres-service.trialsage.svc.cluster.local:5432/trialsage"
+---
+# k8s/cer-worker-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cer-worker-secrets
+  namespace: trialsage-cer-worker
+stringData:
+  AWS_REGION: "us-east-1"
+  AWS_ACCESS_KEY_ID: "<your-access-key-id>"
+  AWS_SECRET_ACCESS_KEY: "<your-secret-access-key>"
+  CER_BUCKET: "trialsage-cer-bucket"
+---
+# k8s/cer-worker-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cer-worker
+  namespace: trialsage-cer-worker
+  labels:
+    app: cer-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cer-worker
+  template:
+    metadata:
+      labels:
+        app: cer-worker
+    spec:
+      serviceAccountName: cer-worker-sa
+      containers:
+        - name: cer-worker
+          image: your-registry/trialsage-cer-worker:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: cer-worker-config
+            - secretRef:
+                name: cer-worker-secrets
+          ports:
+            - name: metrics
+              containerPort: 9100
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+# k8s/cer-worker-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: cer-worker-metrics
+  namespace: trialsage-cer-worker
+spec:
+  selector:
+    app: cer-worker
+  ports:
+    - name: metrics
+      port: 9100
+      targetPort: 9100
+      protocol: TCP
+---
+# k8s/cer-worker-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cer-worker-hpa
+  namespace: trialsage-cer-worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cer-worker
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50

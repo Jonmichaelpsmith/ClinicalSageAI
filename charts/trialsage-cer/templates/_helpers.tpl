@@ -2,7 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "trialsage-cer.name" -}}
-{{- default .Chart.Name .Values.global.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -11,10 +11,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "trialsage-cer.fullname" -}}
-{{- if .Values.global.fullnameOverride }}
-{{- .Values.global.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default .Chart.Name .Values.global.nameOverride }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -28,13 +28,6 @@ Create chart name and version as used by the chart label.
 */}}
 {{- define "trialsage-cer.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
-Create the namespace name
-*/}}
-{{- define "trialsage-cer.namespace" -}}
-{{- default (printf "%s-system" (include "trialsage-cer.name" .)) .Values.namespace.name }}
 {{- end }}
 
 {{/*
@@ -58,71 +51,50 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use for the API component
+Create the name of the service account to use
 */}}
-{{- define "trialsage-cer.api.serviceAccountName" -}}
-{{- if .Values.api.serviceAccount.create }}
-{{- default (printf "%s-api" (include "trialsage-cer.fullname" .)) .Values.api.serviceAccount.name }}
+{{- define "trialsage-cer.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "trialsage-cer.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
-{{- default "default" .Values.api.serviceAccount.name }}
+{{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use for the Worker component
+Get the namespace for all resources
 */}}
-{{- define "trialsage-cer.worker.serviceAccountName" -}}
-{{- if .Values.worker.serviceAccount.create }}
-{{- default (printf "%s-worker" (include "trialsage-cer.fullname" .)) .Values.worker.serviceAccount.name }}
+{{- define "trialsage-cer.namespace" -}}
+{{- if .Values.namespaceOverride }}
+{{- .Values.namespaceOverride }}
 {{- else }}
-{{- default "default" .Values.worker.serviceAccount.name }}
+{{- .Release.Namespace }}
 {{- end }}
 {{- end }}
 
 {{/*
-Create a default fully qualified postgresql name.
-*/}}
-{{- define "trialsage-cer.postgresql.fullname" -}}
-{{- if .Values.postgresql.fullnameOverride -}}
-{{- .Values.postgresql.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default "postgresql" .Values.postgresql.nameOverride -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified redis name.
-*/}}
-{{- define "trialsage-cer.redis.fullname" -}}
-{{- if .Values.redis.fullnameOverride -}}
-{{- .Values.redis.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default "redis" .Values.redis.nameOverride -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Generate the PostgreSQL connection string
+PostgreSQL connection string
 */}}
 {{- define "trialsage-cer.postgresql.connectionString" -}}
-{{- $username := default "trialsage" .Values.postgresql.auth.username -}}
-{{- $password := .Values.postgresql.auth.password -}}
-{{- $database := default "cer" .Values.postgresql.auth.database -}}
-{{- $host := include "trialsage-cer.postgresql.fullname" . -}}
-{{- printf "postgresql://%s:%s@%s:5432/%s" $username $password $host $database -}}
-{{- end -}}
+{{- if and .Values.postgresql.enabled .Values.postgresql.auth .Values.postgresql.auth.username .Values.postgresql.auth.password .Values.postgresql.auth.database }}
+{{- $port := "" }}
+{{- if .Values.postgresql.primary.service.ports.postgresql }}
+{{- $port = .Values.postgresql.primary.service.ports.postgresql }}
+{{- else }}
+{{- $port = "5432" }}
+{{- end }}
+{{- $host := printf "%s-postgresql.%s.svc.cluster.local" .Release.Name .Release.Namespace }}
+{{- printf "postgresql://%s:%s@%s:%s/%s" .Values.postgresql.auth.username .Values.postgresql.auth.password $host $port .Values.postgresql.auth.database }}
+{{- end }}
+{{- end }}
 
 {{/*
-Generate the Redis connection string
+Redis connection string
 */}}
 {{- define "trialsage-cer.redis.connectionString" -}}
-{{- $password := .Values.redis.auth.password -}}
-{{- $host := include "trialsage-cer.redis.fullname" . -}}
-{{- if $password -}}
-{{- printf "redis://:%s@%s-master:6379" $password $host -}}
-{{- else -}}
-{{- printf "redis://%s-master:6379" $host -}}
-{{- end -}}
-{{- end -}}
+{{- if .Values.redis.enabled }}
+{{- $redisPort := .Values.redis.master.service.port | default 6379 }}
+{{- $redisHost := printf "%s-redis-master.%s.svc.cluster.local" .Release.Name .Release.Namespace }}
+{{- printf "redis://%s:%d/0" $redisHost $redisPort }}
+{{- end }}
+{{- end }}
