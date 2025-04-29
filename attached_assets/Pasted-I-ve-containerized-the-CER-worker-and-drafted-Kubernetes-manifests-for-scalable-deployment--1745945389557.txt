@@ -1,0 +1,114 @@
+I’ve containerized the CER worker and drafted Kubernetes manifests for scalable deployment:
+
+---
+
+### 1. `worker/Dockerfile`  
+- **Alpine Node 18**  
+- Installs prod deps only  
+- Copies `worker/cerWorker.js` and service modules  
+- Default `CMD` to start the worker
+
+---
+
+### 2. `docker-compose.yml` (local dev)  
+```yaml
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ['6379:6379']
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: trialsage
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports: ['5432:5432']
+  cer-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DATABASE_URL: postgres://postgres:password@postgres:5432/trialsage
+    depends_on:
+      - redis
+      - postgres
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DATABASE_URL: postgres://postgres:password@postgres:5432/trialsage
+    ports:
+      - '4000:4000'
+    depends_on:
+      - redis
+      - postgres
+```
+
+---
+
+### 3. Kubernetes Deployment & HPA  
+```yaml
+# k8s/cer-worker-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cer-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cer-worker
+  template:
+    metadata:
+      labels:
+        app: cer-worker
+    spec:
+      containers:
+      - name: worker
+        image: your-registry/trialsage-cer-worker:latest
+        env:
+        - name: REDIS_HOST
+          value: redis-service
+        - name: REDIS_PORT
+          value: '6379'
+        - name: DATABASE_URL
+          value: postgres://user:pass@postgres-service:5432/trialsage
+```
+
+```yaml
+# k8s/cer-worker-hpa.yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cer-worker-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cer-worker
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
+---
+
+**Next steps**:  
+1. Build & push `trialsage-cer-worker` image to your registry.  
+2. Update `api` Deployment similarly for the Express service.  
+3. Apply with `kubectl apply -f k8s/cer-worker-deployment.yaml` and HPA.  
+4. Monitor with `kubectl get hpa` as you enqueue jobs.
+
+Let me know if you need Helm charts, namespace configs, or service/secret manifests next!

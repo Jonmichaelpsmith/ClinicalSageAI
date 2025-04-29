@@ -1,0 +1,137 @@
+// migrations/20250501_create_cer_jobs_table.sql
+-- Run this in your PostgreSQL database
+CREATE TABLE cer_jobs (
+  job_id TEXT PRIMARY KEY,
+  user_id UUID NOT NULL,
+  template_id UUID NOT NULL,
+  status TEXT NOT NULL DEFAULT 'queued',
+  progress INT NOT NULL DEFAULT 0,
+  step TEXT NOT NULL DEFAULT '',
+  attempts INT NOT NULL DEFAULT 0,
+  last_error TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- trigger function to update updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_cer_jobs_updated_at
+BEFORE UPDATE ON cer_jobs
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+
+// routes/cerRoutes.js (excerpt)
+const express = require('express');
+const router = express.Router();
+const Queue = require('bull');
+const { Pool } = require('pg');
+
+const pool = new Pool();
+const cerQueue = new Queue('cer-generation', {
+  redis: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT },
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000
+    },
+    removeOnComplete: true,
+    removeOnFail: false
+  }
+});
+
+router.post('/generate-full', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    let { templateId } = req.body;
+    if (!templateId) {
+      const defaultTpl = await pool.query(
+        `SELECT id FROM templates WHERE is_default = TRUE LIMIT 1`
+      );
+      templateId = defaultTpl.rows[0].id;
+    }
+    const job = await cerQueue.add({ userId, templateId });
+
+    // Persist job in Postgres
+    await pool.query(
+      `INSERT INTO cer_jobs(job_id, user_id, template_id) VALUES($1, $2, $3)`,
+      [job.id.toString(), userId, templateId]
+    );
+
+    return res.json({ jobId: job.id });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Could not start report generation' });
+  }
+});
+
+router.get('/jobs/:id/status', async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { rows } = await pool.query(
+      `SELECT status, progress, step, attempts, last_error FROM cer_jobs WHERE job_id = $1`,
+      [jobId]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Job not found' });
+    return res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Could not fetch job status' });
+  }
+});
+
+router.get('/jobs/:id/result', async (req, res) => {
+  // unchanged
+});
+
+module.exports = router;
+
+
+// worker/cerWorker.js (excerpt)
+const Queue = require('bull');
+const { Pool } = require('pg');
+const cerQueue = new Queue('cer-generation', {
+  redis: { host: process.env.REDIS_HOST, port: process.env.REDIS_PORT }
+});
+const pool = new Pool();
+
+cerQueue.process(async job => {
+  const { id, data } = job;
+  try {
+    // update status to 'in-progress'
+    await pool.query(
+      `UPDATE cer_jobs SET status = $1 WHERE job_id = $2`,
+      ['in-progress', id]
+    );
+
+    // ... generation steps ...
+    // for each step:
+    await pool.query(
+      `UPDATE cer_jobs SET progress = $1, step = $2 WHERE job_id = $3`,
+      [job._progress, data.currentStep, id]
+    );
+
+    // on success
+    await pool.query(
+      `UPDATE cer_jobs SET status = $1, progress = 100 WHERE job_id = $2`,
+      ['completed', id]
+    );
+    return Promise.resolve();
+  } catch (error) {
+    console.error(error);
+    // record error and attempts
+    await pool.query(
+      `UPDATE cer_jobs SET status = $1, last_error = $2, attempts = $3 WHERE job_id = $4`,
+      ['failed', error.message, job.attemptsMade, id]
+    );
+    throw error;
+  }
+});

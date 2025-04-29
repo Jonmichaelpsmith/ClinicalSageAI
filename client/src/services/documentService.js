@@ -2,7 +2,10 @@
  * Document Service
  * 
  * Provides client-side methods for interacting with document and vault related API endpoints
+ * with enhanced error handling and automatic retry capabilities.
  */
+
+import { handleApiError, retryApiCall, withRetry } from './errorHandling';
 
 /**
  * Fetch documents with optional filtering
@@ -38,15 +41,36 @@ export async function fetchDocuments(filters = {}, page = 1, limit = 10) {
   queryParams.append('page', page);
   queryParams.append('limit', limit);
   
-  // Make API request
-  const response = await fetch(`/api/docs?${queryParams.toString()}`);
+  const endpoint = `/api/docs?${queryParams.toString()}`;
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to fetch documents: ${errorText}`);
+  try {
+    // Use retry mechanism with exponential backoff
+    const response = await retryApiCall(async () => {
+      const res = await fetch(endpoint);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to fetch documents: ${errorText}`);
+      }
+      
+      return res;
+    }, [], { maxRetries: 2 });
+    
+    return await response.json();
+  } catch (error) {
+    // Enhanced error handling with fallback empty documents
+    handleApiError('Fetch Documents', error, endpoint);
+    
+    // Return empty document list with pagination to prevent UI crashes
+    return {
+      documents: [],
+      pagination: {
+        page: page,
+        totalPages: 1,
+        totalDocuments: 0
+      }
+    };
   }
-  
-  return await response.json();
 }
 
 /**
@@ -55,14 +79,34 @@ export async function fetchDocuments(filters = {}, page = 1, limit = 10) {
  * @returns {Promise<Object>} Document details
  */
 export async function fetchDocument(id) {
-  const response = await fetch(`/api/docs/${id}`);
+  const endpoint = `/api/docs/${id}`;
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to fetch document: ${errorText}`);
+  try {
+    const response = await retryApiCall(async () => {
+      const res = await fetch(endpoint);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to fetch document: ${errorText}`);
+      }
+      
+      return res;
+    }, [], { maxRetries: 2 });
+    
+    return await response.json();
+  } catch (error) {
+    // Enhanced error handling
+    handleApiError('Fetch Document', error, endpoint);
+    
+    // Return error object that can be handled gracefully by UI
+    return {
+      id,
+      status: 'error',
+      error: error.message,
+      title: 'Document Unavailable',
+      message: 'Unable to retrieve document. Please try again later.'
+    };
   }
-  
-  return await response.json();
 }
 
 /**
@@ -71,19 +115,33 @@ export async function fetchDocument(id) {
  * @returns {Promise<Object>} Updated document
  */
 export async function approveDocument(id) {
-  const response = await fetch(`/api/docs/${id}/approve`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  const endpoint = `/api/docs/${id}/approve`;
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to approve document: ${errorText}`);
+  try {
+    const response = await retryApiCall(async () => {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to approve document: ${errorText}`);
+      }
+      
+      return res;
+    }, [], { maxRetries: 2 });
+    
+    return await response.json();
+  } catch (error) {
+    // Enhanced error handling
+    handleApiError('Approve Document', error, endpoint);
+    
+    // Rethrow to allow component to handle with toast notification
+    throw error;
   }
-  
-  return await response.json();
 }
 
 /**
@@ -93,20 +151,34 @@ export async function approveDocument(id) {
  * @returns {Promise<Object>} Updated document
  */
 export async function submitDocumentForReview(id, comments = '') {
-  const response = await fetch(`/api/docs/${id}/review`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ comments })
-  });
+  const endpoint = `/api/docs/${id}/review`;
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to submit document for review: ${errorText}`);
+  try {
+    const response = await retryApiCall(async () => {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ comments })
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to submit document for review: ${errorText}`);
+      }
+      
+      return res;
+    }, [], { maxRetries: 2 });
+    
+    return await response.json();
+  } catch (error) {
+    // Enhanced error handling
+    handleApiError('Submit Document for Review', error, endpoint);
+    
+    // Rethrow to allow component to handle with toast notification
+    throw error;
   }
-  
-  return await response.json();
 }
 
 /**
@@ -123,13 +195,41 @@ export async function fetchCERHistory(deviceId) {
   
   queryParams.append('module', 'cer');
   
-  const response = await fetch(`/api/docs?${queryParams.toString()}`);
+  const endpoint = `/api/docs?${queryParams.toString()}`;
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to fetch CER history: ${errorText}`);
+  try {
+    const response = await retryApiCall(async () => {
+      const res = await fetch(endpoint);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to fetch CER history: ${errorText}`);
+      }
+      
+      return res;
+    }, [], { maxRetries: 2 });
+    
+    const result = await response.json();
+    return result.documents;
+  } catch (error) {
+    // Enhanced error handling
+    handleApiError('Fetch CER History', error, endpoint);
+    
+    // Return empty array to prevent UI crashes
+    return [];
   }
-  
-  const result = await response.json();
-  return result.documents;
+}
+
+/**
+ * Check document service health
+ * @returns {Promise<boolean>} Whether document services are available
+ */
+export async function checkDocumentServiceHealth() {
+  try {
+    const response = await fetch('/api/docs/health');
+    return response.ok;
+  } catch (error) {
+    console.error('Document service health check failed:', error);
+    return false;
+  }
 }
