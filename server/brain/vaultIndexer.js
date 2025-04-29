@@ -1,7 +1,12 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from 'url';
 import pdfParse from "pdf-parse";
 import { OpenAI } from "openai";
+
+// Get the directory path for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 1) Configure OpenAI
 const openai = new OpenAI({
@@ -89,10 +94,15 @@ async function buildIndex() {
     try {
       const { text } = await pdfParse(dataBuffer);
 
+      // For demo purposes, only process the first 5 chunks
       const chunks = await chunkText(text);
-      for (let i = 0; i < chunks.length; i++) {
+      const maxChunks = 5;
+      const chunksToProcess = chunks.slice(0, maxChunks);
+      console.log(`Processing first ${chunksToProcess.length} of ${chunks.length} chunks (demo mode)`);
+      
+      for (let i = 0; i < chunksToProcess.length; i++) {
         const chunk = chunks[i];
-        process.stdout.write(`  • embedding chunk ${i+1}/${chunks.length}…\r`);
+        process.stdout.write(`  • embedding chunk ${i+1}/${chunksToProcess.length}…\r`);
         
         try {
           const embeddingResponse = await openai.embeddings.create({
@@ -111,7 +121,7 @@ async function buildIndex() {
           // Continue with next chunk
         }
       }
-      console.log(`\n✅ Indexed ${chunks.length} chunks for ${doc.id}`);
+      console.log(`\n✅ Indexed ${chunksToProcess.length} chunks for ${doc.id} (out of ${chunks.length} total chunks)`);
     } catch (pdfError) {
       console.error(`\n❌ Error parsing PDF for ${doc.id}: ${pdfError.message}`);
       // Continue with next document
