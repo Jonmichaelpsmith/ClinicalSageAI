@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Card, 
-  Button, 
-  Spinner 
-} from '@/components/ui';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { FileText, Calendar, User, Tag, Check, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 

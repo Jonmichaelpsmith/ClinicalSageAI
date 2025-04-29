@@ -37,7 +37,7 @@ export async function generateFullCER(params) {
  * Fetch all CER reports for the current user
  * @returns {Promise<Array>} List of CER reports
  */
-export async function fetchCERReports() {
+export async function fetchAllCERs() {
   try {
     const response = await fetch('/api/cer/reports');
     
