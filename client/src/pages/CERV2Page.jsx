@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   FileText, Search, Download, Upload, FileSpreadsheet, 
   Book, Database, Layers, Settings, Microscope, BarChart4, 
@@ -43,6 +44,10 @@ const CERV2Page = () => {
   const [reportStatus, setReportStatus] = useState(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStep, setGenerationStep] = useState('');
+  const [sampleModalOpen, setSampleModalOpen] = useState(false);
+  const [loadingSample, setLoadingSample] = useState(false);
+  const [sampleURL, setSampleURL] = useState(null);
+  const [selectedSampleTemplate, setSelectedSampleTemplate] = useState('mdr-full');
   
   // Mock data for existing CER reports
   const [pastReports, setPastReports] = useState([
@@ -271,12 +276,123 @@ const CERV2Page = () => {
   
   return (
     <div className="cerv2-page p-6">
+      {/* Sample CER Modal */}
+      <Dialog open={sampleModalOpen} onOpenChange={setSampleModalOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Generate Sample CER</DialogTitle>
+            <DialogDescription>
+              Preview a sample Clinical Evaluation Report based on selected template
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="sample-template">Select Template</Label>
+              <Select
+                value={selectedSampleTemplate}
+                onValueChange={setSelectedSampleTemplate}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select template" />
+                </SelectTrigger>
+                <SelectContent id="sample-template">
+                  <SelectItem value="mdr-full">EU MDR 2017/745 Full Template</SelectItem>
+                  <SelectItem value="mdr-lite">EU MDR Simplified Template</SelectItem>
+                  <SelectItem value="meddev">MEDDEV 2.7/1 Rev 4 Template</SelectItem>
+                  <SelectItem value="fda-510k">FDA 510(k) Template</SelectItem>
+                  <SelectItem value="pmda">PMDA Template (Japan)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {sampleURL ? (
+              <div className="border rounded-md overflow-hidden h-[400px]">
+                <iframe 
+                  src={sampleURL} 
+                  className="w-full h-full"
+                  title="Sample CER Preview" 
+                />
+              </div>
+            ) : (
+              <div className="border rounded-md bg-gray-50 h-[400px] flex items-center justify-center">
+                <div className="text-center p-6">
+                  <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">
+                    Select a template and click "Generate Sample" to preview
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button
+              disabled={loadingSample}
+              onClick={() => {
+                setLoadingSample(true);
+                setSampleURL(null);
+                
+                // Call the API to get a sample CER
+                fetch('/api/cer/sample', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ template: selectedSampleTemplate })
+                })
+                  .then(response => response.json())
+                  .then(data => {
+                    setSampleURL(data.url);
+                    setLoadingSample(false);
+                  })
+                  .catch(error => {
+                    console.error('Error fetching sample CER:', error);
+                    alert('Failed to generate sample CER.');
+                    setLoadingSample(false);
+                  });
+              }}
+              className="flex items-center gap-2 sm:flex-1"
+            >
+              {loadingSample ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  Generate Sample
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setSampleModalOpen(false)}
+              className="sm:flex-1"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Advanced CER Generator™</h1>
           <p className="text-muted-foreground">Create EU MDR 2017/745 compliant Clinical Evaluation Reports with AI assistance</p>
         </div>
-        <div>
+        <div className="flex gap-3 items-center">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => setSampleModalOpen(true)}
+          >
+            <FileText className="h-4 w-4" />
+            Generate Sample CER
+          </Button>
+          
           <Button 
             className="flex items-center" 
             size="lg"
