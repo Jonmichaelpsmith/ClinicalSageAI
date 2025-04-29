@@ -4,7 +4,9 @@ import UnifiedTopNavV4 from '../components/navigation/UnifiedTopNavV4';
 import SectionEditor from '../components/coauthor/SectionEditor';
 import AICopilotPanel from '../components/coauthor/AICopilotPanel';
 import CanvasWorkbench from '../components/canvas/CanvasWorkbench';
+import CanvasWorkbenchV2 from '../components/canvas/CanvasWorkbenchV2';
 import './CoAuthor.css';
+import '../styles/theme.css';
 
 /**
  * eCTD Co-Author Page
@@ -31,7 +33,7 @@ export default function CoAuthor() {
       
       {isCanvasView ? (
         <div className="canvas-container" style={{ height: 'calc(100vh - 60px)' }}>
-          <CanvasWorkbench />
+          <CanvasWorkbenchV2 />
         </div>
       ) : (
         <div className="coauthor-content">

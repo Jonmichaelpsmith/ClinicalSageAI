@@ -1,0 +1,172 @@
+Great—let’s move on to the next big leap: turning our static “CanvasWorkbench” into a full-fledged interactive graph with animated edges, drag-to-connect handles, and export/share capabilities. We’ll leverage React Flow for this.
+
+⸻
+
+4) Install & configure React Flow
+
+# from your client root
+npm install react-flow-renderer
+
+
+
+⸻
+
+5) Create FlowCanvas.jsx
+
+// client/src/components/canvas/FlowCanvas.jsx
+import React, { useState, useCallback } from 'react';
+import ReactFlow, {
+  addEdge,
+  MiniMap,
+  Controls,
+  Background,
+  Handle,
+  useEdgesState,
+  useNodesState,
+} from 'react-flow-renderer';
+import './FlowCanvas.css';
+
+// Custom node: reuse our CanvasNode visuals inside React Flow
+const CustomNode = ({ data }) => (
+  <div className={`custom-node ${data.status}`}>
+    <Handle type="target" position="top" style={{ background: '#555' }} />
+    <div className="node-content">
+      <div className="node-badge">{data.id}</div>
+      <div className="node-label">{data.label}</div>
+    </div>
+    <Handle type="source" position="bottom" style={{ background: '#555' }} />
+  </div>
+);
+
+// Animated edge: simple moving dash
+const edgeOptions = {
+  animated: true,
+  style: { stroke: 'var(--color-primary)', strokeWidth: 2, strokeDasharray: '5 5' },
+};
+
+export default function FlowCanvas({ initialNodes, initialEdges }) {
+  const [nodes, , onNodesChange]     = useNodesState(initialNodes);
+  const [edges,  setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge({ ...params, ...edgeOptions }, eds)),
+    [setEdges]
+  );
+
+  return (
+    <div className="flow-wrapper">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={{ canvasNode: CustomNode }}
+        fitView
+      >
+        <MiniMap
+          nodeStrokeColor={(n) => {
+            if (n.data.status === 'complete') return var(--color-success);
+            if (n.data.status === 'warning')  return var(--color-warning);
+            if (n.data.status === 'critical') return var(--color-danger);
+            return '#eee';
+          }}
+          nodeColor={(n) => '#fff'}
+        />
+        <Controls />
+        <Background gap={16} />
+      </ReactFlow>
+    </div>
+  );
+}
+
+
+
+⸻
+
+6) Styles for FlowCanvas and CustomNode
+
+/* client/src/components/canvas/FlowCanvas.css */
+.flow-wrapper {
+  height: 500px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--space-sm);
+  box-shadow: var(--elevation-low);
+}
+
+/* reuse our theme tokens */
+.custom-node {
+  background: var(--color-surface);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--space-sm);
+  box-shadow: var(--elevation-low);
+  position: relative;
+  width: 160px;
+  transition: transform 0.2s ease;
+}
+.custom-node.complete { border-left: 4px solid var(--color-success); }
+.custom-node.warning  { border-left: 4px solid var(--color-warning); }
+.custom-node.critical { border-left: 4px solid var(--color-danger); }
+.custom-node:hover { transform: translateY(-4px); }
+
+.node-content {
+  display: flex;
+  align-items: center;
+}
+.node-badge {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--space-sm);
+  font-size: var(--text-xs);
+  margin-right: var(--space-sm);
+}
+.node-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+}
+
+
+
+⸻
+
+7) Hook into your Workbench
+
+Replace your old <CanvasNode/> loop with:
+
+import FlowCanvas from './canvas/FlowCanvas';
+
+const nodes = initialNodes.map(n => ({
+  id: n.id,
+  type: 'canvasNode',
+  position: { x: n.x, y: n.y },
+  data: { ...n, label: n.label, status: n.status }
+}));
+    
+const edges = initialEdges.map(e => ({
+  id: e.id,
+  source: e.source,
+  target: e.target,
+  ...edgeOptions
+}));
+
+<FlowCanvas initialNodes={nodes} initialEdges={edges} />
+
+
+
+⸻
+
+What you now get in v1.2:
+   •   Draggable nodes with top/bottom handles for real connections
+   •   Animated dashed edges showing flow direction
+   •   Mini‐map + zoom/pan controls for large CTD graphs
+   •   Consistent look & feel via our theme tokens
+
+⸻
+
+👣 Next up (after you confirm this works):
+	1.	Real-time multi-user cursors (via WebSocket)
+	2.	Edge‐labeling & contextual hover cards
+	3.	One-click PDF/PNG export
+
+Let me know once you’ve spun this up and we’ll tackle real-time collaboration!

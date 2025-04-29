@@ -1,0 +1,104 @@
+.canvas-workbench-v2 {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--color-bg);
+}
+
+.canvas-container {
+  display: flex;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.nodes-area {
+  flex: 1;
+  position: relative;
+  min-height: 600px;
+  background-color: var(--color-surface);
+  background-image: 
+    linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  cursor: grab;
+}
+
+.nodes-area.dragging {
+  cursor: grabbing;
+}
+
+.connection-line {
+  height: 2px;
+  background: #888;
+  position: absolute;
+}
+
+.connection-line.critical {
+  background: var(--color-danger);
+  height: 3px;
+}
+
+.connection-line::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: -4px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid #888;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+}
+
+.connection-line.critical::after {
+  border-left-color: var(--color-danger);
+}
+
+.node-wrapper {
+  transition: transform 0.2s ease-out;
+}
+
+.canvas-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
+
+.zoom-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #ddd;
+  color: var(--color-text-primary);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--elevation-low);
+}
+
+.zoom-button:hover {
+  background: #f9f9f9;
+  box-shadow: var(--elevation-medium);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .canvas-container {
+    flex-direction: column;
+  }
+  
+  .canvas-panel {
+    max-width: none;
+    width: 100%;
+    height: 300px;
+  }
+}

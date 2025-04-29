@@ -1,0 +1,198 @@
+Below is a drop-in “v1.3” upgrade that layers real‐time multi‐user cursors on top of your React Flow canvas—no more wondering where your teammates are working!
+
+⸻
+
+1) Server: hook up cursor broadcasting
+
+In server/server.js, extend your existing Socket.IO logic:
+
+import http from 'http';
+import express from 'express';
+import { Server as IOServer } from 'socket.io';
+const app = express();
+const server = http.createServer(app);
+const io = new IOServer(server, { cors: { origin: '*' } });
+
+// … your existing route mounts …
+
+io.on('connection', (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+
+  // Existing layout update handler
+  socket.on('layout:update', payload => {
+    socket.broadcast.emit('layout:changed', payload);
+  });
+
+  // NEW: cursor movement
+  socket.on('cursor:move', (cursor) => {
+    // cursor = { userId, x, y, color, label }
+    socket.broadcast.emit('cursor:moved', cursor);
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server running on ${PORT}`));
+
+
+
+⸻
+
+2) Client: capture & broadcast local cursor
+
+In client/src/components/canvas/CanvasWorkbenchV2.jsx, enhance your component:
+
+import React, { useCallback, useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
+import ReactFlow, {
+  MiniMap, Controls, Background,
+  addEdge, useNodesState, useEdgesState
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import NodeDetailPanel from './NodeDetailPanel';
+import {
+  fetchCTDSections,
+  fetchRiskConnections
+} from '../../api/coauthor';
+
+// … nodeColors etc …
+
+export default function CanvasWorkbenchV2() {
+  // … existing state …
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
++ const [remoteCursors, setRemoteCursors] = useState({});
+  const socketRef = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    // 1) Data loading
+    Promise.all([fetchCTDSections(), fetchRiskConnections()])
+      .then(([secs, conns]) => {
+        setNodes(secs.map(sec => ({
+          id: sec.id,
+          type: 'canvasNode',
+          position: { x: sec.x, y: sec.y },
+          data: { ...sec }
+        })));
+        setEdges(conns.map(c => ({
+          id: `e${c.from}-${c.to}`,
+          source: c.from,
+          target: c.to,
+          animated: c.critical,
+          style:{ stroke: c.critical?'#e74c3c':'#888', strokeWidth:2 }
+        })));
+      })
+      .catch(console.error);
+
+    // 2) Socket connection
+    socketRef.current = io.connect(window.location.origin);
+    socketRef.current.on('layout:changed', payload => {
+      setNodes(ns => ns.map(n=>
+        n.id===payload.id ? { ...n, position:{x:payload.x,y:payload.y} } : n
+      ));
+    });
++   // 3) Remote cursor updates
++   socketRef.current.on('cursor:moved', cursor => {
++     setRemoteCursors(rc => ({ ...rc, [cursor.userId]: cursor }));
++   });
+
+    return () => socketRef.current.disconnect();
+  }, [setNodes, setEdges]);
+
+  // Existing onConnect & handleDragEnd…
+  const onConnect = useCallback(params =>
+    setEdges(es => addEdge({ ...params, animated:true, style:{stroke:'#555'} }, es))
+  ,[setEdges]);
+
+  const handleDragEnd = useCallback((e, id) => {
+    const { x,y } = e.target.attrs;
+    socketRef.current.emit('layout:update', { id,x,y });
+  }, []);
+
++ // 4) Send cursor moves
++ const handleMouseMove = useCallback(e => {
++   if (!containerRef.current) return;
++   const rect = containerRef.current.getBoundingClientRect();
++   const x = e.clientX - rect.left;
++   const y = e.clientY - rect.top;
++   socketRef.current.emit('cursor:move', {
++     userId: socketRef.current.id,
++     x, y,
++     color: '#'+socketRef.current.id.slice(-6),   // a quick color per user
++     label: socketRef.current.id.slice(-4)       // short label
++   });
++ }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      style={{ width:'100vw', height:'100vh', position:'relative' }}
++     onMouseMove={handleMouseMove}
+    >
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onNodeDragStop={handleDragEnd}
+        fitView
+      >
+        <MiniMap nodeStrokeColor={n => nodeColors[n.data.status]} nodeColor={n => nodeColors[n.data.status]} />
+        <Controls />
+        <Background color="#eee" gap={16}/>
+      </ReactFlow>
+
++     {/* 5) Render remote cursors */}
++     {Object.entries(remoteCursors).map(([uid, cur]) => (
++       <div
++         key={uid}
++         style={{
++           position: 'absolute',
++           left: cur.x,
++           top:  cur.y,
++           pointerEvents: 'none',
++           transform: 'translate(-50%,-100%)'
++         }}
++       >
++         <div style={{
++           width: '12px', height: '12px',
++           background: cur.color,
++           borderRadius: '50%',
++           boxShadow: '0 0 4px rgba(0,0,0,0.2)'
++         }} />
++         <div style={{
++           fontSize: '10px',
++           color: cur.color,
++           fontWeight: 'bold',
++           textShadow: '0 0 2px #fff'
++         }}>{cur.label}</div>
++       </div>
++     ))}
+
+      <NodeDetailPanel
+        sectionId={selectedSection}
+        onClose={() => setSelectedSection(null)}
+      />
+    </div>
+  );
+}
+
+
+
+⸻
+
+3) Try it out
+	1.	Restart your server & client.
+	2.	Open two browser windows to /coauthor/canvas.
+	3.	Move your mouse in one—the tiny colored cursors (with labels) will track in the other in real time.
+	4.	Continue to drag nodes, connect edges and see everyone’s presence right where they’re working.
+
+⸻
+
+That completes our “real‐time multi‐user cursor” power‐up. Next, we can add:
+   •   Edge labeling & hover cards to show connection rationale.
+   •   One-click export (SVG/PNG) of the current graph.
+   •   Keyboard shortcuts for node selection & navigation.
+
+Let me know which you’d like to slay next!
