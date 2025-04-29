@@ -1,69 +1,44 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { fetchSectionGuidance } from '../../api/coauthor';
 import './NodeDetailPanel.css';
 
 /**
- * NodeDetailPanel - Displays detailed information about a selected node
- * This component shows guidance, risk assessment, and actions for a section
+ * Detail panel that appears when a section is selected in the Canvas Workbench
+ * Provides regulatory guidance, risk assessment, and action buttons
  */
-export default function NodeDetailPanel({ 
-  section, 
-  onClose,
-  onOpenChat
-}) {
+const NodeDetailPanel = ({ section, onClose }) => {
   const [activeTab, setActiveTab] = useState('guidance');
+  const [guidance, setGuidance] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [guidance, setGuidance] = useState('');
-  const [risks, setRisks] = useState(null);
-  
-  // Fetch guidance when section changes
+
+  // Fetch guidance when a section is selected
   useEffect(() => {
-    const fetchGuidance = async () => {
-      setLoading(true);
-      
-      // In a real implementation, this would be an API call
-      setTimeout(() => {
-        const mockGuidance = `
-This section (${section.title}) requires careful documentation of the following elements:
-
-1. Comprehensive overview of the submission structure
-2. Clear delineation of dependencies and relationships
-3. Proper formatting according to regulatory standards
-4. Cross-references to supporting documentation
-
-Ensure all content adheres to ICH guidelines for ${section.id} sections.
-        `;
-        
-        const mockRisks = {
-          level: section.status === 'critical' ? 'high' : 
-                 section.status === 'complete' ? 'low' : 'medium',
-          impact: section.status === 'critical' ? '45-60 days' :
-                  section.status === 'complete' ? '0 days' : '15-30 days',
-          factors: [
-            'Missing required documentation',
-            'Inconsistent formatting across sections',
-            'Inadequate cross-referencing',
-            'Outdated regulatory citations'
-          ]
-        };
-        
-        setGuidance(mockGuidance);
-        setRisks(mockRisks);
-        setLoading(false);
-      }, 800);
-    };
+    if (!section || !section.id) return;
     
-    fetchGuidance();
-  }, [section]);
-  
+    setLoading(true);
+    fetchSectionGuidance(section.id)
+      .then(data => {
+        setGuidance(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching guidance:', error);
+        setLoading(false);
+      });
+  }, [section?.id]); // Only refetch when the section ID changes
+
+  // If no section is selected, don't render the panel
+  if (!section) {
+    return null;
+  }
+
   return (
     <div className="node-detail-panel">
       <div className="panel-header">
-        <h2>Section {section.id}: {section.title}</h2>
-        <button 
-          className="close-button"
-          onClick={onClose}
-        >
-          ×
+        <h2>{section.title || 'Section Details'}</h2>
+        <button className="close-button" onClick={onClose} aria-label="Close panel">
+          <X size={18} />
         </button>
       </div>
       
@@ -90,78 +65,60 @@ Ensure all content adheres to ICH guidelines for ${section.id} sections.
       
       <div className="panel-content">
         {loading ? (
-          <div className="loading">Loading data...</div>
+          <div className="loading">Loading...</div>
+        ) : activeTab === 'guidance' ? (
+          <div className="guidance-content">
+            <h3>Regulatory Guidance</h3>
+            <p>{guidance?.text || 'No guidance available for this section.'}</p>
+            
+            {guidance?.examples && guidance.examples.length > 0 && (
+              <div className="examples">
+                <h4>Examples & References</h4>
+                <ul>
+                  {guidance.examples.map((example, index) => (
+                    <li key={index}>{example}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'risk' ? (
+          <div className="risk-content">
+            <div className="risk-level">
+              <span>Risk Level:</span>
+              <span className={`risk-badge ${section.status === 'critical' ? 'high' : section.status === 'pending' ? 'medium' : 'low'}`}>
+                {section.status === 'critical' ? 'High' : section.status === 'pending' ? 'Medium' : 'Low'}
+              </span>
+            </div>
+            
+            <div className="risk-impact">
+              <span>Potential Delay:</span>
+              <span className="delay-days">
+                {section.status === 'critical' ? '30-60 days' : section.status === 'pending' ? '14-30 days' : '0-7 days'}
+              </span>
+            </div>
+            
+            <div className="risk-factors">
+              <h4>Risk Factors</h4>
+              <ul>
+                <li>Regulatory complexity: {section.status === 'critical' ? 'High' : section.status === 'pending' ? 'Medium' : 'Low'}</li>
+                <li>Historical rejection rate: {section.status === 'critical' ? '45%' : section.status === 'pending' ? '22%' : '8%'}</li>
+                <li>Quality monitoring required: {section.status === 'critical' ? 'Yes' : 'No'}</li>
+              </ul>
+            </div>
+          </div>
         ) : (
-          <>
-            {/* Guidance Tab */}
-            {activeTab === 'guidance' && (
-              <div className="guidance-content">
-                <h3>Regulatory Guidance for {section.title}</h3>
-                <p>{guidance}</p>
-                
-                <div className="examples">
-                  <h4>Common Examples</h4>
-                  <ul>
-                    <li>See example in Section 2.3.1 of the IND template</li>
-                    <li>Reference FDA Guidance Document SC-2022-03</li>
-                    <li>Follow ICH M4E(R2) formatting guidelines</li>
-                  </ul>
-                </div>
-              </div>
-            )}
-            
-            {/* Risk Assessment Tab */}
-            {activeTab === 'risk' && risks && (
-              <div className="risk-content">
-                <div className="risk-level">
-                  <div>Risk Level:</div>
-                  <div className={`risk-badge ${risks.level}`}>
-                    {risks.level.toUpperCase()}
-                  </div>
-                </div>
-                
-                <div className="risk-impact">
-                  <div>Potential Delay:</div>
-                  <div className="delay-days">{risks.impact}</div>
-                </div>
-                
-                <div className="risk-factors">
-                  <h4>Risk Factors</h4>
-                  <ul>
-                    {risks.factors.map((factor, index) => (
-                      <li key={index}>{factor}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-            
-            {/* Actions Tab */}
-            {activeTab === 'actions' && (
-              <div className="actions-content">
-                <button 
-                  className="action-button"
-                  onClick={onOpenChat}
-                >
-                  Ask Lumen AI
-                </button>
-                
-                <button className="action-button">
-                  Generate Content
-                </button>
-                
-                <button className="action-button">
-                  Check Completeness
-                </button>
-                
-                <button className="action-button">
-                  View Related Documents
-                </button>
-              </div>
-            )}
-          </>
+          <div className="actions-content">
+            <button className="action-button">Generate Draft Content</button>
+            <button className="action-button">Run Quality Check</button>
+            <button className="action-button">Check Regulatory Compliance</button>
+            <button className="action-button">View Submission History</button>
+            <button className="action-button">Tag for Expert Review</button>
+          </div>
         )}
       </div>
     </div>
   );
-}
+};
+
+export default NodeDetailPanel;

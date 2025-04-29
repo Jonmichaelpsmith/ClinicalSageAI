@@ -1,164 +1,307 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
+import { Calendar, FileText, BarChart, Check, AlertCircle, Clock } from 'lucide-react';
 import './TimelinePage.css';
 
 /**
- * TimelinePage - Timeline visualization and regulatory planning tool
- * This page provides an interactive timeline for regulatory submissions
+ * TimelinePage component - Visual regulatory timeline
+ * Shows key milestones and deadlines in the submission process
  */
-export default function TimelinePage() {
-  const [submissionType, setSubmissionType] = useState('ind');
+const TimelinePage = () => {
   const [timelineData, setTimelineData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activePhase, setActivePhase] = useState('planning');
   
-  // Simulated milestones data
   useEffect(() => {
-    // In a real implementation, this would be an API call
-    setTimeout(() => {
-      const milestones = [
-        { id: 1, title: 'Project Kickoff', date: '2025-01-15', completed: true },
-        { id: 2, title: 'Protocol Development', date: '2025-02-10', completed: true },
-        { id: 3, title: 'IND Preparation', date: '2025-03-20', completed: true },
-        { id: 4, title: 'CMC Documentation', date: '2025-04-15', completed: false },
-        { id: 5, title: 'Nonclinical Review', date: '2025-05-05', completed: false },
-        { id: 6, title: 'IND Submission', date: '2025-06-10', completed: false },
-        { id: 7, title: 'FDA Feedback', date: '2025-07-10', completed: false },
-        { id: 8, title: 'Trial Start', date: '2025-08-01', completed: false },
-      ];
-      
-      setTimelineData(milestones);
-      setLoading(false);
-    }, 800);
+    // In a real implementation, this would fetch from the backend
+    // const fetchTimeline = async () => {
+    //   try {
+    //     const response = await fetch('/api/timeline/milestones');
+    //     const data = await response.json();
+    //     setTimelineData(data);
+    //     setLoading(false);
+    //   } catch (error) {
+    //     console.error('Error fetching timeline data:', error);
+    //     setLoading(false);
+    //   }
+    // };
+    // 
+    // fetchTimeline();
+    
+    // For now, use mock data
+    const mockTimelineData = [
+      {
+        id: 1,
+        phase: 'planning',
+        title: 'Project Initiation',
+        date: '2025-03-01',
+        status: 'complete',
+        details: 'Initial project setup and team onboarding',
+        subtasks: [
+          { id: 101, title: 'Team onboarding', status: 'complete', date: '2025-03-01' },
+          { id: 102, title: 'Initial planning meeting', status: 'complete', date: '2025-03-03' },
+          { id: 103, title: 'Document templates setup', status: 'complete', date: '2025-03-05' }
+        ]
+      },
+      {
+        id: 2,
+        phase: 'planning',
+        title: 'Regulatory Assessment',
+        date: '2025-03-15',
+        status: 'complete',
+        details: 'Assessment of regulatory requirements for IND submission',
+        subtasks: [
+          { id: 201, title: 'FDA guidance review', status: 'complete', date: '2025-03-10' },
+          { id: 202, title: 'Regulatory gap analysis', status: 'complete', date: '2025-03-12' },
+          { id: 203, title: 'Submission strategy finalization', status: 'complete', date: '2025-03-15' }
+        ]
+      },
+      {
+        id: 3,
+        phase: 'development',
+        title: 'CMC Documentation',
+        date: '2025-04-01',
+        status: 'complete',
+        details: 'Chemistry, Manufacturing, and Controls documentation',
+        subtasks: [
+          { id: 301, title: 'Drug substance characterization', status: 'complete', date: '2025-03-20' },
+          { id: 302, title: 'Manufacturing process documentation', status: 'complete', date: '2025-03-25' },
+          { id: 303, title: 'Stability data compilation', status: 'complete', date: '2025-03-30' }
+        ]
+      },
+      {
+        id: 4,
+        phase: 'development',
+        title: 'Nonclinical Documentation',
+        date: '2025-04-15',
+        status: 'in-progress',
+        details: 'Toxicology and pharmacology studies documentation',
+        subtasks: [
+          { id: 401, title: 'Toxicology studies compilation', status: 'complete', date: '2025-04-05' },
+          { id: 402, title: 'Pharmacology data review', status: 'complete', date: '2025-04-10' },
+          { id: 403, title: 'Safety assessment finalization', status: 'in-progress', date: '2025-04-15' }
+        ]
+      },
+      {
+        id: 5,
+        phase: 'development',
+        title: 'Clinical Protocol',
+        date: '2025-04-30',
+        status: 'at-risk',
+        details: 'Phase 1 clinical trial protocol development',
+        subtasks: [
+          { id: 501, title: 'Protocol outline development', status: 'complete', date: '2025-04-15' },
+          { id: 502, title: 'Study design finalization', status: 'in-progress', date: '2025-04-20' },
+          { id: 503, title: 'Statistical analysis plan', status: 'at-risk', date: '2025-04-25' }
+        ]
+      },
+      {
+        id: 6,
+        phase: 'review',
+        title: 'Internal QC Review',
+        date: '2025-05-15',
+        status: 'pending',
+        details: 'Quality control review of all IND components',
+        subtasks: [
+          { id: 601, title: 'CMC documentation review', status: 'pending', date: '2025-05-05' },
+          { id: 602, title: 'Nonclinical data review', status: 'pending', date: '2025-05-10' },
+          { id: 603, title: 'Clinical protocol review', status: 'pending', date: '2025-05-15' }
+        ]
+      },
+      {
+        id: 7,
+        phase: 'review',
+        title: 'Regulatory Review',
+        date: '2025-05-30',
+        status: 'pending',
+        details: 'Regulatory affairs review and finalization',
+        subtasks: [
+          { id: 701, title: 'Regulatory consistency check', status: 'pending', date: '2025-05-20' },
+          { id: 702, title: 'Cross-reference verification', status: 'pending', date: '2025-05-25' },
+          { id: 703, title: 'Final regulatory assessment', status: 'pending', date: '2025-05-30' }
+        ]
+      },
+      {
+        id: 8,
+        phase: 'submission',
+        title: 'Finalize and Assemble IND',
+        date: '2025-06-10',
+        status: 'pending',
+        details: 'Final assembly of all IND components',
+        subtasks: [
+          { id: 801, title: 'Document formatting finalization', status: 'pending', date: '2025-06-01' },
+          { id: 802, title: 'eCTD assembly', status: 'pending', date: '2025-06-05' },
+          { id: 803, title: 'Final submission package check', status: 'pending', date: '2025-06-10' }
+        ]
+      },
+      {
+        id: 9,
+        phase: 'submission',
+        title: 'Submit to FDA',
+        date: '2025-06-15',
+        status: 'pending',
+        details: 'Electronic submission to FDA',
+        subtasks: [
+          { id: 901, title: 'Electronic submission preparation', status: 'pending', date: '2025-06-12' },
+          { id: 902, title: 'FDA submission', status: 'pending', date: '2025-06-15' },
+          { id: 903, title: 'Submission confirmation receipt', status: 'pending', date: '2025-06-15' }
+        ]
+      },
+      {
+        id: 10,
+        phase: 'post-submission',
+        title: 'FDA Review Period',
+        date: '2025-07-15',
+        status: 'pending',
+        details: '30-day FDA review period',
+        subtasks: [
+          { id: 1001, title: 'Monitor FDA feedback', status: 'pending', date: '2025-06-30' },
+          { id: 1002, title: 'Prepare for FDA questions', status: 'pending', date: '2025-07-10' },
+          { id: 1003, title: 'Review completion', status: 'pending', date: '2025-07-15' }
+        ]
+      }
+    ];
+    
+    setTimelineData(mockTimelineData);
+    setLoading(false);
   }, []);
   
-  // Handle submission type change
-  const handleTypeChange = (type) => {
-    setSubmissionType(type);
-    setLoading(true);
-    
-    // In a real implementation, this would fetch new data based on the type
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
+  // Filter timeline items based on active phase
+  const filteredTimeline = activePhase === 'all' 
+    ? timelineData 
+    : timelineData.filter(item => item.phase === activePhase);
+  
+  // Get status icon based on status
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'complete':
+        return <Check size={16} className="status-icon complete" />;
+      case 'in-progress':
+        return <Clock size={16} className="status-icon in-progress" />;
+      case 'at-risk':
+        return <AlertCircle size={16} className="status-icon at-risk" />;
+      case 'pending':
+      default:
+        return <Clock size={16} className="status-icon pending" />;
+    }
   };
+  
+  // Get phase names and counts
+  const phases = [
+    { id: 'all', name: 'All Phases', count: timelineData.length },
+    { 
+      id: 'planning', 
+      name: 'Planning', 
+      count: timelineData.filter(item => item.phase === 'planning').length 
+    },
+    { 
+      id: 'development', 
+      name: 'Development', 
+      count: timelineData.filter(item => item.phase === 'development').length 
+    },
+    { 
+      id: 'review', 
+      name: 'Review', 
+      count: timelineData.filter(item => item.phase === 'review').length 
+    },
+    { 
+      id: 'submission', 
+      name: 'Submission', 
+      count: timelineData.filter(item => item.phase === 'submission').length 
+    },
+    { 
+      id: 'post-submission', 
+      name: 'Post-Submission', 
+      count: timelineData.filter(item => item.phase === 'post-submission').length 
+    }
+  ];
   
   return (
     <div className="timeline-page">
-      {/* Header with navigation */}
-      <div className="timeline-header">
-        <h1>Regulatory Timeline</h1>
-        
-        <div className="submission-types">
-          <button 
-            className={`type-button ${submissionType === 'ind' ? 'active' : ''}`}
-            onClick={() => handleTypeChange('ind')}
-          >
-            IND
-          </button>
-          <button 
-            className={`type-button ${submissionType === 'nda' ? 'active' : ''}`}
-            onClick={() => handleTypeChange('nda')}
-          >
-            NDA
-          </button>
-          <button 
-            className={`type-button ${submissionType === 'bla' ? 'active' : ''}`}
-            onClick={() => handleTypeChange('bla')}
-          >
-            BLA
-          </button>
-          <button 
-            className={`type-button ${submissionType === 'maa' ? 'active' : ''}`}
-            onClick={() => handleTypeChange('maa')}
-          >
-            MAA
-          </button>
+      <div className="canvas-header">
+        <h1>Submission Timeline</h1>
+        <div className="canvas-tabs">
+          <Link href="/canvas" className="canvas-tab">
+            <FileText size={16} />
+            <span>Section Canvas</span>
+          </Link>
+          <Link href="/timeline" className="canvas-tab active">
+            <Calendar size={16} />
+            <span>Timeline</span>
+          </Link>
+          <Link href="/analysis" className="canvas-tab">
+            <BarChart size={16} />
+            <span>Analysis</span>
+          </Link>
         </div>
-        
-        <div className="timeline-actions">
-          <Link to="/canvas" className="nav-link">
-            Canvas View
-          </Link>
-          <Link to="/module-dashboard" className="back-button">
-            Back to Dashboard
-          </Link>
+        <div className="canvas-meta">
+          <span className="submission-type">IND Initial</span>
+          <span className="submission-id">ID: TSG-IND-2025-0042</span>
         </div>
       </div>
       
-      {/* Timeline content */}
-      <div className="timeline-content">
+      <div className="timeline-main">
+        <div className="timeline-phases">
+          {phases.map(phase => (
+            <button
+              key={phase.id}
+              className={`phase-button ${activePhase === phase.id ? 'active' : ''}`}
+              onClick={() => setActivePhase(phase.id)}
+            >
+              {phase.name}
+              <span className="phase-count">{phase.count}</span>
+            </button>
+          ))}
+        </div>
+        
         {loading ? (
-          <div className="loading-indicator">Loading timeline data...</div>
+          <div className="timeline-loading">Loading timeline data...</div>
         ) : (
-          <>
-            <div className="timeline-container">
-              <div className="timeline-line"></div>
-              
-              {timelineData.map((milestone, index) => (
-                <div 
-                  key={milestone.id} 
-                  className={`timeline-milestone ${milestone.completed ? 'completed' : ''}`}
-                  style={{ 
-                    left: `${10 + (index * (100 / (timelineData.length - 1)))}%`,
-                  }}
-                >
-                  <div className="milestone-dot"></div>
-                  <div className="milestone-label">
-                    <div className="milestone-title">{milestone.title}</div>
-                    <div className="milestone-date">{milestone.date}</div>
+          <div className="timeline-content">
+            {filteredTimeline.length > 0 ? (
+              <div className="timeline-list">
+                {filteredTimeline.map(item => (
+                  <div key={item.id} className={`timeline-item ${item.status}`}>
+                    <div className="timeline-marker">
+                      {getStatusIcon(item.status)}
+                    </div>
+                    <div className="timeline-card">
+                      <div className="timeline-header">
+                        <h3>{item.title}</h3>
+                        <span className="timeline-date">{new Date(item.date).toLocaleDateString()}</span>
+                      </div>
+                      <p className="timeline-details">{item.details}</p>
+                      
+                      {item.subtasks && item.subtasks.length > 0 && (
+                        <div className="timeline-subtasks">
+                          <h4>Subtasks</h4>
+                          <ul>
+                            {item.subtasks.map(subtask => (
+                              <li key={subtask.id} className={`subtask ${subtask.status}`}>
+                                {getStatusIcon(subtask.status)}
+                                <span>{subtask.title}</span>
+                                <span className="subtask-date">
+                                  {new Date(subtask.date).toLocaleDateString()}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="timeline-details">
-              <h2>Submission Timeline: {submissionType.toUpperCase()}</h2>
-              
-              <div className="timeline-stats">
-                <div className="stat-card">
-                  <div className="stat-value">42%</div>
-                  <div className="stat-label">Timeline Progress</div>
-                </div>
-                
-                <div className="stat-card">
-                  <div className="stat-value">
-                    {submissionType === 'ind' ? 'June 10, 2025' : 
-                     submissionType === 'nda' ? 'November 15, 2025' :
-                     submissionType === 'bla' ? 'December 20, 2025' : 'January 10, 2026'}
-                  </div>
-                  <div className="stat-label">Target Date</div>
-                </div>
-                
-                <div className="stat-card">
-                  <div className="stat-value">3 of 8</div>
-                  <div className="stat-label">Milestones Completed</div>
-                </div>
+                ))}
               </div>
-              
-              <div className="timeline-activities">
-                <h3>Recent Activities</h3>
-                
-                <div className="activity-list">
-                  <div className="activity-item">
-                    <div className="activity-date">April 25, 2025</div>
-                    <div className="activity-description">Updated IND Module 3 CMC documentation</div>
-                  </div>
-                  
-                  <div className="activity-item">
-                    <div className="activity-date">April 22, 2025</div>
-                    <div className="activity-description">Completed toxicology report review</div>
-                  </div>
-                  
-                  <div className="activity-item">
-                    <div className="activity-date">April 20, 2025</div>
-                    <div className="activity-description">Added clinical protocol to Module 5</div>
-                  </div>
-                </div>
+            ) : (
+              <div className="timeline-empty">
+                No milestones found for the selected phase.
               </div>
-            </div>
-          </>
+            )}
+          </div>
         )}
       </div>
     </div>
   );
-}
+};
+
+export default TimelinePage;

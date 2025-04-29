@@ -1,96 +1,114 @@
 import React from 'react';
+import { Motion, spring } from 'react-motion';
 
 /**
- * CanvasNode - Renders a single node in the Canvas Workbench
- * This component visualizes a section/module within the submission structure
+ * CanvasNode component - represents a single node on the Canvas Workbench
+ * Handles dragging, selection, and styling based on status
  */
-export function CanvasNode({ 
+const CanvasNode = ({ 
   id, 
   title, 
-  status = 'pending', 
+  status, 
   x, 
   y, 
   isSelected, 
-  onClick 
-}) {
-  // Determine status-based styling
-  let statusColor = '#ffc107'; // Default: yellow/pending
+  onSelect, 
+  onDragStart, 
+  onDrag, 
+  onDragEnd 
+}) => {
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
   
-  if (status === 'complete') {
-    statusColor = '#28a745'; // Green
-  } else if (status === 'critical') {
-    statusColor = '#dc3545'; // Red
-  }
-  
-  // Calculate container's overall styles
-  const nodeStyle = {
-    position: 'absolute',
-    left: `${x}px`,
-    top: `${y}px`,
-    width: '120px',
-    height: '50px',
-    backgroundColor: status === 'complete' ? '#daf5e8' : status === 'critical' ? '#fde2e2' : '#fff4ce',
-    borderRadius: '4px',
-    boxShadow: isSelected 
-      ? '0 0 0 2px var(--color-primary, #5c4dff), 0 2px 8px rgba(0, 0, 0, 0.1)'
-      : '0 2px 4px rgba(0, 0, 0, 0.1)',
-    border: '1px solid #666',
-    cursor: 'pointer',
-    transition: 'transform 0.1s, box-shadow 0.2s',
-    transform: isSelected ? 'scale(1.03)' : 'scale(1)',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: '12px',
-    color: '#333',
-    userSelect: 'none',
-    zIndex: isSelected ? 10 : 1
+  // Handle mouse down for dragging
+  const handleMouseDown = (e) => {
+    e.stopPropagation();
+    
+    // Calculate offset from mouse position to node position to maintain during drag
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    
+    setDragOffset({ x: offsetX, y: offsetY });
+    setIsDragging(true);
+    
+    if (onDragStart) {
+      onDragStart(id, x, y);
+    }
+    
+    // Select the node when clicked
+    if (onSelect && !isSelected) {
+      onSelect(id);
+    }
   };
   
-  // Status indicator (left border)
-  const statusIndicatorStyle = {
-    width: '4px',
-    height: '50px',
-    backgroundColor: statusColor,
-    position: 'absolute',
-    left: 0,
-    top: 0
+  // Handle mouse move during drag
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    
+    e.preventDefault();
+    
+    // Calculate new position considering the initial offset
+    const newX = e.clientX - dragOffset.x;
+    const newY = e.clientY - dragOffset.y;
+    
+    if (onDrag) {
+      onDrag(id, newX, newY);
+    }
   };
   
-  // Badge with section ID
-  const badgeStyle = {
-    position: 'absolute',
-    left: '-5px',
-    top: '-5px',
-    backgroundColor: 'var(--color-primary, #5c4dff)',
-    color: '#fff',
-    borderRadius: '4px',
-    padding: '2px 6px',
-    fontSize: '10px',
-    fontWeight: 'bold',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
-    zIndex: 1
+  // Handle mouse up to end dragging
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    
+    setIsDragging(false);
+    
+    if (onDragEnd) {
+      onDragEnd(id, x, y);
+    }
   };
   
-  // Title text
-  const titleStyle = {
-    marginLeft: '30px',
-    padding: '2px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    width: '80px'
-  };
+  // Register global event listeners for dragging
+  React.useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, x, y]);
+  
+  // Animate using react-motion
+  const springConfig = { stiffness: 300, damping: 30 };
   
   return (
-    <div 
-      style={nodeStyle}
-      onClick={(e) => onClick && onClick(e)}
-      onMouseDown={(e) => e.stopPropagation()} // Prevent canvas drag when clicking node
+    <Motion 
+      defaultStyle={{ x: x, y: y, scale: 1 }} 
+      style={{ 
+        x: spring(x, springConfig), 
+        y: spring(y, springConfig),
+        scale: spring(isSelected ? 1.03 : 1, springConfig)
+      }}
     >
-      <div style={statusIndicatorStyle}></div>
-      <div style={badgeStyle}>{id}</div>
-      <div style={titleStyle}>{title}</div>
-    </div>
+      {(interpolatedStyle) => (
+        <div 
+          className={`canvas-node ${status} ${isSelected ? 'selected' : ''}`}
+          style={{
+            transform: `translate(${interpolatedStyle.x}px, ${interpolatedStyle.y}px) scale(${interpolatedStyle.scale})`,
+            zIndex: isSelected ? 10 : 1
+          }}
+          onMouseDown={handleMouseDown}
+          aria-label={`${title} section - ${status} status`}
+        >
+          <div className="node-badge">{id}</div>
+          <div className="node-content">{title}</div>
+        </div>
+      )}
+    </Motion>
   );
-}
+};
+
+export default CanvasNode;
