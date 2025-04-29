@@ -1,9 +1,7 @@
 import React from 'react';
 import { useLocation } from 'wouter';
 import UnifiedTopNavV4 from '../components/navigation/UnifiedTopNavV4';
-import SectionEditor from '../components/coauthor/SectionEditor';
-import AICopilotPanel from '../components/coauthor/AICopilotPanel';
-import CanvasWorkbench from '../components/canvas/CanvasWorkbench';
+import CoauthorModule from '../components/coauthor/CoauthorModule';
 import CanvasWorkbenchV2 from '../components/canvas/CanvasWorkbenchV2';
 import './CoAuthor.css';
 import '../styles/theme.css';
@@ -13,6 +11,13 @@ import '../styles/theme.css';
  * 
  * This page provides AI-assisted co-authoring of CTD submission sections
  * with context retrieval and draft generation capabilities.
+ * 
+ * Features:
+ * - AI-assisted document drafting with real-time updates
+ * - Regulatory search and guidance integration
+ * - Risk analysis for compliance assessment
+ * - Interactive timeline simulation
+ * - Lumen AI chat assistance
  */
 export default function CoAuthor() {
   const [location] = useLocation();
@@ -24,7 +29,7 @@ export default function CoAuthor() {
     <>
       <UnifiedTopNavV4
         tabs={[
-          { path: '/coauthor',          label: 'Risk Heatmap'       },
+          { path: '/coauthor',          label: 'eCTD Co-Author'    },
           { path: '/coauthor/timeline', label: 'Timeline Simulator' },
           { path: '/coauthor/ask-lumen', label: 'Ask Lumen AI'      },
           { path: '/coauthor/canvas',   label: 'Canvas Workbench'   },
@@ -36,14 +41,8 @@ export default function CoAuthor() {
           <CanvasWorkbenchV2 />
         </div>
       ) : (
-        <div className="coauthor-content">
-          <div className="editor-pane">
-            <h1 className="text-2xl font-medium text-gray-900 mb-4">Section 2.7: Clinical Summary</h1>
-            <SectionEditor />
-          </div>
-          <aside className="copilot-pane">
-            <AICopilotPanel />
-          </aside>
+        <div className="coauthor-full-content">
+          <CoauthorModule />
         </div>
       )}
     </>
