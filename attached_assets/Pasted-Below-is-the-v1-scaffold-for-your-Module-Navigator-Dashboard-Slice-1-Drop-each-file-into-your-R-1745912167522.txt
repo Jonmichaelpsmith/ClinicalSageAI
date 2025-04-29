@@ -1,0 +1,353 @@
+Below is the v1 scaffold for your Module Navigator & Dashboard (Slice 1). Drop each file into your Replit under the given path, then restart your app and navigate to /dashboard.
+
+⸻
+
+1. UnifiedTopNavV5.jsx
+
+<details>
+<summary><code>client/src/components/navigation/UnifiedTopNavV5.jsx</code></summary>
+
+
+import React from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import './UnifiedTopNavV5.css';
+
+export default function UnifiedTopNavV5({ tabs = [] }) {
+  const nav = useNavigate();
+  const { pathname } = useLocation();
+
+  return (
+    <header className="utnv5-header">
+      <div className="utnv5-controls">
+        <button onClick={() => nav(-1)} aria-label="Back">←</button>
+        <button onClick={() => nav(1)}  aria-label="Forward">→</button>
+        <Link to="/dashboard" className="utnv5-home">🏠 Dashboard</Link>
+        <Link to="/switch-module" className="utnv5-switch">🔀 Switch Module</Link>
+      </div>
+      <nav className="utnv5-tabs">
+        {tabs.map(t => (
+          <Link
+            key={t.path}
+            to={t.path}
+            className={pathname === t.path ? 'active' : ''}
+          >
+            {t.label}
+          </Link>
+        ))}
+      </nav>
+    </header>
+);
+}
+
+</details>
+
+
+<details>
+<summary><code>UnifiedTopNavV5.css</code></summary>
+
+
+.utnv5-header {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-bottom: 1px solid #ddd;
+  padding: var(--space-sm) var(--space-md);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.utnv5-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.utnv5-controls button,
+.utnv5-controls .utnv5-home,
+.utnv5-controls .utnv5-switch {
+  background: none;
+  border: none;
+  font-size: var(--text-md);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+.utnv5-tabs {
+  margin-top: var(--space-sm);
+  display: flex;
+  gap: var(--space-lg);
+}
+.utnv5-tabs a {
+  text-decoration: none;
+  font-size: var(--text-md);
+  color: var(--color-text-secondary);
+  padding-bottom: var(--space-xs);
+}
+.utnv5-tabs a.active {
+  color: var(--color-primary);
+  border-bottom: 3px solid var(--color-primary);
+}
+
+</details>
+
+
+
+
+⸻
+
+2. Breadcrumbs.jsx
+
+<details>
+<summary><code>client/src/components/navigation/Breadcrumbs.jsx</code></summary>
+
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import './Breadcrumbs.css';
+
+export default function Breadcrumbs({ items = [] }) {
+  return (
+    <nav aria-label="breadcrumb" className="breadcrumbs">
+      {items.map((it, i) => (
+        <span key={i} className="crumb">
+          {it.to ? <Link to={it.to}>{it.label}</Link> : <span>{it.label}</span>}
+          {i < items.length - 1 && <span className="sep">›</span>}
+        </span>
+      ))}
+    </nav>
+  );
+}
+
+</details>
+
+
+<details>
+<summary><code>Breadcrumbs.css</code></summary>
+
+
+.breadcrumbs {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: var(--space-md) 0;
+}
+.breadcrumbs .crumb {
+  display: inline-flex;
+  align-items: center;
+}
+.breadcrumbs .sep {
+  margin: 0 var(--space-xs);
+}
+.breadcrumbs a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+</details>
+
+
+
+
+⸻
+
+3. ModuleCard.jsx
+
+<details>
+<summary><code>client/src/components/dashboard/ModuleCard.jsx</code></summary>
+
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import './ModuleCard.css';
+
+/**
+ * title: string
+ * to: route string
+ * progress: 0–100
+ * risk: 'low' | 'med' | 'high'
+ */
+export default function ModuleCard({ title, to, progress = 0, risk = 'low' }) {
+  const riskColor = {
+    low:    '#28a745',
+    med:    '#ffc107',
+    high:   '#dc3545'
+  }[risk];
+
+  return (
+    <Link to={to} className="module-card">
+      <h3 className="mc-title">{title}</h3>
+      <div className="mc-progress">
+        <div className="mc-bar" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="mc-footer">
+        <span className="mc-progress-text">{progress}% Complete</span>
+        <span className="mc-risk" style={{ background: riskColor }}>
+          {risk.toUpperCase()}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+</details>
+
+
+<details>
+<summary><code>ModuleCard.css</code></summary>
+
+
+.module-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--color-bg);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--space-sm);
+  padding: var(--space-md);
+  text-decoration: none;
+  color: var(--color-text-primary);
+  box-shadow: var(--elevation-low);
+  transition: box-shadow 0.2s ease;
+}
+.module-card:hover {
+  box-shadow: var(--elevation-medium);
+}
+.mc-title {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-sm);
+}
+.mc-progress {
+  background: #f1f5f9;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+}
+.mc-bar {
+  height: 100%;
+  background: var(--color-primary);
+}
+.mc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-xs);
+}
+.mc-risk {
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+</details>
+
+
+
+
+⸻
+
+4. ModuleDashboard.jsx
+
+<details>
+<summary><code>client/src/pages/ModuleDashboard.jsx</code></summary>
+
+
+import React from 'react';
+import UnifiedTopNavV5 from '../components/navigation/UnifiedTopNavV5';
+import Breadcrumbs from '../components/navigation/Breadcrumbs';
+import ModuleCard from '../components/dashboard/ModuleCard';
+import './ModuleDashboard.css';
+
+export default function ModuleDashboard() {
+  // Hard-coded for demo; replace with fetch from /api/modules
+  const modules = [
+    { id: '1', title: 'Module 1: Administrative',       to:'/coauthor?module=1', progress: 100, risk:'low'  },
+    { id: '2', title: 'Module 2: CTD Summaries',        to:'/coauthor?module=2', progress:  75, risk:'med' },
+    { id: '3', title: 'Module 3: Quality',              to:'/coauthor?module=3', progress:  50, risk:'high'},
+    { id: '4', title: 'Module 4: Nonclinical',          to:'/coauthor?module=4', progress:  20, risk:'high'},
+    { id: '5', title: 'Module 5: Clinical Study Reports',to:'/coauthor?module=5',progress:  0,  risk:'high'},
+  ];
+
+  return (
+    <div className="dashboard-page">
+      <UnifiedTopNavV5
+        tabs={[
+          { path: '/dashboard', label: 'Dashboard' },
+          { path: '/coauthor',  label: 'Co-Author'  },
+          { path: '/canvas',    label: 'Canvas'    },
+          { path: '/timeline',  label: 'Timeline'  },
+        ]}
+      />
+
+      <Breadcrumbs items={[
+        { label:'TrialSage™',        to:'/'        },
+        { label:'eCTD Co-Author™',   to:'/coauthor'},
+        { label:'Dashboard' }
+      ]}/>
+
+      <h1 className="dashboard-title">CTD Module Dashboard</h1>
+
+      <div className="dashboard-grid">
+        {modules.map(mod => (
+          <ModuleCard
+            key={mod.id}
+            title={mod.title}
+            to={mod.to}
+            progress={mod.progress}
+            risk={mod.risk}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+</details>
+
+
+<details>
+<summary><code>ModuleDashboard.css</code></summary>
+
+
+.dashboard-page {
+  padding: var(--space-lg);
+}
+.dashboard-title {
+  font-size: var(--text-xl);
+  margin: var(--space-md) 0;
+}
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-lg);
+}
+
+</details>
+
+
+
+
+⸻
+
+5. Wire the route in App.jsx
+
+// client/src/App.jsx
+import ModuleDashboard from './pages/ModuleDashboard';
+// …
+<Routes>
+  <Route path="/dashboard" element={<ModuleDashboard />} />
+  {/* …other routes… */}
+</Routes>
+
+
+
+⸻
+
+✅ Verification
+	1.	Restart your Repl.
+	2.	Browse to /dashboard.
+	3.	You should see:
+      •   A single UnifiedTopNavV5 header with tabs.
+      •   Breadcrumbs under the tabs.
+      •   CTD Module Dashboard title.
+      •   A responsive grid of ModuleCards showing progress bars and risk badges.
+
+This completes Slice 1. Next up, we’ll tackle Slice 2: the Co-Author Editor Core (rich-text + AI–Generate + inline validation). Let me know when you’re ready!
