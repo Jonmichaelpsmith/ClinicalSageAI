@@ -74,10 +74,6 @@ export default function RiskAnalysisWidget({ sectionId }) {
           <Progress 
             value={riskAnalysis.complianceScore} 
             className="h-2"
-            indicatorClassName={
-              riskAnalysis.complianceScore >= 80 ? 'bg-green-500' :
-              riskAnalysis.complianceScore >= 60 ? 'bg-amber-500' : 'bg-red-500'
-            }
           />
         </div>
         
