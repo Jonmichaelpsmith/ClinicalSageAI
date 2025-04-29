@@ -8,6 +8,8 @@ import AnalyticsDashboard from '@/pages/AnalyticsDashboard';
 import IndDashboard from '@/pages/IndDashboard';
 import NotFound from '@/pages/not-found';
 import AuthPage from '@/pages/auth-page';
+import CMCPage from '@/pages/CMCPage';
+import CoAuthor from '@/pages/CoAuthor';
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from './hooks/use-auth';
 import AppShell from '@/components/layout/AppShell';
@@ -32,6 +34,8 @@ function Router() {
       <ProtectedRoute path="/ind/:id" component={SubmissionHome} />
       <ProtectedRoute path="/analytics" component={AnalyticsDashboard} />
       <ProtectedRoute path="/analytics/:submissionId" component={AnalyticsDashboard} />
+      <ProtectedRoute path="/cmc" component={CMCPage} />
+      <ProtectedRoute path="/coauthor" component={CoAuthor} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
