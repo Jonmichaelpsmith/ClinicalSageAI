@@ -27,7 +27,8 @@ import {
   Clock,
   Home,
   ClipboardList,
-  AlertCircle
+  AlertCircle,
+  Plus as PlusIcon
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -511,6 +512,8 @@ export default function INDWizardContainer({ projectId = '12345' }) {
   const [location, setLocation] = useLocation();
   const [activeStep, setActiveStep] = useState('overview');
   const { isConnected } = useDatabaseStatus();
+  const [loadedProjects, setLoadedProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
   
   // Get the active step ID from the URL path
   useEffect(() => {
@@ -523,7 +526,28 @@ export default function INDWizardContainer({ projectId = '12345' }) {
     }
   }, [location]);
   
-  // Fetch project data
+  // Fetch list of projects first
+  const {
+    data: projectsList,
+    isLoading: isLoadingProjects,
+    error: projectsError
+  } = useQuery({
+    queryKey: ['ind-projects'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', `/api/ind/wizard/projects`);
+        if (!response.ok) throw new Error('Failed to fetch projects list');
+        const projects = await response.json();
+        setLoadedProjects(projects);
+        return projects;
+      } catch (error) {
+        console.error('Error fetching projects list:', error);
+        return [];
+      }
+    }
+  });
+  
+  // Fetch specific project data
   const { 
     data: projectData, 
     isLoading: isLoadingProject,
@@ -532,13 +556,21 @@ export default function INDWizardContainer({ projectId = '12345' }) {
     queryKey: ['project', projectId],
     queryFn: async () => {
       try {
+        // Try fetching from the new API first
+        const wizardResponse = await apiRequest('GET', `/api/ind/wizard/${projectId}`);
+        if (wizardResponse.ok) {
+          const data = await wizardResponse.json();
+          return data;
+        }
+        
+        // If that fails, try the regular API
         const response = await apiRequest('GET', `/api/ind/${projectId}`);
         if (!response.ok) throw new Error('Failed to fetch project data');
         return response.json();
       } catch (error) {
         console.error('Error fetching project data:', error);
         
-        // Return a placeholder for development
+        // Return a placeholder for development with pre-populated data
         return {
           id: projectId,
           title: 'IND-123 - Novel Therapeutic for Autoimmune Disorders',
@@ -617,7 +649,61 @@ export default function INDWizardContainer({ projectId = '12345' }) {
             <ErrorBoundary>
               <Switch>
                 <Route path="/ind-wizard" exact>
-                  <ProjectOverview projectId={projectId} projectData={projectData} />
+                  {loadedProjects && loadedProjects.length > 0 ? (
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-bold">Select a Project</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {loadedProjects.map((project) => (
+                          <Link key={project.id} href={`/ind-wizard/${project.id}`}>
+                            <a className="block">
+                              <Card className="h-full hover:shadow-md transition-shadow">
+                                <CardHeader>
+                                  <CardTitle className="flex items-center justify-between">
+                                    <span className="truncate">{project.name}</span>
+                                    <ProjectStatusBadge status={project.status} />
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="space-y-3">
+                                    <div>
+                                      <p className="text-sm text-muted-foreground">Drug Name</p>
+                                      <p className="font-medium">{project.drugName}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-muted-foreground">Indication</p>
+                                      <p className="font-medium">{project.indication}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-muted-foreground">Progress</p>
+                                      <Progress value={project.progress} className="h-2 mt-1" />
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </a>
+                          </Link>
+                        ))}
+                        
+                        {/* Add New Project Card */}
+                        <div className="block">
+                          <Card className="h-full border-dashed hover:shadow-md transition-shadow">
+                            <CardContent className="flex flex-col items-center justify-center h-full p-6">
+                              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                                <PlusIcon className="h-6 w-6 text-primary" />
+                              </div>
+                              <h3 className="text-lg font-semibold mb-2">Create New Project</h3>
+                              <p className="text-center text-muted-foreground text-sm mb-4">
+                                Start a new IND application with the IND Wizard
+                              </p>
+                              <Button variant="outline">Create Project</Button>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <ProjectOverview projectId={projectId} projectData={projectData} />
+                  )}
                 </Route>
                 
                 <Route path="/ind-wizard/regulatory-intelligence">
