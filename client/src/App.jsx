@@ -25,6 +25,12 @@ import TimelinePage from './pages/TimelinePage'; // Import our Timeline page
 import ProtocolDesignerPage from './pages/ProtocolDesignerPage'; // Import Protocol Designer page
 import CSRPage from './pages/CSRPage'; // Import CSR Deep Intelligence page
 import CMCPage from './pages/CMCPage'; // Import CMC Module page
+import CERPage from './pages/CERPage'; // Import CER Generator page
+import CERV2Page from './pages/CERV2Page'; // Import Advanced CER Generator page
+import BlueprintPage from './pages/BlueprintPage'; // Import Blueprint Generator page
+import CitationManagerPage from './pages/CitationManagerPage'; // Import Citation Manager page
+import AuditPage from './pages/AuditPage'; // Import Audit Trail page
+import SignaturePage from './pages/SignaturePage'; // Import Digital Signature page
 import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import ModuleSectionEditor for co-author page
 import StudyArchitect from './modules/StudyArchitect';
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
@@ -126,6 +132,12 @@ function App() {
           <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
           <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
           <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
+          <Route path="/cer" component={CERPage} /> {/* CER Generator page route */}
+          <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
+          <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
+          <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
+          <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
+          <Route path="/signature" component={SignaturePage} /> {/* Digital Signature page route */}
           <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
