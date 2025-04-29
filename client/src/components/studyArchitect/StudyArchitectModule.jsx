@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LayoutGrid, BookOpen, FileEdit, LineChart, Users } from 'lucide-react';
 import StudySessionSelector from './StudySessionSelector';
 import StudyDesignAssistant from './StudyDesignAssistant';
