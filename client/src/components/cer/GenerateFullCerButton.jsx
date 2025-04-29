@@ -47,40 +47,124 @@ export default function GenerateFullCerButton({ onCompletion }) {
   const runGenerationProcess = async () => {
     let currentProgress = 0;
     
-    for (let i = 0; i < stages.length; i++) {
-      setCurrentStage(i);
+    try {
+      // In a real implementation, we would have deviceData, clinicalData, literature from props
+      // This is a simulated integration for demo purposes
+      const deviceData = {
+        deviceId: "DEV-" + Date.now().toString().substring(0, 8),
+        deviceName: "Enzymex Forte",
+        manufacturer: "BioTech Medical Devices",
+        modelNumber: "EF-2025-A",
+        description: "Advanced enzymatic wound treatment solution",
+        regulatoryClass: "Class IIb",
+        intendedUse: "Treatment of chronic wounds with enzymatic debridement",
+        marketingHistory: "First introduced in European markets in 2023"
+      };
       
-      const stageDuration = stages[i].duration;
-      const stageProgress = 100 / stages.length;
-      const incrementInterval = stageDuration / 10;
+      const clinicalData = {
+        clinicalStudies: [
+          {
+            studyId: "EF-CS-001",
+            title: "Efficacy of Enzymex Forte in Chronic Wound Management",
+            participants: 120,
+            duration: "12 months",
+            primaryEndpoints: "Wound size reduction, Time to complete healing",
+            outcomes: "73% healing rate within study period compared to 48% in control group"
+          }
+        ],
+        postMarketData: {
+          adverseEvents: 12,
+          complaints: 8,
+          totalUnits: 5000,
+          reportingPeriod: "18 months"
+        }
+      };
       
-      // Randomly determine if this stage should fail (for demo purposes)
-      const shouldFail = i === 4 && Math.random() < 0.05;
+      const literature = [
+        {
+          id: "LIT-001",
+          title: "Enzymatic Debridement in Modern Wound Care",
+          authors: "Johnson et al.",
+          journal: "Journal of Wound Care",
+          year: 2024,
+          relevance: "High"
+        },
+        {
+          id: "LIT-002",
+          title: "Comparative Analysis of Debridement Methods for Chronic Wounds",
+          authors: "Smith et al.",
+          journal: "Wound Management & Prevention",
+          year: 2023,
+          relevance: "Medium"
+        }
+      ];
       
-      if (shouldFail) {
-        setErrorMessage('Error during regulatory data synthesis. Please check your template settings and try again.');
-        setIsGenerating(false);
-        return;
+      const templateSettings = {
+        version: "1.1.0",
+        format: "EU MDR",
+        sections: [
+          "Executive Summary",
+          "Device Description",
+          "Literature Review",
+          "Clinical Data Analysis",
+          "Risk Assessment",
+          "Conclusions"
+        ],
+        includeAppendices: true
+      };
+      
+      // Simulate API calls to different services with progress updates
+      for (let i = 0; i < stages.length; i++) {
+        setCurrentStage(i);
+        
+        const stageDuration = stages[i].duration;
+        const stageProgress = 100 / stages.length;
+        const incrementInterval = stageDuration / 10;
+        
+        // Update progress through the current stage
+        for (let j = 0; j < 10; j++) {
+          await new Promise(resolve => setTimeout(resolve, incrementInterval));
+          currentProgress = Math.min(100, Math.round((i * stageProgress) + ((j + 1) / 10) * stageProgress));
+          setProgress(currentProgress);
+        }
+        
+        // Simulate real API calls at key stages (in the real app we'd make these calls)
+        // Here we're just logging to simulate that the integration is ready to work
+        if (i === 2) {
+          console.log('Analyzing clinical data via OpenAI integration:', clinicalData);
+        } else if (i === 3) {
+          console.log('Processing literature review via API:', literature);
+        } else if (i === 5) {
+          console.log('Building document structure with template:', templateSettings);
+        } else if (i === 8) {
+          console.log('Validating against regulatory standards');
+        }
       }
       
-      // Update progress through the current stage
-      for (let j = 0; j < 10; j++) {
-        await new Promise(resolve => setTimeout(resolve, incrementInterval));
-        currentProgress = Math.min(100, Math.round((i * stageProgress) + ((j + 1) / 10) * stageProgress));
-        setProgress(currentProgress);
+      // In a real implementation, we would make this API call to save the CER
+      // const response = await axios.post('/api/documents/cer', {
+      //   deviceData,
+      //   clinicalData,
+      //   literature,
+      //   templateSettings
+      // });
+      // const jobId = response.data.id;
+      
+      // Simulated response
+      const jobId = `cer-${Date.now().toString(36)}`;
+      
+      // Complete the generation process
+      setGenerationComplete(true);
+      setIsGenerating(false);
+      
+      // Notify parent component that generation is complete with the job ID
+      if (onCompletion) {
+        onCompletion(jobId);
       }
-    }
-    
-    // Complete the generation process
-    setGenerationComplete(true);
-    setIsGenerating(false);
-    
-    // Generate a mock job ID
-    const jobId = `cer-${Date.now().toString(36)}`;
-    
-    // Notify parent component that generation is complete with the job ID
-    if (onCompletion) {
-      onCompletion(jobId);
+    } catch (error) {
+      console.error('Error generating CER:', error);
+      setErrorMessage(`Error generating CER: ${error.message || 'Unknown error'}`);
+      setIsGenerating(false);
     }
   };
 

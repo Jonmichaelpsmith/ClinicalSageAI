@@ -1,400 +1,247 @@
-/**
- * OpenAI Service for TrialSage
- * 
- * This service provides a unified interface for all interactions with OpenAI APIs,
- * including GPT-4o and DALL-E 3 capabilities.
- */
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client
+// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true // Note: In production, API calls should be made server-side
+});
 
 /**
- * Generate document analysis with GPT-4o
- * 
- * @param {Object} documentData - Document content and metadata to analyze
- * @returns {Promise<Object>} Analysis results
+ * Generate a Clinical Evaluation Report based on provided device information and data
+ * @param {Object} deviceData - Information about the medical device
+ * @param {Object} clinicalData - Clinical data for the medical device
+ * @param {Array} literature - Selected literature references
+ * @param {Object} templateSettings - Template configuration and settings
+ * @returns {Promise<Object>} Generated CER content
  */
-export const analyzeSpecification = async (documentData) => {
+export async function generateCER(deviceData, clinicalData, literature, templateSettings) {
   try {
-    // In a production implementation, this would call a backend endpoint
-    // that interfaces with OpenAI API using your OPENAI_API_KEY
-    
-    // For demo purposes, we're simulating the response
-    console.log('Analyzing specification with GPT-4o', documentData);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Return simulated response
-    return {
-      issues: [
-        {
-          severity: 'Critical',
-          description: 'Acceptance criteria for dissolution test does not include time point',
-          location: 'Section 3.2.P.5.1',
-          recommendation: 'Add specific time point (e.g., "Q=80% in 30 minutes") to dissolution acceptance criteria'
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert medical device regulatory writer specialized in Clinical Evaluation Reports
+            for EU MDR compliance. Generate structured, professional CER content based on the provided data.
+            Ensure all content meets regulatory standards and follows professional medical writing conventions.`
         },
         {
-          severity: 'Major',
-          description: 'Missing validation data for analytical method',
-          location: 'Section 3.2.P.5.3',
-          recommendation: 'Include method validation data including linearity, precision, accuracy, and specificity'
-        },
-        {
-          severity: 'Minor',
-          description: 'Inconsistent terminology used for excipients',
-          location: 'Throughout document',
-          recommendation: 'Standardize terminology according to pharmacopoeial nomenclature'
+          role: "user",
+          content: JSON.stringify({
+            task: "Generate a Clinical Evaluation Report",
+            deviceData,
+            clinicalData,
+            literature,
+            templateSettings
+          })
         }
       ],
-      regulatoryAlignment: {
-        fda: 92,
-        ema: 85,
-        ich: 90,
-        who: 88
-      },
-      overallScore: 88,
-      summary: "The specification is generally well-structured but contains some regulatory gaps. The document follows ICH Q6A format but lacks some details required by FDA and EMA. Critical issues include incomplete dissolution criteria and missing validation data for analytical methods. Addressing these issues would improve regulatory compliance significantly.",
-      improvementRecommendations: [
-        "Add specific time points to all dissolution criteria",
-        "Include complete analytical method validation data",
-        "Standardize excipient terminology across the document",
-        "Add detailed stability protocol with specific sampling points",
-        "Include reference to pharmacopoeial methods where applicable"
-      ]
-    };
+      temperature: 0.2,
+      max_tokens: 4000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
   } catch (error) {
-    console.error('Error analyzing specification:', error);
-    throw new Error('Failed to analyze specification: ' + (error.message || 'Unknown error'));
+    console.error("Error generating CER:", error);
+    throw new Error(`Failed to generate CER: ${error.message}`);
   }
-};
+}
 
 /**
- * Generate validation protocol with GPT-4o
- * 
- * @param {Object} methodData - Method details and validation parameters
- * @returns {Promise<Object>} Generated validation protocol
+ * Analyze clinical data and extract key findings
+ * @param {Object} clinicalData - Raw clinical data
+ * @returns {Promise<Object>} Structured analysis results
  */
-export const generateValidationProtocol = async (methodData) => {
+export async function analyzeClinicalData(clinicalData) {
   try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Generating validation protocol with GPT-4o', methodData);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    // Return simulated response
-    return {
-      title: `Validation Protocol for ${methodData.methodName}`,
-      methodSummary: `This protocol outlines the validation of ${methodData.methodName} for the analysis of ${methodData.productName}.`,
-      validationParameters: [
-        {
-          parameter: 'Specificity',
-          acceptanceCriteria: 'No interference from placebo, impurities, or degradation products at the retention time of the analyte peak',
-          procedureOutline: 'Analyze standard solution, placebo solution, and sample solution. Compare chromatograms to verify absence of interference.'
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert medical data analyst specialized in analyzing clinical data for
+            medical devices. Extract and summarize key findings, safety endpoints, efficacy results,
+            and identify potential concerns or positive outcomes.`
         },
         {
-          parameter: 'Linearity',
-          acceptanceCriteria: 'Correlation coefficient (r) ≥ 0.99',
-          procedureOutline: 'Prepare and analyze 5 standard solutions covering 50-150% of the target concentration. Plot peak area vs. concentration and calculate r.'
-        },
-        {
-          parameter: 'Accuracy',
-          acceptanceCriteria: 'Recovery: 98.0-102.0%',
-          procedureOutline: 'Prepare and analyze samples at 3 concentration levels (80%, 100%, 120%) in triplicate. Calculate recovery.'
-        },
-        {
-          parameter: 'Precision (Repeatability)',
-          acceptanceCriteria: 'RSD ≤ 2.0%',
-          procedureOutline: 'Analyze 6 replicate injections of standard solution at 100% concentration. Calculate RSD.'
-        },
-        {
-          parameter: 'Intermediate Precision',
-          acceptanceCriteria: 'RSD ≤ 3.0%',
-          procedureOutline: 'Repeat precision study on different days, by different analysts, using different equipment. Calculate overall RSD.'
-        },
-        {
-          parameter: 'Range',
-          acceptanceCriteria: 'Demonstrated acceptable accuracy and precision from 80% to 120% of target concentration',
-          procedureOutline: 'Evaluated based on data from linearity, accuracy, and precision studies.'
-        },
-        {
-          parameter: 'Robustness',
-          acceptanceCriteria: 'Method remains unaffected by small variations in method parameters',
-          procedureOutline: 'Evaluate the effect of small variations in pH, mobile phase composition, column temperature, and flow rate on system suitability parameters.'
+          role: "user",
+          content: JSON.stringify({
+            task: "Analyze clinical data and extract key findings",
+            clinicalData
+          })
         }
-      ]
-    };
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
   } catch (error) {
-    console.error('Error generating validation protocol:', error);
-    throw new Error('Failed to generate validation protocol: ' + (error.message || 'Unknown error'));
+    console.error("Error analyzing clinical data:", error);
+    throw new Error(`Failed to analyze clinical data: ${error.message}`);
   }
-};
+}
 
 /**
- * Generate batch documentation with GPT-4o
- * 
- * @param {Object} batchData - Batch manufacturing details
- * @returns {Promise<Object>} Generated batch record
+ * Generate a literature review based on provided literature references
+ * @param {Array} literatureItems - Selected literature references
+ * @param {Object} deviceData - Basic device information for context
+ * @returns {Promise<Object>} Structured literature review
  */
-export const generateBatchDocumentation = async (batchData) => {
+export async function generateLiteratureReview(literatureItems, deviceData) {
   try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Generating batch record with GPT-4o', batchData);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Response would normally come from OpenAI API
-    return {
-      // Structured batch record data would be returned here
-      title: `Batch Manufacturing Record for ${batchData.productName}`,
-      batchNumber: batchData.batchNumber,
-      generatedAt: new Date().toISOString(),
-      sections: {
-        // Batch record sections would be included here
-      }
-    };
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert medical literature review specialist. Create a comprehensive
+            literature review for a medical device CER based on the provided references. Analyze methodologies,
+            outcomes, and relevance to the device. Identify key findings and their significance.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Generate a literature review for a CER",
+            deviceData,
+            literatureItems
+          })
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 3000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
   } catch (error) {
-    console.error('Error generating batch documentation:', error);
-    throw new Error('Failed to generate batch documentation: ' + (error.message || 'Unknown error'));
+    console.error("Error generating literature review:", error);
+    throw new Error(`Failed to generate literature review: ${error.message}`);
   }
-};
+}
 
 /**
- * Generate image with DALL-E 3
- * 
- * @param {string} prompt - Text prompt for image generation
- * @param {Object} options - Additional options like size
- * @returns {Promise<Object>} Generated image data
+ * Generate a risk assessment based on device information and clinical data
+ * @param {Object} deviceData - Device information
+ * @param {Object} clinicalData - Clinical data
+ * @param {number} riskScore - Risk score from 0-100
+ * @returns {Promise<Object>} Risk assessment results
  */
-export const generateImage = async (prompt, options = {}) => {
+export async function generateRiskAssessment(deviceData, clinicalData, riskScore) {
   try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Generating image with DALL-E 3', { prompt, options });
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 3500));
-    
-    // Return simulated response
-    return {
-      url: "https://example.com/generated-image.png", // This would be a real image URL in production
-      generatedAt: new Date().toISOString(),
-      prompt
-    };
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert medical device risk assessment specialist. Create a comprehensive
+            risk assessment for a medical device CER based on the provided data. Identify potential risks,
+            their severity, probability, and recommended mitigations. Evaluate the benefit-risk ratio.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Generate a risk assessment for a CER",
+            deviceData,
+            clinicalData,
+            riskScore
+          })
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
   } catch (error) {
-    console.error('Error generating image:', error);
-    throw new Error('Failed to generate image: ' + (error.message || 'Unknown error'));
+    console.error("Error generating risk assessment:", error);
+    throw new Error(`Failed to generate risk assessment: ${error.message}`);
   }
-};
+}
 
 /**
- * Analyze image with GPT-4o Vision
- * 
- * @param {string} imageData - Base64 encoded image data
- * @param {string} prompt - Text prompt for image analysis
- * @returns {Promise<Object>} Analysis results
+ * Perform document analysis on an uploaded PDF or document
+ * @param {string} documentText - Extracted text from document
+ * @param {string} documentType - Type of document (literature, clinical, etc.)
+ * @returns {Promise<Object>} Document analysis results
  */
-export const analyzeImage = async (imageData, prompt) => {
+export async function analyzeDocument(documentText, documentType) {
   try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Analyzing image with GPT-4o Vision', { imageLength: imageData?.length, prompt });
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Return simulated response
-    return {
-      analysis: "Image analysis would be provided here based on the actual image content.",
-      generatedAt: new Date().toISOString()
-    };
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert document analyst specialized in medical and regulatory documents.
+            Extract key information, structure, and findings from the provided document text based on its type.
+            Identify author, publication details, methodology, results, and conclusions where applicable.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Analyze document and extract key information",
+            documentType,
+            documentText: documentText.substring(0, 15000) // Truncate for token limits
+          })
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
   } catch (error) {
-    console.error('Error analyzing image:', error);
-    throw new Error('Failed to analyze image: ' + (error.message || 'Unknown error'));
+    console.error("Error analyzing document:", error);
+    throw new Error(`Failed to analyze document: ${error.message}`);
   }
-};
+}
 
 /**
- * Generate formulation analysis with GPT-4o
- * 
- * @param {Object} formulationData - Formulation details and components
- * @returns {Promise<Object>} Analysis and recommendations
+ * Generate executive summary for the CER
+ * @param {Object} cerData - Complete CER data
+ * @returns {Promise<string>} Executive summary text
  */
-export const analyzeFormulation = async (formulationData) => {
+export async function generateExecutiveSummary(cerData) {
   try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Analyzing formulation with GPT-4o', formulationData);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Return simulated response
-    return {
-      compatibilityMatrix: {
-        // Compatibility data would be returned here
-      },
-      stabilityPrediction: {
-        // Stability prediction data would be returned here
-      },
-      recommendations: [
-        // Recommendations would be listed here
-      ]
-    };
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert medical writer specializing in executive summaries for clinical
+            evaluation reports. Create a concise, professional executive summary that captures the key
+            findings, conclusions, and significance of the CER. Highlight the benefit-risk ratio and
+            regulatory compliance status.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Generate an executive summary for a CER",
+            cerData
+          })
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 1000
+    });
+
+    return response.choices[0].message.content;
   } catch (error) {
-    console.error('Error analyzing formulation:', error);
-    throw new Error('Failed to analyze formulation: ' + (error.message || 'Unknown error'));
+    console.error("Error generating executive summary:", error);
+    throw new Error(`Failed to generate executive summary: ${error.message}`);
   }
-};
+}
 
-/**
- * Helper function to simulate OpenAI responses for demo purposes
- * 
- * This function is for development and demo purposes only.
- * In a production environment, this would be replaced with actual API calls.
- */
-/**
- * Generate CMC content with GPT-4o
- * 
- * @param {Object} contentData - CMC section and content requirements
- * @returns {Promise<Object>} Generated CMC content
- */
-export const generateCMCContent = async (contentData) => {
-  try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Generating CMC content with GPT-4o', contentData);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    // Return simulated response
-    return {
-      title: `CMC Section: ${contentData.section}`,
-      content: `Generated content for ${contentData.section} would appear here.`,
-      generatedAt: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('Error generating CMC content:', error);
-    throw new Error('Failed to generate CMC content: ' + (error.message || 'Unknown error'));
-  }
-};
-
-/**
- * Analyze manufacturing process with GPT-4o
- * 
- * @param {Object} processData - Manufacturing process details
- * @returns {Promise<Object>} Analysis results
- */
-export const analyzeManufacturingProcess = async (processData) => {
-  try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Analyzing manufacturing process with GPT-4o', processData);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    // Return simulated response
-    return {
-      recommendations: [],
-      riskFactors: [],
-      optimizationSuggestions: [],
-      generatedAt: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('Error analyzing manufacturing process:', error);
-    throw new Error('Failed to analyze manufacturing process: ' + (error.message || 'Unknown error'));
-  }
-};
-
-/**
- * Assess regulatory compliance with GPT-4o
- * 
- * @param {Object} documentData - Document to assess for compliance
- * @returns {Promise<Object>} Compliance assessment results
- */
-export const assessRegulatoryCompliance = async (documentData) => {
-  try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Assessing regulatory compliance with GPT-4o', documentData);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    // Return simulated response
-    return {
-      compliance: {
-        fda: 90,
-        ema: 85,
-        ich: 92,
-        who: 88
-      },
-      findings: [],
-      recommendations: [],
-      generatedAt: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('Error assessing regulatory compliance:', error);
-    throw new Error('Failed to assess regulatory compliance: ' + (error.message || 'Unknown error'));
-  }
-};
-
-/**
- * Generate risk analysis with GPT-4o
- * 
- * @param {Object} riskData - Risk assessment parameters
- * @returns {Promise<Object>} Risk analysis results
- */
-export const generateRiskAnalysis = async (riskData) => {
-  try {
-    // In a production implementation, this would call a backend endpoint
-    console.log('Generating risk analysis with GPT-4o', riskData);
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    // Return simulated response
-    return {
-      riskFactors: [],
-      mitigationStrategies: [],
-      overallRiskLevel: 'Medium',
-      generatedAt: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('Error generating risk analysis:', error);
-    throw new Error('Failed to generate risk analysis: ' + (error.message || 'Unknown error'));
-  }
-};
-
-/**
- * Generate method validation protocol with GPT-4o
- * 
- * @param {Object} methodData - Method details and validation parameters
- * @returns {Promise<Object>} Generated validation protocol
- */
-export const generateMethodValidationProtocol = async (methodData) => {
-  return generateValidationProtocol(methodData);
-};
-
-export const simulateOpenAIResponse = async (type, data) => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  switch(type) {
-    case 'specification':
-      return analyzeSpecification(data);
-    case 'validation':
-      return generateValidationProtocol(data);
-    case 'batch':
-      return generateBatchDocumentation(data);
-    case 'image':
-      return generateImage(data);
-    case 'formulation':
-      return analyzeFormulation(data);
-    case 'cmc-content':
-      return generateCMCContent(data);
-    case 'manufacturing':
-      return analyzeManufacturingProcess(data);
-    case 'compliance':
-      return assessRegulatoryCompliance(data);
-    case 'risk':
-      return generateRiskAnalysis(data);
-    default:
-      throw new Error(`Unknown simulation type: ${type}`);
-  }
+export default {
+  generateCER,
+  analyzeClinicalData,
+  generateLiteratureReview,
+  generateRiskAssessment,
+  analyzeDocument,
+  generateExecutiveSummary
 };

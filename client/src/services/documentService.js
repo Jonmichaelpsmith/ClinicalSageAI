@@ -1,235 +1,224 @@
-/**
- * Document Service
- * 
- * Provides client-side methods for interacting with document and vault related API endpoints
- * with enhanced error handling and automatic retry capabilities.
- */
+import axios from 'axios';
 
-import { handleApiError, retryApiCall, withRetry } from './errorHandling';
+// Base URL for document API
+const API_URL = '/api/documents';
 
 /**
- * Fetch documents with optional filtering
- * @param {Object} filters - Filter parameters for documents
- * @param {string} filters.module - Filter by module type (cer, ind, csr, etc.)
- * @param {string} filters.section - Filter by document section
- * @param {string} filters.status - Filter by document status (draft, review, approved, etc.)
- * @param {string} filters.owner - Filter by document owner
- * @param {string} filters.search - Free text search term
- * @param {Date} filters.dateFrom - Filter by documents modified after this date
- * @param {Date} filters.dateTo - Filter by documents modified before this date
- * @param {number} page - Page number for pagination (starting from 1)
- * @param {number} limit - Number of documents per page
- * @returns {Promise<Object>} Documents and pagination information
+ * Upload a document to the server
+ * @param {File} file - The file to upload
+ * @param {Object} metadata - Metadata for the document
+ * @returns {Promise<Object>} Uploaded document information
  */
-export async function fetchDocuments(filters = {}, page = 1, limit = 10) {
-  // Build query string from filters
-  const queryParams = new URLSearchParams();
-  
-  // Add filters to query params
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== null && value !== undefined && value !== '') {
-      // Handle date objects
-      if (value instanceof Date) {
-        queryParams.append(key, value.toISOString());
-      } else {
-        queryParams.append(key, value);
-      }
-    }
-  });
-  
-  // Add pagination
-  queryParams.append('page', page);
-  queryParams.append('limit', limit);
-  
-  const endpoint = `/api/docs?${queryParams.toString()}`;
+export async function uploadDocument(file, metadata) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('metadata', JSON.stringify(metadata));
   
   try {
-    // Use retry mechanism with exponential backoff
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to fetch documents: ${errorText}`);
+    const response = await axios.post(`${API_URL}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
       }
-      
-      return res;
-    }, [], { maxRetries: 2 });
+    });
     
-    return await response.json();
+    return response.data;
   } catch (error) {
-    // Enhanced error handling with fallback empty documents
-    handleApiError('Fetch Documents', error, endpoint);
-    
-    // Return empty document list with pagination to prevent UI crashes
-    return {
-      documents: [],
-      pagination: {
-        page: page,
-        totalPages: 1,
-        totalDocuments: 0
-      }
-    };
+    console.error("Error uploading document:", error);
+    throw new Error(`Failed to upload document: ${error.message}`);
   }
 }
 
 /**
- * Fetch a single document by ID
- * @param {string} id - Document ID
- * @returns {Promise<Object>} Document details
+ * Fetch documents from the server with optional filters
+ * @param {Object} filters - Filter criteria
+ * @returns {Promise<Array>} List of documents
  */
-export async function fetchDocument(id) {
-  const endpoint = `/api/docs/${id}`;
-  
+export async function fetchDocuments(filters = {}) {
   try {
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to fetch document: ${errorText}`);
-      }
-      
-      return res;
-    }, [], { maxRetries: 2 });
+    // Convert filters to query parameters
+    const queryParams = Object.entries(filters)
+      .filter(([_, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join('&');
     
-    return await response.json();
+    const url = queryParams ? `${API_URL}?${queryParams}` : API_URL;
+    const response = await axios.get(url);
+    
+    return response.data;
   } catch (error) {
-    // Enhanced error handling
-    handleApiError('Fetch Document', error, endpoint);
-    
-    // Return error object that can be handled gracefully by UI
-    return {
-      id,
-      status: 'error',
-      error: error.message,
-      title: 'Document Unavailable',
-      message: 'Unable to retrieve document. Please try again later.'
-    };
+    console.error("Error fetching documents:", error);
+    throw new Error(`Failed to fetch documents: ${error.message}`);
   }
 }
 
 /**
- * Approve a document
- * @param {string} id - Document ID to approve
- * @returns {Promise<Object>} Updated document
+ * Download a document
+ * @param {string} documentId - ID of the document to download
+ * @returns {Promise<Blob>} Document data as blob
  */
-export async function approveDocument(id) {
-  const endpoint = `/api/docs/${id}/approve`;
-  
+export async function downloadDocument(documentId) {
   try {
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to approve document: ${errorText}`);
-      }
-      
-      return res;
-    }, [], { maxRetries: 2 });
+    const response = await axios.get(`${API_URL}/${documentId}/download`, {
+      responseType: 'blob'
+    });
     
-    return await response.json();
+    return response.data;
   } catch (error) {
-    // Enhanced error handling
-    handleApiError('Approve Document', error, endpoint);
-    
-    // Rethrow to allow component to handle with toast notification
-    throw error;
+    console.error("Error downloading document:", error);
+    throw new Error(`Failed to download document: ${error.message}`);
   }
 }
 
 /**
- * Submit a document for review
- * @param {string} id - Document ID to submit for review
- * @param {string} comments - Review comments
- * @returns {Promise<Object>} Updated document
+ * View document metadata
+ * @param {string} documentId - ID of the document
+ * @returns {Promise<Object>} Document metadata
  */
-export async function submitDocumentForReview(id, comments = '') {
-  const endpoint = `/api/docs/${id}/review`;
-  
+export async function getDocumentMetadata(documentId) {
   try {
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ comments })
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to submit document for review: ${errorText}`);
-      }
-      
-      return res;
-    }, [], { maxRetries: 2 });
-    
-    return await response.json();
+    const response = await axios.get(`${API_URL}/${documentId}/metadata`);
+    return response.data;
   } catch (error) {
-    // Enhanced error handling
-    handleApiError('Submit Document for Review', error, endpoint);
-    
-    // Rethrow to allow component to handle with toast notification
-    throw error;
+    console.error("Error fetching document metadata:", error);
+    throw new Error(`Failed to fetch document metadata: ${error.message}`);
   }
 }
 
 /**
- * Fetch document history specifically for CERs
- * @param {string} deviceId - Device ID to fetch history for
- * @returns {Promise<Array>} List of CER document history
+ * Save a CER document with all related data
+ * @param {Object} cerData - Complete CER data
+ * @returns {Promise<Object>} Saved CER information
+ */
+export async function saveCER(cerData) {
+  try {
+    const response = await axios.post(`${API_URL}/cer`, cerData);
+    return response.data;
+  } catch (error) {
+    console.error("Error saving CER:", error);
+    throw new Error(`Failed to save CER: ${error.message}`);
+  }
+}
+
+/**
+ * Fetch CER history
+ * @param {string} deviceId - Device ID to filter by
+ * @returns {Promise<Array>} List of CER versions
  */
 export async function fetchCERHistory(deviceId) {
-  const queryParams = new URLSearchParams();
-  
-  if (deviceId) {
-    queryParams.append('deviceId', deviceId);
-  }
-  
-  queryParams.append('module', 'cer');
-  
-  const endpoint = `/api/docs?${queryParams.toString()}`;
-  
   try {
-    const response = await retryApiCall(async () => {
-      const res = await fetch(endpoint);
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to fetch CER history: ${errorText}`);
-      }
-      
-      return res;
-    }, [], { maxRetries: 2 });
-    
-    const result = await response.json();
-    return result.documents;
+    const response = await axios.get(`${API_URL}/cer/history?deviceId=${encodeURIComponent(deviceId)}`);
+    return response.data;
   } catch (error) {
-    // Enhanced error handling
-    handleApiError('Fetch CER History', error, endpoint);
-    
-    // Return empty array to prevent UI crashes
-    return [];
+    console.error("Error fetching CER history:", error);
+    throw new Error(`Failed to fetch CER history: ${error.message}`);
   }
 }
 
 /**
- * Check document service health
- * @returns {Promise<boolean>} Whether document services are available
+ * Compare two CER versions
+ * @param {string} versionA - First version ID
+ * @param {string} versionB - Second version ID
+ * @returns {Promise<Object>} Comparison results
  */
-export async function checkDocumentServiceHealth() {
+export async function compareCERVersions(versionA, versionB) {
   try {
-    const response = await fetch('/api/docs/health');
-    return response.ok;
+    const response = await axios.post(`${API_URL}/cer/compare`, {
+      versionA,
+      versionB
+    });
+    return response.data;
   } catch (error) {
-    console.error('Document service health check failed:', error);
-    return false;
+    console.error("Error comparing CER versions:", error);
+    throw new Error(`Failed to compare CER versions: ${error.message}`);
   }
 }
+
+/**
+ * Share a document with other users
+ * @param {string} documentId - ID of the document to share
+ * @param {Array} recipients - List of recipient emails
+ * @param {string} permission - Permission level
+ * @returns {Promise<Object>} Share results
+ */
+export async function shareDocument(documentId, recipients, permission) {
+  try {
+    const response = await axios.post(`${API_URL}/${documentId}/share`, {
+      recipients,
+      permission
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error sharing document:", error);
+    throw new Error(`Failed to share document: ${error.message}`);
+  }
+}
+
+/**
+ * Delete a document
+ * @param {string} documentId - ID of the document to delete
+ * @returns {Promise<Object>} Deletion results
+ */
+export async function deleteDocument(documentId) {
+  try {
+    const response = await axios.delete(`${API_URL}/${documentId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    throw new Error(`Failed to delete document: ${error.message}`);
+  }
+}
+
+/**
+ * Extract text from an uploaded document
+ * @param {File} file - The file to extract text from
+ * @returns {Promise<string>} Extracted text
+ */
+export async function extractTextFromDocument(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    const response = await axios.post(`${API_URL}/extract-text`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    return response.data.text;
+  } catch (error) {
+    console.error("Error extracting text from document:", error);
+    throw new Error(`Failed to extract text: ${error.message}`);
+  }
+}
+
+/**
+ * Generate a PDF from CER data
+ * @param {Object} cerData - CER data to generate PDF from
+ * @returns {Promise<Blob>} Generated PDF as blob
+ */
+export async function generateCERPDF(cerData) {
+  try {
+    const response = await axios.post(`${API_URL}/cer/generate-pdf`, cerData, {
+      responseType: 'blob'
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error generating CER PDF:", error);
+    throw new Error(`Failed to generate CER PDF: ${error.message}`);
+  }
+}
+
+export default {
+  uploadDocument,
+  fetchDocuments,
+  downloadDocument,
+  getDocumentMetadata,
+  saveCER,
+  fetchCERHistory,
+  compareCERVersions,
+  shareDocument,
+  deleteDocument,
+  extractTextFromDocument,
+  generateCERPDF
+};
