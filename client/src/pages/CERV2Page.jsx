@@ -11,6 +11,9 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fetchAllCERs, generateFullCER, generateSampleCER } from "../services/cerService";
+import { fetchDocuments, approveDocument, fetchCERHistory } from "../services/documentService";
+import DocumentFilterPanel from "../components/documents/DocumentFilterPanel";
+import DocumentList from "../components/documents/DocumentList";
 import { 
   FileText, Search, Download, Upload, FileSpreadsheet, 
   Book, Database, Layers, Settings, Microscope, BarChart4, 
@@ -49,6 +52,12 @@ const CERV2Page = () => {
   const [loadingSample, setLoadingSample] = useState(false);
   const [sampleURL, setSampleURL] = useState(null);
   const [selectedSampleTemplate, setSelectedSampleTemplate] = useState('mdr-full');
+  
+  // Document filter state
+  const [docFilters, setDocFilters] = useState({});
+  const [documents, setDocuments] = useState([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docsPagination, setDocsPagination] = useState({ page: 1, totalPages: 1 });
   
   // Mock data for existing CER reports
   const [pastReports, setPastReports] = useState([
@@ -245,6 +254,61 @@ const CERV2Page = () => {
       setIsSearching(false);
     }
   };
+  
+  // Load documents with filtering
+  const loadDocuments = async (filters = {}, page = 1) => {
+    setDocsLoading(true);
+    try {
+      // Set module to 'cer' by default if not specified to only show CER documents
+      const cerFilters = { 
+        ...filters,
+        module: filters.module || 'cer'
+      };
+      
+      const result = await fetchDocuments(cerFilters, page);
+      setDocuments(result.documents);
+      setDocsPagination({
+        page: result.pagination.page,
+        totalPages: result.pagination.totalPages
+      });
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      // You could add toast notification here
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+  
+  // Handle filter apply
+  const handleFilterApply = (filters) => {
+    setDocFilters(filters);
+    loadDocuments(filters, 1); // Reset to page 1 when filters change
+  };
+  
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    loadDocuments(docFilters, newPage);
+  };
+  
+  // Handle document approval
+  const handleApproveDocument = async (doc) => {
+    try {
+      await approveDocument(doc.id);
+      // Refresh document list after approval
+      loadDocuments(docFilters, docsPagination.page);
+      // You could add toast notification here for success
+    } catch (error) {
+      console.error('Error approving document:', error);
+      // You could add toast notification here for error
+    }
+  };
+  
+  // Load documents when filter tab is selected
+  useEffect(() => {
+    if (activeTab === 'history') {
+      loadDocuments(docFilters, 1);
+    }
+  }, [activeTab]);
   
   // Generate CER report
   const generateCERReport = () => {
@@ -478,7 +542,7 @@ const CERV2Page = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-4">
+        <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-5">
           <TabsTrigger value="input">
             <Layers className="h-4 w-4 mr-2" />
             Input Data
@@ -494,6 +558,10 @@ const CERV2Page = () => {
           <TabsTrigger value="library">
             <FolderOpen className="h-4 w-4 mr-2" />
             Report Library
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <Clock className="h-4 w-4 mr-2" />
+            History
           </TabsTrigger>
         </TabsList>
         
