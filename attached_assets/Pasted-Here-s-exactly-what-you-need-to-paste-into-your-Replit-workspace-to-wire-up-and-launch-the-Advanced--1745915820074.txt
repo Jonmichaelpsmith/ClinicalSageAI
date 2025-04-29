@@ -1,0 +1,93 @@
+Here’s exactly what you need to paste into your Replit workspace to wire up and launch the Advanced CER Generator (and its PubMed & openFDA integrations) end-to-end:
+
+⸻
+
+1. Install Dependencies
+
+In your Replit shell, run:
+
+npm install axios uuid
+
+
+
+⸻
+
+2. Mount the New Routes
+
+File: server/server.js
+Add these imports at the top, and mount them before your catch-all:
+
+// At the top with your other imports
+import pubmedRoutes from './routes/pubmed.js';
+import openFDARoutes from './routes/openfda.js';
+
+// …
+
+// After your existing API mounts (e.g. vault, cer, etc.):
+app.use('/api/pubmed', pubmedRoutes);
+app.use('/api/openfda', openFDARoutes);
+
+
+
+⸻
+
+3. Update Client-Side Routing
+
+File: client/src/App.jsx
+Import the new CER V2 page and add its <Route>:
+
+// Add at top with other page imports
++ import CERV2Page from './pages/CERV2Page';
+
+function App() {
+  return (
+    <BrowserRouter>
+      {/* … your top-nav, layout, etc. … */}
+      <Routes>
+        {/* … existing routes … */}
++       <Route path="/cerV2" element={<CERV2Page />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+
+
+⸻
+
+4. Verify CORS & Headers
+
+If you have custom CORS settings, ensure they allow requests to /api/pubmed/* and /api/openfda/*. For example:
+
+// In server/server.js, where you configure CORS:
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  // …
+  next();
+});
+
+
+
+⸻
+
+5. Restart & Test
+	1.	Restart your Replit “Run” or manually stop/start your server.
+	2.	In the browser, navigate to /cerV2.
+	3.	Search PubMed (e.g. “oncology drug safety”) → select one or two PMIDs.
+	4.	Fetch AE data for your drug of interest → select one or two events.
+	5.	Click “Generate Advanced CER” and wait for GPT-4 to draft your full Clinical Evaluation Report.
+
+You should see a polished narrative that weaves together the abstracts, post-market signals, and your study metadata—all in a single view.
+
+⸻
+
+What’s Next?
+   •   UI Polish: Tweak the CSS in CERGeneratorV2.css to match your brand.
+   •   Error Handling: Add user-friendly alerts if PubMed or openFDA calls fail.
+   •   Production Harden: Swap in a real DB for PubMed/openFDA caches, add rate-limit handling.
+
+But at this point, your Advanced CER Generator is live in TrialSage—congratulations! Let me know how the first drafts look and we’ll refine the UX or expand to “one-click submit” next.
