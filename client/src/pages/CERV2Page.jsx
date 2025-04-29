@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CerHistoryPanel from '@/components/cer/CerHistoryPanel';
 import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { fileText, clockRewind, sliders, clipboardCheck } from 'lucide-react';
+import { FileText, ClockRewind, Sliders, ClipboardCheck } from 'lucide-react';
 
 /**
  * CER Generator V2 Page
@@ -30,7 +30,7 @@ const CERV2Page = () => {
     <div className="container py-6 max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight mb-2 flex items-center gap-2">
-          <fileText className="h-8 w-8" />
+          <FileText className="h-8 w-8" />
           Clinical Evaluation Report Generator
         </h1>
         <p className="text-muted-foreground">
@@ -62,15 +62,15 @@ const CERV2Page = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger value="history" className="flex items-center gap-2">
-            <clockRewind className="h-4 w-4" />
+            <ClockRewind className="h-4 w-4" />
             Report History
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
-            <sliders className="h-4 w-4" />
+            <Sliders className="h-4 w-4" />
             Template Settings
           </TabsTrigger>
           <TabsTrigger value="approvals" className="flex items-center gap-2">
-            <clipboardCheck className="h-4 w-4" />
+            <ClipboardCheck className="h-4 w-4" />
             Approvals
           </TabsTrigger>
         </TabsList>
@@ -83,7 +83,7 @@ const CERV2Page = () => {
           <Card className="shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <sliders className="h-5 w-5" />
+                <Sliders className="h-5 w-5" />
                 Template Settings
               </CardTitle>
               <CardDescription>
@@ -102,7 +102,7 @@ const CERV2Page = () => {
           <Card className="shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <clipboardCheck className="h-5 w-5" />
+                <ClipboardCheck className="h-5 w-5" />
                 My Approval Requests
               </CardTitle>
               <CardDescription>
