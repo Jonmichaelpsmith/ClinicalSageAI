@@ -1,0 +1,154 @@
+Here’s the **next** slice of work to take the CER Generator from “stub” to a fully-featured document management hub:
+
+---
+
+## 1. Add “Generate Full CER” & “Browse History” Panels
+
+### a) UI Scaffold in `CERV2Page.jsx`
+```jsx
+// client/src/pages/CERV2Page.jsx
+import React, { useEffect, useState } from 'react'
+import { Button, Card, List, Spinner } from '@components/ui'
+import { fetchAllCERs, generateFullCER } from '@services/cerService'
+
+export default function CERV2Page() {
+  const [history, setHistory] = useState([])
+  const [loadingHistory, setLoadingHistory] = useState(true)
+  const [generating, setGenerating] = useState(false)
+
+  useEffect(() => {
+    fetchAllCERs().then(cs => {
+      setHistory(cs)
+      setLoadingHistory(false)
+    })
+  }, [])
+
+  const handleGenerate = async () => {
+    setGenerating(true)
+    await generateFullCER()
+    // upon completion, refetch history
+    const cs = await fetchAllCERs()
+    setHistory(cs)
+    setGenerating(false)
+  }
+
+  return (
+    <div className="cer-page grid grid-cols-3 gap-6">
+      {/* Left 2/3: existing form */}
+      <div className="col-span-2">
+        {/* … your existing Device Info, PubMed, FDA Adverse tabs … */}
+      </div>
+
+      {/* Right 1/3: “Full Report” + History */}
+      <aside className="space-y-6">
+        <Card>
+          <h3>Full Clinical Evaluation Report</h3>
+          <Button 
+            onClick={handleGenerate} 
+            disabled={generating}
+            variant="primary"
+            block
+          >
+            {generating ? <Spinner /> : 'Generate Full CER'}
+          </Button>
+        </Card>
+
+        <Card>
+          <h3>Your Previous CERs</h3>
+          {loadingHistory 
+            ? <Spinner /> 
+            : (
+              history.length
+                ? <List items={history} renderItem={cer => (
+                    <List.Item key={cer.id}>
+                      <a href={cer.url} target="_blank" rel="noopener">
+                        {cer.title} — {new Date(cer.createdAt).toLocaleDateString()}
+                      </a>
+                    </List.Item>
+                  )}/>
+                : <p className="text-sm">No CERs generated yet.</p>
+            )
+          }
+        </Card>
+      </aside>
+    </div>
+  )
+}
+```
+
+### b) New Client-side Service Methods
+```js
+// client/src/services/cerService.js
+export async function fetchAllCERs() {
+  const res = await fetch('/api/cer/history')
+  return res.ok ? res.json() : []
+}
+
+export async function generateFullCER() {
+  const res = await fetch('/api/cer/generate-full', { method: 'POST' })
+  if (!res.ok) throw new Error('Failed to generate CER')
+  return res.json()
+}
+```
+
+---
+
+## 2. Wire Up Server Endpoints
+
+### a) History & Generate Routes
+```js
+// server/routes/cer.js
+import express from 'express'
+import { listCERs, createFullCER } from '../services/cerService.js'
+const router = express.Router()
+
+// Return list of past CER records
+router.get('/history', async (req, res) => {
+  const records = await listCERs()
+  res.json(records)
+})
+
+// Generate a brand-new, full Clinical Evaluation Report
+router.post('/generate-full', async (req, res) => {
+  const cer = await createFullCER()
+  res.status(201).json(cer)
+})
+
+export default router
+```
+
+### b) Hook into `server.js`
+```js
+// server/server.js (excerpt)
+import cerRoutes from './routes/cer.js'
+app.use('/api/cer', cerRoutes)
+```
+
+---
+
+## 3. Implement Server-Side Logic
+
+#### `services/cerService.js`
+- **`listCERs()`**  
+  • Query your database or Vault metadata collection for all CER docs  
+  • Return `[{ id, title, createdAt, url }, …]`
+
+- **`createFullCER()`**  
+  • Pull together all the section drafts and context  
+  • Call your AI drafting pipeline (`/api/ai/draft-cer-full`)  
+  • Store the resulting PDF or HTML in your Vault (e.g. AWS S3, DB)  
+  • Return the new CER record
+
+---
+
+## 4. Next Steps
+
+1. **Wire up** the two new server-side methods above.  
+2. **Style polish** the right-hand “Full CER” panel to match your brand.  
+3. **Test generation** end-to-end: click “Generate Full CER”, verify you see a new entry in “Your Previous CERs” with a working link.  
+4. **Extend**:  
+   - Add a “Filter by Playbook” drop-down so clients can see only CERs generated under their Fast IND, Full NDA, or EMA IMPD templates.  
+   - Surface brief stats (e.g. pages, last modified) in the history list.  
+   - Tie into your “Active-Learning Loop” so clients can mark a CER as ✅ approved or 🔄 needs revision, feeding that back into the AI.
+
+Let me know once you’ve wired the basic history + generate-full endpoints and integrated the UI, then we’ll tackle the filtering, approval workflows and one-click ESG/EMA submissions!

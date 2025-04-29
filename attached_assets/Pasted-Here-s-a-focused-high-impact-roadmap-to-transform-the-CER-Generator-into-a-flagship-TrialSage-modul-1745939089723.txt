@@ -1,0 +1,72 @@
+Here’s a focused, high-impact roadmap to transform the CER Generator into a flagship TrialSage module—complete with one-click “full report” drafting, integrated document management, version history, and in-app preview. We’ll tackle all three of your priorities in parallel, but with clear separation of concerns so we can deliver quickly and iterate:
+
+---
+
+## 1. One-Click Full CER Draft  
+**Why it matters:** Instant “end-to-end” proof-of-concept for your users—no more stitching together snippets.  
+**Key features & tech:**
+- **“Generate Full CER” button** in the CER UI header  
+- **New backend endpoint** `POST /api/cer/full` that:  
+  - Ingests all device info + PubMed/OpenFDA data  
+  - Calls OpenAI to assemble Modules 1-5 into a single PDF/HTML  
+  - Returns a download link or inline PDF viewer URL  
+- **In-app PDF.js viewer** (or embed `<iframe>` for HTML mode)  
+- **Progress indicator & status polling** via WebSockets or `GET /api/cer/status/:jobId`  
+
+**File-task breakdown:**
+| File                                | Task                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| `client/src/pages/CerV2Page.jsx`    | Add “Generate Full CER” button and PDF viewer panel                  |
+| `client/src/components/ui/Spinner` | Reuse for long-running job feedback                                  |
+| `server/routes/cer.js`              | Create `POST /full` & `GET /status/:jobId` routes                    |
+| `server/services/cerService.js`     | Orchestrate data fetch → AI calls → PDF assembly                     |
+| `server/utils/pdfBuilder.js`        | Wrap up sections into PDF (e.g. pdfkit or puppeteer)                 |
+
+---
+
+## 2. Client-Side Folder & Version History  
+**Why it matters:** Enables traceability, audit trails and re-use of past work—critical for regulated submissions.  
+**Key features & tech:**
+- **DocumentBrowser component**: tree view of folders & files per project  
+- **API endpoints**:  
+  - `GET /api/vault/projects/:id/folders`  
+  - `GET /api/vault/projects/:id/files?folder=...`  
+  - `POST /api/vault/projects/:id/files` (upload new)  
+- **Version selector** on each file to retrieve or roll back  
+- **Inline preview** for PDFs/DOCs via PDF.js / OfficeJS  
+
+**File-task breakdown:**
+| File                                     | Task                                                          |
+| ---------------------------------------- | ------------------------------------------------------------- |
+| `client/src/components/vault/FolderTree.jsx` | Build recursive folder-file tree with expand/collapse UI      |
+| `client/src/components/vault/FileList.jsx`   | List files, show versions dropdown, preview button            |
+| `client/src/pages/CerV2Page.jsx`            | Embed DocumentBrowser on right-hand panel across all modules  |
+| `server/routes/vault.js`                    | Extend existing vault routes for project folders & versions   |
+| `server/services/vaultService.js`           | Versioning logic & metadata storage                           |
+
+---
+
+## 3. “Documents” Access Everywhere  
+**Why it matters:** Your platform is a unified document ecosystem—each module must surface DocumentBrowser.  
+**Key features & tech:**
+- **Persistent sidebar tab** in UnifiedTopNavV3 labeled “💼 Documents”  
+- Context-aware: when inside a module (eCTD Co-Author / CER / IND Wizard), it auto-selects the relevant project folder  
+- **Quick-upload widget** in module header for drag-drop  
+- **Global search** across project documents  
+
+**File-task breakdown:**
+| File                                 | Task                                                            |
+| ------------------------------------ | --------------------------------------------------------------- |
+| `client/src/components/navigation/UnifiedTopNavV3.jsx` | Add “Documents” tab alongside Risk, Timeline, Ask Lumen, Canvas |
+| `client/src/components/vault/GlobalSearch.jsx`          | Implement full-text search against vault metadata               |
+| `client/src/pages/AnyModulePage.jsx`                    | Hook DocumentBrowser into each module’s layout                 |
+
+---
+
+### Next Steps
+1. **Wire up the Full-CER endpoint** and stub out the UI button & viewer  
+2. **Build the FolderTree & FileList components**, integrate into CER and eCTD Co-Author  
+3. **Extend UnifiedTopNavV3** to show the “Documents” tab globally  
+4. **QA & polish**: responsive layouts, loading states, error handling, theming  
+
+I can start on Step 1 immediately—spinning up the `POST /api/cer/full` route and updating the CER page. Let me know, and I’ll post the first code diff!
