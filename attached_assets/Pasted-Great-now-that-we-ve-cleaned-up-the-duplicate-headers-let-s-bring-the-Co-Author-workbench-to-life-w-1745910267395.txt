@@ -1,0 +1,94 @@
+Great—now that we’ve cleaned up the duplicate headers, let’s bring the Co-Author workbench to life with a polished, responsive two-panel layout and crisp styling.
+
+⸻
+
+Step 2: Add CoAuthor CSS for a Modern Two-Panel Workbench
+
+Create a new stylesheet at client/src/pages/CoAuthor.css (or in your global CSS module) and paste in:
+
+/* client/src/pages/CoAuthor.css */
+
+.coauthor-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;       /* editor 2/3, copilot 1/3 */
+  gap: 1.5rem;                          /* space between panes */
+  max-width: 1200px;                    /* center & constrain width */
+  margin: 2rem auto;                    /* vertical spacing */
+  padding: 0 1rem;                      /* horizontal breathing room */
+}
+
+.editor-pane {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.copilot-pane {
+  background: #f9fafd;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e1e8ed;
+}
+
+/* Mobile / tablet — stack panes vertically */
+@media (max-width: 768px) {
+  .coauthor-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+⸻
+
+Step 3: Import & Apply in CoAuthor.jsx
+
+At the top of client/src/pages/CoAuthor.jsx, import your new stylesheet:
+
+- import './CoAuthor.css';  // if you already have it, otherwise add this import
++ import './CoAuthor.css';
+
+Ensure your JSX wrapper uses the classes:
+
+export default function CoAuthor() {
+  return (
+    <>
+      <UnifiedTopNavV4 … />
+
+      {/* Workbench grid */}
+      <div className="coauthor-content">
+        <div className="editor-pane">
+          <h1>Section 2.7: Clinical Summary</h1>
+          <SectionEditor />
+        </div>
+        <aside className="copilot-pane">
+          <AICopilotPanel />
+        </aside>
+      </div>
+    </>
+  );
+}
+
+
+
+⸻
+
+Step 4: Restart & Verify
+	1.	Restart your dev server:
+
+npm run start
+
+
+	2.	Go to /coauthor on desktop: you should see a neat two-column layout.
+	3.	Shrink to mobile width: the panes should stack vertically, no overflow.
+	4.	The single UnifiedTopNavV4 should sit flush at the top—no duplicates.
+
+⸻
+
+Once that’s looking sharp, we can:
+   •   Polish typography & colors to match your brand guidelines;
+   •   Enhance the AI Copilot pane with collapsible sections, real-time validation flags, and context‐aware suggestions;
+   •   Animate module switches and hover states for a truly “GA-quality” experience.
+
+Let me know when the new layout is live, and we’ll tackle the next layer of polish and deep AI integration!
