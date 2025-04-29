@@ -55,186 +55,86 @@ router.post('/ai-guidance', (req, res) => {
   }
 });
 
-// Fetch IND projects (from database)
-router.get('/projects', async (req, res) => {
+// Fetch IND projects
+router.get('/projects', (req, res) => {
   try {
-    // Query the database for all projects
-    const result = await db.query(`
-      SELECT 
-        project_id as id, 
-        name, 
-        drug_name as "drugName", 
-        indication, 
-        sponsor, 
-        status, 
-        progress, 
-        updated_at as "lastUpdated" 
-      FROM ind_projects
-      ORDER BY updated_at DESC
-    `);
-    
-    // If no projects found, seed with defaults for the first time
-    if (result.rows.length === 0) {
-      // Create default projects
-      const defaultProjects = [
-        {
-          project_id: 'project-1',
-          name: 'Enzymax Forte IND',
-          drug_name: 'Enzymax Forte',
-          indication: 'Pancreatic Enzyme Deficiency',
-          sponsor: 'TrialSage Pharmaceuticals',
-          status: 'in_progress',
-          progress: 65,
-          data: JSON.stringify({
-            modules: {
-              prePlanning: { status: 'completed', progress: 100 },
-              nonclinicalData: { status: 'in_progress', progress: 85 },
-              cmcData: { status: 'in_progress', progress: 70 },
-              clinicalProtocol: { status: 'in_progress', progress: 60 },
-              investigatorBrochure: { status: 'not_started', progress: 0 },
-              fdaForms: { status: 'not_started', progress: 0 },
-              finalAssembly: { status: 'not_started', progress: 0 }
-            }
-          })
-        },
-        {
-          project_id: 'project-2',
-          name: 'NeuroClear IND',
-          drug_name: 'NeuroClear',
-          indication: 'Alzheimer\'s Disease',
-          sponsor: 'NeuroGenix Therapeutics',
-          status: 'not_started',
-          progress: 10,
-          data: JSON.stringify({
-            modules: {
-              prePlanning: { status: 'in_progress', progress: 30 },
-              nonclinicalData: { status: 'not_started', progress: 0 },
-              cmcData: { status: 'not_started', progress: 0 },
-              clinicalProtocol: { status: 'not_started', progress: 0 },
-              investigatorBrochure: { status: 'not_started', progress: 0 },
-              fdaForms: { status: 'not_started', progress: 0 },
-              finalAssembly: { status: 'not_started', progress: 0 }
-            }
-          })
-        },
-        {
-          project_id: 'project-3',
-          name: 'CardioFlow IND',
-          drug_name: 'CardioFlow',
-          indication: 'Hypertension',
-          sponsor: 'HeartWell Biosciences',
-          status: 'completed',
-          progress: 100,
-          data: JSON.stringify({
-            modules: {
-              prePlanning: { status: 'completed', progress: 100 },
-              nonclinicalData: { status: 'completed', progress: 100 },
-              cmcData: { status: 'completed', progress: 100 },
-              clinicalProtocol: { status: 'completed', progress: 100 },
-              investigatorBrochure: { status: 'completed', progress: 100 },
-              fdaForms: { status: 'completed', progress: 100 },
-              finalAssembly: { status: 'completed', progress: 100 }
-            }
-          })
-        }
-      ];
-      
-      // Insert default projects
-      for (const project of defaultProjects) {
-        await db.query(`
-          INSERT INTO ind_projects 
-          (project_id, name, drug_name, indication, sponsor, status, progress, data) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        `, [
-          project.project_id,
-          project.name,
-          project.drug_name,
-          project.indication,
-          project.sponsor,
-          project.status,
-          project.progress,
-          project.data
-        ]);
+    // In a production environment, this would query a database
+    const sampleProjects = [
+      {
+        id: 'project-1',
+        name: 'Enzymax Forte IND',
+        drugName: 'Enzymax Forte',
+        indication: 'Pancreatic Enzyme Deficiency',
+        sponsor: 'TrialSage Pharmaceuticals',
+        status: 'in_progress',
+        progress: 65,
+        lastUpdated: '2025-04-20T14:30:00Z'
+      },
+      {
+        id: 'project-2',
+        name: 'NeuroClear IND',
+        drugName: 'NeuroClear',
+        indication: 'Alzheimer\'s Disease',
+        sponsor: 'NeuroGenix Therapeutics',
+        status: 'not_started',
+        progress: 10,
+        lastUpdated: '2025-04-15T09:45:00Z'
+      },
+      {
+        id: 'project-3',
+        name: 'CardioFlow IND',
+        drugName: 'CardioFlow',
+        indication: 'Hypertension',
+        status: 'completed',
+        sponsor: 'HeartWell Biosciences',
+        progress: 100,
+        lastUpdated: '2025-03-28T16:20:00Z'
       }
-      
-      // Get the newly inserted projects
-      const insertedResult = await db.query(`
-        SELECT 
-          project_id as id, 
-          name, 
-          drug_name as "drugName", 
-          indication, 
-          sponsor, 
-          status, 
-          progress, 
-          updated_at as "lastUpdated" 
-        FROM ind_projects
-        ORDER BY updated_at DESC
-      `);
-      
-      return res.json(insertedResult.rows);
-    }
-    
-    // Return the projects from the database
-    return res.json(result.rows);
+    ];
+
+    return res.json(sampleProjects);
   } catch (error) {
     console.error('Error fetching IND projects:', error);
-    return res.status(500).json({ success: false, message: 'Database Error: ' + error.message });
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
-// Get specific project (from database)
-router.get('/:projectId', async (req, res) => {
+// Get specific project
+router.get('/:projectId', (req, res) => {
   try {
     const { projectId } = req.params;
     
-    // Query the database for the specific project
-    const result = await db.query(`
-      SELECT 
-        project_id as id, 
-        name, 
-        drug_name as "drugName", 
-        indication, 
-        sponsor as "sponsorName", 
-        status, 
-        progress, 
-        target_date as "targetDate",
-        updated_at as "lastUpdated", 
-        data 
-      FROM ind_projects
-      WHERE project_id = $1
-    `, [projectId]);
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Project not found' });
-    }
-    
-    // Get the project and parse the JSONB data
-    const project = result.rows[0];
+    // In production, fetch from database using projectId
     const projectData = {
-      ...project,
-      modules: project.data?.modules || {
-        prePlanning: { status: 'not_started', progress: 0 },
-        nonclinicalData: { status: 'not_started', progress: 0 },
-        cmcData: { status: 'not_started', progress: 0 },
-        clinicalProtocol: { status: 'not_started', progress: 0 },
+      id: projectId,
+      name: `IND-${projectId}`,
+      drugName: 'Enzymax Forte',
+      indication: 'Pancreatic Enzyme Deficiency',
+      sponsorName: 'TrialSage Pharmaceuticals',
+      status: 'in_progress',
+      progress: 65,
+      targetDate: '2025-06-15',
+      lastUpdated: new Date().toISOString(),
+      modules: {
+        prePlanning: { status: 'completed', progress: 100 },
+        nonclinicalData: { status: 'in_progress', progress: 85 },
+        cmcData: { status: 'in_progress', progress: 70 },
+        clinicalProtocol: { status: 'in_progress', progress: 60 },
         investigatorBrochure: { status: 'not_started', progress: 0 },
         fdaForms: { status: 'not_started', progress: 0 },
         finalAssembly: { status: 'not_started', progress: 0 }
       }
     };
-    
-    delete projectData.data; // Remove the raw data field
-    
+
     return res.json(projectData);
   } catch (error) {
     console.error(`Error fetching project ${req.params.projectId}:`, error);
-    return res.status(500).json({ success: false, message: 'Database Error: ' + error.message });
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
 // Create new IND project
-router.post('/create', async (req, res) => {
+router.post('/create', (req, res) => {
   try {
     const { name, drugName, indication, sponsor } = req.body;
     
@@ -247,59 +147,33 @@ router.post('/create', async (req, res) => {
     }
     
     // Generate a unique project ID
-    const projectId = 'project-' + uuidv4().split('-')[0];
+    const projectId = 'project-' + Math.random().toString(36).substring(2, 8);
     
-    // Default project data
-    const defaultData = {
-      modules: {
-        prePlanning: { status: 'not_started', progress: 0 },
-        nonclinicalData: { status: 'not_started', progress: 0 },
-        cmcData: { status: 'not_started', progress: 0 },
-        clinicalProtocol: { status: 'not_started', progress: 0 },
-        investigatorBrochure: { status: 'not_started', progress: 0 },
-        fdaForms: { status: 'not_started', progress: 0 },
-        finalAssembly: { status: 'not_started', progress: 0 }
-      }
-    };
-    
-    // Insert the new project into the database
-    const result = await db.query(`
-      INSERT INTO ind_projects 
-      (project_id, name, drug_name, indication, sponsor, status, progress, data) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING 
-        project_id as id, 
-        name, 
-        drug_name as "drugName", 
-        indication, 
-        sponsor, 
-        status, 
-        progress, 
-        updated_at as "lastUpdated"
-    `, [
-      projectId,
+    // Create a mock project
+    const mockProject = {
+      id: projectId,
       name,
       drugName,
       indication,
-      sponsor || 'Unknown',
-      'not_started',
-      0,
-      JSON.stringify(defaultData)
-    ]);
+      sponsor: sponsor || 'Unknown',
+      status: 'not_started',
+      progress: 0,
+      lastUpdated: new Date().toISOString()
+    };
     
     return res.status(201).json({
       success: true,
       message: 'Project created successfully',
-      project: result.rows[0]
+      project: mockProject
     });
   } catch (error) {
     console.error('Error creating IND project:', error);
-    return res.status(500).json({ success: false, message: 'Database Error: ' + error.message });
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
 // Save IND project data
-router.post('/save-draft', async (req, res) => {
+router.post('/save-draft', (req, res) => {
   try {
     const projectData = req.body;
     
@@ -307,54 +181,10 @@ router.post('/save-draft', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing project ID' });
     }
     
-    // Check if the project exists
-    const checkResult = await db.query(
-      'SELECT project_id FROM ind_projects WHERE project_id = $1',
-      [projectData.id]
-    );
+    // In a production environment, this would save to a database
+    console.log('Saving IND project draft:', projectData);
     
-    if (checkResult.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Project not found' });
-    }
-    
-    // Extract the data to save
-    const {
-      name = checkResult.rows[0].name,
-      drugName,
-      indication,
-      sponsor,
-      status,
-      progress,
-      targetDate,
-      modules
-    } = projectData;
-    
-    // Update the project in the database
-    await db.query(`
-      UPDATE ind_projects 
-      SET 
-        name = $1, 
-        drug_name = $2, 
-        indication = $3, 
-        sponsor = $4, 
-        status = $5, 
-        progress = $6, 
-        target_date = $7, 
-        data = $8,
-        updated_at = NOW()
-      WHERE project_id = $9
-    `, [
-      name,
-      drugName,
-      indication,
-      sponsor,
-      status,
-      progress,
-      targetDate,
-      JSON.stringify({ modules }),
-      projectData.id
-    ]);
-    
+    // Simulating successful save
     return res.json({ 
       success: true, 
       message: 'Project draft saved successfully', 
@@ -362,7 +192,7 @@ router.post('/save-draft', async (req, res) => {
     });
   } catch (error) {
     console.error('Error saving IND project draft:', error);
-    return res.status(500).json({ success: false, message: 'Database Error: ' + error.message });
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
