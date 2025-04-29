@@ -43,7 +43,18 @@ app.use((req, res, next) => {
 import aiRoutes from './routes/ai-routes.js';
 import coauthorRoutes from './routes/coauthor.js';
 
-// API Routes
+// Direct test endpoint for coauthor generate
+app.post('/api/coauthor/generate/test', (req, res) => {
+  console.log('📝 Direct test endpoint for coauthor generate called');
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  
+  return res.json({
+    success: true,
+    draft: `This is a test response from the direct endpoint in server.js. Your request included: ${req.body.moduleId || 'unknown'}/${req.body.sectionId || 'unknown'}`
+  });
+});
+
+// API Routes 
 app.use('/api/projects', projectsStatusRoutes);
 app.use('/api/ind', indAssemblerRoutes);
 app.use('/api/ind/wizard', indWizardAPIRoutes);
@@ -99,7 +110,9 @@ app.get('*', (req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000; // Changed to match port 5000 that's actually being used
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('🚀 CoAuthor API available at: /api/coauthor/generate');
+  console.log('🧪 Test endpoint available at: /api/coauthor/generate/test');
 });

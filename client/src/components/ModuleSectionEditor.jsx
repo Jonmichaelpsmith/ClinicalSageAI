@@ -89,7 +89,7 @@ export default function ModuleSectionEditor({
         });
         
         if (!response.ok) {
-          console.warn(`/api/coauthor/generate returned ${response.status}. Falling back to /api/ai/draft...`);
+          console.warn(`/api/coauthor/generate returned ${response.status}. Trying test endpoint...`);
           throw new Error(`Server returned ${response.status}`);
         }
         
@@ -103,8 +103,41 @@ export default function ModuleSectionEditor({
           throw new Error(data.error || 'Failed to generate draft content');
         }
       } catch (coauthorErr) {
-        console.warn('Failed to use coauthor endpoint, falling back to ai/draft:', coauthorErr);
-        // Fall through to legacy endpoint
+        console.warn('Failed to use coauthor endpoint, trying direct test endpoint:', coauthorErr);
+        
+        // Try the direct test endpoint
+        try {
+          const directResponse = await fetch('/api/coauthor/generate/test', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              moduleId,
+              sectionId,
+              prompt: content,
+              context: contextSnippets.map(s => s.text)
+            })
+          });
+          
+          if (!directResponse.ok) {
+            console.warn(`Direct test endpoint returned ${directResponse.status}. Falling back to /api/ai/draft...`);
+            throw new Error(`Server returned ${directResponse.status} from test endpoint`);
+          }
+          
+          const directData = await directResponse.json();
+          
+          if (directData.success && directData.draft) {
+            setContent(directData.draft);
+            setIsDraftReady(true);
+            return; // Exit if successful
+          } else {
+            throw new Error(directData.error || 'Failed to generate draft content from test endpoint');
+          }
+        } catch (directErr) {
+          console.warn('Failed to use direct test endpoint, falling back to ai/draft:', directErr);
+          // Fall through to legacy endpoint
+        }
       }
       
       // Legacy fallback
