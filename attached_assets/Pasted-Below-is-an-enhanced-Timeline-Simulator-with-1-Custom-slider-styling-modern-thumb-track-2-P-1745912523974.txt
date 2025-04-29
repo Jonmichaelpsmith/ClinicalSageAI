@@ -1,0 +1,270 @@
+Below is an enhanced Timeline Simulator with:
+	1.	Custom slider styling (modern thumb & track)
+	2.	Playbook presets (“Fast IND”, “Full NDA”, “EMA IMPD”) that dynamically adjust your “work remaining” and reshuffle the timeline
+
+⸻
+
+1) Updated Component: TimelineSimulator.jsx
+
+// client/src/components/timeline/TimelineSimulator.jsx
+import React, { useState, useEffect } from 'react';
+import './TimelineSimulator.css';
+
+export default function TimelineSimulator() {
+  const [info, setInfo]           = useState(null);
+  const [delay, setDelay]         = useState(0);
+  const [preset, setPreset]       = useState('standard');
+
+  // store original missingDays for preset recalcs
+  const [originalMissing, setOriginalMissing] = useState(0);
+
+  const playbooks = [
+    { id: 'fast-ind', label: 'Fast IND Playbook', factor: 0.8 },
+    { id: 'standard', label: 'Standard',          factor: 1.0 },
+    { id: 'full-nda', label: 'Full NDA Playbook', factor: 1.2 },
+    { id: 'ema-impd', label: 'EMA IMPD Playbook', factor: 1.1 },
+  ];
+
+  useEffect(() => {
+    fetch('/api/timeline/info')
+      .then(res => res.json())
+      .then(data => {
+        setInfo(data);
+        setOriginalMissing(data.missingDays);
+        setDelay(0);
+      })
+      .catch(console.error);
+  }, []);
+
+  if (!info) {
+    return <div className="ts-loading">Loading timeline data…</div>;
+  }
+
+  // apply playbook factor
+  const factor     = playbooks.find(p => p.id === preset)?.factor || 1;
+  const missingDays = Math.round(originalMissing * factor);
+  const reviewDays  = info.reviewDays;
+  const today       = new Date();
+  const baselineSubmission = new Date(
+    today.getTime() + missingDays * 24 * 60 * 60 * 1000
+  );
+  const predictedSubmission = new Date(
+    baselineSubmission.getTime() + delay * 24 * 60 * 60 * 1000
+  );
+  const reviewCompletion = new Date(
+    predictedSubmission.getTime() + reviewDays * 24 * 60 * 60 * 1000
+  );
+
+  const fmt = d => d.toLocaleDateString();
+
+  return (
+    <div className="ts-container">
+      <h2 className="ts-title">Timeline Simulator</h2>
+
+      {/* ▶︎ Playbook Presets */}
+      <div className="ts-playbooks">
+        {playbooks.map(pb => (
+          <button
+            key={pb.id}
+            className={`ts-preset-btn ${preset===pb.id ? 'active' : ''}`}
+            onClick={() => setPreset(pb.id)}
+          >
+            {pb.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="ts-stats">
+        <div>
+          <span className="ts-label">Current Readiness:</span>
+          <span className="ts-value">{info.readiness}%</span>
+        </div>
+        <div>
+          <span className="ts-label">Work Remaining:</span>
+          <span className="ts-value">{missingDays} days</span>
+        </div>
+        <div>
+          <span className="ts-label">Review Duration:</span>
+          <span className="ts-value">{reviewDays} days</span>
+        </div>
+      </div>
+
+      <div className="ts-slider-group">
+        <label htmlFor="delayRange" className="ts-slider-label">
+          Delay submission by <strong>{delay}</strong> day{delay !== 1 && 's'}
+        </label>
+        <input
+          id="delayRange"
+          type="range"
+          min="0"
+          max="90"
+          value={delay}
+          onChange={e => setDelay(Number(e.target.value))}
+          className="ts-slider"
+        />
+      </div>
+
+      <ul className="ts-dates">
+        <li>
+          <span>Earliest possible submission:</span>
+          <strong>{fmt(baselineSubmission)}</strong>
+        </li>
+        <li>
+          <span>Predicted submission date:</span>
+          <strong>{fmt(predictedSubmission)}</strong>
+        </li>
+        <li>
+          <span>Estimated review completion:</span>
+          <strong>{fmt(reviewCompletion)}</strong>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+
+
+⸻
+
+2) Enhanced Styles: TimelineSimulator.css
+
+/* client/src/components/timeline/TimelineSimulator.css */
+
+.ts-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border-radius: var(--space-sm);
+  box-shadow: var(--elevation-medium);
+}
+
+.ts-title {
+  margin-bottom: var(--space-lg);
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+/* Playbook preset buttons */
+.ts-playbooks {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+.ts-preset-btn {
+  background: var(--color-bg);
+  border: 1px solid #ccc;
+  border-radius: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.ts-preset-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary-variant);
+  color: var(--color-on-primary);
+}
+
+/* Stats */
+.ts-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: var(--space-lg);
+}
+.ts-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+.ts-value {
+  margin-left: var(--space-xs);
+  font-weight: 600;
+}
+
+/* Slider container */
+.ts-slider-group {
+  margin-bottom: var(--space-lg);
+}
+.ts-slider-label {
+  display: block;
+  margin-bottom: var(--space-xs);
+  font-size: var(--text-sm);
+}
+
+/* Custom range slider */
+.ts-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #e1e1e1;
+  border-radius: 4px;
+  outline: none;
+}
+.ts-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ts-slider::-webkit-slider-thumb:hover {
+  background: var(--color-primary-variant);
+}
+.ts-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.ts-slider::-ms-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Dates list */
+.ts-dates {
+  list-style: none;
+  padding: 0;
+  font-size: var(--text-sm);
+}
+.ts-dates li {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-xs) 0;
+  border-top: 1px solid #e0e0e0;
+}
+.ts-dates li:first-child {
+  border-top: none;
+}
+
+/* Loading state */
+.ts-loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-secondary);
+}
+
+
+
+⸻
+
+✔️ Verification
+	1.	Restart your client/server.
+	2.	Go to /timeline.
+	3.	You’ll see a row of playbook buttons—click to switch presets and watch the “Work Remaining” and dates update.
+	4.	The slider now has a polished thumb, custom track, and hover state.
+	5.	Everything still responds dynamically to your delay and playbook selection.
+
+Next up, we can integrate playbook‐specific validation rules, or move on to Slice 6: Package Builder & Export—let me know where you’d like to steer!
