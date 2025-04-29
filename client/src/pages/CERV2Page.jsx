@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CerHistoryPanel from '@/components/cer/CerHistoryPanel';
 import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileText, ClockRewind, Sliders, ClipboardCheck } from 'lucide-react';
+import { FileText, RotateCcw, Sliders, ClipboardCheck } from 'lucide-react';
 
 /**
  * CER Generator V2 Page
@@ -62,7 +62,7 @@ const CERV2Page = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger value="history" className="flex items-center gap-2">
-            <ClockRewind className="h-4 w-4" />
+            <RotateCcw className="h-4 w-4" />
             Report History
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
