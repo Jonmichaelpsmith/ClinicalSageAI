@@ -120,11 +120,9 @@ const ClientPortalLanding = () => {
                 <h2 className="text-2xl font-semibold text-indigo-700 mb-4">TrialSage™ Modules</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {moduleCards.map(module => (
-                    <Link key={module.id} href={module.path}>
-                      <a className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full">
-                        <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
-                        <p className="text-gray-600 mt-2 text-sm">{module.description}</p>
-                      </a>
+                    <Link key={module.id} to={module.path} className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full">
+                      <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
+                      <p className="text-gray-600 mt-2 text-sm">{module.description}</p>
                     </Link>
                   ))}
                 </div>
