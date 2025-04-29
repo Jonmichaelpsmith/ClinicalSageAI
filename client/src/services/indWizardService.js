@@ -278,7 +278,7 @@ const mockSubmissionPreview = {
   ],
   documents: [
     {
-      name: 'Investigator's Brochure',
+      name: 'Investigator Brochure',
       type: 'PDF',
       size: '15.6 MB'
     },
