@@ -1,0 +1,297 @@
+Below is a first‐cut implementation of the React Flow canvas workbench and its supporting server stubs. You can drop these files straight into your Replit project and then run npm install to pull in the new dependency.
+
+⸻
+
+1. Add React Flow to your dependencies
+
+package.json
+
+{
+  "dependencies": {
++   "react-flow-renderer": "^11.6.5",
+    // … your existing deps
+  }
+}
+
+Then run:
+
+npm install
+
+
+
+⸻
+
+2. Server: stub out the Co-Author API endpoints
+
+Create a new router server/routes/coauthorCanvas.js:
+
+import express from 'express';
+const router = express.Router();
+
+// dummy in-memory CTD sections
+const sections = [
+  { id: '1', title: 'Module 1: Administrative', status: 'complete', x: 0,   y: 0 },
+  { id: '2', title: 'Module 2.7: Clinical Summary', status: 'critical', x: 300, y: 0 },
+  { id: '3', title: 'Module 4.1: Nonclinical Studies', status: 'warning', x: 300, y: 200 },
+  { id: '4', title: 'Module 5.1: Study Listings', status: 'warning', x: 0,   y: 200 },
+];
+
+// dummy edges between sections
+const connections = [
+  { from: '1', to: '2', critical: true },
+  { from: '1', to: '4', critical: false },
+  { from: '1', to: '3', critical: false },
+];
+
+router.get('/sections', (req, res) => {
+  res.json(sections);
+});
+
+router.get('/connections', (req, res) => {
+  res.json(connections);
+});
+
+router.get('/guidance/:sectionId', (req, res) => {
+  const { sectionId } = req.params;
+  // in real implementation call your AI; here we return a stub
+  res.json({
+    text: `AI Guidance for section ${sectionId}: please ensure you address all ICH guidelines.`
+  });
+});
+
+router.get('/risk/:sectionId', (req, res) => {
+  // stubbed risk analysis
+  res.json({
+    level: (sectionId === '2') ? 'High' : 'Medium',
+    delay: (sectionId === '2') ? 45 : 14
+  });
+});
+
+export default router;
+
+Then mount it in server/server.js (alongside your other routes):
+
+import coauthorCanvasRoutes from './routes/coauthorCanvas.js';
+…
+app.use('/api/coauthor', coauthorCanvasRoutes);
+…
+
+Restart your server so the new routes are live at:
+   •   GET /api/coauthor/sections
+   •   GET /api/coauthor/connections
+   •   GET /api/coauthor/guidance/:id
+   •   GET /api/coauthor/risk/:id
+
+⸻
+
+3. Client: API helper
+
+Create client/src/api/coauthor.js:
+
+export async function fetchCTDSections() {
+  const res = await fetch('/api/coauthor/sections');
+  return res.json();
+}
+
+export async function fetchRiskConnections() {
+  const res = await fetch('/api/coauthor/connections');
+  return res.json();
+}
+
+export async function getSectionGuidance(id) {
+  const res = await fetch(`/api/coauthor/guidance/${id}`);
+  return res.json();
+}
+
+export async function getRiskAnalysis(id) {
+  const res = await fetch(`/api/coauthor/risk/${id}`);
+  return res.json();
+}
+
+
+
+⸻
+
+4. Client: Two-pane canvas workbench
+
+4.1. Canvas + React Flow
+
+Create client/src/components/canvas/CanvasWorkbenchV2.jsx:
+
+import React, { useCallback, useState, useEffect } from 'react';
+import ReactFlow, {
+  MiniMap,
+  Controls,
+  Background,
+  addEdge,
+  useNodesState,
+  useEdgesState
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import NodeDetailPanel from './NodeDetailPanel';
+import {
+  fetchCTDSections,
+  fetchRiskConnections
+} from '../../api/coauthor';
+
+const nodeColors = {
+  complete: '#daf5e8',
+  critical: '#fde2e2',
+  warning:  '#fff4ce',
+};
+
+export default function CanvasWorkbenchV2() {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [selectedSection, setSelectedSection] = useState(null);
+
+  useEffect(() => {
+    Promise.all([ fetchCTDSections(), fetchRiskConnections() ])
+      .then(([sections, connections]) => {
+        setNodes(sections.map(sec => ({
+          id: sec.id,
+          position: { x: sec.x, y: sec.y },
+          data: {
+            label: sec.title,
+            status: sec.status
+          },
+          style: {
+            background: nodeColors[sec.status],
+            width: 200,
+            padding: 10,
+          }
+        })));
+
+        setEdges(connections.map(c => ({
+          id: `e${c.from}-${c.to}`,
+          source: c.from,
+          target: c.to,
+          animated: c.critical,
+          style: { stroke: c.critical ? '#e74c3c' : '#888', strokeWidth: 2 }
+        })));
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  const onConnect = useCallback(params => {
+    setEdges(es => addEdge({ ...params, animated: true, style:{stroke:'#555'} }, es));
+  }, [setEdges]);
+
+  return (
+    <div style={{ display: 'flex', height: '100vh' }}>
+      <div style={{ flexGrow: 1 }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={(_, node) => setSelectedSection(node.id)}
+          fitView
+        >
+          <MiniMap
+            nodeStrokeColor={n => nodeColors[n.data?.status]}
+            nodeColor={n => nodeColors[n.data?.status]}
+            maskColor="rgba(0,0,0,0.1)"
+          />
+          <Controls />
+          <Background gap={20} size={1} color="#eee" />
+        </ReactFlow>
+      </div>
+
+      {selectedSection && (
+        <NodeDetailPanel
+          sectionId={selectedSection}
+          onClose={() => setSelectedSection(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+4.2. Side panel for AI guidance & risk
+
+Create client/src/components/canvas/NodeDetailPanel.jsx:
+
+import React, { useEffect, useState } from 'react';
+import { getSectionGuidance, getRiskAnalysis } from '../../api/coauthor';
+
+export default function NodeDetailPanel({ sectionId, onClose }) {
+  const [guidance, setGuidance] = useState(null);
+  const [risk, setRisk] = useState(null);
+
+  useEffect(() => {
+    getSectionGuidance(sectionId).then(setGuidance);
+    getRiskAnalysis(sectionId).then(setRisk);
+  }, [sectionId]);
+
+  return (
+    <aside style={{
+      width: 320,
+      borderLeft: '1px solid #ddd',
+      padding: '1rem',
+      background: '#fafafa',
+      overflowY: 'auto'
+    }}>
+      <header style={{ display:'flex', justifyContent:'space-between' }}>
+        <h3>Section {sectionId}</h3>
+        <button onClick={onClose} aria-label="Close">✕</button>
+      </header>
+      <section>
+        <p><strong>Risk Level:</strong> {risk?.level || '…'}</p>
+        <p><strong>Delay Impact:</strong> {risk?.delay ?? '…'} days</p>
+      </section>
+      <hr/>
+      <section>
+        <h4>AI Guidance</h4>
+        {guidance
+          ? <p>{guidance.text}</p>
+          : <p>Loading suggestions…</p>}
+      </section>
+      <footer style={{ marginTop: '1rem' }}>
+        <button 
+          style={{
+            background: '#4f46e5', color: '#fff', padding:'0.5rem 1rem',
+            border:'none', borderRadius:4, cursor:'pointer'
+          }}
+          onClick={() => {
+            /* future: socket.emit('suggestNext', sectionId) */
+            alert('AI will suggest your next section here!');
+          }}
+        >
+          Suggest Next Section
+        </button>
+      </footer>
+    </aside>
+  );
+}
+
+
+
+⸻
+
+5. Hook it into your routing
+
+In client/src/App.jsx (or wherever you declare your React Router routes), add:
+
+import CanvasWorkbenchV2 from './components/canvas/CanvasWorkbenchV2';
+
+…
+
+<Routes>
+  {/* … other routes … */}
+  <Route path="/coauthor/canvas" element={<CanvasWorkbenchV2 />} />
+</Routes>
+
+Now you can navigate to /coauthor/canvas, zoom/pan your CTD map, click any node to open the right-hand AI panel, and use the “Suggest Next Section” button to drop new, AI-driven nodes in future iterations.
+
+⸻
+
+Next Steps / Polish
+   •   Drag-and-drop new nodes from a toolbox
+   •   Realtime collaboration via WebSockets
+   •   SVG export and print-ready layouts
+   •   Theming via your design system tokens
+   •   Keyboard shortcuts (arrows, delete, escape panel)
+
+Let me know how it looks and we can iterate on styling, layout, accessibility and phase-2 AI-driven automations!

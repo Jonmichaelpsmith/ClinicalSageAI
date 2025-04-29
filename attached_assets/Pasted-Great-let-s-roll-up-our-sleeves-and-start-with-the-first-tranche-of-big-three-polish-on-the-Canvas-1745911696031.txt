@@ -1,0 +1,255 @@
+Great—let’s roll up our sleeves and start with the first tranche of “big three” polish on the Canvas Workbench:
+	1.	Design Tokens & CSS Variables (central theme)
+	2.	Custom Node Styles (fancier cards & badges)
+	3.	Enhanced Side-Panel Tabs (Guidance / Snippets / Chat)
+
+Below is a minimal “v1.1” PR that:
+   •   Introduces a global theme.css with CSS custom properties
+   •   Refactors your Canvas nodes to consume those variables (via styled-components or plain CSS classes)
+   •   Rebuilds the right-hand panel into three tabs
+
+⸻
+
+1) Add src/styles/theme.css
+
+:root {
+  /* COLORS */
+  --color-bg: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-primary: #5c4dff;
+  --color-primary-variant: #3e2dbb;
+  --color-on-primary: #ffffff;
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #4f4f4f;
+
+  /* TYPOGRAPHY */
+  --font-base: "Inter", sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+
+  /* SPACING */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+
+  /* ELEVATION */
+  --elevation-low: 0 1px 3px rgba(0,0,0,0.1);
+  --elevation-medium: 0 4px 6px rgba(0,0,0,0.1);
+  --elevation-high: 0 10px 20px rgba(0,0,0,0.15);
+}
+body {
+  font-family: var(--font-base);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  margin:0; padding:0;
+}
+
+Import this at the top of your main entry point (e.g. in index.js or App.jsx):
+
+import "../styles/theme.css";
+
+
+
+⸻
+
+2) Refactor Canvas Nodes (CanvasNode.jsx)
+
+import React from 'react';
+import './CanvasNode.css';
+
+export function CanvasNode({ id, label, status }) {
+  // status: "complete" | "warning" | "critical"
+  return (
+    <div className={`canvas-node ${status}`}>
+      <div className="node-badge">{id}</div>
+      <div className="node-label">{label}</div>
+    </div>
+  );
+}
+
+And CanvasNode.css:
+
+.canvas-node {
+  background: var(--color-surface);
+  border-radius: var(--space-sm);
+  padding: var(--space-md);
+  box-shadow: var(--elevation-low);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  position: relative;
+}
+.canvas-node:hover {
+  box-shadow: var(--elevation-medium);
+  transform: translateY(-2px);
+}
+
+.node-badge {
+  position: absolute;
+  top: calc(-1 * var(--space-sm));
+  left: calc(-1 * var(--space-sm));
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: var(--text-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--space-sm);
+}
+
+.canvas-node.complete { border-left: 4px solid var(--color-success); }
+.canvas-node.warning  { border-left: 4px solid var(--color-warning);}
+.canvas-node.critical { border-left: 4px solid var(--color-danger);}
+
+.node-label {
+  margin-left: var(--space-lg);
+  font-size: var(--text-md);
+  color: var(--color-text-primary);
+}
+
+
+
+⸻
+
+3) Build a Tabbed Side-Panel (CanvasSidePanel.jsx)
+
+import React, { useState } from 'react';
+import './CanvasSidePanel.css';
+
+export function CanvasSidePanel({ draft, snippets, onChatOpen }) {
+  const tabs = ["Guidance","Snippets","Chat"];
+  const [active, setActive] = useState(tabs[0]);
+
+  return (
+    <div className="canvas-panel">
+      <div className="panel-tabs">
+        {tabs.map(t => (
+          <button
+            key={t}
+            className={`tab-button ${active===t?"active":""}`}
+            onClick={()=>setActive(t)}
+          >{t}</button>
+        ))}
+      </div>
+      <div className="panel-content">
+        {active==="Guidance" && (
+          <div className="guidance">{ draft || "No guidance yet." }</div>
+        )}
+        {active==="Snippets" && (
+          <ul className="snippets">
+            {snippets.length
+              ? snippets.map(s=> <li key={s.id}>{s.text}</li>)
+              : <li>No snippets found.</li>}
+          </ul>
+        )}
+        {active==="Chat" && (
+          <button className="open-chat" onClick={onChatOpen}>
+            Open Ask Lumen AI
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+with CanvasSidePanel.css:
+
+.canvas-panel {
+  background: var(--color-surface);
+  border-radius: var(--space-sm);
+  box-shadow: var(--elevation-low);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 300px;
+}
+
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+}
+.tab-button {
+  flex:1;
+  padding: var(--space-sm);
+  background: none;
+  border: none;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: color 0.2s;
+}
+.tab-button.active {
+  color: var(--color-primary);
+  border-bottom: 3px solid var(--color-primary);
+}
+
+.panel-content {
+  padding: var(--space-md);
+}
+.guidance { font-size: var(--text-sm); line-height:1.4; }
+.snippets { list-style: disc; padding-left: var(--space-lg); }
+.open-chat {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border:none;
+  border-radius: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+}
+
+
+
+⸻
+
+Wiring It All Up
+
+In your CanvasWorkbench.jsx, swap out the old single-panel side and node imports for these new components:
+
+import { CanvasNode } from './CanvasNode';
+import { CanvasSidePanel } from './CanvasSidePanel';
+
+// … within your render …
+
+<div className="canvas-container">
+  <div className="nodes-area">
+    {nodes.map(n=>(
+      <CanvasNode
+        key={n.id}
+        id={n.id}
+        label={n.label}
+        status={n.status}
+      />
+    ))}
+  </div>
+  <CanvasSidePanel
+    draft={currentDraft}
+    snippets={contextSnippets}
+    onChatOpen={()=>openLumenChat()}
+  />
+</div>
+
+And add a bit of flex in your CSS:
+
+.canvas-container {
+  display: flex;
+  gap: var(--space-lg);
+}
+.nodes-area {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-md);
+}
+
+
+
+⸻
+
+Once you pull in these changes and restart, you’ll have:
+   •   A consistent theme driving every color, font, shadow & spacing
+   •   Nodes that look modern (badges, hover lifts, border-status accents)
+   •   Side-panel with real tabs to switch between AI guidance, context snippets, or launching the chat
+
+Let me know once you’ve merged and tested this “v1.1” polish! Next up, we can tackle animated edges, drag-to-connect handles, real-time cursors and export capabilities.
