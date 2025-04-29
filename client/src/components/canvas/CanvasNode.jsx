@@ -1,5 +1,4 @@
 import React from 'react';
-import { Motion, spring } from 'react-motion';
 
 /**
  * CanvasNode component - represents a single node on the Canvas Workbench
@@ -81,33 +80,20 @@ const CanvasNode = ({
     };
   }, [isDragging, x, y]);
   
-  // Animate using react-motion
-  const springConfig = { stiffness: 300, damping: 30 };
-  
   return (
-    <Motion 
-      defaultStyle={{ x: x, y: y, scale: 1 }} 
-      style={{ 
-        x: spring(x, springConfig), 
-        y: spring(y, springConfig),
-        scale: spring(isSelected ? 1.03 : 1, springConfig)
+    <div 
+      className={`canvas-node ${status} ${isSelected ? 'selected' : ''}`}
+      style={{
+        transform: `translate(${x}px, ${y}px) scale(${isSelected ? 1.03 : 1})`,
+        zIndex: isSelected ? 10 : 1,
+        transition: isDragging ? 'none' : 'transform 0.2s ease'
       }}
+      onMouseDown={handleMouseDown}
+      aria-label={`${title} section - ${status} status`}
     >
-      {(interpolatedStyle) => (
-        <div 
-          className={`canvas-node ${status} ${isSelected ? 'selected' : ''}`}
-          style={{
-            transform: `translate(${interpolatedStyle.x}px, ${interpolatedStyle.y}px) scale(${interpolatedStyle.scale})`,
-            zIndex: isSelected ? 10 : 1
-          }}
-          onMouseDown={handleMouseDown}
-          aria-label={`${title} section - ${status} status`}
-        >
-          <div className="node-badge">{id}</div>
-          <div className="node-content">{title}</div>
-        </div>
-      )}
-    </Motion>
+      <div className="node-badge">{id}</div>
+      <div className="node-content">{title}</div>
+    </div>
   );
 };
 
