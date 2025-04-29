@@ -1,0 +1,60 @@
+Here’s the Sprint 1 File-Level Task Plan, covering Co-Author Editor Core, AI Copilot Panel v1, and Global Layout & Routing. Copy–paste each section into your Replit to get everything wired up.
+
+⸻
+
+1. Global Theme & Layout
+
+File	Task
+client/src/styles/theme.css	Create with CSS variables (colors, typography, spacing, elevations) and import at top of index.js/App.jsx.
+client/src/components/navigation/UnifiedTopNavV5.jsxUnifiedTopNavV5.css	Scaffold back/forward/home/switch buttons + tabs; style per theme.
+client/src/components/navigation/Breadcrumbs.jsxBreadcrumbs.css	Breadcrumb component under header.
+client/src/App.jsx	Import & mount routes:/dashboard → ModuleDashboard/coauthor → CoAuthorPage/canvas → CanvasPage/timeline → TimelinePage
+
+
+
+⸻
+
+2. Co-Author Editor Core
+
+File	Task
+client/src/components/coauthor/CoAuthorEditor.jsxCoAuthorEditor.css	Create the React Quill editor wrapper with:• Generate Draft & Validate buttons (spinners)• Auto-save every 30 s with timestamp• Inline issues panel
+server/routes/coauthor.js	Add or update:• POST /api/coauthor/generate → returns { draft }• POST /api/coauthor/validate → returns { issues: [ { message } ] }
+client/src/api/coauthor.js	Add helpers:• generateDraft({moduleId,sectionId,currentText})• validateDraft({moduleId,sectionId,sectionText})
+
+
+
+⸻
+
+3. AI Copilot Panel v1
+
+File	Task
+client/src/components/coauthor/CopilotPanel.jsxCopilotPanel.css	Implement three tabs:• Guidance (calls /validate)• Context (calls /context)• Chat (calls /chat)Style per theme
+server/routes/coauthor.js	Stub or implement:• POST /api/coauthor/context → returns { snippets: [ { text, source } ] }• POST /api/coauthor/chat → returns chat reply
+
+
+
+⸻
+
+4. Co-Author Page & Routing
+
+File	Task
+client/src/pages/CoAuthorPage.jsx	Layout two-panel grid:• Left: <CoAuthorEditor>• Right: <CopilotPanel>
+client/src/pages/CoAuthorPage.css	Style the page grid, sticky header, scrollable panels
+client/src/App.jsx (already above)	Ensure <Route path="/coauthor" element={<CoAuthorPage/>} /> is present
+
+
+
+⸻
+
+5. Verification Steps
+	1.	Restart your Repl (server + client).
+	2.	Go to /coauthor?module=2§ion=2.7 (or any module/section).
+	3.	You should see:
+      •   UnifiedTopNavV5 + Breadcrumbs
+      •   CoAuthorEditor (React Quill) with Generate/Validate & auto-save
+      •   CopilotPanel (Guidance/Context/Chat) in the right pane
+	4.	Test each endpoint and UI interaction to confirm no errors.
+
+⸻
+
+Once this is green, we’ll move on to Sprint 2 (Canvas Overview & SVG export). Let me know how it goes!

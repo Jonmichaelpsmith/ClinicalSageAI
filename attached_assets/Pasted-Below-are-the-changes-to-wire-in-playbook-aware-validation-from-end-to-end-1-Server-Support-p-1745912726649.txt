@@ -1,0 +1,159 @@
+Below are the changes to wire in playbook‐aware validation from end-to-end.
+
+⸻
+
+1) Server: Support playbook in /api/coauthor/validate
+
+File: server/routes/coauthor.js
+Update the validate route to accept playbook and pass it to the service.
+
+// --- routes/coauthor.js ---
+router.post('/validate', async (req, res) => {
+  try {
+    const { text, playbook } = req.body;           // ← include playbook
+    const issues = await validateCompliance(text, playbook);
+    return res.json({ issues });
+  } catch (err) {
+    console.error('Validation Error:', err);
+    return res.status(500).json({ error: 'Validation failed' });
+  }
+});
+
+
+
+⸻
+
+2) Server: Adjust validateCompliance to honor playbook
+
+File: server/services/coauthor.js
+Add a second parameter playbook and inject playbook context into the prompt.
+
+// --- services/coauthor.js ---
+import { openAIComplianceCheck } from './openai-utils.js';
+
+/**
+ * Validate CTD section text, adjusting rules per playbook.
+ * @param {string} text      — the section content
+ * @param {string} playbook  — one of 'fast-ind','standard','full-nda','ema-impd'
+ */
+export async function validateCompliance(text, playbook = 'standard') {
+  // Define playbook‐specific guidance
+  const playbookGuidance = {
+    'fast-ind': `Under the Fast IND Playbook, non‐critical modules (e.g. reproductive tox) may be deferred; focus on CMC stability and safety narratives first.`,
+    'standard': `Under the Standard Playbook, validate all CTD modules with equal priority.`,
+    'full-nda': `Under the Full NDA Playbook, require full CTD compliance including optional sections and supplementary reports.`,
+    'ema-impd': `Under the EMA IMPD Playbook, enforce EU‐specific guidelines, e.g. environmental risk assessment and QP declarations.`
+  }[playbook] || playbookGuidance.standard;
+
+  const prompt = `
+You are a regulatory compliance checker for FDA IND/NDA CTD submissions.
+Apply the following playbook rules:
+${playbookGuidance}
+
+Now, review this draft for missing critical items or non-compliant statements:
+---
+${text}
+---
+List each issue as one bullet point.`;
+  
+  const resp = await openAIComplianceCheck(prompt);
+  // resp is a string containing bullets, split into array
+  return resp
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.startsWith('-') || l);
+}
+
+
+
+⸻
+
+3) Client: Let users pick a playbook in the CopilotPanel
+
+File: client/src/components/coauthor/CopilotPanel.jsx
+
+ export default function CopilotPanel({ moduleId, sectionId, content }) {
+-  const tabs = ['Guidance', 'Context', 'Chat'];
++  const tabs = ['Guidance', 'Context', 'Chat'];
++  const playbooks = [
++    { id: 'fast-ind', label: 'Fast IND' },
++    { id: 'standard', label: 'Standard' },
++    { id: 'full-nda', label: 'Full NDA' },
++    { id: 'ema-impd', label: 'EMA IMPD' },
++  ];
++  const [playbook, setPlaybook] = useState('standard');
+
+   // --- Guidance Tab ---
+   const fetchGuidance = async () => {
+     setLoadingGuidance(true);
+     try {
+-      const res = await fetch('/api/coauthor/validate', {
++      const res = await fetch('/api/coauthor/validate', {
+         method: 'POST',
+         headers: { 'Content-Type':'application/json' },
+-        body: JSON.stringify({ moduleId, sectionId, sectionText: content })
++        body: JSON.stringify({ 
++          moduleId, 
++          sectionId, 
++          sectionText: content,
++          playbook           // include playbook
++        })
+       });
+       const { issues } = await res.json();
+       setIssues(issues);
+@@
+   return (
+     <div className="copilot-panel">
++      {/* Playbook selector */}
++      <div className="cp-playbook">
++        <label htmlFor="playbookSelect">Playbook:</label>
++        <select
++          id="playbookSelect"
++          value={playbook}
++          onChange={e => setPlaybook(e.target.value)}
++        >
++          {playbooks.map(pb => (
++            <option key={pb.id} value={pb.id}>{pb.label}</option>
++          ))}
++        </select>
++      </div>
+
+
+
+⸻
+
+4) Client CSS: Style the playbook dropdown
+
+File: client/src/components/coauthor/CopilotPanel.css
+
+/* Add at top */
+.cp-playbook {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  border-bottom: 1px solid #e2e8f0;
+  background: #fafafa;
+}
+.cp-playbook label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+.cp-playbook select {
+  font-size: var(--text-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+
+
+⸻
+
+Verification
+	1.	Restart your server and client.
+	2.	Navigate to Co-Author for any section.
+	3.	In the Guidance tab you’ll now see a Playbook dropdown.
+	4.	Switch to Fast IND, Full NDA, or EMA IMPD and click Guidance → the validation issues returned will reflect those playbook rules.
+
+This integrates playbook‐specific validation into your Co-Author module. Let me know if you need any tweaks or further expansions!
