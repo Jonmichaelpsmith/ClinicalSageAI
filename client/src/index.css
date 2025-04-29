@@ -231,24 +231,4 @@ body {
   color: #0078d4;
 }
 
-/* TWO-PANE WORKBENCH - UPDATED */
-.coauthor-content {
-  display: flex;
-  gap: 24px;
-  margin: 24px 16px 0;
-  min-height: calc(100vh - 150px); /* Account for header height */
-}
-.editor-pane {
-  flex: 2;
-  background: #fff;
-  border: 1px solid #e1e1e1;
-  border-radius: 4px;
-  padding: 16px;
-}
-.copilot-pane {
-  flex: 1;
-  background: #f9fafb;
-  border: 1px solid #e1e1e1;
-  border-radius: 4px;
-  padding: 16px;
-}
+/* Coauthor styles moved to CoAuthor.css */

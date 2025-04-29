@@ -2,6 +2,7 @@ import React from 'react';
 import UnifiedTopNavV4 from '../components/navigation/UnifiedTopNavV4';
 import SectionEditor from '../components/coauthor/SectionEditor';
 import AICopilotPanel from '../components/coauthor/AICopilotPanel';
+import './CoAuthor.css';
 
 /**
  * eCTD Co-Author Page
