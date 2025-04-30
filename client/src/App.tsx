@@ -10,6 +10,8 @@ import NotFound from '@/pages/not-found';
 import AuthPage from '@/pages/auth-page';
 import CMCPage from '@/pages/CMCPage';
 import CoAuthor from '@/pages/CoAuthor';
+// Import your existing CSR Analyzer pages
+import CSRAnalyzer from '@/pages/CSRAnalyzer.jsx';
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from './hooks/use-auth';
 import AppShell from '@/components/layout/AppShell';
@@ -36,6 +38,7 @@ function Router() {
       <ProtectedRoute path="/analytics/:submissionId" component={AnalyticsDashboard} />
       <ProtectedRoute path="/cmc" component={CMCPage} />
       <ProtectedRoute path="/coauthor" component={CoAuthor} />
+      <ProtectedRoute path="/CSRAnalyzer" component={CSRAnalyzer} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
