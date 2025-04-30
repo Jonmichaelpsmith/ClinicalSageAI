@@ -136,9 +136,11 @@ const ClientPortalLanding = () => {
                       <div 
                         key={module.id}
                         onClick={() => {
-                          console.log('Navigating to CSR Analyzer');
-                          // Handle CSR Analyzer navigation
-                          setLocation('/CSRAnalyzer');
+                          console.log('Navigating to CSR Analyzer using window.location');
+                          // Handle CSR Analyzer navigation with direct window.location approach
+                          const csrUrl = window.location.origin + '/CSRAnalyzer';
+                          console.log('CSR URL:', csrUrl);
+                          window.location.href = csrUrl;
                         }}
                         className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer"
                       >
