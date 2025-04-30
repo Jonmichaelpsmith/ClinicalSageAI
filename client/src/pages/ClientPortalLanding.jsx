@@ -134,7 +134,10 @@ const ClientPortalLanding = () => {
                   {moduleCards.map(module => (
                     <div 
                       key={module.id} 
-                      onClick={() => window.location.href = module.path} 
+                      onClick={() => {
+                        console.log('Navigating to:', module.path);
+                        window.location.href = module.path;
+                      }} 
                       className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer"
                     >
                       <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
