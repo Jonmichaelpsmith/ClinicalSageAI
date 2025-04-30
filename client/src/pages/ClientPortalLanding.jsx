@@ -19,6 +19,12 @@ const ClientPortalLanding = () => {
     // Log that the ClientPortalLanding component has mounted
     console.log('ClientPortalLanding component mounted');
     
+    // Add a CSR direct navigation helper to window
+    window.navigateToCSR = function() {
+      console.log('Direct CSR navigation helper called');
+      window.location.href = '/CSRAnalyzer';
+    };
+    
     // Use mock data instead of fetching from API
     const mockProjects = [
       { 
@@ -61,7 +67,7 @@ const ClientPortalLanding = () => {
     { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor' },
     { id: 'cer', title: 'CER Generator™', description: 'EU MDR 2017/745 Clinical Evaluation Reports', path: '/cerv2' },
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc' },
-    { id: 'csr', title: 'CSR Analyzer™', description: 'AI-powered Clinical Study Report analysis', path: '/CSRAnalyzer' },
+    { id: 'csr', title: 'CSR Analyzer™', description: 'AI-powered Clinical Study Report analysis', path: '/CSRAnalyzer', debug: true },
     { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault' },
     { id: 'rih', title: 'Regulatory Intelligence Hub™', description: 'AI-powered strategy, timeline, and risk simulation', path: '/regulatory-intelligence-hub', highlight: true },
     { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/regulatory-risk-dashboard' },
@@ -123,27 +129,50 @@ const ClientPortalLanding = () => {
               <div className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-semibold text-indigo-700">TrialSage™ Modules</h2>
-                  <Button 
-                    onClick={() => window.location.href = '/cerv2'}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded"
-                  >
-                    Open CER Generator
-                  </Button>
+                  <div className="flex gap-2">
+                    <a 
+                      href="/CSRAnalyzer" 
+                      target="_self"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded inline-flex items-center justify-center"
+                    >
+                      Open CSR Analyzer
+                    </a>
+                    <Button 
+                      onClick={() => window.location.href = '/cerv2'}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded"
+                    >
+                      Open CER Generator
+                    </Button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {moduleCards.map(module => (
-                    <div 
-                      key={module.id} 
-                      onClick={() => {
-                        console.log('Navigating to:', module.path);
-                        window.location.href = module.path;
-                      }} 
-                      className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer"
-                    >
-                      <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
-                      <p className="text-gray-600 mt-2 text-sm">{module.description}</p>
-                    </div>
-                  ))}
+                  {moduleCards.map(module => 
+                    module.id === 'csr' ? (
+                      <a 
+                        key={module.id}
+                        href={window.location.origin + "/CSRAnalyzer"}
+                        className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer"
+                      >
+                        <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
+                        <p className="text-gray-600 mt-2 text-sm">{module.description}</p>
+                      </a>
+                    ) : (
+                      <div 
+                        key={module.id} 
+                        onClick={() => {
+                          console.log('Navigating to:', module.path);
+                          // Use complete URL with origin
+                          const fullUrl = window.location.origin + module.path;
+                          console.log('Full URL:', fullUrl);
+                          window.location.href = fullUrl;
+                        }} 
+                        className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer"
+                      >
+                        <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
+                        <p className="text-gray-600 mt-2 text-sm">{module.description}</p>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </div>
