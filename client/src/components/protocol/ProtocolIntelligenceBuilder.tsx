@@ -56,12 +56,12 @@ export default function ProtocolIntelligenceBuilder() {
   const runAnalysis = async () => {
     if (!text.trim()) {
       // toast call replaced
-  // Original: toast({
-        title: "Missing input",
-        description: "Please enter your protocol text first",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Missing input",
+      //   description: "Please enter your protocol text first",
+      //   variant: "destructive"
+      // });
+      console.log('Toast would show:', {
         title: "Missing input",
         description: "Please enter your protocol text first",
         variant: "destructive"
@@ -151,12 +151,12 @@ export default function ProtocolIntelligenceBuilder() {
     } catch (error) {
       console.error("Error analyzing protocol text:", error);
       // toast call replaced
-  // Original: toast({
-        title: "Analysis failed",
-        description: error instanceof Error ? error.message : "An error occurred during analysis",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Analysis failed",
+      //   description: error instanceof Error ? error.message : "An error occurred during analysis",
+      //   variant: "destructive"
+      // });
+      console.log('Toast would show:', {
         title: "Analysis failed",
         description: error instanceof Error ? error.message : "An error occurred during analysis",
         variant: "destructive"
@@ -169,12 +169,12 @@ export default function ProtocolIntelligenceBuilder() {
   const exportReport = async () => {
     if (!parsed || !prediction) {
       // toast call replaced
-  // Original: toast({
-        title: "Missing data",
-        description: "Please analyze a protocol first",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Missing data",
+      //   description: "Please analyze a protocol first",
+      //   variant: "destructive"
+      // });
+      console.log('Toast would show:', {
         title: "Missing data",
         description: "Please analyze a protocol first",
         variant: "destructive"
@@ -205,12 +205,12 @@ export default function ProtocolIntelligenceBuilder() {
     } catch (error) {
       console.error("Error exporting report:", error);
       // toast call replaced
-  // Original: toast({
-        title: "Export failed",
-        description: error instanceof Error ? error.message : "Failed to export report",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Export failed",
+      //   description: error instanceof Error ? error.message : "Failed to export report",
+      //   variant: "destructive"
+      // });
+      console.log('Toast would show:', {
         title: "Export failed",
         description: error instanceof Error ? error.message : "Failed to export report",
         variant: "destructive"
@@ -221,12 +221,12 @@ export default function ProtocolIntelligenceBuilder() {
   const saveToDossier = async () => {
     if (!parsed || !prediction || !user) {
       // toast call replaced
-  // Original: toast({
-        title: "Cannot save",
-        description: user ? "Please analyze a protocol first" : "Please log in to save",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Cannot save",
+      //   description: user ? "Please analyze a protocol first" : "Please log in to save",
+      //   variant: "destructive"
+      // });
+      console.log('Toast would show:', {
         title: "Cannot save",
         description: user ? "Please analyze a protocol first" : "Please log in to save",
         variant: "destructive"
@@ -257,11 +257,11 @@ export default function ProtocolIntelligenceBuilder() {
       const data = await res.json();
       
       // toast call replaced
-  // Original: toast({
-        title: "Saved successfully",
-        description: `Protocol saved as version ${data.version}`,
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Saved successfully",
+      //   description: `Protocol saved as version ${data.version}`,
+      // });
+      console.log('Toast would show:', {
         title: "Saved successfully",
         description: `Protocol saved as version ${data.version}`,
       });
@@ -273,12 +273,12 @@ export default function ProtocolIntelligenceBuilder() {
     } catch (error) {
       console.error("Error saving to dossier:", error);
       // toast call replaced
-  // Original: toast({
-        title: "Save failed",
-        description: error instanceof Error ? error.message : "Failed to save to dossier",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Save failed",
+      //   description: error instanceof Error ? error.message : "Failed to save to dossier",
+      //   variant: "destructive"
+      // });
+      console.log('Toast would show:', {
         title: "Save failed",
         description: error instanceof Error ? error.message : "Failed to save to dossier",
         variant: "destructive"
@@ -301,11 +301,11 @@ export default function ProtocolIntelligenceBuilder() {
       const data = await res.json();
       
       // toast call replaced
-  // Original: toast({
-        title: "Version restored",
-        description: `Protocol restored from ${version} and saved as ${data.version}`,
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Version restored",
+      //   description: `Protocol restored from ${version} and saved as ${data.version}`,
+      // });
+      console.log('Toast would show:', {
         title: "Version restored",
         description: `Protocol restored from ${version} and saved as ${data.version}`,
       });
@@ -328,12 +328,12 @@ export default function ProtocolIntelligenceBuilder() {
     } catch (error) {
       console.error("Error restoring version:", error);
       // toast call replaced
-  // Original: toast({
-        title: "Restore failed",
-        description: error instanceof Error ? error.message : "Failed to restore version",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Restore failed",
+      //   description: error instanceof Error ? error.message : "Failed to restore version",
+      //   variant: "destructive"
+      // });
+      console.log('Toast would show:', {
         title: "Restore failed",
         description: error instanceof Error ? error.message : "Failed to restore version",
         variant: "destructive"
@@ -473,8 +473,8 @@ export default function ProtocolIntelligenceBuilder() {
                 </Button>
                 {user && (
                   <Button 
-                    onClick={saveToDossier}
-                    variant="default"
+                    onClick={saveToDossier} 
+                    variant="outline"
                   >
                     💾 Save to Dossier
                   </Button>
@@ -482,82 +482,61 @@ export default function ProtocolIntelligenceBuilder() {
               </div>
             </>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                No analysis available. Please enter protocol text in the editor and click Analyze.
-              </p>
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No protocol analysis results yet. Please analyze a protocol first.</p>
+              <Button
+                onClick={() => setSelectedTab("editor")}
+                variant="outline"
+                className="mt-4"
+              >
+                Go to Protocol Editor
+              </Button>
             </div>
           )}
         </TabsContent>
         
         <TabsContent value="versions" className="space-y-4">
-          {user ? (
-            savedVersions.length > 0 ? (
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Version History</CardTitle>
-                    <CardDescription>Previously saved protocol versions</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {savedVersions.map((version, index) => (
-                        <Card key={index} className={`border ${version.version === currentVersion ? 'border-blue-500' : 'border-gray-200'}`}>
-                          <CardHeader className="py-3">
-                            <div className="flex justify-between items-center">
-                              <CardTitle className="text-base">
-                                {version.version} 
-                                <span className="text-xs font-normal ml-2 text-muted-foreground">
-                                  {new Date(version.created_at).toLocaleString()}
-                                </span>
-                              </CardTitle>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => restoreVersion(version.version)}
-                              >
-                                Restore
-                              </Button>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="py-0">
-                            {version.summary && (
-                              <p className="text-sm mb-2">{version.summary}</p>
-                            )}
-                            {version.changelog && version.changelog.length > 0 && (
-                              <div className="text-xs space-y-1 text-muted-foreground">
-                                {version.changelog.map((change: string, i: number) => (
-                                  <p key={i}>• {change}</p>
-                                ))}
-                              </div>
-                            )}
-                            {version.statistical_implications && version.statistical_implications.length > 0 && (
-                              <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
-                                <p className="font-medium mb-1">Statistical Implications:</p>
-                                {version.statistical_implications.map((implication: string, i: number) => (
-                                  <p key={i}>• {implication}</p>
-                                ))}
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+          {savedVersions.length > 0 ? (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Saved Protocol Versions</h3>
+              <div className="grid gap-3">
+                {savedVersions.map((ver, i) => (
+                  <Card key={i} className="border-blue-100">
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-base flex justify-between">
+                        <span>Version {ver.version}</span>
+                        <Badge variant={ver.version === currentVersion ? "default" : "outline"}>
+                          {ver.version === currentVersion ? "Current" : "Saved"}
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardFooter className="py-3 flex justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(ver.created_at).toLocaleString()}
+                      </span>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => restoreVersion(ver.version)}
+                        disabled={ver.version === currentVersion}
+                      >
+                        {ver.version === currentVersion ? "Current Version" : "Restore Version"}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  No saved versions found. Analyze a protocol and save it to create a version.
-                </p>
-              </div>
-            )
+            </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
-                Please log in to access version history.
-              </p>
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No saved versions yet. Analyze a protocol and save it to create versions.</p>
+              <Button
+                onClick={() => setSelectedTab("editor")}
+                variant="outline"
+                className="mt-4"
+              >
+                Go to Protocol Editor
+              </Button>
             </div>
           )}
         </TabsContent>
