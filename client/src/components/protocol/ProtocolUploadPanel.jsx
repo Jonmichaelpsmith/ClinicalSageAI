@@ -63,12 +63,12 @@ export default function ProtocolUploadPanel() {
       // Check file type
       if (!['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'].includes(selectedFile.type)) {
         // toast call replaced
-  // Original: toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF or Word document",
-          variant: "destructive",
-        })
-  console.log('Toast would show:', {
+        // Original: toast({
+        //   title: "Invalid file type",
+        //   description: "Please upload a PDF or Word document",
+        //   variant: "destructive",
+        // });
+        console.log('Toast would show:', {
           title: "Invalid file type",
           description: "Please upload a PDF or Word document",
           variant: "destructive",
@@ -79,12 +79,12 @@ export default function ProtocolUploadPanel() {
       // Check file size (10MB limit)
       if (selectedFile.size > 10 * 1024 * 1024) {
         // toast call replaced
-  // Original: toast({
-          title: "File too large",
-          description: "Please upload a file smaller than 10MB",
-          variant: "destructive",
-        })
-  console.log('Toast would show:', {
+        // Original: toast({
+        //   title: "File too large",
+        //   description: "Please upload a file smaller than 10MB",
+        //   variant: "destructive",
+        // });
+        console.log('Toast would show:', {
           title: "File too large",
           description: "Please upload a file smaller than 10MB",
           variant: "destructive",
@@ -101,12 +101,12 @@ export default function ProtocolUploadPanel() {
   const handleFileUpload = async () => {
     if (!file) {
       // toast call replaced
-  // Original: toast({
-        title: "No file selected",
-        description: "Please select a file to upload",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "No file selected",
+      //   description: "Please select a file to upload",
+      //   variant: "destructive",
+      // });
+      console.log('Toast would show:', {
         title: "No file selected",
         description: "Please select a file to upload",
         variant: "destructive",
@@ -148,23 +148,23 @@ export default function ProtocolUploadPanel() {
       setAnalysisResult(data);
       
       // toast call replaced
-  // Original: toast({
-        title: "Analysis complete",
-        description: "Protocol has been analyzed successfully.",
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Analysis complete",
+      //   description: "Protocol has been analyzed successfully.",
+      // });
+      console.log('Toast would show:', {
         title: "Analysis complete",
         description: "Protocol has been analyzed successfully.",
       });
     } catch (error) {
       console.error('Upload error:', error);
       // toast call replaced
-  // Original: toast({
-        title: "Analysis failed",
-        description: "There was an error analyzing your protocol. Please try again.",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Analysis failed",
+      //   description: "There was an error analyzing your protocol. Please try again.",
+      //   variant: "destructive",
+      // });
+      console.log('Toast would show:', {
         title: "Analysis failed",
         description: "There was an error analyzing your protocol. Please try again.",
         variant: "destructive",
@@ -180,12 +180,12 @@ export default function ProtocolUploadPanel() {
   const handleAnalyzePasted = async () => {
     if (!pastingText.trim()) {
       // toast call replaced
-  // Original: toast({
-        title: "No text provided",
-        description: "Please paste protocol text to analyze",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "No text provided",
+      //   description: "Please paste protocol text to analyze",
+      //   variant: "destructive",
+      // });
+      console.log('Toast would show:', {
         title: "No text provided",
         description: "Please paste protocol text to analyze",
         variant: "destructive",
@@ -216,23 +216,23 @@ export default function ProtocolUploadPanel() {
       setProgress(100);
       
       // toast call replaced
-  // Original: toast({
-        title: "Analysis complete",
-        description: "Protocol text has been analyzed successfully.",
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Analysis complete",
+      //   description: "Protocol text has been analyzed successfully.",
+      // });
+      console.log('Toast would show:', {
         title: "Analysis complete",
         description: "Protocol text has been analyzed successfully.",
       });
     } catch (error) {
       console.error('Analysis error:', error);
       // toast call replaced
-  // Original: toast({
-        title: "Analysis failed",
-        description: "There was an error analyzing your protocol text. Please try again.",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      // Original: toast({
+      //   title: "Analysis failed",
+      //   description: "There was an error analyzing your protocol text. Please try again.",
+      //   variant: "destructive",
+      // });
+      console.log('Toast would show:', {
         title: "Analysis failed",
         description: "There was an error analyzing your protocol text. Please try again.",
         variant: "destructive",
@@ -250,11 +250,11 @@ export default function ProtocolUploadPanel() {
         setClipboard({ copied: true, text });
         setTimeout(() => setClipboard({ copied: false, text: "" }), 3000);
         // toast call replaced
-  // Original: toast({
-          title: "Copied to clipboard",
-          description: "Analysis summary copied to clipboard",
-        })
-  console.log('Toast would show:', {
+        // Original: toast({
+        //   title: "Copied to clipboard",
+        //   description: "Analysis summary copied to clipboard",
+        // });
+        console.log('Toast would show:', {
           title: "Copied to clipboard",
           description: "Analysis summary copied to clipboard",
         });
@@ -262,12 +262,12 @@ export default function ProtocolUploadPanel() {
       (err) => {
         console.error('Could not copy text: ', err);
         // toast call replaced
-  // Original: toast({
-          title: "Failed to copy",
-          description: "Could not copy to clipboard",
-          variant: "destructive",
-        })
-  console.log('Toast would show:', {
+        // Original: toast({
+        //   title: "Failed to copy",
+        //   description: "Could not copy to clipboard",
+        //   variant: "destructive",
+        // });
+        console.log('Toast would show:', {
           title: "Failed to copy",
           description: "Could not copy to clipboard",
           variant: "destructive",
@@ -493,81 +493,93 @@ ${analysisResult.recommendations || 'No recommendations provided'}`;
               </div>
             </div>
             
-            {/* PDF Download Card - positioned prominently at the top */}
-            {analysisResult.pdf_link && (
-              <Card className="bg-blue-50 border-blue-200 mb-4">
-                <CardContent className="pt-4 pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FileOutput className="h-8 w-8 text-blue-600 mr-3" />
-                      <div>
-                        <h3 className="font-semibold text-blue-800">Complete Protocol Analysis Report</h3>
-                        <p className="text-sm text-blue-700">Includes detailed assessment, CSR matches, risk analysis and recommendations</p>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => window.open(analysisResult.pdf_link, '_blank')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download PDF
-                    </Button>
+            {/* Protocol Overview Card */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Protocol Overview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Title</p>
+                    <p className="font-medium">{analysisResult.title || 'Not specified'}</p>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Protocol Analysis Metrics Card */}
+                  <div>
+                    <p className="text-sm text-muted-foreground">Indication</p>
+                    <p className="font-medium">{analysisResult.indication || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Phase</p>
+                    <p className="font-medium">{analysisResult.phase || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Sample Size</p>
+                    <p className="font-medium">{analysisResult.sample_size || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Duration</p>
+                    <p className="font-medium">
+                      {analysisResult.duration_weeks ? `${analysisResult.duration_weeks} weeks` : 'Not specified'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Design</p>
+                    <p className="font-medium">{analysisResult.design_type || 'Not specified'}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Confidence Score Card */}
             {analysisResult.confidence_score && (
-              <Card className="mb-4">
+              <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center">
-                    <ShieldCheck className="h-5 w-5 mr-2 text-primary" />
-                    Confidence Assessment
-                  </CardTitle>
+                  <CardTitle className="text-base">Protocol Confidence Assessment</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex flex-col items-center mb-3">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="text-xl font-bold">{analysisResult.confidence_score}</h3>
-                      <span className="text-sm text-muted-foreground">/100</span>
-                      
-                      {/* Verdict Icon */}
-                      {analysisResult.confidence_verdict && (
-                        <Badge 
-                          className={`ml-2 ${
-                            analysisResult.confidence_verdict.toLowerCase().includes('strong') 
-                              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                              : analysisResult.confidence_verdict.toLowerCase().includes('moderate')
-                              ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                              : 'bg-red-100 text-red-800 hover:bg-red-200'
-                          }`}
-                        >
-                          {analysisResult.confidence_verdict}
-                        </Badge>
-                      )}
+                <CardContent>
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">Confidence Score</span>
+                      <span className="text-sm font-bold">{analysisResult.confidence_score}/100</span>
                     </div>
                     <Progress 
                       value={analysisResult.confidence_score} 
-                      className="h-2 w-full" 
+                      className="h-2"
                       indicatorClassName={
-                        analysisResult.confidence_score > 75 
-                          ? "bg-green-500" 
-                          : analysisResult.confidence_score > 50 
-                          ? "bg-amber-500" 
-                          : "bg-red-500"
+                        analysisResult.confidence_score >= 80 ? "bg-green-600" :
+                        analysisResult.confidence_score >= 60 ? "bg-amber-500" :
+                        "bg-red-500"
                       }
                     />
                   </div>
                   
-                  {analysisResult.confidence_issues && analysisResult.confidence_issues.length > 0 && (
-                    <div className="mt-3">
-                      <h4 className="text-sm font-semibold mb-2">Identified Issues:</h4>
-                      <ul className="text-sm space-y-1.5">
-                        {analysisResult.confidence_issues.map((issue, idx) => (
-                          <li key={idx} className="flex items-start">
-                            <AlertTriangle className="h-4 w-4 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex-shrink-0">
+                      {analysisResult.confidence_score >= 80 ? (
+                        <ShieldCheck className="h-6 w-6 text-green-600" />
+                      ) : analysisResult.confidence_score >= 60 ? (
+                        <ShieldAlert className="h-6 w-6 text-amber-600" />
+                      ) : (
+                        <ShieldX className="h-6 w-6 text-red-600" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {analysisResult.confidence_verdict || 
+                          (analysisResult.confidence_score >= 80 ? "Strong protocol design" :
+                          analysisResult.confidence_score >= 60 ? "Acceptable protocol with room for improvement" :
+                          "Protocol requires significant revisions")}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {analysisResult.confidence_issues?.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-2">Issues Identified:</p>
+                      <ul className="space-y-1 text-sm">
+                        {analysisResult.confidence_issues.map((issue, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
                             <span>{issue}</span>
                           </li>
                         ))}
@@ -577,169 +589,110 @@ ${analysisResult.recommendations || 'No recommendations provided'}`;
                 </CardContent>
               </Card>
             )}
-
-            <div className="grid grid-cols-2 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Protocol Details</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="font-medium">Title:</dt>
-                      <dd>{analysisResult.title || 'Not specified'}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="font-medium">Indication:</dt>
-                      <dd>
-                        <Badge variant="outline">
-                          {analysisResult.indication || 'Not specified'}
-                        </Badge>
-                      </dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="font-medium">Phase:</dt>
-                      <dd>
-                        <Badge variant="outline">
-                          {analysisResult.phase || 'Not specified'}
-                        </Badge>
-                      </dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="font-medium">Sample Size:</dt>
-                      <dd>{analysisResult.sample_size || 'Not specified'}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="font-medium">Duration:</dt>
-                      <dd>
-                        {analysisResult.duration_weeks 
-                          ? `${analysisResult.duration_weeks} weeks` 
-                          : 'Not specified'}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="font-medium">Arms:</dt>
-                      <dd>{analysisResult.arms || 'Not specified'}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="font-medium">Primary Endpoint:</dt>
-                      <dd className="text-right">{analysisResult.primary_endpoint || 'Not specified'}</dd>
-                    </div>
-                  </dl>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Risk Assessment</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {analysisResult.risk_factors && analysisResult.risk_factors.length > 0 ? (
-                    <div className="space-y-2">
-                      {analysisResult.risk_factors.map((risk, idx) => (
-                        <RiskLevel key={idx} level={risk.severity.toLowerCase()}>
-                          <div className="flex gap-2 items-start">
-                            <AlertTriangle className={`h-4 w-4 ${
-                              risk.severity.toLowerCase() === 'high' ? 'text-red-600' : 
-                              risk.severity.toLowerCase() === 'medium' ? 'text-amber-600' : 
-                              'text-green-600'
-                            } mt-0.5`} />
-                            <div>
-                              <p className="text-sm font-medium">{risk.description}</p>
-                              {risk.recommendation && (
-                                <p className="text-xs mt-1">{risk.recommendation}</p>
-                              )}
-                            </div>
+            
+            {/* Risk Factors */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Risk Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {analysisResult.risk_factors?.length > 0 ? (
+                  <div className="space-y-4">
+                    {analysisResult.risk_factors.map((risk, i) => (
+                      <RiskLevel key={i} level={risk.severity || "medium"}>
+                        <div className="flex items-start">
+                          {risk.severity === "high" ? (
+                            <AlertTriangle className="h-5 w-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
+                          ) : risk.severity === "medium" ? (
+                            <AlertTriangle className="h-5 w-5 text-amber-600 mr-2 flex-shrink-0 mt-0.5" />
+                          ) : (
+                            <CheckCircle className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
+                          )}
+                          <div>
+                            <p className="font-medium">{risk.title || `Risk Factor ${i + 1}`}</p>
+                            <p className="text-sm">{risk.description}</p>
+                            {risk.recommendation && (
+                              <p className="text-sm mt-1 italic">
+                                Recommendation: {risk.recommendation}
+                              </p>
+                            )}
                           </div>
-                        </RiskLevel>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
-                      <div className="text-center">
-                        <CheckCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                        <p>No significant risks identified</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Matching CSR Precedents</CardTitle>
-                <CardDescription>
-                  Similar protocols from successful completed studies
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {analysisResult.matching_csrs && analysisResult.matching_csrs.length > 0 ? (
-                  <ul className="space-y-3">
-                    {analysisResult.matching_csrs.map((csr, idx) => (
-                      <li key={idx} className="border p-3 rounded-md">
-                        <div className="flex justify-between">
-                          <strong className="text-sm">{csr.title}</strong>
-                          <Badge variant="outline">{csr.id}</Badge>
                         </div>
-                        <div className="text-xs mt-1 text-muted-foreground">
-                          {csr.sponsor} • Phase {csr.phase} • {csr.sample_size} subjects
-                        </div>
-                        <div className="flex gap-2 mt-2">
-                          {csr.similarity && (
-                            <Badge variant="secondary" className="text-xs">
-                              {Math.round(csr.similarity * 100)}% match
-                            </Badge>
-                          )}
-                          {csr.success && (
-                            <Badge variant="success" className="text-xs bg-green-100 text-green-800 hover:bg-green-200">
-                              Successful
-                            </Badge>
-                          )}
-                        </div>
-                      </li>
+                      </RiskLevel>
                     ))}
-                  </ul>
-                ) : (
-                  <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
-                    <p>No matching CSRs found</p>
                   </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No significant risk factors identified.</p>
                 )}
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Recommendations</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {analysisResult.recommendations ? (
-                  <div className="text-sm whitespace-pre-wrap">
-                    {analysisResult.recommendations}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
-                    <p>No specific recommendations provided</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            
-            {analysisResult.statistical_insights && (
+            {/* CSR Precedents */}
+            {analysisResult.matching_csrs?.length > 0 && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center">
-                    <BarChart4 className="h-4 w-4 mr-2" />
-                    Statistical Analysis
-                  </CardTitle>
+                  <CardTitle className="text-base">Related CSR Precedents</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="text-sm whitespace-pre-wrap">
-                    {analysisResult.statistical_insights}
+                <CardContent>
+                  <div className="space-y-3">
+                    {analysisResult.matching_csrs.map((csr, i) => (
+                      <div key={i} className="p-3 border rounded-md">
+                        <div className="flex justify-between">
+                          <p className="font-medium">{csr.title}</p>
+                          <Badge>{csr.id}</Badge>
+                        </div>
+                        {csr.similarity_score && (
+                          <div className="flex items-center mt-1">
+                            <span className="text-xs text-muted-foreground mr-2">Similarity:</span>
+                            <Progress value={csr.similarity_score} className="h-1.5 w-24" />
+                            <span className="text-xs ml-2">{csr.similarity_score}%</span>
+                          </div>
+                        )}
+                        {csr.key_learnings && (
+                          <p className="text-sm mt-2">{csr.key_learnings}</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             )}
+            
+            {/* Recommendations */}
+            {analysisResult.recommendations && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Improvement Recommendations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {analysisResult.recommendations.split('\n').map((rec, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm">{rec}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Generate Blueprint Button */}
+            <Alert className="bg-blue-50 border border-blue-200">
+              <div className="flex items-start">
+                <FileOutput className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
+                <div>
+                  <AlertTitle>Ready for Blueprint Generation</AlertTitle>
+                  <AlertDescription className="mt-1">
+                    Use this analysis to generate an optimized protocol blueprint based on identified patterns and precedents.
+                  </AlertDescription>
+                  <Button className="mt-3 bg-blue-600 hover:bg-blue-700">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Generate Protocol Blueprint
+                  </Button>
+                </div>
+              </div>
+            </Alert>
           </div>
         )}
       </CardContent>

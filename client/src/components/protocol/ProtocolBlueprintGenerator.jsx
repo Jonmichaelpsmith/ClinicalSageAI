@@ -1,646 +1,562 @@
 import React, { useState } from 'react';
-import { useToast } from '../../hooks/use-toast';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Loader2, 
-  FileText, 
-  Check, 
-  Brain, 
-  Sparkles, 
-  ChevronRight, 
-  Download, 
-  Clock, 
-  Zap, 
-  BadgeCheck, 
-  ListChecks, 
-  CalendarRange, 
-  Microscope,
-  FlaskConical,
-  ClipboardList
+  FileText, PencilRuler, Target, Download, RefreshCw, 
+  Loader2, ChevronRight, Lightbulb, Brain, Scale, Beaker, 
+  Folder, Sparkles, Database, Check, Info
 } from 'lucide-react';
 
-/**
- * Protocol Blueprint Generator Component
- * 
- * Creates a first-draft protocol outline including study rationale, objectives, 
- * endpoints, design schema, schedule of assessments, and CRF maps based on
- * simple study descriptors like phase, population, and objectives.
- */
 const ProtocolBlueprintGenerator = () => {
+  const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(0);
-  const [generationComplete, setGenerationComplete] = useState(false);
-  const [activeSection, setActiveSection] = useState('basic');
-  const [blueprintData, setBlueprintData] = useState(null);
-  
-  // Form state
+  const [activeTab, setActiveTab] = useState('input');
   const [formData, setFormData] = useState({
     studyTitle: '',
-    phase: '',
     indication: '',
-    population: '',
+    phase: '',
     primaryObjective: '',
-    secondaryObjectives: '',
-    treatmentDuration: '',
-    controlType: '',
-    estimatedSampleSize: '',
-    keyEndpoints: '',
-    specialConsiderations: ''
+    studyDesign: '',
+    targetPopulation: '',
+    sampleSize: '',
+    treatmentGroups: '',
+    primaryEndpoint: '',
+    secondaryEndpoints: '',
+    inclusionCriteria: '',
+    exclusionCriteria: '',
+    statisticalApproach: '',
+    useCsrIntelligence: true
   });
   
-  const { toast } = useToast();
-  
-  const handleFormChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-  
-  const handleGenerate = () => {
-    // Validate required fields
-    if (!formData.studyTitle || !formData.phase || !formData.indication || !formData.primaryObjective) {
-      toast({
-        title: "Missing required information",
-        description: "Please provide study title, phase, indication, and primary objective.",
-        variant: "destructive"
-      });
-      return;
+  // Sample CSR insights that would influence the protocol blueprint
+  const csrInsights = [
+    {
+      id: 'insight-1',
+      category: 'Study Design',
+      description: 'Adaptive designs show 28% fewer protocol deviations in Type 2 Diabetes studies',
+      impact: 'high',
+      confidence: 92,
+      applied: true
+    },
+    {
+      id: 'insight-2',
+      category: 'Endpoint Selection',
+      description: 'Integration of PROs as secondary endpoints correlates with 34% higher approval rates',
+      impact: 'high',
+      confidence: 88,
+      applied: true
+    },
+    {
+      id: 'insight-3',
+      category: 'Patient Selection',
+      description: 'Biomarker-stratified enrollment approaches yield 3.2x greater treatment effect sizes',
+      impact: 'high',
+      confidence: 94,
+      applied: false
+    },
+    {
+      id: 'insight-4',
+      category: 'Statistical Methods',
+      description: 'Multiple imputation methods show superior acceptance by regulators compared to LOCF approaches',
+      impact: 'medium',
+      confidence: 89,
+      applied: true
+    },
+    {
+      id: 'insight-5',
+      category: 'Safety Reporting',
+      description: 'Enhanced AE visualization techniques correlate with 29% faster safety reviews',
+      impact: 'medium',
+      confidence: 86,
+      applied: false
     }
-    
+  ];
+  
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+  
+  const handleGenerateBlueprint = async () => {
     setGenerating(true);
-    setGenerationProgress(0);
+    setActiveTab('generating');
     
-    // Simulate blueprint generation with progress updates
-    const progressInterval = setInterval(() => {
-      setGenerationProgress(prev => {
-        if (prev >= 95) {
-          clearInterval(progressInterval);
-          return 95;
-        }
-        return prev + 5;
-      });
-    }, 300);
+    // Simulate generation delay
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
-    // Simulate completion after 6 seconds
-    setTimeout(() => {
-      clearInterval(progressInterval);
-      setGenerationProgress(100);
-      
-      // Generate mock blueprint data
-      const mockBlueprint = generateMockBlueprint(formData);
-      setBlueprintData(mockBlueprint);
-      
-      setTimeout(() => {
-        setGenerating(false);
-        setGenerationComplete(true);
-        
-        toast({
-          title: "Protocol Blueprint Generated",
-          description: "Your protocol blueprint has been successfully created.",
-          variant: "default"
-        });
-      }, 500);
-    }, 6000);
+    setGenerating(false);
+    setActiveTab('result');
   };
   
-  const generateMockBlueprint = (data) => {
-    // This would be replaced with actual AI generation
-    return {
-      studyTitle: data.studyTitle,
-      protocolId: `PROT-${data.phase.replace(' ', '')}-${Math.floor(1000 + Math.random() * 9000)}`,
-      version: "1.0 (Draft)",
-      generatedDate: new Date().toLocaleDateString(),
-      studyRationale: `This ${data.phase} study aims to evaluate the safety${data.phase !== 'Phase I' ? ' and efficacy' : ''} of the investigational product in patients with ${data.indication}. ${data.indication} represents a significant unmet medical need, with limited treatment options currently available. This study will provide valuable insights into the ${data.phase === 'Phase I' ? 'safety profile and pharmacokinetics' : data.phase === 'Phase II' ? 'optimal dosing and preliminary efficacy' : 'efficacy and safety in a larger population'} of the investigational product.`,
-      objectives: {
-        primary: data.primaryObjective,
-        secondary: data.secondaryObjectives.split('\n').filter(obj => obj.trim() !== '')
-      },
-      endpoints: {
-        primary: `Change from baseline in ${data.keyEndpoints ? data.keyEndpoints.split('\n')[0] : '[Primary endpoint measure]'} at Week ${data.treatmentDuration ? data.treatmentDuration.split(' ')[0] : '12'}`,
-        secondary: [
-          `Proportion of subjects achieving [clinically significant improvement] at Week ${data.treatmentDuration ? data.treatmentDuration.split(' ')[0] : '12'}`,
-          "Incidence of treatment-emergent adverse events (TEAEs)",
-          "Change from baseline in quality of life measures"
-        ]
-      },
-      design: {
-        type: data.controlType ? (data.controlType.includes('Placebo') ? "Randomized, Double-blind, Placebo-controlled" : "Randomized, Active-controlled") : "Randomized, Double-blind",
-        population: `Adult patients with ${data.indication} ${data.population ? `(${data.population})` : ''}`,
-        sampleSize: data.estimatedSampleSize || "To be determined based on power calculations",
-        duration: data.treatmentDuration || "12 weeks",
-        arms: data.controlType ? (
-          data.controlType.includes('Placebo') ? 
-          ["Investigational Product", "Placebo"] : 
-          ["Investigational Product", "Active Control"]
-        ) : ["Investigational Product"]
-      },
-      visitSchedule: [
-        { visit: "Screening", timepoint: "Day -28 to Day -1", procedures: ["Informed consent", "Eligibility assessment", "Medical history", "Physical examination", "Vital signs", "Clinical laboratory tests"] },
-        { visit: "Baseline/Randomization", timepoint: "Day 1", procedures: ["Randomization", "Baseline assessments", "Study drug dispensation", "Dosing instructions"] },
-        { visit: "Week 4", timepoint: "Day 28 ± 3 days", procedures: ["Safety assessments", "Efficacy assessments", "Compliance check", "Adverse event monitoring"] },
-        { visit: "Week 8", timepoint: "Day 56 ± 3 days", procedures: ["Safety assessments", "Efficacy assessments", "Compliance check", "Adverse event monitoring"] },
-        { visit: "Week 12/End of Treatment", timepoint: `Day ${12*7} ± 3 days`, procedures: ["Safety assessments", "Efficacy assessments", "Compliance check", "Adverse event monitoring", "End of treatment procedures"] },
-        { visit: "Follow-up", timepoint: "14 days after last dose", procedures: ["Safety assessments", "Study completion procedures"] }
-      ],
-      crfSections: [
-        { name: "Demographics", fields: ["Date of birth", "Sex", "Race", "Ethnicity", "Height", "Weight", "BMI"] },
-        { name: "Medical History", fields: ["Relevant medical conditions", "Prior medications", "Disease history", `${data.indication} severity measures`] },
-        { name: "Efficacy Assessments", fields: [data.keyEndpoints ? data.keyEndpoints.split('\n')[0] : "Primary efficacy measure", "Secondary efficacy measures", "Patient-reported outcomes"] },
-        { name: "Safety Assessments", fields: ["Adverse events", "Concomitant medications", "Vital signs", "Physical examination findings", "Laboratory results"] },
-        { name: "Study Drug Administration", fields: ["Dispensation records", "Compliance assessment", "Dose modifications"] }
-      ],
-      inclusionCriteria: [
-        `Adult patients with confirmed diagnosis of ${data.indication}`,
-        `Age ≥ 18 years${data.population && data.population.includes('elderly') ? ' and ≤ 80 years' : ''}`,
-        "Able to provide written informed consent",
-        "Willing and able to comply with study procedures",
-        `${data.indication}-specific inclusion criteria`
-      ],
-      exclusionCriteria: [
-        "History of hypersensitivity to study medication or excipients",
-        "Participation in another interventional clinical trial within 30 days",
-        "Pregnant or breastfeeding women",
-        "Clinically significant abnormal laboratory values",
-        "Clinically significant medical condition that could interfere with study participation"
-      ],
-      complianceScore: Math.floor(85 + Math.random() * 15)
-    };
-  };
-  
-  const handleDownload = () => {
-    toast({
-      title: "Downloading Protocol Blueprint",
-      description: "Your protocol blueprint is being prepared for download.",
-      variant: "default"
-    });
-    
-    // Simulate download delay
-    setTimeout(() => {
-      toast({
-        title: "Download Complete",
-        description: "Protocol blueprint has been downloaded successfully.",
-        variant: "default"
-      });
-    }, 2000);
+  const toggleInsight = (insightId) => {
+    // This would toggle the application of a specific insight to the blueprint
+    console.log(`Toggling insight ${insightId}`);
   };
   
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="shadow-sm">
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-xl">Protocol Blueprint Generator</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <PencilRuler className="h-5 w-5 text-blue-600" />
+                Protocol Blueprint Generator
+              </CardTitle>
               <CardDescription>
-                AI-powered tool to generate a comprehensive protocol outline from basic study information
+                Create a comprehensive protocol blueprint based on study parameters and CSR intelligence
               </CardDescription>
-            </div>
-            <div className="flex items-center">
-              <Badge variant="outline" className="mr-2">
-                <Sparkles className="h-3.5 w-3.5 mr-1 text-blue-500" />
-                AI-Powered
-              </Badge>
-              <Badge variant="outline">
-                <Clock className="h-3.5 w-3.5 mr-1 text-green-500" />
-                ~5 min
-              </Badge>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {!generationComplete ? (
-            <div className="space-y-6">
-              <Tabs value={activeSection} onValueChange={setActiveSection}>
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="basic">Basic Information</TabsTrigger>
-                  <TabsTrigger value="design">Study Design</TabsTrigger>
-                  <TabsTrigger value="endpoints">Objectives & Endpoints</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="basic" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="studyTitle">Study Title <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="studyTitle" 
-                        placeholder="Enter descriptive study title" 
-                        value={formData.studyTitle}
-                        onChange={(e) => handleFormChange('studyTitle', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phase">Study Phase <span className="text-red-500">*</span></Label>
-                      <Select 
-                        value={formData.phase}
-                        onValueChange={(value) => handleFormChange('phase', value)}
-                      >
-                        <SelectTrigger id="phase">
-                          <SelectValue placeholder="Select study phase" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Phase I">Phase I</SelectItem>
-                          <SelectItem value="Phase I/II">Phase I/II</SelectItem>
-                          <SelectItem value="Phase II">Phase II</SelectItem>
-                          <SelectItem value="Phase II/III">Phase II/III</SelectItem>
-                          <SelectItem value="Phase III">Phase III</SelectItem>
-                          <SelectItem value="Phase IV">Phase IV</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-3 mb-6">
+              <TabsTrigger value="input">Input Parameters</TabsTrigger>
+              <TabsTrigger value="generating" disabled={!generating}>Generating</TabsTrigger>
+              <TabsTrigger value="result" disabled={activeTab !== 'result'}>Blueprint Result</TabsTrigger>
+            </TabsList>
+            
+            {/* Input Parameters Tab */}
+            <TabsContent value="input" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Study Title</label>
+                    <Input 
+                      value={formData.studyTitle}
+                      onChange={(e) => handleChange('studyTitle', e.target.value)}
+                      placeholder="Enter a descriptive study title"
+                    />
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="indication">Therapeutic Area/Indication <span className="text-red-500">*</span></Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium block mb-1">Indication</label>
                       <Input 
-                        id="indication" 
-                        placeholder="e.g., Type 2 Diabetes Mellitus" 
                         value={formData.indication}
-                        onChange={(e) => handleFormChange('indication', e.target.value)}
+                        onChange={(e) => handleChange('indication', e.target.value)}
+                        placeholder="e.g., Type 2 Diabetes"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="population">Target Population</Label>
-                      <Input 
-                        id="population" 
-                        placeholder="e.g., Adults with moderate to severe disease" 
-                        value={formData.population}
-                        onChange={(e) => handleFormChange('population', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="design" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="controlType">Control Type</Label>
+                    
+                    <div>
+                      <label className="text-sm font-medium block mb-1">Phase</label>
                       <Select 
-                        value={formData.controlType}
-                        onValueChange={(value) => handleFormChange('controlType', value)}
+                        value={formData.phase} 
+                        onValueChange={(value) => handleChange('phase', value)}
                       >
-                        <SelectTrigger id="controlType">
-                          <SelectValue placeholder="Select control type" />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Phase" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Placebo-controlled">Placebo-controlled</SelectItem>
-                          <SelectItem value="Active-controlled">Active-controlled</SelectItem>
-                          <SelectItem value="Non-controlled">Non-controlled</SelectItem>
-                          <SelectItem value="Dose-response">Dose-response</SelectItem>
+                          <SelectItem value="Phase 1">Phase 1</SelectItem>
+                          <SelectItem value="Phase 2">Phase 2</SelectItem>
+                          <SelectItem value="Phase 2a">Phase 2a</SelectItem>
+                          <SelectItem value="Phase 2b">Phase 2b</SelectItem>
+                          <SelectItem value="Phase 3">Phase 3</SelectItem>
+                          <SelectItem value="Phase 4">Phase 4</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="treatmentDuration">Treatment Duration</Label>
-                      <Input 
-                        id="treatmentDuration" 
-                        placeholder="e.g., 12 weeks" 
-                        value={formData.treatmentDuration}
-                        onChange={(e) => handleFormChange('treatmentDuration', e.target.value)}
-                      />
-                    </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="estimatedSampleSize">Estimated Sample Size</Label>
-                      <Input 
-                        id="estimatedSampleSize" 
-                        placeholder="e.g., 200 subjects" 
-                        value={formData.estimatedSampleSize}
-                        onChange={(e) => handleFormChange('estimatedSampleSize', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="specialConsiderations">Special Considerations</Label>
-                      <Input 
-                        id="specialConsiderations" 
-                        placeholder="e.g., Adaptive design elements, special populations" 
-                        value={formData.specialConsiderations}
-                        onChange={(e) => handleFormChange('specialConsiderations', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="endpoints" className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="primaryObjective">Primary Objective <span className="text-red-500">*</span></Label>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Primary Objective</label>
                     <Textarea 
-                      id="primaryObjective" 
-                      placeholder="State the primary objective of the study"
                       value={formData.primaryObjective}
-                      onChange={(e) => handleFormChange('primaryObjective', e.target.value)}
+                      onChange={(e) => handleChange('primaryObjective', e.target.value)}
+                      placeholder="Describe the primary objective of the study"
                       rows={2}
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="secondaryObjectives">Secondary Objectives</Label>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Study Design</label>
+                    <Select 
+                      value={formData.studyDesign} 
+                      onValueChange={(value) => handleChange('studyDesign', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Study Design" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Randomized, Double-blind, Placebo-controlled">Randomized, Double-blind, Placebo-controlled</SelectItem>
+                        <SelectItem value="Randomized, Open-label">Randomized, Open-label</SelectItem>
+                        <SelectItem value="Single-arm">Single-arm</SelectItem>
+                        <SelectItem value="Crossover">Crossover</SelectItem>
+                        <SelectItem value="Adaptive Design">Adaptive Design</SelectItem>
+                        <SelectItem value="Non-randomized">Non-randomized</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Target Population</label>
                     <Textarea 
-                      id="secondaryObjectives" 
-                      placeholder="Enter each secondary objective on a new line"
-                      value={formData.secondaryObjectives}
-                      onChange={(e) => handleFormChange('secondaryObjectives', e.target.value)}
-                      rows={3}
+                      value={formData.targetPopulation}
+                      onChange={(e) => handleChange('targetPopulation', e.target.value)}
+                      placeholder="Describe the target patient population"
+                      rows={2}
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="keyEndpoints">Key Endpoints</Label>
-                    <Textarea 
-                      id="keyEndpoints" 
-                      placeholder="Enter each key endpoint on a new line"
-                      value={formData.keyEndpoints}
-                      onChange={(e) => handleFormChange('keyEndpoints', e.target.value)}
-                      rows={3}
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Estimated Sample Size</label>
+                    <Input 
+                      value={formData.sampleSize}
+                      onChange={(e) => handleChange('sampleSize', e.target.value)}
+                      placeholder="e.g., 120 patients"
                     />
-                  </div>
-                </TabsContent>
-              </Tabs>
-              
-              {generating && (
-                <div className="space-y-2 mt-4">
-                  <div className="flex justify-between text-sm">
-                    <span>Generating Protocol Blueprint...</span>
-                    <span>{generationProgress}%</span>
-                  </div>
-                  <Progress value={generationProgress} className="h-2" />
-                  <div className="text-xs text-gray-500 italic mt-1">
-                    {generationProgress < 30 ? 'Analyzing study parameters...' : 
-                     generationProgress < 60 ? 'Creating protocol structure and core elements...' : 
-                     generationProgress < 90 ? 'Generating detailed protocol sections...' : 
-                     'Finalizing protocol blueprint...'}
                   </div>
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {blueprintData && (
-                <>
-                  <div className="bg-blue-50 p-4 rounded-md mb-6">
-                    <div className="flex items-start">
-                      <BadgeCheck className="h-5 w-5 text-blue-500 mt-1 mr-2 flex-shrink-0" />
-                      <div>
-                        <h3 className="text-sm font-medium text-blue-800">Protocol Blueprint Generated</h3>
-                        <p className="text-sm text-blue-700 mt-1">
-                          Your protocol blueprint has been successfully generated with a compliance score of {blueprintData.complianceScore}%. 
-                          Review the sections below and download the complete blueprint.
-                        </p>
-                      </div>
-                    </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Treatment Groups</label>
+                    <Textarea 
+                      value={formData.treatmentGroups}
+                      onChange={(e) => handleChange('treatmentGroups', e.target.value)}
+                      placeholder="Describe treatment groups and dosing regimens"
+                      rows={2}
+                    />
                   </div>
                   
-                  <Tabs defaultValue="overview" className="mt-6">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="design">Design & Population</TabsTrigger>
-                      <TabsTrigger value="schedule">Visit Schedule</TabsTrigger>
-                      <TabsTrigger value="crf">CRF Elements</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="overview" className="mt-4 space-y-6">
-                      <div>
-                        <h3 className="text-lg font-semibold">{blueprintData.studyTitle}</h3>
-                        <div className="flex flex-wrap items-center gap-3 mt-2">
-                          <Badge className="bg-blue-100 text-blue-800">Protocol ID: {blueprintData.protocolId}</Badge>
-                          <Badge className="bg-gray-100 text-gray-800">Version: {blueprintData.version}</Badge>
-                          <Badge className="bg-green-100 text-green-800">{blueprintData.phase}</Badge>
-                          <Badge className="bg-purple-100 text-purple-800">{blueprintData.design.type}</Badge>
-                        </div>
-                      </div>
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Primary Endpoint</label>
+                    <Textarea 
+                      value={formData.primaryEndpoint}
+                      onChange={(e) => handleChange('primaryEndpoint', e.target.value)}
+                      placeholder="Define the primary endpoint"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Secondary Endpoints</label>
+                    <Textarea 
+                      value={formData.secondaryEndpoints}
+                      onChange={(e) => handleChange('secondaryEndpoints', e.target.value)}
+                      placeholder="List key secondary endpoints"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Key Inclusion Criteria</label>
+                    <Textarea 
+                      value={formData.inclusionCriteria}
+                      onChange={(e) => handleChange('inclusionCriteria', e.target.value)}
+                      placeholder="List important inclusion criteria"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Key Exclusion Criteria</label>
+                    <Textarea 
+                      value={formData.exclusionCriteria}
+                      onChange={(e) => handleChange('exclusionCriteria', e.target.value)}
+                      placeholder="List important exclusion criteria"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm font-medium block mb-1">Statistical Approach</label>
+                    <Select 
+                      value={formData.statisticalApproach} 
+                      onValueChange={(value) => handleChange('statisticalApproach', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Approach" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Frequentist">Frequentist</SelectItem>
+                        <SelectItem value="Bayesian">Bayesian</SelectItem>
+                        <SelectItem value="Mixed Methods">Mixed Methods</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              
+              {/* CSR Intelligence Integration */}
+              <Card className="mt-6 bg-blue-50">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Brain className="h-5 w-5 text-blue-600" />
+                      CSR Intelligence Integration
+                    </CardTitle>
+                    <div className="flex items-center">
+                      <span className="text-sm mr-2">Apply CSR insights</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox"
+                          checked={formData.useCsrIntelligence}
+                          onChange={(e) => handleChange('useCsrIntelligence', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                  <CardDescription>
+                    Apply intelligence from analyzed CSRs to optimize your protocol blueprint
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {formData.useCsrIntelligence ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-blue-700">The following CSR insights will be applied to your protocol blueprint:</p>
                       
-                      <div>
-                        <h4 className="text-md font-medium mb-2">Study Rationale</h4>
-                        <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md">
-                          {blueprintData.studyRationale}
-                        </p>
-                      </div>
+                      {csrInsights.filter(i => i.applied).map(insight => (
+                        <div key={insight.id} className="flex items-start gap-2 bg-white p-3 rounded-md shadow-sm">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <Lightbulb className="h-5 w-5 text-amber-500" />
+                          </div>
+                          <div className="flex-grow">
+                            <div className="flex justify-between items-start">
+                              <span className="font-medium text-sm">{insight.category}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {insight.confidence}% confidence
+                              </Badge>
+                            </div>
+                            <p className="text-sm mt-1">{insight.description}</p>
+                          </div>
+                        </div>
+                      ))}
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="text-md font-medium mb-2">Objectives</h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="text-sm font-medium mb-1">Primary:</div>
-                              <div className="text-sm bg-gray-50 p-2 rounded-md">
-                                {blueprintData.objectives.primary}
-                              </div>
-                            </div>
-                            {blueprintData.objectives.secondary.length > 0 && (
-                              <div>
-                                <div className="text-sm font-medium mb-1">Secondary:</div>
-                                <ul className="text-sm bg-gray-50 p-2 rounded-md list-disc list-inside space-y-1">
-                                  {blueprintData.objectives.secondary.map((obj, i) => (
-                                    <li key={i}>{obj}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h4 className="text-md font-medium mb-2">Endpoints</h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="text-sm font-medium mb-1">Primary:</div>
-                              <div className="text-sm bg-gray-50 p-2 rounded-md">
-                                {blueprintData.endpoints.primary}
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium mb-1">Secondary:</div>
-                              <ul className="text-sm bg-gray-50 p-2 rounded-md list-disc list-inside space-y-1">
-                                {blueprintData.endpoints.secondary.map((ep, i) => (
-                                  <li key={i}>{ep}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="design" className="mt-4 space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="text-md font-medium mb-2">Study Design</h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between p-2 bg-gray-50 rounded-md">
-                              <span className="text-sm font-medium">Design Type:</span>
-                              <span className="text-sm">{blueprintData.design.type}</span>
-                            </div>
-                            <div className="flex justify-between p-2 bg-gray-50 rounded-md">
-                              <span className="text-sm font-medium">Study Arms:</span>
-                              <span className="text-sm">{blueprintData.design.arms.join(", ")}</span>
-                            </div>
-                            <div className="flex justify-between p-2 bg-gray-50 rounded-md">
-                              <span className="text-sm font-medium">Treatment Duration:</span>
-                              <span className="text-sm">{blueprintData.design.duration}</span>
-                            </div>
-                            <div className="flex justify-between p-2 bg-gray-50 rounded-md">
-                              <span className="text-sm font-medium">Sample Size:</span>
-                              <span className="text-sm">{blueprintData.design.sampleSize}</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h4 className="text-md font-medium mb-2">Population</h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="text-sm font-medium mb-1">Target Population:</div>
-                              <div className="text-sm bg-gray-50 p-2 rounded-md">
-                                {blueprintData.design.population}
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium mb-1">Key Inclusion Criteria:</div>
-                              <ul className="text-sm bg-gray-50 p-2 rounded-md list-disc list-inside space-y-1">
-                                {blueprintData.inclusionCriteria.slice(0, 3).map((criteria, i) => (
-                                  <li key={i}>{criteria}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium mb-1">Key Exclusion Criteria:</div>
-                              <ul className="text-sm bg-gray-50 p-2 rounded-md list-disc list-inside space-y-1">
-                                {blueprintData.exclusionCriteria.slice(0, 3).map((criteria, i) => (
-                                  <li key={i}>{criteria}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="schedule" className="mt-4">
-                      <h4 className="text-md font-medium mb-3">Schedule of Assessments</h4>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visit</th>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timepoint</th>
-                              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Procedures</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {blueprintData.visitSchedule.map((visit, index) => (
-                              <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                                <td className="px-4 py-3 text-sm font-medium text-gray-900">{visit.visit}</td>
-                                <td className="px-4 py-3 text-sm text-gray-700">{visit.timepoint}</td>
-                                <td className="px-4 py-3 text-sm text-gray-700">
-                                  <ul className="list-disc list-inside">
-                                    {visit.procedures.map((procedure, i) => (
-                                      <li key={i} className="text-sm">{procedure}</li>
-                                    ))}
-                                  </ul>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="crf" className="mt-4">
-                      <h4 className="text-md font-medium mb-3">Case Report Form Sections</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {blueprintData.crfSections.map((section, index) => (
-                          <div key={index} className="border rounded-md p-3">
-                            <div className="flex items-center mb-2">
-                              <ClipboardList className="h-4 w-4 mr-2 text-blue-500" />
-                              <div className="text-sm font-medium">{section.name}</div>
-                            </div>
-                            <ul className="list-disc list-inside">
-                              {section.fields.map((field, i) => (
-                                <li key={i} className="text-sm text-gray-700">{field}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </>
-              )}
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          {!generationComplete ? (
-            <>
-              <Button variant="outline" onClick={() => setActiveSection(activeSection === 'basic' ? 'basic' : activeSection === 'design' ? 'basic' : 'design')}>
-                {activeSection === 'basic' ? "Reset" : "Back"}
-              </Button>
-              {activeSection === 'endpoints' ? (
-                <Button onClick={handleGenerate} disabled={generating}>
-                  {generating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
+                      <Button className="w-full mt-2" variant="outline" size="sm">
+                        <Database className="h-4 w-4 mr-2" />
+                        View All Available Insights
+                      </Button>
+                    </div>
                   ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Generate Blueprint
-                    </>
+                    <div className="flex items-center justify-center py-4">
+                      <div className="text-center">
+                        <Info className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                        <p className="text-sm text-blue-700">CSR intelligence is disabled. Toggle the switch above to enhance your protocol blueprint with evidence-based insights.</p>
+                      </div>
+                    </div>
                   )}
+                </CardContent>
+              </Card>
+              
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline">
+                  Reset Form
                 </Button>
-              ) : (
-                <Button onClick={() => setActiveSection(activeSection === 'basic' ? 'design' : 'endpoints')}>
-                  Next
-                  <ChevronRight className="ml-2 h-4 w-4" />
+                <Button onClick={handleGenerateBlueprint}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generate Blueprint
                 </Button>
+              </div>
+            </TabsContent>
+            
+            {/* Generating Tab */}
+            <TabsContent value="generating" className="min-h-[400px] flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Generating Protocol Blueprint</h3>
+                <p className="text-sm text-gray-600 max-w-md mx-auto mb-4">
+                  Analyzing parameters, applying CSR intelligence insights, and generating optimized protocol sections...
+                </p>
+                <div className="w-full max-w-md mx-auto space-y-2">
+                  <div className="flex justify-between text-sm text-gray-600 mb-1">
+                    <span>Progress</span>
+                    <span>68%</span>
+                  </div>
+                  <Progress value={68} className="h-2" />
+                </div>
+              </div>
+            </TabsContent>
+            
+            {/* Result Tab */}
+            <TabsContent value="result" className="space-y-6">
+              <div className="flex justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold">Protocol Blueprint</h3>
+                  <p className="text-sm text-gray-600">{formData.studyTitle || "Protocol Blueprint"}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Regenerate
+                  </Button>
+                  <Button size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Blueprint
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border rounded-md">
+                <div className="border-b p-3 bg-gray-50">
+                  <h4 className="font-medium">Protocol Sections</h4>
+                </div>
+                
+                <div className="divide-y">
+                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">1. Study Overview</div>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Title, indication, phase, objectives, and rationale
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">2. Study Design</div>
+                      <div className="flex items-center">
+                        <Badge variant="outline" className="mr-2">CSR Insights Applied</Badge>
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {formData.studyDesign || "Study design"}, treatment groups, duration, sample size
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">3. Study Population</div>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Inclusion/exclusion criteria, subject recruitment, and demographics
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">4. Endpoints and Assessments</div>
+                      <div className="flex items-center">
+                        <Badge variant="outline" className="mr-2">CSR Insights Applied</Badge>
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Primary and secondary endpoints, assessment schedule
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">5. Statistical Analysis</div>
+                      <div className="flex items-center">
+                        <Badge variant="outline" className="mr-2">CSR Insights Applied</Badge>
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {formData.statisticalApproach || "Statistical methods"}, sample size justification, analysis populations
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">6. Safety Monitoring</div>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Adverse event reporting, safety analyses, risk management
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium">7. Ethical Considerations</div>
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      IRB/EC approval, informed consent, data privacy
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* CSR Intelligence Summary */}
+              {formData.useCsrIntelligence && (
+                <Card className="mt-6 bg-blue-50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Brain className="h-5 w-5 text-blue-600" />
+                      CSR Intelligence Implementation
+                    </CardTitle>
+                    <CardDescription>
+                      Blueprint optimizations based on historical CSR analysis
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="bg-white p-3 rounded-md shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0">
+                            <Sparkles className="h-5 w-5 text-amber-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Design Optimization</div>
+                            <p className="text-sm mt-1">
+                              Adaptive design elements have been integrated into the protocol, including interim analyses at 30% and 60% enrollment to assess futility and sample size re-estimation.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded-md shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0">
+                            <Sparkles className="h-5 w-5 text-amber-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Endpoint Enhancement</div>
+                            <p className="text-sm mt-1">
+                              Patient-reported outcomes have been added as key secondary endpoints based on regulatory approval patterns in similar studies.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded-md shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0">
+                            <Sparkles className="h-5 w-5 text-amber-500" />
+                          </div>
+                          <div>
+                            <div className="font-medium">Statistical Method Refinement</div>
+                            <p className="text-sm mt-1">
+                              Multiple imputation methods for missing data have been selected based on superior regulatory acceptance compared to LOCF approaches.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
-            </>
-          ) : (
-            <>
-              <Button variant="outline" onClick={() => {
-                setGenerationComplete(false);
-                setActiveSection('basic');
-                setBlueprintData(null);
-              }}>
-                New Blueprint
-              </Button>
-              <Button onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4" />
-                Download Blueprint
-              </Button>
-            </>
-          )}
-        </CardFooter>
+              
+              <div className="flex justify-end gap-2 mt-6">
+                <Button variant="outline">
+                  <Folder className="h-4 w-4 mr-2" />
+                  Save to Projects
+                </Button>
+                <Button>
+                  <Scale className="h-4 w-4 mr-2" />
+                  Protocol Success Prediction
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
       </Card>
     </div>
   );
