@@ -129,21 +129,6 @@ const ClientPortalLanding = () => {
               <div className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-semibold text-indigo-700">TrialSage™ Modules</h2>
-                  <div className="flex gap-2">
-                    <a 
-                      href="/CSRAnalyzer" 
-                      target="_self"
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded inline-flex items-center justify-center"
-                    >
-                      Open CSR Analyzer
-                    </a>
-                    <Button 
-                      onClick={() => window.location.href = '/cerv2'}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded"
-                    >
-                      Open CER Generator
-                    </Button>
-                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {moduleCards.map(module => 
