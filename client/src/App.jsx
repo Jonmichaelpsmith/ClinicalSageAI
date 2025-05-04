@@ -37,7 +37,12 @@ import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import Mo
 import StudyArchitect from './modules/StudyArchitect';
 import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
-// Using only INDWizardAdvanced which contains all module implementations
+// Module page imports for IND Wizard
+import Module1AdminPage from './modules/Module1AdminPage';
+import Module2SummaryPage from './modules/Module2SummaryPage';
+import Module3QualityPage from './modules/Module3QualityPage';
+import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
+import Module5ClinicalPage from './modules/Module5ClinicalPage';
 import VaultDocumentViewer from './components/vault/VaultDocumentViewer'; // Import VaultDocumentViewer
 
 // Import new Analytical & Stability modules (Stub versions)
