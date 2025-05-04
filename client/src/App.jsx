@@ -34,9 +34,8 @@ import CitationManagerPage from './pages/CitationManagerPage'; // Import Citatio
 import AuditPage from './pages/AuditPage'; // Import Audit Trail page
 import SignaturePage from './pages/SignaturePage'; // Import Digital Signature page
 import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import ModuleSectionEditor for co-author page
-// Import Study Architect directly (reverting to stable version)
 import StudyArchitect from './modules/StudyArchitect';
-// Uncomment when fixed: import StudyArchitect from './features/study-architect';
+import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
 import Module1AdminPage from './modules/Module1AdminPage';
 import Module2SummaryPage from './modules/Module2SummaryPage';
