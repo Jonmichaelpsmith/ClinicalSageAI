@@ -1,10 +1,9 @@
 import React from 'react';
 import { useLocation } from 'wouter';
 
-// Import the original working Study Architect module
-import StudyArchitect from '../modules/StudyArchitect';
+// Import our main Study Architect page component
+import StudyArchitect from './study-architect';
 
-// This component serves as a wrapper around Study Architect module
 export default function StudyArchitectPage() {
   return <StudyArchitect />;
 }
