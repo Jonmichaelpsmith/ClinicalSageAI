@@ -1,20 +1,10 @@
 import { useEffect, useState } from 'react';
-import {
-  Textarea,
-  Input,
-  Button,
-  Card,
-  CardContent,
-  CardTitle,
-  CardDescription,
-  CardHeader,
-  CardFooter,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Badge
-} from '@/components/ui';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardTitle, CardDescription, CardHeader, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 

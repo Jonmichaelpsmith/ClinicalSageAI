@@ -102,7 +102,7 @@ function App() {
           <Route path="/client-portal/cer-generator" component={CERV2Page} />
           <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
           <Route path="/client-portal/csr-analyzer" component={CsrAnalyzer} />
-          <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
+          <Route path="/client-portal/study-architect" component={StudyArchitect} />
           <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
 
           {/* Module Dashboard */}
@@ -155,7 +155,7 @@ function App() {
           <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
           <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
           <Route path="/signature" component={SignaturePage} /> {/* Digital Signature page route */}
-          <Route path="/study-architect" component={StudyArchitectPage} />
+          <Route path="/study-architect" component={StudyArchitect} />
           <Route path="/analytics" component={AnalyticsDashboard} />
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
           <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
