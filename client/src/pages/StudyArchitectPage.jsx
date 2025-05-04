@@ -1,10 +1,10 @@
 import React from 'react';
 import { useLocation } from 'wouter';
 
-// Import our centralized Study Architect implementation
-import StudyArchitect from '../features/study-architect';
+// Import the original working Study Architect module
+import StudyArchitect from '../modules/StudyArchitect';
 
-// This component now serves as a wrapper/redirect to the centralized implementation
+// This component serves as a wrapper around Study Architect module
 export default function StudyArchitectPage() {
   return <StudyArchitect />;
 }
