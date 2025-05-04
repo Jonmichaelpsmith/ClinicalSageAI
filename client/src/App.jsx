@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 
 // Import Pages and Modules
 import ClientPortalLanding from './pages/ClientPortalLanding';
-import INDWizardAdvanced from './pages/INDWizardAdvanced';
 import RegulatoryRiskDashboard from './pages/RegulatoryRiskDashboard';
 import EnhancedRegulatoryDashboard from './pages/EnhancedRegulatoryDashboard';
 import RegulatoryDashboard from './pages/RegulatoryDashboard';
@@ -37,6 +36,8 @@ import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import Mo
 import StudyArchitect from './modules/StudyArchitect';
 import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
+import INDWizardAdvanced from './pages/INDWizardAdvanced'; // Import the most complete IND Wizard implementation
+import INDFullSolution from './pages/INDFullSolution'; // Import the IND Full Solution page
 // Module page imports for IND Wizard
 import Module1AdminPage from './modules/Module1AdminPage';
 import Module2SummaryPage from './modules/Module2SummaryPage';
@@ -109,16 +110,10 @@ function App() {
           {/* Module Dashboard */}
           <Route path="/dashboard" component={ModuleDashboard} />
 
-          {/* Advanced IND Wizard - Main Entry Point */}
+          {/* IND Wizard Routes */}
           <Route path="/ind-wizard" component={INDWizardAdvanced} />
+          <Route path="/ind-full-solution" component={INDFullSolution} />
           
-          {/* IND Wizard Step Routes - For Individual Steps */}
-          <Route path="/ind-wizard/:projectId">
-            {(params) => (
-              <INDWizardAdvanced projectId={params.projectId} />
-            )}
-          </Route>
-
           {/* Client Portal IND Wizard Route */}
           <Route path="/client-portal/ind-wizard" component={INDWizardAdvanced} />
 
