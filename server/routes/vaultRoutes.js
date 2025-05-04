@@ -118,14 +118,63 @@ router.post('/upload', upload.single('document'), (req, res) => {
 // Route to list all documents
 router.get('/list', (req, res) => {
   try {
+    // Set proper headers to prevent issues with JSON parsing
+    res.setHeader('Content-Type', 'application/json');
+    
+    // Read and process metadata
     const metadata = readMetadata();
+    
+    // Extract metadata for filter UI
+    const uniqueModules = [...new Set(metadata.map(doc => doc.moduleLinked || 'Unknown'))];
+    const uniqueUploaders = [...new Set(metadata.map(doc => doc.uploader || 'Anonymous'))];
+    const uniqueProjects = [...new Set(metadata.map(doc => doc.projectId || 'Unknown'))];
+    
+    // Return data with successful status
     return res.status(200).json({ 
       success: true, 
-      documents: metadata
+      documents: metadata,
+      metadata: {
+        uniqueModules,
+        uniqueUploaders,
+        uniqueProjects,
+        totalCount: metadata.length
+      }
     });
   } catch (error) {
     console.error('Error listing documents:', error);
     return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Route to reset vault data
+router.post('/reset', (req, res) => {
+  try {
+    // Create empty metadata file
+    writeMetadata([]);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Vault reset successfully'
+    });
+  } catch (error) {
+    console.error('Error resetting vault:', error);
+    return res.status(500).json({ success: false, message: 'Failed to reset vault' });
+  }
+});
+
+// Fallback GET method for reset
+router.get('/reset', (req, res) => {
+  try {
+    // Create empty metadata file
+    writeMetadata([]);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Vault reset successfully via GET method'
+    });
+  } catch (error) {
+    console.error('Error resetting vault:', error);
+    return res.status(500).json({ success: false, message: 'Failed to reset vault' });
   }
 });
 
