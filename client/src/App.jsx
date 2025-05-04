@@ -134,7 +134,7 @@ function App() {
           <Route path="/cer-generator" component={CerGenerator} />
           <Route path="/cmc-wizard" component={CmcWizard} />
           <Route path="/csr-analyzer" component={CsrAnalyzer} />
-          <Route path="/vault" component={VaultDocumentViewer} /> {/* Updated to use VaultDocumentViewer directly */}
+          <Route path="/vault" component={VaultPage} /> {/* Use VaultPage which includes VaultDocumentViewer */}
           <Route path="/vault-page" component={VaultPage} />
           <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
           <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
