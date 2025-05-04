@@ -34,7 +34,7 @@ import CitationManagerPage from './pages/CitationManagerPage'; // Import Citatio
 import AuditPage from './pages/AuditPage'; // Import Audit Trail page
 import SignaturePage from './pages/SignaturePage'; // Import Digital Signature page
 import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import ModuleSectionEditor for co-author page
-import StudyArchitect from './pages/study-architect';
+import StudyArchitect from './modules/StudyArchitect';
 import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
 import Module1AdminPage from './modules/Module1AdminPage';
