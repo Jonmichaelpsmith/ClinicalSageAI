@@ -36,7 +36,7 @@ import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import Mo
 import StudyArchitect from './modules/StudyArchitect';
 import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
-import INDWizardAdvanced from './pages/INDWizardAdvanced'; // Import the most complete IND Wizard implementation
+import IndWizard from './modules/IndWizard'; // Import the IND Wizard module (standard implementation)
 import INDFullSolution from './pages/INDFullSolution'; // Import the IND Full Solution page
 // Module page imports for IND Wizard
 import Module1AdminPage from './modules/Module1AdminPage';
@@ -111,11 +111,11 @@ function App() {
           <Route path="/dashboard" component={ModuleDashboard} />
 
           {/* IND Wizard Routes */}
-          <Route path="/ind-wizard" component={INDWizardAdvanced} />
+          <Route path="/ind-wizard" component={IndWizard} />
           <Route path="/ind-full-solution" component={INDFullSolution} />
           
           {/* Client Portal IND Wizard Route */}
-          <Route path="/client-portal/ind-wizard" component={INDWizardAdvanced} />
+          <Route path="/client-portal/ind-wizard" component={IndWizard} />
 
           {/* Other Module Pages */}
           <Route path="/cer-generator" component={CERPage} />
@@ -148,14 +148,14 @@ function App() {
           <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
           <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
           
-          {/* IND Wizard - All module routes redirect to the advanced implementation */}
-          <Route path="/module-1" component={INDWizardAdvanced} />
-          <Route path="/module-2" component={INDWizardAdvanced} />
-          <Route path="/module-3" component={INDWizardAdvanced} />
-          <Route path="/module-4" component={INDWizardAdvanced} />
-          <Route path="/module-5" component={INDWizardAdvanced} />
-          <Route path="/ind-wizard/module-3" component={INDWizardAdvanced} />
-          <Route path="/ind-wizard/module-4" component={INDWizardAdvanced} />
+          {/* IND Wizard - All module routes redirect to the default implementation */}
+          <Route path="/module-1" component={IndWizard} />
+          <Route path="/module-2" component={IndWizard} />
+          <Route path="/module-3" component={IndWizard} />
+          <Route path="/module-4" component={IndWizard} />
+          <Route path="/module-5" component={IndWizard} />
+          <Route path="/ind-wizard/module-3" component={IndWizard} />
+          <Route path="/ind-wizard/module-4" component={IndWizard} />
           
           {/* Analytical Control & Method Management Routes */}
           <Route path="/analytical" component={AnalyticalMethodsStubPage} />
