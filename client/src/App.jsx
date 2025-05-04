@@ -37,11 +37,7 @@ import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import Mo
 import StudyArchitect from './modules/StudyArchitect';
 import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
-import Module1AdminPage from './modules/Module1AdminPage';
-import Module2SummaryPage from './modules/Module2SummaryPage';
-import Module3QualityPage from './modules/Module3QualityPage';
-import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
-import Module5ClinicalPage from './modules/Module5ClinicalPage';
+// Using only INDWizardAdvanced which contains all module implementations
 import VaultDocumentViewer from './components/vault/VaultDocumentViewer'; // Import VaultDocumentViewer
 
 // Import new Analytical & Stability modules (Stub versions)
@@ -152,26 +148,14 @@ function App() {
           <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
           <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
           
-          {/* IND Wizard Module Pages - Direct Access */}
-          <Route path="/module-1">
-            <Module1AdminPage />
-          </Route>
-          <Route path="/module-2">
-            <Module2SummaryPage />
-          </Route>
-          <Route path="/module-3">
-            <Module3QualityPage />
-          </Route>
-          <Route path="/module-4">
-            <Module4NonclinicalPage />
-          </Route>
-          <Route path="/module-5">
-            <Module5ClinicalPage />
-          </Route>
-          <Route path="/ind-wizard/module-3">
-            <Module3QualityPage />
-          </Route>
-          <Route path="/ind-wizard/module-4" component={Module4NonclinicalPage} />
+          {/* IND Wizard - All module routes redirect to the advanced implementation */}
+          <Route path="/module-1" component={INDWizardAdvanced} />
+          <Route path="/module-2" component={INDWizardAdvanced} />
+          <Route path="/module-3" component={INDWizardAdvanced} />
+          <Route path="/module-4" component={INDWizardAdvanced} />
+          <Route path="/module-5" component={INDWizardAdvanced} />
+          <Route path="/ind-wizard/module-3" component={INDWizardAdvanced} />
+          <Route path="/ind-wizard/module-4" component={INDWizardAdvanced} />
           
           {/* Analytical Control & Method Management Routes */}
           <Route path="/analytical" component={AnalyticalMethodsStubPage} />
