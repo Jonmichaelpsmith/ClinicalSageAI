@@ -54,7 +54,7 @@ import ShelfLifePredictorStubPage from './pages/ShelfLifePredictorStubPage'; // 
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
 
 // IND Wizard step components
-import IndWizardLayout from './components/ind-wizard/IndWizardLayout';
+// Advanced IND Wizard implementation is now used exclusively
 
 // Create a QueryClient instance to use with React Query
 const queryClient = new QueryClient();
@@ -114,21 +114,12 @@ function App() {
           {/* IND Wizard Step Routes - For Individual Steps */}
           <Route path="/ind-wizard/:projectId">
             {(params) => (
-              <IndWizardLayout projectId={params.projectId} />
-            )}
-          </Route>
-          
-          {/* Individual IND Wizard Steps */}
-          <Route path="/ind/wizard/:step">
-            {(params) => (
-              <IndWizardLayout currentStep={params.step} />
+              <INDWizardAdvanced projectId={params.projectId} />
             )}
           </Route>
 
           {/* Client Portal IND Wizard Route */}
-          <Route path="/client-portal/ind-wizard">
-            <IndWizardLayout />
-          </Route>
+          <Route path="/client-portal/ind-wizard" component={INDWizardAdvanced} />
 
           {/* Other Module Pages */}
           <Route path="/cer-generator" component={CERPage} />
