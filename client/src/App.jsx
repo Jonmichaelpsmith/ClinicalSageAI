@@ -101,7 +101,7 @@ function App() {
           <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
           <Route path="/client-portal/cer-generator" component={CERV2Page} />
           <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
-          <Route path="/client-portal/csr-analyzer" component={CsrAnalyzer} />
+          <Route path="/client-portal/csr-analyzer" component={CSRPage} />
           <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
           <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
 
@@ -131,9 +131,9 @@ function App() {
           </Route>
 
           {/* Other Module Pages */}
-          <Route path="/cer-generator" component={CerGenerator} />
+          <Route path="/cer-generator" component={CERPage} />
           <Route path="/cmc-wizard" component={CmcWizard} />
-          <Route path="/csr-analyzer" component={CsrAnalyzer} />
+          <Route path="/csr-analyzer" component={CSRPage} />
           <Route path="/vault" component={VaultPage} /> {/* Use VaultPage which includes VaultDocumentViewer */}
           <Route path="/vault-page" component={VaultPage} />
           <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
