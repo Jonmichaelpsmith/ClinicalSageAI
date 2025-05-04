@@ -159,6 +159,7 @@ const StudyArchitectPage = () => {
         <div className="mt-6">
           {/* Study Design Content */}
           <TabsContent value="dashboard">
+            {/* Render the dashboard component defined below */}
             <StudyArchitectDashboard />
           </TabsContent>
           
