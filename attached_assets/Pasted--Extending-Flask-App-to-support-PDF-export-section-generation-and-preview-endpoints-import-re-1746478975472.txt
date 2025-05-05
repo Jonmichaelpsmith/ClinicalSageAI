@@ -1,0 +1,103 @@
+// Extending Flask App to support PDF export, section generation, and preview endpoints
+
+import requests
+from typing import List, Optional
+from datetime import datetime
+from flask import Flask, request, jsonify, send_file
+import psycopg2
+import os
+import io
+from docx import Document
+from docx.shared import Inches
+from fpdf import FPDF
+import openai
+
+# --- Setup ---
+
+app = Flask(__name__)
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# (FAERSClient class remains unchanged...)
+# Include existing FAERSClient here.
+
+# --- AI Section Generator ---
+
+@app.route("/api/cer/generate-section", methods=["POST"])
+def generate_section():
+    data = request.json
+    section_type = data.get("section")
+    context = data.get("context", "")
+
+    if not section_type:
+        return jsonify({"error": "Section type required"}), 400
+
+    prompt = f"Generate the '{section_type}' section of a Clinical Evaluation Report using the following context:\n{context}\nEnsure regulatory tone and structure."
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a medical regulatory expert trained to write CER sections."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.4,
+            max_tokens=1200
+        )
+        text = response.choices[0].message.content.strip()
+        return jsonify({"section": section_type, "content": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# --- PDF Export ---
+
+@app.route("/api/cer/export-pdf", methods=["POST"])
+def export_cer_to_pdf():
+    data = request.json
+    title = data.get("title", "Clinical Evaluation Report")
+    faers_summary = data.get("faers", [])
+    comparators = data.get("comparators", [])
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(200, 10, txt=title, ln=True, align='C')
+
+    pdf.set_font("Arial", 'B', 12)
+    pdf.ln(10)
+    pdf.cell(200, 10, "FAERS Safety Summary", ln=True)
+    pdf.set_font("Arial", '', 10)
+    for event in faers_summary:
+        pdf.multi_cell(0, 8, f"Reaction: {event['reaction']}, Outcome: {event['outcome']}, Serious: {'Yes' if event['is_serious'] else 'No'}, Age: {event['age']}, Sex: {event['sex']}, Date: {event['report_date']}")
+
+    pdf.set_font("Arial", 'B', 12)
+    pdf.ln(5)
+    pdf.cell(200, 10, "Comparator Risk Scores", ln=True)
+    pdf.set_font("Arial", '', 10)
+    for comp in comparators:
+        pdf.cell(200, 8, f"{comp['comparator']} - Risk Score: {comp['riskScore']} (Reports: {comp['reportCount']})", ln=True)
+
+    output = io.BytesIO()
+    pdf.output(output)
+    output.seek(0)
+
+    return send_file(output, as_attachment=True, download_name="cer_report.pdf", mimetype="application/pdf")
+
+# --- Optional Preview API ---
+
+@app.route("/api/cer/preview", methods=["POST"])
+def preview_cer():
+    data = request.json
+    title = data.get("title")
+    faers = data.get("faers", [])
+    comparators = data.get("comparators", [])
+    section_drafts = data.get("sections", [])
+
+    return jsonify({
+        "title": title,
+        "sections": section_drafts,
+        "faers_summary": faers,
+        "comparators": comparators
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True)
