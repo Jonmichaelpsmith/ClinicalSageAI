@@ -115,8 +115,26 @@ const CERV2Page = () => {
           <CerProgressDashboard />
         </TabsContent>
         
-        {/* CER Builder Tab */}
+        {/* Improved CER Builder Tab - Consolidated workflow */}
         <TabsContent value="builder" className="mt-0">
+          <Card className="mb-4 border-blue-200 bg-blue-50">
+            <CardContent className="pt-4">
+              <div className="flex items-start space-x-4">
+                <div className="bg-blue-100 p-2 rounded-full">
+                  <Brain className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Create Your CER in 3 Steps</h3>
+                  <ol className="list-decimal list-inside mt-1 text-sm space-y-1 text-blue-800">
+                    <li>Select a section type and provide context</li>
+                    <li>Generate and add each needed section to your report</li>
+                    <li>Preview and export your complete CER as PDF or DOCX</li>
+                  </ol>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
           <CerBuilderPanel 
             productName={productData.name}
             faersData={{
