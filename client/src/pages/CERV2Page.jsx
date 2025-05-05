@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
+import QAChecklistButton from '@/components/cer/QAChecklistButton';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
@@ -10,6 +11,11 @@ export default function CERV2Page() {
 
   return (
     <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">CER Generator</h1>
+        <QAChecklistButton variant="outline" />
+      </div>
+      
       <div className="bg-white p-4 rounded shadow border">
         <h2 className="text-xl font-bold mb-2">🧠 How to Use the CER Generator</h2>
         <ol className="list-decimal list-inside space-y-1">
