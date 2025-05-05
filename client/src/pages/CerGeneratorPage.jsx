@@ -506,6 +506,94 @@ const CerGeneratorPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* FAERS Data Dialog */}
+      <Dialog open={showFaersDialog} onOpenChange={setShowFaersDialog}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Database className="mr-2 h-5 w-5" />
+              FDA FAERS Data for {productName}
+            </DialogTitle>
+            <DialogDescription>
+              Adverse event data from the FDA Adverse Event Reporting System
+            </DialogDescription>
+          </DialogHeader>
+          
+          {/* FAERS Dialog Content */}
+          <div className="mt-4">
+            <Tabs value={selectedFaersTab} onValueChange={setSelectedFaersTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="reports" className="flex items-center justify-center">
+                  <Database className="h-4 w-4 mr-2" /> Reports
+                </TabsTrigger>
+                <TabsTrigger value="charts" className="flex items-center justify-center">
+                  <BarChart4 className="h-4 w-4 mr-2" /> Charts
+                </TabsTrigger>
+                <TabsTrigger value="comparisons" className="flex items-center justify-center">
+                  <AlertCircle className="h-4 w-4 mr-2" /> Comparative Analysis
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value={selectedFaersTab} className="mt-4">
+                {isFaersLoading ? (
+                  <div className="flex justify-center items-center p-8">
+                    <div className="flex flex-col items-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                      <p className="text-gray-500">Loading FAERS data...</p>
+                    </div>
+                  </div>
+                ) : faersError ? (
+                  <div className="p-4 rounded-md bg-red-50 text-red-700 mb-4">
+                    <div className="flex items-center mb-2">
+                      <AlertCircle className="h-5 w-5 mr-2" />
+                      <h4 className="text-sm font-medium">Error loading FAERS data</h4>
+                    </div>
+                    <p className="text-sm">{faersError.toString()}</p>
+                  </div>
+                ) : (
+                  renderFaersModalContent()
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+          
+          {/* Export Actions */}
+          <div className="mt-6 flex flex-col space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-medium">Export & Integration Options</h4>
+                <p className="text-xs text-gray-500">Include FAERS data in your CER</p>
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" onClick={() => exportToPDF(faersData, productName)}
+                  disabled={exporting || !faersData}>
+                  Export to PDF
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => exportToWord(faersData, productName)}
+                  disabled={exporting || !faersData}>
+                  Export to Word
+                </Button>
+                <Button onClick={() => {
+                  integrateWithCER(faersData, cerId, productName);
+                  setShowFaersDialog(false);
+                }} disabled={exporting || !faersData}>
+                  Add to CER
+                </Button>
+              </div>
+            </div>
+            {exporting && (
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+                <span>Preparing export...</span>
+              </div>
+            )}
+            {exportError && (
+              <div className="text-sm text-red-500">{exportError.toString()}</div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

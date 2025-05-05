@@ -1,201 +1,172 @@
 import React from 'react';
-import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FaersRiskBadge } from './FaersRiskBadge';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import FaersRiskBadge from './FaersRiskBadge';
 
 /**
- * FAERS Comparative Analysis Chart Component
+ * A component that displays comparative safety analysis between
+ * a product and similar drugs in its class
  * 
- * Displays visual comparison of risk scores and report counts for similar products
+ * Note: In a real implementation, this would use Chart.js/react-chartjs-2
+ * for interactive charting, but for this demo we'll use a simpler approach
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.productName - Primary product name
+ * @param {Object} props.faersData - FAERS data including comparators
+ * @returns {JSX.Element} - Rendered component
  */
-export function FaersComparativeChart({ productName, faersData, className }) {
-  // Return early if no comparators available
-  if (!faersData?.comparators || faersData.comparators.length === 0) {
+const FaersComparativeChart = ({ productName, faersData }) => {
+  if (!faersData || !faersData.comparators || faersData.comparators.length === 0) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle>Comparative Analysis</CardTitle>
-          <CardDescription>No comparative data available for similar products</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 text-center text-gray-500 text-sm">
-            <p>No similar products found in the same class.</p>
-            <p className="mt-2">Try searching with a different product name or enable comparative analysis.</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="p-6 text-center">
+        <p className="text-gray-500">No comparative data available for this product.</p>
+      </div>
     );
   }
 
-  // Prepare data for charts
-  const comparators = faersData.comparators || [];
-  const labels = [productName, ...comparators.map(c => c.comparator)];
+  // Get the class/category info from the first comparator
+  const drugClass = faersData.comparators[0].therapeuticClass || 'Medication';
   
-  // Risk score chart data
-  const riskScoreData = {
-    labels,
-    datasets: [
-      {
-        label: 'Risk Score',
-        data: [faersData.riskScore, ...comparators.map(c => c.riskScore)],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.8)',  // Product color (red)
-          ...comparators.map(() => 'rgba(54, 162, 235, 0.8)')  // Comparator color (blue)
-        ],
-        borderColor: [
-          'rgb(255, 99, 132)',  // Product border
-          ...comparators.map(() => 'rgb(54, 162, 235)')  // Comparator border
-        ],
-        borderWidth: 1
-      }
-    ]
-  };
+  // Sort comparators by risk score
+  const sortedComparators = [...faersData.comparators]
+    .sort((a, b) => a.riskScore - b.riskScore);
   
-  // Report count chart data
-  const reportCountData = {
-    labels,
-    datasets: [
-      {
-        label: 'Report Count',
-        data: [faersData.totalReports, ...comparators.map(c => c.reportCount)],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.8)',  // Product color (red)
-          ...comparators.map(() => 'rgba(54, 162, 235, 0.8)')  // Comparator color (blue)
-        ],
-        borderColor: [
-          'rgb(255, 99, 132)',  // Product border
-          ...comparators.map(() => 'rgb(54, 162, 235)')  // Comparator border
-        ],
-        borderWidth: 1
-      }
-    ]
-  };
-
-  // Chart options
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const dataset = context.dataset;
-            const value = dataset.data[context.dataIndex];
-            const label = dataset.label || '';
-            return `${label}: ${value}`;
-          }
-        }
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true
-      }
+  // Determine where the current product ranks among comparators
+  const allProducts = [
+    ...sortedComparators.map(c => ({ 
+      name: c.comparator, 
+      riskScore: c.riskScore, 
+      reportCount: c.reportCount,
+      isCurrentProduct: false 
+    })),
+    { 
+      name: productName, 
+      riskScore: faersData.riskScore, 
+      reportCount: faersData.totalReports || 0,
+      isCurrentProduct: true 
     }
-  };
-
-  // Safety comparison helper function
-  const getRelativeSafety = (comparatorScore) => {
-    const ratio = comparatorScore / faersData.riskScore;
-    
-    if (ratio < 0.8) return { text: 'Better', className: 'text-green-600' };
-    if (ratio > 1.2) return { text: 'Worse', className: 'text-red-600' };
-    return { text: 'Similar', className: 'text-blue-600' };
-  };
-
+  ].sort((a, b) => a.riskScore - b.riskScore);
+  
+  // Calculate percentile rank
+  const currentIndex = allProducts.findIndex(p => p.isCurrentProduct);
+  const percentileRank = Math.round((currentIndex / (allProducts.length - 1)) * 100);
+  
+  // Generate safety profile text
+  let safetyProfile = '';
+  if (percentileRank < 25) {
+    safetyProfile = 'Better safety profile than most similar products';
+  } else if (percentileRank < 50) {
+    safetyProfile = 'Better than average safety profile';
+  } else if (percentileRank < 75) {
+    safetyProfile = 'Worse than average safety profile';
+  } else {
+    safetyProfile = 'Worse safety profile than most similar products';
+  }
+  
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>Comparative Safety Analysis</CardTitle>
-        <CardDescription>
-          {`Comparing ${productName} with ${comparators.length} similar ${comparators.length === 1 ? 'product' : 'products'}`}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="risk">
-          <TabsList className="mb-4">
-            <TabsTrigger value="risk">Risk Score</TabsTrigger>
-            <TabsTrigger value="reports">Report Count</TabsTrigger>
-            <TabsTrigger value="table">Comparison Table</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="risk" className="h-72">
-            <Bar data={riskScoreData} options={chartOptions} />
-          </TabsContent>
-          
-          <TabsContent value="reports" className="h-72">
-            <Bar data={reportCountData} options={chartOptions} />
-          </TabsContent>
-          
-          <TabsContent value="table">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2">Product</th>
-                    <th className="px-4 py-2">Risk Score</th>
-                    <th className="px-4 py-2">Report Count</th>
-                    <th className="px-4 py-2">Risk Level</th>
-                    <th className="px-4 py-2">Relative Safety</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Current product */}
-                  <tr className="bg-gray-50 border-b">
-                    <td className="px-4 py-2 font-medium">{productName}</td>
-                    <td className="px-4 py-2">{faersData.riskScore.toFixed(2)}</td>
-                    <td className="px-4 py-2">{faersData.totalReports}</td>
-                    <td className="px-4 py-2">
-                      <FaersRiskBadge riskLevel={faersData.severityAssessment.toLowerCase()} score={faersData.riskScore} compact />
-                    </td>
-                    <td className="px-4 py-2">Reference</td>
-                  </tr>
-                  
-                  {/* Comparator products */}
-                  {comparators.map((comp, idx) => {
-                    const safety = getRelativeSafety(comp.riskScore);
-                    const severityLevel = comp.riskScore > 1.5 ? 'high' : comp.riskScore > 0.5 ? 'medium' : 'low';
-                    
-                    return (
-                      <tr key={idx} className="bg-white border-b">
-                        <td className="px-4 py-2">{comp.comparator}</td>
-                        <td className="px-4 py-2">{comp.riskScore.toFixed(2)}</td>
-                        <td className="px-4 py-2">{comp.reportCount}</td>
-                        <td className="px-4 py-2">
-                          <FaersRiskBadge riskLevel={severityLevel} score={comp.riskScore} compact />
-                        </td>
-                        <td className={`px-4 py-2 ${safety.className} font-medium`}>{safety.text}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-4 rounded-md">
+        <h3 className="font-medium mb-2">{drugClass} Class Comparison</h3>
+        <p className="text-sm text-gray-600 mb-1">
+          {allProducts.length} products analyzed
+        </p>
+        <div className="flex items-center space-x-1 mb-4">
+          <span className="text-sm font-medium">{safetyProfile}</span>
+          <span className="text-xs text-gray-500">({percentileRank}th percentile)</span>
+        </div>
+      </div>
+      
+      {/* Risk Score Bar Chart */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium mb-2">Relative Risk Scores</h4>
+        {allProducts.map((product, i) => (
+          <div key={i} className={`flex items-center space-x-2 ${product.isCurrentProduct ? 'bg-blue-50 p-2 rounded-md' : ''}`}>
+            <div className="w-32 truncate">
+              <span className={`text-sm ${product.isCurrentProduct ? 'font-bold' : ''}`}>
+                {product.name}
+              </span>
             </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+            <div className="flex-grow">
+              <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className={`absolute top-0 left-0 h-full ${product.isCurrentProduct ? 'bg-blue-500' : 'bg-gray-400'}`}
+                  style={{ width: `${Math.min(100, (product.riskScore / 3) * 100)}%` }}
+                ></div>
+              </div>
+            </div>
+            <div className="w-20 text-right">
+              <FaersRiskBadge riskScore={product.riskScore} size="sm" showLabel={false} showTooltip={true} />
+              <span className="ml-2 text-sm">{product.riskScore.toFixed(2)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Report Count Comparison */}
+      <div className="mt-8">
+        <h4 className="text-sm font-medium mb-2">Adverse Event Reports</h4>
+        <div className="relative overflow-x-auto rounded-md border border-gray-200">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 text-gray-700">
+              <tr>
+                <th className="px-4 py-2">Product</th>
+                <th className="px-4 py-2">Reports</th>
+                <th className="px-4 py-2">Risk Score</th>
+                <th className="px-4 py-2">Comparison</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allProducts.map((product, i) => (
+                <tr key={i} className={`border-t border-gray-200 ${product.isCurrentProduct ? 'bg-blue-50' : ''}`}>
+                  <td className="px-4 py-3 font-medium">{product.name}</td>
+                  <td className="px-4 py-3">{product.reportCount.toLocaleString()}</td>
+                  <td className="px-4 py-3">
+                    <FaersRiskBadge riskScore={product.riskScore} size="sm" />
+                  </td>
+                  <td className="px-4 py-3">
+                    {product.isCurrentProduct ? (
+                      <span className="text-blue-500 font-medium">Reference</span>
+                    ) : (
+                      <span className={getComparisonClass(product.riskScore, faersData.riskScore)}>
+                        {getComparisonText(product.riskScore, faersData.riskScore)}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Data based on FDA Adverse Event Reporting System (FAERS)
+        </p>
+      </div>
+    </div>
   );
+};
+
+/**
+ * Determine comparison text based on risk scores
+ */
+function getComparisonText(comparatorScore, referenceScore) {
+  const ratio = comparatorScore / referenceScore;
+  
+  if (ratio < 0.7) return 'Significantly better';
+  if (ratio < 0.9) return 'Somewhat better';
+  if (ratio < 1.1) return 'Similar';
+  if (ratio < 1.3) return 'Somewhat worse';
+  return 'Significantly worse';
 }
+
+/**
+ * Determine CSS class for comparison text
+ */
+function getComparisonClass(comparatorScore, referenceScore) {
+  const ratio = comparatorScore / referenceScore;
+  
+  if (ratio < 0.7) return 'text-green-600 font-medium';
+  if (ratio < 0.9) return 'text-green-500';
+  if (ratio < 1.1) return 'text-gray-500';
+  if (ratio < 1.3) return 'text-orange-500';
+  return 'text-red-500 font-medium';
+}
+
+export default FaersComparativeChart;
