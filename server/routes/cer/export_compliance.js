@@ -50,13 +50,13 @@ export async function generateCompliancePDF(data, threshold = 80, flagThreshold 
       if (data.sectionScores && Array.isArray(data.sectionScores)) {
         // Process sectionScores format
         data.sectionScores.forEach(section => {
-          // Highlight low scores below 70%
-          const highlight = section.averageScore < 0.7;
+          // Highlight low scores below flagThreshold
           const scorePercentage = Math.round(section.averageScore * 100);
+          const highlight = scorePercentage < flagThreshold;
           
           if (highlight) {
             doc.font('Helvetica-Bold').fillColor('#DC3545'); // Bootstrap danger red
-            doc.text(`${section.title} ⚠️`);
+            doc.text(`${section.title} ⚠️ (Below ${flagThreshold}%)`);
           } else {
             doc.font('Helvetica-Bold').fillColor('black');
             doc.text(section.title);
@@ -88,12 +88,12 @@ export async function generateCompliancePDF(data, threshold = 80, flagThreshold 
       } else if (data.breakdown && Array.isArray(data.breakdown)) {
         // Process older breakdown format
         data.breakdown.forEach(section => {
-          // Highlight low scores below 70%
-          const highlight = section.score < 70;
+          // Highlight low scores below flagThreshold
+          const highlight = section.score < flagThreshold;
           
           if (highlight) {
             doc.font('Helvetica-Bold').fillColor('#DC3545'); // Bootstrap danger red
-            doc.text(`${section.section} ⚠️`);
+            doc.text(`${section.section} ⚠️ (Below ${flagThreshold}%)`);
           } else {
             doc.font('Helvetica-Bold').fillColor('black');
             doc.text(section.section);
@@ -120,12 +120,13 @@ export async function generateCompliancePDF(data, threshold = 80, flagThreshold 
 export function exportComplianceHandler(req, res) {
   const data = req.body.data;
   const threshold = req.body.threshold || 80;
+  const flagThreshold = req.body.flag_threshold || 70;
   
   if (!data) {
     return res.status(400).json({ error: 'No data provided.' });
   }
   
-  generateCompliancePDF(data, threshold)
+  generateCompliancePDF(data, threshold, flagThreshold)
     .then(pdfBuffer => {
       // Set PDF response headers
       res.setHeader('Content-Type', 'application/pdf');
