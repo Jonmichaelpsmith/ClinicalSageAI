@@ -51,7 +51,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedSection, setGeneratedSection] = useState(null);
   const [cerSections, setCerSections] = useState([]);
-  const [cerTitle, setCerTitle] = useState(`Clinical Evaluation Report: ${title || 'Device/Product'}`); 
+  const [cerTitle, setCerTitle] = useState(`Clinical Evaluation Report: ${productName || 'Device/Product'}`); 
   const [exportFormat, setExportFormat] = useState('pdf');
   const [previewData, setPreviewData] = useState(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
@@ -99,7 +99,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
         body: JSON.stringify({
           section: selectedSectionType,
           context: sectionContext,
-          productName: title.split(':')[1]?.trim() || 'Device/Product',
+          productName: productName,
         }),
       });
       
