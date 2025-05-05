@@ -198,15 +198,12 @@ const CerGeneratorPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 mb-4">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="dashboard" className="flex items-center">
             <BarChart4 className="h-4 w-4 mr-2" /> Dashboard
           </TabsTrigger>
           <TabsTrigger value="generator" className="flex items-center">
-            <Brain className="h-4 w-4 mr-2" /> AI Generator
-          </TabsTrigger>
-          <TabsTrigger value="templates" className="flex items-center">
-            <FileCheck className="h-4 w-4 mr-2" /> Templates
+            <Brain className="h-4 w-4 mr-2" /> CER Builder
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center">
             <Settings className="h-4 w-4 mr-2" /> Settings
