@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import path from 'path';
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer.js';
+import literatureRouter from './routes/literature.js';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
@@ -84,6 +85,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register our enhanced CER routes
   app.use('/api/cer', cerRouter);
+
+  // Register Literature API routes
+  app.use('/api/literature', literatureRouter);
   
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
