@@ -1,0 +1,94 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+
+export default function LiteratureSearchPanel({ onAddSection }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState('');
+
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post('/api/cer/literature-search', {
+        query,
+        year_from: 2020,
+        year_to: 2025
+      });
+      setResults(res.data.ids || []);
+    } catch (err) {
+      console.error('Search failed', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSummarize = async () => {
+    try {
+      const res = await axios.post('/api/cer/generate-section', {
+        section: 'Literature Review',
+        context: `Summarize the following PubMed IDs: ${results.join(', ')}`
+      });
+      setSummary(res.data.content);
+    } catch (err) {
+      console.error('Summarization failed', err);
+    }
+  };
+
+  const handleAddToCER = () => {
+    if (summary && typeof onAddSection === 'function') {
+      onAddSection({ section: 'Literature Review', content: summary });
+    }
+  };
+
+  return (
+    <div className="p-4">
+      <h2 className="text-lg font-semibold mb-2">Search PubMed Literature</h2>
+      <input
+        type="text"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="e.g., clinical evaluation cardiovascular device"
+        className="w-full p-2 border rounded mb-2"
+      />
+      <button
+        onClick={handleSearch}
+        disabled={loading || !query.trim()}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        {loading ? 'Searching...' : 'Search'}
+      </button>
+
+      <div className="mt-4">
+        <h3 className="text-md font-semibold mb-2">Results:</h3>
+        <ul className="list-disc list-inside text-sm">
+          {results.map((pmid, i) => (
+            <li key={i}>PubMed ID: {pmid}</li>
+          ))}
+        </ul>
+
+        {results.length > 0 && (
+          <button
+            onClick={handleSummarize}
+            className="mt-4 bg-teal-600 text-white px-4 py-2 rounded"
+          >
+            Summarize & Generate Literature Review Section
+          </button>
+        )}
+      </div>
+
+      {summary && (
+        <div className="mt-6 border p-3 bg-gray-50 rounded">
+          <h4 className="font-bold mb-2">Generated Literature Review</h4>
+          <p className="whitespace-pre-wrap text-sm mb-4">{summary}</p>
+          <button
+            onClick={handleAddToCER}
+            className="bg-green-700 text-white px-4 py-2 rounded"
+          >
+            Add to CER
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

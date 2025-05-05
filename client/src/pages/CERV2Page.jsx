@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
+import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
 import QAChecklistButton from '@/components/cer/QAChecklistButton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { exportToPDF, exportToWord, downloadBlob, fetchFaersData } from '@/services/CerAPIService';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
@@ -11,6 +13,7 @@ export default function CERV2Page() {
   const [comparators, setComparators] = useState([]);
   const [sections, setSections] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const loadFaersData = async () => {
@@ -62,6 +65,7 @@ export default function CERV2Page() {
           <TabsList className="flex gap-2 mb-4">
             <TabsTrigger value="builder">🧱 Section Generator</TabsTrigger>
             <TabsTrigger value="preview">📄 Report Preview</TabsTrigger>
+            <TabsTrigger value="literature">📚 Literature</TabsTrigger>
             <TabsTrigger value="export">📤 Export Options</TabsTrigger>
           </TabsList>
 
@@ -84,6 +88,23 @@ export default function CERV2Page() {
               faers={faers}
               comparators={comparators}
               sections={sections}
+            />
+          </TabsContent>
+
+          <TabsContent value="literature">
+            <LiteratureSearchPanel
+              onAddSection={(newSection) => {
+                // Add the new section to the sections array
+                const updatedSections = [...sections, newSection];
+                setSections(updatedSections);
+                
+                // Show success notification
+                toast({
+                  title: "Literature Review Added",
+                  description: "The generated literature review has been added to your CER.",
+                  variant: "success",
+                });
+              }}
             />
           </TabsContent>
 

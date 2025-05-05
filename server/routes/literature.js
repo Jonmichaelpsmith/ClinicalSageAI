@@ -8,8 +8,40 @@
 import express from 'express';
 import axios from 'axios';
 import OpenAI from 'openai';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const router = express.Router();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../../uploads/literature');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Generate a timestamp-based unique ID instead of using uuid
+    const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1000);
+    const extension = path.extname(file.originalname);
+    cb(null, `paper-${uniqueId}${extension}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'), false);
+    }
+  }
+});
 
 // Configure OpenAI
 let openai;
@@ -335,6 +367,111 @@ router.post('/generate-citations', async (req, res) => {
   } catch (error) {
     console.error('Citation generation error:', error);
     res.status(500).json({ error: 'An error occurred during citation generation' });
+  }
+});
+
+/**
+ * @route POST /api/literature/generate-review
+ * @desc Generate a comprehensive literature review section based on selected papers
+ */
+router.post('/generate-review', async (req, res) => {
+  try {
+    const { papers, context, options = {} } = req.body;
+    
+    if (!papers || !Array.isArray(papers) || papers.length === 0) {
+      return res.status(400).json({ error: 'Papers array is required' });
+    }
+    
+    if (!openai) {
+      return res.status(500).json({ error: 'OpenAI client not initialized' });
+    }
+    
+    // Extract paper summaries or use abstracts when summaries aren't available
+    const paperTexts = papers.map(paper => {
+      const paperSummary = paper.summary || paper.abstract || '';
+      return `Title: ${paper.title}\nAuthors: ${paper.authors.join(', ')}\nJournal: ${paper.journal}, ${paper.publicationDate}\n\n${paperSummary}`;
+    }).join('\n\n');
+    
+    // Determine focus area for the literature review
+    const focusInstructions = {
+      safety: 'Focus primarily on safety outcomes, adverse events, and risk factors',
+      efficacy: 'Focus primarily on efficacy, performance, and clinical outcomes',
+      both: 'Balance coverage of both safety and efficacy aspects of the device/product',
+    };
+    
+    const focusInstruction = focusInstructions[options.focus] || focusInstructions.both;
+    
+    // Determine format detail level
+    const formatInstructions = {
+      comprehensive: 'Create a comprehensive, detailed literature review with in-depth analysis',
+      concise: 'Create a concise, focused literature review highlighting only the most important findings',
+    };
+    
+    const formatInstruction = formatInstructions[options.format] || formatInstructions.comprehensive;
+    
+    const prompt = `As a senior regulatory medical writer, create a professionally structured literature review section for a Clinical Evaluation Report on ${context || 'a medical device'}.\n\n${focusInstruction}. ${formatInstruction}.\n\nThe review should:\n1. Begin with a clear introduction explaining the search strategy and review purpose\n2. Group papers by themes or findings (not paper-by-paper)\n3. Synthesize findings across papers to draw stronger conclusions\n4. Identify gaps in current literature\n5. Evaluate the quality and relevance of the evidence\n6. End with a conclusion summarizing key insights\n\nUse proper Markdown formatting with headers, subheaders, and paragraphs.\n\nBase your review on these scientific papers:\n\n${paperTexts}`;
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: "You are an expert regulatory medical writer specializing in EU MDR and FDA clinical evaluation reports." },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 4000,
+      temperature: 0.3,
+    });
+    
+    const reviewContent = response.choices[0].message.content;
+    res.json({ content: reviewContent });
+  } catch (error) {
+    console.error('Literature review generation error:', error);
+    res.status(500).json({ error: 'An error occurred during literature review generation' });
+  }
+});
+
+/**
+ * @route POST /api/literature/analyze-pdf
+ * @desc Upload and analyze a PDF paper to extract and summarize content
+ */
+router.post('/analyze-pdf', upload.single('file'), async (req, res) => {
+  try {
+    const file = req.file;
+    const context = req.body.context || '';
+    
+    if (!file) {
+      return res.status(400).json({ error: 'PDF file is required' });
+    }
+    
+    // For now, we're implementing a simplified version that doesn't actually parse the PDF
+    // In a full implementation, you would use a library like pdf-parse or pdf.js to extract text
+    // and then analyze it with OpenAI
+    
+    if (!openai) {
+      return res.status(500).json({ error: 'OpenAI client not initialized' });
+    }
+    
+    // Simulate paper extraction with metadata
+    const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1000);
+    const extractedPaper = {
+      id: `pdf-${uniqueId}`,
+      title: path.basename(file.originalname, path.extname(file.originalname)),
+      filename: file.filename,
+      uploadDate: new Date().toISOString(),
+      fileSize: file.size,
+      mimeType: file.mimetype,
+      filePath: file.path,
+    };
+    
+    // In a full implementation, you would extract text from the PDF and analyze it here
+    // For demo purposes, we're returning the file metadata and a placeholder message
+    res.json({
+      success: true,
+      paper: extractedPaper,
+      message: 'PDF uploaded successfully. Text extraction and analysis will be implemented in a future update.',
+    });
+  } catch (error) {
+    console.error('PDF analysis error:', error);
+    res.status(500).json({ error: 'An error occurred during PDF analysis' });
   }
 });
 
