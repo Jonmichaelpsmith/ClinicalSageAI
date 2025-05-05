@@ -164,9 +164,9 @@ const CerGeneratorPage = () => {
               <h3 className="text-sm font-medium text-blue-800">Create a Clinical Evaluation Report in 3 Simple Steps</h3>
               <div className="mt-2 text-sm text-blue-700">
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>Enter your device information in the AI Generator tab</li>
-                  <li>Enable FDA adverse event data and literature search</li>
-                  <li>Click "Generate CER" to create your report</li>
+                  <li>Choose a section type and provide context in the CER Builder</li>
+                  <li>Generate and add each needed section to your report</li>
+                  <li>Export your completed report as PDF or DOCX format</li>
                 </ol>
               </div>
               <div className="mt-3 flex space-x-3">
@@ -217,451 +217,148 @@ const CerGeneratorPage = () => {
         <TabsContent value="generator" className="space-y-4">
           {/* New CerBuilderPanel Component - comprehensive UI for building CERs */}
           <CerBuilderPanel faersData={faersData} productName={productName} />
-          
-          {/* Old UI - Kept for reference and backward compatibility */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" style={{display: 'none'}}>
-            {/* Device Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Device Information</CardTitle>
-                <CardDescription>Enter the details of your medical device</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="deviceName">Device Name</Label>
-                  <Input id="deviceName" placeholder="e.g. CardioMonitor Pro 3000" defaultValue="CardioMonitor Pro 3000" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="deviceType">Device Type</Label>
-                  <Select defaultValue="monitoring">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select device type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="monitoring">Patient Monitoring Device</SelectItem>
-                      <SelectItem value="implantable">Implantable Device</SelectItem>
-                      <SelectItem value="diagnostic">Diagnostic Equipment</SelectItem>
-                      <SelectItem value="therapeutic">Therapeutic Device</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="classification">Device Classification</Label>
-                  <Select defaultValue="iia">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select classification" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="i">Class I</SelectItem>
-                      <SelectItem value="iia">Class IIa</SelectItem>
-                      <SelectItem value="iib">Class IIb</SelectItem>
-                      <SelectItem value="iii">Class III</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="manufacturer">Manufacturer</Label>
-                  <Input id="manufacturer" placeholder="e.g. MedTech Innovations, Inc." defaultValue="MedTech Innovations, Inc." />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="intendedUse">Intended Use</Label>
-                  <Textarea id="intendedUse" placeholder="Describe the intended use of the device" 
-                    defaultValue="Continuous monitoring of cardiac activity, blood pressure, and oxygen saturation in clinical settings." />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Literature Data */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Literature Evidence</CardTitle>
-                <CardDescription>Manage clinical literature for your report</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-sm font-medium">Literature Search</h3>
-                    <p className="text-xs text-gray-500">Find relevant clinical literature</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={handleLiteratureSearch} disabled={isLiteratureSearching}>
-                    {isLiteratureSearching ? 'Searching...' : 'Search'}
-                  </Button>
-                </div>
-                
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <div>
-                    <h3 className="text-sm font-medium">AI Literature Analysis</h3>
-                    <p className="text-xs text-gray-500">Automatically analyze and extract key findings</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="literature-ai" className="sr-only">Enable AI Analysis</Label>
-                    <Switch id="literature-ai" checked={aiEnhancementEnabled} onCheckedChange={setAiEnhancementEnabled} />
-                  </div>
-                </div>
-                
-                <div className="pt-2 border-t">
-                  <h3 className="text-sm font-medium mb-2">Found Literature</h3>
-                  <div className="bg-gray-50 p-3 rounded-md">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <BookOpen className="h-4 w-4 mr-2 text-blue-500" />
-                        <span className="text-sm">{literatureCount} articles found</span>
-                      </div>
-                      <Badge variant="blue" className="text-xs">PubMed</Badge>
-                    </div>
-                    <div className="mt-2 text-xs text-gray-500">
-                      {literatureCount > 0 ? (
-                        <span>Most recent: "Long-term outcomes of cardiac monitoring devices in clinical settings"</span>
-                      ) : (
-                        <span>No articles found. Try adjusting your search terms.</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="pt-2 border-t">
-                  <h3 className="text-sm font-medium mb-2">Upload Additional Documents</h3>
-                  <div className="border-2 border-dashed border-gray-200 rounded-md p-4 text-center">
-                    <FileUpload className="h-6 w-6 mx-auto text-gray-400 mb-2" />
-                    <p className="text-xs text-gray-500">Drag & drop files or click to browse</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* FDA Data and Generation Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Regulatory Data</CardTitle>
-                <CardDescription>Additional data sources and generation settings</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-sm font-medium">FDA Adverse Events</h3>
-                    <p className="text-xs text-gray-500">Include adverse event data from FDA MAUDE</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="fda-data" checked={fdaDataEnabled} onCheckedChange={setFdaDataEnabled} />
-                  </div>
-                </div>
-                
-                {fdaDataEnabled && (
-                  <div className="flex justify-between items-center pt-2">
-                    <div>
-                      <h3 className="text-sm font-medium">FDA Data Search</h3>
-                      <p className="text-xs text-gray-500">Find relevant adverse events</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={handleFdaDataSearch} disabled={isFdaDataSearching}>
-                      {isFdaDataSearching ? 'Searching...' : 'Search'}
-                    </Button>
-                  </div>
-                )}
-                
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <div>
-                    <h3 className="text-sm font-medium">AI Section Generation</h3>
-                    <p className="text-xs text-gray-500">Create regulatory-compliant CER sections with GPT-4o</p>
-                  </div>
-                  <AiSectionGenerator onSectionGenerated={handleSectionGenerated} />
-                </div>
-                
-                <div className="pt-2 border-t">
-                  <h3 className="text-sm font-medium mb-2">CER Template</h3>
-                  <Select value={templateSelection} onValueChange={setTemplateSelection}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a template" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {templates.map((template) => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="mt-2 text-xs text-gray-500">
-                    {templates.find(t => t.id === templateSelection)?.description}
-                  </p>
-                </div>
-                
-                <div className="pt-2 border-t">
-                  <h3 className="text-sm font-medium mb-2">AI Enhancement Level</h3>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button variant={aiEnhancementEnabled ? "default" : "outline"} size="sm" className="w-full" onClick={() => setAiEnhancementEnabled(true)}>Full AI</Button>
-                    <Button variant={!aiEnhancementEnabled ? "default" : "outline"} size="sm" className="w-full" onClick={() => setAiEnhancementEnabled(false)}>Basic</Button>
-                    <Button variant="outline" size="sm" className="w-full">Custom</Button>
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t">
-                  <Button 
-                    id="generate-cer-button"
-                    className="w-full flex items-center justify-center bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold shadow-lg"
-                    onClick={() => {
-                      // Simulate report generation with a loading state
-                      const deviceName = document.getElementById('deviceName')?.value || 'CardioMonitor Pro 3000';
-                      const template = templates.find(t => t.id === templateSelection);
-                      
-                      // Show a success dialog or redirect to a PDF view component
-                      alert(`Starting CER generation for ${deviceName} using ${template?.name}. Your report will be available shortly.`);
-                      
-                      // In production, this would trigger the actual report generation process
-                      // and then direct the user to the generated PDF
-                    }}
-                  >
-                    <Brain className="h-5 w-5 mr-2" /> Generate CER Report
-                  </Button>
-                  <p className="mt-2 text-xs text-center text-gray-500">Report will be generated and added to your dashboard</p>
-                </div>
-              </CardContent>
-              <CardFooter className="text-xs text-gray-500">
-                Using GPT-4o for enhanced content generation
-              </CardFooter>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="templates" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((template) => (
-              <Card key={template.id} className={templateSelection === template.id ? 'border-2 border-blue-500' : ''}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle>{template.name}</CardTitle>
-                    {templateSelection === template.id && (
-                      <Badge className="bg-blue-500">Selected</Badge>
-                    )}
-                  </div>
-                  <CardDescription>{template.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Framework:</span>
-                      <span className="text-sm font-medium">{template.regulatoryFramework}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Sections:</span>
-                      <span className="text-sm font-medium">{template.sectionCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">AI Enhanced:</span>
-                      <span className="text-sm font-medium">Yes</span>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                  <Button 
-                    variant={templateSelection === template.id ? "outline" : "default"}
-                    size="sm"
-                    onClick={() => setTemplateSelection(template.id)}
-                  >
-                    {templateSelection === template.id ? 'Selected' : 'Select'}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
         </TabsContent>
         
         <TabsContent value="settings" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>AI Generation Settings</CardTitle>
-              <CardDescription>Configure the AI-powered generation process</CardDescription>
+              <CardTitle>CER Generator Settings</CardTitle>
+              <CardDescription>Configure your preferences for the CER Generator module</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center pb-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">AI Model</h3>
-                  <p className="text-xs text-gray-500">Select the AI model to use for generation</p>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-md font-semibold">Template Settings</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="default-template">Default Template</Label>
+                  <Select defaultValue="eu-mdr-full">
+                    <SelectTrigger id="default-template">
+                      <SelectValue placeholder="Select template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="eu-mdr-full">EU MDR 2017/745 Full Template</SelectItem>
+                      <SelectItem value="meddev-rev4">MEDDEV 2.7/1 Rev 4 Template</SelectItem>
+                      <SelectItem value="fda-510k">FDA 510(k) Template</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Select defaultValue="gpt4o">
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select AI model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gpt4o">GPT-4o</SelectItem>
-                    <SelectItem value="claude">Claude 3 Opus</SelectItem>
-                    <SelectItem value="mixtral">Mixtral 8x7B</SelectItem>
-                  </SelectContent>
-                </Select>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="citation-style">Citation Style</Label>
+                  <Select defaultValue="vancouver">
+                    <SelectTrigger id="citation-style">
+                      <SelectValue placeholder="Citation style" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="vancouver">Vancouver</SelectItem>
+                      <SelectItem value="harvard">Harvard</SelectItem>
+                      <SelectItem value="apa">APA</SelectItem>
+                      <SelectItem value="chicago">Chicago</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div className="flex justify-between items-center py-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">Citations Style</h3>
-                  <p className="text-xs text-gray-500">Format for citations in the report</p>
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="text-md font-semibold">AI Settings</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="ai-enhancement">AI Enhancement</Label>
+                    <p className="text-sm text-muted-foreground">Use AI to improve CER content quality</p>
+                  </div>
+                  <Switch id="ai-enhancement" defaultChecked />
                 </div>
-                <Select defaultValue="vancouver">
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select citation style" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="vancouver">Vancouver</SelectItem>
-                    <SelectItem value="apa">APA</SelectItem>
-                    <SelectItem value="mla">MLA</SelectItem>
-                    <SelectItem value="harvard">Harvard</SelectItem>
-                  </SelectContent>
-                </Select>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="auto-citations">Automatic Citations</Label>
+                    <p className="text-sm text-muted-foreground">AI will add relevant citations automatically</p>
+                  </div>
+                  <Switch id="auto-citations" defaultChecked />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="regulatory-check">Regulatory Compliance Check</Label>
+                    <p className="text-sm text-muted-foreground">Verify content against regulatory requirements</p>
+                  </div>
+                  <Switch id="regulatory-check" defaultChecked />
+                </div>
+              </div>
+
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="text-md font-semibold">Document Settings</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="executive-summary">Include Executive Summary</Label>
+                    <p className="text-sm text-muted-foreground">Add an executive summary to your reports</p>
+                  </div>
+                  <Switch id="executive-summary" defaultChecked />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="glossary">Include Glossary</Label>
+                    <p className="text-sm text-muted-foreground">Add a glossary of terms to your reports</p>
+                  </div>
+                  <Switch id="glossary" defaultChecked />
+                </div>
               </div>
               
-              <div className="flex justify-between items-center py-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">Automatic Refinement</h3>
-                  <p className="text-xs text-gray-500">AI will automatically refine generated sections</p>
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="text-md font-semibold">Data Sources</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="pubmed-integration">PubMed Integration</Label>
+                    <p className="text-sm text-muted-foreground">Use PubMed as a literature source</p>
+                  </div>
+                  <Switch id="pubmed-integration" defaultChecked />
                 </div>
-                <Switch id="auto-refinement" defaultChecked />
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">Regulatory Focus</h3>
-                  <p className="text-xs text-gray-500">Primary regulatory framework focus</p>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="fda-integration">FDA MAUDE Integration</Label>
+                    <p className="text-sm text-muted-foreground">Include FDA adverse event data</p>
+                  </div>
+                  <Switch id="fda-integration" defaultChecked />
                 </div>
-                <Select defaultValue="eu-mdr">
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select framework" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="eu-mdr">EU MDR</SelectItem>
-                    <SelectItem value="fda">FDA</SelectItem>
-                    <SelectItem value="meddev">MEDDEV</SelectItem>
-                    <SelectItem value="multi">Multi-regional</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">Export Format</h3>
-                  <p className="text-xs text-gray-500">Default file format for exports</p>
-                </div>
-                <Select defaultValue="pdf">
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select format" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                    <SelectItem value="docx">DOCX</SelectItem>
-                    <SelectItem value="html">HTML</SelectItem>
-                    <SelectItem value="json">JSON</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button className="w-full">Save Settings</Button>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline">Reset to Defaults</Button>
+              <Button>Save Settings</Button>
             </CardFooter>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>API Integrations</CardTitle>
-              <CardDescription>Configure external data source connections</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center pb-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">PubMed API</h3>
-                  <p className="text-xs text-gray-500">Connected and working properly</p>
-                </div>
-                <Badge className="bg-green-500">Active</Badge>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">FDA MAUDE Database</h3>
-                  <p className="text-xs text-gray-500">Connected and working properly</p>
-                </div>
-                <Badge className="bg-green-500">Active</Badge>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">EUDAMED Connection</h3>
-                  <p className="text-xs text-gray-500">API key configuration required</p>
-                </div>
-                <Badge className="bg-yellow-500">Setup Required</Badge>
-              </div>
-              
-              <div className="flex justify-between items-center py-2 border-b">
-                <div>
-                  <h3 className="text-sm font-medium">OpenAI API</h3>
-                  <p className="text-xs text-gray-500">Connected and working properly</p>
-                </div>
-                <Badge className="bg-green-500">Active</Badge>
-              </div>
-            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-      
-      {/* CER Preview Panel - shown when FAERS data is available */}
-      {faersData && (
-        <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Clinical Evaluation Report Preview</h2>
-            <Button variant="outline" onClick={() => setShowFaersDialog(true)}>
-              View FAERS Data
-            </Button>
-          </div>
-          <CerPreviewPanel 
-            productName={productName}
-            faersData={faersData}
-            onExport={handleExportCompleted}
-          />
-        </div>
-      )}
       
       {/* FAERS Data Dialog */}
       <Dialog open={showFaersDialog} onOpenChange={setShowFaersDialog}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <Database className="mr-2 h-5 w-5" />
-              FDA FAERS Data for {productName}
-            </DialogTitle>
+            <DialogTitle>FAERS Adverse Event Data for {productName}</DialogTitle>
             <DialogDescription>
-              Adverse event data from the FDA Adverse Event Reporting System
+              FDA Adverse Event Reporting System data analysis and visualization
             </DialogDescription>
           </DialogHeader>
           
-          {/* FAERS Dialog Content */}
           <div className="mt-4">
             <Tabs value={selectedFaersTab} onValueChange={setSelectedFaersTab}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="reports" className="flex items-center justify-center">
-                  <Database className="h-4 w-4 mr-2" /> Reports
-                </TabsTrigger>
-                <TabsTrigger value="charts" className="flex items-center justify-center">
-                  <BarChart4 className="h-4 w-4 mr-2" /> Charts
-                </TabsTrigger>
-                <TabsTrigger value="comparisons" className="flex items-center justify-center">
-                  <AlertCircle className="h-4 w-4 mr-2" /> Comparative Analysis
-                </TabsTrigger>
+              <TabsList className="mb-4">
+                <TabsTrigger value="reports">Reports</TabsTrigger>
+                <TabsTrigger value="charts">Demographics</TabsTrigger>
+                <TabsTrigger value="comparisons">Comparisons</TabsTrigger>
               </TabsList>
               
-              <TabsContent value={selectedFaersTab} className="mt-4">
+              <TabsContent value={selectedFaersTab}>
                 {isFaersLoading ? (
-                  <div className="flex justify-center items-center p-8">
-                    <div className="flex flex-col items-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-                      <p className="text-gray-500">Loading FAERS data...</p>
-                    </div>
+                  <div className="flex justify-center py-12">
+                    <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
                   </div>
                 ) : faersError ? (
-                  <div className="p-4 rounded-md bg-red-50 text-red-700 mb-4">
-                    <div className="flex items-center mb-2">
-                      <AlertCircle className="h-5 w-5 mr-2" />
-                      <h4 className="text-sm font-medium">Error loading FAERS data</h4>
-                    </div>
-                    <p className="text-sm">{faersError.toString()}</p>
+                  <div className="text-center py-12">
+                    <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-lg font-medium">Error retrieving FAERS data</p>
+                    <p className="text-gray-500 mt-2">{faersError.message || 'An unexpected error occurred'}</p>
                   </div>
                 ) : (
                   renderFaersModalContent()
@@ -670,39 +367,32 @@ const CerGeneratorPage = () => {
             </Tabs>
           </div>
           
-          {/* Export Actions */}
-          <div className="mt-6 flex flex-col space-y-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-medium">Export & Integration Options</h4>
-                <p className="text-xs text-gray-500">Include FAERS data in your CER</p>
-              </div>
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" onClick={() => exportToPDF(faersData, productName)}
-                  disabled={exporting || !faersData}>
-                  Export to PDF
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => exportToWord(faersData, productName)}
-                  disabled={exporting || !faersData}>
-                  Export to Word
-                </Button>
-                <Button onClick={() => {
-                  integrateWithCER(faersData, cerId, productName);
-                  setShowFaersDialog(false);
-                }} disabled={exporting || !faersData}>
-                  Add to CER
-                </Button>
-              </div>
+          <div className="flex justify-between items-center mt-4 pt-4 border-t">
+            <div className="flex-1">
+              <p className="text-sm text-gray-500">
+                Data sourced from FDA Adverse Event Reporting System (FAERS)
+              </p>
             </div>
-            {exporting && (
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
-                <span>Preparing export...</span>
-              </div>
-            )}
-            {exportError && (
-              <div className="text-sm text-red-500">{exportError.toString()}</div>
-            )}
+            <div className="flex space-x-2">
+              <FaersReportExporter 
+                productName={productName} 
+                data={faersData} 
+                onExport={handleExportCompleted} 
+              />
+              <Button 
+                onClick={() => {
+                  setShowFaersDialog(false);
+                  integrateWithCER(faersData, productName);
+                  toast({
+                    title: 'FAERS Data Integrated',
+                    description: 'Successfully integrated FDA adverse event data with your CER',
+                  });
+                }}
+              >
+                <Database className="h-4 w-4 mr-2" />
+                Integrate with CER
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
