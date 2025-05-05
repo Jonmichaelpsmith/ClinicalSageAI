@@ -396,30 +396,22 @@ export function CerBuilderPanel({ faersData, productName }) {
                   />
                 </div>
                 
-                {isLoadingPreview ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  </div>
-                ) : cerSections.length === 0 ? (
-                  <div className="text-center py-12 border rounded-md bg-muted/20">
-                    <p className="text-lg text-muted-foreground">
-                      No sections added yet. Use the Section Generator to create and add content.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="border rounded-md bg-white">
-                    {/* Use CerPreviewPanel for a consistent preview experience */}
-                    <CerPreviewPanel 
-                      title={cerTitle}
-                      sections={cerSections.map(section => ({
-                        section: section.title,
-                        content: section.content
-                      }))}
-                      faers={faersData?.reports || []}
-                      comparators={faersData?.comparators || []}
-                    />
-                  </div>
-                )}
+                <CerReportPreview 
+                  isLoading={isLoadingPreview}
+                  previewData={{
+                    title: cerTitle,
+                    sections: cerSections,
+                    faersData: faersData,
+                    comparatorData: faersData?.comparators || [],
+                    generatedAt: new Date().toISOString(),
+                    metadata: {
+                      totalSections: cerSections.length,
+                      hasFaersData: Boolean(faersData?.reports?.length > 0),
+                      hasComparatorData: Boolean(faersData?.comparators?.length > 0)
+                    }
+                  }}
+                  productName={productName}
+                />
               </div>
             </TabsContent>
             
