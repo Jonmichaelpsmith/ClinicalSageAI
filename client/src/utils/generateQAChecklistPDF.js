@@ -4,7 +4,6 @@
  * Utility function to generate a downloadable PDF version of the CER QA Checklist
  */
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
 
 /**
  * Generates and downloads a PDF version of the QA Checklist

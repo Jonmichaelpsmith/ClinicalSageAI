@@ -165,8 +165,8 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
         body: JSON.stringify({
           title: cerTitle,
           sections: cerSections,
-          faers: faersData?.reports || [],
-          comparators: faersData?.comparators || [],
+          faers: faers?.reports || [],
+          comparators: faers?.comparators || [],
         }),
       });
       
@@ -206,8 +206,8 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       const exportData = {
         title: cerTitle,
         sections: cerSections,
-        faers: faersData?.reports || [],
-        comparators: faersData?.comparators || [],
+        faers: faers?.reports || [],
+        comparators: faers?.comparators || [],
       };
       
       // Call the appropriate export function based on format
@@ -263,7 +263,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
   // Handle DOCX export using the implemented exportToWord function
   const handleDocxExport = async (exportData) => {
     try {
-      await exportToWord(faersData, productName, {
+      await exportToWord(faers, title.split(':')[1]?.trim() || 'Device/Product', {
         sections: cerSections,
         title: cerTitle
       });
