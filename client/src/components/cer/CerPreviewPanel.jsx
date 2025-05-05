@@ -8,7 +8,10 @@ export default function CerPreviewPanel({
   faers = [], 
   comparators = [],
   complianceData = null,
-  flagThreshold = 70 // Default threshold percentage for flagging sections
+  thresholds = {
+    OVERALL_THRESHOLD: 0.8, // 80% threshold for passing
+    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings/flagging
+  }
 }) {
   // Function to find section compliance data if available
   const getSectionCompliance = (sectionTitle) => {
@@ -21,8 +24,8 @@ export default function CerPreviewPanel({
   // Function to determine border color based on compliance score
   const getBorderColorClass = (score) => {
     if (!score) return '';
-    if (score >= 0.8) return 'border-green-300';
-    if (score >= 0.6) return 'border-amber-300';
+    if (score >= thresholds.OVERALL_THRESHOLD) return 'border-green-300';
+    if (score >= thresholds.FLAG_THRESHOLD) return 'border-amber-300';
     return 'border-red-300';
   };
   
@@ -30,9 +33,9 @@ export default function CerPreviewPanel({
   const getComplianceIcon = (score) => {
     if (!score) return null;
     
-    if (score >= 0.8) {
+    if (score >= thresholds.OVERALL_THRESHOLD) {
       return <CheckCircle className="h-5 w-5 text-green-500" />;
-    } else if (score >= 0.6) {
+    } else if (score >= thresholds.FLAG_THRESHOLD) {
       return <AlertTriangle className="h-5 w-5 text-amber-500" />;
     } else {
       return <AlertCircle className="h-5 w-5 text-red-500" />;
@@ -44,7 +47,7 @@ export default function CerPreviewPanel({
     const sectionCompliance = getSectionCompliance(s.section);
     const complianceScore = sectionCompliance?.averageScore;
     const scorePercent = complianceScore ? Math.round(complianceScore * 100) : null;
-    const isBelowThreshold = scorePercent && scorePercent < flagThreshold;
+    const isBelowThreshold = scorePercent && scorePercent < (thresholds.FLAG_THRESHOLD * 100);
     const complianceBorder = getBorderColorClass(complianceScore);
     const complianceIcon = getComplianceIcon(complianceScore);
     
@@ -65,16 +68,16 @@ export default function CerPreviewPanel({
                 <TooltipTrigger>
                   <div className="flex items-center gap-1">
                     {complianceIcon}
-                    <span className={`text-sm font-medium ${complianceScore >= 0.8 ? 'text-green-600' : complianceScore >= 0.6 ? 'text-amber-600' : 'text-red-600'}`}>
+                    <span className={`text-sm font-medium ${complianceScore >= thresholds.OVERALL_THRESHOLD ? 'text-green-600' : complianceScore >= thresholds.FLAG_THRESHOLD ? 'text-amber-600' : 'text-red-600'}`}>
                       {scorePercent}%
                     </span>
-                    {isBelowThreshold && <span className="text-xs text-red-600 ml-1">(Below {flagThreshold}%)</span>}
+                    {isBelowThreshold && <span className="text-xs text-red-600 ml-1">(Below {Math.round(thresholds.FLAG_THRESHOLD * 100)}%)</span>}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="w-64 p-2">
                   <p className="font-semibold mb-1">Compliance Score</p>
                   {isBelowThreshold && (
-                    <p className="text-xs text-red-600 font-semibold mb-1">This section falls below the {flagThreshold}% threshold and requires attention</p>
+                    <p className="text-xs text-red-600 font-semibold mb-1">This section falls below the {Math.round(thresholds.FLAG_THRESHOLD * 100)}% threshold and requires attention</p>
                   )}
                   {complianceTips.length > 0 && (
                     <div className="mt-1">
