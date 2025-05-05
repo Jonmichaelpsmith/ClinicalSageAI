@@ -28,6 +28,7 @@ import CSRLibraryPage from './pages/CSRLibraryPage'; // Import CSR Library page
 import CMCPage from './pages/CMCPage'; // Import CMC Module page
 import CERPage from './pages/CerPage'; // Import CER Generator page
 import CERV2Page from './pages/CERV2Page'; // Import Advanced CER Generator page
+import CerGeneratorLandingPage from './pages/CerGeneratorLandingPage'; // Import CER Generator Landing page
 import BlueprintPage from './pages/BlueprintPage'; // Import Blueprint Generator page
 import CitationManagerPage from './pages/CitationManagerPage'; // Import Citation Manager page
 import AuditPage from './pages/AuditPage'; // Import Audit Trail page
@@ -139,6 +140,7 @@ function App() {
           <Route path="/cer" component={CERPage} /> {/* CER Generator page route */}
           <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
           <Route path="/cerv2" component={CERV2Page} /> {/* Additional lowercase route for Advanced CER Generator */}
+          <Route path="/cerv2/info" component={CerGeneratorLandingPage} /> {/* CER Generator Landing page with detailed info */}
           <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
           <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
           <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}

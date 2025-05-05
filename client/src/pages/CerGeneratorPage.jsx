@@ -122,8 +122,21 @@ const CerGeneratorPage = () => {
   return (
     <div className="container mx-auto py-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-1">CER Generator</h1>
-        <p className="text-gray-600">AI-powered Clinical Evaluation Report generator with automated workflows</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">CER Generator</h1>
+            <p className="text-gray-600">AI-powered Clinical Evaluation Report generator with automated workflows</p>
+          </div>
+          <div>
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/cerv2/info'}
+              className="text-indigo-600 border-indigo-300 hover:bg-indigo-50"
+            >
+              <Brain className="h-4 w-4 mr-2" /> Learn More About CER Generator
+            </Button>
+          </div>
+        </div>
         
         <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-start">
@@ -139,7 +152,7 @@ const CerGeneratorPage = () => {
                   <li>Click "Generate CER" to create your report</li>
                 </ol>
               </div>
-              <div className="mt-3">
+              <div className="mt-3 flex space-x-3">
                 <Button 
                   onClick={() => {
                     setActiveTab('generator');
@@ -153,6 +166,13 @@ const CerGeneratorPage = () => {
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Brain className="h-4 w-4 mr-2" /> Start Creating Now
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => window.location.href = '/cerv2/info'}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                >
+                  Learn More
                 </Button>
               </div>
             </div>
