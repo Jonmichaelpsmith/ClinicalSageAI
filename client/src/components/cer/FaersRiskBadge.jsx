@@ -10,7 +10,7 @@ import React from 'react';
  * @param {boolean} props.showTooltip - Whether to show a tooltip on hover
  * @returns {JSX.Element} - Rendered component
  */
-const FaersRiskBadge = ({ riskScore, size = 'md', showLabel = true, showTooltip = false }) => {
+export function FaersRiskBadge({ riskScore, size = 'md', showLabel = true, showTooltip = false }) {
   const riskLevel = getRiskLevel(riskScore);
   const bgColor = getRiskColor(riskLevel);
   
