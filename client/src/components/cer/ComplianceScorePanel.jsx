@@ -19,7 +19,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Info, CheckCircle, XCircle, RefreshCw, Download, FileText } from 'lucide-react';
 
-export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
+export default function ComplianceScorePanel({ 
+  sections, 
+  title = 'Clinical Evaluation Report', 
+  onComplianceChange, 
+  onStatusChange,
+  flagThreshold = 70 // Default threshold percentage for flagging sections
+}) {
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -71,7 +77,12 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
     
     try {
       setExporting(true);
-      const blob = await exportCompliancePDF(complianceData);
+      
+      // Pass configurable thresholds to the export function
+      const blob = await exportCompliancePDF(complianceData, {
+        threshold: 80, // Overall pass threshold
+        flag_threshold: 70 // Section warning threshold
+      });
       
       // Create a download link
       const url = window.URL.createObjectURL(blob);
@@ -236,10 +247,19 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
             <CardContent>
               <Accordion type="single" collapsible>
                 {complianceData.sectionScores?.map((section) => (
-                  <AccordionItem value={section.id} key={section.id}>
+                  <AccordionItem 
+                    value={section.id} 
+                    key={section.id} 
+                    className={Math.round(section.averageScore * 100) < flagThreshold ? 'border border-red-200 bg-red-50 rounded mb-2' : ''}>
+                  
                     <AccordionTrigger className="hover:no-underline">
                       <div className="flex items-center justify-between w-full pr-4">
-                        <span>{section.title}</span>
+                        <span className={`${Math.round(section.averageScore * 100) < flagThreshold ? 'text-red-600 font-semibold' : ''}`}>
+                          {section.title}
+                          {Math.round(section.averageScore * 100) < flagThreshold && 
+                            <span className="inline-block ml-2">⚠️ <span className="text-xs">(Below {flagThreshold}%)</span></span>
+                          }
+                        </span>
                         <span className={`${getScoreColor(section.averageScore)} font-semibold`}>
                           {formatPercent(section.averageScore)}
                         </span>
