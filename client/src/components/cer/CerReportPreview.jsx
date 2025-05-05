@@ -18,7 +18,11 @@ export function CerReportPreview({
   previewData, 
   isLoading = false,
   productName = 'Device',
-  complianceData = null
+  complianceData = null,
+  thresholds = {
+    OVERALL_THRESHOLD: 0.8, // 80% threshold for passing
+    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings
+  }
 }) {
   // Function to find section compliance data if available
   const getSectionCompliance = (sectionTitle) => {
@@ -31,8 +35,8 @@ export function CerReportPreview({
   // Function to determine border color based on compliance score
   const getBorderColorClass = (score) => {
     if (!score && score !== 0) return '';
-    if (score >= 0.8) return 'border-green-300 border-l-4';
-    if (score >= 0.6) return 'border-amber-300 border-l-4';
+    if (score >= thresholds.OVERALL_THRESHOLD) return 'border-green-300 border-l-4';
+    if (score >= thresholds.FLAG_THRESHOLD) return 'border-amber-300 border-l-4';
     return 'border-red-300 border-l-4';
   };
   
@@ -40,9 +44,9 @@ export function CerReportPreview({
   const getComplianceIcon = (score) => {
     if (!score && score !== 0) return null;
     
-    if (score >= 0.8) {
+    if (score >= thresholds.OVERALL_THRESHOLD) {
       return <CheckCircle className="h-5 w-5 text-green-500" />;
-    } else if (score >= 0.6) {
+    } else if (score >= thresholds.FLAG_THRESHOLD) {
       return <AlertTriangle className="h-5 w-5 text-amber-500" />;
     } else {
       return <AlertCircle className="h-5 w-5 text-red-500" />;

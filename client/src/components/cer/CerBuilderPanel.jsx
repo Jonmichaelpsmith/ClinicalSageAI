@@ -42,7 +42,12 @@ import CerPreviewPanel from './CerPreviewPanel';
  * Comprehensive interface for building, previewing, and exporting Clinical Evaluation Reports
  * with integrated FAERS data and AI-generated sections
  */
-export default function CerBuilderPanel({ title, faers, comparators, sections, onTitleChange, onSectionsChange, onFaersChange, onComparatorsChange }) {
+export default function CerBuilderPanel({ title, faers, comparators, sections, onTitleChange, onSectionsChange, onFaersChange, onComparatorsChange, complianceThresholds }) {
+  // Set default compliance thresholds if not provided
+  const thresholds = complianceThresholds || {
+    OVERALL_THRESHOLD: 0.8, // 80% overall compliance required to pass
+    FLAG_THRESHOLD: 0.7,    // 70% section threshold for flagging issues
+  };
   const { toast } = useToast();
   const { exportToPDF, exportToWord } = useExportFAERS();
   
@@ -297,8 +302,8 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       ...exportData,
       complianceData: complianceData,
       compliance_thresholds: {
-        threshold: 80, // Overall pass threshold
-        flag_threshold: 70 // Section warning threshold
+        threshold: thresholds.OVERALL_THRESHOLD * 100, // Convert to percentage (0-100)
+        flag_threshold: thresholds.FLAG_THRESHOLD * 100 // Convert to percentage (0-100)
       }
     };
 
@@ -356,7 +361,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 <AlignLeft className="mr-2 h-4 w-4" />
                 Section Generator
                 {complianceData && (
-                  <span className={`ml-2 px-1.5 py-0.5 text-xs rounded-full ${complianceData.overallScore >= 0.8 ? 'bg-green-100 text-green-700' : complianceData.overallScore >= 0.7 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                  <span className={`ml-2 px-1.5 py-0.5 text-xs rounded-full ${complianceData.overallScore >= thresholds.OVERALL_THRESHOLD ? 'bg-green-100 text-green-700' : complianceData.overallScore >= thresholds.FLAG_THRESHOLD ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                     {Math.round(complianceData.overallScore * 100)}%
                   </span>
                 )}
@@ -370,9 +375,9 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 Report Preview
                 {complianceData && (
                   <span className="ml-2 flex items-center">
-                    {complianceData.overallScore >= 0.8 ? (
+                    {complianceData.overallScore >= thresholds.OVERALL_THRESHOLD ? (
                       <CheckCircle className="h-3 w-3 text-green-500" />
-                    ) : complianceData.overallScore >= 0.7 ? (
+                    ) : complianceData.overallScore >= thresholds.FLAG_THRESHOLD ? (
                       <AlertTriangle className="h-3 w-3 text-amber-500" />
                     ) : (
                       <AlertCircle className="h-3 w-3 text-red-500" />
@@ -385,9 +390,9 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 Export Options
                 {complianceData && complianceData.sectionScores && (
                   <span className="ml-2 flex items-center">
-                    {complianceData.sectionScores.filter(s => s.averageScore < 0.7).length > 0 ? (
+                    {complianceData.sectionScores.filter(s => s.averageScore < thresholds.FLAG_THRESHOLD).length > 0 ? (
                       <Badge variant="outline" className="bg-red-50 text-red-700 text-xs py-0 px-1.5">
-                        {complianceData.sectionScores.filter(s => s.averageScore < 0.7).length} issue{complianceData.sectionScores.filter(s => s.averageScore < 0.7).length !== 1 ? 's' : ''}
+                        {complianceData.sectionScores.filter(s => s.averageScore < thresholds.FLAG_THRESHOLD).length} issue{complianceData.sectionScores.filter(s => s.averageScore < thresholds.FLAG_THRESHOLD).length !== 1 ? 's' : ''}
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="bg-green-50 text-green-700 text-xs py-0 px-1.5">Ready</Badge>
@@ -404,9 +409,9 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 {complianceData && (
                   <div className="flex justify-between items-center mb-4 p-3 border rounded-md bg-muted/20">
                     <div className="flex items-center">
-                      {complianceData.overallScore >= 0.8 ? (
+                      {complianceData.overallScore >= thresholds.OVERALL_THRESHOLD ? (
                         <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                      ) : complianceData.overallScore >= 0.7 ? (
+                      ) : complianceData.overallScore >= thresholds.FLAG_THRESHOLD ? (
                         <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
                       ) : (
                         <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
@@ -421,11 +426,11 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                       </div>
                     </div>
                     <Badge 
-                      className={`${complianceData.overallScore >= 0.8 ? 'bg-green-100 text-green-800' : 
-                        complianceData.overallScore >= 0.7 ? 'bg-amber-100 text-amber-800' : 
+                      className={`${complianceData.overallScore >= thresholds.OVERALL_THRESHOLD ? 'bg-green-100 text-green-800' : 
+                        complianceData.overallScore >= thresholds.FLAG_THRESHOLD ? 'bg-amber-100 text-amber-800' : 
                         'bg-red-100 text-red-800'}`}
                     >
-                      {complianceData.overallScore >= 0.8 ? 'Ready for Review' : 'Needs Attention'}
+                      {complianceData.overallScore >= thresholds.OVERALL_THRESHOLD ? 'Ready for Review' : 'Needs Attention'}
                     </Badge>
                   </div>
                 )}
@@ -589,7 +594,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                       
                       <div className="space-y-2">
                         {complianceData.sectionScores
-                          .filter(section => section.averageScore < 0.7)
+                          .filter(section => section.averageScore < thresholds.FLAG_THRESHOLD)
                           .map((section, index) => (
                             <div 
                               key={index} 
@@ -620,7 +625,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                           ))
                         }
                         
-                        {complianceData.sectionScores.filter(section => section.averageScore < 0.7).length === 0 && (
+                        {complianceData.sectionScores.filter(section => section.averageScore < thresholds.FLAG_THRESHOLD).length === 0 && (
                           <div className="p-2 bg-green-50 border border-green-200 rounded-md">
                             <div className="flex items-center">
                               <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
