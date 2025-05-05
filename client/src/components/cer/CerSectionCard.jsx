@@ -1,133 +1,126 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, AlertTriangle, AlertCircle, Edit2, Trash2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CheckCircle, AlertTriangle, Clock, ChevronRight, Info } from 'lucide-react';
 
 /**
- * CER Section Card Component
- * 
- * Displays a clinical evaluation report section with compliance scoring,
- * following the MASTER DATA MODEL for CERs
+ * CerSectionCard - Represents a section in the Clinical Evaluation Report
+ * based on the Master Data Model structure.
  */
 export default function CerSectionCard({ 
-  section, 
-  thresholds,
-  onEdit,
-  onDelete,
+  title, 
+  description, 
+  status = 'pending', // 'pending', 'in-progress', 'completed', 'non-compliant'
+  compliance = null,  // { score: 0.85, remarks: 'Some issues found...' }
+  lastUpdated = null,
+  onClick,
+  thresholds = {
+    OVERALL_THRESHOLD: 0.8, // 80% threshold for passing
+    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings/flagging
+  }
 }) {
-  // Check if section has compliance issues
-  const isCompliant = section.complianceScore >= thresholds.OVERALL_THRESHOLD;
-  const hasWarnings = !isCompliant && section.complianceScore >= thresholds.FLAG_THRESHOLD;
-  const hasCritical = section.complianceScore < thresholds.FLAG_THRESHOLD;
+  // Format the ISO date string to a readable format
+  const formatDate = (dateStr) => {
+    if (!dateStr) return null;
+    
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric'
+    });
+  };
   
-  // Helper function to get category icon for section type
-  const getCategoryIcon = (sectionType) => {
-    // Icons corresponding to the MASTER DATA MODEL categories
-    switch (sectionType) {
-      case 'device-profile':
-      case 'device-description':
-        return '📌';
-      case 'technical':
-      case 'functional-description':
-        return '⚙️';
-      case 'preclinical':
-      case 'non-clinical':
-        return '🔬';
-      case 'clinical-data':
-      case 'clinical-investigation':
-      case 'literature-analysis':
-        return '🧪';
-      case 'post-market':
-      case 'pms-data':
-      case 'vigilance':
-        return '📈';
-      case 'faers':
-      case 'safety':
-        return '⚠️';
-      case 'benefit-risk':
-        return '⚖️';
-      case 'literature-review':
-      case 'literature-appraisal':
-        return '📚';
-      case 'regulatory':
-      case 'compliance-mapping':
-        return '📊';
-      case 'ai-enhanced':
-        return '🧠';
-      case 'metadata':
-      case 'authorship':
-        return '🧾';
-      case 'conclusion':
-      case 'final-report':
-        return '📤';
+  // Get status-based styling
+  const getStatusBadge = () => {
+    switch (status) {
+      case 'completed':
+        return (
+          <Badge className="bg-green-100 text-green-800 font-medium">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Complete
+          </Badge>
+        );
+      case 'in-progress':
+        return (
+          <Badge className="bg-blue-100 text-blue-800 font-medium">
+            <Clock className="h-3 w-3 mr-1" />
+            In Progress
+          </Badge>
+        );
+      case 'non-compliant':
+        return (
+          <Badge className="bg-red-100 text-red-800 font-medium">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Non-Compliant
+          </Badge>
+        );
       default:
-        return '📄';
+        return (
+          <Badge variant="outline" className="text-gray-500 font-medium">
+            Pending
+          </Badge>
+        );
+    }
+  };
+  
+  // Get border styling based on compliance status
+  const getBorderStyle = () => {
+    if (!compliance) return '';
+    
+    if (compliance.score < thresholds.FLAG_THRESHOLD) {
+      return 'border-red-300';
+    } else if (compliance.score < thresholds.OVERALL_THRESHOLD) {
+      return 'border-amber-300';
+    } else {
+      return 'border-green-300';
     }
   };
   
   return (
-    <Card className={`border-l-4 ${hasCritical ? 'border-l-red-500 bg-red-50/30' : hasWarnings ? 'border-l-amber-500 bg-amber-50/30' : 'border-l-green-500 bg-green-50/30'}`}>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center">
-            <span className="text-2xl mr-2">{getCategoryIcon(section.type)}</span>
-            <div>
-              <CardTitle>{section.title}</CardTitle>
-              <CardDescription>
-                {new Date(section.dateAdded).toLocaleDateString()} - Section ID: {section.id.split('-')[1]}
-              </CardDescription>
-            </div>
+    <Card 
+      className={`transition-all hover:shadow-md ${getBorderStyle()} ${status === 'non-compliant' || (compliance && compliance.score < thresholds.FLAG_THRESHOLD) ? 'bg-red-50' : ''}`}
+      onClick={onClick}
+    >
+      <CardContent className="pt-6">
+        <div className="space-y-3">
+          <div className="flex justify-between items-start">
+            <h3 className="font-medium text-base">{title}</h3>
+            {getStatusBadge()}
           </div>
-          <Badge 
-            className={`${hasCritical ? 'bg-red-100 text-red-800' : hasWarnings ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}
-          >
-            {section.complianceScore ? 
-              `${Math.round(section.complianceScore * 100)}%` : 
-              isCompliant ? 'Compliant' : hasWarnings ? 'Warnings' : 'Issues'}
-          </Badge>
+          
+          <p className="text-sm text-gray-500">{description}</p>
+          
+          {compliance && compliance.score < thresholds.FLAG_THRESHOLD && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center text-xs text-red-600 mt-1">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Below {Math.round(thresholds.FLAG_THRESHOLD * 100)}% compliance threshold
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p className="text-xs">{compliance.remarks}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="prose max-w-none text-sm">
-          <p className="line-clamp-3">{section.content.substring(0, 250)}...</p>
-        </div>
-        
-        {section.complianceIssues && section.complianceIssues.length > 0 && (
-          <div className="mt-4 pt-4 border-t">
-            <h4 className="text-sm font-medium mb-2 flex items-center">
-              {hasCritical ? (
-                <AlertCircle className="h-4 w-4 text-red-500 mr-1" />
-              ) : hasWarnings ? (
-                <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
-              ) : (
-                <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-              )}
-              Compliance Issues
-            </h4>
-            <ul className="space-y-1 text-xs">
-              {section.complianceIssues.slice(0, 2).map((issue, index) => (
-                <li key={index} className={`pl-2 py-1 border-l-2 ${hasCritical ? 'border-l-red-400' : 'border-l-amber-400'}`}>
-                  {issue.description}
-                </li>
-              ))}
-              {section.complianceIssues.length > 2 && (
-                <li className="text-xs text-muted-foreground italic">
-                  +{section.complianceIssues.length - 2} more issues...
-                </li>
-              )}
-            </ul>
-          </div>
-        )}
       </CardContent>
-      <CardFooter className="flex justify-end space-x-2 pt-2">
-        <Button variant="outline" size="sm" onClick={() => onDelete?.(section.id)}>
-          <Trash2 className="h-4 w-4 mr-1" />
-          Remove
-        </Button>
-        <Button size="sm" onClick={() => onEdit?.(section.id)}>
-          <Edit2 className="h-4 w-4 mr-1" />
-          Edit
+      
+      <CardFooter className="py-2 justify-between border-t bg-gray-50">
+        {lastUpdated ? (
+          <span className="text-xs text-gray-500">Updated {formatDate(lastUpdated)}</span>
+        ) : (
+          <span className="text-xs text-gray-500">Not started</span>
+        )}
+        
+        <Button variant="ghost" size="sm" className="h-7 px-2">
+          <span className="text-xs">Open</span>
+          <ChevronRight className="h-3 w-3 ml-1" />
         </Button>
       </CardFooter>
     </Card>
