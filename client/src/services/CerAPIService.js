@@ -166,16 +166,23 @@ export const getComplianceScore = async ({ sections, title, standards = ['EU MDR
 /**
  * Export compliance score results as a PDF report
  * @param {Object} data - The compliance score data to include in the report
+ * @param {Object} options - Optional settings for the export
+ * @param {number} options.threshold - The threshold percentage for overall "Ready for Review" status (default: 80)
+ * @param {number} options.flag_threshold - The threshold percentage for flagging sections (default: 70)
  * @returns {Promise<Blob>} - The PDF report as a Blob
  */
-export const exportCompliancePDF = async (data) => {
+export const exportCompliancePDF = async (data, options = {}) => {
   try {
     const response = await fetch('/api/cer/export-compliance', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ data }),
+      body: JSON.stringify({ 
+        data,
+        threshold: options.threshold || 80,
+        flag_threshold: options.flag_threshold || 70
+      }),
     });
     
     if (!response.ok) {
