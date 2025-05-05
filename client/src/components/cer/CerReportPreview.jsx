@@ -5,8 +5,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, AlertCircle, ShieldCheck, FileClock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { FaersRiskBadge } from './FaersRiskBadge';
-import { FaersDemographicsCharts } from './FaersDemographicsCharts';
-import { FaersComparativeChart } from './FaersComparativeChart';
+import FaersDemographicsCharts from './FaersDemographicsCharts';
+import FaersComparativeChart from './FaersComparativeChart';
 
 /**
  * CER Report Preview Component

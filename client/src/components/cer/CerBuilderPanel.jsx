@@ -260,6 +260,11 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       const data = await response.json();
       setComplianceData(data);
       
+      // Notify parent component about compliance score changes
+      if (onComplianceScoreChange) {
+        onComplianceScoreChange(data.overallScore);
+      }
+      
       toast({
         title: 'Compliance analysis complete',
         description: `Overall compliance score: ${Math.round(data.overallScore * 100)}%`,
