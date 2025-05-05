@@ -17,7 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { InfoCircledIcon, CheckCircledIcon, CrossCircledIcon, ReloadIcon } from '@radix-ui/react-icons';
+import { Info, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 
 export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report' }) {
   const [loading, setLoading] = useState(false);
