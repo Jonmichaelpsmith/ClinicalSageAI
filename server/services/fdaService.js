@@ -4,14 +4,68 @@
  * This service provides automatic data retrieval and processing from the FDA FAERS
  * database for inclusion in Clinical Evaluation Reports (CERs).
  * 
- * It leverages the FDA FAERS Public Dashboard API to fetch adverse event data
- * for medical devices and pharmaceuticals.
+ * Key features:
+ * - Automatic UNII/substance matching using OpenFDA API
+ * - Comprehensive adverse event data extraction and analysis
+ * - Risk scoring and categorization based on event severity
+ * - Comparative analysis with similar substances/products
  */
 
 import axios from 'axios';
 
-// Base URL for FDA FAERS API
-const FDA_API_BASE_URL = 'https://api.fda.gov/drug/event.json';
+// Base URLs for FDA APIs
+const FDA_FAERS_API_URL = 'https://api.fda.gov/drug/event.json';
+const FDA_LABEL_API_URL = 'https://api.fda.gov/drug/label.json';
+
+/**
+ * Resolve a brand name to a UNII code or substance name
+ * for more accurate FAERS data retrieval
+ * 
+ * @param {string} brandName - Brand name to resolve
+ * @returns {Promise<Object>} - Object containing UNII code and substance name
+ */
+async function resolveToUnii(brandName) {
+  try {
+    // Build FDA Label API query to find UNII code and substance name
+    const query = `?search=openfda.brand_name:"${encodeURIComponent(brandName)}"&limit=1`;
+    console.log(`Resolving UNII for ${brandName} using query: ${FDA_LABEL_API_URL}${query}`);
+    
+    // Make the API request
+    const response = await axios.get(`${FDA_LABEL_API_URL}${query}`);
+    
+    // Extract UNII and substance name from response
+    if (response.data && response.data.results && response.data.results.length > 0) {
+      const result = response.data.results[0];
+      const openfda = result.openfda || {};
+      
+      // Get values, handling cases where these might be arrays
+      const unii = Array.isArray(openfda.unii) ? openfda.unii[0] : null;
+      const substanceName = Array.isArray(openfda.substance_name) ? openfda.substance_name[0] : null;
+      const genericName = Array.isArray(openfda.generic_name) ? openfda.generic_name[0] : null;
+      
+      return {
+        unii,
+        substanceName: substanceName || genericName || brandName,
+        matchConfidence: unii && substanceName ? 'high' : 'low'
+      };
+    }
+    
+    // Default return if no matches found
+    return {
+      unii: null,
+      substanceName: brandName,
+      matchConfidence: 'low'
+    };
+    
+  } catch (error) {
+    console.error('Error resolving UNII code:', error.message);
+    return {
+      unii: null,
+      substanceName: brandName,
+      matchConfidence: 'error'
+    };
+  }
+}
 
 /**
  * Fetch adverse event data from FDA FAERS for a specific product

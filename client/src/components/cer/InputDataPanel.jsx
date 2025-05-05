@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Upload, FileText, CheckCircle, AlertCircle, FileType2 } from 'lucide-react';
+import FdaFaersDataPanel from './FdaFaersDataPanel';
 
 export default function InputDataPanel({ jobId }) {
   const [activeTab, setActiveTab] = useState('basic-info');
@@ -122,6 +123,7 @@ export default function InputDataPanel({ jobId }) {
         <TabsList>
           <TabsTrigger value="basic-info">Basic Information</TabsTrigger>
           <TabsTrigger value="clinical-data">Clinical Data</TabsTrigger>
+          <TabsTrigger value="fda-data">FDA FAERS Data</TabsTrigger>
           <TabsTrigger value="risk-assessment">Risk Assessment</TabsTrigger>
           <TabsTrigger value="documents">Supporting Documents</TabsTrigger>
         </TabsList>
@@ -335,6 +337,15 @@ export default function InputDataPanel({ jobId }) {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="fda-data" className="space-y-4">
+          <FdaFaersDataPanel
+            onDataFetched={(faersData) => {
+              console.log('FDA FAERS data fetched:', faersData);
+              // Here we could update the formData with the FAERS data or save it separately
+            }}
+          />
         </TabsContent>
         
         <TabsContent value="risk-assessment" className="space-y-4">

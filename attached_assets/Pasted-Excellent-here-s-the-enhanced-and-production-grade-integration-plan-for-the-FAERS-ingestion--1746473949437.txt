@@ -1,0 +1,183 @@
+Excellent — here's the **enhanced and production-grade integration plan** for the **FAERS ingestion and automation pipeline** in TrialSage’s CER Module. This includes **UNII/substance auto-matching**, **comparative safety charting**, and a **confidence/risk scoring system** derived from FAERS signal severity and prevalence.
+
+---
+
+## ✅ Final Implementation Plan: FAERS CER Auto-Ingestion Engine
+
+### 🎯 GOAL
+
+Autopopulate key CER sections with real-world FDA FAERS safety data, matched to the product's **substance**, **UNII**, and therapeutic class — with AI-assisted comparative intelligence and risk scoring.
+
+---
+
+### 1. **Trigger Mechanism**
+
+When generating a new CER:
+
+* Input: `substance name`, `brand name`, or `UNII code`
+* Trigger: Button click or auto-fetch
+* Action:
+
+  * Search OpenFDA FAERS endpoint
+  * Match to UNII/substance if brand name is ambiguous
+  * Pull structured safety reports
+
+---
+
+### 2. **Auto-Matching to FDA Substance / UNII**
+
+Use this OpenFDA Drug Label API:
+
+```
+GET https://api.fda.gov/drug/label.json?search=openfda.brand_name:"LIPITOR"
+```
+
+Parse and normalize:
+
+* `openfda.substance_name`
+* `openfda.unii`
+* `openfda.generic_name`
+
+**UNII Linkage Logic**:
+If substance match confidence is low → fallback to OpenFDA's UNII → refetch FAERS with UNII instead of brand.
+
+**Helper function**:
+
+```python
+def resolve_to_unii(brand_name: str) -> str:
+    # Use OpenFDA label endpoint to find UNII code
+    ...
+    return unii_code or substance_name
+```
+
+---
+
+### 3. **FAERS Ingestion Service**
+
+Use:
+
+```
+GET https://api.fda.gov/drug/event.json?search=patient.drug.openfda.unii:"12345ABC"&limit=100
+```
+
+Parse:
+
+* Reaction type (MedDRA term)
+* Seriousness flags
+* Outcome type
+* Demographics
+* Date received
+
+**Store structured format**:
+
+```json
+{
+  "substance": "Atorvastatin Calcium",
+  "unii": "123ABC",
+  "reaction": "Myopathy",
+  "serious": true,
+  "death": false,
+  "report_date": "2023-06-01",
+  "age": 62,
+  "sex": "Male"
+}
+```
+
+---
+
+### 4. **Database Model**
+
+New table: `faers_reports` with FK to `cer_id`
+
+```sql
+CREATE TABLE faers_reports (
+  id SERIAL PRIMARY KEY,
+  cer_id UUID REFERENCES cer_reports(id),
+  substance_name TEXT,
+  unii TEXT,
+  reaction TEXT,
+  is_serious BOOLEAN,
+  outcome TEXT,
+  report_date DATE,
+  age INT,
+  sex TEXT
+);
+```
+
+---
+
+### 5. **Comparative Safety Charts**
+
+Use React + Chart.js to display:
+
+* Top 10 adverse events vs. frequency
+* Death/serious outcome rates across related drugs
+* FAERS report volume over time
+
+**Compare**:
+
+* Your product vs. top 3 other substances in same class
+* Auto-identify via ATC code or UNII clusters
+
+Backend endpoint:
+
+```ts
+GET /api/cer/compare-faers?unii=123ABC
+```
+
+---
+
+### 6. **Confidence / Risk Scoring Engine**
+
+Implement logic to calculate:
+
+* **Signal prevalence**: % of reports with severe outcomes
+* **Relative risk vs. class**: z-score or percentile
+* **Event severity index**: weighted by death, hospitalization, life-threatening events
+
+```python
+def compute_risk_score(reports: List[dict]) -> float:
+    weights = {
+        "death": 3.0,
+        "hospitalization": 2.0,
+        "disability": 1.5
+    }
+    total = len(reports)
+    score = sum(weights.get(r['outcome'].lower(), 1) for r in reports if r['serious']) / total
+    return round(score, 2)
+```
+
+Use this score to drive:
+
+* A CER summary "risk confidence score"
+* Color-coded badges: ✅ Safe, ⚠️ Monitor, ❌ High Concern
+
+---
+
+### 7. **Frontend Integration (CER Module)**
+
+**UI Updates**:
+
+* "Import FAERS Data" button
+* UNII/brand matcher confirmation modal
+* Adverse Event Table + “View FAERS Charts”
+* Display Risk Score in Executive Summary
+
+**Sections auto-filled**:
+
+* Post-Market Surveillance
+* Adverse Event Profile
+* Benefit-Risk Conclusion
+
+---
+
+### 8. **Optional Add-ons**
+
+* Allow manual override of UNII match
+* Export raw FAERS data as CSV appendix
+* Integrate MedDRA term mappings for narrative clarity
+* Auto-cite FAERS data source + query timestamp in CER
+
+---
+
+Would you like the **backend ingestion engine (Python)** and **React UI hooks** scaffolded in Canvas next?
