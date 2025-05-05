@@ -390,7 +390,7 @@ export default function CerBuilderPanel({
   // Render the UI
   return (
     <div className="space-y-4">
-      {!hideHeader && 
+      {!hideHeader ? (
       <Card>
         <CardHeader>
           <CardTitle>Clinical Evaluation Report Builder</CardTitle>
