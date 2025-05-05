@@ -1,9 +1,21 @@
 /**
- * INDWizardFixed Page
+ * INDWizardFixed Page - VERSION 5.0 FINAL (May 5, 2025)
  * 
- * Fixed version of the IND Wizard interface with comprehensive AI guidance, project management,
- * and document generation capabilities integrated with DocuShare.
- * (Based on INDWizardAdvanced with fixes for dependencies)
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ * !!  IMPORTANT: THIS IS THE ONLY CORRECT VERSION OF THE IND WIZARD TO USE     !!
+ * !!  DO NOT REVERT TO ANY OTHER VERSION OR IMPLEMENTATIONS                    !!
+ * !!  All other versions have been permanently deleted from the codebase       !!
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *
+ * This is the fixed, stabilized implementation of the IND Wizard with all features:
+ * - Comprehensive project management dashboard
+ * - Full Module 1-5 implementation
+ * - Timeline planning functionality
+ * - Analytics and BI integration
+ * - Document management system integration
+ * 
+ * Unlike previous versions, this implementation does not have React Query dependencies
+ * which caused problems in the application environment.
  */
 
 import React, { useState, useEffect } from 'react';
