@@ -36,7 +36,8 @@ import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import Mo
 import StudyArchitect from './modules/StudyArchitect';
 import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
-import IndWizard from './pages/INDWizardFixed'; // Import the IND Wizard module (fixed implementation)
+// !!! CRITICAL: ONLY USE THE INDWIZARDFIXED IMPLEMENTATION - All other implementations have been deleted !!!
+import IndWizard from './pages/INDWizardFixed'; // FINAL VERSION 5.0 - Only correct implementation of IND Wizard
 import INDFullSolution from './pages/INDFullSolution'; // Import the IND Full Solution page
 // Module page imports for IND Wizard
 import Module1AdminPage from './modules/Module1AdminPage';
@@ -110,12 +111,12 @@ function App() {
           {/* Module Dashboard */}
           <Route path="/dashboard" component={ModuleDashboard} />
 
-          {/* IND Wizard Routes */}
-          <Route path="/ind-wizard" component={IndWizard} />
+          {/* IND Wizard Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
+          <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
           <Route path="/ind-full-solution" component={INDFullSolution} />
           
-          {/* Client Portal IND Wizard Route */}
-          <Route path="/client-portal/ind-wizard" component={IndWizard} />
+          {/* Client Portal IND Wizard Route - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
+          <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
 
           {/* Other Module Pages */}
           <Route path="/cer-generator" component={CERPage} />
@@ -148,14 +149,15 @@ function App() {
           <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
           <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
           
-          {/* IND Wizard - All module routes redirect to the default implementation */}
-          <Route path="/module-1" component={IndWizard} />
-          <Route path="/module-2" component={IndWizard} />
-          <Route path="/module-3" component={IndWizard} />
-          <Route path="/module-4" component={IndWizard} />
-          <Route path="/module-5" component={IndWizard} />
-          <Route path="/ind-wizard/module-3" component={IndWizard} />
-          <Route path="/ind-wizard/module-4" component={IndWizard} />
+          {/* IND Wizard Module Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
+          {/* These direct module routes help users navigate directly to specific IND modules */}
+          <Route path="/module-1" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
+          <Route path="/module-2" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
+          <Route path="/module-3" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
+          <Route path="/module-4" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
+          <Route path="/module-5" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
+          <Route path="/ind-wizard/module-3" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
+          <Route path="/ind-wizard/module-4" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
           
           {/* Analytical Control & Method Management Routes */}
           <Route path="/analytical" component={AnalyticalMethodsStubPage} />
