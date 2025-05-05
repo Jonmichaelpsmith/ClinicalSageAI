@@ -976,13 +976,11 @@ router.post('/preview', async (req, res) => {
   try {
     const { title, sections, faers, comparators } = req.body;
     
-    if (!sections || !Array.isArray(sections) || sections.length === 0) {
-      // Allow preview with just FAERS data
-      if (faers && Array.isArray(faers) && faers.length > 0) {
-        console.log('Generating preview with FAERS data only');
-      } else {
-        return res.status(400).json({ error: 'At least one section is required' });
-      }
+    // Allow preview with just FAERS data
+    if (faers && Array.isArray(faers) && faers.length > 0) {
+      console.log('Generating preview with FAERS data only');
+    } else if (!sections || !Array.isArray(sections) || sections.length === 0) {
+      return res.status(400).json({ error: 'At least one section is required' });
     }
     
     console.log(`Generating HTML preview for ${title || 'unknown product'}`);
