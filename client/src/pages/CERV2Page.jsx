@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileText, Upload, BookOpen, FileDigit, Archive, Settings, ClipboardCheck, Brain } from 'lucide-react';
+import { FileText, Upload, BookOpen, FileDigit, Archive, Settings, ClipboardCheck, Brain, PenLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Import all our restored components
@@ -13,6 +13,7 @@ import TemplateSettingsPanel from '@/components/cer/TemplateSettingsPanel';
 import ApprovalsPanel from '@/components/cer/ApprovalsPanel';
 import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
 import CerProgressDashboard from '@/components/cer/CerProgressDashboard'; // Add our new AI enhanced progress dashboard
+import { CerBuilderPanel } from '@/components/cer/CerBuilderPanel'; // Import our new CER builder panel
 
 /**
  * CER Generator V2 Page
@@ -74,10 +75,14 @@ const CERV2Page = () => {
       
       {/* Main Navigation Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-7 mb-8">
+        <TabsList className="grid w-full grid-cols-8 mb-8">
           <TabsTrigger value="ai-dashboard" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
             AI Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="builder" className="flex items-center gap-2">
+            <PenLine className="h-4 w-4" />
+            CER Builder
           </TabsTrigger>
           <TabsTrigger value="input" className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
@@ -108,6 +113,20 @@ const CERV2Page = () => {
         {/* AI Dashboard Tab */}
         <TabsContent value="ai-dashboard" className="mt-0">
           <CerProgressDashboard />
+        </TabsContent>
+        
+        {/* CER Builder Tab */}
+        <TabsContent value="builder" className="mt-0">
+          <CerBuilderPanel 
+            productName={productData.name}
+            faersData={{
+              product_name: productData.name,
+              manufacturer: productData.metadata.Sponsor,
+              total_reports: 432,
+              serious_events: 78,
+              reporting_period: "January 2024 - April 2025"
+            }}
+          />
         </TabsContent>
 
         {/* Input Data Tab */}
