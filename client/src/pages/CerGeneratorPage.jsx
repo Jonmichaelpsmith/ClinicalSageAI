@@ -3,6 +3,7 @@ import CerProgressDashboard from '../components/cer/CerProgressDashboard';
 import { FaersReportDisplay } from '../components/cer/FaersReportDisplay';
 import { FaersDemographicsCharts } from '../components/cer/FaersDemographicsCharts';
 import { FaersReportExporter } from '../components/cer/FaersReportExporter';
+import { FaersComparativeChart } from '../components/cer/FaersComparativeChart';
 import { useFetchFAERS } from '../hooks/useFetchFAERS';
 import { useExportFAERS } from '../hooks/useExportFAERS';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
