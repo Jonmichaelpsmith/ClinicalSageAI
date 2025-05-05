@@ -1,4 +1,5 @@
 // /client/src/components/SidebarNav.jsx
+import { Link } from "wouter";
 import {
   BrainCircuit,
   BarChart3,
@@ -30,12 +31,12 @@ export default function SidebarNav() {
 
 function NavItem({ icon: Icon, label, href, className }) {
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-blue-50 transition ${className || ''}`}
     >
       <Icon size={16} />
       <span>{label}</span>
-    </a>
+    </Link>
   );
 }

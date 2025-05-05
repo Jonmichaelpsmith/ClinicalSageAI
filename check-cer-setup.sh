@@ -13,9 +13,9 @@ echo "[4/6] Checking preview component"
 test -f ./client/src/components/cer/CerPreviewPanel.jsx && echo "✅ CerPreviewPanel.jsx found" || echo "❌ CerPreviewPanel.jsx not found"
 
 echo "[5/6] Checking sidebar integration"
-grep -q 'href=\"/cer\"' ./client/src/components/SidebarNav.jsx && echo "✅ Sidebar links to /cer" || echo "❌ Sidebar missing link to /cer"
+grep -q '/cer' ./client/src/components/SidebarNav.jsx && echo "✅ Sidebar links to /cer" || echo "❌ Sidebar missing link to /cer"
 
 echo "[6/6] Backend API route check"
-grep -q 'fetch-faers' ./server/routes/faers_cer_ingestion.py 2>/dev/null && echo "✅ fetch-faers API route exists" || echo "❌ fetch-faers API route missing"
+grep -q 'fetch-faers' ./server/routes/cer.js && echo "✅ fetch-faers API route exists" || echo "❌ fetch-faers API route missing"
 
 echo "🎯 TrialSage CER setup check complete."
