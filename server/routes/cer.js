@@ -6,6 +6,9 @@ import * as faersService from '../services/faersService.js';
 // Import enhanced FAERS service
 import { fetchFaersAnalysis } from '../services/enhancedFaersService.js';
 
+// Import compliance score module
+import { complianceScoreHandler } from './cer/complianceScore.js';
+
 // Import PDF generation libraries
 // Note: docx import temporarily commented out to avoid dependency issues
 // import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from 'docx';
@@ -1102,6 +1105,9 @@ router.post('/preview-test', async (req, res) => {
     });
   }
 });
+
+// POST /api/cer/compliance-score - Analyze CER content for regulatory compliance
+router.post('/compliance-score', complianceScoreHandler);
 
 export { router as default };
 
