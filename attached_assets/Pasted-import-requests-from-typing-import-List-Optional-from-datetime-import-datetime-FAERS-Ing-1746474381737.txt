@@ -1,0 +1,94 @@
+import requests
+from typing import List, Optional
+from datetime import datetime
+
+# --- FAERS Ingestion Client ---
+
+class FAERSClient:
+    BASE_EVENT_URL = "https://api.fda.gov/drug/event.json"
+    BASE_LABEL_URL = "https://api.fda.gov/drug/label.json"
+
+    def __init__(self):
+        pass
+
+    def resolve_to_unii(self, brand_name: str) -> Optional[str]:
+        params = {"search": f"openfda.brand_name:\"{brand_name}\"", "limit": 1}
+        response = requests.get(self.BASE_LABEL_URL, params=params)
+        if response.status_code == 200:
+            results = response.json().get("results", [])
+            if results:
+                openfda_data = results[0].get("openfda", {})
+                return openfda_data.get("unii", [None])[0]
+        return None
+
+    def fetch_faers_data_by_unii(self, unii: str, limit: int = 100) -> List[dict]:
+        params = {"search": f"patient.drug.openfda.unii:\"{unii}\"", "limit": limit}
+        response = requests.get(self.BASE_EVENT_URL, params=params)
+        if response.status_code != 200:
+            raise Exception(f"FAERS fetch failed: {response.text}")
+
+        results = response.json().get("results", [])
+        parsed_results = []
+        for entry in results:
+            patient = entry.get("patient", {})
+            reactions = patient.get("reaction", [])
+            drugs = patient.get("drug", [])
+            demographics = {
+                "age": patient.get("patientonsetage"),
+                "sex": patient.get("patientsex")
+            }
+            for reaction in reactions:
+                parsed_results.append({
+                    "substance": drugs[0].get("medicinalproduct", "Unknown") if drugs else "Unknown",
+                    "unii": unii,
+                    "reaction": reaction.get("reactionmeddrapt"),
+                    "is_serious": entry.get("serious") == 1,
+                    "outcome": entry.get("seriousnessdeath") and "Death" or "Non-Death",
+                    "report_date": entry.get("receivedate"),
+                    "age": demographics.get("age"),
+                    "sex": demographics.get("sex")
+                })
+        return parsed_results
+
+    def compute_risk_score(self, reports: List[dict]) -> float:
+        weights = {
+            "Death": 3.0,
+            "Hospitalization": 2.0,
+            "Disability": 1.5
+        }
+        if not reports:
+            return 0.0
+        score = sum(weights.get(r['outcome'], 1.0) for r in reports if r['is_serious'])
+        return round(score / len(reports), 2)
+
+# --- Example Usage ---
+
+if __name__ == "__main__":
+    client = FAERSClient()
+    product_name = "Lipitor"
+    unii = client.resolve_to_unii(product_name)
+    if unii:
+        reports = client.fetch_faers_data_by_unii(unii)
+        score = client.compute_risk_score(reports)
+        print(f"FAERS Reports for {product_name} (UNII: {unii}): {len(reports)}")
+        print(f"Risk Score: {score}")
+        for r in reports[:5]:
+            print(r)
+    else:
+        print(f"Could not resolve UNII for {product_name}")
+
+# --- React Integration Notes ---
+
+# Frontend Workflow:
+# 1. Button: "Import from FAERS"
+# 2. Trigger API: POST /api/cer/fetch-faers { productName, cerId }
+# 3. Display:
+#    - Table of parsed adverse events
+#    - Risk score badge (Safe / Monitor / High Concern)
+#    - Comparative bar chart (Top AE types vs similar drugs)
+# 4. User can confirm inclusion of data into CER
+
+# To implement next:
+# - Express route to wrap this service
+# - PostgreSQL model for faers_reports
+# - React hook to trigger and consume data
