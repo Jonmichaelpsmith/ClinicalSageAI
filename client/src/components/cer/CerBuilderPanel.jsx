@@ -401,16 +401,16 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   previewData={{
                     title: cerTitle,
                     sections: cerSections,
-                    faersData: faersData,
-                    comparatorData: faersData?.comparators || [],
+                    faersData: faers,
+                    comparatorData: faers?.comparators || [],
                     generatedAt: new Date().toISOString(),
                     metadata: {
                       totalSections: cerSections.length,
-                      hasFaersData: Boolean(faersData?.reports?.length > 0),
-                      hasComparatorData: Boolean(faersData?.comparators?.length > 0)
+                      hasFaersData: Boolean(faers?.reports?.length > 0),
+                      hasComparatorData: Boolean(faers?.comparators?.length > 0)
                     }
                   }}
-                  productName={productName}
+                  productName={title.split(':')[1]?.trim() || 'Device/Product'}
                 />
               </div>
             </TabsContent>
@@ -490,11 +490,11 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   <ul className="list-disc list-inside pl-4 mt-2">
                     <li>Report title and metadata</li>
                     <li>All generated sections ({cerSections.length} added)</li>
-                    {faersData && (
+                    {faers && (
                       <>
-                        <li>FAERS safety analysis ({faersData.totalReports || 0} reports)</li>
-                        {faersData.comparators && faersData.comparators.length > 0 && (
-                          <li>Comparator analysis ({faersData.comparators.length} products)</li>
+                        <li>FAERS safety analysis ({faers.totalReports || 0} reports)</li>
+                        {faers.comparators && faers.comparators.length > 0 && (
+                          <li>Comparator analysis ({faers.comparators.length} products)</li>
                         )}
                       </>
                     )}
