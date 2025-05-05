@@ -41,7 +41,7 @@ import CerPreviewPanel from './CerPreviewPanel';
  * Comprehensive interface for building, previewing, and exporting Clinical Evaluation Reports
  * with integrated FAERS data and AI-generated sections
  */
-export function CerBuilderPanel({ faersData, productName }) {
+export default function CerBuilderPanel({ title, faers, comparators, sections, onTitleChange, onSectionsChange, onFaersChange, onComparatorsChange }) {
   const { toast } = useToast();
   const { exportToPDF, exportToWord } = useExportFAERS();
   
