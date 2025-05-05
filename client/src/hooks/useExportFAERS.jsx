@@ -13,9 +13,10 @@ export function useExportFAERS() {
    * 
    * @param {Object} faersData - The FAERS data to export
    * @param {string} productName - Name of the product for the report title
+   * @param {Object} options - Export options for customizing the document
    * @returns {Promise} - Promise resolving to the exported file info
    */
-  const exportToPDF = async (faersData, productName) => {
+  const exportToPDF = async (faersData, productName, options = {}) => {
     if (!faersData) {
       throw new Error('No FAERS data available for export');
     }
@@ -24,18 +25,49 @@ export function useExportFAERS() {
       setExporting(true);
       setExportError(null);
       
-      // In a real implementation, this would make an API call to generate the PDF
-      // For demo purposes, we simulate the export process
       console.log(`Exporting FAERS data for ${productName} to PDF`, faersData);
       
-      // Simulate an API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Prepare data for the API call
+      const exportData = {
+        title: `FAERS Safety Analysis: ${productName}`,
+        faers: faersData.reports || [],
+        comparators: faersData.comparators || []
+      };
       
-      // Return simulated result
+      // Call the real PDF export endpoint
+      const response = await fetch('/api/cer/export-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(exportData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`PDF export failed: ${response.statusText}`);
+      }
+      
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Create a download link and click it
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `faers_report_${productName.replace(/\s+/g, '_').toLowerCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      // Return success result
       return {
         success: true,
-        fileName: `faers_report_${productName.replace(/\s+/g, '_').toLowerCase()}.pdf`,
-        fileSize: '452KB',
+        fileName: a.download,
+        fileSize: `${Math.round(blob.size / 1024)}KB`,
         timestamp: new Date().toISOString()
       };
       
