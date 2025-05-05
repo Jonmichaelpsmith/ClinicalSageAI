@@ -1,0 +1,133 @@
+ComplianceScorePanel.jsx
+Paste into: /client/src/components/cer/ComplianceScorePanel.jsx
+
+jsx
+Copy
+Edit
+import React, { useState } from 'react';
+import axios from 'axios';
+
+export default function ComplianceScorePanel({ sections = [], flagThreshold = 70 }) {
+  const [scores, setScores] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const runComplianceCheck = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await axios.post('/api/cer/compliance-score', { sections });
+      setScores(res.data);
+    } catch (err) {
+      setError('Failed to evaluate compliance.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportPDF = async () => {
+    try {
+      const res = await axios.post(
+        '/api/cer/export-compliance',
+        {
+          data: scores,
+          threshold: 80,
+          flag_threshold: flagThreshold,
+        },
+        { responseType: 'blob' }
+      );
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'compliance_scorecard.pdf');
+      document.body.appendChild(link);
+      link.click();
+    } catch (err) {
+      alert('Export failed.');
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold mb-4">📋 Compliance Scorecard</h2>
+      <button
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        onClick={runComplianceCheck}
+        disabled={loading}
+      >
+        {loading ? 'Scoring…' : 'Run Compliance Check'}
+      </button>
+
+      {scores && (
+        <>
+          <div className="mt-4 mb-2 text-xl">
+            Overall Score: <span className="font-bold">{scores.overallScore}%</span>
+          </div>
+          <table className="w-full border mt-2">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="p-2 text-left">Section</th>
+                <th className="p-2 text-left">Score</th>
+                <th className="p-2 text-left">Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scores.breakdown.map((sec, i) => (
+                <tr
+                  key={i}
+                  className={
+                    sec.score < flagThreshold ? 'bg-red-50 text-red-800 font-semibold' : 'bg-white'
+                  }
+                >
+                  <td className="p-2">{sec.score < flagThreshold ? `⚠️ ${sec.section}` : sec.section}</td>
+                  <td className="p-2">{sec.score}%</td>
+                  <td className="p-2">{sec.comment}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <button
+            className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+            onClick={exportPDF}
+          >
+            Download Compliance Report (PDF)
+          </button>
+        </>
+      )}
+
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+    </div>
+  );
+}
+You now have a professional live UI that matches your backend logic:
+
+Live flagging of weak sections
+
+Visual score breakdown
+
+Real-time PDF export
+
+Accurate thresholds and warnings
+
+Next step: Integrate this into the unified CERV2Page.jsx state and apply across all tabs. Shall I proceed?
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+Create image
+
+
+
+ChatGPT can make mista

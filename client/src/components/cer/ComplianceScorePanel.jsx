@@ -24,7 +24,10 @@ export default function ComplianceScorePanel({
   title = 'Clinical Evaluation Report', 
   onComplianceChange, 
   onStatusChange,
-  flagThreshold = 70 // Default threshold percentage for flagging sections
+  thresholds = {
+    OVERALL_THRESHOLD: 0.8, // 80% threshold for passing
+    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings/flagging
+  }
 }) {
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -39,7 +42,7 @@ export default function ComplianceScorePanel({
       onComplianceChange(complianceData);
       
       // Update status based on score if callback provided
-      if (onStatusChange && complianceData.overallScore >= 0.8) {
+      if (onStatusChange && complianceData.overallScore >= thresholds.OVERALL_THRESHOLD) {
         onStatusChange('ready-for-review');
       }
     }
@@ -80,8 +83,8 @@ export default function ComplianceScorePanel({
       
       // Pass configurable thresholds to the export function
       const blob = await exportCompliancePDF(complianceData, {
-        threshold: 80, // Overall pass threshold
-        flag_threshold: 70 // Section warning threshold
+        threshold: thresholds.OVERALL_THRESHOLD * 100, // Overall pass threshold
+        flag_threshold: thresholds.FLAG_THRESHOLD * 100 // Section warning threshold
       });
       
       // Create a download link
@@ -103,15 +106,15 @@ export default function ComplianceScorePanel({
   
   // Get score color based on value
   const getScoreColor = (score) => {
-    if (score >= 0.8) return 'text-green-600';
-    if (score >= 0.6) return 'text-yellow-600';
+    if (score >= thresholds.OVERALL_THRESHOLD) return 'text-green-600';
+    if (score >= thresholds.FLAG_THRESHOLD) return 'text-yellow-600';
     return 'text-red-600';
   };
   
   // Get badge color based on score
   const getBadgeVariant = (score) => {
-    if (score >= 0.8) return 'success';
-    if (score >= 0.6) return 'warning';
+    if (score >= thresholds.OVERALL_THRESHOLD) return 'success';
+    if (score >= thresholds.FLAG_THRESHOLD) return 'warning';
     return 'destructive';
   };
   
@@ -225,7 +228,7 @@ export default function ComplianceScorePanel({
                   <div className="text-2xl font-bold mb-2 flex items-center gap-2">
                     {formatPercent(data.score)}
                     <Badge variant={getBadgeVariant(data.score)} className="text-xs">
-                      {data.score >= 0.8 ? 'Pass' : data.score >= 0.6 ? 'Needs Improvement' : 'Non-compliant'}
+                      {data.score >= thresholds.OVERALL_THRESHOLD ? 'Pass' : data.score >= thresholds.FLAG_THRESHOLD ? 'Needs Improvement' : 'Non-compliant'}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -250,14 +253,14 @@ export default function ComplianceScorePanel({
                   <AccordionItem 
                     value={section.id} 
                     key={section.id} 
-                    className={Math.round(section.averageScore * 100) < flagThreshold ? 'border border-red-200 bg-red-50 rounded mb-2' : ''}>
+                    className={Math.round(section.averageScore * 100) < (thresholds.FLAG_THRESHOLD * 100) ? 'border border-red-200 bg-red-50 rounded mb-2' : ''}>
                   
                     <AccordionTrigger className="hover:no-underline">
                       <div className="flex items-center justify-between w-full pr-4">
-                        <span className={`${Math.round(section.averageScore * 100) < flagThreshold ? 'text-red-600 font-semibold' : ''}`}>
+                        <span className={`${Math.round(section.averageScore * 100) < (thresholds.FLAG_THRESHOLD * 100) ? 'text-red-600 font-semibold' : ''}`}>
                           {section.title}
-                          {Math.round(section.averageScore * 100) < flagThreshold && 
-                            <span className="inline-block ml-2">⚠️ <span className="text-xs">(Below {flagThreshold}%)</span></span>
+                          {Math.round(section.averageScore * 100) < (thresholds.FLAG_THRESHOLD * 100) && 
+                            <span className="inline-block ml-2">⚠️ <span className="text-xs">(Below {Math.round(thresholds.FLAG_THRESHOLD * 100)}%)</span></span>
                           }
                         </span>
                         <span className={`${getScoreColor(section.averageScore)} font-semibold`}>

@@ -150,7 +150,7 @@ export function CerReportPreview({
                       <Tooltip>
                         <TooltipTrigger className="flex items-center gap-1 px-2 py-1 rounded bg-muted/30">
                           {complianceIcon}
-                          <span className={`text-sm font-medium ${complianceScore >= 0.8 ? 'text-green-600' : complianceScore >= 0.6 ? 'text-amber-600' : 'text-red-600'}`}>
+                          <span className={`text-sm font-medium ${complianceScore >= thresholds.OVERALL_THRESHOLD ? 'text-green-600' : complianceScore >= thresholds.FLAG_THRESHOLD ? 'text-amber-600' : 'text-red-600'}`}>
                             {Math.round(complianceScore * 100)}%
                           </span>
                         </TooltipTrigger>
@@ -158,7 +158,7 @@ export function CerReportPreview({
                           <p className="font-bold">
                             Compliance Score: {Math.round(complianceScore * 100)}%
                           </p>
-                          {complianceScore < 0.7 && (
+                          {complianceScore < thresholds.FLAG_THRESHOLD && (
                             <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded-md">
                               <p className="text-sm font-medium text-red-700 flex items-center">
                                 <AlertCircle className="h-4 w-4 mr-1" /> 
@@ -193,7 +193,7 @@ export function CerReportPreview({
               )}
             </CardHeader>
             <CardContent className="pt-6">
-              {complianceScore !== undefined && complianceScore < 0.7 && (
+              {complianceScore !== undefined && complianceScore < thresholds.FLAG_THRESHOLD && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
                   <div className="flex items-start">
                     <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2" />
