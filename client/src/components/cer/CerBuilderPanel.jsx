@@ -57,6 +57,8 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
   const [previewData, setPreviewData] = useState(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [complianceData, setComplianceData] = useState(null);
+  const [isRunningCompliance, setIsRunningCompliance] = useState(false);
   
   // Section type options
   const sectionTypes = [
@@ -177,6 +179,11 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       
       const data = await response.json();
       setPreviewData(data);
+      
+      // Automatically run compliance analysis if we have sections
+      if (cerSections.length > 0) {
+        runComplianceAnalysis();
+      }
     } catch (error) {
       console.error('Error fetching preview:', error);
       toast({
@@ -186,6 +193,55 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       });
     } finally {
       setIsLoadingPreview(false);
+    }
+  };
+  
+  // Run compliance analysis against regulatory standards
+  const runComplianceAnalysis = async () => {
+    if (cerSections.length === 0) {
+      toast({
+        title: 'No content to analyze',
+        description: 'Please add at least one section to your report before running compliance analysis.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsRunningCompliance(true);
+    
+    try {
+      const response = await fetch('/api/cer/compliance-score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: cerTitle,
+          sections: cerSections.map(s => ({ title: s.title, content: s.content })),
+          standards: ['EU MDR', 'ISO 14155', 'FDA']
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setComplianceData(data);
+      
+      toast({
+        title: 'Compliance analysis complete',
+        description: `Overall compliance score: ${Math.round(data.overallScore * 100)}%`,
+      });
+    } catch (error) {
+      console.error('Error analyzing compliance:', error);
+      toast({
+        title: 'Analysis failed',
+        description: error.message || 'Failed to analyze compliance. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRunningCompliance(false);
     }
   };
   
@@ -236,12 +292,22 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
   
   // Handle PDF export
   const handlePdfExport = async (exportData) => {
+    // Add compliance data to export if available
+    const exportPayload = {
+      ...exportData,
+      complianceData: complianceData,
+      compliance_thresholds: {
+        threshold: 80, // Overall pass threshold
+        flag_threshold: 70 // Section warning threshold
+      }
+    };
+
     const response = await fetch('/api/cer/export-pdf', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(exportData),
+      body: JSON.stringify(exportPayload),
     });
     
     if (!response.ok) {
@@ -254,7 +320,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    a.download = `cer_${productName.replace(/\s+/g, '_').toLowerCase()}.pdf`;
+    a.download = `cer_${title.split(':')[1]?.trim() || 'device'}.pdf`.replace(/\s+/g, '_').toLowerCase();
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -438,7 +504,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 </div>
                 
                 <CerReportPreview 
-                  isLoading={isLoadingPreview}
+                  isLoading={isLoadingPreview || isRunningCompliance}
                   previewData={{
                     title: cerTitle,
                     sections: cerSections,
@@ -452,7 +518,38 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     }
                   }}
                   productName={title.split(':')[1]?.trim() || 'Device/Product'}
+                  complianceData={complianceData}
                 />
+                
+                {/* Compliance Check Button */}
+                {cerSections.length > 0 && !isRunningCompliance && (
+                  <div className="flex justify-end mt-4">
+                    <Button 
+                      onClick={runComplianceAnalysis}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      disabled={isRunningCompliance}
+                    >
+                      {isRunningCompliance ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Analyzing Compliance...
+                        </>
+                      ) : (
+                        <>Run Compliance Check</>
+                      )}
+                    </Button>
+                  </div>
+                )}
+                
+                {isRunningCompliance && (
+                  <div className="mt-4 p-4 border rounded-md bg-muted/30">
+                    <div className="flex items-center">
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                      <p>Analyzing regulatory compliance against EU MDR, FDA, and ISO 14155 standards...</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
             
@@ -531,6 +628,12 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   <ul className="list-disc list-inside pl-4 mt-2">
                     <li>Report title and metadata</li>
                     <li>All generated sections ({cerSections.length} added)</li>
+                    {complianceData && (
+                      <li className="flex items-center text-green-600">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Regulatory compliance analysis ({Math.round(complianceData.overallScore * 100)}% overall score)
+                      </li>
+                    )}
                     {faers && (
                       <>
                         <li>FAERS safety analysis ({faers.totalReports || 0} reports)</li>
@@ -541,6 +644,33 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     )}
                   </ul>
                 </div>
+                
+                {/* Compliance Export Information */}
+                {complianceData ? (
+                  <div className="p-3 mt-2 border border-green-200 bg-green-50 rounded-md">
+                    <div className="flex items-start">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 mr-2" />
+                      <div>
+                        <p className="text-sm font-medium text-green-800">Compliance data will be included in the export</p>
+                        <p className="text-xs text-green-700 mt-1">
+                          The PDF will include visual indicators for sections below compliance thresholds, color coding, and regulatory guidance.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 mt-2 border border-amber-200 bg-amber-50 rounded-md">
+                    <div className="flex items-start">
+                      <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 mr-2" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-800">Compliance data not available</p>
+                        <p className="text-xs text-amber-700 mt-1">
+                          For regulatory compliance indicators in your export, please run the compliance check in the Preview tab first.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
