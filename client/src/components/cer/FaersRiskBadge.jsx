@@ -1,84 +1,68 @@
 import React from 'react';
+import { AlertCircle, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
 /**
- * Component for showing risk level as a color-coded badge with optional tooltip
+ * FAERS Risk Badge Component
  * 
- * @param {Object} props - Component props
- * @param {number} props.riskScore - Risk score (typically 0-3 range)
- * @param {string} props.size - Badge size (sm, md, lg)
- * @param {boolean} props.showLabel - Whether to show the risk level label
- * @param {boolean} props.showTooltip - Whether to show a tooltip on hover
- * @returns {JSX.Element} - Rendered component
+ * Displays a visual indicator of the risk level associated with a product
+ * based on FAERS adverse event data analysis
  */
-export function FaersRiskBadge({ riskScore, size = 'md', showLabel = true, showTooltip = false }) {
-  const riskLevel = getRiskLevel(riskScore);
-  const bgColor = getRiskColor(riskLevel);
-  
-  // Size classes
-  const sizeClasses = {
-    sm: 'h-4 w-4 text-xs',
-    md: 'h-6 w-6 text-sm',
-    lg: 'h-8 w-8 text-base'
+export function FaersRiskBadge({ riskLevel = 'medium', score = 3.0 }) {
+  // Define colors and icons based on risk level
+  const getConfig = () => {
+    switch (riskLevel.toLowerCase()) {
+      case 'low':
+        return {
+          bgColor: 'bg-green-100',
+          textColor: 'text-green-800',
+          borderColor: 'border-green-200',
+          icon: <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />,
+          label: 'Low Risk',
+        };
+      case 'medium':
+        return {
+          bgColor: 'bg-yellow-100',
+          textColor: 'text-yellow-800',
+          borderColor: 'border-yellow-200',
+          icon: <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2" />,
+          label: 'Medium Risk',
+        };
+      case 'high':
+        return {
+          bgColor: 'bg-orange-100',
+          textColor: 'text-orange-800',
+          borderColor: 'border-orange-200',
+          icon: <AlertCircle className="h-5 w-5 text-orange-500 mr-2" />,
+          label: 'High Risk',
+        };
+      case 'critical':
+        return {
+          bgColor: 'bg-red-100',
+          textColor: 'text-red-800',
+          borderColor: 'border-red-200',
+          icon: <XCircle className="h-5 w-5 text-red-500 mr-2" />,
+          label: 'Critical Risk',
+        };
+      default:
+        return {
+          bgColor: 'bg-blue-100',
+          textColor: 'text-blue-800',
+          borderColor: 'border-blue-200',
+          icon: <AlertTriangle className="h-5 w-5 text-blue-500 mr-2" />,
+          label: 'Unknown Risk',
+        };
+    }
   };
   
-  // Get the appropriate size class
-  const sizeClass = sizeClasses[size] || sizeClasses.md;
-  
-  // Generate tooltip content
-  const tooltipContent = `Risk Score: ${riskScore.toFixed(2)} - ${riskLevel} Risk`;
+  const config = getConfig();
   
   return (
-    <div className="flex items-center">
-      <div 
-        className={`rounded-full flex items-center justify-center ${sizeClass} ${bgColor}`}
-        title={showTooltip ? tooltipContent : undefined}
-      >
-        {size !== 'sm' && (
-          <span className="text-white font-bold">
-            {riskScore < 10 ? riskScore.toFixed(1) : Math.round(riskScore)}
-          </span>
-        )}
+    <div className={`flex items-center px-4 py-3 rounded-lg border ${config.bgColor} ${config.borderColor}`}>
+      {config.icon}
+      <div>
+        <div className={`font-semibold ${config.textColor}`}>{config.label}</div>
+        <div className="text-sm text-gray-500">Risk Score: {score.toFixed(1)}</div>
       </div>
-      
-      {showLabel && (
-        <span className="ml-2 text-sm font-medium">{riskLevel}</span>
-      )}
     </div>
   );
-};
-
-/**
- * Determine risk level based on risk score
- * 
- * @param {number} score - Risk score
- * @returns {string} - Risk level label
- */
-function getRiskLevel(score) {
-  if (score < 0.5) return 'Low';
-  if (score < 1.0) return 'Medium';
-  if (score < 1.5) return 'High';
-  return 'Very High';
 }
-
-/**
- * Get the appropriate background color class based on risk level
- * 
- * @param {string} riskLevel - Risk level (Low, Medium, High, Very High)
- * @returns {string} - CSS class for background color
- */
-function getRiskColor(riskLevel) {
-  switch (riskLevel) {
-    case 'Low':
-      return 'bg-green-500';
-    case 'Medium':
-      return 'bg-yellow-500';
-    case 'High':
-      return 'bg-orange-500';
-    case 'Very High':
-      return 'bg-red-500';
-    default:
-      return 'bg-gray-500';
-  }
-}
-
-export default FaersRiskBadge;
