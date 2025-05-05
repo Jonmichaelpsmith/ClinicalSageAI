@@ -2,7 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, AlertCircle, ShieldCheck, FileClock } from 'lucide-react';
+import { Loader2, AlertCircle, ShieldCheck, FileClock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { FaersRiskBadge } from './FaersRiskBadge';
 import { FaersDemographicsCharts } from './FaersDemographicsCharts';
 import { FaersComparativeChart } from './FaersComparativeChart';
@@ -11,13 +12,43 @@ import { FaersComparativeChart } from './FaersComparativeChart';
  * CER Report Preview Component
  * 
  * Displays a fully formatted preview of the Clinical Evaluation Report with all sections,
- * FAERS data integration, and regulatory formatting
+ * FAERS data integration, compliance information, and regulatory formatting
  */
 export function CerReportPreview({ 
   previewData, 
   isLoading = false,
-  productName = 'Device'
+  productName = 'Device',
+  complianceData = null
 }) {
+  // Function to find section compliance data if available
+  const getSectionCompliance = (sectionTitle) => {
+    if (!complianceData || !complianceData.sectionScores) return null;
+    
+    return complianceData.sectionScores.find(section => 
+      section.title.toLowerCase() === sectionTitle.toLowerCase());
+  };
+  
+  // Function to determine border color based on compliance score
+  const getBorderColorClass = (score) => {
+    if (!score && score !== 0) return '';
+    if (score >= 0.8) return 'border-green-300 border-l-4';
+    if (score >= 0.6) return 'border-amber-300 border-l-4';
+    return 'border-red-300 border-l-4';
+  };
+  
+  // Function to get compliance icon
+  const getComplianceIcon = (score) => {
+    if (!score && score !== 0) return null;
+    
+    if (score >= 0.8) {
+      return <CheckCircle className="h-5 w-5 text-green-500" />;
+    } else if (score >= 0.6) {
+      return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+    } else {
+      return <AlertCircle className="h-5 w-5 text-red-500" />;
+    }
+  };
+  
   if (isLoading) {
     return <CerReportSkeleton />;
   }
@@ -89,32 +120,109 @@ export function CerReportPreview({
       </Card>
       
       {/* Report Sections */}
-      {sections?.map((section, index) => (
-        <Card key={section.id || index} id={`section-${index}`} className="overflow-hidden">
-          <CardHeader className="bg-muted/30">
-            <div className="flex justify-between items-start">
-              <CardTitle>{section.title || 'Untitled Section'}</CardTitle>
-              <Badge variant="outline">
-                Section {index + 1}
-              </Badge>
-            </div>
-            {section.description && (
-              <CardDescription>{section.description}</CardDescription>
-            )}
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="prose max-w-none dark:prose-invert">
-              {section.content ? (
-                section.content.split('\n').map((paragraph, idx) => (
-                  <p key={idx}>{paragraph}</p>
-                ))
-              ) : (
-                <p className="text-muted-foreground italic">No content available for this section.</p>
+      {sections?.map((section, index) => {
+        const sectionCompliance = getSectionCompliance(section.title || `Section ${index + 1}`);
+        const complianceScore = sectionCompliance?.averageScore;
+        const complianceBorder = getBorderColorClass(complianceScore);
+        const complianceIcon = getComplianceIcon(complianceScore);
+        
+        // Get compliance suggestions if available
+        const complianceTips = sectionCompliance ? 
+          Object.entries(sectionCompliance.standards || {}).flatMap(([standardName, data]) => 
+            data.suggestions || []).filter(Boolean) : [];
+        
+        return (
+          <Card 
+            key={section.id || index} 
+            id={`section-${index}`} 
+            className={`overflow-hidden ${complianceBorder}`}
+          >
+            <CardHeader className="bg-muted/30">
+              <div className="flex justify-between items-start">
+                <CardTitle>{section.title || 'Untitled Section'}</CardTitle>
+                <div className="flex items-center gap-2">
+                  {complianceScore !== undefined && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger className="flex items-center gap-1 px-2 py-1 rounded bg-muted/30">
+                          {complianceIcon}
+                          <span className={`text-sm font-medium ${complianceScore >= 0.8 ? 'text-green-600' : complianceScore >= 0.6 ? 'text-amber-600' : 'text-red-600'}`}>
+                            {Math.round(complianceScore * 100)}%
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="w-72 p-3 space-y-2">
+                          <p className="font-bold">
+                            Compliance Score: {Math.round(complianceScore * 100)}%
+                          </p>
+                          {complianceScore < 0.7 && (
+                            <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded-md">
+                              <p className="text-sm font-medium text-red-700 flex items-center">
+                                <AlertCircle className="h-4 w-4 mr-1" /> 
+                                Needs Attention
+                              </p>
+                            </div>
+                          )}
+                          {complianceTips.length > 0 && (
+                            <div className="mt-1">
+                              <p className="text-sm font-medium">Suggestions:</p>
+                              <ul className="text-xs list-disc list-inside">
+                                {complianceTips.slice(0, 3).map((tip, idx) => (
+                                  <li key={idx} className="mt-1">{tip}</li>
+                                ))}
+                                {complianceTips.length > 3 && (
+                                  <li className="text-xs mt-1 text-gray-500">+{complianceTips.length - 3} more suggestions</li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  <Badge variant="outline">
+                    Section {index + 1}
+                  </Badge>
+                </div>
+              </div>
+              {section.description && (
+                <CardDescription>{section.description}</CardDescription>
               )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardHeader>
+            <CardContent className="pt-6">
+              {complianceScore !== undefined && complianceScore < 0.7 && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2" />
+                    <div>
+                      <p className="text-sm font-medium text-red-700">Compliance Issues Detected</p>
+                      <p className="text-xs text-red-600 mt-1">
+                        This section may not meet regulatory requirements. 
+                        {complianceTips.length > 0 && ' See suggestions below:'}
+                      </p>
+                      {complianceTips.length > 0 && (
+                        <ul className="text-xs text-red-600 mt-1 list-disc list-inside">
+                          {complianceTips.slice(0, 2).map((tip, idx) => (
+                            <li key={idx}>{tip}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="prose max-w-none dark:prose-invert">
+                {section.content ? (
+                  section.content.split('\n').map((paragraph, idx) => (
+                    <p key={idx}>{paragraph}</p>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground italic">No content available for this section.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
       
       {/* FAERS Data Section */}
       {faersData && faersData.length > 0 && (
