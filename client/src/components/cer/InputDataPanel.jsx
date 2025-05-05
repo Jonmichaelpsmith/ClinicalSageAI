@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Upload, FileText, CheckCircle, AlertCircle, FileType2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Upload, FileText, CheckCircle, AlertCircle, FileType2, RefreshCw, Database } from 'lucide-react';
 import FdaFaersDataPanel from './FdaFaersDataPanel';
+import FaersRiskBadge from './FaersRiskBadge';
 
 export default function InputDataPanel({ jobId }) {
   const [activeTab, setActiveTab] = useState('basic-info');
@@ -32,6 +34,15 @@ export default function InputDataPanel({ jobId }) {
     riskScore: 65,
     primaryEndpoints: '',
     secondaryEndpoints: ''
+  });
+  
+  // FAERS data state
+  const [faersStatus, setFaersStatus] = useState({
+    loaded: false,
+    severity: null,
+    score: null,
+    reportCount: 0,
+    resolvedName: null
   });
 
   const handleInputChange = (e) => {
@@ -103,6 +114,39 @@ export default function InputDataPanel({ jobId }) {
     // In a real app, we would save the data to the server
     console.log('Saving form data:', formData);
     alert('Device information saved successfully');
+  };
+  
+  /**
+   * Handler for FAERS data updates from the FdaFaersDataPanel
+   */
+  const handleFaersDataUpdate = (faersData) => {
+    if (!faersData) return;
+    
+    // Extract severity assessment from FAERS data if it exists
+    if (faersData.analysis && faersData.analysis.summary) {
+      const { severityAssessment, eventsPerTenThousand, totalReports } = faersData.analysis.summary;
+      
+      setFaersStatus({
+        loaded: true,
+        severity: severityAssessment,
+        score: eventsPerTenThousand,
+        reportCount: totalReports,
+        resolvedName: faersData.resolvedInfo?.substanceName || formData.deviceName
+      });
+    } else if (faersData.totalReports) {
+      // Fallback to raw data if analysis is not available
+      const seriousEventsCount = faersData.seriousEvents?.length || 0;
+      const severityLevel = seriousEventsCount / faersData.totalReports > 0.2 ? 'High' : 
+                            seriousEventsCount / faersData.totalReports > 0.05 ? 'Medium' : 'Low';
+      
+      setFaersStatus({
+        loaded: true,
+        severity: severityLevel,
+        score: null,
+        reportCount: faersData.totalReports,
+        resolvedName: faersData.resolvedInfo?.substanceName || formData.deviceName
+      });
+    }
   };
 
   const getRiskLevelText = (score) => {
@@ -269,8 +313,37 @@ export default function InputDataPanel({ jobId }) {
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end">
-                <Button onClick={saveFormData}>Save Information</Button>
+              {/* FAERS Risk Status */}
+              {faersStatus.loaded && (
+                <div className="mt-6 p-4 border rounded-md bg-slate-50">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium">FDA FAERS Risk Assessment</h4>
+                    <FaersRiskBadge 
+                      severity={faersStatus.severity} 
+                      score={faersStatus.score}
+                    />
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <p>Based on {faersStatus.reportCount} adverse event reports for {faersStatus.resolvedName || formData.deviceName}</p>
+                    <p className="mt-1 text-xs">To view detailed analysis, visit the FDA FAERS Data tab</p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-6 flex justify-between">
+                {!faersStatus.loaded && formData.deviceName && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveTab('fda-data')} 
+                    className="flex items-center"
+                  >
+                    <Database className="mr-2 h-4 w-4" />
+                    Check FDA FAERS Data
+                  </Button>
+                )}
+                <div className="ml-auto">
+                  <Button onClick={saveFormData}>Save Information</Button>
+                </div>
               </div>
             </CardContent>
           </Card>
