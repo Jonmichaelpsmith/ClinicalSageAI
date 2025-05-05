@@ -79,7 +79,26 @@
             display: flex;
             gap: 20px;
             list-style: none;
-            margin-right: 10px;
+            margin-right: 20px;
+        }
+        
+        /* Client Portal Button in Header */
+        .client-portal-button {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .client-portal-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         .nav-item {
@@ -675,9 +694,9 @@
                 <div class="action-buttons">
                     <a href="#" id="open-rfp-modal" class="btn btn-outline">RFP</a>
                     <a href="/demo" class="btn btn-primary">Demo</a>
-                    <a href="/client-portal" class="btn btn-primary">Client Portal</a>
                     <a href="/support" class="btn btn-outline">Support</a>
                 </div>
+                <a href="/client-portal" class="client-portal-button">Client Portal</a>
             </div>
         </div>
     </header>
@@ -689,6 +708,7 @@
             <p class="hero-subtitle">TrialSage™ is a comprehensive AI-powered platform integrating enterprise document management, regulatory submissions, and intelligent workflow automation. Our Microsoft 365-style UI with advanced retention management exceeds industry demands for 21 CFR Part 11 compliance while accelerating submissions by up to 85%.</p>
             
             <div class="hero-buttons">
+                <a href="/client-portal" class="btn btn-primary hero-btn" style="background-color: var(--primary); font-size: 18px; padding: 12px 28px;">Client Portal</a>
                 <a href="/demo" class="btn btn-primary hero-btn">Request Demo</a>
                 <a href="#solutions" class="btn btn-outline hero-btn" style="background-color: transparent; color: white; border-color: white;">Explore Solutions</a>
                 <a href="/security-compliance" class="btn hero-btn" style="background-color: #2C3E50; color: white; border: none; display: flex; align-items: center;">
