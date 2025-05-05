@@ -36,7 +36,7 @@ import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import Mo
 import StudyArchitect from './modules/StudyArchitect';
 import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
 import AnalyticsDashboard from './modules/AnalyticsDashboard';
-import IndWizard from './pages/INDWizardAdvanced'; // Import the IND Wizard module (advanced implementation)
+import IndWizard from './pages/INDWizardFixed'; // Import the IND Wizard module (fixed implementation)
 import INDFullSolution from './pages/INDFullSolution'; // Import the IND Full Solution page
 // Module page imports for IND Wizard
 import Module1AdminPage from './modules/Module1AdminPage';
