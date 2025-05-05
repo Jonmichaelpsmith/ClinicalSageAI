@@ -17,6 +17,9 @@ import axios from 'axios';
 const FDA_FAERS_API_URL = 'https://api.fda.gov/drug/event.json';
 const FDA_LABEL_API_URL = 'https://api.fda.gov/drug/label.json';
 
+// Backup constant for backward compatibility (will be removed in future versions)
+const FDA_API_BASE_URL = FDA_FAERS_API_URL;
+
 /**
  * Resolve a brand name to a UNII code or substance name
  * for more accurate FAERS data retrieval

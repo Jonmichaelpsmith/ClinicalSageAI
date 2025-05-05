@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4 } from 'lucide-react';
+import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4, BarChartHorizontal } from 'lucide-react';
+import FaersRiskBadge from './FaersRiskBadge';
 
 /**
  * FDA FAERS Data Panel Component
@@ -248,15 +249,11 @@ const FdaFaersDataPanel = ({ onDataFetched }) => {
             </CardHeader>
             <CardContent className="flex items-center justify-between">
               <p className="text-2xl font-bold">{summary.severityAssessment}</p>
-              <Badge 
-                className={`
-                  ${summary.severityAssessment === 'Low' ? 'bg-green-500' : ''}
-                  ${summary.severityAssessment === 'Medium' ? 'bg-yellow-500' : ''}
-                  ${summary.severityAssessment === 'High' ? 'bg-red-500' : ''}
-                `}
-              >
-                {summary.severityAssessment}
-              </Badge>
+              <FaersRiskBadge 
+                severity={summary.severityAssessment}
+                score={summary.eventsPerTenThousand}
+                size="lg"
+              />
             </CardContent>
           </Card>
         </div>
