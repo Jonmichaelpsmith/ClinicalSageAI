@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileText, Upload, BookOpen, FileDigit, Archive, Settings, ClipboardCheck } from 'lucide-react';
+import { FileText, Upload, BookOpen, FileDigit, Archive, Settings, ClipboardCheck, Brain } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Import all our restored components
 import InputDataPanel from '@/components/cer/InputDataPanel';
@@ -11,6 +12,7 @@ import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
 import TemplateSettingsPanel from '@/components/cer/TemplateSettingsPanel';
 import ApprovalsPanel from '@/components/cer/ApprovalsPanel';
 import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
+import CerProgressDashboard from '@/components/cer/CerProgressDashboard'; // Add our new AI enhanced progress dashboard
 
 /**
  * CER Generator V2 Page
@@ -19,7 +21,7 @@ import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
  * comprehensive tabs for different aspects of the CER workflow.
  */
 const CERV2Page = () => {
-  const [activeTab, setActiveTab] = useState('input');
+  const [activeTab, setActiveTab] = useState('ai-dashboard');
   const [selectedJobId, setSelectedJobId] = useState('JOB-20250429-001');
   
   // Product data - in production this would come from API or context
@@ -72,7 +74,11 @@ const CERV2Page = () => {
       
       {/* Main Navigation Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6 mb-8">
+        <TabsList className="grid w-full grid-cols-7 mb-8">
+          <TabsTrigger value="ai-dashboard" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            AI Dashboard
+          </TabsTrigger>
           <TabsTrigger value="input" className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
             Input Data
@@ -99,6 +105,11 @@ const CERV2Page = () => {
           </TabsTrigger>
         </TabsList>
         
+        {/* AI Dashboard Tab */}
+        <TabsContent value="ai-dashboard" className="mt-0">
+          <CerProgressDashboard />
+        </TabsContent>
+
         {/* Input Data Tab */}
         <TabsContent value="input" className="mt-0">
           <InputDataPanel />

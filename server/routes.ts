@@ -82,6 +82,9 @@ export default function registerRoutes(app: Express): void {
   // Register IND Wizard API routes
   app.use('/api/ind-wizard', indWizardRouter);
   
+  // Register our enhanced CER routes
+  app.use('/api/cer', cerRouter);
+  
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('API Error:', err);

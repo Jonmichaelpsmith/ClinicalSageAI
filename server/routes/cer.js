@@ -1,5 +1,6 @@
 import express from 'express';
 import { generateMockCER, generateFullCER, getCERReport, analyzeLiteratureWithAI, analyzeAdverseEventsWithAI } from '../services/cerService.js';
+import { fetchFaersData, analyzeFaersDataForCER } from '../services/fdaService.js';
 
 const router = express.Router();
 
@@ -184,6 +185,58 @@ router.post('/analyze/adverse-events', async (req, res) => {
   } catch (error) {
     console.error('Error analyzing adverse events with AI:', error);
     res.status(500).json({ error: 'Failed to analyze adverse events' });
+  }
+});
+
+// GET /api/cer/faers/data - Fetch adverse event data from FDA FAERS database
+router.get('/faers/data', async (req, res) => {
+  try {
+    const { productName, manufacturerName, startDate, endDate, limit } = req.query;
+    
+    if (!productName) {
+      return res.status(400).json({ error: 'Product name is required' });
+    }
+    
+    // Fetch FAERS data
+    const faersData = await fetchFaersData({
+      productName,
+      manufacturerName,
+      startDate,
+      endDate,
+      limit: limit ? parseInt(limit) : 50
+    });
+    
+    res.json(faersData);
+  } catch (error) {
+    console.error('Error fetching FAERS data:', error);
+    res.status(500).json({ error: 'Failed to fetch FAERS data' });
+  }
+});
+
+// GET /api/cer/faers/analysis - Get analyzed FAERS data for CER inclusion
+router.get('/faers/analysis', async (req, res) => {
+  try {
+    const { productName, manufacturerName, startDate, endDate } = req.query;
+    
+    if (!productName) {
+      return res.status(400).json({ error: 'Product name is required' });
+    }
+    
+    // Fetch FAERS data
+    const faersData = await fetchFaersData({
+      productName,
+      manufacturerName,
+      startDate,
+      endDate
+    });
+    
+    // Analyze data for CER inclusion
+    const analysis = analyzeFaersDataForCER(faersData);
+    
+    res.json(analysis);
+  } catch (error) {
+    console.error('Error analyzing FAERS data for CER:', error);
+    res.status(500).json({ error: 'Failed to analyze FAERS data for CER' });
   }
 });
 
