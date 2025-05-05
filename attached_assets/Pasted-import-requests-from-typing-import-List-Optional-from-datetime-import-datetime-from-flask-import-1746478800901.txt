@@ -1,0 +1,185 @@
+import requests
+from typing import List, Optional
+from datetime import datetime
+from flask import Flask, request, jsonify, send_file
+import psycopg2
+import os
+import io
+from docx import Document
+from docx.shared import Inches
+
+# --- FAERS Ingestion Client ---
+
+class FAERSClient:
+    BASE_EVENT_URL = "https://api.fda.gov/drug/event.json"
+    BASE_LABEL_URL = "https://api.fda.gov/drug/label.json"
+
+    def __init__(self):
+        pass
+
+    def resolve_to_unii(self, brand_name: str) -> Optional[str]:
+        params = {"search": f"openfda.brand_name:\"{brand_name}\"", "limit": 1}
+        response = requests.get(self.BASE_LABEL_URL, params=params)
+        if response.status_code == 200:
+            results = response.json().get("results", [])
+            if results:
+                openfda_data = results[0].get("openfda", {})
+                return openfda_data.get("unii", [None])[0]
+        return None
+
+    def resolve_substance_name(self, brand_name: str) -> Optional[str]:
+        params = {"search": f"openfda.brand_name:\"{brand_name}\"", "limit": 1}
+        response = requests.get(self.BASE_LABEL_URL, params=params)
+        if response.status_code == 200:
+            results = response.json().get("results", [])
+            if results:
+                openfda_data = results[0].get("openfda", {})
+                return openfda_data.get("substance_name", [None])[0]
+        return None
+
+    def find_atc_similars(self, brand_name: str) -> List[str]:
+        params = {"search": f"openfda.brand_name:\"{brand_name}\"", "limit": 1}
+        response = requests.get(self.BASE_LABEL_URL, params=params)
+        names = set()
+        if response.status_code == 200:
+            results = response.json().get("results", [])
+            if results:
+                openfda_data = results[0].get("openfda", {})
+                atc_class = openfda_data.get("pharm_class_epc", [])
+                if atc_class:
+                    atc_term = atc_class[0]
+                    comp_params = {"search": f"openfda.pharm_class_epc:\"{atc_term}\"", "limit": 10}
+                    comp_response = requests.get(self.BASE_LABEL_URL, params=comp_params)
+                    if comp_response.status_code == 200:
+                        comp_results = comp_response.json().get("results", [])
+                        for r in comp_results:
+                            for s in r.get("openfda", {}).get("substance_name", []):
+                                names.add(s)
+        return list(names)
+
+    def fetch_faers_data_by_unii(self, unii: str, limit: int = 100) -> List[dict]:
+        params = {"search": f"patient.drug.openfda.unii:\"{unii}\"", "limit": limit}
+        response = requests.get(self.BASE_EVENT_URL, params=params)
+        if response.status_code != 200:
+            raise Exception(f"FAERS fetch failed: {response.text}")
+
+        results = response.json().get("results", [])
+        parsed_results = []
+        for entry in results:
+            patient = entry.get("patient", {})
+            reactions = patient.get("reaction", [])
+            drugs = patient.get("drug", [])
+            demographics = {
+                "age": patient.get("patientonsetage"),
+                "sex": patient.get("patientsex")
+            }
+            for reaction in reactions:
+                parsed_results.append({
+                    "substance": drugs[0].get("medicinalproduct", "Unknown") if drugs else "Unknown",
+                    "unii": unii,
+                    "reaction": reaction.get("reactionmeddrapt"),
+                    "is_serious": entry.get("serious") == 1,
+                    "outcome": entry.get("seriousnessdeath") and "Death" or "Non-Death",
+                    "report_date": entry.get("receivedate"),
+                    "age": demographics.get("age"),
+                    "sex": demographics.get("sex")
+                })
+        return parsed_results
+
+    def compute_risk_score(self, reports: List[dict]) -> float:
+        weights = {
+            "Death": 3.0,
+            "Hospitalization": 2.0,
+            "Disability": 1.5
+        }
+        if not reports:
+            return 0.0
+        score = sum(weights.get(r['outcome'], 1.0) for r in reports if r['is_serious'])
+        return round(score / len(reports), 2)
+
+# --- Flask API Endpoint ---
+
+app = Flask(__name__)
+
+@app.route("/api/cer/fetch-faers", methods=["POST"])
+def fetch_faers():
+    data = request.json
+    product_name = data.get("productName")
+    cer_id = data.get("cerId")
+
+    if not product_name or not cer_id:
+        return jsonify({"error": "Missing productName or cerId"}), 400
+
+    client = FAERSClient()
+    unii = client.resolve_to_unii(product_name)
+    substance = client.resolve_substance_name(product_name)
+    if not unii or not substance:
+        return jsonify({"error": "UNII or substance name not found for product"}), 404
+
+    reports = client.fetch_faers_data_by_unii(unii)
+    score = client.compute_risk_score(reports)
+
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
+    cur = conn.cursor()
+    for r in reports:
+        cur.execute("""
+            INSERT INTO faers_reports
+            (cer_id, substance_name, unii, reaction, is_serious, outcome, report_date, age, sex)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            cer_id, r['substance'], r['unii'], r['reaction'], r['is_serious'],
+            r['outcome'], r['report_date'], r['age'], r['sex']
+        ))
+    conn.commit()
+
+    comparator_names = client.find_atc_similars(product_name)
+    comparators = []
+    for peer in comparator_names:
+        if peer.lower() == substance.lower():
+            continue
+        peer_unii = client.resolve_to_unii(peer)
+        if not peer_unii:
+            continue
+        peer_reports = client.fetch_faers_data_by_unii(peer_unii, limit=50)
+        peer_score = client.compute_risk_score(peer_reports)
+        comparators.append({
+            "comparator": peer,
+            "riskScore": peer_score,
+            "reportCount": len(peer_reports)
+        })
+
+    cur.close()
+    conn.close()
+
+    return jsonify({
+        "riskScore": score,
+        "reportCount": len(reports),
+        "comparators": comparators
+    })
+
+@app.route("/api/cer/export-docx", methods=["POST"])
+def export_cer_to_docx():
+    data = request.json
+    cer_title = data.get("title", "CER Report")
+    faers_summary = data.get("faers", [])
+    comparators = data.get("comparators", [])
+
+    doc = Document()
+    doc.add_heading(cer_title, 0)
+    doc.add_heading("FAERS Safety Summary", level=1)
+
+    for event in faers_summary:
+        doc.add_paragraph(f"Reaction: {event['reaction']}, Outcome: {event['outcome']}, Serious: {'Yes' if event['is_serious'] else 'No'}, Age: {event['age']}, Sex: {event['sex']}, Date: {event['report_date']}")
+
+    doc.add_heading("Comparator Risk Scores", level=1)
+    for comp in comparators:
+        doc.add_paragraph(f"{comp['comparator']} - Risk Score: {comp['riskScore']} (Reports: {comp['reportCount']})")
+
+    output = io.BytesIO()
+    doc.save(output)
+    output.seek(0)
+
+    return send_file(output, as_attachment=True, download_name="cer_report.docx", mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+if __name__ == "__main__":
+    app.run(debug=True)

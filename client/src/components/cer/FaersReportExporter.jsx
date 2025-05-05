@@ -12,6 +12,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FaersRiskBadge } from './FaersRiskBadge';
+import { useExportFAERS } from '../../hooks/useExportFAERS';
 
 /**
  * FAERS Report Export Component
@@ -63,15 +64,14 @@ export function FaersReportExporter({
     `;
   };
 
+  // Import the export hooks
+  const { exportToPDF, exportToWord } = useExportFAERS();
+
   // Start export process
   const startExport = async () => {
     setIsExporting(true);
     
     try {
-      // In a real implementation, this would make an API call to a PDF/Doc generation service
-      // For now, we'll simulate a delay to illustrate the process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
       // Basic construction of export data
       const exportData = {
         productName,
@@ -88,14 +88,41 @@ export function FaersReportExporter({
       
       console.log('Export data prepared:', exportData);
       
-      // In a production app, we would submit this data to an API endpoint
-      // For example: await axios.post('/api/cer/export-faers', exportData);
+      let result;
+      
+      // Call the appropriate export function based on the selected format
+      if (exportFormat === 'docx') {
+        // Use the real DOCX export functionality
+        result = await exportToWord(faersData, productName, exportOptions);
+      } else if (exportFormat === 'pdf') {
+        // Use the PDF export functionality
+        result = await exportToPDF(faersData, productName);
+      } else {
+        // For JSON format - simply download as JSON
+        const dataStr = JSON.stringify(faersData, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = window.URL.createObjectURL(dataBlob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `faers_report_${productName.replace(/\s+/g, '_').toLowerCase()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        result = {
+          success: true,
+          fileName: a.download,
+          fileSize: `${Math.round(dataBlob.size / 1024)}KB`,
+          timestamp: new Date().toISOString()
+        };
+      }
       
       // Inform parent component that export is complete
       onExportCompleted({
-        success: true,
+        ...result,
         format: exportFormat,
-        timestamp: new Date().toISOString(),
         message: `FAERS data for ${productName} exported successfully as ${exportFormat.toUpperCase()}`
       });
       
