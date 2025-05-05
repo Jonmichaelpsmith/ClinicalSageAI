@@ -3,12 +3,11 @@ import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
 import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
 import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
-import QAChecklistButton from '@/components/cer/QAChecklistButton';
+// QAChecklistButton replaced with standard button
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+// Collapsible components replaced with standard div/button
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { exportToPDF, exportToWord, downloadBlob, fetchFaersData, getComplianceScore } from '@/services/CerAPIService';
 import { useToast } from '@/hooks/use-toast';
@@ -243,27 +242,29 @@ export default function CERV2Page() {
               </TooltipProvider>
             )}
             
-            {/* QA Checklist button */}
-            <QAChecklistButton variant="outline" />
+            {/* QA Checklist button - Temporarily disabled until fixed */}
+            <button
+              className="flex items-center justify-center gap-1 px-3 py-1 rounded-full border bg-gray-100 text-gray-800 border-gray-300"
+            >
+              <FileCheck className="h-4 w-4 mr-1" />
+              <span>QA Checklist</span>
+            </button>
           </div>
         </div>
       </div>
       
-      {/* Collapsible instructions panel */}
-      <Collapsible 
-        open={instructionsOpen} 
-        onOpenChange={setInstructionsOpen}
-        className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden"
-      >
+      {/* Instructions panel */}
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="p-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">🧠 How to Use the CER Generator</h2>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <ChevronDown className={`h-5 w-5 transform transition-transform ${instructionsOpen ? '' : 'rotate-180'}`} />
-            </Button>
-          </CollapsibleTrigger>
+          <button 
+            onClick={() => setInstructionsOpen(!instructionsOpen)}
+            className="p-1 rounded-md hover:bg-gray-100"
+          >
+            <ChevronDown className={`h-5 w-5 transform transition-transform ${instructionsOpen ? '' : 'rotate-180'}`} />
+          </button>
         </div>
-        <CollapsibleContent>
+        {instructionsOpen && (
           <div className="px-4 pb-4">
             <ol className="list-decimal list-inside space-y-1 text-gray-700">
               <li>Select a section type and provide context</li>
@@ -272,8 +273,8 @@ export default function CERV2Page() {
               <li>Preview and export your complete CER as PDF or DOCX</li>
             </ol>
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+        )}
+      </div>
 
       {/* Main content area with tabs */}
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
@@ -338,39 +339,43 @@ export default function CERV2Page() {
                     <span className="text-sm font-medium">{Math.round(sectionCoverage)}%</span>
                   </div>
                 </div>
+                {compliance && (
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-gray-500">Compliance Score</span>
+                    <span className={`text-lg font-bold ${compliance.overallScore >= 0.8 ? 'text-green-600' : compliance.overallScore >= 0.6 ? 'text-amber-600' : 'text-red-600'}`}>
+                      {Math.round(compliance.overallScore * 100)}%
+                    </span>
+                  </div>
+                )}
               </div>
               
               {/* Floating actions */}
               <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center gap-1"
+                <button 
                   onClick={runComplianceCheck}
                   disabled={isComplianceRunning || sections.length === 0}
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 disabled:opacity-50"
                 >
                   {isComplianceRunning ? (
                     <>
                       <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-1" />
-                      Analyzing...
+                      <span>Analyzing...</span>
                     </>
                   ) : (
                     <>
                       <ClipboardCheck className="h-4 w-4" />
-                      Check Compliance
+                      <span>Check Compliance</span>
                     </>
                   )}
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center gap-1"
+                </button>
+                <button 
                   onClick={() => handleExport('pdf')}
                   disabled={sections.length === 0}
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 disabled:opacity-50"
                 >
                   <FileText className="h-4 w-4" />
-                  Export PDF
-                </Button>
+                  <span>Export PDF</span>
+                </button>
               </div>
             </div>
             
@@ -379,6 +384,7 @@ export default function CERV2Page() {
               faers={faers}
               comparators={comparators}
               sections={sections}
+              complianceData={compliance}
             />
           </TabsContent>
 
