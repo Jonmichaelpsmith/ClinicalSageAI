@@ -7,7 +7,7 @@ import React from 'react';
  * @param {Object} props.faersData - FAERS data object
  * @returns {JSX.Element} - Rendered component
  */
-const FaersDemographicsCharts = ({ faersData }) => {
+export function FaersDemographicsCharts({ faersData }) {
   if (!faersData) {
     return (
       <div className="p-6 text-center">

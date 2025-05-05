@@ -13,7 +13,7 @@ import FaersRiskBadge from './FaersRiskBadge';
  * @param {Object} props.faersData - FAERS data including comparators
  * @returns {JSX.Element} - Rendered component
  */
-const FaersComparativeChart = ({ productName, faersData }) => {
+export function FaersComparativeChart({ productName, faersData }) {
   if (!faersData || !faersData.comparators || faersData.comparators.length === 0) {
     return (
       <div className="p-6 text-center">
