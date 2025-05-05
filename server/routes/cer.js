@@ -974,18 +974,16 @@ router.post('/export-word', async (req, res) => {
 // POST /api/cer/preview - Generate HTML preview of CER report
 router.post('/preview', async (req, res) => {
   try {
-    console.log('Preview request body:', JSON.stringify(req.body));
-    const { title, sections, faers, comparators } = req.body;
+    console.log('Preview request body:', JSON.stringify(req.body, null, 2));
+    const { title, sections = [], faers = [], comparators = [] } = req.body;
     
     // Allow preview with either sections or FAERS data
     const hasFaers = faers && Array.isArray(faers) && faers.length > 0;
     const hasSections = sections && Array.isArray(sections) && sections.length > 0;
     
-    if (hasFaers) {
-      console.log('Generating preview with FAERS data:', faers.length, 'records');
-    } else if (hasSections) {
-      console.log('Generating preview with sections:', sections.length, 'sections');
-    } else {
+    console.log(`FAERS data: ${hasFaers ? 'present' : 'missing'}, Sections: ${hasSections ? 'present' : 'missing'}`);
+    
+    if (!hasFaers && !hasSections) {
       console.log('No content found for preview');
       return res.status(400).json({ error: 'Either sections or FAERS data is required' });
     }
@@ -1070,6 +1068,36 @@ router.post('/preview', async (req, res) => {
     res.status(500).json({ 
       success: false,
       error: 'Failed to generate CER preview',
+      message: error.message 
+    });
+  }
+});
+
+// Test preview route for debugging
+router.post('/preview-test', async (req, res) => {
+  try {
+    console.log('Preview test body:', JSON.stringify(req.body, null, 2));
+    const { title, sections, faers, comparators } = req.body;
+    
+    // Always return data for testing
+    res.json({
+      success: true,
+      message: 'Preview test endpoint',
+      receivedData: {
+        hasFaers: faers && Array.isArray(faers) && faers.length > 0,
+        hasSections: sections && Array.isArray(sections) && sections.length > 0,
+        title: title || 'No title provided',
+        sections: sections || [],
+        faers: faers || [],
+        comparators: comparators || []
+      },
+      html: '<div class="test-preview">Preview test generated content</div>'
+    });
+  } catch (error) {
+    console.error('Error in preview test:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Preview test error',
       message: error.message 
     });
   }
