@@ -467,7 +467,7 @@ ${citations}
                   Processing...
                 </>
               ) : (
-                <>Generate Citations</>  
+                <>Generate Citations</>
               )}
             </button>
           </div>
