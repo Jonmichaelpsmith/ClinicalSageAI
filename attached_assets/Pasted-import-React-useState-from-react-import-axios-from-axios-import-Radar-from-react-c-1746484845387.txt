@@ -1,0 +1,117 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Radar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+);
+
+export default function ComplianceScorePanel({ sections }) {
+  const [scoreData, setScoreData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleScore = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post('/api/cer/compliance-score', { sections });
+      setScoreData(res.data);
+    } catch (err) {
+      console.error('Compliance scoring failed', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const res = await axios.post('/api/cer/export-compliance', { data: scoreData }, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'compliance_scorecard.pdf');
+      document.body.appendChild(link);
+      link.click();
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    }
+  };
+
+  const chartData = scoreData && {
+    labels: scoreData.breakdown.map((b) => b.section),
+    datasets: [
+      {
+        label: 'Compliance %',
+        data: scoreData.breakdown.map((b) => b.score),
+        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+        borderColor: 'rgba(34, 197, 94, 1)',
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  return (
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-2">📋 Regulatory Compliance Scorecard</h2>
+      <p className="text-sm mb-4 text-gray-600">Assess alignment with EU MDR, ISO 14155, and FDA Part 812.</p>
+      <div className="flex gap-4">
+        <button onClick={handleScore} disabled={loading} className="bg-blue-700 text-white px-4 py-2 rounded">
+          {loading ? 'Scoring...' : 'Run Compliance Check'}
+        </button>
+        {scoreData && (
+          <button onClick={handleExport} className="bg-gray-800 text-white px-4 py-2 rounded">
+            Export PDF
+          </button>
+        )}
+      </div>
+
+      {scoreData && (
+        <div className="mt-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Overall Compliance Score</h3>
+            <div className="text-2xl font-bold text-green-600">{scoreData.overallScore}%</div>
+          </div>
+
+          <div className="max-w-xl mx-auto">
+            <Radar data={chartData} options={{ scales: { r: { beginAtZero: true, max: 100 } } }} />
+          </div>
+
+          <div className="mt-6">
+            <h4 className="font-semibold mb-2">Section Breakdown</h4>
+            <table className="table-auto text-sm w-full border">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-2 py-1 text-left">Section</th>
+                  <th className="border px-2 py-1 text-left">Score</th>
+                  <th className="border px-2 py-1 text-left">Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scoreData.breakdown.map((item, i) => (
+                  <tr key={i}>
+                    <td className="border px-2 py-1">{item.section}</td>
+                    <td className="border px-2 py-1">{item.score}%</td>
+                    <td className="border px-2 py-1">{item.comment}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
