@@ -974,12 +974,14 @@ router.post('/export-word', async (req, res) => {
 // POST /api/cer/preview - Generate HTML preview of CER report
 router.post('/preview', async (req, res) => {
   try {
+    console.log('Preview request body:', JSON.stringify(req.body));
     const { title, sections, faers, comparators } = req.body;
     
     // Allow preview with just FAERS data
     if (faers && Array.isArray(faers) && faers.length > 0) {
       console.log('Generating preview with FAERS data only');
     } else if (!sections || !Array.isArray(sections) || sections.length === 0) {
+      console.log('No sections found, faers data:', faers);
       return res.status(400).json({ error: 'At least one section is required' });
     }
     
