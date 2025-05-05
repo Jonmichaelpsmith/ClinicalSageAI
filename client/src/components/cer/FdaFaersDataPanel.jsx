@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4, BarChartHorizontal } from 'lucide-react';
+import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4, BarChartHorizontal, HelpCircle, FileText } from 'lucide-react';
 import { FaersRiskBadge } from './FaersRiskBadge';
+import { FaersHowToModal } from './FaersHowToModal';
 
 /**
  * FDA FAERS Data Panel Component
@@ -27,6 +28,8 @@ const FdaFaersDataPanel = ({ onDataFetched }) => {
   const [faersData, setFaersData] = useState(null);
   const [faersAnalysis, setFaersAnalysis] = useState(null);
   const [activeTab, setActiveTab] = useState('raw-data');
+  const [showHowTo, setShowHowTo] = useState(false);
+  const [showFullReport, setShowFullReport] = useState(false);
   
   /**
    * Fetch raw FAERS data from the API
@@ -404,9 +407,18 @@ const FdaFaersDataPanel = ({ onDataFetched }) => {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <div>
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center text-blue-600" 
+              onClick={() => setShowHowTo(true)}
+            >
+              <HelpCircle className="h-4 w-4 mr-1" />
+              How to use this module
+            </Button>
             {error && (
-              <Alert variant="destructive" className="p-2 text-sm">
+              <Alert variant="destructive" className="p-2 text-sm ml-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
@@ -482,6 +494,190 @@ const FdaFaersDataPanel = ({ onDataFetched }) => {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+  // Render the How-To modal
+  const renderHowToModal = () => {
+    return <FaersHowToModal isOpen={showHowTo} onClose={() => setShowHowTo(false)} />;
+  };
+
+  // Render the full CER report modal
+  const renderFullCerReport = () => {
+    if (!showFullReport) return null;
+    // Import the FullCerReportModal component only when needed (code splitting)
+    const FullCerReportModal = React.lazy(() => import('./FullCerReportModal'));
+    
+    return (
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <FullCerReportModal 
+          isOpen={showFullReport} 
+          onClose={() => setShowFullReport(false)} 
+          faersData={faersData || faersAnalysis} 
+        />
+      </React.Suspense>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Search Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle>FDA FAERS Database Query</CardTitle>
+          <CardDescription>
+            Search the FDA Adverse Event Reporting System for device or drug-related adverse events
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="productName">Product Name <span className="text-red-500">*</span></Label>
+              <Input
+                id="productName"
+                placeholder="e.g. CardioMonitor Pro 3000"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+              />
+              <p className="text-xs text-gray-500">Enter the exact product name as registered with FDA</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="manufacturerName">Manufacturer Name (Optional)</Label>
+              <Input
+                id="manufacturerName"
+                placeholder="e.g. MedTech Innovations, Inc."
+                value={manufacturerName}
+                onChange={(e) => setManufacturerName(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="startDate">Start Date (Optional)</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="endDate">End Date (Optional)</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center text-blue-600" 
+              onClick={() => setShowHowTo(true)}
+            >
+              <HelpCircle className="h-4 w-4 mr-1" />
+              How to use this module
+            </Button>
+            {error && (
+              <Alert variant="destructive" className="p-2 text-sm ml-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              disabled={isLoading}
+              onClick={() => {
+                setProductName('');
+                setManufacturerName('');
+                setStartDate('');
+                setEndDate('');
+                setFaersData(null);
+                setFaersAnalysis(null);
+                setError(null);
+              }}
+            >
+              Reset
+            </Button>
+            <Button 
+              onClick={fetchFaersData} 
+              disabled={isLoading || !productName}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Search FAERS
+                </>
+              )}
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+      
+      {/* Results */}
+      {(faersData || faersAnalysis) && (
+        <Card>
+          <CardHeader className="pb-0">
+            <CardTitle>FDA FAERS Data Results</CardTitle>
+            <CardDescription>
+              {faersData?.productName} - {faersData?.totalReports} adverse event reports
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="mb-4">
+                <TabsTrigger value="raw-data">
+                  <DatabaseIcon className="mr-2 h-4 w-4" />
+                  Raw Data
+                </TabsTrigger>
+                <TabsTrigger value="analysis">
+                  <BarChart4 className="mr-2 h-4 w-4" />
+                  Analysis
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="raw-data">
+                {renderRawDataView()}
+              </TabsContent>
+              
+              <TabsContent value="analysis">
+                {renderAnalysisView()}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Add Full CER Report Button */}
+      {(faersData || faersAnalysis) && (
+        <div className="flex justify-center mt-4">
+          <Button 
+            variant="outline" 
+            className="flex items-center" 
+            onClick={() => setShowFullReport(true)}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Generate Full CER Report
+          </Button>
+        </div>
+      )}
+      
+      {/* Render modals */}
+      {renderHowToModal()}
+      {renderFullCerReport()}
     </div>
   );
 };
