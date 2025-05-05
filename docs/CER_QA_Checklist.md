@@ -1,79 +1,119 @@
-# TrialSage CER Generator - Quality Assurance Checklist
+# TrialSage CER Generator - QA Checklist
 
 ## Overview
-This document provides a comprehensive QA checklist for the TrialSage CER Generator module before stakeholder review.
+This document provides a comprehensive checklist for Quality Assurance testing of the Clinical Evaluation Report (CER) Generator module. Before presenting to stakeholders or releasing for user testing, ensure all criteria below are verified.
 
-## ✅ CERv2 QA CHECKLIST – FINAL REVIEW
+## Pre-verification Requirements
+- Application must be running locally or on a testing environment
+- Database access must be available for API calls
+- Test user credentials (if applicable) should be ready
 
-### 1. 🚀 **Navigation & Entry**
+## Verification Process
 
-* [ ] Sidebar shows **"CER Generator"** in blue highlight
-* [ ] Clicking it routes to `/cer`
-* [ ] Page loads without console errors
+### 1. Navigation & Entry
+- [ ] Sidebar shows "CER Generator" in blue highlight
+- [ ] Clicking it routes to /cer
+- [ ] Page loads without console errors
+- [ ] CERV2Page component renders correctly
+- [ ] Header displays properly with title and QA Checklist button
+
+### 2. Instructional Flow
+- [ ] Instruction card shows all 3 steps:
+  - [ ] Select section type and provide context
+  - [ ] Generate and add each needed section to your report
+  - [ ] Preview and export your complete CER as PDF or DOCX
+- [ ] Instructions are clearly visible at the top of the page
+- [ ] Text is formatted readably with proper icons
+
+### 3. Section Builder Panel
+- [ ] Section type dropdown contains all required options
+  - [ ] Executive Summary
+  - [ ] Device Description
+  - [ ] Risk Analysis
+  - [ ] Clinical Evaluation
+- [ ] Context textarea accepts input
+- [ ] Character counter works (if implemented)
+- [ ] "Generate Section" button is properly styled
+- [ ] Loading state shows spinner while generating
+- [ ] Generated content displays properly formatted
+- [ ] "Add to Report" button adds section to draft
+- [ ] Appropriate error handling if generation fails
+
+### 4. Live Preview
+- [ ] CER title displays at top of preview
+- [ ] Title is editable
+- [ ] Generated sections render with proper formatting
+- [ ] Section headings are clearly differentiated
+- [ ] FAERS data table renders correctly (if data available)
+- [ ] Comparator products display with risk scores (if available)
+- [ ] Preview updates immediately when new section is added
+
+### 5. Export Functionality
+- [ ] Export tab UI renders correctly
+- [ ] PDF option is selectable
+- [ ] DOCX option is selectable
+- [ ] Export button is enabled only when content exists
+- [ ] PDF export generates downloadable file
+- [ ] DOCX export generates downloadable file
+- [ ] Exported files contain all sections from preview
+- [ ] Exported files have professional formatting
+
+### 6. Backend API Integration
+- [ ] /api/cer/fetch-faers API responds with data
+- [ ] /api/cer/generate-section creates content with GPT-4o
+- [ ] /api/cer/export-pdf generates PDF with content
+- [ ] /api/cer/export-docx generates DOCX with content
+- [ ] Error handling is implemented for all API calls
+- [ ] Console shows no CORS or unauthorized errors
+
+### 7. State Management
+- [ ] State persists between tab changes
+- [ ] Adding sections updates state correctly
+- [ ] Preview reflects current state of all sections
+- [ ] Form values maintain consistency
+- [ ] No unexpected state resets during user interaction
+
+### 8. Cross-browser Compatibility
+- [ ] Verify functionality in Chrome
+- [ ] Verify functionality in Firefox
+- [ ] Verify functionality in Safari (if available)
+- [ ] Mobile view renders appropriately (responsive design)
+
+## Documentation & Reporting
+- [ ] Screenshot each major component for documentation
+- [ ] Document any issues found during QA
+- [ ] Note any future enhancements identified
+- [ ] Create final report with pass/fail status
+
+## Stakeholder Review Preparation
+- [ ] Prepare demonstration script
+- [ ] Create sample CER with realistic data
+- [ ] Document known limitations and future enhancements
+- [ ] Set up screen sharing for remote presentations
 
 ---
 
-### 2. 🧠 **Instructional Flow**
+## QA Testing Notes
 
-* [ ] Instruction card shows all 3 steps:
+| Test Date | Tester | Build Version | Status |
+|-----------|--------|---------------|--------|
+| YYYY-MM-DD | Name | v1.0.0 | ✅ Pass / ❌ Fail |
 
-  * Select section
-  * Generate content
-  * Preview/export
+### Issues Found
 
----
+1. Issue description
+   - Severity: (Critical/Major/Minor)
+   - Steps to reproduce: 
+   - Expected behavior:
+   - Actual behavior:
+   - Screenshots/logs:
 
-### 3. ✍️ **Section Builder Panel**
+### Enhancement Suggestions
 
-* [ ] Section type dropdown works (4 types)
-* [ ] Textarea accepts input
-* [ ] "Generate Section" calls `/api/cer/generate-section`
-* [ ] Generated content is displayed clearly
-* [ ] New section is added to live draft
-
----
-
-### 4. 📄 **Live Preview**
-
-* [ ] CER title renders at top
-* [ ] Drafted sections display correctly with formatting
-* [ ] FAERS table displays adverse events (if present)
-* [ ] Comparator list shows risk scores
+1. Enhancement idea
+   - Potential value:
+   - Complexity estimate:
 
 ---
 
-### 5. 📤 **Export Buttons**
-
-* [ ] "Export as PDF" downloads a file with FAERS + sections
-* [ ] "Export as Word" downloads same in `.docx` format
-* [ ] Files are readable and professionally formatted
-
----
-
-### 6. ⚙️ **Backend API Test**
-
-* [ ] `/api/cer/fetch-faers` works with valid product name
-* [ ] `/api/cer/export-docx` and `/api/cer/export-pdf` respond with correct files
-* [ ] `/api/cer/generate-section` generates expected content using GPT-4o
-
----
-
-### 7. 💾 **State Sync (Advanced)**
-
-* [ ] Generated sections are stored in local state
-* [ ] Preview reflects all added sections without page reload
-* [ ] Export pulls the correct title, FAERS, and comparators at time of click
-
----
-
-## Test Results
-
-| Date | Tester | Status | Notes |
-|------|--------|--------|-------|
-| 2025-05-05 | [Name] | [Pass/Fail] | [Key observations] |
-
-## Additional Notes
-
-* The CER Generator is a critical component for regulatory compliance workflows
-* All exports should maintain consistent formatting across PDF and DOCX formats
-* FAERS data integration should be thoroughly verified with multiple test products
+*Note: This is a living document. Update with any additional test cases or requirements as needed.*
