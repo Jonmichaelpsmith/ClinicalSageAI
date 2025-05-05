@@ -1,0 +1,133 @@
+import React, { useState, useEffect } from 'react';
+import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
+import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
+import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
+import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+export default function CERV2Page() {
+  const [title, setTitle] = useState('Clinical Evaluation Report');
+  const [faers, setFaers] = useState([]);
+  const [comparators, setComparators] = useState([]);
+  const [sections, setSections] = useState([]);
+
+  useEffect(() => {
+    const fetchFAERS = async () => {
+      try {
+        const response = await fetch('/api/cer/fetch-faers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productName: title, cerId: 'cer-v2-live' })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to load FAERS data');
+        setFaers(result.reports || []);
+        setComparators(result.comparators || []);
+      } catch (err) {
+        console.error('FAERS fetch failed:', err.message);
+      }
+    };
+    if (title && title.trim().length > 0) fetchFAERS();
+  }, [title]);
+
+  const handleAddSection = (section) => {
+    setSections((prev) => [...prev, section]);
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="bg-white p-4 rounded shadow border">
+        <h2 className="text-xl font-bold mb-2">🧠 How to Use the CER Generator</h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Select a section type and provide context</li>
+          <li>Generate and add each needed section to your report</li>
+          <li>Preview and export your complete CER as PDF or DOCX</li>
+        </ol>
+      </div>
+
+      <div className="bg-white p-4 rounded shadow border">
+        <Tabs defaultValue="builder" className="w-full">
+          <TabsList className="flex gap-2 mb-4">
+            <TabsTrigger value="builder">🧱 Section Generator</TabsTrigger>
+            <TabsTrigger value="preview">📄 Report Preview</TabsTrigger>
+            <TabsTrigger value="export">📤 Export Options</TabsTrigger>
+            <TabsTrigger value="literature">📚 Literature Review</TabsTrigger>
+            <TabsTrigger value="compliance">📋 Compliance Scorecard</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="builder">
+            <CerBuilderPanel
+              title={title}
+              faers={faers}
+              comparators={comparators}
+              sections={sections}
+              onTitleChange={setTitle}
+              onSectionsChange={setSections}
+              onFaersChange={setFaers}
+              onComparatorsChange={setComparators}
+            />
+          </TabsContent>
+
+          <TabsContent value="preview">
+            <CerPreviewPanel
+              title={title}
+              faers={faers}
+              comparators={comparators}
+              sections={sections}
+            />
+          </TabsContent>
+
+          <TabsContent value="export">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Export Your Report</h3>
+              <button
+                onClick={async () => {
+                  const res = await fetch('/api/cer/export-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, faers, comparators })
+                  });
+                  const blob = await res.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = 'cer_report.pdf';
+                  link.click();
+                }}
+                className="bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Download PDF
+              </button>
+              <button
+                onClick={async () => {
+                  const res = await fetch('/api/cer/export-docx', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, faers, comparators })
+                  });
+                  const blob = await res.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = 'cer_report.docx';
+                  link.click();
+                }}
+                className="bg-purple-700 text-white px-4 py-2 rounded"
+              >
+                Download Word
+              </button>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="literature">
+            <LiteratureSearchPanel onAddSection={handleAddSection} />
+          </TabsContent>
+
+          <TabsContent value="compliance">
+            <ComplianceScorePanel sections={sections} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
