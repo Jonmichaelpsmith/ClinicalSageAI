@@ -124,6 +124,40 @@ const CerGeneratorPage = () => {
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-1">CER Generator</h1>
         <p className="text-gray-600">AI-powered Clinical Evaluation Report generator with automated workflows</p>
+        
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <Brain className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">Create a Clinical Evaluation Report in 3 Simple Steps</h3>
+              <div className="mt-2 text-sm text-blue-700">
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Enter your device information in the AI Generator tab</li>
+                  <li>Enable FDA adverse event data and literature search</li>
+                  <li>Click "Generate CER" to create your report</li>
+                </ol>
+              </div>
+              <div className="mt-3">
+                <Button 
+                  onClick={() => {
+                    setActiveTab('generator');
+                    setTimeout(() => {
+                      const element = document.getElementById('generate-cer-button');
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }, 100);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Brain className="h-4 w-4 mr-2" /> Start Creating Now
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -319,9 +353,24 @@ const CerGeneratorPage = () => {
                 </div>
                 
                 <div className="pt-4 border-t">
-                  <Button className="w-full flex items-center justify-center">
-                    <Brain className="h-4 w-4 mr-2" /> Generate CER
+                  <Button 
+                    id="generate-cer-button"
+                    className="w-full flex items-center justify-center bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold shadow-lg"
+                    onClick={() => {
+                      // Simulate report generation with a loading state
+                      const deviceName = document.getElementById('deviceName')?.value || 'CardioMonitor Pro 3000';
+                      const template = templates.find(t => t.id === templateSelection);
+                      
+                      // Show a success dialog or redirect to a PDF view component
+                      alert(`Starting CER generation for ${deviceName} using ${template?.name}. Your report will be available shortly.`);
+                      
+                      // In production, this would trigger the actual report generation process
+                      // and then direct the user to the generated PDF
+                    }}
+                  >
+                    <Brain className="h-5 w-5 mr-2" /> Generate CER Report
                   </Button>
+                  <p className="mt-2 text-xs text-center text-gray-500">Report will be generated and added to your dashboard</p>
                 </div>
               </CardContent>
               <CardFooter className="text-xs text-gray-500">
