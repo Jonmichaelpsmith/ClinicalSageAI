@@ -2,523 +2,395 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Loader2, Download, Copy, FileText } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Label } from '../ui/label';
+import { Switch } from '../ui/switch';
+import { Textarea } from '../ui/textarea';
+import { FileText, ClipboardList, Book, FileCheck, Download, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 /**
  * Full CER Report Modal Component
- * Displays a complete Clinical Evaluation Report with FAERS data integration
  * 
- * @param {Object} props - Component props
- * @param {boolean} props.isOpen - Whether the modal is open
- * @param {Function} props.onClose - Function to close the modal
- * @param {Object} props.faersData - FAERS data for the report
- * @returns {JSX.Element} - Rendered component
+ * This modal allows users to generate a complete Clinical Evaluation Report
+ * using the FAERS data and other sources of evidence.
  */
 export function FullCerReportModal({ isOpen, onClose, faersData }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('report');
-  const [downloadFormat, setDownloadFormat] = useState('pdf');
-
-  // Example data for demonstration - in real implementation this would be populated from API
-  const reportSections = {
-    deviceInfo: {
-      name: faersData?.productName || "Example Medical Device",
-      manufacturer: "Concept2Cures Biotech",
-      classification: "Class III",
-      intendedUse: "Cardiovascular monitoring and support"
-    },
-    clinicalEvaluation: {
-      methodDescription: "This clinical evaluation was conducted in accordance with MEDDEV 2.7/1 Rev. 4 guidelines and follows the requirements of ISO 14155:2020.",
-      dataTypes: ["Clinical Investigation Data", "Post-Market Surveillance", "Literature Review", "FAERS Analysis"],
-      evaluationPeriod: "January 2023 - May 2025",
-      evaluators: "Regulatory Affairs Team, Clinical Advisory Board, Medical Safety Officers"
-    },
-    faersAnalysis: {
-      totalReports: faersData?.totalReports || 250,
-      seriousEvents: faersData?.seriousEvents?.length || 45,
-      riskScore: faersData?.riskScore || 0.87,
-      conclusion: "Based on FAERS data analysis, the device demonstrates an acceptable safety profile consistent with similar devices in its class. The benefit-risk ratio remains favorable."
-    },
-    clinicalData: {
-      totalPatients: 1250,
-      adverseEvents: 74,
-      severeAdverseEvents: 12,
-      efficacyRate: "92.4%",
-      conclusion: "Clinical data demonstrates favorable efficacy with acceptable safety profile."
-    },
-    literatureReview: {
-      referencesReviewed: 87,
-      relevantPublications: 43,
-      favorableResults: 38,
-      unfavorableResults: 5,
-      conclusion: "Current literature supports the safety and performance of the device."
-    },
-    riskBenefit: {
-      identifiedRisks: ["Infection (Low)", "Device Malfunction (Very Low)", "User Error (Medium)", "Allergic Reaction (Low)"],
-      mitigationMeasures: ["Comprehensive training program", "Enhanced sterilization protocols", "Improved material biocompatibility", "Advanced fail-safe mechanisms"],
-      benefitAssessment: "The device provides significant clinical benefit through improved diagnostic accuracy, reduced procedure time, and enhanced patient outcomes.",
-      conclusion: "The comprehensive evaluation of clinical data, literature, and post-market surveillance, including FAERS data analysis, supports a favorable benefit-risk profile for continued marketing of the device."
-    },
-    postMarketData: {
-      complaintsReceived: 28,
-      fieldsCorrectiveActions: 1,
-      vigilanceReports: 3,
-      conclusion: "Post-market surveillance data demonstrates acceptable performance in real-world clinical settings."
+  const [selectedTemplate, setSelectedTemplate] = useState('meddev-rev4');
+  const [deviceInfo, setDeviceInfo] = useState({
+    name: faersData?.productInfo?.name || '',
+    manufacturer: '',
+    modelNumber: '',
+    description: '',
+    intendedUse: ''
+  });
+  
+  const [additionalOptions, setAdditionalOptions] = useState({
+    includeFaersData: true,
+    includeLiterature: true,
+    includePostMarket: true,
+    includeComparators: true
+  });
+  
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedReport, setGeneratedReport] = useState(null);
+  const [activeTab, setActiveTab] = useState('settings');
+  
+  // Handle form input changes
+  const handleDeviceInfoChange = (field, value) => {
+    setDeviceInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+  
+  // Handle switch toggle changes
+  const handleOptionChange = (option) => {
+    setAdditionalOptions(prev => ({
+      ...prev,
+      [option]: !prev[option]
+    }));
+  };
+  
+  // Generate the CER report
+  const handleGenerateReport = async () => {
+    try {
+      setIsGenerating(true);
+      setActiveTab('preview'); // Switch to preview tab
+      
+      // Simulate API request
+      setTimeout(() => {
+        setGeneratedReport({
+          id: `CER-${Date.now()}`,
+          title: `${deviceInfo.name} - Clinical Evaluation Report`,
+          sections: [
+            { id: 'executive-summary', title: 'Executive Summary', completionStatus: 'completed' },
+            { id: 'scope', title: 'Scope', completionStatus: 'completed' },
+            { id: 'device-description', title: 'Device Description', completionStatus: 'completed' },
+            { id: 'intended-use', title: 'Intended Use/Purpose', completionStatus: 'completed' },
+            { id: 'regulatory-context', title: 'Regulatory Context', completionStatus: 'completed' },
+            { id: 'literature-search', title: 'Literature Search', completionStatus: 'completed' },
+            { id: 'device-safety', title: 'Device Safety Analysis', completionStatus: 'completed' },
+            { id: 'device-performance', title: 'Device Performance Analysis', completionStatus: 'completed' },
+            { id: 'risk-benefit', title: 'Risk-Benefit Analysis', completionStatus: 'completed' },
+            { id: 'pmcf', title: 'PMCF Plan', completionStatus: 'completed' },
+            { id: 'conclusion', title: 'Conclusion', completionStatus: 'completed' },
+            { id: 'references', title: 'References', completionStatus: 'completed' }
+          ],
+          formats: ['PDF', 'DOCX', 'HTML'],
+          generatedAt: new Date().toISOString(),
+          status: 'completed',
+          downloadUrl: '#',
+        });
+        setIsGenerating(false);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error generating CER report:', error);
+      setIsGenerating(false);
     }
   };
-
-  // Function to simulate report generation with loading state
-  const generateReport = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000); // Simulate API call delay
-  };
-
-  // Handle download button click
-  const handleDownload = () => {
-    setIsLoading(true);
-    // In a real implementation, this would trigger an API call to generate a PDF/DOCX
-    setTimeout(() => {
-      setIsLoading(false);
-      // Simulating download completion
-      alert(`CER Report downloaded in ${downloadFormat.toUpperCase()} format`);
-    }, 3000);
-  };
-
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl flex items-center">
-            <FileText className="mr-2 h-5 w-5" />
-            Clinical Evaluation Report
+          <DialogTitle className="flex items-center text-xl">
+            <FileText className="mr-2 h-5 w-5 text-blue-600" />
+            Generate Full Clinical Evaluation Report
           </DialogTitle>
           <DialogDescription>
-            Complete CER with integrated FAERS analysis for {reportSections.deviceInfo.name}
+            Create a comprehensive CER using FAERS data and other evidence sources
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="report" className="mt-4" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="report">Full Report</TabsTrigger>
-            <TabsTrigger value="faers">FAERS Section</TabsTrigger>
-            <TabsTrigger value="export">Export Options</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="settings" disabled={isGenerating}>
+              <ClipboardList className="h-4 w-4 mr-2" />
+              CER Settings
+            </TabsTrigger>
+            <TabsTrigger value="preview" disabled={isGenerating && !generatedReport}>
+              <Book className="h-4 w-4 mr-2" />
+              Preview
+            </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="report" className="p-4 space-y-6">
-            {/* Device Information Section */}
-            <div className="bg-white border rounded-lg overflow-hidden">
-              <div className="bg-blue-50 px-4 py-3 border-b">
-                <h3 className="font-semibold text-lg">1. Device Information</h3>
-              </div>
-              <div className="p-4">
-                <table className="min-w-full">
-                  <tbody>
-                    <tr className="border-b">
-                      <td className="py-2 px-4 font-medium">Device Name:</td>
-                      <td className="py-2 px-4">{reportSections.deviceInfo.name}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="py-2 px-4 font-medium">Manufacturer:</td>
-                      <td className="py-2 px-4">{reportSections.deviceInfo.manufacturer}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="py-2 px-4 font-medium">Classification:</td>
-                      <td className="py-2 px-4">{reportSections.deviceInfo.classification}</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 px-4 font-medium">Intended Use:</td>
-                      <td className="py-2 px-4">{reportSections.deviceInfo.intendedUse}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Clinical Evaluation Method */}
-            <div className="bg-white border rounded-lg overflow-hidden">
-              <div className="bg-blue-50 px-4 py-3 border-b">
-                <h3 className="font-semibold text-lg">2. Clinical Evaluation Methodology</h3>
-              </div>
-              <div className="p-4 space-y-3">
-                <p>{reportSections.clinicalEvaluation.methodDescription}</p>
-                <div>
-                  <h4 className="font-medium mt-2 mb-1">Data Sources:</h4>
-                  <ul className="list-disc pl-6">
-                    {reportSections.clinicalEvaluation.dataTypes.map((type, index) => (
-                      <li key={index}>{type}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-3">
-                  <div>
-                    <span className="font-medium">Evaluation Period:</span>
-                    <p>{reportSections.clinicalEvaluation.evaluationPeriod}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Evaluation Team:</span>
-                    <p>{reportSections.clinicalEvaluation.evaluators}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* FAERS Analysis Section - Key section */}
-            <div className="bg-white border rounded-lg overflow-hidden border-blue-200">
-              <div className="bg-blue-100 px-4 py-3 border-b border-blue-200">
-                <h3 className="font-semibold text-lg">3. FDA Adverse Event Reporting System Analysis</h3>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-gray-50 p-3 rounded-md text-center">
-                    <p className="text-gray-500 text-sm">Total Reports</p>
-                    <p className="text-2xl font-bold">{reportSections.faersAnalysis.totalReports}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-md text-center">
-                    <p className="text-gray-500 text-sm">Serious Events</p>
-                    <p className="text-2xl font-bold">{reportSections.faersAnalysis.seriousEvents}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-md text-center">
-                    <p className="text-gray-500 text-sm">Risk Score</p>
-                    <p className="text-2xl font-bold">{reportSections.faersAnalysis.riskScore}</p>
-                  </div>
-                </div>
+          
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column - Device Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Device Information</h3>
                 
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">FAERS Data Conclusion:</h4>
-                  <p className="p-3 bg-blue-50 rounded-md">{reportSections.faersAnalysis.conclusion}</p>
-                </div>
-                
-                {faersData?.comparators && (
-                  <div className="mt-4">
-                    <h4 className="font-medium mb-2">Comparative Analysis:</h4>
-                    <p className="mb-2">The device was compared against similar products in its class based on FAERS data:</p>
-                    <table className="min-w-full border">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="py-2 px-3 text-left text-sm font-medium border-b">Product</th>
-                          <th className="py-2 px-3 text-left text-sm font-medium border-b">Reports</th>
-                          <th className="py-2 px-3 text-left text-sm font-medium border-b">Risk Score</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {faersData?.comparators?.map((comp, idx) => (
-                          <tr key={idx} className="border-b">
-                            <td className="py-2 px-3">{comp.comparator}</td>
-                            <td className="py-2 px-3">{comp.reportCount}</td>
-                            <td className="py-2 px-3">{comp.riskScore}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Clinical Data */}
-            <div className="bg-white border rounded-lg overflow-hidden">
-              <div className="bg-blue-50 px-4 py-3 border-b">
-                <h3 className="font-semibold text-lg">4. Clinical Data Evaluation</h3>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <table className="min-w-full">
-                      <tbody>
-                        <tr className="border-b">
-                          <td className="py-2 px-4 font-medium">Total Patients:</td>
-                          <td className="py-2 px-4">{reportSections.clinicalData.totalPatients}</td>
-                        </tr>
-                        <tr className="border-b">
-                          <td className="py-2 px-4 font-medium">Adverse Events:</td>
-                          <td className="py-2 px-4">{reportSections.clinicalData.adverseEvents}</td>
-                        </tr>
-                        <tr className="border-b">
-                          <td className="py-2 px-4 font-medium">Severe AEs:</td>
-                          <td className="py-2 px-4">{reportSections.clinicalData.severeAdverseEvents}</td>
-                        </tr>
-                        <tr>
-                          <td className="py-2 px-4 font-medium">Efficacy Rate:</td>
-                          <td className="py-2 px-4">{reportSections.clinicalData.efficacyRate}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-md">
-                    <h4 className="font-medium mb-2">Clinical Data Conclusion:</h4>
-                    <p>{reportSections.clinicalData.conclusion}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Risk-Benefit Analysis */}
-            <div className="bg-white border rounded-lg overflow-hidden">
-              <div className="bg-blue-50 px-4 py-3 border-b">
-                <h3 className="font-semibold text-lg">5. Risk-Benefit Analysis</h3>
-              </div>
-              <div className="p-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Identified Risks:</h4>
-                    <ul className="list-disc pl-6">
-                      {reportSections.riskBenefit.identifiedRisks.map((risk, index) => (
-                        <li key={index}>{risk}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Mitigation Measures:</h4>
-                    <ul className="list-disc pl-6">
-                      {reportSections.riskBenefit.mitigationMeasures.map((measure, index) => (
-                        <li key={index}>{measure}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-medium mb-2">Benefit Assessment:</h4>
-                  <p>{reportSections.riskBenefit.benefitAssessment}</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded-md">
-                  <h4 className="font-medium mb-2">Risk-Benefit Conclusion:</h4>
-                  <p>{reportSections.riskBenefit.conclusion}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Overall Conclusion */}
-            <div className="bg-white border rounded-lg overflow-hidden">
-              <div className="bg-green-50 px-4 py-3 border-b border-green-100">
-                <h3 className="font-semibold text-lg">6. Overall Conclusion</h3>
-              </div>
-              <div className="p-4">
-                <p className="p-3 bg-green-50 rounded-md border border-green-100">
-                  Based on the comprehensive evaluation of clinical data, literature, post-market surveillance, and FAERS data analysis, 
-                  {reportSections.deviceInfo.name} demonstrates a favorable benefit-risk profile. The device meets applicable safety and performance 
-                  requirements and remains suitable for its intended purpose. Continued marketing of the device is supported by the available evidence.
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="faers" className="p-4 space-y-6">
-            <div className="bg-white border rounded-lg overflow-hidden border-blue-200">
-              <div className="bg-blue-100 px-4 py-3 border-b border-blue-200">
-                <h3 className="font-semibold text-lg">FDA Adverse Event Reporting System Analysis</h3>
-              </div>
-              <div className="p-4 space-y-4">
-                <p>
-                  A comprehensive analysis of the FDA Adverse Event Reporting System (FAERS) database was conducted to identify and evaluate adverse events associated with {reportSections.deviceInfo.name}.
-                  This analysis is an essential component of post-market surveillance and provides valuable real-world safety data to complement clinical trial findings.
-                </p>
-                
-                <div className="grid grid-cols-3 gap-4 my-6">
-                  <div className="bg-gray-50 p-3 rounded-md text-center">
-                    <p className="text-gray-500 text-sm">Total Reports</p>
-                    <p className="text-2xl font-bold">{reportSections.faersAnalysis.totalReports}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-md text-center">
-                    <p className="text-gray-500 text-sm">Serious Events</p>
-                    <p className="text-2xl font-bold">{reportSections.faersAnalysis.seriousEvents}</p>
-                    <p className="text-xs text-gray-500">
-                      {((reportSections.faersAnalysis.seriousEvents / reportSections.faersAnalysis.totalReports) * 100).toFixed(1)}% of total
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-md text-center">
-                    <p className="text-gray-500 text-sm">Risk Score</p>
-                    <p className="text-2xl font-bold">{reportSections.faersAnalysis.riskScore}</p>
-                    <p className="text-xs text-gray-500">
-                      {reportSections.faersAnalysis.riskScore < 0.5 ? 'Low Risk' : 
-                       reportSections.faersAnalysis.riskScore < 1.0 ? 'Medium Risk' : 
-                       reportSections.faersAnalysis.riskScore < 1.5 ? 'High Risk' : 'Very High Risk'}
-                    </p>
-                  </div>
-                </div>
-                
-                {faersData?.comparators && (
-                  <div>
-                    <h4 className="font-medium text-lg mb-3">Comparative Analysis</h4>
-                    <p className="mb-4">
-                      To contextualize the safety profile of {reportSections.deviceInfo.name}, a comparative analysis was performed against similar products in its therapeutic class.
-                      This analysis provides perspective on the relative safety performance of the device compared to established alternatives.
-                    </p>
-                    
-                    <table className="min-w-full border">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="py-2 px-4 text-left text-sm font-medium border-b">Product</th>
-                          <th className="py-2 px-4 text-left text-sm font-medium border-b">Total Reports</th>
-                          <th className="py-2 px-4 text-left text-sm font-medium border-b">Risk Score</th>
-                          <th className="py-2 px-4 text-left text-sm font-medium border-b">Risk Category</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {/* Primary product row */}
-                        <tr className="bg-blue-50 border-b">
-                          <td className="py-2 px-4 font-medium">{reportSections.deviceInfo.name}</td>
-                          <td className="py-2 px-4">{reportSections.faersAnalysis.totalReports}</td>
-                          <td className="py-2 px-4">{reportSections.faersAnalysis.riskScore}</td>
-                          <td className="py-2 px-4">
-                            {reportSections.faersAnalysis.riskScore < 0.5 ? 'Low Risk' : 
-                            reportSections.faersAnalysis.riskScore < 1.0 ? 'Medium Risk' : 
-                            reportSections.faersAnalysis.riskScore < 1.5 ? 'High Risk' : 'Very High Risk'}
-                          </td>
-                        </tr>
-                        
-                        {/* Comparator rows */}
-                        {faersData?.comparators?.map((comp, idx) => (
-                          <tr key={idx} className="border-b">
-                            <td className="py-2 px-4">{comp.comparator}</td>
-                            <td className="py-2 px-4">{comp.reportCount}</td>
-                            <td className="py-2 px-4">{comp.riskScore}</td>
-                            <td className="py-2 px-4">
-                              {comp.riskScore < 0.5 ? 'Low Risk' : 
-                              comp.riskScore < 1.0 ? 'Medium Risk' : 
-                              comp.riskScore < 1.5 ? 'High Risk' : 'Very High Risk'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                
-                <div className="mt-6">
-                  <h4 className="font-medium text-lg mb-3">Conclusion</h4>
-                  <div className="p-4 bg-blue-50 rounded-md border border-blue-100">
-                    <p>{reportSections.faersAnalysis.conclusion}</p>
-                    <p className="mt-2">
-                      The FAERS data has been incorporated into the overall benefit-risk assessment of the device, providing valuable real-world evidence
-                      to complement the clinical investigation data and literature findings. The safety profile observed in FAERS aligns with expectations
-                      based on the device's intended use and risk classification.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="export" className="p-4 space-y-6">
-            <div className="bg-white border rounded-lg overflow-hidden">
-              <div className="bg-blue-50 px-4 py-3 border-b">
-                <h3 className="font-semibold text-lg">Export Options</h3>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-medium mb-4">Format Selection</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center">
-                        <input 
-                          type="radio" 
-                          id="pdf-format" 
-                          name="format" 
-                          checked={downloadFormat === 'pdf'}
-                          onChange={() => setDownloadFormat('pdf')}
-                          className="h-4 w-4 text-blue-600" 
-                        />
-                        <label htmlFor="pdf-format" className="ml-2">PDF Format</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input 
-                          type="radio" 
-                          id="docx-format" 
-                          name="format" 
-                          checked={downloadFormat === 'docx'}
-                          onChange={() => setDownloadFormat('docx')}
-                          className="h-4 w-4 text-blue-600" 
-                        />
-                        <label htmlFor="docx-format" className="ml-2">DOCX Format (Microsoft Word)</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input 
-                          type="radio" 
-                          id="html-format" 
-                          name="format" 
-                          checked={downloadFormat === 'html'}
-                          onChange={() => setDownloadFormat('html')}
-                          className="h-4 w-4 text-blue-600" 
-                        />
-                        <label htmlFor="html-format" className="ml-2">HTML Format (Web)</label>
-                      </div>
-                    </div>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="deviceName">Device/Product Name</Label>
+                    <Textarea 
+                      id="deviceName"
+                      value={deviceInfo.name}
+                      onChange={(e) => handleDeviceInfoChange('name', e.target.value)}
+                      placeholder="Enter the exact device or product name"
+                      className="resize-none"
+                    />
                   </div>
                   
-                  <div>
-                    <h4 className="font-medium mb-4">Content Options</h4>
+                  <div className="space-y-1">
+                    <Label htmlFor="manufacturer">Manufacturer</Label>
+                    <Textarea 
+                      id="manufacturer"
+                      value={deviceInfo.manufacturer}
+                      onChange={(e) => handleDeviceInfoChange('manufacturer', e.target.value)}
+                      placeholder="Enter the manufacturer name"
+                      className="resize-none"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label htmlFor="modelNumber">Model/Catalog Number</Label>
+                    <Textarea 
+                      id="modelNumber"
+                      value={deviceInfo.modelNumber}
+                      onChange={(e) => handleDeviceInfoChange('modelNumber', e.target.value)}
+                      placeholder="Enter the model or catalog number"
+                      className="resize-none"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <Label htmlFor="description">Brief Description</Label>
+                  <Textarea 
+                    id="description"
+                    value={deviceInfo.description}
+                    onChange={(e) => handleDeviceInfoChange('description', e.target.value)}
+                    placeholder="Provide a brief description of the device or product"
+                    className="resize-none h-20"
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <Label htmlFor="intendedUse">Intended Use/Purpose</Label>
+                  <Textarea 
+                    id="intendedUse"
+                    value={deviceInfo.intendedUse}
+                    onChange={(e) => handleDeviceInfoChange('intendedUse', e.target.value)}
+                    placeholder="Describe the intended use or purpose"
+                    className="resize-none h-20"
+                  />
+                </div>
+              </div>
+              
+              {/* Right Column - CER Options */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">CER Configuration</h3>
+                
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="template">Template Format</Label>
+                    <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                      <SelectTrigger id="template">
+                        <SelectValue placeholder="Select a template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="eu-mdr-full">EU MDR 2017/745 Full Template</SelectItem>
+                        <SelectItem value="meddev-rev4">MEDDEV 2.7/1 Rev 4 Template</SelectItem>
+                        <SelectItem value="fda-510k">FDA 510(k) Template</SelectItem>
+                        <SelectItem value="pmcf">PMCF Evaluation Report Template</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {selectedTemplate === 'eu-mdr-full' && 'Complete template for EU MDR 2017/745 compliance'}
+                      {selectedTemplate === 'meddev-rev4' && 'Template following MEDDEV 2.7/1 Rev 4 guidelines'}
+                      {selectedTemplate === 'fda-510k' && 'Template for FDA 510(k) clinical evaluation'}
+                      {selectedTemplate === 'pmcf' && 'Post-Market Clinical Follow-up report template'}
+                    </p>
+                  </div>
+                  
+                  <div className="pt-4">
+                    <h4 className="text-sm font-medium mb-2">Data Sources</h4>
+                    
                     <div className="space-y-3">
-                      <div className="flex items-center">
-                        <input type="checkbox" id="include-charts" className="h-4 w-4 text-blue-600" checked />
-                        <label htmlFor="include-charts" className="ml-2">Include charts and visualizations</label>
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          id="includeFaersData" 
+                          checked={additionalOptions.includeFaersData}
+                          onCheckedChange={() => handleOptionChange('includeFaersData')}
+                        />
+                        <Label htmlFor="includeFaersData" className="cursor-pointer">Include FAERS Data Analysis</Label>
                       </div>
-                      <div className="flex items-center">
-                        <input type="checkbox" id="include-raw" className="h-4 w-4 text-blue-600" />
-                        <label htmlFor="include-raw" className="ml-2">Include raw FAERS data tables</label>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          id="includeComparators" 
+                          checked={additionalOptions.includeComparators}
+                          onCheckedChange={() => handleOptionChange('includeComparators')}
+                        />
+                        <Label htmlFor="includeComparators" className="cursor-pointer">Include Similar Product Comparisons</Label>
                       </div>
-                      <div className="flex items-center">
-                        <input type="checkbox" id="include-comp" className="h-4 w-4 text-blue-600" checked />
-                        <label htmlFor="include-comp" className="ml-2">Include comparative analysis</label>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          id="includeLiterature" 
+                          checked={additionalOptions.includeLiterature}
+                          onCheckedChange={() => handleOptionChange('includeLiterature')}
+                        />
+                        <Label htmlFor="includeLiterature" className="cursor-pointer">Include Literature Review</Label>
                       </div>
-                      <div className="flex items-center">
-                        <input type="checkbox" id="include-exec" className="h-4 w-4 text-blue-600" checked />
-                        <label htmlFor="include-exec" className="ml-2">Include executive summary</label>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          id="includePostMarket" 
+                          checked={additionalOptions.includePostMarket}
+                          onCheckedChange={() => handleOptionChange('includePostMarket')}
+                        />
+                        <Label htmlFor="includePostMarket" className="cursor-pointer">Include Post-Market Data</Label>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="mt-8 flex justify-center">
-                  <Button
-                    onClick={handleDownload}
-                    disabled={isLoading}
-                    className="w-64"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating Report...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="mr-2 h-4 w-4" />
-                        Download {downloadFormat.toUpperCase()} Report
-                      </>
-                    )}
-                  </Button>
+                <div className="mt-6 bg-muted p-4 rounded-lg">
+                  <h4 className="text-sm font-medium mb-2">FAERS Data Summary</h4>
+                  {faersData ? (
+                    <ul className="text-sm space-y-1 text-muted-foreground">
+                      <li>Product: {faersData.productInfo?.name || 'Not available'}</li>
+                      <li>Total Reports: {faersData.summary?.totalReports || 0}</li>
+                      <li>Serious Events: {faersData.summary?.seriousEvents || 0}</li>
+                      <li>Risk Severity: {faersData.summary?.severityAssessment || 'Not assessed'}</li>
+                      {faersData.comparativeAnalysis && (
+                        <li>Comparators: {faersData.comparativeAnalysis.products?.length || 0} similar products</li>
+                      )}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No FAERS data available</p>
+                  )}
                 </div>
               </div>
             </div>
             
-            <div className="bg-amber-50 border border-amber-100 rounded-md p-4">
-              <h4 className="font-medium mb-2 flex items-center text-amber-800">
-                <FileText className="h-4 w-4 mr-2" />
-                Report Generation Information
-              </h4>
-              <p className="text-sm text-amber-700">
-                The full CER report integrates data from multiple sources, including product specifications, clinical trial data, literature reviews, and
-                FDA FAERS analysis. The report is generated in accordance with regulatory requirements and follows the MEDDEV 2.7/1 Rev. 4 guidelines.
-              </p>
-            </div>
+            <Button 
+              onClick={handleGenerateReport} 
+              disabled={isGenerating || !deviceInfo.name}
+              className="w-full mt-6"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating CER Report...
+                </>
+              ) : (
+                <>
+                  <FileCheck className="mr-2 h-4 w-4" />
+                  Generate CER Report
+                </>
+              )}
+            </Button>
+          </TabsContent>
+          
+          {/* Preview Tab */}
+          <TabsContent value="preview" className="space-y-4 py-4">
+            {isGenerating && !generatedReport ? (
+              <div className="py-20 flex flex-col items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin mb-4 text-primary" />
+                <p className="text-lg text-center">Generating your Clinical Evaluation Report...</p>
+                <p className="text-sm text-center text-muted-foreground mt-2">This may take a few moments</p>
+              </div>
+            ) : generatedReport ? (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold">{generatedReport.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Generated: {new Date(generatedReport.generatedAt).toLocaleString()}
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Document Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold flex items-center text-green-600">
+                        <FileCheck className="mr-2 h-5 w-5" />
+                        Complete
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        All sections generated successfully
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Document Sections</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {generatedReport.sections.length}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        All sections follow {selectedTemplate === 'eu-mdr-full' ? 'EU MDR' : 
+                          selectedTemplate === 'meddev-rev4' ? 'MEDDEV 2.7/1' : 
+                          selectedTemplate === 'fda-510k' ? 'FDA 510(k)' : 'PMCF'} guidelines
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Available Formats</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {generatedReport.formats.map((format, index) => (
+                          <div key={index} className="px-2 py-1 bg-muted rounded text-xs font-medium">
+                            {format}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Click download below to select format
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="bg-muted px-4 py-2">
+                    <h4 className="font-medium">Document Sections</h4>
+                  </div>
+                  <div className="divide-y">
+                    {generatedReport.sections.map((section) => (
+                      <div key={section.id} className="px-4 py-3 flex items-center justify-between">
+                        <span>{section.title}</span>
+                        <span className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                          <FileCheck className="h-3 w-3 mr-1" />
+                          Complete
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <Button className="w-full">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Clinical Evaluation Report
+                </Button>
+              </div>
+            ) : (
+              <div className="py-20 text-center text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p>Configure your CER settings and click "Generate" to create your report</p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 
-        <DialogFooter className="mt-4">
-          {activeTab === 'report' || activeTab === 'faers' ? (
-            <Button 
-              variant="outline"
-              onClick={() => {
-                navigator.clipboard.writeText(document.querySelector('[role="tabpanel"]').innerText);
-                alert('Report content copied to clipboard');
-              }}
-              className="mr-2"
-            >
-              <Copy className="h-4 w-4 mr-2" /> Copy to Clipboard
-            </Button>
-          ) : null}
-          <Button onClick={onClose}>Close Report</Button>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isGenerating}>
+            Close
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
