@@ -2,7 +2,8 @@
  * CER API Service
  * 
  * Provides utility functions for interacting with the CER Generator API endpoints.
- * Centralizes all API calls related to CER generation, export, and FAERS data fetching.
+ * Centralizes all API calls related to CER generation, export, FAERS data fetching,
+ * and regulatory compliance scoring.
  */
 
 /**
@@ -126,4 +127,38 @@ export const downloadBlob = (blob, filename) => {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+};
+
+/**
+ * Get compliance score for CER sections against regulatory standards
+ * @param {Object} params - Parameters for compliance scoring
+ * @param {Array} params.sections - The sections to analyze
+ * @param {string} params.title - The title of the CER
+ * @param {Array} params.standards - Optional array of regulatory standards to check against (defaults to EU MDR, ISO 14155, FDA)
+ * @returns {Promise<Object>} - The compliance score results
+ */
+export const getComplianceScore = async ({ sections, title, standards = ['EU MDR', 'ISO 14155', 'FDA'] }) => {
+  try {
+    const response = await fetch('/api/cer/compliance-score', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sections,
+        title,
+        standards,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error getting compliance score: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getComplianceScore:', error);
+    throw error;
+  }
 };

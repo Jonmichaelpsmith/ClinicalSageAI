@@ -1,296 +1,233 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, CheckCircle, BadgeInfo, FileText, X, Shield } from 'lucide-react';
+import { getComplianceScore } from '../../services/CerAPIService';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { InfoCircledIcon, CheckCircledIcon, CrossCircledIcon, ReloadIcon } from '@radix-ui/react-icons';
 
-/**
- * Compliance Score Panel Component
- * 
- * Analyzes the current CER content and provides compliance scoring against
- * major regulatory frameworks including EU MDR, ISO 14155, and FDA guidelines.
- * Identifies gaps and provides recommendations for improving compliance.
- */
-const ComplianceScorePanel = ({ sections = [] }) => {
-  const [scores, setScores] = useState(null);
+export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report' }) {
   const [loading, setLoading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(null);
+  const [complianceData, setComplianceData] = useState(null);
   const [expandedSection, setExpandedSection] = useState(null);
-
-  // Fetch compliance scores whenever sections change
-  useEffect(() => {
-    const fetchScores = async () => {
-      if (!sections.length) {
-        setScores(null);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetch('/api/cer/compliance-score', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sections }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to analyze compliance');
-        }
-
-        const data = await response.json();
-        setScores(data);
-      } catch (err) {
-        console.error('Compliance score error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchScores();
-  }, [sections]);
-
-  // Calculate combined average score
-  const calculateAverageScore = () => {
-    if (!scores) return 0;
-    const { euMdr, iso14155, fda } = scores.frameworks;
-    return Math.round((euMdr.score + iso14155.score + fda.score) / 3);
-  };
-
-  // Get color class based on score
-  const getScoreColorClass = (score) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-amber-500';
-    return 'text-red-500';
-  };
-
-  // Get progress color class based on score
-  const getProgressColorClass = (score) => {
-    if (score >= 80) return 'bg-green-600';
-    if (score >= 60) return 'bg-amber-500';
-    return 'bg-red-500';
-  };
-
-  // Render loading state
-  if (loading) {
-    return (
-      <div className="p-6 space-y-6">
-        <h2 className="text-xl font-bold mb-4">Analyzing Regulatory Compliance...</h2>
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-      </div>
-    );
-  }
-
-  // Render error state
-  if (error) {
-    return (
-      <div className="p-6 space-y-4">
-        <div className="bg-red-50 border border-red-200 p-4 rounded-md flex items-start">
-          <AlertTriangle className="text-red-500 mr-3 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-red-800">Error Analyzing Compliance</h3>
-            <p className="text-red-700">{error}</p>
-            <p className="text-sm text-red-600 mt-1">Please try again or contact support if this problem persists.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Render empty state
-  if (!scores || !sections.length) {
-    return (
-      <div className="p-6 space-y-4">
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-md flex items-start">
-          <BadgeInfo className="text-blue-500 mr-3 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-blue-800">No Content to Analyze</h3>
-            <p className="text-blue-700">Add sections to your Clinical Evaluation Report to receive compliance scoring.</p>
-            <p className="text-sm text-blue-600 mt-1">Compliance scoring will automatically analyze your report against EU MDR, ISO 14155, and FDA guidelines.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Render compliance score results
-  return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-xl font-bold mb-2 flex items-center">
-        <Shield className="mr-2" />
-        Regulatory Compliance Analysis
-      </h2>
+  
+  // Function to run compliance analysis
+  const runComplianceAnalysis = async () => {
+    if (!sections || sections.length === 0) {
+      setError('Please add sections to your report before running compliance analysis');
+      return;
+    }
+    
+    try {
+      setAnalyzing(true);
+      setError(null);
       
-      {/* Overall Score */}
-      <div className="bg-white border rounded-lg p-4 shadow-sm">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="font-semibold text-lg">Overall Compliance</h3>
-          <div className={`text-3xl font-bold ${getScoreColorClass(calculateAverageScore())}`}>
-            {calculateAverageScore()}%
-          </div>
-        </div>
-        <Progress value={calculateAverageScore()} className="h-2 mt-1" />
-        <p className="text-sm text-gray-600 mt-2">
-          Combined score across EU MDR, ISO 14155, and FDA guidelines
-        </p>
+      const response = await getComplianceScore({
+        sections,
+        title,
+        standards: ['EU MDR', 'ISO 14155', 'FDA']
+      });
+      
+      setComplianceData(response);
+    } catch (err) {
+      console.error('Compliance analysis error:', err);
+      setError(err.message || 'Failed to analyze compliance');
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+  
+  // Get score color based on value
+  const getScoreColor = (score) => {
+    if (score >= 0.8) return 'text-green-600';
+    if (score >= 0.6) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+  
+  // Get badge color based on score
+  const getBadgeVariant = (score) => {
+    if (score >= 0.8) return 'success';
+    if (score >= 0.6) return 'warning';
+    return 'destructive';
+  };
+  
+  // Format percentage for display
+  const formatPercent = (value) => `${Math.round(value * 100)}%`;
+  
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Regulatory Compliance Scorecard</h2>
+        <button
+          onClick={runComplianceAnalysis}
+          disabled={analyzing || sections.length === 0}
+          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md disabled:bg-blue-300"
+        >
+          {analyzing ? (
+            <>
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              Analyzing...
+            </>
+          ) : (
+            <>Check Compliance</>
+          )}
+        </button>
       </div>
-
-      {/* Framework Scores */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* EU MDR Score */}
-        <div className="bg-white border rounded-lg p-4 shadow-sm">
-          <div className="flex justify-between items-center">
-            <h3 className="font-semibold">EU MDR 2017/745</h3>
-            <div className={`text-2xl font-bold ${getScoreColorClass(scores.frameworks.euMdr.score)}`}>
-              {scores.frameworks.euMdr.score}%
+      
+      {error && (
+        <Alert variant="destructive">
+          <CrossCircledIcon className="h-4 w-4" />
+          <AlertTitle>Analysis Failed</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {!complianceData && !analyzing && !error && (
+        <Alert>
+          <InfoCircledIcon className="h-4 w-4" />
+          <AlertTitle>Regulatory Compliance Check</AlertTitle>
+          <AlertDescription>
+            Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 regulatory standards.
+            This will evaluate each section for content quality, completeness, and alignment with regulatory requirements.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {analyzing && (
+        <div className="space-y-4">
+          <p>Analyzing regulatory compliance against EU MDR, FDA, and ISO 14155 standards...</p>
+          <div className="space-y-2">
+            <Skeleton className="h-[28px] w-full" />
+            <Skeleton className="h-[100px] w-full" />
+            <div className="grid grid-cols-3 gap-4">
+              <Skeleton className="h-[120px]" />
+              <Skeleton className="h-[120px]" />
+              <Skeleton className="h-[120px]" />
             </div>
+            <Skeleton className="h-[180px] w-full" />
           </div>
-          <Progress 
-            value={scores.frameworks.euMdr.score} 
-            className={`h-2 mt-1 ${getProgressColorClass(scores.frameworks.euMdr.score)}`} 
-          />
         </div>
-
-        {/* ISO 14155 Score */}
-        <div className="bg-white border rounded-lg p-4 shadow-sm">
-          <div className="flex justify-between items-center">
-            <h3 className="font-semibold">ISO 14155</h3>
-            <div className={`text-2xl font-bold ${getScoreColorClass(scores.frameworks.iso14155.score)}`}>
-              {scores.frameworks.iso14155.score}%
-            </div>
-          </div>
-          <Progress 
-            value={scores.frameworks.iso14155.score} 
-            className={`h-2 mt-1 ${getProgressColorClass(scores.frameworks.iso14155.score)}`} 
-          />
-        </div>
-
-        {/* FDA Score */}
-        <div className="bg-white border rounded-lg p-4 shadow-sm">
-          <div className="flex justify-between items-center">
-            <h3 className="font-semibold">FDA Requirements</h3>
-            <div className={`text-2xl font-bold ${getScoreColorClass(scores.frameworks.fda.score)}`}>
-              {scores.frameworks.fda.score}%
-            </div>
-          </div>
-          <Progress 
-            value={scores.frameworks.fda.score} 
-            className={`h-2 mt-1 ${getProgressColorClass(scores.frameworks.fda.score)}`} 
-          />
-        </div>
-      </div>
-
-      {/* Section Analysis */}
-      <div className="mt-6">
-        <h3 className="font-semibold text-lg mb-3">Section-by-Section Analysis</h3>
-        <div className="space-y-3">
-          {scores.sectionScores.map((section, index) => (
-            <div key={index} className="border rounded-lg overflow-hidden">
-              <div 
-                className="flex justify-between items-center p-3 bg-gray-50 cursor-pointer"
-                onClick={() => setExpandedSection(expandedSection === index ? null : index)}
-              >
-                <div className="flex items-center">
-                  <FileText className="mr-2 text-gray-500" size={18} />
-                  <span className="font-medium">{section.title}</span>
-                </div>
-                <div className="flex items-center">
-                  <div className={`font-semibold ${getScoreColorClass(section.score)}`}>
-                    {section.score}%
+      )}
+      
+      {complianceData && (
+        <div className="space-y-6">
+          {/* Overall Score */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Overall Compliance</CardTitle>
+              <CardDescription>Regulatory readiness assessment</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Compliance Score</span>
+                    <span className={`text-sm font-bold ${getScoreColor(complianceData.overallScore)}`}>
+                      {formatPercent(complianceData.overallScore)}
+                    </span>
                   </div>
-                  <div className="ml-3">
-                    {expandedSection === index ? (
-                      <X size={16} className="text-gray-500" />
-                    ) : (
-                      <div>
-                        {section.score >= 80 ? (
-                          <CheckCircle size={18} className="text-green-500" />
-                        ) : (
-                          <AlertTriangle size={18} className="text-amber-500" />
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  <Progress
+                    value={complianceData.overallScore * 100}
+                    className="h-2"
+                  />
                 </div>
+                <p className="text-sm">{complianceData.summary}</p>
               </div>
-              
-              {expandedSection === index && (
-                <div className="p-3 border-t bg-white">
-                  <h4 className="font-medium mb-2">Gap Analysis</h4>
-                  <ul className="space-y-2">
-                    {section.findings.map((finding, i) => (
-                      <li key={i} className="flex items-start">
-                        {finding.type === 'issue' ? (
-                          <AlertTriangle size={16} className="text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
-                        ) : (
-                          <CheckCircle size={16} className="text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                        )}
-                        <span className="text-sm">{finding.message}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  {section.recommendations.length > 0 && (
-                    <div className="mt-3">
-                      <h4 className="font-medium mb-1">Recommendations</h4>
-                      <ul className="space-y-1 text-sm">
-                        {section.recommendations.map((rec, i) => (
-                          <li key={i} className="text-blue-700">
-                            • {rec}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+            </CardContent>
+          </Card>
+          
+          {/* Standards Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {Object.entries(complianceData.standards || {}).map(([standard, data]) => (
+              <Card key={standard}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{standard}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold mb-2 flex items-center gap-2">
+                    {formatPercent(data.score)}
+                    <Badge variant={getBadgeVariant(data.score)} className="text-xs">
+                      {data.score >= 0.8 ? 'Pass' : data.score >= 0.6 ? 'Needs Improvement' : 'Non-compliant'}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {data.criticalGaps?.length ? 
+                      `${data.criticalGaps.length} critical issues identified` : 
+                      'No critical issues found'}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          {/* Section Breakdown */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Section Compliance Breakdown</CardTitle>
+              <CardDescription>Detailed analysis by section</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible>
+                {complianceData.sectionScores?.map((section) => (
+                  <AccordionItem value={section.id} key={section.id}>
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <span>{section.title}</span>
+                        <span className={`${getScoreColor(section.averageScore)} font-semibold`}>
+                          {formatPercent(section.averageScore)}
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-4 pt-2">
+                        {/* Standards breakdown for this section */}
+                        <div className="grid grid-cols-1 gap-4">
+                          {Object.entries(section.standards || {}).map(([standard, data]) => (
+                            <div key={standard} className="border rounded-md p-3">
+                              <div className="flex justify-between items-center mb-2">
+                                <h4 className="font-medium">{standard}</h4>
+                                <Badge variant={getBadgeVariant(data.score)}>
+                                  {formatPercent(data.score)}
+                                </Badge>
+                              </div>
+                              <p className="text-sm mb-2">{data.feedback}</p>
+                              {data.suggestions?.length > 0 && (
+                                <div>
+                                  <h5 className="text-sm font-medium mb-1">Suggestions:</h5>
+                                  <ul className="list-disc list-inside text-sm space-y-1">
+                                    {data.suggestions.map((suggestion, idx) => (
+                                      <li key={idx}>{suggestion}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-
-      {/* Key Findings */}
-      <div className="bg-white border rounded-lg p-4 shadow-sm mt-4">
-        <h3 className="font-semibold mb-3">Key Findings</h3>
-        <ul className="space-y-2">
-          {scores.keyFindings.map((finding, index) => (
-            <li key={index} className="flex items-start">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    {finding.severity === 'high' ? (
-                      <AlertTriangle size={16} className="text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-                    ) : finding.severity === 'medium' ? (
-                      <AlertTriangle size={16} className="text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
-                    ) : (
-                      <BadgeInfo size={16} className="text-blue-500 mr-2 mt-0.5 flex-shrink-0" />
-                    )}
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{finding.severity === 'high' ? 'Critical Issue' : finding.severity === 'medium' ? 'Moderate Issue' : 'Suggestion'}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <span>{finding.message}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      )}
     </div>
   );
-};
-
-export default ComplianceScorePanel;
+}
