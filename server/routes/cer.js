@@ -974,32 +974,34 @@ router.post('/export-word', async (req, res) => {
 // POST /api/cer/preview - Generate HTML preview of CER report
 router.post('/preview', async (req, res) => {
   try {
-    const { faersData, productName } = req.body;
+    const { title, sections, faers, comparators } = req.body;
     
-    if (!faersData) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'FAERS data is required' 
-      });
+    if (!sections || !Array.isArray(sections) || sections.length === 0) {
+      // Allow preview with just FAERS data
+      if (faers && Array.isArray(faers) && faers.length > 0) {
+        console.log('Generating preview with FAERS data only');
+      } else {
+        return res.status(400).json({ error: 'At least one section is required' });
+      }
     }
     
-    console.log(`Generating HTML preview for ${productName || 'unknown product'}`);
+    console.log(`Generating HTML preview for ${title || 'unknown product'}`);
     
     // Extract some basic information for the preview
-    const reportCount = faersData.reportCount || 0;
-    const seriousCount = faersData.reports?.filter(r => r.is_serious)?.length || 0;
+    const reportCount = faers?.length || 0;
+    const seriousCount = faers?.filter(r => r.is_serious)?.length || 0;
     
     // Generate sample HTML preview
     const html = `
       <div class="cer-preview-content">
         <div class="cer-section">
           <h2>Clinical Evaluation Report</h2>
-          <h3>Safety Analysis for ${productName}</h3>
+          <h3>Safety Analysis for ${title}</h3>
           
           <div class="cer-summary">
             <p>
               Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, 
-              ${productName} demonstrates a moderate risk profile with ${seriousCount} serious events reported.
+              ${title?.split(':')[1] || 'The product'} demonstrates a moderate risk profile with ${seriousCount} serious events reported.
               This data has been considered in the overall benefit-risk assessment of the product.
             </p>
           </div>
@@ -1016,7 +1018,7 @@ router.post('/preview', async (req, res) => {
           <div class="cer-section">
             <h4>Risk Assessment</h4>
             <p>
-              The adverse event profile for ${productName} is consistent with similar products in its class.
+              The adverse event profile for ${title?.split(':')[1] || 'the product'} is consistent with similar products in its class.
               Most reported events were non-serious and resolved without intervention.
             </p>
           </div>
@@ -1024,7 +1026,7 @@ router.post('/preview', async (req, res) => {
           <div class="cer-section">
             <h4>Conclusion</h4>
             <p>
-              The safety profile of ${productName} is well-characterized and acceptable for its intended use.
+              The safety profile of ${title?.split(':')[1] || 'the product'} is well-characterized and acceptable for its intended use.
               Continuous monitoring of adverse events will ensure ongoing safety assessment.
             </p>
           </div>
