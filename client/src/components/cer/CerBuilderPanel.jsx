@@ -160,6 +160,32 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     return section ? section.label : selectedSectionType;
   };
   
+  // Get description text for each section type
+  const getSectionDescription = (sectionType) => {
+    switch (sectionType) {
+      case 'benefit-risk':
+        return 'Analysis of benefits vs. risks based on clinical data and risk management';
+      case 'safety':
+        return 'Evaluation of safety profile, adverse events, and device-related incidents';
+      case 'clinical-background':
+        return 'Medical context, condition overview, and current treatment options';
+      case 'device-description':
+        return 'Technical specifications, principles of operation, and intended use';
+      case 'state-of-art':
+        return 'Current medical practices, standards, and alternative therapies';
+      case 'equivalence':
+        return 'Comparison with equivalent devices and demonstration of substantial equivalence';
+      case 'literature-analysis':
+        return 'Analysis of published literature and clinical evidence';
+      case 'pms-data':
+        return 'Analysis of post-market surveillance data and real-world performance';
+      case 'conclusion':
+        return 'Overall evaluation and determination of acceptable benefit-risk profile';
+      default:
+        return 'Select to add content to your Clinical Evaluation Report';
+    }
+  };
+  
   // Fetch preview data from the API
   const fetchPreview = async () => {
     setIsLoadingPreview(true);
@@ -437,25 +463,30 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sectionType">Section Type</Label>
-                    <Select 
-                      value={selectedSectionType} 
-                      onValueChange={setSelectedSectionType}
-                    >
-                      <SelectTrigger id="sectionType">
-                        <SelectValue placeholder="Select section type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>CER Sections</SelectLabel>
-                          {sectionTypes.map(section => (
-                            <SelectItem key={section.id} value={section.id}>
-                              {section.label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <div className="mb-3">
+                      <h3 className="text-lg font-semibold mb-2">Section Type Selection</h3>
+                      <p className="text-sm text-muted-foreground mb-4">Choose a section type to generate content compliant with EU MDR, ISO 14155, and FDA regulations</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                      {sectionTypes.map(section => (
+                        <div
+                          key={section.id}
+                          className={`relative flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all hover:bg-muted/30 ${selectedSectionType === section.id ? 'border-primary bg-primary/10' : 'border-muted'}`}
+                          onClick={() => setSelectedSectionType(section.id)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="text-sm font-semibold">{section.label}</span>
+                            {selectedSectionType === section.id && (
+                              <CheckCircle className="h-4 w-4 text-primary" />
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {getSectionDescription(section.id)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
