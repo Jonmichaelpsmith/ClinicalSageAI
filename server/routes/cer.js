@@ -208,10 +208,10 @@ router.get('/faers/data', async (req, res) => {
   }
 });
 
-// POST /api/cer/fetch-faers - Fetch and store FAERS data for a specific CER
+// POST /api/cer/fetch-faers - Fetch and store FAERS data for a specific CER including comparator analysis
 router.post('/fetch-faers', async (req, res) => {
   try {
-    const { productName, cerId } = req.body;
+    const { productName, cerId, includeComparators = true, comparatorLimit = 3 } = req.body;
     
     if (!productName) {
       return res.status(400).json({ error: 'Product name is required' });
@@ -221,9 +221,14 @@ router.post('/fetch-faers', async (req, res) => {
       return res.status(400).json({ error: 'CER ID is required' });
     }
     
-    // Step 1: Fetch FAERS data using our service
-    console.log(`Fetching FAERS data for product: ${productName}, CER ID: ${cerId}`);
-    const faersData = await faersService.getFaersData(productName);
+    // Step 1: Fetch FAERS data with comparator analysis using our enhanced service
+    console.log(`Fetching FAERS data for product: ${productName}, CER ID: ${cerId}, with comparators: ${includeComparators}`);
+    
+    // Use the new comparative analysis service
+    const faersData = await faersService.getFaersDataWithComparators(productName, {
+      includeComparators,
+      comparatorLimit: parseInt(comparatorLimit, 10)
+    });
     
     // Step 2: Save FAERS data to database
     // This would use the faersDbService in a production implementation
@@ -231,20 +236,29 @@ router.post('/fetch-faers', async (req, res) => {
     // const savedReports = await dbService.saveReports(faersData.reports);
     // const savedAnalysis = await dbService.saveCachedAnalysis(faersData);
     
-    // Step 3: Return processed data
-    res.json({
+    // Step 3: Return processed data including comparators
+    const responseData = {
       success: true,
       productName,
       cerId,
-      summary: {
-        totalReports: faersData.totalReports,
-        seriousEvents: faersData.seriousEvents.length,
-        riskScore: faersData.riskScore,
-        severityAssessment: faersData.severityAssessment,
-        associatedWithCer: true
-      },
-      message: `Successfully imported ${faersData.totalReports} FAERS reports for ${productName}.`
-    });
+      reports: faersData.reports,
+      riskScore: faersData.riskScore,
+      reportCount: faersData.totalReports,
+      seriousEvents: faersData.seriousEvents,
+      topReactions: faersData.topReactions,
+      reactionCounts: faersData.reactionCounts,
+      demographics: faersData.demographics,
+      severityAssessment: faersData.severityAssessment,
+      message: `Successfully imported ${faersData.totalReports} FAERS reports for ${productName}`
+    };
+    
+    // Add comparator data if it exists
+    if (faersData.comparators && faersData.comparators.length > 0) {
+      responseData.comparators = faersData.comparators;
+      responseData.message += ` with ${faersData.comparators.length} comparative products analyzed.`;
+    }
+    
+    res.json(responseData);
     
   } catch (error) {
     console.error('Error fetching and storing FAERS data:', error);
@@ -256,17 +270,22 @@ router.post('/fetch-faers', async (req, res) => {
   }
 });
 
-// GET /api/cer/faers/analysis - Get analyzed FAERS data for CER inclusion
+// GET /api/cer/faers/analysis - Get analyzed FAERS data for CER inclusion with comparative analysis
 router.get('/faers/analysis', async (req, res) => {
   try {
-    const { productName } = req.query;
+    const { productName, includeComparators = 'true' } = req.query;
     
     if (!productName) {
       return res.status(400).json({ error: 'Product name is required' });
     }
     
-    // Use the enhanced FAERS service to get data
-    const faersData = await faersService.getFaersData(productName);
+    // Use the enhanced FAERS service to get data with comparators
+    const includeComparatorsBoolean = includeComparators === 'true';
+    
+    const faersData = await faersService.getFaersDataWithComparators(productName, {
+      includeComparators: includeComparatorsBoolean,
+      comparatorLimit: 5
+    });
     
     // Format the response specifically for CER inclusion
     const analysis = {
@@ -305,16 +324,93 @@ router.get('/faers/analysis', async (req, res) => {
             count,
             percentage: `${((count / faersData.totalReports) * 100).toFixed(1)}%`
           }))
-      },
-      conclusion: `Based on the analysis of ${faersData.totalReports} adverse event reports from the FDA FAERS database, ${faersData.productName} demonstrates a ${faersData.severityAssessment.toLowerCase()} risk profile with ${faersData.seriousEvents.length} serious events reported. The most common adverse events were ${faersData.topReactions.slice(0, 3).join(', ')}. This data should be considered in the overall benefit-risk assessment of the device.`
+      }
     };
+    
+    // Add comparator analysis if available
+    if (faersData.comparators && faersData.comparators.length > 0) {
+      analysis.comparativeAnalysis = {
+        products: faersData.comparators.map(comp => ({
+          name: comp.comparator,
+          riskScore: comp.riskScore,
+          reportCount: comp.reportCount,
+          severityAssessment: getSeverityLevel(comp.riskScore),
+          relativeSafety: getRelativeSafety(faersData.riskScore, comp.riskScore)
+        })),
+        summary: `Compared to ${faersData.comparators.length} similar products in its class, ${productName} shows ${getComparativeConclusion(faersData)}`
+      };
+      
+      // Enhanced conclusion with comparative data
+      analysis.conclusion = `Based on the analysis of ${faersData.totalReports} adverse event reports from the FDA FAERS database, ${faersData.productName} demonstrates a ${faersData.severityAssessment.toLowerCase()} risk profile with ${faersData.seriousEvents.length} serious events reported. The most common adverse events were ${faersData.topReactions.slice(0, 3).join(', ')}. ${analysis.comparativeAnalysis.summary} This data should be considered in the overall benefit-risk assessment of the device.`;
+    } else {
+      // Standard conclusion without comparators
+      analysis.conclusion = `Based on the analysis of ${faersData.totalReports} adverse event reports from the FDA FAERS database, ${faersData.productName} demonstrates a ${faersData.severityAssessment.toLowerCase()} risk profile with ${faersData.seriousEvents.length} serious events reported. The most common adverse events were ${faersData.topReactions.slice(0, 3).join(', ')}. This data should be considered in the overall benefit-risk assessment of the device.`;
+    }
     
     res.json(analysis);
   } catch (error) {
     console.error('Error analyzing FAERS data for CER:', error);
-    res.status(500).json({ error: 'Failed to analyze FAERS data for CER' });
+    res.status(500).json({ 
+      error: 'Failed to analyze FAERS data for CER',
+      message: error.message 
+    });
   }
 });
+
+// Helper function to determine severity level based on risk score
+function getSeverityLevel(riskScore) {
+  if (riskScore > 1.5) return 'High';
+  if (riskScore > 0.5) return 'Medium';
+  return 'Low';
+}
+
+// Helper function to determine relative safety compared to reference product
+function getRelativeSafety(referenceScore, comparatorScore) {
+  const ratio = comparatorScore / referenceScore;
+  
+  if (ratio < 0.8) return 'better';
+  if (ratio > 1.2) return 'worse';
+  return 'similar';
+}
+
+// Helper function to generate comparative conclusion
+function getComparativeConclusion(faersData) {
+  if (!faersData.comparators || faersData.comparators.length === 0) {
+    return '';
+  }
+  
+  // Count comparative ratings
+  const safetyCounts = {
+    better: 0,
+    similar: 0,
+    worse: 0
+  };
+  
+  faersData.comparators.forEach(comp => {
+    const relativeSafety = getRelativeSafety(faersData.riskScore, comp.riskScore);
+    safetyCounts[relativeSafety]++;
+  });
+  
+  // Generate conclusion based on counts
+  if (safetyCounts.better > safetyCounts.worse && safetyCounts.better > safetyCounts.similar) {
+    return `a more favorable safety profile than most similar products in its class.`;
+  }
+  
+  if (safetyCounts.worse > safetyCounts.better && safetyCounts.worse > safetyCounts.similar) {
+    return `a less favorable safety profile than most similar products in its class.`;
+  }
+  
+  if (safetyCounts.similar > safetyCounts.better && safetyCounts.similar > safetyCounts.worse) {
+    return `a safety profile consistent with other products in its class.`;
+  }
+  
+  // Mixed results
+  if (safetyCounts.better === safetyCounts.worse) {
+    return `a variable safety profile compared to other products in its class.`;
+  }
+  
+  return `a safety profile that should be evaluated in context with other products in its class.`;
+}
 
 // POST /api/cer/export/:id - Export CER to various formats
 router.post('/export/:id', async (req, res) => {

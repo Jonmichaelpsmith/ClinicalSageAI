@@ -94,6 +94,29 @@ const CerGeneratorPage = () => {
     console.log('Export completed:', result);
     // Could add a toast notification here
   };
+  
+  // FAERS modal content based on selected tab
+  const renderFaersModalContent = () => {
+    if (!faersData) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12">
+          <p className="text-gray-500 mb-4">No FAERS data available. Please search for a product first.</p>
+        </div>
+      );
+    }
+    
+    // Render different content based on selected tab
+    switch (selectedFaersTab) {
+      case 'reports':
+        return <FaersReportDisplay faersData={faersData} />;
+      case 'charts':
+        return <FaersDemographicsCharts faersData={faersData} />;
+      case 'comparisons':
+        return <FaersComparativeChart productName={productName} faersData={faersData} />;
+      default:
+        return <FaersReportDisplay faersData={faersData} />;
+    }
+  };
 
   return (
     <div className="container mx-auto py-6">
