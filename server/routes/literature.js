@@ -5,18 +5,18 @@
  * for the CER module's Literature AI component.
  */
 
-const express = require('express');
+import express from 'express';
+import axios from 'axios';
+import OpenAI from 'openai';
+
 const router = express.Router();
-const axios = require('axios');
-const { Configuration, OpenAIApi } = require('openai');
 
 // Configure OpenAI
 let openai;
 try {
-  const configuration = new Configuration({
+  openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
-  openai = new OpenAIApi(configuration);
 } catch (error) {
   console.error('Error initializing OpenAI client:', error);
 }
@@ -112,7 +112,7 @@ router.post('/summarize', async (req, res) => {
 
     ${text}`;
     
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: "You are an expert medical and scientific writer specializing in regulatory documentation." },
@@ -122,7 +122,7 @@ router.post('/summarize', async (req, res) => {
       temperature: 0.3,
     });
     
-    const summary = response.data.choices[0].message.content;
+    const summary = response.choices[0].message.content;
     res.json({ summary });
   } catch (error) {
     console.error('Literature summarization error:', error);
@@ -167,7 +167,7 @@ router.post('/generate-citations', async (req, res) => {
       `;
     }).join('\n')}`;
     
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: "You are a citation formatting expert for scientific and medical literature." },
@@ -177,7 +177,7 @@ router.post('/generate-citations', async (req, res) => {
       temperature: 0.1,
     });
     
-    const citations = response.data.choices[0].message.content;
+    const citations = response.choices[0].message.content;
     res.json({ citations });
   } catch (error) {
     console.error('Citation generation error:', error);
@@ -185,4 +185,4 @@ router.post('/generate-citations', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

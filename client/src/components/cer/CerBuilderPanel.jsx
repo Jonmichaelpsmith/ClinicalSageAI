@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import LiteratureSearchPanel from './LiteratureSearchPanel';
 import { useToast } from '@/hooks/use-toast';
 import {
   Card,
@@ -27,7 +28,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, AlignLeft, FileDown, FileText } from 'lucide-react';
+import { Loader2, AlignLeft, FileDown, FileText, BookOpen, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useExportFAERS } from '../../hooks/useExportFAERS';
@@ -288,6 +289,10 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
               <TabsTrigger value="generator">
                 <AlignLeft className="mr-2 h-4 w-4" />
                 Section Generator
+              </TabsTrigger>
+              <TabsTrigger value="literature">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Literature AI
               </TabsTrigger>
               <TabsTrigger value="preview">
                 <FileText className="mr-2 h-4 w-4" />
