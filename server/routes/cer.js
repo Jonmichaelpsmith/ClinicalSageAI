@@ -977,12 +977,17 @@ router.post('/preview', async (req, res) => {
     console.log('Preview request body:', JSON.stringify(req.body));
     const { title, sections, faers, comparators } = req.body;
     
-    // Allow preview with just FAERS data
-    if (faers && Array.isArray(faers) && faers.length > 0) {
-      console.log('Generating preview with FAERS data only');
-    } else if (!sections || !Array.isArray(sections) || sections.length === 0) {
-      console.log('No sections found, faers data:', faers);
-      return res.status(400).json({ error: 'At least one section is required' });
+    // Allow preview with either sections or FAERS data
+    const hasFaers = faers && Array.isArray(faers) && faers.length > 0;
+    const hasSections = sections && Array.isArray(sections) && sections.length > 0;
+    
+    if (hasFaers) {
+      console.log('Generating preview with FAERS data:', faers.length, 'records');
+    } else if (hasSections) {
+      console.log('Generating preview with sections:', sections.length, 'sections');
+    } else {
+      console.log('No content found for preview');
+      return res.status(400).json({ error: 'Either sections or FAERS data is required' });
     }
     
     console.log(`Generating HTML preview for ${title || 'unknown product'}`);
@@ -991,37 +996,59 @@ router.post('/preview', async (req, res) => {
     const reportCount = faers?.length || 0;
     const seriousCount = faers?.filter(r => r.is_serious)?.length || 0;
     
-    // Generate sample HTML preview
+    // Generate sample HTML preview with sections and/or FAERS data
+    let sectionsHtml = '';
+    if (hasSections) {
+      sectionsHtml = sections.map(section => {
+        return `
+          <div class="cer-user-section">
+            <h4>${section.title || 'Section'}</h4>
+            <div class="cer-section-content">
+              ${section.content || ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    let faersHtml = '';
+    if (hasFaers) {
+      faersHtml = `
+        <div class="cer-summary">
+          <p>
+            Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, 
+            ${title?.split(':')[1] || 'The product'} demonstrates a moderate risk profile with ${seriousCount} serious events reported.
+            This data has been considered in the overall benefit-risk assessment of the product.
+          </p>
+        </div>
+        
+        <div class="cer-section">
+          <h4>Summary of FAERS Findings</h4>
+          <ul>
+            <li>Total reports analyzed: ${reportCount}</li>
+            <li>Serious adverse events: ${seriousCount}</li>
+            <li>Reporting period: 2020-01-01 to ${new Date().toISOString().split('T')[0]}</li>
+          </ul>
+        </div>
+        
+        <div class="cer-section">
+          <h4>Risk Assessment</h4>
+          <p>
+            The adverse event profile for ${title?.split(':')[1] || 'the product'} is consistent with similar products in its class.
+            Most reported events were non-serious and resolved without intervention.
+          </p>
+        </div>
+      `;
+    }
+    
     const html = `
       <div class="cer-preview-content">
         <div class="cer-section">
           <h2>Clinical Evaluation Report</h2>
-          <h3>Safety Analysis for ${title}</h3>
+          <h3>${title || 'Device/Product Evaluation'}</h3>
           
-          <div class="cer-summary">
-            <p>
-              Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, 
-              ${title?.split(':')[1] || 'The product'} demonstrates a moderate risk profile with ${seriousCount} serious events reported.
-              This data has been considered in the overall benefit-risk assessment of the product.
-            </p>
-          </div>
-          
-          <div class="cer-section">
-            <h4>Summary of FAERS Findings</h4>
-            <ul>
-              <li>Total reports analyzed: ${reportCount}</li>
-              <li>Serious adverse events: ${seriousCount}</li>
-              <li>Reporting period: 2020-01-01 to ${new Date().toISOString().split('T')[0]}</li>
-            </ul>
-          </div>
-          
-          <div class="cer-section">
-            <h4>Risk Assessment</h4>
-            <p>
-              The adverse event profile for ${title?.split(':')[1] || 'the product'} is consistent with similar products in its class.
-              Most reported events were non-serious and resolved without intervention.
-            </p>
-          </div>
+          ${faersHtml}
+          ${sectionsHtml}
           
           <div class="cer-section">
             <h4>Conclusion</h4>
