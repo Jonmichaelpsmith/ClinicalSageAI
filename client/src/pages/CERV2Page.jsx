@@ -1,182 +1,122 @@
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { FileText, Upload, BookOpen, FileDigit, Archive, Settings, ClipboardCheck, Brain, PenLine } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Brain } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-// Import all our restored components
-import InputDataPanel from '@/components/cer/InputDataPanel';
-import LitReviewPanel from '@/components/cer/LitReviewPanel';
-import GeneratedReportPanel from '@/components/cer/GeneratedReportPanel';
-import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
-import TemplateSettingsPanel from '@/components/cer/TemplateSettingsPanel';
-import ApprovalsPanel from '@/components/cer/ApprovalsPanel';
-import GenerateFullCerButton from '@/components/cer/GenerateFullCerButton';
-import CerProgressDashboard from '@/components/cer/CerProgressDashboard'; // Add our new AI enhanced progress dashboard
-import { CerBuilderPanel } from '@/components/cer/CerBuilderPanel'; // Import our new CER builder panel
+// Import our core components
+import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
+import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
+
+/**
+ * Backup implementation of the CER Generator page
+ * This serves as a disaster recovery version if issues arise with the main implementation
+ */
+function CERV2Page_backup() {
+  const [title, setTitle] = useState('Clinical Evaluation Report');
+  const [faers, setFaers] = useState([]);
+  const [comparators, setComparators] = useState([]);
+  const [sections, setSections] = useState([]);
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="bg-white p-4 rounded shadow border">
+        <h2 className="text-xl font-bold mb-2">🧠 How to Use the CER Generator</h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Select a section type and provide context</li>
+          <li>Generate and add each needed section to your report</li>
+          <li>Preview and export your complete CER as PDF or DOCX</li>
+        </ol>
+      </div>
+
+      <CerBuilderPanel
+        title={title}
+        faers={faers}
+        comparators={comparators}
+        sections={sections}
+        onTitleChange={setTitle}
+        onSectionsChange={setSections}
+        onFaersChange={setFaers}
+        onComparatorsChange={setComparators}
+      />
+
+      <div className="border-t pt-6">
+        <CerPreviewPanel
+          title={title}
+          faers={faers}
+          comparators={comparators}
+          sections={sections}
+        />
+      </div>
+    </div>
+  );
+}
 
 /**
  * CER Generator V2 Page
  * 
- * Enhanced interface for managing Clinical Evaluation Reports with 
- * comprehensive tabs for different aspects of the CER workflow.
+ * Streamlined interface for managing Clinical Evaluation Reports with
+ * AI-powered section generation and live preview.
  */
-const CERV2Page = () => {
-  const [activeTab, setActiveTab] = useState('ai-dashboard');
-  const [selectedJobId, setSelectedJobId] = useState('JOB-20250429-001');
+function CERV2Page() {
+  const { toast } = useToast();
+  const [title, setTitle] = useState('Clinical Evaluation Report');
+  const [faers, setFaers] = useState([]);
+  const [comparators, setComparators] = useState([]);
+  const [sections, setSections] = useState([]);
   
-  // Product data - in production this would come from API or context
+  // Product information - in production would come from context/API
   const productData = {
     id: 'PROD-12345',
     name: 'Enzymex Forte',
-    templateId: 'ICH-E3-FULL',
-    metadata: {
-      Sponsor: 'PharmaPlus Therapeutics',
-      Region: 'Global',
-      Phase: 'Phase III'
-    }
+    manufacturer: 'PharmaPlus Therapeutics',
+    reporting_period: "January 2024 - April 2025"
   };
   
-  return (
-    <div className="container py-6 max-w-7xl mx-auto">
-      {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2 flex items-center gap-2">
-          <FileText className="h-8 w-8" />
-          Clinical Evaluation Report Generator
-        </h1>
-        <p className="text-muted-foreground">
-          Generate, manage, and review Clinical Evaluation Reports for regulatory submissions.
-        </p>
-      </div>
-      
-      {/* Active Product Card */}
-      <div className="grid grid-cols-1 gap-8 mb-8">
-        <Card className="shadow-md">
-          <CardHeader className="p-6">
-            <CardTitle>Active Product: {productData.name}</CardTitle>
-            <CardDescription>ID: {productData.id}</CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 pt-0">
-            <div className="flex justify-end">
-              <GenerateFullCerButton
-                productId={productData.id}
-                templateId={productData.templateId}
-                metadata={productData.metadata}
-                onSuccess={(jobId) => {
-                  setSelectedJobId(jobId);
-                  setActiveTab('report');
-                }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Main Navigation Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-8 mb-8">
-          <TabsTrigger value="ai-dashboard" className="flex items-center gap-2">
-            <Brain className="h-4 w-4" />
-            AI Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="builder" className="flex items-center gap-2">
-            <PenLine className="h-4 w-4" />
-            CER Builder
-          </TabsTrigger>
-          <TabsTrigger value="input" className="flex items-center gap-2">
-            <Upload className="h-4 w-4" />
-            Input Data
-          </TabsTrigger>
-          <TabsTrigger value="litreview" className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Literature Review
-          </TabsTrigger>
-          <TabsTrigger value="report" className="flex items-center gap-2">
-            <FileDigit className="h-4 w-4" />
-            Generated Report
-          </TabsTrigger>
-          <TabsTrigger value="vault" className="flex items-center gap-2">
-            <Archive className="h-4 w-4" />
-            Document Vault
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Template Settings
-          </TabsTrigger>
-          <TabsTrigger value="approvals" className="flex items-center gap-2">
-            <ClipboardCheck className="h-4 w-4" />
-            Approvals
-          </TabsTrigger>
-        </TabsList>
-        
-        {/* AI Dashboard Tab */}
-        <TabsContent value="ai-dashboard" className="mt-0">
-          <CerProgressDashboard />
-        </TabsContent>
-        
-        {/* Improved CER Builder Tab - Consolidated workflow */}
-        <TabsContent value="builder" className="mt-0">
-          <Card className="mb-4 border-blue-200 bg-blue-50">
-            <CardContent className="pt-4">
-              <div className="flex items-start space-x-4">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <Brain className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Create Your CER in 3 Steps</h3>
-                  <ol className="list-decimal list-inside mt-1 text-sm space-y-1 text-blue-800">
-                    <li>Select a section type and provide context</li>
-                    <li>Generate and add each needed section to your report</li>
-                    <li>Preview and export your complete CER as PDF or DOCX</li>
-                  </ol>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <CerBuilderPanel 
-            productName={productData.name}
-            faersData={{
-              product_name: productData.name,
-              manufacturer: productData.metadata.Sponsor,
-              total_reports: 432,
-              serious_events: 78,
-              reporting_period: "January 2024 - April 2025"
-            }}
-          />
-        </TabsContent>
+  // Handle notification when sections are added or edited
+  const handleSectionChange = (newSections) => {
+    setSections(newSections);
+    if (newSections.length > sections.length) {
+      toast({
+        title: "Section Added",
+        description: "New section has been added to your report"
+      });
+    }
+  };
 
-        {/* Input Data Tab */}
-        <TabsContent value="input" className="mt-0">
-          <InputDataPanel />
-        </TabsContent>
-        
-        {/* Literature Review Tab */}
-        <TabsContent value="litreview" className="mt-0">
-          <LitReviewPanel />
-        </TabsContent>
-        
-        {/* Generated Report Tab */}
-        <TabsContent value="report" className="mt-0">
-          <GeneratedReportPanel jobId={selectedJobId} />
-        </TabsContent>
-        
-        {/* Document Vault Tab */}
-        <TabsContent value="vault" className="mt-0">
-          <DocumentVaultPanel jobId={selectedJobId} />
-        </TabsContent>
-        
-        {/* Template Settings Tab */}
-        <TabsContent value="settings" className="mt-0">
-          <TemplateSettingsPanel />
-        </TabsContent>
-        
-        {/* Approvals Tab */}
-        <TabsContent value="approvals" className="mt-0">
-          <ApprovalsPanel />
-        </TabsContent>
-      </Tabs>
+  return (
+    <div className="p-6 space-y-6">
+      <div className="bg-white p-4 rounded shadow border">
+        <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+          <Brain className="h-5 w-5 text-blue-600" />
+          How to Use the CER Generator
+        </h2>
+        <ol className="list-decimal list-inside space-y-1">
+          <li>Select a section type and provide context</li>
+          <li>Generate and add each needed section to your report</li>
+          <li>Preview and export your complete CER as PDF or DOCX</li>
+        </ol>
+      </div>
+
+      <CerBuilderPanel
+        title={title}
+        faers={faers}
+        comparators={comparators}
+        sections={sections}
+        onTitleChange={setTitle}
+        onSectionsChange={handleSectionChange}
+        onFaersChange={setFaers}
+        onComparatorsChange={setComparators}
+        productData={productData}
+      />
+
+      <div className="border-t pt-6">
+        <CerPreviewPanel
+          title={title}
+          faers={faers}
+          comparators={comparators}
+          sections={sections}
+        />
+      </div>
     </div>
   );
 };
