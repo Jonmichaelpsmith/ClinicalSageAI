@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useExportFAERS } from '../../hooks/useExportFAERS';
 import { FaersRiskBadge } from './FaersRiskBadge';
+import { CerReportPreview } from './CerReportPreview';
 import CerPreviewPanel from './CerPreviewPanel';
 
 /**
