@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useExportFAERS } from '../../hooks/useExportFAERS';
 import { FaersRiskBadge } from './FaersRiskBadge';
+import CerPreviewPanel from './CerPreviewPanel';
 
 /**
  * CER Builder Panel Component
@@ -405,77 +406,17 @@ export function CerBuilderPanel({ faersData, productName }) {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {/* CER Sections */}
-                    <Accordion type="single" collapsible className="w-full">
-                      {cerSections.map((section, index) => (
-                        <AccordionItem key={section.id} value={section.id}>
-                          <AccordionTrigger>
-                            <div className="flex items-center">
-                              <span>{index + 1}. {section.title}</span>
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                {new Date(section.dateAdded).toLocaleDateString()}
-                              </Badge>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <div className="prose max-w-none dark:prose-invert">
-                              {section.content.split('\n').map((paragraph, idx) => (
-                                <p key={idx}>{paragraph}</p>
-                              ))}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                    
-                    {/* FAERS Summary */}
-                    {faersData && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>FAERS Safety Analysis</CardTitle>
-                          <CardDescription>
-                            FDA Adverse Event Reporting System Data Summary
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="flex items-center">
-                              <span className="font-medium mr-2">Risk Assessment:</span>
-                              <FaersRiskBadge 
-                                riskLevel={faersData.severityAssessment?.toLowerCase()} 
-                                score={faersData.riskScore} 
-                                compact 
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium">Total Reports</p>
-                                <p className="text-xl font-semibold">{faersData.totalReports || 0}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium">Serious Events</p>
-                                <p className="text-xl font-semibold">{faersData.seriousEvents?.length || 0}</p>
-                              </div>
-                            </div>
-                            
-                            {faersData.topReactions && faersData.topReactions.length > 0 && (
-                              <div className="space-y-2">
-                                <p className="text-sm font-medium">Top Reactions</p>
-                                <div className="flex flex-wrap gap-2">
-                                  {faersData.topReactions.slice(0, 5).map((reaction, idx) => (
-                                    <Badge key={idx} variant="secondary">
-                                      {reaction.term} ({reaction.count})
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
+                  <div className="border rounded-md bg-white">
+                    {/* Use CerPreviewPanel for a consistent preview experience */}
+                    <CerPreviewPanel 
+                      title={cerTitle}
+                      sections={cerSections.map(section => ({
+                        section: section.title,
+                        content: section.content
+                      }))}
+                      faers={faersData?.reports || []}
+                      comparators={faersData?.comparators || []}
+                    />
                   </div>
                 )}
               </div>
