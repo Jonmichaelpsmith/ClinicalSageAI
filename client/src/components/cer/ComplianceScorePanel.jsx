@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getComplianceScore } from '../../services/CerAPIService';
+import { getComplianceScore, exportCompliancePDF } from '../../services/CerAPIService';
 import {
   Card,
   CardContent,
@@ -17,7 +17,6 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Info, CheckCircle, XCircle, RefreshCw, Download, FileText } from 'lucide-react';
 
 export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
@@ -27,6 +26,18 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
   const [error, setError] = useState(null);
   const [complianceData, setComplianceData] = useState(null);
   const [expandedSection, setExpandedSection] = useState(null);
+  
+  // Update parent component with compliance data if callback provided
+  useEffect(() => {
+    if (complianceData && onComplianceChange) {
+      onComplianceChange(complianceData);
+      
+      // Update status based on score if callback provided
+      if (onStatusChange && complianceData.overallScore >= 0.8) {
+        onStatusChange('ready-for-review');
+      }
+    }
+  }, [complianceData, onComplianceChange, onStatusChange]);
   
   // Function to run compliance analysis
   const runComplianceAnalysis = async () => {
@@ -51,6 +62,31 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
       setError(err.message || 'Failed to analyze compliance');
     } finally {
       setAnalyzing(false);
+    }
+  };
+  
+  // Function to export compliance report as PDF
+  const handleExportPDF = async () => {
+    if (!complianceData) return;
+    
+    try {
+      setExporting(true);
+      const blob = await exportCompliancePDF(complianceData);
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'compliance_scorecard.pdf';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export PDF error:', err);
+      setError(err.message || 'Failed to export compliance report');
+    } finally {
+      setExporting(false);
     }
   };
   
@@ -148,7 +184,21 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
                     className="h-2"
                   />
                 </div>
-                <p className="text-sm">{complianceData.summary}</p>
+                <div className="flex justify-between items-start">
+                  <p className="text-sm flex-grow mr-4">{complianceData.summary}</p>
+                  <button
+                    onClick={handleExportPDF}
+                    disabled={exporting}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white text-gray-900 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {exporting ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileText className="h-4 w-4" />
+                    )}
+                    <span>{exporting ? 'Exporting...' : 'Export PDF'}</span>
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>

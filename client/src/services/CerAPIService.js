@@ -162,3 +162,30 @@ export const getComplianceScore = async ({ sections, title, standards = ['EU MDR
     throw error;
   }
 };
+
+/**
+ * Export compliance score results as a PDF report
+ * @param {Object} data - The compliance score data to include in the report
+ * @returns {Promise<Blob>} - The PDF report as a Blob
+ */
+export const exportCompliancePDF = async (data) => {
+  try {
+    const response = await fetch('/api/cer/export-compliance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error exporting compliance PDF: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    return blob;
+  } catch (error) {
+    console.error('Error in exportCompliancePDF:', error);
+    throw error;
+  }
+};
