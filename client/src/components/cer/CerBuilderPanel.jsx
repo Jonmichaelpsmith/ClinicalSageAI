@@ -390,6 +390,42 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
               </div>
             </TabsContent>
             
+            {/* Literature AI Tab */}
+            <TabsContent value="literature">
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Literature AI Search</CardTitle>
+                    <CardDescription>
+                      Search and analyze scientific literature for your Clinical Evaluation Report
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <LiteratureSearchPanel 
+                      cerTitle={title} 
+                      onAddToCER={(literatureSection) => {
+                        setCerSections([...cerSections, {
+                          id: `section-${Date.now()}`,
+                          type: 'literature-review',
+                          title: 'Literature Review',
+                          content: literatureSection.content,
+                          dateAdded: new Date().toISOString(),
+                        }]);
+                        
+                        toast({
+                          title: 'Literature Review Added',
+                          description: 'Literature review and citations have been added to your report.',
+                        });
+                        
+                        // Switch to preview tab to show the added content
+                        setActiveTab('preview');
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
             {/* Report Preview Tab */}
             <TabsContent value="preview">
               <div className="space-y-4">
