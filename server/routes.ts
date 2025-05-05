@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import path from 'path';
 import indWizardRouter from './routes/indWizardAPI.js';
+import cerRouter from './routes/cer.js';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
