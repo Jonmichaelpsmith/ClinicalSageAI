@@ -17,11 +17,13 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Info, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Info, CheckCircle, XCircle, RefreshCw, Download, FileText } from 'lucide-react';
 
-export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report' }) {
+export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [complianceData, setComplianceData] = useState(null);
   const [expandedSection, setExpandedSection] = useState(null);
@@ -80,7 +82,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
         >
           {analyzing ? (
             <>
-              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               Analyzing...
             </>
           ) : (
@@ -91,7 +93,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
       
       {error && (
         <Alert variant="destructive">
-          <CrossCircledIcon className="h-4 w-4" />
+          <XCircle className="h-4 w-4" />
           <AlertTitle>Analysis Failed</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -99,7 +101,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
       
       {!complianceData && !analyzing && !error && (
         <Alert>
-          <InfoCircledIcon className="h-4 w-4" />
+          <Info className="h-4 w-4" />
           <AlertTitle>Regulatory Compliance Check</AlertTitle>
           <AlertDescription>
             Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 regulatory standards.
