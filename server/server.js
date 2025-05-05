@@ -156,6 +156,14 @@ app.use('/api/*', (req, res, next) => {
   });
 });
 
+// Import and set up static routes for marketing pages
+import { setupStaticRoutes } from './static-routes.js';
+
+// Set up static routes for marketing pages before the React fallback
+console.log('✅ Setting up static routes for marketing pages');
+setupStaticRoutes(app);
+console.log('✅ Static routes set up successfully');
+
 // React Router fallback - serve React index.html for client routes
 app.get('*', (req, res) => {
   // Frontend route - serve React app
