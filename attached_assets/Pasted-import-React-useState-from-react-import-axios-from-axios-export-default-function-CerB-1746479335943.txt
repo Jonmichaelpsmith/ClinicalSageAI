@@ -1,0 +1,84 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+
+export default function CerBuilderPanel() {
+  const [sectionType, setSectionType] = useState('Safety Profile');
+  const [context, setContext] = useState('');
+  const [sectionContent, setSectionContent] = useState('');
+  const [faers, setFaers] = useState([]);
+  const [comparators, setComparators] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [title, setTitle] = useState('Clinical Evaluation Report');
+
+  const generateSection = async () => {
+    const res = await axios.post('/api/cer/generate-section', {
+      section: sectionType,
+      context
+    });
+    setSectionContent(res.data.content);
+    setSections(prev => [...prev, { section: sectionType, content: res.data.content }]);
+  };
+
+  const exportToPDF = async () => {
+    const res = await axios.post('/api/cer/export-pdf', {
+      title,
+      faers,
+      comparators
+    }, { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'cer_report.pdf');
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  const exportToDocx = async () => {
+    const res = await axios.post('/api/cer/export-docx', {
+      title,
+      faers,
+      comparators
+    }, { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'cer_report.docx');
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  return (
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-2">CER Builder Panel</h2>
+
+      <div className="mb-4">
+        <label className="block font-semibold">Section Type:</label>
+        <select value={sectionType} onChange={e => setSectionType(e.target.value)} className="border p-2">
+          <option>Safety Profile</option>
+          <option>Benefit-Risk Analysis</option>
+          <option>Clinical Background</option>
+          <option>Post-Market Surveillance</option>
+        </select>
+      </div>
+
+      <div className="mb-4">
+        <label className="block font-semibold">Context:</label>
+        <textarea value={context} onChange={e => setContext(e.target.value)} rows={5} className="w-full border p-2"></textarea>
+      </div>
+
+      <button onClick={generateSection} className="bg-blue-600 text-white px-4 py-2 rounded mb-4">Generate Section</button>
+
+      {sectionContent && (
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">Generated Section:</h3>
+          <div className="whitespace-pre-wrap border p-2 bg-gray-50 mt-2">{sectionContent}</div>
+        </div>
+      )}
+
+      <div className="flex gap-4 mt-6">
+        <button onClick={exportToPDF} className="bg-green-600 text-white px-4 py-2 rounded">Export as PDF</button>
+        <button onClick={exportToDocx} className="bg-purple-600 text-white px-4 py-2 rounded">Export as Word</button>
+      </div>
+    </div>
+  );
+}
