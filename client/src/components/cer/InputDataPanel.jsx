@@ -11,7 +11,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Upload, FileText, CheckCircle, AlertCircle, FileType2, RefreshCw, Database } from 'lucide-react';
 import FdaFaersDataPanel from './FdaFaersDataPanel';
-import FaersRiskBadge from './FaersRiskBadge';
+import { FaersRiskBadge } from './FaersRiskBadge';
 
 export default function InputDataPanel({ jobId }) {
   const [activeTab, setActiveTab] = useState('basic-info');

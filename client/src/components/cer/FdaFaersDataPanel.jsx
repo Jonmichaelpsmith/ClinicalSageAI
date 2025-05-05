@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4, BarChartHorizontal } from 'lucide-react';
-import FaersRiskBadge from './FaersRiskBadge';
+import { FaersRiskBadge } from './FaersRiskBadge';
 
 /**
  * FDA FAERS Data Panel Component
