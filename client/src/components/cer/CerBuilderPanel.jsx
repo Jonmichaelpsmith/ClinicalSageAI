@@ -42,7 +42,19 @@ import CerPreviewPanel from './CerPreviewPanel';
  * Comprehensive interface for building, previewing, and exporting Clinical Evaluation Reports
  * with integrated FAERS data and AI-generated sections
  */
-export default function CerBuilderPanel({ title, faers, comparators, sections, onTitleChange, onSectionsChange, onFaersChange, onComparatorsChange, complianceThresholds, onComplianceScoreChange }) {
+export default function CerBuilderPanel({ 
+  title, 
+  faers, 
+  comparators, 
+  sections, 
+  onTitleChange, 
+  onSectionsChange, 
+  onFaersChange, 
+  onComparatorsChange, 
+  complianceThresholds, 
+  onComplianceScoreChange,
+  hideHeader = false // New prop to control header visibility
+}) {
   // Set default compliance thresholds if not provided
   const thresholds = complianceThresholds || {
     OVERALL_THRESHOLD: 0.8, // 80% overall compliance required to pass

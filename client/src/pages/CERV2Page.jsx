@@ -107,18 +107,25 @@ export default function CERV2Page() {
             </TabsList>
             
             <TabsContent value="main">
-              <CerBuilderPanel
-                title={title}
-                faers={faers}
-                comparators={comparators}
-                sections={sections}
-                onTitleChange={setTitle}
-                onSectionsChange={setSections}
-                onFaersChange={setFaers}
-                onComparatorsChange={setComparators}
-                complianceThresholds={COMPLIANCE_THRESHOLDS}
-                onComplianceScoreChange={handleComplianceScoreChange}
-              />
+              {/* We're integrating CerBuilderPanel functionality directly here */}
+              <div className="space-y-6">
+                {/* Use CerBuilderPanel but override its styling */}
+                <div className="cerbuilder-integrated">
+                  <CerBuilderPanel
+                    title={title}
+                    faers={faers}
+                    comparators={comparators}
+                    sections={sections}
+                    onTitleChange={setTitle}
+                    onSectionsChange={setSections}
+                    onFaersChange={setFaers}
+                    onComparatorsChange={setComparators}
+                    complianceThresholds={COMPLIANCE_THRESHOLDS}
+                    onComplianceScoreChange={handleComplianceScoreChange}
+                    hideHeader={true} /* Hide the header to prevent duplication */
+                  />
+                </div>
+              </div>
             </TabsContent>
             
             <TabsContent value="faers">
