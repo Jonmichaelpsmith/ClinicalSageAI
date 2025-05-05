@@ -31,6 +31,37 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// Serve static files from the root directory
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve the marketing landing page at the root URL
+app.get('/', (req, res) => {
+  console.log('Serving marketing landing page');
+  const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
+  if (fs.existsSync(landingPath)) {
+    res.sendFile(landingPath);
+  } else {
+    console.error('Marketing landing page not found at:', landingPath);
+    res.status(404).send('Marketing landing page not found');
+  }
+});
+
+// Alternative marketing page route
+app.get('/marketing', (req, res) => {
+  console.log('Serving marketing page from /marketing route');
+  const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
+  if (fs.existsSync(landingPath)) {
+    res.sendFile(landingPath);
+  } else {
+    res.status(404).send('Marketing landing page not found');
+  }
+});
+
 // Register API routes
 registerRoutes(app);
 
