@@ -3,6 +3,9 @@ import { generateMockCER, generateFullCER, getCERReport, analyzeLiteratureWithAI
 import { fetchFaersData, analyzeFaersDataForCER } from '../services/fdaService.js';
 import * as faersService from '../services/faersService.js';
 
+// Import enhanced FAERS service
+import { fetchFaersAnalysis } from '../services/enhancedFaersService.js';
+
 const router = express.Router();
 
 // GET /api/cer/reports - Retrieve user's CER reports
@@ -211,7 +214,7 @@ router.get('/faers/data', async (req, res) => {
 // POST /api/cer/fetch-faers - Fetch and store FAERS data for a specific CER including comparator analysis
 router.post('/fetch-faers', async (req, res) => {
   try {
-    const { productName, cerId, includeComparators = true, comparatorLimit = 3 } = req.body;
+    const { productName, cerId, includeComparators = true, comparatorLimit = 3, useATC = true, useMoA = true } = req.body;
     
     if (!productName) {
       return res.status(400).json({ error: 'Product name is required' });
@@ -222,40 +225,38 @@ router.post('/fetch-faers', async (req, res) => {
     }
     
     // Step 1: Fetch FAERS data with comparator analysis using our enhanced service
-    console.log(`Fetching FAERS data for product: ${productName}, CER ID: ${cerId}, with comparators: ${includeComparators}`);
+    console.log(`Fetching FAERS data for product: ${productName}, CER ID: ${cerId}, with comparators: ${includeComparators}, useATC: ${useATC}, useMoA: ${useMoA}`);
     
-    // Use the new comparative analysis service
-    const faersData = await faersService.getFaersDataWithComparators(productName, {
-      includeComparators,
-      comparatorLimit: parseInt(comparatorLimit, 10)
-    });
+    // Use the enhanced FAERS analysis service that handles ATC codes and mechanism of action
+    const faersData = await fetchFaersAnalysis(productName, cerId);
     
-    // Step 2: Save FAERS data to database
-    // This would use the faersDbService in a production implementation
-    // const dbService = require('../services/faersDbService');
-    // const savedReports = await dbService.saveReports(faersData.reports);
-    // const savedAnalysis = await dbService.saveCachedAnalysis(faersData);
-    
-    // Step 3: Return processed data including comparators
+    // Step 2: Process the data for the response
     const responseData = {
       success: true,
       productName,
       cerId,
-      reports: faersData.reports,
+      reports: faersData.reportsData || [],
       riskScore: faersData.riskScore,
-      reportCount: faersData.totalReports,
-      seriousEvents: faersData.seriousEvents,
-      topReactions: faersData.topReactions,
-      reactionCounts: faersData.reactionCounts,
-      demographics: faersData.demographics,
-      severityAssessment: faersData.severityAssessment,
-      message: `Successfully imported ${faersData.totalReports} FAERS reports for ${productName}`
+      reportCount: faersData.reportCount,
+      classification: faersData.classification,
+      message: `Successfully analyzed ${faersData.reportCount} FAERS reports for ${productName}`
     };
     
     // Add comparator data if it exists
     if (faersData.comparators && faersData.comparators.length > 0) {
       responseData.comparators = faersData.comparators;
-      responseData.message += ` with ${faersData.comparators.length} comparative products analyzed.`;
+      responseData.message += ` with ${faersData.comparators.length} comparative products analyzed using `;
+      
+      const methods = [];
+      if (faersData.classification?.atcCodes?.length > 0) methods.push('ATC codes');
+      if (faersData.classification?.mechanismOfAction?.length > 0) methods.push('mechanism of action');
+      if (faersData.classification?.pharmacologicalClass?.length > 0) methods.push('pharmacological class');
+      
+      if (methods.length > 0) {
+        responseData.message += methods.join(', ');
+      } else {
+        responseData.message += 'substance similarity';
+      }
     }
     
     res.json(responseData);
@@ -273,26 +274,58 @@ router.post('/fetch-faers', async (req, res) => {
 // GET /api/cer/faers/analysis - Get analyzed FAERS data for CER inclusion with comparative analysis
 router.get('/faers/analysis', async (req, res) => {
   try {
-    const { productName, includeComparators = 'true' } = req.query;
+    const { productName, includeComparators = 'true', useATC = 'true', useMoA = 'true' } = req.query;
     
     if (!productName) {
       return res.status(400).json({ error: 'Product name is required' });
     }
     
-    // Use the enhanced FAERS service to get data with comparators
-    const includeComparatorsBoolean = includeComparators === 'true';
+    // Use the new enhanced FAERS service with ATC codes and MoA
+    console.log(`Analyzing FAERS data for ${productName} with comparative analysis`);
     
-    const faersData = await faersService.getFaersDataWithComparators(productName, {
-      includeComparators: includeComparatorsBoolean,
-      comparatorLimit: 5
-    });
+    // Fetch the enhanced analysis with ATC and MoA-based comparisons
+    const faersData = await fetchFaersAnalysis(productName);
+    
+    // Process the data for clinical evaluation reporting
+    const reportCount = faersData.reportCount || 0;
+    const seriousCount = faersData.reportsData?.filter(r => r.is_serious)?.length || 0;
+    const riskScore = faersData.riskScore || 0;
+    const severityLevel = getSeverityLevel(riskScore);
+    
+    // Extract most common adverse events
+    const eventCounts = {};
+    if (faersData.reportsData && faersData.reportsData.length > 0) {
+      faersData.reportsData.forEach(report => {
+        const reaction = report.reaction;
+        if (reaction) {
+          eventCounts[reaction] = (eventCounts[reaction] || 0) + 1;
+        }
+      });
+    }
+    
+    // Convert to sorted array of reaction counts
+    const topReactions = Object.entries(eventCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([reaction, count]) => ({
+        event: reaction,
+        count: count,
+        percentage: `${((count / reportCount) * 100).toFixed(1)}%`
+      }));
+    
+    // Extract demographics
+    const demographics = {
+      ageDistribution: extractAgeDistribution(faersData.reportsData || [], reportCount),
+      genderDistribution: extractGenderDistribution(faersData.reportsData || [], reportCount)
+    };
     
     // Format the response specifically for CER inclusion
     const analysis = {
       productInfo: {
-        name: faersData.productName,
-        unii: faersData.resolvedInfo?.unii || null,
-        substanceName: faersData.resolvedInfo?.substanceName || faersData.productName
+        name: productName,
+        unii: faersData.substance?.unii || null,
+        substanceName: faersData.substance || productName,
+        classification: faersData.classification || {}
       },
       reportingPeriod: {
         start: "2020-01-01",  // In production, this should be dynamically determined
@@ -300,32 +333,24 @@ router.get('/faers/analysis', async (req, res) => {
         durationMonths: 48
       },
       summary: {
-        totalReports: faersData.totalReports,
-        seriousEvents: faersData.seriousEvents.length,
-        seriousEventsPercentage: `${((faersData.seriousEvents.length / faersData.totalReports) * 100).toFixed(1)}%`,
-        eventsPerTenThousand: (faersData.riskScore * 100).toFixed(2),
-        severityAssessment: faersData.severityAssessment
+        totalReports: reportCount,
+        seriousEvents: seriousCount,
+        seriousEventsPercentage: reportCount > 0 ? `${((seriousCount / reportCount) * 100).toFixed(1)}%` : '0%',
+        eventsPerTenThousand: (riskScore * 100).toFixed(2),
+        severityAssessment: severityLevel
       },
-      topEvents: faersData.reactionCounts.slice(0, 10).map(item => ({
-        event: item.reaction,
-        count: item.count,
-        percentage: `${((item.count / faersData.totalReports) * 100).toFixed(1)}%`
-      })),
-      demographics: {
-        ageDistribution: Object.entries(faersData.demographics.ageGroups)
-          .map(([group, count]) => ({
-            group,
-            count,
-            percentage: `${((count / faersData.totalReports) * 100).toFixed(1)}%`
-          })),
-        genderDistribution: Object.entries(faersData.demographics.gender)
-          .map(([gender, count]) => ({
-            gender,
-            count,
-            percentage: `${((count / faersData.totalReports) * 100).toFixed(1)}%`
-          }))
-      }
+      topEvents: topReactions,
+      demographics,
     };
+    
+    // Add pharmacological classification information
+    if (faersData.classification) {
+      analysis.pharmacology = {
+        atcCodes: faersData.classification.atcCodes || [],
+        mechanismOfAction: faersData.classification.mechanismOfAction || [],
+        pharmacologicalClass: faersData.classification.pharmacologicalClass || []
+      };
+    }
     
     // Add comparator analysis if available
     if (faersData.comparators && faersData.comparators.length > 0) {
@@ -335,16 +360,24 @@ router.get('/faers/analysis', async (req, res) => {
           riskScore: comp.riskScore,
           reportCount: comp.reportCount,
           severityAssessment: getSeverityLevel(comp.riskScore),
-          relativeSafety: getRelativeSafety(faersData.riskScore, comp.riskScore)
+          relativeSafety: getRelativeSafety(riskScore, comp.riskScore)
         })),
-        summary: `Compared to ${faersData.comparators.length} similar products in its class, ${productName} shows ${getComparativeConclusion(faersData)}`
+        matchingCriteria: buildMatchingCriteria(faersData.classification),
+        summary: `Compared to ${faersData.comparators.length} similar products in its class, ${productName} shows ${getComparativeConclusion(faersData.riskScore, faersData.comparators)}`
       };
       
-      // Enhanced conclusion with comparative data
-      analysis.conclusion = `Based on the analysis of ${faersData.totalReports} adverse event reports from the FDA FAERS database, ${faersData.productName} demonstrates a ${faersData.severityAssessment.toLowerCase()} risk profile with ${faersData.seriousEvents.length} serious events reported. The most common adverse events were ${faersData.topReactions.slice(0, 3).join(', ')}. ${analysis.comparativeAnalysis.summary} This data should be considered in the overall benefit-risk assessment of the device.`;
+      // Enhanced conclusion with comparative data and classification info
+      let classificationInfo = '';
+      if (faersData.classification?.atcCodes?.length > 0) {
+        classificationInfo = ` As a ${faersData.classification.atcCodes[0].split(':')[0]} class pharmaceutical,`;
+      } else if (faersData.classification?.mechanismOfAction?.length > 0) {
+        classificationInfo = ` With a mechanism of action as ${faersData.classification.mechanismOfAction[0].toLowerCase()},`;
+      }
+      
+      analysis.conclusion = `Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, ${productName} demonstrates a ${severityLevel.toLowerCase()} risk profile with ${seriousCount} serious events reported.${classificationInfo} ${analysis.comparativeAnalysis.summary} The most common adverse events were ${topReactions.slice(0, 3).map(r => r.event).join(', ')}. This data should be considered in the overall benefit-risk assessment of the product.`;
     } else {
       // Standard conclusion without comparators
-      analysis.conclusion = `Based on the analysis of ${faersData.totalReports} adverse event reports from the FDA FAERS database, ${faersData.productName} demonstrates a ${faersData.severityAssessment.toLowerCase()} risk profile with ${faersData.seriousEvents.length} serious events reported. The most common adverse events were ${faersData.topReactions.slice(0, 3).join(', ')}. This data should be considered in the overall benefit-risk assessment of the device.`;
+      analysis.conclusion = `Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, ${productName} demonstrates a ${severityLevel.toLowerCase()} risk profile with ${seriousCount} serious events reported. The most common adverse events were ${topReactions.slice(0, 3).map(r => r.event).join(', ')}. This data should be considered in the overall benefit-risk assessment of the product.`;
     }
     
     res.json(analysis);
@@ -356,6 +389,92 @@ router.get('/faers/analysis', async (req, res) => {
     });
   }
 });
+
+// Helper function to extract age distribution from FAERS reports
+function extractAgeDistribution(reports, totalReports) {
+  const ageGroups = {
+    '0-17': 0,
+    '18-44': 0,
+    '45-64': 0,
+    '65-74': 0,
+    '75+': 0,
+    'Unknown': 0
+  };
+  
+  reports.forEach(report => {
+    const age = report.age ? parseInt(report.age, 10) : null;
+    
+    if (age === null || isNaN(age)) {
+      ageGroups['Unknown']++;
+    } else if (age < 18) {
+      ageGroups['0-17']++;
+    } else if (age < 45) {
+      ageGroups['18-44']++;
+    } else if (age < 65) {
+      ageGroups['45-64']++;
+    } else if (age < 75) {
+      ageGroups['65-74']++;
+    } else {
+      ageGroups['75+']++;
+    }
+  });
+  
+  return Object.entries(ageGroups).map(([group, count]) => ({
+    group,
+    count,
+    percentage: totalReports > 0 ? `${((count / totalReports) * 100).toFixed(1)}%` : '0%'
+  }));
+}
+
+// Helper function to extract gender distribution from FAERS reports
+function extractGenderDistribution(reports, totalReports) {
+  const genderCounts = {
+    'Male': 0,
+    'Female': 0,
+    'Unknown': 0
+  };
+  
+  reports.forEach(report => {
+    const sex = report.sex;
+    
+    if (!sex) {
+      genderCounts['Unknown']++;
+    } else if (sex === '1') {
+      genderCounts['Male']++;
+    } else if (sex === '2') {
+      genderCounts['Female']++;
+    } else {
+      genderCounts['Unknown']++;
+    }
+  });
+  
+  return Object.entries(genderCounts).map(([gender, count]) => ({
+    gender,
+    count,
+    percentage: totalReports > 0 ? `${((count / totalReports) * 100).toFixed(1)}%` : '0%'
+  }));
+}
+
+// Helper function to build matching criteria description
+function buildMatchingCriteria(classification) {
+  if (!classification) return 'substance similarity';
+  
+  const criteria = [];
+  
+  if (classification.atcCodes && classification.atcCodes.length > 0) {
+    criteria.push('ATC classification codes');
+  }
+  
+  if (classification.mechanismOfAction && classification.mechanismOfAction.length > 0) {
+    criteria.push('mechanism of action');
+  }
+  
+  if (classification.pharmacologicalClass && classification.pharmacologicalClass.length > 0) {
+    criteria.push('pharmacological class');
+  }
+  
+  return criteria.length > 0 ? criteria.join(', ') : 'substance similarity';
+}
 
 // Helper function to determine severity level based on risk score
 function getSeverityLevel(riskScore) {
