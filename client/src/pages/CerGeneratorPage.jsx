@@ -4,6 +4,9 @@ import { FaersReportDisplay } from '../components/cer/FaersReportDisplay';
 import { FaersDemographicsCharts } from '../components/cer/FaersDemographicsCharts';
 import { FaersReportExporter } from '../components/cer/FaersReportExporter';
 import { FaersComparativeChart } from '../components/cer/FaersComparativeChart';
+import { CerPreviewPanel } from '../components/cer/CerPreviewPanel';
+import { AiSectionGenerator } from '../components/cer/AiSectionGenerator';
+import { CerBuilderPanel } from '../components/cer/CerBuilderPanel';
 import { useFetchFAERS } from '../hooks/useFetchFAERS';
 import { useExportFAERS } from '../hooks/useExportFAERS';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
@@ -14,9 +17,10 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
-import { FileUpload, Search, FileCheck, BookOpen, Brain, Shield, BarChart4, Settings, AlertCircle, Database } from 'lucide-react';
+import { FileUpload, Search, FileCheck, BookOpen, Brain, Shield, BarChart4, Settings, AlertCircle, Database, Sparkles } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { toast } from '../ui/use-toast';
 
 const CerGeneratorPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -93,7 +97,20 @@ const CerGeneratorPage = () => {
   // Handle export completion
   const handleExportCompleted = (result) => {
     console.log('Export completed:', result);
-    // Could add a toast notification here
+    toast({
+      title: 'Export Complete',
+      description: result.message || `Export completed successfully as ${result.format.toUpperCase()}`,
+      variant: result.success ? 'default' : 'destructive',
+    });
+  };
+  
+  // Handle AI section generation
+  const handleSectionGenerated = (sectionData) => {
+    console.log('Section generated:', sectionData);
+    toast({
+      title: 'Section Generated',
+      description: `${sectionData.sectionType} section was generated successfully`,
+    });
   };
   
   // FAERS modal content based on selected tab
@@ -201,7 +218,11 @@ const CerGeneratorPage = () => {
         </TabsContent>
         
         <TabsContent value="generator" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* New CerBuilderPanel Component - comprehensive UI for building CERs */}
+          <CerBuilderPanel faersData={faersData} productName={productName} />
+          
+          {/* Old UI - Kept for reference and backward compatibility */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" style={{display: 'none'}}>
             {/* Device Information */}
             <Card>
               <CardHeader>
@@ -343,6 +364,14 @@ const CerGeneratorPage = () => {
                     </Button>
                   </div>
                 )}
+                
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <div>
+                    <h3 className="text-sm font-medium">AI Section Generation</h3>
+                    <p className="text-xs text-gray-500">Create regulatory-compliant CER sections with GPT-4o</p>
+                  </div>
+                  <AiSectionGenerator onSectionGenerated={handleSectionGenerated} />
+                </div>
                 
                 <div className="pt-2 border-t">
                   <h3 className="text-sm font-medium mb-2">CER Template</h3>
@@ -575,6 +604,23 @@ const CerGeneratorPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* CER Preview Panel - shown when FAERS data is available */}
+      {faersData && (
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Clinical Evaluation Report Preview</h2>
+            <Button variant="outline" onClick={() => setShowFaersDialog(true)}>
+              View FAERS Data
+            </Button>
+          </div>
+          <CerPreviewPanel 
+            productName={productName}
+            faersData={faersData}
+            onExport={handleExportCompleted}
+          />
+        </div>
+      )}
       
       {/* FAERS Data Dialog */}
       <Dialog open={showFaersDialog} onOpenChange={setShowFaersDialog}>
