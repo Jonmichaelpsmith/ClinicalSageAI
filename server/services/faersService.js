@@ -9,6 +9,7 @@
  */
 
 import axios from 'axios';
+import * as drugClassService from './drugClassService.js';
 
 // Base URLs for FDA APIs
 const BASE_EVENT_URL = 'https://api.fda.gov/drug/event.json';
@@ -283,10 +284,159 @@ async function getFaersData(productName) {
   }
 }
 
-// Only use ESM export
+/**
+ * Find comparator products for a given product name
+ * 
+ * @param {string} productName - Product name to find comparators for
+ * @param {number} limit - Maximum number of comparators to return
+ * @returns {Promise<Array>} - List of comparator product names
+ */
+async function findComparatorProducts(productName, limit = 5) {
+  try {
+    // First, get the classification info for the product
+    const classInfo = await drugClassService.resolveClassificationByName(productName);
+    if (!classInfo) {
+      console.warn(`Could not resolve classification for ${productName}`);
+      return [];
+    }
+    
+    let comparators = [];
+    
+    // Try ATC codes first
+    if (classInfo.atc_codes && classInfo.atc_codes.length > 0) {
+      comparators = await drugClassService.findComparatorsByATC(classInfo.atc_codes, limit);
+    }
+    
+    // If not enough by ATC, try pharmacological class
+    if (comparators.length < limit && classInfo.pharm_class && classInfo.pharm_class.length > 0) {
+      const pharmClassComparators = await drugClassService.findComparatorsByPharmClass(classInfo.pharm_class, limit - comparators.length);
+      comparators = [...comparators, ...pharmClassComparators];
+    }
+    
+    // Return only unique product names, excluding the original product
+    return comparators
+      .filter(comp => comp.name.toLowerCase() !== productName.toLowerCase())
+      .filter((comp, index, self) => index === self.findIndex(c => c.name === comp.name))
+      .map(comp => comp.name)
+      .slice(0, limit);
+      
+  } catch (error) {
+    console.error('Error finding comparator products:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Get FAERS data for comparator products
+ * 
+ * @param {string} productName - Main product name
+ * @param {number} limit - Maximum number of comparators to analyze
+ * @returns {Promise<Array>} - Comparator products with risk scores
+ */
+async function getComparatorFaersData(productName, limit = 3) {
+  try {
+    // Find comparator products
+    const comparators = await findComparatorProducts(productName, limit);
+    if (!comparators || comparators.length === 0) {
+      return [];
+    }
+    
+    // For each comparator, get basic FAERS data (simplified to reduce API calls)
+    const comparatorData = [];
+    for (const comparatorName of comparators) {
+      try {
+        // Resolve UNII
+        const resolvedComparator = await resolveToUnii(comparatorName);
+        
+        // Only process further if we got a valid resolution
+        if (resolvedComparator) {
+          let reports = [];
+          
+          // Try to get reports by UNII if available
+          if (resolvedComparator.unii) {
+            reports = await fetchFaersDataByUnii(resolvedComparator.unii, 50); // Limit to 50 to reduce processing
+          } 
+          // Otherwise try by name
+          else {
+            const params = {
+              search: `patient.drug.medicinalproduct:"${comparatorName}" OR patient.drug.openfda.brand_name:"${comparatorName}"`,
+              limit: 50
+            };
+            
+            const response = await axios.get(BASE_EVENT_URL, { params });
+            if (response.status === 200) {
+              const results = response.data.results || [];
+              
+              for (const entry of results) {
+                const patient = entry.patient || {};
+                const reactions = patient.reaction || [];
+                
+                for (const reaction of reactions) {
+                  reports.push({
+                    reaction: reaction.reactionmeddrapt,
+                    is_serious: entry.serious === 1,
+                    outcome: entry.seriousnessdeath ? 'Death' : 'Non-Death'
+                  });
+                }
+              }
+            }
+          }
+          
+          // Only include if we found reports
+          if (reports.length > 0) {
+            const riskScore = computeRiskScore(reports);
+            comparatorData.push({
+              comparator: comparatorName,
+              riskScore,
+              reportCount: reports.length
+            });
+          }
+        }
+      } catch (err) {
+        console.warn(`Error processing comparator ${comparatorName}:`, err.message);
+        // Skip this comparator but continue with others
+      }
+    }
+    
+    return comparatorData;
+  } catch (error) {
+    console.error('Error getting comparator FAERS data:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Get comprehensive FAERS data for a product including comparators
+ * 
+ * @param {string} productName - Product name to search for
+ * @param {Object} options - Options including whether to include comparators
+ * @returns {Promise<Object>} - Complete FAERS data including reports, risk score, and comparators
+ */
+async function getFaersDataWithComparators(productName, options = { includeComparators: true, comparatorLimit: 3 }) {
+  try {
+    // Get main product data
+    const mainData = await getFaersData(productName);
+    
+    // If comparators are requested, get comparator data
+    if (options.includeComparators) {
+      const comparators = await getComparatorFaersData(productName, options.comparatorLimit);
+      mainData.comparators = comparators;
+    }
+    
+    return mainData;
+  } catch (error) {
+    console.error('Error getting FAERS data with comparators:', error.message);
+    throw error;
+  }
+}
+
+// Export the functions
 export {
   resolveToUnii,
   fetchFaersDataByUnii,
   computeRiskScore,
-  getFaersData
+  getFaersData,
+  findComparatorProducts,
+  getComparatorFaersData,
+  getFaersDataWithComparators
 };
