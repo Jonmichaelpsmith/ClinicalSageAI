@@ -6,7 +6,8 @@ import {
   UploadCloud,
   LineChart,
   NotebookText,
-  FlaskConical
+  FlaskConical,
+  ClipboardCheck
 } from "lucide-react";
 
 export default function SidebarNav() {
@@ -21,16 +22,17 @@ export default function SidebarNav() {
         <NavItem icon={FileText} href="/reports" label="Reports" />
         <NavItem icon={NotebookText} href="/use-cases" label="Use Cases" />
         <NavItem icon={FlaskConical} href="/planning" label="Modeling & Design" />
+        <NavItem icon={ClipboardCheck} href="/cer" label="CER Generator" className="font-semibold text-blue-700" />
       </nav>
     </aside>
   );
 }
 
-function NavItem({ icon: Icon, label, href }) {
+function NavItem({ icon: Icon, label, href, className }) {
   return (
     <a
       href={href}
-      className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-blue-50 transition"
+      className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-blue-50 transition ${className || ''}`}
     >
       <Icon size={16} />
       <span>{label}</span>
