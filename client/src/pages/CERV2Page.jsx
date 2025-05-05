@@ -18,16 +18,6 @@ export default function CERV2Page() {
   const [faers, setFaers] = useState([]);
   const [comparators, setComparators] = useState([]);
   const [sections, setSections] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [instructionsOpen, setInstructionsOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState('builder');
-  const [compliance, setCompliance] = useState(null);
-  const [draftStatus, setDraftStatus] = useState('in-progress'); // in-progress, ready-for-review, finalized
-  const [exportTimestamp, setExportTimestamp] = useState(null);
-  const [wordCount, setWordCount] = useState(0);
-  const [citationCount, setCitationCount] = useState(0);
-  const [sectionCoverage, setSectionCoverage] = useState(0);
-  const [isComplianceRunning, setIsComplianceRunning] = useState(false);
   const { toast } = useToast();
 
   // Refs for floating buttons

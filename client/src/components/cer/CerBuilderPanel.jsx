@@ -28,7 +28,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, AlignLeft, FileDown, FileText, BookOpen, Search } from 'lucide-react';
+import { Loader2, AlignLeft, FileDown, FileText, BookOpen, Search, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useExportFAERS } from '../../hooks/useExportFAERS';
@@ -355,6 +355,11 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
               <TabsTrigger value="generator">
                 <AlignLeft className="mr-2 h-4 w-4" />
                 Section Generator
+                {complianceData && (
+                  <span className={`ml-2 px-1.5 py-0.5 text-xs rounded-full ${complianceData.overallScore >= 0.8 ? 'bg-green-100 text-green-700' : complianceData.overallScore >= 0.7 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                    {Math.round(complianceData.overallScore * 100)}%
+                  </span>
+                )}
               </TabsTrigger>
               <TabsTrigger value="literature">
                 <BookOpen className="mr-2 h-4 w-4" />
@@ -363,16 +368,68 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
               <TabsTrigger value="preview">
                 <FileText className="mr-2 h-4 w-4" />
                 Report Preview
+                {complianceData && (
+                  <span className="ml-2 flex items-center">
+                    {complianceData.overallScore >= 0.8 ? (
+                      <CheckCircle className="h-3 w-3 text-green-500" />
+                    ) : complianceData.overallScore >= 0.7 ? (
+                      <AlertTriangle className="h-3 w-3 text-amber-500" />
+                    ) : (
+                      <AlertCircle className="h-3 w-3 text-red-500" />
+                    )}
+                  </span>
+                )}
               </TabsTrigger>
               <TabsTrigger value="export">
                 <FileDown className="mr-2 h-4 w-4" />
                 Export Options
+                {complianceData && complianceData.sectionScores && (
+                  <span className="ml-2 flex items-center">
+                    {complianceData.sectionScores.filter(s => s.averageScore < 0.7).length > 0 ? (
+                      <Badge variant="outline" className="bg-red-50 text-red-700 text-xs py-0 px-1.5">
+                        {complianceData.sectionScores.filter(s => s.averageScore < 0.7).length} issue{complianceData.sectionScores.filter(s => s.averageScore < 0.7).length !== 1 ? 's' : ''}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-green-50 text-green-700 text-xs py-0 px-1.5">Ready</Badge>
+                    )}
+                  </span>
+                )}
               </TabsTrigger>
             </TabsList>
             
             {/* Section Generator Tab */}
             <TabsContent value="generator">
               <div className="space-y-4">
+                {/* Compliance Score Badge */}
+                {complianceData && (
+                  <div className="flex justify-between items-center mb-4 p-3 border rounded-md bg-muted/20">
+                    <div className="flex items-center">
+                      {complianceData.overallScore >= 0.8 ? (
+                        <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                      ) : complianceData.overallScore >= 0.7 ? (
+                        <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
+                      ) : (
+                        <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">
+                          Compliance Score: {Math.round(complianceData.overallScore * 100)}%
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Based on EU MDR, ISO 14155, FDA 21 CFR 812 requirements
+                        </p>
+                      </div>
+                    </div>
+                    <Badge 
+                      className={`${complianceData.overallScore >= 0.8 ? 'bg-green-100 text-green-800' : 
+                        complianceData.overallScore >= 0.7 ? 'bg-amber-100 text-amber-800' : 
+                        'bg-red-100 text-red-800'}`}
+                    >
+                      {complianceData.overallScore >= 0.8 ? 'Ready for Review' : 'Needs Attention'}
+                    </Badge>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="sectionType">Section Type</Label>
@@ -521,26 +578,80 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   complianceData={complianceData}
                 />
                 
-                {/* Compliance Check Button */}
-                {cerSections.length > 0 && !isRunningCompliance && (
-                  <div className="flex justify-end mt-4">
-                    <Button 
-                      onClick={runComplianceAnalysis}
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      disabled={isRunningCompliance}
-                    >
-                      {isRunningCompliance ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Analyzing Compliance...
-                        </>
-                      ) : (
-                        <>Run Compliance Check</>
-                      )}
-                    </Button>
-                  </div>
-                )}
+                {/* Compliance Check Button and Section Issues */}
+                <div className="flex flex-col space-y-4 mt-4">
+                  {complianceData && complianceData.sectionScores && (
+                    <div className="border rounded-md p-4 bg-muted/10">
+                      <h3 className="text-sm font-medium mb-2 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-2 text-muted-foreground" />
+                        Section Compliance Issues
+                      </h3>
+                      
+                      <div className="space-y-2">
+                        {complianceData.sectionScores
+                          .filter(section => section.averageScore < 0.7)
+                          .map((section, index) => (
+                            <div 
+                              key={index} 
+                              className="p-2 bg-red-50 border border-red-200 rounded-md flex justify-between items-center cursor-pointer hover:bg-red-100 transition-colors"
+                              onClick={() => {
+                                // Find the section element and scroll to it
+                                const sectionTitle = section.title;
+                                const sectionElement = document.getElementById(`section-${cerSections.findIndex(s => s.title === sectionTitle)}`);
+                                if (sectionElement) {
+                                  sectionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                  // Highlight the section briefly
+                                  sectionElement.classList.add('highlight-section');
+                                  setTimeout(() => {
+                                    sectionElement.classList.remove('highlight-section');
+                                  }, 2000);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center">
+                                <AlertTriangle className="h-4 w-4 text-red-600 mr-2" />
+                                <span className="text-sm text-red-700">{section.title}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="text-sm font-medium text-red-700">{Math.round(section.averageScore * 100)}%</span>
+                                <span className="text-xs bg-red-200 text-red-800 px-2 py-0.5 rounded ml-2">Scroll to</span>
+                              </div>
+                            </div>
+                          ))
+                        }
+                        
+                        {complianceData.sectionScores.filter(section => section.averageScore < 0.7).length === 0 && (
+                          <div className="p-2 bg-green-50 border border-green-200 rounded-md">
+                            <div className="flex items-center">
+                              <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                              <span className="text-sm text-green-700">All sections meet compliance thresholds</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {cerSections.length > 0 && !isRunningCompliance && (
+                    <div className="flex justify-end">
+                      <Button 
+                        onClick={runComplianceAnalysis}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                        disabled={isRunningCompliance}
+                      >
+                        {isRunningCompliance ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Analyzing Compliance...
+                          </>
+                        ) : (
+                          <>Run Compliance Check</>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 
                 {isRunningCompliance && (
                   <div className="mt-4 p-4 border rounded-md bg-muted/30">
