@@ -1,315 +1,278 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertCircle, AlertTriangle, CheckCircle, Scale } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AlertTriangle, CheckCircle, HelpCircle, Lightbulb, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
 
 /**
- * Benefit-Risk Assessment Component
- * 
- * Provides a comprehensive benefit-risk analysis following 
- * the Master Data Model section 7 requirements
+ * BenefitRiskAssessment - Component for displaying benefit-risk assessment information
+ * Implements section 7 of the CER Master Data Model
  */
 export default function BenefitRiskAssessment({ 
-  benefitRiskData = null,
-  thresholds = {
+  benefitRiskData,
+  complianceThresholds = {
     OVERALL_THRESHOLD: 0.8, // 80% threshold for passing
-    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings
-  }
+    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings/flagging
+  },
+  readOnly = false
 }) {
-  if (!benefitRiskData) {
+  // If no data is provided, show placeholder/empty state
+  if (!benefitRiskData || !benefitRiskData.benefits || !benefitRiskData.risks) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Scale className="h-5 w-5 mr-2" />
-            Benefit-Risk Assessment
-          </CardTitle>
+          <CardTitle>Benefit-Risk Assessment</CardTitle>
           <CardDescription>
-            Comprehensive analysis of benefits, risks, and residual risk acceptability following ISO 14971 standards
+            Structured assessment of benefits versus risks per ISO 14971
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 border rounded-lg bg-muted/20">
-            <p className="text-muted-foreground">
-              No benefit-risk assessment data available.
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Complete the clinical evaluation to generate a benefit-risk assessment.
-            </p>
-          </div>
+        <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+          <ShieldAlert className="h-10 w-10 text-amber-500 mb-3" />
+          <h3 className="text-lg font-medium">No Benefit-Risk Data Available</h3>
+          <p className="text-sm text-muted-foreground mt-1 max-w-md">
+            A comprehensive benefit-risk assessment is required for your Clinical Evaluation Report.
+          </p>
         </CardContent>
       </Card>
     );
   }
   
-  const { benefits, risks, residualRisks, acceptabilityMatrix, comparison, riskFileReference } = benefitRiskData;
-  
-  // Helper to get severity icon based on risk level
-  const getSeverityIcon = (level) => {
-    if (!level) return null;
+  // Get risk acceptability color based on matrix
+  const getRiskAcceptabilityColor = (acceptability) => {
+    if (!acceptability) return 'text-gray-500';
     
-    switch(level.toLowerCase()) {
-      case 'low':
+    switch (acceptability.toLowerCase()) {
       case 'acceptable':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'medium':
-      case 'moderate':
-      case 'tolerable':
-        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-      case 'high':
-      case 'severe':
+        return 'text-green-600';
+      case 'acceptable with mitigation':
+      case 'needs mitigation':
+        return 'text-amber-600';
       case 'unacceptable':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return 'text-red-600';
       default:
-        return null;
+        return 'text-gray-500';
     }
   };
   
-  // Helper to get badge variant based on risk level
-  const getBadgeClass = (level) => {
-    if (!level) return '';
+  // Get risk acceptability badge
+  const getRiskAcceptabilityBadge = (acceptability) => {
+    if (!acceptability) return null;
     
-    switch(level.toLowerCase()) {
-      case 'low':
+    switch (acceptability.toLowerCase()) {
       case 'acceptable':
-        return 'bg-green-100 text-green-800';
-      case 'medium':
-      case 'moderate':
-      case 'tolerable':
-        return 'bg-amber-100 text-amber-800';
-      case 'high':
-      case 'severe':
+        return (
+          <Badge className="bg-green-100 text-green-800 font-medium">
+            <ShieldCheck className="h-3 w-3 mr-1" />
+            Acceptable
+          </Badge>
+        );
+      case 'acceptable with mitigation':
+      case 'needs mitigation':
+        return (
+          <Badge className="bg-amber-100 text-amber-800 font-medium">
+            <Shield className="h-3 w-3 mr-1" />
+            With Mitigation
+          </Badge>
+        );
       case 'unacceptable':
-        return 'bg-red-100 text-red-800';
+        return (
+          <Badge className="bg-red-100 text-red-800 font-medium">
+            <ShieldX className="h-3 w-3 mr-1" />
+            Unacceptable
+          </Badge>
+        );
       default:
-        return '';
+        return (
+          <Badge variant="outline">
+            Not Assessed
+          </Badge>
+        );
     }
+  };
+  
+  // Calculate benefit-risk ratio
+  const calculateBenefitRiskRatio = () => {
+    const totalBenefitScore = benefitRiskData.benefits.reduce((sum, benefit) => sum + benefit.score, 0);
+    const totalRiskScore = benefitRiskData.risks.reduce((sum, risk) => sum + risk.score, 0);
+    
+    if (totalRiskScore === 0) return 'N/A';
+    return (totalBenefitScore / totalRiskScore).toFixed(2);
   };
   
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-indigo-200">
+      <CardHeader className="bg-indigo-50 border-b border-indigo-100">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="flex items-center">
-              <Scale className="h-5 w-5 mr-2" />
-              Benefit-Risk Assessment
-            </CardTitle>
+            <CardTitle>Benefit-Risk Assessment</CardTitle>
             <CardDescription>
-              Comprehensive analysis of benefits, risks, and residual risk acceptability following ISO 14971 standards
+              Based on ISO 14971 Risk Management and EU MDR Annex I requirements
             </CardDescription>
           </div>
-          {riskFileReference && (
-            <Badge variant="outline" className="bg-blue-50 text-blue-800">
-              Risk File: {riskFileReference}
-            </Badge>
-          )}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Overall Assessment:</span>
+            {getRiskAcceptabilityBadge(benefitRiskData.overallAcceptability)}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Benefits Section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Clinical Benefits</h3>
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Benefit</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Evidence Strength</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {benefits?.map((benefit, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{benefit.name}</TableCell>
-                    <TableCell>{benefit.description}</TableCell>
-                    <TableCell>
-                      <Badge className={getBadgeClass(benefit.evidenceStrength)}>
-                        {benefit.evidenceStrength}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {(!benefits || benefits.length === 0) && (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground py-4">
-                      No benefits have been defined yet
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-
-        {/* Risks Section */}
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Known and Foreseeable Risks</h3>
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Risk</TableHead>
-                  <TableHead>Severity</TableHead>
-                  <TableHead>Probability</TableHead>
-                  <TableHead>Mitigation</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {risks?.map((risk, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{risk.name}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center">
-                        {getSeverityIcon(risk.severity)}
-                        <span className="ml-1">{risk.severity}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{risk.probability}</TableCell>
-                    <TableCell>{risk.mitigation}</TableCell>
-                  </TableRow>
-                ))}
-                {(!risks || risks.length === 0) && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-4">
-                      No risks have been defined yet
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-
-        {/* Residual Risks after Mitigation */}
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Residual Risks after Mitigation</h3>
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Risk</TableHead>
-                  <TableHead>Post-Mitigation Severity</TableHead>
-                  <TableHead>Post-Mitigation Probability</TableHead>
-                  <TableHead>Acceptability</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {residualRisks?.map((risk, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{risk.name}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        {getSeverityIcon(risk.severity)}
-                        <span className="ml-1">{risk.severity}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{risk.probability}</TableCell>
-                    <TableCell>
-                      <Badge className={getBadgeClass(risk.acceptability)}>
-                        {risk.acceptability}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {(!residualRisks || residualRisks.length === 0) && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-4">
-                      No residual risks have been defined yet
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-
-        {/* Risk Acceptability Matrix */}
-        {acceptabilityMatrix && (
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Risk Acceptability Matrix</h3>
-            <div className="border rounded-lg p-4">
-              <div className="grid grid-cols-6 gap-2">
-                <div className="col-span-1"></div>
-                <div className="col-span-5 grid grid-cols-5 gap-2">
-                  <div className="text-center font-medium text-sm">Negligible</div>
-                  <div className="text-center font-medium text-sm">Minor</div>
-                  <div className="text-center font-medium text-sm">Moderate</div>
-                  <div className="text-center font-medium text-sm">Major</div>
-                  <div className="text-center font-medium text-sm">Catastrophic</div>
-                </div>
-                
-                {/* Probability rows */}
-                {['Frequent', 'Probable', 'Occasional', 'Remote', 'Improbable'].map((prob, probIndex) => (
-                  <React.Fragment key={probIndex}>
-                    <div className="font-medium text-sm">{prob}</div>
-                    {[0, 1, 2, 3, 4].map((sevIndex) => {
-                      // Determine the color based on position in the matrix
-                      let bgColorClass = 'bg-green-100';
-                      if (probIndex <= 1 && sevIndex >= 2) bgColorClass = 'bg-red-100';
-                      else if ((probIndex <= 2 && sevIndex >= 3) || (probIndex <= 1 && sevIndex >= 1)) bgColorClass = 'bg-amber-100';
-                      
-                      return (
-                        <div 
-                          key={sevIndex} 
-                          className={`h-8 ${bgColorClass} border rounded flex items-center justify-center`}
-                        >
-                          {/* Map residual risks to cells */}
-                          {residualRisks?.filter(r => {
-                            const riskProb = r.probability.toLowerCase();
-                            const riskSev = {
-                              'low': 0,
-                              'minor': 1,
-                              'moderate': 2,
-                              'major': 3,
-                              'catastrophic': 4
-                            }[r.severity.toLowerCase()];
-                            
-                            const matrixProb = ['frequent', 'probable', 'occasional', 'remote', 'improbable'].indexOf(prob.toLowerCase());
-                            
-                            return matrixProb === probIndex && riskSev === sevIndex;
-                          }).map((risk, idx) => (
-                            <span key={idx} className="h-4 w-4 rounded-full bg-white shadow-sm text-xs flex items-center justify-center" title={risk.name}>
-                              {idx + 1}
-                            </span>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </React.Fragment>
-                ))}
-              </div>
-              
-              <div className="flex justify-between mt-4 text-xs text-muted-foreground">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-100 mr-1"></div>
-                  <span>Acceptable</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-amber-100 mr-1"></div>
-                  <span>Tolerable</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-red-100 mr-1"></div>
-                  <span>Unacceptable</span>
-                </div>
-              </div>
+      
+      <CardContent className="pt-6 space-y-6">
+        {/* Summary Section */}
+        <div className="bg-gray-50 border rounded-md p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <div className="text-sm font-medium">Benefit-Risk Ratio</div>
+              <div className="text-2xl font-bold text-indigo-600">{calculateBenefitRiskRatio()}</div>
+              <div className="text-xs text-gray-500">Benefit score / Risk score</div>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="text-sm font-medium">Risk Management File</div>
+              <div className="text-base font-medium">{benefitRiskData.riskManagementFileReference || 'N/A'}</div>
+              <div className="text-xs text-gray-500">ISO 14971 compliance</div>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="text-sm font-medium">Risk Analysis Method</div>
+              <div className="text-base font-medium">{benefitRiskData.riskAnalysisMethodology || 'N/A'}</div>
+              <div className="text-xs text-gray-500">e.g., FMEA, FTA, HAZOP</div>
             </div>
           </div>
-        )}
-
+        </div>
+        
+        {/* Benefits Table */}
+        <div>
+          <h3 className="font-medium text-base mb-3 flex items-center">
+            <Lightbulb className="h-4 w-4 mr-2 text-indigo-500" />
+            Clinical Benefits
+          </h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[300px]">Benefit</TableHead>
+                <TableHead>Evidence Level</TableHead>
+                <TableHead>Strength</TableHead>
+                <TableHead>Description</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {benefitRiskData.benefits.map((benefit, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">{benefit.name}</TableCell>
+                  <TableCell>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center">
+                            <Badge variant="outline" className="bg-blue-50 text-blue-800 font-medium">
+                              {benefit.evidenceLevel || 'Unknown'}
+                            </Badge>
+                            <HelpCircle className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p className="text-xs">
+                            Evidence Levels: High (Multiple well-designed clinical studies), 
+                            Moderate (Limited clinical data), Low (Theoretical or bench data only)
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <div className="flex items-center">
+                        <Progress value={benefit.score * 20} className="h-1.5 w-20 mr-2" />
+                        <span>{benefit.score}/5</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm">{benefit.description}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        
+        {/* Risks Table */}
+        <div>
+          <h3 className="font-medium text-base mb-3 flex items-center">
+            <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
+            Identified Risks
+          </h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[250px]">Risk</TableHead>
+                <TableHead>Severity</TableHead>
+                <TableHead>Probability</TableHead>
+                <TableHead>Score</TableHead>
+                <TableHead>Mitigation</TableHead>
+                <TableHead>Acceptability</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {benefitRiskData.risks.map((risk, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">{risk.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={risk.severity.toLowerCase() === 'high' ? 'bg-red-50 text-red-800' : 
+                      risk.severity.toLowerCase() === 'medium' ? 'bg-amber-50 text-amber-800' : 'bg-blue-50 text-blue-800'}
+                    >
+                      {risk.severity || 'Unknown'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={risk.probability.toLowerCase() === 'high' ? 'bg-red-50 text-red-800' : 
+                      risk.probability.toLowerCase() === 'medium' ? 'bg-amber-50 text-amber-800' : 'bg-blue-50 text-blue-800'}
+                    >
+                      {risk.probability || 'Unknown'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{risk.score}/5</TableCell>
+                  <TableCell className="text-sm">{risk.mitigation || 'None'}</TableCell>
+                  <TableCell>
+                    <span className={getRiskAcceptabilityColor(risk.acceptability)}>
+                      {risk.acceptability || 'Not assessed'}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        
         {/* Comparison to Standard of Care */}
-        {comparison && (
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Comparison to Standard of Care</h3>
-            <div className="border rounded-lg p-4">
-              <p className="text-sm">{comparison}</p>
+        {benefitRiskData.standardOfCareComparison && (
+          <div className="border rounded-md p-4">
+            <h3 className="font-medium text-base mb-3 flex items-center">
+              <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+              Comparison to Standard of Care
+            </h3>
+            <div className="prose prose-sm max-w-none">
+              <p>{benefitRiskData.standardOfCareComparison}</p>
             </div>
           </div>
         )}
       </CardContent>
+      
+      <CardFooter className="bg-gray-50 border-t p-4">
+        <div className="w-full flex flex-col space-y-2">
+          <div className="text-sm font-medium">Conclusion</div>
+          <div className="text-sm">
+            {benefitRiskData.conclusion || 'No conclusion has been provided for this benefit-risk assessment.'}
+          </div>
+        </div>
+      </CardFooter>
     </Card>
   );
 }
