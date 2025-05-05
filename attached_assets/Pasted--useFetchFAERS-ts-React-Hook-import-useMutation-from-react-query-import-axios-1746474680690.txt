@@ -1,0 +1,149 @@
+// --- useFetchFAERS.ts (React Hook) ---
+
+import { useMutation } from 'react-query';
+import axios from 'axios';
+import { useState } from 'react';
+
+export interface FAERSReport {
+  substance: string;
+  unii: string;
+  reaction: string;
+  is_serious: boolean;
+  outcome: string;
+  report_date: string;
+  age: number;
+  sex: string;
+}
+
+export interface FetchFAERSResponse {
+  reports: FAERSReport[];
+  riskScore: number;
+  reportCount: number;
+}
+
+export function useFetchFAERS() {
+  const [data, setData] = useState<FetchFAERSResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutation = useMutation(
+    async ({ productName, cerId }: { productName: string; cerId: string }) => {
+      const response = await axios.post('/api/cer/fetch-faers', {
+        productName,
+        cerId,
+      });
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        setData(data);
+        setError(null);
+      },
+      onError: (err: any) => {
+        setError(err.response?.data?.error || 'An unknown error occurred.');
+      },
+    }
+  );
+
+  return {
+    fetchFAERS: mutation.mutate,
+    isLoading: mutation.isLoading,
+    data,
+    error,
+  };
+}
+
+// --- Component Usage Example ---
+
+/**
+ * import { useFetchFAERS } from './hooks/useFetchFAERS';
+ * import { Bar } from 'react-chartjs-2';
+ * import jsPDF from 'jspdf';
+ * import autoTable from 'jspdf-autotable';
+ *
+ * const { fetchFAERS, data, isLoading, error } = useFetchFAERS();
+ *
+ * const handleClick = () => {
+ *   fetchFAERS({ productName: 'Lipitor', cerId: 'abc-123' });
+ * };
+ *
+ * const handleExport = () => {
+ *   if (!data) return;
+ *   const doc = new jsPDF();
+ *   doc.text(`FAERS Report Summary`, 14, 16);
+ *   doc.text(`Risk Score: ${data.riskScore}`, 14, 24);
+ *   doc.text(`Total Reports: ${data.reportCount}`, 14, 32);
+ *   autoTable(doc, {
+ *     startY: 40,
+ *     head: [['Reaction', 'Outcome', 'Serious', 'Age', 'Sex', 'Date']],
+ *     body: data.reports.slice(0, 20).map(r => [
+ *       r.reaction,
+ *       r.outcome,
+ *       r.is_serious ? 'Yes' : 'No',
+ *       r.age || 'N/A',
+ *       r.sex === '1' ? 'Male' : r.sex === '2' ? 'Female' : 'Unknown',
+ *       r.report_date
+ *     ])
+ *   });
+ *   doc.save('FAERS_Summary.pdf');
+ * };
+ *
+ * const chartData = {
+ *   labels: data?.reports.map((r) => r.reaction).slice(0, 10),
+ *   datasets: [
+ *     {
+ *       label: 'Adverse Event Frequency',
+ *       data: data?.reports.reduce((acc, cur) => {
+ *         acc[cur.reaction] = (acc[cur.reaction] || 0) + 1;
+ *         return acc;
+ *       }, {} as Record<string, number>),
+ *       backgroundColor: 'rgba(255, 99, 132, 0.6)'
+ *     }
+ *   ]
+ * };
+ *
+ * return (
+ *   <div>
+ *     <button onClick={handleClick} disabled={isLoading}>
+ *       Import from FAERS
+ *     </button>
+ *     {isLoading && <p>Loading...</p>}
+ *     {error && <p style={{ color: 'red' }}>{error}</p>}
+ *     {data && (
+ *       <>
+ *         <div className="risk-summary">
+ *           <h3>Risk Score: {data.riskScore}</h3>
+ *           <h4>Total Reports: {data.reportCount}</h4>
+ *           <button onClick={handleExport}>Export to PDF</button>
+ *         </div>
+ *         <div style={{ width: '600px', marginTop: '20px' }}>
+ *           <Bar data={chartData} />
+ *         </div>
+ *         <table style={{ marginTop: '20px' }}>
+ *           <thead>
+ *             <tr>
+ *               <th>Reaction</th>
+ *               <th>Outcome</th>
+ *               <th>Serious</th>
+ *               <th>Age</th>
+ *               <th>Sex</th>
+ *               <th>Date</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             {data.reports.slice(0, 20).map((r, i) => (
+ *               <tr key={i}>
+ *                 <td>{r.reaction}</td>
+ *                 <td>{r.outcome}</td>
+ *                 <td>{r.is_serious ? 'Yes' : 'No'}</td>
+ *                 <td>{r.age || 'N/A'}</td>
+ *                 <td>{r.sex === '1' ? 'Male' : r.sex === '2' ? 'Female' : 'Unknown'}</td>
+ *                 <td>{r.report_date}</td>
+ *               </tr>
+ *             ))}
+ *           </tbody>
+ *         </table>
+ *       </>
+ *     )}
+ *   </div>
+ * );
+ */

@@ -414,10 +414,7 @@ export default function InputDataPanel({ jobId }) {
         
         <TabsContent value="fda-data" className="space-y-4">
           <FdaFaersDataPanel
-            onDataFetched={(faersData) => {
-              console.log('FDA FAERS data fetched:', faersData);
-              // Here we could update the formData with the FAERS data or save it separately
-            }}
+            onDataFetched={handleFaersDataUpdate}
           />
         </TabsContent>
         

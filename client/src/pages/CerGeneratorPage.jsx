@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CerProgressDashboard from '../components/cer/CerProgressDashboard';
+import { FaersReportDisplay } from '../components/cer/FaersReportDisplay';
+import { FaersDemographicsCharts } from '../components/cer/FaersDemographicsCharts';
+import { FaersReportExporter } from '../components/cer/FaersReportExporter';
+import { useFetchFAERS } from '../hooks/useFetchFAERS';
+import { useExportFAERS } from '../hooks/useExportFAERS';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -8,7 +13,9 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 import { Switch } from '../ui/switch';
 import { Label } from '../ui/label';
-import { FileUpload, Search, FileCheck, BookOpen, Brain, Shield, BarChart4, Settings } from 'lucide-react';
+import { FileUpload, Search, FileCheck, BookOpen, Brain, Shield, BarChart4, Settings, AlertCircle, Database } from 'lucide-react';
+import { Badge } from '../ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 
 const CerGeneratorPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -53,12 +60,39 @@ const CerGeneratorPage = () => {
     }, 2500);
   };
 
-  // Simulate FDA data search
+  // FAERS integration states
+  const [productName, setProductName] = useState('CardioMonitor Pro 3000');
+  const [cerId, setCerId] = useState('cer-' + Math.random().toString(36).substring(2, 10));
+  const [showFaersDialog, setShowFaersDialog] = useState(false);
+  const [selectedFaersTab, setSelectedFaersTab] = useState('reports');
+  
+  // Use custom hooks for FAERS functionality
+  const { fetchFAERS, isLoading: isFaersLoading, data: faersData, error: faersError } = useFetchFAERS();
+  const { exportToPDF, exportToWord, integrateWithCER, exporting, exportError } = useExportFAERS();
+  
+  // FDA/FAERS data search handler
   const handleFdaDataSearch = () => {
     setIsFdaDataSearching(true);
+    
+    // Get device name from input field
+    const deviceNameInput = document.getElementById('deviceName');
+    const currentDeviceName = deviceNameInput ? deviceNameInput.value : productName;
+    setProductName(currentDeviceName);
+    
+    // Fetch FAERS data
+    fetchFAERS({ productName: currentDeviceName, cerId });
+    
+    // Show the FAERS dialog after a short delay
     setTimeout(() => {
       setIsFdaDataSearching(false);
-    }, 2500);
+      setShowFaersDialog(true);
+    }, 1200);
+  };
+  
+  // Handle export completion
+  const handleExportCompleted = (result) => {
+    console.log('Export completed:', result);
+    // Could add a toast notification here
   };
 
   return (
