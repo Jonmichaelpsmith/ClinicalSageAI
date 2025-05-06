@@ -126,62 +126,8 @@ router.get('/report/:id', async (req, res) => {
   }
 });
 
-// POST /api/cer/generate-full - Generate a full CER report
-router.post('/generate-full', async (req, res) => {
-  try {
-    const { deviceInfo, literature, fdaData, templateId } = req.body;
-    
-    // Log request details
-    console.log(`Starting zero-click CER generation for ${deviceInfo?.name || 'unnamed device'}`);
-    console.log(`Template: ${templateId}, Literature items: ${literature?.length || 0}`);
-    console.log(`FAERS data: ${fdaData ? 'Provided' : 'Not provided'}`);
-    
-    // We'll implement generation logic directly here since we have ESM/CommonJS compatibility issues
-    // This is the full CER generation implementation - the core of the "zero-click" workflow
-    
-    // Step 1: Build intro section
-    console.log('Creating introduction section for CER...');
-    
-    // Step 2: Process literature data
-    console.log('Processing literature data...');
-    
-    // Step 3: Process FAERS data
-    console.log('Processing FAERS data...');
-    
-    // Step 4: Generate all required CER sections
-    console.log('Generating core CER sections...');
-    
-    // Step 5: Run compliance check
-    console.log('Verifying regulatory compliance...');
-    
-    // Step 6: Create final package
-    console.log('Finalizing CER document...');
-    
-    // Return success response
-    return res.json({
-      success: true,
-      reportId: `CER-${Date.now()}`,
-      message: 'CER report generation complete',
-      downloadUrl: `/api/cer/download/${Date.now()}`,
-      sections: ['introduction', 'device_description', 'regulatory_context', 'literature_review', 'risk_assessment', 'clinical_evaluation', 'conclusion'],
-      compliance: {
-        score: 0.89,
-        status: 'compliant',
-        framework: templateId || 'EU MDR'
-      }
-    });
-  } catch (error) {
-    console.error('Error generating full CER:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate CER report', 
-      message: error.message,
-      requestData: {
-        deviceName: req.body.deviceInfo?.name,
-        templateId: req.body.templateId
-      }
-    });
-  }
-});
+// First implementation of generate-full removed to fix duplication
+// Now using the aiGenerateCER implementation instead
 
 // POST /api/cer/sample - Generate a sample CER
 router.post('/sample', async (req, res) => {
