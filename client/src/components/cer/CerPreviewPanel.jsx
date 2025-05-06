@@ -4,10 +4,10 @@ import { cerApiService } from '@/services/CerAPIService';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import SaveCerToVaultButton from './SaveCerToVaultButton';
 
 export default function CerPreviewPanel({ title, sections = [], faers = [], comparators = [], complianceData }) {
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
   // Helper function to find compliance score for a section
   const getSectionComplianceStatus = (sectionTitle) => {
@@ -245,24 +245,29 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
             Download PDF
           </Button>
           
-          <Button
-            onClick={exportToVault}
-            disabled={isExporting || sections.length === 0}
+          <SaveCerToVaultButton
+            cerData={{
+              title,
+              sections,
+              faers,
+              comparators
+            }}
+            metadata={{
+              name: title,
+              version: '1.0.0',
+              status: 'draft',
+              description: `Clinical Evaluation Report for ${title.split(' Clinical Evaluation')[0]}`,
+              tags: ['MEDDEV 2.7/1 Rev 4', 'Clinical Evaluation', 'EU MDR'],
+              manufacturer: 'TrialSage Medical',
+              modelNumber: 'TS-' + Date.now().toString().slice(-6),
+              date: new Date().toLocaleDateString(),
+              standard: 'MEDDEV 2.7/1 Rev 4'
+            }}
+            disabled={sections.length === 0}
+            variant="default"
             className="bg-[#107C10] hover:bg-[#0B5A0B] text-white h-9"
             size="sm"
-          >
-            {isExporting ? (
-              <>
-                <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></div>
-                Exporting...
-              </>
-            ) : (
-              <>
-                <Download className="h-4 w-4 mr-2" />
-                Save to Vault
-              </>
-            )}
-          </Button>
+          />
         </div>
       </div>
 
