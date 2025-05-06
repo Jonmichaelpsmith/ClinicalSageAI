@@ -52,26 +52,39 @@ export default function DocumentVaultPanel({ jobId }) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   
-  // Mock document data
+  // Mock document data with actual CER report content
   const documents = [
     {
       id: 'doc-001',
-      name: 'Enzymex Forte CER v1.0.5',
+      name: 'Arthrosurface Shoulder Arthroplasty Systems CER v1.0.5',
       type: 'cer',
       category: 'Clinical Evaluation',
       version: '1.0.5',
       author: 'Michael Chen',
-      dateCreated: '2025-04-28T15:30:00Z',
+      dateCreated: '2025-04-18T15:30:00Z',
       dateModified: '2025-04-28T15:30:00Z',
       size: '2.3 MB',
       status: 'approved',
-      tags: ['EU MDR', 'Enzymex Forte', 'Final'],
-      description: 'Final Clinical Evaluation Report for Enzymex Forte submission',
-      thumbnail: null
+      tags: ['EU MDR', 'MEDDEV 2.7/1 Rev 4', 'Shoulder', 'Final'],
+      description: 'Final Clinical Evaluation Report for Arthrosurface Shoulder Arthroplasty Systems',
+      thumbnail: null,
+      content: {
+        title: 'Clinical Evaluation Report - Arthrosurface Shoulder Arthroplasty Systems',
+        sections: [
+          { id: 'sec001', title: 'Executive Summary', content: 'This clinical evaluation report (CER) has been prepared in accordance with MEDDEV 2.7/1 Rev 4 and EU MDR 2017/745. The Arthrosurface Shoulder Arthroplasty System demonstrates a favorable benefit-risk profile and meets performance and safety requirements.' },
+          { id: 'sec002', title: 'Device Description', content: 'The Arthrosurface Shoulder Arthroplasty System is designed for the repair of focal chondral and osteochondral defects in the shoulder joint. It consists of articulating components that restore the articular surface geometry of the glenohumeral joint.' },
+          { id: 'sec003', title: 'Clinical Evaluation Scope', content: 'This evaluation covers the safety and performance of the device based on clinical data from multiple sources including clinical studies, post-market surveillance, and relevant literature.' }
+        ],
+        metadata: {
+          standard: 'MEDDEV 2.7/1 Rev 4',
+          complianceScore: 92,
+          reviewStatus: 'final'
+        }
+      }
     },
     {
       id: 'doc-002',
-      name: 'Literature Review Report - Enzymex Forte',
+      name: 'Literature Review Report - Shoulder Arthroplasty',
       type: 'literature',
       category: 'Literature Review',
       version: '1.0.2',
@@ -80,13 +93,27 @@ export default function DocumentVaultPanel({ jobId }) {
       dateModified: '2025-04-25T09:15:00Z',
       size: '1.8 MB',
       status: 'approved',
-      tags: ['Literature', 'Enzymex Forte', 'Research'],
-      description: 'Comprehensive literature review supporting the CER for Enzymex Forte',
-      thumbnail: null
+      tags: ['Literature', 'Arthrosurface', 'Research'],
+      description: 'Comprehensive literature review supporting the CER for Arthrosurface Shoulder Arthroplasty Systems',
+      thumbnail: null,
+      content: {
+        title: 'Literature Review Report - Shoulder Arthroplasty Systems',
+        sections: [
+          { id: 'lit001', title: 'Introduction', content: 'This literature review was conducted to identify and evaluate published clinical data relevant to the Arthrosurface Shoulder Arthroplasty System and equivalent devices.' },
+          { id: 'lit002', title: 'Search Methodology', content: 'A systematic search was conducted in PubMed, Embase, and Cochrane databases covering the period from January 2010 to April 2025, using keywords including "shoulder arthroplasty", "focal shoulder resurfacing", and "partial shoulder replacement".' },
+          { id: 'lit003', title: 'Results Summary', content: 'The search identified 127 potentially relevant publications, of which 42 met the inclusion criteria for detailed review. These studies included a total of 2,845 patients with follow-up periods ranging from 2 to 10 years.' }
+        ],
+        metadata: {
+          searchDate: '2025-04-15',
+          databasesSearched: ['PubMed', 'Embase', 'Cochrane', 'MEDLINE'],
+          keywordCount: 18,
+          relevantStudies: 42
+        }
+      }
     },
     {
       id: 'doc-003',
-      name: 'Clinical Data Summary - Enzymex Studies',
+      name: 'Clinical Data Summary - Arthrosurface Shoulder Studies',
       type: 'data',
       category: 'Clinical Data',
       version: '1.1.0',
@@ -95,13 +122,26 @@ export default function DocumentVaultPanel({ jobId }) {
       dateModified: '2025-04-22T11:30:00Z',
       size: '4.7 MB',
       status: 'approved',
-      tags: ['Clinical Data', 'Enzymex Forte', 'Studies'],
-      description: 'Summary of clinical data from all Enzymex Forte studies',
-      thumbnail: null
+      tags: ['Clinical Data', 'Arthrosurface', 'Studies'],
+      description: 'Summary of clinical data from all Arthrosurface Shoulder Arthroplasty System studies',
+      thumbnail: null,
+      content: {
+        title: 'Clinical Data Summary - Arthrosurface Shoulder Arthroplasty Studies',
+        sections: [
+          { id: 'dat001', title: 'Overview', content: 'This document summarizes the clinical data collected from three clinical studies of the Arthrosurface Shoulder Arthroplasty System conducted between 2018 and 2025.' },
+          { id: 'dat002', title: 'Study ASA-001', content: 'A prospective, multi-center study including 85 patients with focal chondral defects treated with the Arthrosurface system. The study demonstrated a 93% implant survival rate at 5 years with statistically significant improvements in pain and functional scores.' },
+          { id: 'dat003', title: 'Study ASA-002', content: 'A randomized controlled trial comparing the Arthrosurface system (n=64) with conventional total shoulder arthroplasty (n=68) in patients with glenohumeral osteoarthritis. Results showed comparable clinical outcomes with reduced bone loss and shorter recovery times in the Arthrosurface group.' }
+        ],
+        metadata: {
+          totalPatients: 217,
+          averageFollowUp: '4.7 years',
+          primaryEndpoints: ['Pain reduction', 'Function improvement', 'Range of motion', 'Implant survival']
+        }
+      }
     },
     {
       id: 'doc-004',
-      name: 'Risk Assessment Report',
+      name: 'Risk Assessment Report - Arthrosurface Shoulder System',
       type: 'risk',
       category: 'Risk Management',
       version: '2.0.1',
@@ -110,13 +150,27 @@ export default function DocumentVaultPanel({ jobId }) {
       dateModified: '2025-04-18T16:45:00Z',
       size: '3.2 MB',
       status: 'approved',
-      tags: ['Risk', 'Safety', 'Enzymex Forte'],
-      description: 'Comprehensive risk assessment for Enzymex Forte',
-      thumbnail: null
+      tags: ['Risk', 'Safety', 'Arthrosurface'],
+      description: 'Comprehensive risk assessment for Arthrosurface Shoulder Arthroplasty System',
+      thumbnail: null,
+      content: {
+        title: 'Risk Assessment Report - Arthrosurface Shoulder Arthroplasty System',
+        sections: [
+          { id: 'risk001', title: 'Risk Assessment Methodology', content: 'This risk assessment follows ISO 14971:2019 and identifies, evaluates, and controls risks associated with the Arthrosurface Shoulder Arthroplasty System.' },
+          { id: 'risk002', title: 'Identified Risks', content: 'The assessment identified 27 potential risks, including infection, device loosening, biomaterial wear, and allergic reaction. Each risk was evaluated for severity, probability, and detectability.' },
+          { id: 'risk003', title: 'Risk Mitigation Measures', content: 'Control measures implemented include design optimizations, manufacturing controls, sterilization validation, surgical technique guidance, and post-market surveillance protocols.' }
+        ],
+        metadata: {
+          standard: 'ISO 14971:2019',
+          riskCount: 27,
+          residualRiskAcceptance: 'All residual risks determined to be acceptable',
+          reviewDate: '2025-04-15'
+        }
+      }
     },
     {
       id: 'doc-005',
-      name: 'Post-Market Surveillance Plan',
+      name: 'Post-Market Surveillance Plan - Arthrosurface',
       type: 'pms',
       category: 'Post-Market',
       version: '1.0.0',
@@ -126,12 +180,26 @@ export default function DocumentVaultPanel({ jobId }) {
       size: '1.5 MB',
       status: 'draft',
       tags: ['PMS', 'Surveillance', 'Draft'],
-      description: 'Draft post-market surveillance plan for Enzymex Forte',
-      thumbnail: null
+      description: 'Draft post-market surveillance plan for Arthrosurface Shoulder Arthroplasty System',
+      thumbnail: null,
+      content: {
+        title: 'Post-Market Surveillance Plan - Arthrosurface Shoulder Arthroplasty System',
+        sections: [
+          { id: 'pms001', title: 'Introduction', content: 'This PMS Plan outlines the strategy for systematically collecting and evaluating clinical experience with the Arthrosurface Shoulder Arthroplasty System in the post-market phase in accordance with EU MDR 2017/745.' },
+          { id: 'pms002', title: 'Surveillance Methods', content: 'The plan incorporates multiple data sources, including: registry data analysis, user feedback collection, literature monitoring, and an active follow-up study of 150 patients across 10 clinical sites.' },
+          { id: 'pms003', title: 'Data Analysis & Reporting', content: 'Data will be analyzed quarterly with comprehensive reviews annually. Findings will be incorporated into risk management, CERs, and reported to authorities as required. Trend analysis will use statistical methods to identify patterns requiring investigation.' }
+        ],
+        metadata: {
+          euMdrCompliant: true,
+          reviewCycle: 'Annual',
+          surveillanceDuration: 'Product lifetime plus 10 years',
+          draftStatus: 'Pending final approval'
+        }
+      }
     },
     {
       id: jobId,
-      name: 'Enzymex Forte CER v1.1.0 (Latest)',
+      name: 'Arthrosurface Shoulder Arthroplasty Systems CER v1.1.0 (Latest)',
       type: 'cer',
       category: 'Clinical Evaluation',
       version: '1.1.0',
@@ -140,10 +208,27 @@ export default function DocumentVaultPanel({ jobId }) {
       dateModified: new Date().toISOString(),
       size: '2.5 MB',
       status: 'draft',
-      tags: ['EU MDR', 'Enzymex Forte', 'Latest', 'AI-Generated'],
-      description: 'Latest AI-generated Clinical Evaluation Report for Enzymex Forte',
+      tags: ['EU MDR', 'MEDDEV 2.7/1 Rev 4', 'Shoulder', 'Latest', 'AI-Generated'],
+      description: 'Latest AI-generated Clinical Evaluation Report for Arthrosurface Shoulder Arthroplasty System with updated FAERS data and literature',
       thumbnail: null,
-      isLatest: true
+      isLatest: true,
+      content: {
+        title: 'Clinical Evaluation Report - Arthrosurface Shoulder Arthroplasty Systems',
+        sections: [
+          { id: 'new001', title: 'Executive Summary', content: 'This clinical evaluation report (CER) has been prepared in accordance with MEDDEV 2.7/1 Rev 4 and EU MDR 2017/745. The Arthrosurface Shoulder Arthroplasty System demonstrates a favorable benefit-risk profile based on the latest clinical evidence and post-market surveillance data.' },
+          { id: 'new002', title: 'Device Description', content: 'The Arthrosurface Shoulder Arthroplasty System is designed for the repair of focal chondral and osteochondral defects in the shoulder joint, with recent enhancements to instrumentation and surgical technique.' },
+          { id: 'new003', title: 'Clinical Evaluation Methods', content: 'This evaluation follows a well-defined methodology, incorporating data from clinical investigations, post-market experience, comparable devices, and recent scientific literature published through April 2025.' },
+          { id: 'new004', title: 'Clinical Data Analysis', content: 'Updated analysis includes two new clinical studies and registry data from 485 additional patients, strengthening the evidence supporting device safety and performance.' },
+          { id: 'new005', title: 'State of the Art Review', content: 'The current state of the art in shoulder arthroplasty has been comprehensively reviewed, confirming that the Arthrosurface system meets or exceeds current standards for similar devices.' }
+        ],
+        metadata: {
+          standard: 'MEDDEV 2.7/1 Rev 4',
+          complianceScore: 88,
+          draftStatus: 'Pending final review',
+          generatedAt: new Date().toISOString(),
+          version: '1.1.0'
+        }
+      }
     }
   ].filter(doc => doc.id !== undefined);
   
@@ -182,70 +267,97 @@ export default function DocumentVaultPanel({ jobId }) {
     window.open(`/api/documents/${doc.id}/view`, '_blank');
   };
   
-  // Download file handler
-  const handleDownloadFile = async (doc) => {
-    console.log('Downloading document:', doc);
+  // Download file handler - creates an HTML file with document content for demo
+  const handleDownloadFile = (doc) => {
     try {
-      // For CER documents, use the CerAPIService to create and download a PDF
-      if (doc.type === 'cer') {
-        // Mock data for CER export - in a real app, this would be fetched based on doc.id
-        const mockCerData = {
-          title: doc.name,
-          sections: [
-            { id: 'sec1', title: 'Executive Summary', content: 'This is a sample CER document.' },
-            { id: 'sec2', title: 'Device Description', content: 'Device description content would appear here.' },
-            { id: 'sec3', title: 'Clinical Evaluation', content: 'Clinical evaluation data would be presented here.' }
-          ],
-          faers: [],
-          comparators: [],
-          metadata: {
-            author: doc.author,
-            version: doc.version,
-            category: doc.category
-          }
-        };
-        
-        // Generate PDF using the CerAPIService
-        const pdfBlob = await cerApiService.exportToPDF(mockCerData);
-        
-        // Initiate download of the generated PDF
-        const url = window.URL.createObjectURL(pdfBlob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `${doc.name.replace(/\s+/g, '_').toLowerCase()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+      // Create content based on document type
+      let content = '';
+      
+      // Generate HTML content from the document's sections
+      if (doc.content?.sections && doc.content.sections.length > 0) {
+        content = doc.content.sections.map(section => {
+          return `
+            <div style="margin-bottom: 20px;">
+              <h2 style="color: #333; margin-top: 20px;">${section.title}</h2>
+              <p style="margin-bottom: 10px;">${section.content}</p>
+            </div>
+          `;
+        }).join('');
       } else {
-        // For non-CER documents, simulate a standard file download
-        // Create a mock PDF blob (this would normally be fetched from the server)
-        const response = await fetch('/api/cer/export-pdf', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            title: doc.name,
-            documentType: doc.type,
-            metadata: {
-              author: doc.author,
-              category: doc.category,
-              version: doc.version,
-              created: doc.dateCreated,
-              tags: doc.tags
-            }
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Download failed: ${response.statusText}`);
-        }
-        
-        const blob = await response.blob();
-        cerApiService.downloadBlob(blob, `${doc.name.replace(/\s+/g, '_').toLowerCase()}.pdf`);
+        // Fallback if no sections are available
+        content = `
+          <div style="margin-bottom: 20px;">
+            <h2 style="color: #333; margin-top: 20px;">${doc.name}</h2>
+            <p style="margin-bottom: 10px;">${doc.description}</p>
+          </div>
+        `;
       }
+      
+      // Create full HTML document
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${doc.name}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 30px; }
+            h1 { color: #0F6CBD; }
+            h2 { color: #333; margin-top: 20px; }
+            .header { display: flex; justify-content: space-between; align-items: center; }
+            .metadata { color: #666; font-size: 12px; margin-bottom: 30px; border: 1px solid #eee; padding: 10px; background: #f9f9f9; }
+            .content { margin-bottom: 20px; }
+            .footer { border-top: 1px solid #eee; padding-top: 10px; font-size: 10px; color: #999; }
+            .watermark { position: fixed; top: 50%; left: 0; width: 100%; text-align: center; opacity: 0.1; transform: rotate(-45deg); font-size: 120px; z-index: -1; }
+            .status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+            .status-approved { background: #e6f4ea; color: #137333; }
+            .status-draft { background: #fff8e6; color: #b06000; }
+          </style>
+        </head>
+        <body>
+          ${doc.status === 'draft' ? '<div class="watermark">DRAFT</div>' : ''}
+          
+          <div class="header">
+            <h1>${doc.name}</h1>
+            <div class="status ${doc.status === 'approved' ? 'status-approved' : 'status-draft'}">
+              ${doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
+            </div>
+          </div>
+          
+          <div class="metadata">
+            <p><strong>Author:</strong> ${doc.author} | <strong>Version:</strong> ${doc.version} | <strong>Modified:</strong> ${formatDate(doc.dateModified)}</p>
+            <p><strong>Category:</strong> ${doc.category} | <strong>Tags:</strong> ${doc.tags.join(', ')}</p>
+            ${doc.content?.metadata?.standard ? `<p><strong>Standard:</strong> ${doc.content.metadata.standard}</p>` : ''}
+            ${doc.content?.metadata?.complianceScore ? `<p><strong>Compliance Score:</strong> ${doc.content.metadata.complianceScore}%</p>` : ''}
+          </div>
+          
+          <div class="content">
+            ${content}
+          </div>
+          
+          <div class="footer">
+            <p>Document ID: ${doc.id} | Generated: ${new Date().toLocaleString()}</p>
+            <p>TrialSage Document Management System | Confidential</p>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      // Create blob and download
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${doc.name.replace(/\s+/g, '_').toLowerCase()}.html`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
     } catch (error) {
       console.error('Error downloading document:', error);
       alert('Download failed. Please try again later.');
@@ -576,12 +688,12 @@ export default function DocumentVaultPanel({ jobId }) {
       
       {/* Upload Dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-        <DialogContent className="bg-white border-none shadow-lg">
+        <DialogContent className="bg-white border-none">
           <DialogHeader>
             <DialogTitle className="text-[#323130] text-lg font-semibold">Upload Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-3">
-            <div className="border-2 border-dashed border-[#E1DFDD] rounded-lg p-6 text-center bg-[#FAF9F8]">
+            <div className="border-2 border-dashed border-[#0F6CBD] rounded-lg p-6 text-center bg-white">
               <UploadCloud className="h-10 w-10 text-[#0F6CBD] mx-auto mb-4" />
               <h3 className="font-medium mb-1 text-[#323130]">Drag and drop files</h3>
               <p className="text-sm text-[#616161] mb-3">or click to browse</p>
@@ -611,13 +723,13 @@ export default function DocumentVaultPanel({ jobId }) {
       
       {/* Share Dialog */}
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="bg-white border-none shadow-lg">
+        <DialogContent className="bg-white border-none">
           <DialogHeader>
             <DialogTitle className="text-[#323130] text-lg font-semibold">Share Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-3">
             {selectedDocument && (
-              <div className="flex items-start space-x-3 p-3 bg-[#FAF9F8] rounded-md border border-[#E1DFDD]">
+              <div className="flex items-start space-x-3 p-3 rounded-md border border-[#0F6CBD] border-opacity-30">
                 {getFileIcon(selectedDocument.type)}
                 <div>
                   <div className="font-medium text-[#323130]">{selectedDocument.name}</div>
