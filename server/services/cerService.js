@@ -9,6 +9,12 @@
  */
 
 import OpenAI from 'openai';
+import { storage } from '../storage.js';
+
+// Simple ID generator to avoid uuid dependency
+function generateId(prefix = '') {
+  return `${prefix}${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
 
 // Initialize OpenAI with API key from environment variable
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -203,6 +209,108 @@ export async function generateMockCER(templateId = 'eu-mdr-full') {
     url: `/api/cer/reports/sample-${templateId}.pdf`,
     generatedAt: new Date().toISOString()
   };
+}
+
+/**
+ * Generate a full CER with enhanced AI workflow
+ * 
+ * @param {Object} params - Generation parameters
+ * @param {Object} params.deviceInfo - Device information
+ * @param {Array} params.literature - Clinical literature references
+ * @param {Object} params.fdaData - FDA adverse event data
+ * @param {string} params.templateId - Template ID to use
+ * @returns {Object} - Generated report sections and metadata
+ */
+/**
+ * Initialize a new CER report in the database and start the generation workflow
+ * 
+ * @param {Object} params - Generation parameters
+ * @param {Object} params.deviceInfo - Device information
+ * @param {Array} params.literature - Clinical literature references
+ * @param {Object} params.fdaData - FDA adverse event data
+ * @param {string} params.templateId - Template ID to use
+ * @returns {Object} - Created CER report record with initialized workflow
+ */
+export async function initializeZeroClickCER({ deviceInfo, literature = [], fdaData = null, templateId = 'meddev' }) {
+  console.log(`Initializing Zero-Click CER with template ${templateId}`);
+  console.log(`Device: ${deviceInfo?.name || 'Unknown device'}`);
+  
+  try {
+    // Map template ID to regulatory framework
+    let regulatoryFramework = 'EU MDR 2017/745';
+    if (templateId === 'fda-510k') {
+      regulatoryFramework = 'FDA 510(k)';
+    } else if (templateId === 'meddev') {
+      regulatoryFramework = 'MEDDEV 2.7/1 Rev 4';
+    } else if (templateId === 'iso-14155') {
+      regulatoryFramework = 'ISO 14155';
+    }
+    
+    // Generate a unique report ID
+    const reportId = generateId('CER-');
+    
+    // Create title based on device info
+    const title = `${deviceInfo.name} - ${regulatoryFramework} Clinical Evaluation Report`;
+    
+    // Prepare the CER report data
+    const cerReport = {
+      id: reportId,
+      title,
+      deviceName: deviceInfo.name,
+      manufacturer: deviceInfo.manufacturer,
+      deviceType: deviceInfo.type,
+      regulatoryFramework,
+      status: 'initializing',
+      templateId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      metadata: {
+        intendedUse: deviceInfo.intendedUse,
+        classification: deviceInfo.classification || 'Class IIb',
+        initialRequest: {
+          literature: Array.isArray(literature) ? literature.length : 0,
+          hasFdaData: !!fdaData
+        }
+      }
+    };
+    
+    // Create the CER report in the database
+    const createdReport = await storage.createCerReport(cerReport);
+    
+    // Initialize workflow record to track progress
+    const workflow = {
+      id: generateId('WF-'),
+      reportId: reportId,
+      startedAt: new Date(),
+      lastUpdated: new Date(),
+      status: 'data_preparation',
+      currentStep: 'initialize',
+      progress: 0,
+      steps: [
+        { id: 'initialize', name: 'Initialization', status: 'completed', completedAt: new Date() },
+        { id: 'data_preparation', name: 'Data Preparation', status: 'in_progress', startedAt: new Date() },
+        { id: 'faers_analysis', name: 'FDA FAERS Analysis', status: 'pending' },
+        { id: 'literature_analysis', name: 'Literature Analysis', status: 'pending' },
+        { id: 'section_generation', name: 'Section Generation', status: 'pending' },
+        { id: 'compliance_check', name: 'Compliance Check', status: 'pending' },
+        { id: 'finalization', name: 'Finalization', status: 'pending' }
+      ]
+    };
+    
+    // Create the workflow in the database
+    const createdWorkflow = await storage.createCerWorkflow(workflow);
+    
+    // Return the combined data
+    return {
+      report: createdReport,
+      workflow: createdWorkflow,
+      message: `Zero-Click CER initialization complete. Report ID: ${reportId}`,
+      status: 'success'
+    };
+  } catch (error) {
+    console.error('Error initializing Zero-Click CER:', error);
+    throw error;
+  }
 }
 
 /**
