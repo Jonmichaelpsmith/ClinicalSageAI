@@ -10,9 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { exportToPDF, exportToWord, downloadBlob, fetchFaersData, getComplianceScore } from '@/services/CerAPIService';
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardCheck, Clock, Download, FileCheck, FileText, CheckCircle, AlertCircle, ChevronDown, FileWarning, BookOpen, Calendar, Layers, CircleCheck, CircleAlert } from 'lucide-react';
+import { ClipboardCheck, Clock, Download, FileCheck, FileText, CheckCircle, AlertCircle, ChevronDown, FileWarning, BookOpen, Calendar, Layers, CircleCheck, CircleAlert, Database, MessageSquare, UploadCloud, Loader2, Info } from 'lucide-react';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
@@ -298,6 +303,10 @@ export default function CERV2Page() {
               <ClipboardCheck className="h-4 w-4" />
               <span>Compliance Scorecard</span>
             </TabsTrigger>
+            <TabsTrigger value="ai-assist" className="flex gap-1 items-center">
+              <MessageSquare className="h-4 w-4" />
+              <span>AI Assistant</span>
+            </TabsTrigger>
             <TabsTrigger value="export" className="flex gap-1 items-center">
               <Download className="h-4 w-4" />
               <span>Export Options</span>
@@ -405,6 +414,331 @@ export default function CERV2Page() {
               onComplianceChange={setCompliance}
               onStatusChange={setDraftStatus}
             />
+          </TabsContent>
+          
+          <TabsContent value="ai-assist">
+            <div className="space-y-6">
+              {/* AI Assistant for Automated CER Generation */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                {/* Left panel - Device Input and Settings */}
+                <div className="md:col-span-5">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Database className="h-5 w-5 text-blue-600" />
+                        Device Information
+                      </CardTitle>
+                      <CardDescription>
+                        Configure device details for intelligent CER generation
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="deviceName">Device Name</Label>
+                        <Input
+                          id="deviceName"
+                          placeholder="e.g., CardioMonitor Pro 3000"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="deviceType">Device Type</Label>
+                        <Select defaultValue="Class2">
+                          <SelectTrigger id="deviceType">
+                            <SelectValue placeholder="Select device type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>EU MDR</SelectLabel>
+                              <SelectItem value="Class1">Class I (Non-sterile)</SelectItem>
+                              <SelectItem value="Class1s">Class I (Sterile)</SelectItem>
+                              <SelectItem value="Class2a">Class IIa</SelectItem>
+                              <SelectItem value="Class2b">Class IIb</SelectItem>
+                              <SelectItem value="Class3">Class III</SelectItem>
+                            </SelectGroup>
+                            <SelectGroup>
+                              <SelectLabel>US FDA</SelectLabel>
+                              <SelectItem value="Class1FDA">Class I (Exempt)</SelectItem>
+                              <SelectItem value="Class2FDA">Class II (510k)</SelectItem>
+                              <SelectItem value="Class3FDA">Class III (PMA)</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="regulatoryPath">Regulatory Framework</Label>
+                        <Select defaultValue="EU-MDR">
+                          <SelectTrigger id="regulatoryPath">
+                            <SelectValue placeholder="Select regulatory framework" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="EU-MDR">EU MDR</SelectItem>
+                            <SelectItem value="ISO-14155">ISO 14155</SelectItem>
+                            <SelectItem value="US-FDA">US FDA</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="intendedUse">Intended Use</Label>
+                        <Textarea
+                          id="intendedUse"
+                          placeholder="Describe the intended use of the device..."
+                          rows={3}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <UploadCloud className="h-5 w-5 text-blue-600" />
+                        Document Upload
+                      </CardTitle>
+                      <CardDescription>
+                        Upload existing documentation to enhance the CER
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="border-2 border-dashed rounded-md p-6 text-center cursor-pointer hover:bg-slate-50 transition-colors">
+                        <div className="flex flex-col items-center">
+                          <UploadCloud className="w-8 h-8 mb-2 text-slate-400" />
+                          <span className="text-sm font-medium">Click to upload or drag and drop</span>
+                          <span className="text-xs text-slate-500 mt-1">PDF, DOCX, CSV (max 10MB each)</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4">
+                        <Label className="text-sm">Data Sources</Label>
+                        <div className="mt-2 space-y-2">
+                          <div className="flex items-center">
+                            <input type="checkbox" id="faers" className="mr-2" checked />
+                            <Label htmlFor="faers" className="text-sm cursor-pointer">FAERS Database</Label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" id="literature" className="mr-2" checked />
+                            <Label htmlFor="literature" className="text-sm cursor-pointer">PubMed Literature</Label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" id="maude" className="mr-2" checked />
+                            <Label htmlFor="maude" className="text-sm cursor-pointer">MAUDE Database</Label>
+                          </div>
+                          <div className="flex items-center">
+                            <input type="checkbox" id="eudamed" className="mr-2" checked />
+                            <Label htmlFor="eudamed" className="text-sm cursor-pointer">EUDAMED</Label>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Right panel - CER Generation Options */}
+                <div className="md:col-span-7">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-indigo-600" />
+                        AI-Powered CER Generation
+                      </CardTitle>
+                      <CardDescription>
+                        Generate a complete, standards-compliant Clinical Evaluation Report
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-5">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Smart Generation Options</h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="border border-gray-200 rounded-md p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center mb-2">
+                                <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                                <h4 className="font-medium">Standard CER</h4>
+                              </div>
+                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Recommended</Badge>
+                            </div>
+                            <p className="text-sm text-gray-600">Generate a complete CER with all required sections based on device classification</p>
+                            <div className="flex items-center gap-1 mt-2">
+                              <Info className="h-3 w-3 text-gray-400" />
+                              <span className="text-xs text-gray-500">~25 min generation time</span>
+                            </div>
+                          </div>
+                          
+                          <div className="border border-gray-200 rounded-md p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center mb-2">
+                                <ClipboardCheck className="h-5 w-5 mr-2 text-indigo-600" />
+                                <h4 className="font-medium">Zero-Click Report</h4>
+                              </div>
+                              <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100">Premium</Badge>
+                            </div>
+                            <p className="text-sm text-gray-600">Fully autonomous report generation with intelligent data integration and self-completion</p>
+                            <div className="flex items-center gap-1 mt-2">
+                              <Info className="h-3 w-3 text-gray-400" />
+                              <span className="text-xs text-gray-500">~15 min generation time</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="border border-gray-200 rounded-md p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                            <div className="flex items-center mb-2">
+                              <BookOpen className="h-5 w-5 mr-2 text-amber-600" />
+                              <h4 className="font-medium">Literature-Focused</h4>
+                            </div>
+                            <p className="text-sm text-gray-600">CER with enhanced literature review and critical appraisal of scientific evidence</p>
+                            <div className="flex items-center gap-1 mt-2">
+                              <Info className="h-3 w-3 text-gray-400" />
+                              <span className="text-xs text-gray-500">~40 min generation time</span>
+                            </div>
+                          </div>
+                          
+                          <div className="border border-gray-200 rounded-md p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                            <div className="flex items-center mb-2">
+                              <Database className="h-5 w-5 mr-2 text-purple-600" />
+                              <h4 className="font-medium">Deep Data Analysis</h4>
+                            </div>
+                            <p className="text-sm text-gray-600">Comprehensive CER with in-depth data analysis and statistical evaluation of safety data</p>
+                            <div className="flex items-center gap-1 mt-2">
+                              <Info className="h-3 w-3 text-gray-400" />
+                              <span className="text-xs text-gray-500">~35 min generation time</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4 space-y-3">
+                        <h3 className="text-lg font-medium">Required Sections</h3>
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                          {['Device Description', 'Intended Purpose', 'State of the Art', 'Clinical Data Analysis', 'Post-Market Surveillance', 'Literature Review', 'Benefit-Risk Analysis', 'Conclusion'].map((section, index) => (
+                            <div key={index} className="flex items-center text-sm">
+                              <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                              {section}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2">
+                        <Button size="lg" className="w-full" onClick={() => {
+                          toast({
+                            title: "AI-Generated CER",
+                            description: "Your zero-click report has started processing. This will take approximately 15 minutes.",
+                          });
+                          
+                          // In a real implementation, we would call an API to start the generation process
+                          // and then update the sections state when complete
+                          setTimeout(() => {
+                            const newSections = [
+                              {
+                                title: "Device Description",
+                                type: "device-description",
+                                content: `# Device Description\n\nThis section provides a detailed description of ${title || "the medical device"}, including its components, functional characteristics, and technical specifications. The device is designed in accordance with the relevant standards and regulatory requirements.\n\nThe device consists of specialized components engineered to ensure safety and efficacy in clinical use. Manufacturing processes follow strict quality control protocols to ensure consistency and reliability.`
+                              },
+                              {
+                                title: "Intended Purpose",
+                                type: "intended-purpose",
+                                content: `# Intended Purpose\n\n${title || "The medical device"} is intended for use in clinical settings to provide diagnostic or therapeutic benefit to patients with specific conditions. The device is indicated for use under the supervision of healthcare professionals trained in its operation.\n\nThe target patient population and clinical settings are clearly defined based on the device's specific characteristics and performance capabilities.`
+                              },
+                              {
+                                title: "State of the Art",
+                                type: "state-of-art",
+                                content: `# State of the Art\n\nThis section provides a comprehensive overview of the current state of the art in the field related to ${title || "the medical device"}. It includes an analysis of existing technologies, alternative treatments, and current clinical practices.\n\nThe review demonstrates that ${title || "the device"} incorporates the latest technological advancements and is comparable or superior to existing alternatives in terms of safety and performance.`
+                              },
+                              {
+                                title: "Clinical Data Analysis",
+                                type: "clinical-data",
+                                content: `# Clinical Data Analysis\n\nThis section presents an analysis of clinical data related to ${title || "the medical device"}, including clinical investigations, published literature, and post-market surveillance data.\n\nThe analysis demonstrates that the device meets its intended purpose and performs as expected in clinical use. Safety and performance data support the device's benefit-risk profile.`
+                              },
+                              {
+                                title: "Post-Market Surveillance",
+                                type: "post-market",
+                                content: `# Post-Market Surveillance\n\nThis section describes the post-market surveillance system in place for ${title || "the medical device"}, including mechanisms for collecting and analyzing data on device performance and safety in real-world use.\n\nThe surveillance system is designed to identify any emerging risks or issues related to the device and to implement corrective actions as needed.`
+                              },
+                              {
+                                title: "Literature Review",
+                                type: "literature-review",
+                                content: `# Literature Review\n\nThis section presents a systematic review of published literature related to ${title || "the medical device"} and similar devices. The review includes clinical studies, case reports, and other relevant publications.\n\nThe literature review supports the safety and performance of the device and provides context for its use in clinical practice. Key findings from the literature are integrated into the overall clinical evaluation.`
+                              },
+                              {
+                                title: "Benefit-Risk Analysis",
+                                type: "benefit-risk",
+                                content: `# Benefit-Risk Analysis\n\nThis section presents a comprehensive analysis of the benefits and risks associated with ${title || "the medical device"}, based on available clinical data and literature.\n\nThe analysis demonstrates that the benefits of the device outweigh the risks when used as intended. Residual risks are identified and mitigation measures are described.`
+                              },
+                              {
+                                title: "Conclusion",
+                                type: "conclusion",
+                                content: `# Conclusion\n\nBased on the comprehensive clinical evaluation presented in this report, ${title || "the medical device"} is determined to be safe and effective for its intended purpose when used as specified.\n\nThe device meets all applicable regulatory requirements and standards. The benefit-risk profile is favorable, and the device represents a valuable option for clinical use in the specified indications.`
+                              }
+                            ];
+                            
+                            setSections(newSections);
+                            setActiveTab("preview");
+                            
+                            toast({
+                              title: "CER Generation Complete",
+                              description: "Your AI-generated Clinical Evaluation Report is ready for review.",
+                              variant: "success"
+                            });
+                            
+                            // Auto-trigger compliance check
+                            setTimeout(() => {
+                              runComplianceCheck();
+                            }, 1000);
+                            
+                          }, 3000); // Simulated delay for demo purposes
+                        }}>
+                          <FileText className="h-5 w-5 mr-2" />
+                          Generate Zero-Click CER Report
+                        </Button>
+                        
+                        <p className="text-xs text-center mt-2 text-gray-500">
+                          The report will be generated using GPT-4o intelligence and all available data sources
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-purple-600" />
+                        AI CER Assistant
+                      </CardTitle>
+                      <CardDescription>
+                        Ask questions about your CER or get help with specific sections
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="p-3 bg-gray-50 rounded-md text-gray-700">
+                          <p><span className="font-medium">AI Assistant:</span> How can I help with your Clinical Evaluation Report today?</p>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Input placeholder="Ask me anything about CER development..." className="flex-1" />
+                          <Button>
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <Badge className="cursor-pointer" variant="outline">How should I structure my State of the Art section?</Badge>
+                          <Badge className="cursor-pointer" variant="outline">What clinical data should I include?</Badge>
+                          <Badge className="cursor-pointer" variant="outline">Help me fix compliance issues</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="export">
