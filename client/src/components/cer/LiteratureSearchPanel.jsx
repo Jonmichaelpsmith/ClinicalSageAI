@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { searchLiterature, generateCitations, summarizePaper } from '@/services/LiteratureAPIService';
+import React, { useState, useEffect, useRef } from 'react';
+import { searchLiterature, generateCitations, summarizePaper, generateLiteratureReview, analyzePaperPDF } from '@/services/LiteratureAPIService';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, BookOpen, Search, Plus, Check, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { AlertCircle, BookOpen, BookOpenCheck, BookmarkCheck, Check, Download, FileCheck, FileText, FileUp, Loader2, Plus, Search, Sparkles, Upload, Zap } from 'lucide-react';
 
 /**
  * Literature Search Panel Component for CER Generator
@@ -9,23 +14,46 @@ import { Loader2, BookOpen, Search, Plus, Check, FileText } from 'lucide-react';
  * Provides functionality to search PubMed and Google Scholar for literature related to a medical device,
  * select relevant papers, generate summaries, and create citations for integration into the CER.
  */
-const LiteratureSearchPanel = ({ cerTitle, onAddToCER }) => {
+const LiteratureSearchPanel = ({ cerTitle, onAddToCER, deviceName = '', manufacturer = '' }) => {
+  const { toast } = useToast();
+  const fileInputRef = useRef(null);
+  
+  // Search state
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState({
-    yearFrom: new Date().getFullYear() - 5, // Default to last 5 years
+    yearFrom: new Date().getFullYear() - 10, // Default to last 10 years for medical devices
     yearTo: new Date().getFullYear(),
-    journalType: ''
+    journalType: '',
+    relevanceFilter: 'high' // high, medium, all
   });
-  const [searchSources, setSearchSources] = useState(['pubmed', 'googleScholar']);
+  const [searchSources, setSearchSources] = useState(['pubmed', 'googleScholar', 'clinicalTrials']);
+  const [activeTab, setActiveTab] = useState('search'); // search, upload, review, generate
+  
+  // Results and selection state
   const [results, setResults] = useState([]);
   const [selectedPapers, setSelectedPapers] = useState([]);
   const [citations, setCitations] = useState('');
+  const [generatedReview, setGeneratedReview] = useState(null);
+  const [reviewOptions, setReviewOptions] = useState({
+    format: 'comprehensive', // comprehensive, concise
+    citationStyle: 'vancouverStyle',
+    includeEvidenceGrading: true,
+    conformToMeddev: true,
+    standard: 'MEDDEV 2.7/1 Rev 4'
+  });
+  
+  // Loading states
   const [isLoading, setIsLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [generatingReview, setGeneratingReview] = useState(false);
+  
+  // UI states
   const [error, setError] = useState(null);
   const [searchMetadata, setSearchMetadata] = useState(null);
   const [paperSummaries, setPaperSummaries] = useState({});
   const [activePaper, setActivePaper] = useState(null);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
 
   // Default to using the CER title as the query if no query is entered
   const effectiveQuery = query || cerTitle; 
@@ -188,12 +216,187 @@ ${citations}
     onAddToCER(literatureSection);
   };
 
+  // Handle file upload
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Check if file is PDF
+    if (file.type !== 'application/pdf') {
+      setError('Please upload a PDF file');
+      toast({
+        title: 'Invalid File Type',
+        description: 'Only PDF files are supported',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    try {
+      setUploadLoading(true);
+      setError(null);
+      
+      // Use the analyzePaperPDF function to extract data
+      const data = await analyzePaperPDF({
+        file,
+        context: {
+          cerTitle,
+          deviceName: deviceName || cerTitle,
+          standard: 'MEDDEV 2.7/1 Rev 4'
+        }
+      });
+      
+      // Create a paper object from the PDF data
+      const paperObj = {
+        id: `pdf-${Date.now()}`,
+        title: data.title || 'Uploaded PDF',
+        authors: data.authors || ['Unknown Author'],
+        journal: data.journal || 'Unknown Source',
+        publicationDate: data.publicationDate || new Date().getFullYear().toString(),
+        abstract: data.abstract || '',
+        fullText: data.fullText || '',
+        source: 'PDF Upload',
+        url: '#'
+      };
+      
+      // Add to results and select it
+      setResults(prev => [paperObj, ...prev]);
+      setSelectedPapers(prev => [...prev, paperObj]);
+      setActivePaper(paperObj.id);
+      
+      // Add summary
+      setPaperSummaries(prev => ({
+        ...prev,
+        [paperObj.id]: data.summary || 'No summary available.'
+      }));
+      
+      toast({
+        title: 'PDF Successfully Analyzed',
+        description: `Extracted ${data.title || 'document'} data and created summary`,
+      });
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
+    } catch (err) {
+      console.error('PDF analysis failed:', err);
+      setError(`Failed to analyze PDF: ${err.message}`);
+      toast({
+        title: 'PDF Analysis Failed',
+        description: err.message || 'Please try another file',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+  
+  // Generate MEDDEV 2.7/1 Rev 4 compliant literature review
+  const handleGenerateMeddevReview = async () => {
+    if (selectedPapers.length === 0) {
+      setError('Please select at least one paper');
+      toast({
+        title: 'No Papers Selected',
+        description: 'Select at least one paper to generate a review',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    try {
+      setGeneratingReview(true);
+      setError(null);
+      
+      // Prepare papers with summaries
+      const papersWithSummaries = selectedPapers.map(paper => ({
+        ...paper,
+        summary: paperSummaries[paper.id] || paper.abstract
+      }));
+      
+      // Generate MEDDEV 2.7/1 Rev 4 compliant literature review
+      const data = await generateLiteratureReview({
+        papers: papersWithSummaries,
+        context: {
+          cerTitle,
+          deviceName: deviceName || (cerTitle?.split(':')[1]?.trim() || 'Medical Device'),
+          manufacturer: manufacturer || 'Device Manufacturer',
+          standard: reviewOptions.standard
+        },
+        options: reviewOptions
+      });
+      
+      setGeneratedReview(data.review);
+      setCitations(data.citations || '');
+      setShowReviewDialog(true);
+      
+      toast({
+        title: 'Literature Review Generated',
+        description: `MEDDEV 2.7/1 Rev 4 compliant review created with ${selectedPapers.length} references`,
+      });
+      
+    } catch (err) {
+      console.error('Literature review generation failed:', err);
+      setError(`Review generation failed: ${err.message}`);
+      toast({
+        title: 'Review Generation Failed',
+        description: err.message || 'Please try again with different papers',
+        variant: 'destructive'
+      });
+    } finally {
+      setGeneratingReview(false);
+    }
+  };
+  
+  // Add generated MEDDEV-compliant review to CER
+  const addGeneratedReviewToCER = () => {
+    if (!generatedReview) return;
+    
+    const literatureSection = {
+      type: 'Literature Review',
+      content: generatedReview,
+      metadata: {
+        standard: reviewOptions.standard,
+        paperCount: selectedPapers.length,
+        generatedAt: new Date().toISOString()
+      }
+    };
+    
+    onAddToCER(literatureSection);
+    setShowReviewDialog(false);
+    
+    toast({
+      title: 'Added to CER',
+      description: 'MEDDEV-compliant literature review added to your report',
+    });
+  };
+
   return (
     <div className="space-y-6 p-4 border rounded-md bg-white">
-      <div>
-        <h2 className="text-xl font-bold">Literature AI Search</h2>
-        <p className="text-sm text-gray-500">Search scientific literature for your Clinical Evaluation Report</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold">Literature AI Search</h2>
+          <p className="text-sm text-gray-500">Generate MEDDEV 2.7/1 Rev 4 compliant literature reviews for your Clinical Evaluation Report</p>
+        </div>
+        <Badge variant="outline" className="px-2 py-1 border-blue-200 bg-blue-50 text-blue-700">
+          MEDDEV 2.7/1 Rev 4
+        </Badge>
       </div>
+      
+      <Tabs defaultValue="search" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="search" className="flex items-center gap-1">
+            <Search className="h-4 w-4" /> Search Literature
+          </TabsTrigger>
+          <TabsTrigger value="upload" className="flex items-center gap-1">
+            <Upload className="h-4 w-4" /> Upload Papers
+          </TabsTrigger>
+          <TabsTrigger value="review" className="flex items-center gap-1">
+            <FileCheck className="h-4 w-4" /> Generate Review
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
       
       {error && (
         <div className="p-3 text-sm bg-red-50 border border-red-200 text-red-600 rounded">
@@ -452,24 +655,404 @@ ${citations}
         </div>
       )}
       
-      {selectedPapers.length > 0 && (
+      <TabsContent value="search" className="mt-4">
+        {/* Existing search results display logic */}
+        {results.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Search Results ({results.length})</h3>
+              <div className="border rounded max-h-[600px] overflow-y-auto">
+                {results.map(paper => (
+                  <div 
+                    key={paper.id}
+                    className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
+                      selectedPapers.some(p => p.id === paper.id) ? 'bg-blue-50' : ''
+                    } ${activePaper === paper.id ? 'ring-2 ring-blue-500' : ''}`}
+                    onClick={() => getSummary(paper)}
+                  >
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className="font-medium text-blue-800">{paper.title}</h4>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectPaper(paper);
+                        }}
+                        className={`shrink-0 p-1 rounded ${
+                          selectedPapers.some(p => p.id === paper.id) 
+                            ? 'bg-green-100 text-green-800 border border-green-300' 
+                            : 'bg-gray-100 text-gray-800 border border-gray-300'
+                        }`}
+                      >
+                        {selectedPapers.some(p => p.id === paper.id) 
+                          ? <Check className="h-4 w-4" /> 
+                          : <Plus className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    
+                    <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-gray-600">
+                      <Badge 
+                        variant="outline" 
+                        className={`${paper.source === 'PubMed' ? 'border-blue-300 bg-blue-50' : paper.source === 'PDF Upload' ? 'border-purple-300 bg-purple-50' : 'border-emerald-300 bg-emerald-50'}`}
+                      >
+                        {paper.source}
+                      </Badge>
+                      
+                      <span>{paper.journal}</span>
+                      <span>·</span>
+                      <span>{paper.publicationDate}</span>
+                      
+                      {paper.citationCount && (
+                        <>
+                          <span>·</span>
+                          <span>Citations: {paper.citationCount}</span>
+                        </>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-gray-800 mt-2 line-clamp-2">
+                      {paper.authors.slice(0, 3).join(', ')}
+                      {paper.authors.length > 3 ? ` and ${paper.authors.length - 3} more` : ''}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+              
+            <div>
+              {activePaper ? (
+                <div className="border rounded p-4 h-full">
+                  <h3 className="text-lg font-semibold">
+                    Paper Summary
+                    {summaryLoading && <Loader2 className="ml-2 h-4 w-4 inline animate-spin" />}
+                  </h3>
+                  
+                  {activePaper && results.find(p => p.id === activePaper) && (
+                    <div className="mt-2">
+                      <h4 className="font-medium text-blue-800">
+                        {results.find(p => p.id === activePaper)?.title}
+                      </h4>
+                      
+                      <div className="mt-4 space-y-4">
+                        {paperSummaries[activePaper] ? (
+                          <div className="prose prose-sm max-w-none">
+                            <h5 className="text-sm font-medium">AI Summary</h5>
+                            <p className="whitespace-pre-line text-sm">
+                              {paperSummaries[activePaper]}
+                            </p>
+                          </div>
+                        ) : summaryLoading ? (
+                          <div className="flex items-center justify-center p-8">
+                            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                          </div>
+                        ) : (
+                          <div className="prose prose-sm max-w-none">
+                            <h5 className="text-sm font-medium">Abstract</h5>
+                            <p className="text-sm">
+                              {results.find(p => p.id === activePaper)?.abstract || 'No abstract available'}
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="pt-4 border-t flex justify-between">
+                          <a 
+                            href={results.find(p => p.id === activePaper)?.url || '#'}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 text-sm hover:underline flex items-center gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <BookOpen className="h-4 w-4" />
+                            View Full Paper
+                          </a>
+                          
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const paper = results.find(p => p.id === activePaper);
+                              if (paper) handleSelectPaper(paper);
+                            }}
+                            className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                          >
+                            {selectedPapers.some(p => p.id === activePaper) ? (
+                              <>
+                                <Check className="h-4 w-4" />
+                                Selected
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="h-4 w-4" />
+                                Select for CER
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="border rounded p-6 h-full flex flex-col items-center justify-center text-center text-gray-500">
+                  <FileText className="h-12 w-12 mb-4 text-gray-400" />
+                  <p>Select a paper to view its AI-generated summary</p>
+                  <p className="text-sm mt-2">
+                    Summaries are tailored for your Clinical Evaluation Report
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="upload" className="mt-4">
+        <div className="p-6 border rounded bg-gray-50">
+          <div className="text-center mb-8">
+            <Upload className="h-12 w-12 mx-auto mb-3 text-blue-500" />
+            <h3 className="text-lg font-semibold">Upload Research Papers</h3>
+            <p className="text-sm text-gray-600 max-w-md mx-auto mt-1">
+              Upload PDF papers or research articles to analyze and include in your MEDDEV 2.7/1 Rev 4 compliant literature review
+            </p>
+          </div>
+          
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-12 bg-white">
+            <input 
+              type="file" 
+              id="file-upload" 
+              className="hidden" 
+              accept=".pdf" 
+              onChange={handleFileUpload}
+              ref={fileInputRef}
+              disabled={uploadLoading}
+            />
+            
+            {uploadLoading ? (
+              <div className="flex flex-col items-center">
+                <Loader2 className="h-10 w-10 animate-spin text-blue-500 mb-4" />
+                <p className="text-sm text-gray-600">Analyzing PDF content...</p>
+                <p className="text-xs text-gray-500 mt-1">This may take a moment</p>
+              </div>
+            ) : (
+              <>
+                <FileUp className="h-10 w-10 text-gray-400 mb-4" />
+                <p className="text-sm text-gray-600">Drag & drop PDFs here or</p>
+                <label htmlFor="file-upload" className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 cursor-pointer">
+                  Browse Files
+                </label>
+                <p className="text-xs text-gray-500 mt-6">Supported formats: PDF</p>
+              </>
+            )}
+          </div>
+          
+          <div className="mt-6 text-sm text-gray-600">
+            <p className="flex items-center">
+              <BookOpenCheck className="h-4 w-4 text-green-600 mr-2" />
+              AI analyzes PDFs and automatically extracts key information
+            </p>
+            <p className="flex items-center mt-2">
+              <BookmarkCheck className="h-4 w-4 text-green-600 mr-2" />
+              Creates MEDDEV 2.7/1 Rev 4 compliant literature reviews
+            </p>
+            <p className="flex items-center mt-2">
+              <Zap className="h-4 w-4 text-green-600 mr-2" />
+              Built-in relevance scoring and evidence grading
+            </p>
+          </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="review" className="mt-4">
+        <div className="p-6 border rounded bg-gray-50">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold">Generate MEDDEV Compliant Literature Review</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Create a comprehensive literature review that meets MEDDEV 2.7/1 Rev 4 regulatory requirements
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="space-y-4 p-4 border rounded bg-white">
+              <h4 className="font-medium text-gray-800">Review Options</h4>
+              
+              <div>
+                <Label htmlFor="format" className="text-sm font-medium">Review Format</Label>
+                <select 
+                  id="format"
+                  value={reviewOptions.format}
+                  onChange={(e) => setReviewOptions({...reviewOptions, format: e.target.value})}
+                  className="w-full p-2 mt-1 border rounded text-sm"
+                >
+                  <option value="comprehensive">Comprehensive (Detailed analysis)</option>
+                  <option value="concise">Concise (Summary format)</option>
+                </select>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="evidence-grading"
+                  checked={reviewOptions.includeEvidenceGrading}
+                  onChange={(e) => setReviewOptions({...reviewOptions, includeEvidenceGrading: e.target.checked})}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="evidence-grading" className="text-sm cursor-pointer">Include evidence grading</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="conform-meddev"
+                  checked={reviewOptions.conformToMeddev}
+                  onChange={(e) => setReviewOptions({...reviewOptions, conformToMeddev: e.target.checked})}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="conform-meddev" className="text-sm cursor-pointer">Conform to MEDDEV 2.7/1 Rev 4</Label>
+              </div>
+            </div>
+            
+            <div className="space-y-4 p-4 border rounded bg-white">
+              <h4 className="font-medium text-gray-800">Selected Literature</h4>
+              <p className="text-sm text-gray-600">
+                {selectedPapers.length === 0 ? (
+                  "No papers selected yet. Search or upload papers to include them in your review."
+                ) : (
+                  `${selectedPapers.length} papers selected for inclusion in your literature review.`
+                )}
+              </p>
+              
+              {selectedPapers.length > 0 && (
+                <div className="mt-2">
+                  <Badge className="bg-blue-100 text-blue-800 border border-blue-200">
+                    {selectedPapers.filter(p => p.source === 'PubMed').length} PubMed
+                  </Badge>
+                  <Badge className="bg-green-100 text-green-800 border border-green-200 ml-2">
+                    {selectedPapers.filter(p => p.source === 'Google Scholar').length} Google Scholar
+                  </Badge>
+                  <Badge className="bg-purple-100 text-purple-800 border border-purple-200 ml-2">
+                    {selectedPapers.filter(p => p.source === 'PDF Upload').length} Uploaded PDFs
+                  </Badge>
+                </div>
+              )}
+              
+              <div className="pt-4 border-t border-gray-100">
+                <Button 
+                  onClick={handleGenerateMeddevReview}
+                  disabled={selectedPapers.length === 0 || generatingReview}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                >
+                  {generatingReview ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating Review...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate MEDDEV-Compliant Review
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          {selectedPapers.length > 0 && (
+            <div className="p-4 border rounded bg-white">
+              <h4 className="font-medium text-gray-800 mb-3">Selected Papers ({selectedPapers.length})</h4>
+              <div className="max-h-[250px] overflow-y-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {selectedPapers.map(paper => (
+                    <div key={paper.id} className="border border-gray-200 rounded p-3 text-sm">
+                      <div className="flex justify-between items-start">
+                        <h5 className="font-medium line-clamp-2 text-blue-700">{paper.title}</h5>
+                        <button
+                          onClick={() => handleSelectPaper(paper)}
+                          className="text-red-500 hover:text-red-700 text-xs flex-shrink-0"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1 line-clamp-1">{paper.authors.join(', ')}</p>
+                      <p className="text-xs mt-1 flex items-center">
+                        <Badge 
+                          variant="outline"
+                          className="mr-1 text-[10px] px-1 py-0"
+                        >
+                          {paper.source}
+                        </Badge>
+                        {paper.journal}, {paper.publicationDate}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </TabsContent>
+
+      {/* Review Dialog */}
+      <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>MEDDEV 2.7/1 Rev 4 Compliant Literature Review</DialogTitle>
+            <DialogDescription>
+              Review and add this literature analysis to your Clinical Evaluation Report
+            </DialogDescription>
+          </DialogHeader>
+          
+          {generatedReview ? (
+            <div className="mt-2 space-y-4">
+              <div className="p-4 border rounded bg-gray-50 whitespace-pre-line">
+                {generatedReview}
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" onClick={() => setShowReviewDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={addGeneratedReviewToCER} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Add to CER
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="py-12 flex flex-col items-center justify-center">
+              <Loader2 className="h-10 w-10 animate-spin text-blue-500 mb-4" />
+              <p className="text-gray-600">Generating MEDDEV-compliant review...</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {selectedPapers.length > 0 && activeTab === 'search' && (
         <div className="mt-4 p-4 border rounded-lg bg-gray-50">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Selected Papers ({selectedPapers.length})</h3>
-            <button
-              onClick={handleGenerateCitations}
-              disabled={isLoading}
-              className="px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>Generate Citations</>
-              )}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleGenerateCitations}
+                disabled={isLoading}
+                className="px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>Generate Citations</>
+                )}
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('review')}
+                className="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                Create MEDDEV Review
+              </button>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
