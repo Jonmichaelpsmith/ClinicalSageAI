@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cerApiService } from '@/services/CerAPIService';
 import { useToast } from '@/hooks/use-toast';
-import { ClipboardCheck, Clock, Download, FileCheck, FileText, CheckCircle, AlertCircle, ChevronDown, FileWarning, BookOpen, Calendar, Layers, CircleCheck, CircleAlert, Database, MessageSquare, UploadCloud, Loader2, Info } from 'lucide-react';
+import { ClipboardCheck, Clock, Download, FileCheck, FileText, CheckCircle, AlertCircle, ChevronDown, FileWarning, BookOpen, Calendar, Layers, CircleCheck, CircleAlert, Database, MessageSquare, UploadCloud, Loader2, Info, Send } from 'lucide-react';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
@@ -772,7 +772,7 @@ export default function CERV2Page() {
                           className="flex-1 border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary h-10" 
                         />
                         <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                          <Send className="h-4 w-4" />
+                          <MessageSquare className="h-4 w-4" />
                         </Button>
                       </div>
                       
