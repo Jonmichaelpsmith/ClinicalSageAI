@@ -218,7 +218,7 @@ export default function CERPage() {
       {/* Navigation Tabs */}
       <div className="border-b bg-gray-50">
         <div className="container mx-auto px-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <div className="tabs-header-container">
             <TabsList className="bg-transparent h-10 justify-start border-b-0 p-0">
               <TabsTrigger 
                 value="overview" 
@@ -284,7 +284,7 @@ export default function CERPage() {
                 VAULT
               </TabsTrigger>
             </TabsList>
-          </Tabs>
+          </div>
         </div>
       </div>
       
