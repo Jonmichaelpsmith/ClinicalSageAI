@@ -321,5 +321,75 @@ cerApiService.getAssistantResponse = async (query, context = {}) => {
   }
 };
 
+/**
+ * Generate a section for the CER
+ * @param {Object} params - Parameters for generating the section
+ * @param {string} params.section - The type of section to generate
+ * @param {string} params.context - The context for the section
+ * @param {string} params.productName - The name of the product
+ * @returns {Promise<Object>} - The generated section content
+ */
+cerApiService.generateSection = async ({ section, context, productName }) => {
+  try {
+    const response = await fetch('/api/cer/generate-section', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        section,
+        context,
+        productName,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating section: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateSection:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a preview of the CER
+ * @param {Object} params - Parameters for the preview
+ * @param {string} params.title - The title of the CER
+ * @param {Array} params.sections - The sections of the CER
+ * @param {Array} params.faers - FAERS data
+ * @param {Array} params.comparators - Comparator data
+ * @returns {Promise<Object>} - The preview data
+ */
+cerApiService.getPreview = async ({ title, sections, faers, comparators }) => {
+  try {
+    const response = await fetch('/api/cer/preview', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        sections,
+        faers,
+        comparators,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating preview: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getPreview:', error);
+    throw error;
+  }
+};
+
 // Export the service object for use in other components
 export { cerApiService };

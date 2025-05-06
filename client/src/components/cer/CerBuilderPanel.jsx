@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { cerApiService } from '../../services/CerAPIService';
 import LiteratureSearchPanel from './LiteratureSearchPanel';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -92,23 +93,12 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     setIsGenerating(true);
     
     try {
-      const response = await fetch('/api/cer/generate-section', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          section: selectedSectionType,
-          context: sectionContext,
-          productName: title.split(':')[1]?.trim() || 'Device/Product',
-        }),
+      const data = await cerApiService.generateSection({
+        section: selectedSectionType,
+        context: sectionContext,
+        productName: title.split(':')[1]?.trim() || 'Device/Product',
       });
       
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
       setGeneratedSection(data);
       
       toast({
@@ -158,24 +148,13 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     setIsLoadingPreview(true);
     
     try {
-      const response = await fetch('/api/cer/preview', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: cerTitle,
-          sections: cerSections,
-          faers: faers?.reports || [],
-          comparators: faers?.comparators || [],
-        }),
+      const data = await cerApiService.getPreview({
+        title: cerTitle,
+        sections: cerSections,
+        faers: faers?.reports || [],
+        comparators: faers?.comparators || [],
       });
       
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
       setPreviewData(data);
     } catch (error) {
       console.error('Error fetching preview:', error);
