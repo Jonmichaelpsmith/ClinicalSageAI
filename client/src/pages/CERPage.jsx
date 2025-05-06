@@ -1,446 +1,211 @@
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FileText, Download, Pen, FileCheck } from "lucide-react";
+import React from 'react';
+import { useLocation } from 'wouter';
+import { ChevronLeft, Share } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
-/**
- * Clinical Evaluation Report Generator - Generate CERs for medical devices
- */
-const CERPage = () => {
-  // Form state
-  const [deviceName, setDeviceName] = useState('');
-  const [manufacturer, setManufacturer] = useState('');
-  const [modelNumber, setModelNumber] = useState('');
-  const [deviceType, setDeviceType] = useState('');
-  const [description, setDescription] = useState('');
-  const [intendedUse, setIntendedUse] = useState('');
-  const [equivalentDevices, setEquivalentDevices] = useState('');
-  const [clinicalData, setClinicalData] = useState('');
-  const [literatureSearch, setLiteratureSearch] = useState('');
-  const [adverseEvents, setAdverseEvents] = useState('');
-  const [cerDraft, setCerDraft] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  // Handle form submission
-  const handleGenerateCER = async () => {
-    if (!deviceName || !manufacturer || !intendedUse) {
-      alert('Please fill in the required fields (Device Name, Manufacturer, and Intended Use)');
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const cerData = {
-        deviceName,
-        manufacturer,
-        modelNumber,
-        deviceType,
-        description,
-        intendedUse,
-        equivalentDevices,
-        clinicalData,
-        literatureSearch,
-        adverseEvents
-      };
-      
-      const response = await fetch('/api/cer/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(cerData)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Error generating CER');
-      }
-      
-      const data = await response.json();
-      setCerDraft(data.cer);
-    } catch (error) {
-      console.error('Error generating CER:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Download CER as PDF
-  const handleDownloadPDF = async () => {
-    if (!cerDraft) return;
-    
-    setLoading(true);
-    try {
-      const response = await fetch('/api/cer/download-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          deviceName,
-          manufacturer,
-          cer: cerDraft
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Error downloading PDF');
-      }
-      
-      // Create a blob from the PDF Stream
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      
-      // Create link and trigger download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${deviceName}_CER.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function CERPage() {
+  const [location, setLocation] = useLocation();
   
   return (
-    <div className="cer-page-container p-4">
-      <h1 className="text-2xl font-bold mb-6">Clinical Evaluation Report Generator</h1>
+    <div className="flex flex-col min-h-screen">
+      {/* Header - exactly matching screenshot */}
+      <header className="bg-blue-900 text-white py-4">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-8">
+              <button 
+                className="text-white flex items-center" 
+                onClick={() => setLocation('/client-portal')}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                <span className="text-sm">Back</span>
+              </button>
+              
+              <div className="grid grid-cols-4 gap-8">
+                <div>
+                  <div className="text-xs text-gray-300">Device Name</div>
+                  <div className="text-sm font-medium">CardioStent XR</div>
+                </div>
+                
+                <div>
+                  <div className="text-xs text-gray-300">Manufacturer</div>
+                  <div className="text-sm font-medium">MedDevice Technologies Inc.</div>
+                </div>
+                
+                <div>
+                  <div className="text-xs text-gray-300">Product Code</div>
+                  <div className="text-sm font-medium">MDT-CS-221</div>
+                </div>
+                
+                <div>
+                  <div className="text-xs text-gray-300">Report Status</div>
+                  <div className="flex items-center">
+                    <Badge className="bg-green-500 text-xs font-normal hover:bg-green-600 rounded">Draft</Badge>
+                    <Badge className="ml-2 bg-white text-blue-800 text-xs font-normal hover:bg-gray-100 rounded">v1.0</Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="sm" className="text-white hover:bg-blue-800 text-xs h-7 rounded">
+                Save
+              </Button>
+              
+              <Button variant="ghost" size="sm" className="text-white hover:bg-blue-800 text-xs h-7 rounded">
+                <Share className="h-3.5 w-3.5 mr-1" />
+                Share
+              </Button>
+              
+              <div className="border-l border-blue-700 h-5 mx-2"></div>
+              
+              <span className="text-xs mr-1">Production</span>
+              <div className="h-3 w-3 rounded-full bg-green-500"></div>
+            </div>
+          </div>
+        </div>
+      </header>
       
-      <Tabs defaultValue="device">
-        <TabsList className="mb-4">
-          <TabsTrigger value="device">
-            <FileText className="h-4 w-4 mr-2" />
-            Device Information
-          </TabsTrigger>
-          <TabsTrigger value="clinical">
-            <FileCheck className="h-4 w-4 mr-2" />
-            Clinical Evidence
-          </TabsTrigger>
-          <TabsTrigger value="generate">
-            <Pen className="h-4 w-4 mr-2" />
-            Generated CER
-          </TabsTrigger>
-        </TabsList>
-        
-        {/* Device Information Tab */}
-        <TabsContent value="device">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Device Details</CardTitle>
-                <CardDescription>Enter information about your medical device</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block mb-1 font-medium">Device Name<span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded"
-                      value={deviceName}
-                      onChange={(e) => setDeviceName(e.target.value)}
-                      placeholder="e.g., CardioRhythm Pacemaker"
-                      required
-                    />
+      {/* Navigation Tabs */}
+      <div className="border-b bg-gray-50">
+        <div className="container mx-auto px-6">
+          <nav className="flex space-x-1">
+            <a href="#" className="px-4 py-3 border-b-2 border-transparent text-sm font-medium">Overview</a>
+            <a href="#" className="px-4 py-3 border-b-2 border-transparent text-sm font-medium">Report Builder</a>
+            <a href="#" className="px-4 py-3 border-b-2 border-blue-600 text-sm font-medium text-blue-600 bg-white">Compliance Assessment</a>
+            <a href="#" className="px-4 py-3 border-b-2 border-transparent text-sm font-medium">Export & Publish</a>
+          </nav>
+        </div>
+      </div>
+      
+      {/* Main Content */}
+      <main className="flex-1 bg-gray-50">
+        <div className="container mx-auto px-6 py-6">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-xl font-semibold mb-1">Clinical Evaluation Report: CardioStent XR</h1>
+              <div className="flex items-center text-xs text-gray-500">
+                <div className="flex items-center mr-3">
+                  <span className="mr-1">Last updated:</span>
+                  <span>2025-05-06</span>
+                </div>
+                <div className="flex items-center mr-3">
+                  <span className="mr-1">Author:</span>
+                  <span>Dr. Elizabeth Chen</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="mr-1">MedDevice Technologies, Inc.</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex space-x-2">
+              <select className="border text-xs rounded px-2 py-1 pr-6 bg-white">
+                <option>Version 1.0 (Current Draft)</option>
+                <option>Version 0.9 (Review)</option>
+                <option>Version 0.8 (Initial Draft)</option>
+              </select>
+              
+              <Button size="sm" className="text-xs h-7 rounded">
+                <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                View Full Report
+              </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-6">
+            {/* Report Summary Card */}
+            <div className="col-span-1">
+              <div className="bg-white border rounded shadow-sm">
+                <div className="border-b px-4 py-2 bg-gray-50 text-sm font-medium">
+                  <div className="flex items-center">
+                    <svg className="h-3.5 w-3.5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Report Summary
                   </div>
-                  
-                  <div>
-                    <label className="block mb-1 font-medium">Manufacturer<span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      className="w-full p-2 border rounded"
-                      value={manufacturer}
-                      onChange={(e) => setManufacturer(e.target.value)}
-                      placeholder="e.g., MedTech Innovations, Inc."
-                      required
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block mb-1 font-medium">Model Number</label>
-                      <input
-                        type="text"
-                        className="w-full p-2 border rounded"
-                        value={modelNumber}
-                        onChange={(e) => setModelNumber(e.target.value)}
-                        placeholder="e.g., CR-2023"
-                      />
+                      <div className="text-xs text-gray-500">Device</div>
+                      <div className="text-sm">CardioStent XR</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Product Code</div>
+                      <div className="text-sm">MDT-CS-221</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Version</div>
+                      <div className="text-sm">v1.0</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Status</div>
+                      <div className="text-sm">Draft</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Report Date</div>
+                      <div className="text-sm">2025-05-06</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Last Updated</div>
+                      <div className="text-sm">2025-05-06</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Key Statistics Card */}
+            <div className="col-span-2">
+              <div className="bg-white border rounded shadow-sm">
+                <div className="border-b px-4 py-2 bg-gray-50 text-sm font-medium flex justify-between items-center">
+                  <div className="flex items-center">
+                    <svg className="h-3.5 w-3.5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Key Statistics
+                  </div>
+                  <button className="px-2 py-1 text-xs border rounded">
+                    <svg className="h-3.5 w-3.5 mr-1 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh
+                  </button>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="border rounded-md p-3">
+                      <div className="text-xs text-gray-500">Sections</div>
+                      <div className="text-2xl font-bold">0</div>
+                      <div className="text-xs text-gray-500">Total report sections</div>
                     </div>
                     
-                    <div>
-                      <label className="block mb-1 font-medium">Device Type</label>
-                      <select
-                        className="w-full p-2 border rounded"
-                        value={deviceType}
-                        onChange={(e) => setDeviceType(e.target.value)}
-                      >
-                        <option value="">Select Device Type</option>
-                        <option value="active-implantable">Active Implantable</option>
-                        <option value="non-active-implantable">Non-Active Implantable</option>
-                        <option value="active-therapeutic">Active Therapeutic</option>
-                        <option value="diagnostic">Diagnostic</option>
-                        <option value="monitoring">Monitoring</option>
-                        <option value="in-vitro-diagnostic">In Vitro Diagnostic</option>
-                      </select>
+                    <div className="border rounded-md p-3">
+                      <div className="text-xs text-gray-500">Compliance</div>
+                      <div className="text-2xl font-bold">N/A</div>
+                      <div className="text-xs text-gray-500">Overall score</div>
+                    </div>
+                    
+                    <div className="border rounded-md p-3">
+                      <div className="text-xs text-gray-500">Critical Gaps</div>
+                      <div className="text-2xl font-bold">N/A</div>
+                      <div className="text-xs text-gray-500">Issues to address</div>
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block mb-1 font-medium">Device Description</label>
-                    <textarea
-                      className="w-full p-2 border rounded"
-                      rows="3"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe the device, its components, and functionality"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block mb-1 font-medium">Intended Use<span className="text-red-500">*</span></label>
-                    <textarea
-                      className="w-full p-2 border rounded"
-                      rows="3"
-                      value={intendedUse}
-                      onChange={(e) => setIntendedUse(e.target.value)}
-                      placeholder="Describe the intended purpose, indications, and patient population"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="pt-4 flex justify-end">
-                    <Button
-                      onClick={() => document.querySelector('[data-value="clinical"]').click()}
-                    >
-                      Next: Clinical Evidence
-                    </Button>
+                    <h3 className="text-sm font-medium mb-2">Progress Tracker</h3>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Equivalent Devices</CardTitle>
-                <CardDescription>List equivalent devices for comparison</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block mb-1 font-medium">Equivalent Devices</label>
-                    <textarea
-                      className="w-full p-2 border rounded"
-                      rows="8"
-                      value={equivalentDevices}
-                      onChange={(e) => setEquivalentDevices(e.target.value)}
-                      placeholder="List predicate or equivalent devices that can be used for comparison, including manufacturer, model number, and similarities/differences"
-                    />
-                  </div>
-                  
-                  <div className="p-4 border rounded bg-blue-50">
-                    <h3 className="font-medium text-blue-800 mb-2">Guidance for Equivalence</h3>
-                    <p className="text-sm text-blue-700">
-                      When identifying equivalent devices, consider the following aspects:
-                    </p>
-                    <ul className="text-sm text-blue-700 mt-2 ml-4 list-disc">
-                      <li>Technical characteristics (materials, specifications, properties)</li>
-                      <li>Biological characteristics (biocompatibility, degradation)</li>
-                      <li>Clinical characteristics (intended purpose, clinical performance)</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        {/* Clinical Evidence Tab */}
-        <TabsContent value="clinical">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Clinical Data</CardTitle>
-                <CardDescription>Provide information about clinical investigations</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block mb-1 font-medium">Clinical Investigation Data</label>
-                    <textarea
-                      className="w-full p-2 border rounded"
-                      rows="8"
-                      value={clinicalData}
-                      onChange={(e) => setClinicalData(e.target.value)}
-                      placeholder="Summarize any clinical investigations conducted with the device, including study design, objectives, methods, results, and conclusions"
-                    />
-                  </div>
-                  
-                  <div className="p-4 border rounded bg-blue-50">
-                    <h3 className="font-medium text-blue-800 mb-2">Clinical Data Guidance</h3>
-                    <p className="text-sm text-blue-700">
-                      Include the following information for each clinical investigation:
-                    </p>
-                    <ul className="text-sm text-blue-700 mt-2 ml-4 list-disc">
-                      <li>Study title and identifier</li>
-                      <li>Study design (e.g., randomized, controlled, cohort)</li>
-                      <li>Patient demographics</li>
-                      <li>Primary and secondary endpoints</li>
-                      <li>Summary of results</li>
-                      <li>Clinical significance of findings</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Literature Search</CardTitle>
-                  <CardDescription>Summarize literature search strategy and findings</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div>
-                    <textarea
-                      className="w-full p-2 border rounded"
-                      rows="5"
-                      value={literatureSearch}
-                      onChange={(e) => setLiteratureSearch(e.target.value)}
-                      placeholder="Describe your literature search strategy, databases searched, search terms, and summary of relevant publications"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Adverse Events</CardTitle>
-                  <CardDescription>Post-market surveillance data and adverse events</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div>
-                    <textarea
-                      className="w-full p-2 border rounded"
-                      rows="5"
-                      value={adverseEvents}
-                      onChange={(e) => setAdverseEvents(e.target.value)}
-                      placeholder="Summarize any known adverse events, complaints, recalls, or field safety notices related to the device or equivalent devices"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => document.querySelector('[data-value="device"]').click()}
-                >
-                  Back to Device Information
-                </Button>
-                <Button
-                  onClick={handleGenerateCER}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    'Generate CER'
-                  )}
-                </Button>
               </div>
             </div>
           </div>
-        </TabsContent>
-        
-        {/* Generated CER Tab */}
-        <TabsContent value="generate">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Generated Clinical Evaluation Report</CardTitle>
-                  {cerDraft && (
-                    <Button 
-                      onClick={handleDownloadPDF}
-                      disabled={loading}
-                      className="flex items-center"
-                    >
-                      {loading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Download className="mr-2 h-4 w-4" />
-                      )}
-                      Download PDF
-                    </Button>
-                  )}
-                </div>
-                <CardDescription>Review and download your Clinical Evaluation Report</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-                    <p className="text-gray-500">Generating your Clinical Evaluation Report...</p>
-                  </div>
-                ) : cerDraft ? (
-                  <div className="border rounded p-6 bg-white">
-                    <div 
-                      className="prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: cerDraft }}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <FileText className="h-16 w-16 text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No CER Generated Yet</h3>
-                    <p className="text-gray-500 max-w-md mb-6">
-                      Fill in your device information and clinical evidence, then click "Generate CER" to create your Clinical Evaluation Report.
-                    </p>
-                    <Button
-                      onClick={() => document.querySelector('[data-value="device"]').click()}
-                    >
-                      Start with Device Information
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            
-            {cerDraft && (
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => document.querySelector('[data-value="clinical"]').click()}
-                >
-                  Edit Clinical Evidence
-                </Button>
-                <Button 
-                  onClick={handleDownloadPDF}
-                  disabled={loading}
-                  className="flex items-center"
-                >
-                  {loading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Download className="mr-2 h-4 w-4" />
-                  )}
-                  Download PDF
-                </Button>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </main>
     </div>
   );
-};
-
-export default CERPage;
+}
