@@ -63,13 +63,23 @@ function getRequiredSections(framework) {
 async function generateFullCER(req, res) {
   try {
     const { 
-      deviceName, 
-      deviceType, 
-      regulatoryPath = 'EU-MDR', 
-      intendedUse = '',
-      uploadedFiles = [],
-      dataSources = []
+      deviceInfo = {}, 
+      templateId = 'eu-mdr',
+      literature = [],
+      fdaData = null
     } = req.body;
+    
+    // Map templateId to regulatory path
+    let regulatoryPath = 'EU-MDR';
+    if (templateId === 'fda-510k') regulatoryPath = 'US-FDA';
+    else if (templateId === 'iso-14155') regulatoryPath = 'ISO-14155';
+    else if (templateId === 'meddev') regulatoryPath = 'EU-MDR';
+    
+    // Extract device information
+    const deviceName = deviceInfo.name || '';
+    const deviceType = deviceInfo.type || '';
+    const manufacturer = deviceInfo.manufacturer || '';
+    const intendedUse = deviceInfo.intendedUse || '';
     
     if (!deviceName) {
       return res.status(400).json({ error: 'Device name is required' });
@@ -80,14 +90,21 @@ async function generateFullCER(req, res) {
     
     console.log(`Generating full CER for ${deviceName} using ${regulatoryPath} framework...`);
     
+    // Determine available data sources
+    const dataSources = [];
+    if (fdaData) dataSources.push('FAERS');
+    if (literature.length > 0) dataSources.push('Literature');
+    
     // Prepare the context for generation
     const deviceContext = {
       name: deviceName,
       type: deviceType,
+      manufacturer,
       intendedUse,
       regulatoryPath,
       dataSources: dataSources.join(', '),
-      uploadedDocuments: uploadedFiles.join(', ')
+      literatureCount: literature.length || 0,
+      faersReportCount: fdaData ? fdaData.reportCount || 0 : 0
     };
     
     // Format device context as string
