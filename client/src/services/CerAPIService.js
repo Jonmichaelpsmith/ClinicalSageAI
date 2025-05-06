@@ -196,40 +196,53 @@ export const exportCompliancePDF = async (data) => {
 /**
  * Generate a complete CER using GPT-4o intelligence
  * @param {Object} params - Parameters for generating the full CER
- * @param {string} params.deviceName - The name of the device
- * @param {string} params.deviceType - The type/classification of the device
- * @param {string} params.regulatoryPath - The regulatory framework to follow (EU MDR, ISO 14155, FDA)
- * @param {string} params.intendedUse - The intended use of the device
- * @param {Array} params.uploadedFiles - Optional array of files that have been uploaded
- * @param {Array} params.dataSources - Optional array of data sources to use (FAERS, PubMed, MAUDE, etc.)
+ * @param {Object} params.deviceInfo - Information about the device
+ * @param {string} params.deviceInfo.name - The name of the device
+ * @param {string} params.deviceInfo.type - The type/classification of the device
+ * @param {string} params.deviceInfo.manufacturer - The manufacturer of the device
+ * @param {string} params.deviceInfo.intendedUse - The intended use of the device
+ * @param {string} params.templateId - The regulatory template to use (eu-mdr, fda-510k, meddev, iso-14155)
+ * @param {Array} params.literature - Optional array of literature references
+ * @param {Object} params.fdaData - Optional FAERS data
  * @returns {Promise<Object>} - The fully generated CER with all required sections
  */
 export const generateFullCER = async ({ 
-  deviceName, 
-  deviceType, 
-  regulatoryPath, 
-  intendedUse, 
-  uploadedFiles = [],
-  dataSources = []
+  deviceInfo = {}, 
+  templateId = 'eu-mdr',
+  literature = [],
+  fdaData = null
 }) => {
   try {
+    // Ensure deviceInfo has all required fields
+    const enhancedDeviceInfo = {
+      name: deviceInfo.name || deviceInfo.deviceName || '',
+      type: deviceInfo.type || deviceInfo.deviceType || '',
+      manufacturer: deviceInfo.manufacturer || '',
+      intendedUse: deviceInfo.intendedUse || ''
+    };
+    
+    console.log('Calling Zero-Click Report generation with:', {
+      deviceInfo: enhancedDeviceInfo,
+      templateId,
+      literatureCount: literature.length,
+      hasFdaData: !!fdaData
+    });
+    
     const response = await fetch('/api/cer/generate-full', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        deviceName,
-        deviceType,
-        regulatoryPath,
-        intendedUse,
-        uploadedFiles,
-        dataSources,
+        deviceInfo: enhancedDeviceInfo,
+        templateId,
+        literature,
+        fdaData
       }),
     });
     
     if (!response.ok) {
-      throw new Error(`Error generating full CER: ${response.statusText}`);
+      throw new Error(`Error generating zero-click CER: ${response.statusText}`);
     }
     
     const data = await response.json();
