@@ -3,6 +3,7 @@ import path from 'path';
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer.js';
 import literatureRouter from './routes/literature.js';
+import documentRouter from './routes/document-routes';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
@@ -88,6 +89,9 @@ export default function registerRoutes(app: Express): void {
 
   // Register Literature API routes
   app.use('/api/literature', literatureRouter);
+  
+  // Register Document API routes
+  app.use('/api/documents', documentRouter);
   
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
