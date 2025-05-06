@@ -6,7 +6,7 @@ import React from 'react';
  * Displays demographic breakdowns for adverse event reports with visualizations
  * for age, gender, and other key demographic factors
  */
-export default function FaersDemographicsCharts({ faersData = {} }) {
+export function FaersDemographicsCharts({ faersData = {} }) {
   // Placeholder for actual chart implementation
   // In a real implementation, this would use a charting library like recharts or chart.js
   

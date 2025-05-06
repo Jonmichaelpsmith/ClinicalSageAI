@@ -39,12 +39,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve static files from the js directory
-app.use('/js', express.static(path.join(process.cwd(), 'js')));
-
-// Serve static files from public directory for other assets
-app.use('/public', express.static(path.join(process.cwd(), 'public')));
-
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
@@ -66,24 +60,6 @@ app.get('/marketing', (req, res) => {
   } else {
     res.status(404).send('Marketing landing page not found');
   }
-});
-
-// Client portal route
-app.get('/client-portal', (req, res) => {
-  console.log('Serving client portal page');
-  const portalPath = path.join(process.cwd(), 'client-portal.html');
-  if (fs.existsSync(portalPath)) {
-    res.sendFile(portalPath);
-  } else {
-    console.error('Client portal page not found at:', portalPath);
-    res.status(404).send('Client portal page not found');
-  }
-});
-
-// CER Module route
-app.get('/cer', (req, res) => {
-  console.log('Redirecting to CER module in the React app');
-  res.redirect('/');
 });
 
 // Register API routes

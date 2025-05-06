@@ -1,107 +1,6 @@
 import React from 'react';
-import { AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-export default function CerPreviewPanel({ 
-  title, 
-  sections = [], 
-  faers = [], 
-  comparators = [],
-  complianceData = null,
-  thresholds = {
-    OVERALL_THRESHOLD: 0.8, // 80% threshold for passing
-    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings/flagging
-  }
-}) {
-  // Function to find section compliance data if available
-  const getSectionCompliance = (sectionTitle) => {
-    if (!complianceData || !complianceData.sectionScores) return null;
-    
-    return complianceData.sectionScores.find(section => 
-      section.title.toLowerCase() === sectionTitle.toLowerCase());
-  };
-  
-  // Function to determine border color based on compliance score
-  const getBorderColorClass = (score) => {
-    if (!score) return '';
-    if (score >= thresholds.OVERALL_THRESHOLD) return 'border-green-300';
-    if (score >= thresholds.FLAG_THRESHOLD) return 'border-amber-300';
-    return 'border-red-300';
-  };
-  
-  // Function to get compliance icon
-  const getComplianceIcon = (score) => {
-    if (!score) return null;
-    
-    if (score >= thresholds.OVERALL_THRESHOLD) {
-      return <CheckCircle className="h-5 w-5 text-green-500" />;
-    } else if (score >= thresholds.FLAG_THRESHOLD) {
-      return <AlertTriangle className="h-5 w-5 text-amber-500" />;
-    } else {
-      return <AlertCircle className="h-5 w-5 text-red-500" />;
-    }
-  };
-  
-  // Render function for section item
-  const renderSection = (s, i) => {
-    const sectionCompliance = getSectionCompliance(s.section);
-    const complianceScore = sectionCompliance?.averageScore;
-    const scorePercent = complianceScore ? Math.round(complianceScore * 100) : null;
-    const isBelowThreshold = scorePercent && scorePercent < (thresholds.FLAG_THRESHOLD * 100);
-    const complianceBorder = getBorderColorClass(complianceScore);
-    const complianceIcon = getComplianceIcon(complianceScore);
-    
-    const complianceTips = sectionCompliance ? 
-      Object.entries(sectionCompliance.standards || {}).flatMap(([standardName, data]) => 
-        data.suggestions || []).filter(Boolean) : [];
-    
-    return (
-      <div key={i} className={`mb-4 border p-4 bg-white rounded shadow ${complianceBorder} ${complianceScore ? 'border-l-4' : ''} ${isBelowThreshold ? 'bg-red-50' : ''}`}>
-        <div className="flex justify-between items-start">
-          <h3 className={`text-lg font-bold mb-2 ${isBelowThreshold ? 'text-red-600' : ''}`}>
-            {s.section} {isBelowThreshold && <span className="inline-block ml-2">⚠️</span>}
-          </h3>
-          
-          {complianceScore && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="flex items-center gap-1">
-                    {complianceIcon}
-                    <span className={`text-sm font-medium ${complianceScore >= thresholds.OVERALL_THRESHOLD ? 'text-green-600' : complianceScore >= thresholds.FLAG_THRESHOLD ? 'text-amber-600' : 'text-red-600'}`}>
-                      {scorePercent}%
-                    </span>
-                    {isBelowThreshold && <span className="text-xs text-red-600 ml-1">(Below {Math.round(thresholds.FLAG_THRESHOLD * 100)}%)</span>}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="w-64 p-2">
-                  <p className="font-semibold mb-1">Compliance Score</p>
-                  {isBelowThreshold && (
-                    <p className="text-xs text-red-600 font-semibold mb-1">This section falls below the {Math.round(thresholds.FLAG_THRESHOLD * 100)}% threshold and requires attention</p>
-                  )}
-                  {complianceTips.length > 0 && (
-                    <div className="mt-1">
-                      <p className="text-sm font-medium">Suggestions:</p>
-                      <ul className="text-xs list-disc list-inside">
-                        {complianceTips.slice(0, 3).map((tip, idx) => (
-                          <li key={idx} className="mt-1">{tip}</li>
-                        ))}
-                        {complianceTips.length > 3 && (
-                          <li className="text-xs mt-1 text-gray-500">+{complianceTips.length - 3} more suggestions</li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
-        <div className="whitespace-pre-wrap text-sm text-gray-800">{s.content}</div>
-      </div>
-    );
-  };
-  
+export default function CerPreviewPanel({ title, sections = [], faers = [], comparators = [] }) {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">{title || 'Clinical Evaluation Report'}</h1>
@@ -109,7 +8,12 @@ export default function CerPreviewPanel({
       {sections.length > 0 && (
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-2">Drafted Sections</h2>
-          {sections.map(renderSection)}
+          {sections.map((s, i) => (
+            <div key={i} className="mb-4 border p-4 bg-white rounded shadow">
+              <h3 className="text-lg font-bold mb-2">{s.section}</h3>
+              <div className="whitespace-pre-wrap text-sm text-gray-800">{s.content}</div>
+            </div>
+          ))}
         </div>
       )}
 

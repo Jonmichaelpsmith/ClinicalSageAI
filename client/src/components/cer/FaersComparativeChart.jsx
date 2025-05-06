@@ -6,7 +6,7 @@ import React from 'react';
  * Displays comparative analysis of adverse event reports between the target product
  * and similar products in the same therapeutic class
  */
-export default function FaersComparativeChart({ productName = 'Target Product', faersData = {} }) {
+export function FaersComparativeChart({ productName = 'Target Product', faersData = {} }) {
   // Sample comparative data for visualization
   // In a real implementation, this would come from the faersData prop
   const comparators = faersData?.comparators || [
