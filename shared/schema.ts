@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, jsonb, boolean, varchar, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, jsonb, boolean, varchar, uuid, date, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -149,6 +149,151 @@ export const documentAuditLogs = pgTable("vault_document_audit_logs", {
   userAgent: text("user_agent"),
 });
 
+// CER (Clinical Evaluation Report) schema
+export const cerReports = pgTable("cer_reports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  deviceName: text("device_name").notNull(),
+  deviceType: text("device_type").notNull(),
+  manufacturer: text("manufacturer").notNull(),
+  version: varchar("version", { length: 20 }).default("1.0.0"),
+  status: varchar("status", { length: 20 }).default("draft"),
+  regulatoryFramework: varchar("regulatory_framework", { length: 50 }).default("EU MDR"),
+  intendedUse: text("intended_use"),
+  classification: varchar("classification", { length: 50 }),
+  uniiCode: varchar("unii_code", { length: 50 }),
+  atcCode: varchar("atc_code", { length: 50 }),
+  gmdnCode: varchar("gmdn_code", { length: 50 }),
+  mechanismOfAction: text("mechanism_of_action"),
+  templateId: varchar("template_id", { length: 50 }).default("eu-mdr"),
+  complianceScore: jsonb("compliance_score").default({}),
+  authorId: integer("author_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  publishedAt: timestamp("published_at"),
+  reviewStatus: varchar("review_status", { length: 50 }),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  documentId: uuid("document_id").references(() => documents.id),
+});
+
+// CER Sections schema
+export const cerSections = pgTable("cer_sections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reportId: uuid("report_id").notNull().references(() => cerReports.id),
+  title: text("title").notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  content: text("content"),
+  aiGenerated: boolean("ai_generated").default(true),
+  wordCount: integer("word_count"),
+  order: integer("order").notNull(),
+  status: varchar("status", { length: 20 }).default("draft"),
+  complianceScore: jsonb("compliance_score").default({}),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  lastReviewed: timestamp("last_reviewed"),
+  metadata: jsonb("metadata").default({}),
+});
+
+// CER FAERS Data schema
+export const cerFaersData = pgTable("cer_faers_data", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reportId: uuid("report_id").notNull().references(() => cerReports.id),
+  productName: varchar("product_name", { length: 255 }).notNull(),
+  uniiCode: varchar("unii_code", { length: 50 }),
+  substanceName: varchar("substance_name", { length: 255 }),
+  atcCodes: jsonb("atc_codes").default([]),
+  mechanismOfAction: jsonb("mechanism_of_action").default([]),
+  pharmacologicalClass: jsonb("pharmacological_class").default([]),
+  totalReports: integer("total_reports"),
+  seriousReports: integer("serious_reports"),
+  riskScore: integer("risk_score"),
+  reportDates: jsonb("report_dates").default({}),
+  eventsByType: jsonb("events_by_type").default({}),
+  comparators: jsonb("comparators").default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// CER Literature schema
+export const cerLiterature = pgTable("cer_literature", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reportId: uuid("report_id").notNull().references(() => cerReports.id),
+  title: text("title").notNull(),
+  authors: text("authors"),
+  publication: text("publication"),
+  publicationDate: date("publication_date"),
+  doi: varchar("doi", { length: 100 }),
+  pmid: varchar("pmid", { length: 20 }),
+  abstract: text("abstract"),
+  fullText: text("full_text"),
+  summary: text("summary"),
+  relevanceScore: integer("relevance_score"),
+  qualityScore: integer("quality_score"),
+  outcomesSummary: text("outcomes_summary"),
+  adverseEventsSummary: text("adverse_events_summary"),
+  methodologySummary: text("methodology_summary"),
+  sampleSize: integer("sample_size"),
+  studyType: varchar("study_type", { length: 100 }),
+  endpoints: jsonb("endpoints").default([]),
+  metadata: jsonb("metadata").default({}),
+  includedInReport: boolean("included_in_report").default(false),
+  aiProcessed: boolean("ai_processed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// CER Compliance Checks schema
+export const cerComplianceChecks = pgTable("cer_compliance_checks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reportId: uuid("report_id").notNull().references(() => cerReports.id),
+  standard: varchar("standard", { length: 100 }).notNull(),
+  checkDate: timestamp("check_date").defaultNow(),
+  overallScore: integer("overall_score"),
+  sectionScores: jsonb("section_scores").default({}),
+  recommendations: jsonb("recommendations").default([]),
+  missingElements: jsonb("missing_elements").default([]),
+  warningElements: jsonb("warning_elements").default([]),
+  status: varchar("status", { length: 20 }).default("pending"),
+  remediationStatus: varchar("remediation_status", { length: 20 }).default("not_started"),
+  autoFixesApplied: boolean("auto_fixes_applied").default(false),
+  fixesLog: jsonb("fixes_log").default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// CER Workflows schema
+export const cerWorkflows = pgTable("cer_workflows", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reportId: uuid("report_id").notNull().references(() => cerReports.id),
+  status: varchar("status", { length: 20 }).default("in_progress"),
+  currentStep: varchar("current_step", { length: 50 }),
+  progress: integer("progress").default(0),
+  steps: jsonb("steps").default([]),
+  logs: jsonb("logs").default([]),
+  metadata: jsonb("metadata").default({}),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  estimatedCompletion: timestamp("estimated_completion"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+});
+
+// CER Export history schema
+export const cerExports = pgTable("cer_exports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reportId: uuid("report_id").notNull().references(() => cerReports.id),
+  exportType: varchar("export_type", { length: 20 }).notNull(), // pdf, docx
+  filename: varchar("filename", { length: 255 }).notNull(),
+  filePath: text("file_path"),
+  fileSize: integer("file_size"),
+  exportedAt: timestamp("exported_at").defaultNow(),
+  exportedBy: integer("exported_by").references(() => users.id),
+  version: varchar("version", { length: 20 }),
+  checksum: varchar("checksum", { length: 255 }),
+  settings: jsonb("settings").default({}),
+  status: varchar("status", { length: 20 }).default("complete"),
+});
+
 // Setup relations after all tables are defined
 export const documentFoldersRelations = relations(documentFolders, ({ one, many }) => ({
   parentFolder: one(documentFolders, {
@@ -221,6 +366,74 @@ export const documentAuditLogsRelations = relations(documentAuditLogs, ({ one })
   }),
 }));
 
+// CER Relations
+export const cerReportsRelations = relations(cerReports, ({ one, many }) => ({
+  document: one(documents, {
+    fields: [cerReports.documentId],
+    references: [documents.id],
+  }),
+  author: one(users, {
+    fields: [cerReports.authorId],
+    references: [users.id],
+  }),
+  reviewer: one(users, {
+    fields: [cerReports.reviewedBy],
+    references: [users.id],
+  }),
+  sections: many(cerSections),
+  faersData: many(cerFaersData),
+  literatures: many(cerLiterature),
+  complianceChecks: many(cerComplianceChecks),
+  workflows: many(cerWorkflows),
+  exports: many(cerExports),
+}));
+
+export const cerSectionsRelations = relations(cerSections, ({ one }) => ({
+  report: one(cerReports, {
+    fields: [cerSections.reportId],
+    references: [cerReports.id],
+  }),
+}));
+
+export const cerFaersDataRelations = relations(cerFaersData, ({ one }) => ({
+  report: one(cerReports, {
+    fields: [cerFaersData.reportId],
+    references: [cerReports.id],
+  }),
+}));
+
+export const cerLiteratureRelations = relations(cerLiterature, ({ one }) => ({
+  report: one(cerReports, {
+    fields: [cerLiterature.reportId],
+    references: [cerReports.id],
+  }),
+}));
+
+export const cerComplianceChecksRelations = relations(cerComplianceChecks, ({ one }) => ({
+  report: one(cerReports, {
+    fields: [cerComplianceChecks.reportId],
+    references: [cerReports.id],
+  }),
+}));
+
+export const cerWorkflowsRelations = relations(cerWorkflows, ({ one }) => ({
+  report: one(cerReports, {
+    fields: [cerWorkflows.reportId],
+    references: [cerReports.id],
+  }),
+}));
+
+export const cerExportsRelations = relations(cerExports, ({ one }) => ({
+  report: one(cerReports, {
+    fields: [cerExports.reportId],
+    references: [cerReports.id],
+  }),
+  exportedByUser: one(users, {
+    fields: [cerExports.exportedBy],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertCsrReportSchema = createInsertSchema(csrReports);
 export const insertCsrDetailSchema = createInsertSchema(csrDetails);
@@ -251,6 +464,60 @@ export const insertDocumentAuditLogSchema = createInsertSchema(documentAuditLogs
   documentId: z.string().uuid().optional().nullable(),
 });
 
+// CER Insert Schemas
+export const insertCerReportSchema = createInsertSchema(cerReports, {
+  id: z.string().uuid().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+  publishedAt: z.date().optional().nullable(),
+  reviewedAt: z.date().optional().nullable(),
+  reviewedBy: z.number().optional().nullable(),
+  authorId: z.number().optional().nullable(),
+  documentId: z.string().uuid().optional().nullable(),
+});
+
+export const insertCerSectionSchema = createInsertSchema(cerSections, {
+  id: z.string().uuid().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+  lastReviewed: z.date().optional().nullable(),
+  wordCount: z.number().optional(),
+});
+
+export const insertCerFaersDataSchema = createInsertSchema(cerFaersData, {
+  id: z.string().uuid().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export const insertCerLiteratureSchema = createInsertSchema(cerLiterature, {
+  id: z.string().uuid().optional(),
+  publicationDate: z.date().optional().nullable(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export const insertCerComplianceCheckSchema = createInsertSchema(cerComplianceChecks, {
+  id: z.string().uuid().optional(),
+  checkDate: z.date().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export const insertCerWorkflowSchema = createInsertSchema(cerWorkflows, {
+  id: z.string().uuid().optional(),
+  startedAt: z.date().optional(),
+  completedAt: z.date().optional().nullable(),
+  estimatedCompletion: z.date().optional().nullable(),
+  lastUpdated: z.date().optional(),
+});
+
+export const insertCerExportSchema = createInsertSchema(cerExports, {
+  id: z.string().uuid().optional(),
+  exportedAt: z.date().optional(),
+  exportedBy: z.number().optional().nullable(),
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -269,3 +536,19 @@ export type DocumentShare = typeof documentShares.$inferSelect;
 export type InsertDocumentShare = z.infer<typeof insertDocumentShareSchema>;
 export type DocumentAuditLog = typeof documentAuditLogs.$inferSelect;
 export type InsertDocumentAuditLog = z.infer<typeof insertDocumentAuditLogSchema>;
+
+// CER Types
+export type CerReport = typeof cerReports.$inferSelect;
+export type InsertCerReport = z.infer<typeof insertCerReportSchema>;
+export type CerSection = typeof cerSections.$inferSelect;
+export type InsertCerSection = z.infer<typeof insertCerSectionSchema>;
+export type CerFaersData = typeof cerFaersData.$inferSelect;
+export type InsertCerFaersData = z.infer<typeof insertCerFaersDataSchema>;
+export type CerLiterature = typeof cerLiterature.$inferSelect;
+export type InsertCerLiterature = z.infer<typeof insertCerLiteratureSchema>;
+export type CerComplianceCheck = typeof cerComplianceChecks.$inferSelect;
+export type InsertCerComplianceCheck = z.infer<typeof insertCerComplianceCheckSchema>;
+export type CerWorkflow = typeof cerWorkflows.$inferSelect;
+export type InsertCerWorkflow = z.infer<typeof insertCerWorkflowSchema>;
+export type CerExport = typeof cerExports.$inferSelect;
+export type InsertCerExport = z.infer<typeof insertCerExportSchema>;
