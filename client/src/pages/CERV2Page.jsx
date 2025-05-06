@@ -424,119 +424,129 @@ export default function CERV2Page() {
           </TabsContent>
           
           <TabsContent value="ai-assist">
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* AI Assistant for Automated CER Generation */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left panel - Device Input and Settings */}
-                <div className="md:col-span-5">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Database className="h-5 w-5 text-blue-600" />
-                        Device Information
+                <div className="lg:col-span-5 space-y-8">
+                  <Card className="border border-slate-200 shadow-sm overflow-hidden">
+                    <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white pb-4">
+                      <CardTitle className="flex items-center gap-2 text-slate-800">
+                        <Database className="h-5 w-5 text-primary" />
+                        <span className="text-h4 font-semibold">Device Information</span>
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-body-sm text-slate-500">
                         Configure device details for intelligent CER generation
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-6 pt-6">
                       <div className="space-y-2">
-                        <Label htmlFor="deviceName">Device Name</Label>
+                        <Label htmlFor="deviceName" className="text-body-sm font-medium text-slate-700">Device Name</Label>
                         <Input
                           id="deviceName"
                           placeholder="e.g., CardioMonitor Pro 3000"
                           value={title}
                           onChange={(e) => setTitle(e.target.value)}
+                          className="border-slate-200 focus:border-primary focus:ring-primary h-10"
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="deviceType">Device Type</Label>
+                        <Label htmlFor="deviceType" className="text-body-sm font-medium text-slate-700">Device Type</Label>
                         <Select defaultValue="Class2">
-                          <SelectTrigger id="deviceType">
+                          <SelectTrigger id="deviceType" className="border-slate-200 bg-white h-10">
                             <SelectValue placeholder="Select device type" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="border border-slate-200 shadow-md">
                             <SelectGroup>
-                              <SelectLabel>EU MDR</SelectLabel>
-                              <SelectItem value="Class1">Class I (Non-sterile)</SelectItem>
-                              <SelectItem value="Class1s">Class I (Sterile)</SelectItem>
-                              <SelectItem value="Class2a">Class IIa</SelectItem>
-                              <SelectItem value="Class2b">Class IIb</SelectItem>
-                              <SelectItem value="Class3">Class III</SelectItem>
+                              <SelectLabel className="text-caption font-semibold text-slate-500">EU MDR</SelectLabel>
+                              <SelectItem value="Class1" className="text-body-sm">Class I (Non-sterile)</SelectItem>
+                              <SelectItem value="Class1s" className="text-body-sm">Class I (Sterile)</SelectItem>
+                              <SelectItem value="Class2a" className="text-body-sm">Class IIa</SelectItem>
+                              <SelectItem value="Class2b" className="text-body-sm">Class IIb</SelectItem>
+                              <SelectItem value="Class3" className="text-body-sm">Class III</SelectItem>
                             </SelectGroup>
                             <SelectGroup>
-                              <SelectLabel>US FDA</SelectLabel>
-                              <SelectItem value="Class1FDA">Class I (Exempt)</SelectItem>
-                              <SelectItem value="Class2FDA">Class II (510k)</SelectItem>
-                              <SelectItem value="Class3FDA">Class III (PMA)</SelectItem>
+                              <SelectLabel className="text-caption font-semibold text-slate-500">US FDA</SelectLabel>
+                              <SelectItem value="Class1FDA" className="text-body-sm">Class I (Exempt)</SelectItem>
+                              <SelectItem value="Class2FDA" className="text-body-sm">Class II (510k)</SelectItem>
+                              <SelectItem value="Class3FDA" className="text-body-sm">Class III (PMA)</SelectItem>
                             </SelectGroup>
                           </SelectContent>
                         </Select>
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="regulatoryPath">Regulatory Framework</Label>
+                        <Label htmlFor="regulatoryPath" className="text-body-sm font-medium text-slate-700">Regulatory Framework</Label>
                         <Select defaultValue="EU-MDR">
-                          <SelectTrigger id="regulatoryPath">
+                          <SelectTrigger id="regulatoryPath" className="border-slate-200 bg-white h-10">
                             <SelectValue placeholder="Select regulatory framework" />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="EU-MDR">EU MDR</SelectItem>
-                            <SelectItem value="ISO-14155">ISO 14155</SelectItem>
-                            <SelectItem value="US-FDA">US FDA</SelectItem>
+                          <SelectContent className="border border-slate-200 shadow-md">
+                            <SelectItem value="EU-MDR" className="text-body-sm">EU MDR</SelectItem>
+                            <SelectItem value="ISO-14155" className="text-body-sm">ISO 14155</SelectItem>
+                            <SelectItem value="US-FDA" className="text-body-sm">US FDA</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="intendedUse">Intended Use</Label>
+                        <Label htmlFor="intendedUse" className="text-body-sm font-medium text-slate-700">Intended Use</Label>
                         <Textarea
                           id="intendedUse"
                           placeholder="Describe the intended use of the device..."
                           rows={3}
+                          className="border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary resize-none"
                         />
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="mt-6">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <UploadCloud className="h-5 w-5 text-blue-600" />
-                        Document Upload
+                  <Card className="border border-slate-200 shadow-sm overflow-hidden">
+                    <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white pb-4">
+                      <CardTitle className="flex items-center gap-2 text-slate-800">
+                        <UploadCloud className="h-5 w-5 text-primary" />
+                        <span className="text-h4 font-semibold">Document Upload</span>
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-body-sm text-slate-500">
                         Upload existing documentation to enhance the CER
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="border-2 border-dashed rounded-md p-6 text-center cursor-pointer hover:bg-slate-50 transition-colors">
+                    <CardContent className="pt-6 space-y-5">
+                      <div className="border border-dashed border-slate-200 rounded-lg p-6 text-center cursor-pointer hover:bg-slate-50 transition-colors">
                         <div className="flex flex-col items-center">
-                          <UploadCloud className="w-8 h-8 mb-2 text-slate-400" />
-                          <span className="text-sm font-medium">Click to upload or drag and drop</span>
+                          <UploadCloud className="w-10 h-10 mb-3 text-slate-300" />
+                          <span className="text-sm font-medium text-slate-600">Click to upload or drag and drop</span>
                           <span className="text-xs text-slate-500 mt-1">PDF, DOCX, CSV (max 10MB each)</span>
                         </div>
                       </div>
                       
-                      <div className="mt-4">
-                        <Label className="text-sm">Data Sources</Label>
-                        <div className="mt-2 space-y-2">
-                          <div className="flex items-center">
-                            <input type="checkbox" id="faers" className="mr-2" checked />
-                            <Label htmlFor="faers" className="text-sm cursor-pointer">FAERS Database</Label>
+                      <div>
+                        <Label className="text-body-sm font-medium text-slate-700 mb-3 block">Data Sources</Label>
+                        <div className="space-y-3">
+                          <div className="flex items-center p-2 rounded-md hover:bg-slate-50 transition-colors">
+                            <div className="flex h-5 w-5 items-center justify-center rounded border border-primary mr-3">
+                              <div className="h-3 w-3 rounded-sm bg-primary"></div>
+                            </div>
+                            <Label htmlFor="faers" className="text-body-sm text-slate-700 cursor-pointer">FAERS Database</Label>
                           </div>
-                          <div className="flex items-center">
-                            <input type="checkbox" id="literature" className="mr-2" checked />
-                            <Label htmlFor="literature" className="text-sm cursor-pointer">PubMed Literature</Label>
+                          <div className="flex items-center p-2 rounded-md hover:bg-slate-50 transition-colors">
+                            <div className="flex h-5 w-5 items-center justify-center rounded border border-primary mr-3">
+                              <div className="h-3 w-3 rounded-sm bg-primary"></div>
+                            </div>
+                            <Label htmlFor="literature" className="text-body-sm text-slate-700 cursor-pointer">PubMed Literature</Label>
                           </div>
-                          <div className="flex items-center">
-                            <input type="checkbox" id="maude" className="mr-2" checked />
-                            <Label htmlFor="maude" className="text-sm cursor-pointer">MAUDE Database</Label>
+                          <div className="flex items-center p-2 rounded-md hover:bg-slate-50 transition-colors">
+                            <div className="flex h-5 w-5 items-center justify-center rounded border border-primary mr-3">
+                              <div className="h-3 w-3 rounded-sm bg-primary"></div>
+                            </div>
+                            <Label htmlFor="maude" className="text-body-sm text-slate-700 cursor-pointer">MAUDE Database</Label>
                           </div>
-                          <div className="flex items-center">
-                            <input type="checkbox" id="eudamed" className="mr-2" checked />
-                            <Label htmlFor="eudamed" className="text-sm cursor-pointer">EUDAMED</Label>
+                          <div className="flex items-center p-2 rounded-md hover:bg-slate-50 transition-colors">
+                            <div className="flex h-5 w-5 items-center justify-center rounded border border-primary mr-3">
+                              <div className="h-3 w-3 rounded-sm bg-primary"></div>
+                            </div>
+                            <Label htmlFor="eudamed" className="text-body-sm text-slate-700 cursor-pointer">EUDAMED</Label>
                           </div>
                         </div>
                       </div>
@@ -545,97 +555,108 @@ export default function CERV2Page() {
                 </div>
                 
                 {/* Right panel - CER Generation Options */}
-                <div className="md:col-span-7">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-indigo-600" />
-                        AI-Powered CER Generation
+                <div className="lg:col-span-7 space-y-8">
+                  <Card className="border border-slate-200 shadow-sm overflow-hidden">
+                    <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white pb-4">
+                      <CardTitle className="flex items-center gap-2 text-slate-800">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <span className="text-h4 font-semibold">AI-Powered CER Generation</span>
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-body-sm text-slate-500">
                         Generate a complete, standards-compliant Clinical Evaluation Report
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-5">
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-medium">Smart Generation Options</h3>
+                    <CardContent className="space-y-8 pt-6">
+                      <div>
+                        <h3 className="text-h5 font-semibold text-slate-800 mb-4">Smart Generation Options</h3>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="border border-gray-200 rounded-md p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          <div className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
                             <div className="flex justify-between items-start">
-                              <div className="flex items-center mb-2">
-                                <FileText className="h-5 w-5 mr-2 text-blue-600" />
-                                <h4 className="font-medium">Standard CER</h4>
+                              <div className="flex items-center">
+                                <div className="rounded-full bg-blue-50 p-2 mr-3">
+                                  <FileText className="h-5 w-5 text-primary" />
+                                </div>
+                                <h4 className="font-medium text-slate-800">Standard CER</h4>
                               </div>
-                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Recommended</Badge>
+                              <Badge className="bg-blue-50 text-primary hover:bg-blue-100 border-0">Recommended</Badge>
                             </div>
-                            <p className="text-sm text-gray-600">Generate a complete CER with all required sections based on device classification</p>
-                            <div className="flex items-center gap-1 mt-2">
-                              <Info className="h-3 w-3 text-gray-400" />
-                              <span className="text-xs text-gray-500">~25 min generation time</span>
+                            <p className="text-body-sm text-slate-600 mt-3">Generate a complete CER with all required sections based on device classification</p>
+                            <div className="flex items-center gap-1 mt-3">
+                              <Clock className="h-3.5 w-3.5 text-slate-400" />
+                              <span className="text-caption text-slate-500">~25 min generation time</span>
                             </div>
                           </div>
                           
-                          <div className="border border-gray-200 rounded-md p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                          <div className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
                             <div className="flex justify-between items-start">
-                              <div className="flex items-center mb-2">
-                                <ClipboardCheck className="h-5 w-5 mr-2 text-indigo-600" />
-                                <h4 className="font-medium">Zero-Click Report</h4>
+                              <div className="flex items-center">
+                                <div className="rounded-full bg-indigo-50 p-2 mr-3">
+                                  <ClipboardCheck className="h-5 w-5 text-indigo-600" />
+                                </div>
+                                <h4 className="font-medium text-slate-800">Zero-Click Report</h4>
                               </div>
-                              <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-100">Premium</Badge>
+                              <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-0">Premium</Badge>
                             </div>
-                            <p className="text-sm text-gray-600">Fully autonomous report generation with intelligent data integration and self-completion</p>
-                            <div className="flex items-center gap-1 mt-2">
-                              <Info className="h-3 w-3 text-gray-400" />
-                              <span className="text-xs text-gray-500">~15 min generation time</span>
+                            <p className="text-body-sm text-slate-600 mt-3">Fully autonomous report generation with intelligent data integration and self-completion</p>
+                            <div className="flex items-center gap-1 mt-3">
+                              <Clock className="h-3.5 w-3.5 text-slate-400" />
+                              <span className="text-caption text-slate-500">~15 min generation time</span>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="border border-gray-200 rounded-md p-4 hover:bg-gray-50 cursor-pointer transition-colors">
-                            <div className="flex items-center mb-2">
-                              <BookOpen className="h-5 w-5 mr-2 text-amber-600" />
-                              <h4 className="font-medium">Literature-Focused</h4>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                          <div className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
+                            <div className="flex items-center">
+                              <div className="rounded-full bg-amber-50 p-2 mr-3">
+                                <BookOpen className="h-5 w-5 text-amber-600" />
+                              </div>
+                              <h4 className="font-medium text-slate-800">Literature-Focused</h4>
                             </div>
-                            <p className="text-sm text-gray-600">CER with enhanced literature review and critical appraisal of scientific evidence</p>
-                            <div className="flex items-center gap-1 mt-2">
-                              <Info className="h-3 w-3 text-gray-400" />
-                              <span className="text-xs text-gray-500">~40 min generation time</span>
+                            <p className="text-body-sm text-slate-600 mt-3">CER with enhanced literature review and critical appraisal of scientific evidence</p>
+                            <div className="flex items-center gap-1 mt-3">
+                              <Clock className="h-3.5 w-3.5 text-slate-400" />
+                              <span className="text-caption text-slate-500">~40 min generation time</span>
                             </div>
                           </div>
                           
-                          <div className="border border-gray-200 rounded-md p-4 hover:bg-gray-50 cursor-pointer transition-colors">
-                            <div className="flex items-center mb-2">
-                              <Database className="h-5 w-5 mr-2 text-purple-600" />
-                              <h4 className="font-medium">Deep Data Analysis</h4>
+                          <div className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
+                            <div className="flex items-center">
+                              <div className="rounded-full bg-purple-50 p-2 mr-3">
+                                <Database className="h-5 w-5 text-purple-600" />
+                              </div>
+                              <h4 className="font-medium text-slate-800">Deep Data Analysis</h4>
                             </div>
-                            <p className="text-sm text-gray-600">Comprehensive CER with in-depth data analysis and statistical evaluation of safety data</p>
-                            <div className="flex items-center gap-1 mt-2">
-                              <Info className="h-3 w-3 text-gray-400" />
-                              <span className="text-xs text-gray-500">~35 min generation time</span>
+                            <p className="text-body-sm text-slate-600 mt-3">Comprehensive CER with in-depth data analysis and statistical evaluation of safety data</p>
+                            <div className="flex items-center gap-1 mt-3">
+                              <Clock className="h-3.5 w-3.5 text-slate-400" />
+                              <span className="text-caption text-slate-500">~35 min generation time</span>
                             </div>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="pt-4 space-y-3">
-                        <h3 className="text-lg font-medium">Required Sections</h3>
+                      <div className="bg-slate-50 rounded-lg border border-slate-200 p-5">
+                        <h3 className="text-h5 font-semibold text-slate-800 flex items-center gap-2 mb-4">
+                          <CheckCircle className="h-5 w-5 text-primary" />
+                          <span>Required Sections</span>
+                        </h3>
                         
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-y-3 gap-x-4">
                           {['Device Description', 'Intended Purpose', 'State of the Art', 'Clinical Data Analysis', 'Post-Market Surveillance', 'Literature Review', 'Benefit-Risk Analysis', 'Conclusion'].map((section, index) => (
-                            <div key={index} className="flex items-center text-sm">
-                              <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                              {section}
+                            <div key={index} className="flex items-center text-body-sm">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary mr-2"></div>
+                              <span className="text-slate-700">{section}</span>
                             </div>
                           ))}
                         </div>
                       </div>
                       
-                      <div className="pt-2">
+                      <div>
                         <Button 
                           size="lg" 
-                          className="w-full" 
+                          className="w-full bg-primary hover:bg-primary-dark text-white font-medium shadow transition-all duration-200 py-6" 
                           onClick={async () => {
                             setIsLoading(true);
                             
@@ -710,51 +731,55 @@ export default function CERV2Page() {
                           {isLoading ? (
                             <>
                               <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                              Generating Report...
+                              <span className="text-body-sm">Generating Report...</span>
                             </>
                           ) : (
                             <>
                               <FileText className="h-5 w-5 mr-2" />
-                              Generate Zero-Click CER Report
+                              <span className="text-body-sm">Generate Zero-Click CER Report</span>
                             </>
                           )}
                         </Button>
                         
-                        <p className="text-xs text-center mt-2 text-gray-500">
+                        <p className="text-caption text-center mt-3 text-slate-500">
                           The report will be generated using GPT-4o intelligence and all available data sources
                         </p>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="mt-6">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
+                  <Card className="border border-slate-200 shadow-sm overflow-hidden">
+                    <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-purple-50 to-white pb-4">
+                      <CardTitle className="flex items-center gap-2 text-slate-800">
                         <MessageSquare className="h-5 w-5 text-purple-600" />
-                        AI CER Assistant
+                        <span className="text-h4 font-semibold">AI CER Assistant</span>
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-body-sm text-slate-500">
                         Ask questions about your CER or get help with specific sections
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="p-3 bg-gray-50 rounded-md text-gray-700">
-                          <p><span className="font-medium">AI Assistant:</span> How can I help with your Clinical Evaluation Report today?</p>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <Input placeholder="Ask me anything about CER development..." className="flex-1" />
-                          <Button>
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          <Badge className="cursor-pointer" variant="outline">How should I structure my State of the Art section?</Badge>
-                          <Badge className="cursor-pointer" variant="outline">What clinical data should I include?</Badge>
-                          <Badge className="cursor-pointer" variant="outline">Help me fix compliance issues</Badge>
-                        </div>
+                    <CardContent className="pt-6 space-y-4">
+                      <div className="p-4 bg-slate-50 rounded-lg border border-slate-100 text-slate-700">
+                        <p className="flex items-start gap-3">
+                          <span className="text-purple-600"><MessageSquare className="h-5 w-5" /></span>
+                          <span><span className="font-medium">AI Assistant:</span> How can I help with your Clinical Evaluation Report today?</span>
+                        </p>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Ask me anything about CER development..." 
+                          className="flex-1 border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary h-10" 
+                        />
+                        <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <Badge className="cursor-pointer text-body-xs bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200">How should I structure my State of the Art section?</Badge>
+                        <Badge className="cursor-pointer text-body-xs bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200">What clinical data should I include?</Badge>
+                        <Badge className="cursor-pointer text-body-xs bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200">Help me fix compliance issues</Badge>
                       </div>
                     </CardContent>
                   </Card>
