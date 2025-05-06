@@ -41,9 +41,9 @@ export function generateShortId(length: number = 8): string {
  * @returns {string} A numeric ID with prefix
  */
 export function generateNumericId(prefix: string = 'ID'): string {
-  const timestamp = Date.now();
+  const timestamp = new Date().getTime();
   const random = Math.floor(Math.random() * 10000);
-  return `${prefix}-${timestamp}-${random}`;
+  return `${prefix}${timestamp}${random}`;
 }
 
 /**
@@ -52,8 +52,14 @@ export function generateNumericId(prefix: string = 'ID'): string {
  * @returns {string} A job ID with formatted date
  */
 export function generateJobId(prefix: string = 'JOB'): string {
-  const date = new Date();
-  const dateString = date.toISOString().slice(0, 10).replace(/-/g, '');
-  const sequence = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `${prefix}-${dateString}-${sequence}`;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  
+  return `${prefix}-${year}${month}${day}-${hours}${minutes}${seconds}-${random}`;
 }

@@ -1,15 +1,12 @@
 /**
- * Logger Utility
+ * Structured Logging Utility
  * 
- * Provides a centralized logging system with structured output format, context tracking,
- * and consistent log levels across the application. This utility helps ensure all logs
- * follow the same format and contain appropriate context information for debugging.
+ * Provides a standardized logging interface with context support and structured output.
+ * Supports different log levels and contextual information for enhanced debugging.
  */
 
-// Define log levels
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-// Define context interface for structured logging
 interface LogContext {
   module?: string;
   component?: string;
@@ -17,7 +14,6 @@ interface LogContext {
   [key: string]: any;
 }
 
-// Simple log message interface
 interface LogMessage {
   timestamp: string;
   level: LogLevel;
@@ -32,8 +28,8 @@ interface LogMessage {
  * @returns {Object} - Logger object with methods for each log level
  */
 export function createContextLogger(baseContext: LogContext = {}) {
-  // Utility function to create log entries
-  const createLogEntry = (
+  // Helper function to generate a log entry
+  const generateLogEntry = (
     level: LogLevel,
     message: string,
     context: LogContext = {},
@@ -44,67 +40,53 @@ export function createContextLogger(baseContext: LogContext = {}) {
       level,
       message,
       context: { ...baseContext, ...context },
-      data
+      ...(data !== undefined ? { data } : {}),
     };
   };
 
-  // Print log entry to console, formatted based on level
+  // Helper to print the log entry
   const printLogEntry = (entry: LogMessage) => {
-    // Print log message to console
-    const logMessage = JSON.stringify(entry, null, 2);
+    // In production, we might want to use a logging service
+    // But for now, we'll just use console.log with formatting
+    const logFn = 
+      entry.level === 'debug' ? console.debug :
+      entry.level === 'info' ? console.info :
+      entry.level === 'warn' ? console.warn :
+      console.error;
     
-    // Use different console methods based on level
-    switch (entry.level) {
-      case 'debug':
-        console.debug(logMessage);
-        break;
-      case 'info':
-        console.info(logMessage);
-        break;
-      case 'warn':
-        console.warn(logMessage);
-        break;
-      case 'error':
-        console.error(logMessage);
-        break;
-      default:
-        console.log(logMessage);
-    }
+    // JSON stringify the entry for structured logging
+    logFn(JSON.stringify(entry, null, 2));
+    
+    return entry;
   };
 
-  // Return logger object with methods for each log level
+  // Return logger interface
   return {
     debug: (message: string, context: LogContext = {}, data?: any) => {
-      const entry = createLogEntry('debug', message, context, data);
-      printLogEntry(entry);
-      return entry;
+      return printLogEntry(generateLogEntry('debug', message, context, data));
     },
-
+    
     info: (message: string, context: LogContext = {}, data?: any) => {
-      const entry = createLogEntry('info', message, context, data);
-      printLogEntry(entry);
-      return entry;
+      return printLogEntry(generateLogEntry('info', message, context, data));
     },
-
+    
     warn: (message: string, context: LogContext = {}, data?: any) => {
-      const entry = createLogEntry('warn', message, context, data);
-      printLogEntry(entry);
-      return entry;
+      return printLogEntry(generateLogEntry('warn', message, context, data));
     },
-
+    
     error: (message: string, context: LogContext = {}, data?: any) => {
-      const entry = createLogEntry('error', message, context, data);
-      printLogEntry(entry);
-      return entry;
+      return printLogEntry(generateLogEntry('error', message, context, data));
     },
-
-    // Create a new logger with extended context
+    
+    // Create a new logger with additional context
     withContext: (additionalContext: LogContext) => {
-      return createContextLogger({ ...baseContext, ...additionalContext });
+      return createContextLogger({
+        ...baseContext,
+        ...additionalContext
+      });
     }
   };
 }
 
-// Create a default logger for direct use
-const logger = createContextLogger();
-export default logger;
+// Export a default logger
+export const logger = createContextLogger();
