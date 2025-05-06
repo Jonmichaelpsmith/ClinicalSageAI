@@ -1371,12 +1371,51 @@ router.post('/assistant/chat', async (req, res) => {
       selectedSection: context?.selectedSection?.title || 'None'
     })}`);
     
-    // In a production implementation, this would call OpenAI's GPT-4o API
-    // to generate a contextually relevant response based on the user's message
-    // and the current state of their CER report
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured. Cannot provide CER assistant responses.');
+    }
+
+    // Import OpenAI if needed
+    const OpenAI = (await import('openai')).default;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     
-    // For now, we'll use an enhanced pattern matching approach that considers context
-    let response = '';
+    // Build the system prompt with CER context
+    const systemPrompt = `You are a Clinical Evaluation Report (CER) specialist assistant who helps medical device manufacturers prepare regulatory documentation.
+    Your role is to provide accurate, helpful information about regulatory requirements, CER content, and improving compliance.
+    
+    The user is currently working on a CER titled: "${context?.title || 'Clinical Evaluation Report'}"
+    
+    ${context?.sections?.length ? `The CER has ${context.sections.length} sections: ${context.sections.map(s => s.title).join(', ')}` : 'The CER currently has no sections.'}
+    ${context?.faers?.length ? `FAERS data is available with ${context.faers.length} adverse event reports.` : 'No FAERS data is available.'}
+    ${context?.selectedSection ? `The user is currently focused on the "${context.selectedSection.title}" section.` : ''}
+    
+    Your expertise includes EU MDR 2017/745, MEDDEV 2.7/1 Rev 4, ISO 14155, FDA 21 CFR 812, and FDA guidance documents.
+    
+    When answering:
+    1. Be concise but thorough in your answers (maximum 3-4 paragraphs)
+    2. Reference specific regulatory requirements when applicable
+    3. Provide practical guidance that would help improve the CER
+    4. If discussing safety data, emphasize the importance of objective analysis`;
+    
+    // Build messages array with any existing conversation context
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: message }
+    ];
+    
+    // Call OpenAI for the response
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: messages,
+      max_tokens: 1000,
+      temperature: 0.7,
+    });
+    
+    // Extract the response
+    const response = completion.choices[0].message.content;
+    
+    // Generate follow-up suggestions based on the context
     let customSuggestions = [];
     
     // Check if we have contextual information about the report to personalize the response
