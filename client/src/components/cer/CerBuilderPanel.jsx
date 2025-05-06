@@ -327,19 +327,19 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sectionType">Section Type</Label>
+                    <Label htmlFor="sectionType" className="text-body-sm font-medium text-slate-700">Section Type</Label>
                     <Select 
                       value={selectedSectionType} 
                       onValueChange={setSelectedSectionType}
                     >
-                      <SelectTrigger id="sectionType" className="bg-white border-slate-200">
+                      <SelectTrigger id="sectionType" className="select-trigger h-10 border-slate-200 bg-white">
                         <SelectValue placeholder="Select section type" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border border-slate-200 shadow-md">
+                      <SelectContent className="select-content">
                         <SelectGroup>
-                          <SelectLabel className="text-slate-500 font-medium">CER Sections</SelectLabel>
+                          <SelectLabel className="text-caption font-semibold text-slate-500">CER Sections</SelectLabel>
                           {sectionTypes.map(section => (
-                            <SelectItem key={section.id} value={section.id} className="text-slate-800 hover:bg-slate-50">
+                            <SelectItem key={section.id} value={section.id} className="text-body-sm">
                               {section.label}
                             </SelectItem>
                           ))}
@@ -349,15 +349,16 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="context">Context Information</Label>
+                    <Label htmlFor="context" className="text-body-sm font-medium text-slate-700">Context Information</Label>
                     <Textarea 
                       id="context" 
                       placeholder="Enter information to help generate this section, such as device details, clinical data, or specific regulatory requirements..." 
                       value={sectionContext}
                       onChange={(e) => setSectionContext(e.target.value)}
                       rows={6}
+                      className="border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary resize-none"
                     />
-                    <p className="text-sm text-gray-500">
+                    <p className="text-caption text-slate-500">
                       Provide relevant details to enhance the generated content. For best results, include specifics about your device/product.
                     </p>
                   </div>
@@ -366,14 +367,17 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     <Button 
                       onClick={generateSection} 
                       disabled={isGenerating || !sectionContext}
+                      className="bg-primary hover:bg-primary-dark text-white font-medium shadow-sm"
                     >
                       {isGenerating ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Generating...
+                          <span className="text-body-sm">Generating...</span>
                         </>
                       ) : (
-                        'Generate Section'
+                        <>
+                          <span className="text-body-sm">Generate Section</span>
+                        </>
                       )}
                     </Button>
                   </div>
@@ -381,26 +385,32 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 
                 {/* Generated Section Display */}
                 {generatedSection && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>{getSelectedSectionLabel()}</CardTitle>
-                      <CardDescription>
+                  <Card className="border border-slate-200 shadow-sm overflow-hidden">
+                    <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b border-slate-100">
+                      <CardTitle className="text-h4 text-slate-800">{getSelectedSectionLabel()}</CardTitle>
+                      <CardDescription className="text-body-sm text-slate-500">
                         AI-generated content based on your inputs
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="prose max-w-none dark:prose-invert">
+                    <CardContent className="py-4">
+                      <div className="prose max-w-none text-body text-slate-700 leading-relaxed">
                         {generatedSection.content.split('\n').map((paragraph, index) => (
-                          <p key={index}>{paragraph}</p>
+                          <p key={index} className="mb-3 last:mb-0">{paragraph}</p>
                         ))}
                       </div>
                     </CardContent>
-                    <CardFooter className="flex justify-end">
-                      <Button variant="outline" className="mr-2">
-                        Edit
+                    <CardFooter className="flex justify-end border-t border-slate-100 bg-white py-3">
+                      <Button 
+                        variant="outline" 
+                        className="mr-2 border-slate-200 hover:bg-slate-50 text-slate-700"
+                      >
+                        <span className="text-body-sm">Edit</span>
                       </Button>
-                      <Button onClick={addToReport}>
-                        Add to Report
+                      <Button 
+                        onClick={addToReport}
+                        className="bg-primary hover:bg-primary-dark text-white font-medium shadow-sm"
+                      >
+                        <span className="text-body-sm">Add to Report</span>
                       </Button>
                     </CardFooter>
                   </Card>
