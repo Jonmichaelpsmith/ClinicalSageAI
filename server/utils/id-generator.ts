@@ -3,13 +3,15 @@
  * 
  * Provides functions to generate various types of IDs for use in the application.
  */
-import { randomUUID } from 'crypto';
 
 /**
  * Generate a random UUID
  */
 export function generateUuid(): string {
-  return randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 
 /**
@@ -35,8 +37,7 @@ export function generateRandomId(prefix: string = '', length: number = 8): strin
  * @param prefix - Optional prefix for the ID
  */
 export function generateSequentialId(prefix: string = ''): string {
-  const timestamp = Date.now().toString(36);
-  const randomPart = Math.random().toString(36).substring(2, 5);
-  
-  return `${prefix}${timestamp}${randomPart}`;
+  const timestamp = new Date().getTime();
+  const random = Math.floor(Math.random() * 1000);
+  return `${prefix}${timestamp}${random}`;
 }

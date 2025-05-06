@@ -5,7 +5,13 @@ import { insertDocumentSchema, insertDocumentFolderSchema } from '@shared/schema
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
+// Generate UUID manually instead of using a package
+const uuidv4 = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 
 const router = Router();
 
@@ -28,7 +34,7 @@ const multerStorage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: multerStorage });
 
 // Get all documents with optional filtering
 router.get('/', async (req, res) => {
@@ -113,10 +119,10 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // Add file information to document data
     const enhancedDocumentData = {
       ...documentData,
-      file_name: file.originalname,
-      file_type: file.mimetype,
-      file_size: file.size,
-      file_path: file.path,
+      fileName: file.originalname,
+      fileType: file.mimetype,
+      fileSize: file.size,
+      filePath: file.path,
     };
     
     // Validate document data
@@ -189,9 +195,9 @@ router.get('/:id/download', async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
     
-    // If the document has a file_path, send the file
-    if (document.file_path && fs.existsSync(document.file_path)) {
-      return res.download(document.file_path, document.file_name || `document-${id}.pdf`);
+    // If the document has a filePath, send the file
+    if (document.filePath && fs.existsSync(document.filePath)) {
+      return res.download(document.filePath, document.fileName || `document-${id}.pdf`);
     }
     
     // For documents with content but no file, generate a PDF or HTML file

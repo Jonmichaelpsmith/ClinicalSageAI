@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cerApiService } from '@/services/CerAPIService';
+import { documentApiService } from '@/services/DocumentAPIService';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,9 +52,33 @@ export default function DocumentVaultPanel({ jobId }) {
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploadMetadata, setUploadMetadata] = useState({
+    name: '',
+    type: 'cer',
+    category: 'Clinical Evaluation',
+    status: 'draft',
+    description: '',
+    author: 'TrialSage AI',
+    tags: ['CER']
+  });
   
-  // Mock document data with actual CER report content
-  const documents = [
+  // Fetch documents on component mount
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        setLoading(true);
+        const docs = await documentApiService.getDocuments();
+        
+        // If there are no documents yet, we'll fall back to using the mock data
+        if (docs && docs.length > 0) {
+          setDocuments(docs);
+        } else {
+          // Mock document data with actual CER report content
+          const mockDocuments = [
     {
       id: 'doc-001',
       name: 'Arthrosurface Shoulder Arthroplasty Systems CER v1.0.5',
