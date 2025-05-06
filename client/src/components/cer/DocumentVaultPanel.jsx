@@ -432,7 +432,11 @@ export default function DocumentVaultPanel({ jobId }) {
                 <UploadCloud className="mr-2 h-4 w-4" />
                 Upload
               </Button>
-              <Button size="sm">
+              <Button 
+                size="sm"
+                onClick={() => setShowUploadDialog(true)}
+                className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+              >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Document
               </Button>
