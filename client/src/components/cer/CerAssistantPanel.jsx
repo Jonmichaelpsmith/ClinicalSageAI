@@ -59,13 +59,13 @@ export default function CerAssistantPanel({ sections = [], title = 'Clinical Eva
       });
 
       // Format and add the assistant's response
-      let assistantContent = response.answer || 'I encountered an issue processing your request.';
+      let assistantContent = response.response || 'I encountered an issue processing your request.';
       
-      // Add references if available
-      if (response.references && response.references.length > 0) {
-        assistantContent += '\n\n**References:**';
-        response.references.forEach((ref) => {
-          assistantContent += `\n- ${ref}`;
+      // Add suggestions if available
+      if (response.suggestions && response.suggestions.length > 0) {
+        assistantContent += '\n\n**Suggested questions:**';
+        response.suggestions.forEach((suggestion) => {
+          assistantContent += `\n- ${suggestion}`;
         });
       }
 
