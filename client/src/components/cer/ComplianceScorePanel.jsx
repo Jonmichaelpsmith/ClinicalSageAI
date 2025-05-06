@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Info, CheckCircle, AlertCircle, RefreshCw, FileText, Sparkles, Zap, XCircle, Plus, Shield, BarChart4, AArrowRight, ExternalLink, FileCheck, BookOpen } from 'lucide-react';
+import { Info, CheckCircle, AlertCircle, RefreshCw, FileText, Sparkles, Zap, XCircle, Plus, Shield, BarChart4, ArrowRight, ExternalLink, FileCheck, BookOpen } from 'lucide-react';
 
 export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
   const [analyzing, setAnalyzing] = useState(false);
