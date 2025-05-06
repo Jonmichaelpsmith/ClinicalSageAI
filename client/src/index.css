@@ -49,48 +49,143 @@ body {
 
 /* Smooth hover transitions */
 
-/* Fix for select/dropdown component styles */
-.select-content {
-  background-color: white !important;
-  color: #333 !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 0.375rem !important;
-  z-index: 50 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+/* Enhanced tab styling */
+.tabs-list {
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border: 1px solid #e2e8f0;
 }
 
-.select-item {
-  color: #333 !important;
+.tabs-trigger {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  color: #64748b;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.tabs-trigger[data-state="active"] {
+  background-color: white;
+  color: #1e40af;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+}
+
+.tabs-trigger:hover:not([data-state="active"]) {
+  background-color: rgba(241, 245, 249, 0.7);
+  color: #334155;
+}
+
+.tabs-content {
+  padding: 1rem 0;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Global dropdown and select component styling */
+:where(.select-content),
+:where(.popover-content),
+:where(.command-dialog),
+:where(.dialog-content),
+:where(.dropdown-menu-content) {
+  --bg-color: white;
+  --text-color: #1a202c;
+  --border-color: #e2e8f0;
+  --shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.15);
+  
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0.375rem !important;
+  box-shadow: var(--shadow) !important;
+  z-index: 50 !important;
+  padding: 0.5rem !important;
+  margin-top: 0.25rem !important;
+}
+
+/* Select items and dropdown items */
+:where(.select-item),
+:where(.dropdown-menu-item),
+:where(.command-item) {
+  color: var(--text-color) !important;
   background-color: transparent !important;
   cursor: pointer !important;
-  padding: 0.5rem 1rem !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 0.25rem !important;
+  margin-bottom: 0.125rem !important;
+  transition: background-color 0.15s ease-in-out !important;
+  font-size: 0.95rem !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
-.select-item:hover {
-  background-color: #f3f4f6 !important;
+/* Hover state */
+:where(.select-item:hover),
+:where(.dropdown-menu-item:hover),
+:where(.command-item:hover) {
+  background-color: rgba(243, 244, 246, 0.8) !important;
 }
 
-.select-item[data-state="checked"] {
-  background-color: #f0f9ff !important;
-  color: #0284c7 !important;
+/* Selected/Checked state */
+:where(.select-item[data-state="checked"]),
+:where(.dropdown-menu-item[data-state="checked"]) {
+  background-color: rgba(239, 246, 255, 0.8) !important;
+  color: #1d4ed8 !important;
   font-weight: 500 !important;
 }
 
-.select-item-text {
+/* Text elements inside dropdown items */
+:where(.select-item-text),
+:where(.dropdown-menu-item-text),
+:where(.command-item-text) {
   color: inherit !important;
+  font-weight: inherit !important;
 }
 
-/* Additional dropdown styling fixes */
-.popover-content,
-.command-dialog,
-.dialog-content,
-.dropdown-menu-content {
-  background-color: white !important;
-  color: #333 !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 0.375rem !important;
-  z-index: 50 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+/* Selection indicator for selected items */
+:where(.select-item[data-state="checked"]):after {
+  content: '✓';
+  display: inline-block;
+  margin-left: auto;
+  font-weight: bold;
+}
+
+/* Disabled state */
+:where(.select-item[data-disabled]),
+:where(.dropdown-menu-item[data-disabled]) {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Scrollable areas inside dropdowns */
+:where(.select-viewport),
+:where(.dropdown-menu-viewport),
+:where(.command-list) {
+  padding: 0.25rem !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+}
+
+/* Group labels */
+:where(.select-group-label),
+:where(.dropdown-menu-group-label) {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: #6b7280 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
 }
 .hover-lift {
   transition: transform 0.2s ease, box-shadow 0.2s ease;

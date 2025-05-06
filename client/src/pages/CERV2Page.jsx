@@ -286,8 +286,10 @@ export default function CERV2Page() {
       {/* Main content area with tabs */}
       <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
         <div className="pb-4 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800">Clinical Evaluation Report Builder</h2>
-          <p className="text-sm text-gray-600 mt-1">Generate, review, and export your Clinical Evaluation Report with FAERS data integration</p>
+          <div className="flex items-center">
+            <FileText className="h-6 w-6 mr-2 text-blue-600" />
+            <h2 className="text-xl font-semibold text-gray-800">Report Builder Tools</h2>
+          </div>
         </div>
 
         <Tabs defaultValue="builder" className="w-full mt-4" onValueChange={setActiveTab}>
