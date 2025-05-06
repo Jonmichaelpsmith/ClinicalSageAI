@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ import ComplianceRadarChart from '../components/cer/ComplianceRadarChart';
 
 // CERV2Page - Enhanced Clinical Evaluation Report page with enterprise styling
 export default function CERV2Page() {
-  const navigate = useNavigate();
+  const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [cerTitle, setCerTitle] = useState('Clinical Evaluation Report: CardioStent XR');
   const [cerSections, setCerSections] = useState([]);
@@ -72,7 +72,7 @@ export default function CERV2Page() {
             variant="ghost" 
             size="sm" 
             className="text-white hover:bg-blue-800"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => setLocation('/')}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             Back
