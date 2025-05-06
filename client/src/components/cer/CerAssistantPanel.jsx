@@ -17,7 +17,7 @@ export default function CerAssistantPanel({ sections = [], title = 'Clinical Eva
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Hello! I'm your CER Assistant. Ask me any questions about your Clinical Evaluation Report, regulatory requirements, or how to improve your documentation. I can also explain FAERS data or help interpret compliance results.',
+      content: 'Hello! I am your CER Assistant. Ask me any questions about your Clinical Evaluation Report, regulatory requirements, or how to improve your documentation. I can also explain FAERS data or help interpret compliance results.',
     },
   ]);
   
