@@ -65,7 +65,7 @@ export const users = pgTable("users", {
 });
 
 // Document Types
-export const documentTypes = pgTable("document_types", {
+export const documentTypes = pgTable("vault_document_types", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 50 }).notNull().unique(),
   description: text("description"),
@@ -76,7 +76,7 @@ export const documentTypes = pgTable("document_types", {
 });
 
 // Document Folders schema
-export const documentFolders = pgTable("document_folders", {
+export const documentFolders = pgTable("vault_document_folders", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
@@ -89,7 +89,7 @@ export const documentFolders = pgTable("document_folders", {
 });
 
 // Documents schema
-export const documents = pgTable("documents", {
+export const documents = pgTable("vault_documents_v2", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
   type: varchar("type", { length: 50 }).notNull(),
@@ -123,7 +123,7 @@ export const documents = pgTable("documents", {
 });
 
 // Document shares schema
-export const documentShares = pgTable("document_shares", {
+export const documentShares = pgTable("vault_document_shares", {
   id: uuid("id").primaryKey().defaultRandom(),
   documentId: uuid("document_id").notNull(),  // Reference will be set up in relations
   userId: integer("user_id").references(() => users.id),
@@ -138,7 +138,7 @@ export const documentShares = pgTable("document_shares", {
 });
 
 // Document audit log
-export const documentAuditLogs = pgTable("document_audit_logs", {
+export const documentAuditLogs = pgTable("vault_document_audit_logs", {
   id: serial("id").primaryKey(),
   documentId: uuid("document_id"),  // Reference will be set up in relations
   userId: integer("user_id").references(() => users.id),
