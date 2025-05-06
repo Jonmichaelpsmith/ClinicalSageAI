@@ -136,71 +136,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
     }
   };
   
-  // Export to Vault
-  const exportToVault = async () => {
-    try {
-      setIsExporting(true);
-      
-      // Generate PDF blob first
-      const exportData = {
-        title,
-        sections,
-        faers,
-        comparators,
-        complianceData,
-        templateId: 'meddev', // MEDDEV 2.7/1 Rev 4 format
-        metadata: {
-          device: title.split(' ')[0] || 'Medical Device',
-          manufacturer: 'TrialSage Medical',
-          modelNumber: 'TS-' + Date.now().toString().slice(-6),
-          version: '1.0',
-          date: new Date().toLocaleDateString(),
-          standard: 'MEDDEV 2.7/1 Rev 4'
-        }
-      };
-      
-      const pdfBlob = await cerApiService.exportToPDF(exportData);
-      
-      // Create FormData to send to Vault API
-      const formData = new FormData();
-      formData.append('file', pdfBlob, `${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-      formData.append('metadata', JSON.stringify({
-        title: title,
-        type: 'cer',
-        category: 'Clinical Evaluation',
-        version: '1.0.0', 
-        status: 'draft',
-        tags: ['MEDDEV 2.7/1 Rev 4', 'Clinical Evaluation', 'EU MDR']
-      }));
-      
-      // Upload to Vault
-      const response = await fetch('/api/vault/upload', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      
-      toast({
-        title: 'Exported to Document Vault',
-        description: 'Your CER has been saved to the Document Vault for team access',
-        variant: 'success'
-      });
-    } catch (error) {
-      console.error('Vault export failed:', error);
-      toast({
-        title: 'Vault Export Failed',
-        description: error.message || 'Failed to export to Document Vault',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
+
 
   return (
     <div className="p-6 bg-white border border-[#E1DFDD] rounded-md shadow-sm">
