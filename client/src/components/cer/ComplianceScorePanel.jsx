@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { cerApiService } from '../../services/CerAPIService';
+import { cerApiService } from '@/services/CerAPIService';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +20,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Info, CheckCircle, XCircle, RefreshCw, FileText } from 'lucide-react';
+import { Info, CheckCircle, AlertCircle, RefreshCw, FileText } from 'lucide-react';
 
 export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
   const [analyzing, setAnalyzing] = useState(false);
@@ -91,218 +91,224 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
     }
   };
   
-  // Get score color based on value
-  const getScoreColor = (score) => {
-    if (score >= 0.8) return 'text-green-600';
-    if (score >= 0.6) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-  
-  // Get badge color based on score
-  const getBadgeVariant = (score) => {
-    if (score >= 0.8) return 'success';
-    if (score >= 0.6) return 'warning';
-    return 'destructive';
-  };
-  
   // Format percentage for display
   const formatPercent = (value) => `${Math.round(value * 100)}%`;
   
+  // MS365 color helpers
+  const getScoreColorClass = (score) => {
+    if (score >= 0.8) return 'text-[#107C10]';
+    if (score >= 0.6) return 'text-[#986F0B]';
+    return 'text-[#D83B01]';
+  };
+  
+  const getScoreBgClass = (score) => {
+    if (score >= 0.8) return 'bg-[#DFF6DD]';
+    if (score >= 0.6) return 'bg-[#FFFCE5]';
+    return 'bg-[#FDE7E9]';
+  };
+  
+  const getScoreBorderClass = (score) => {
+    if (score >= 0.8) return 'border-[#107C10]';
+    if (score >= 0.6) return 'border-[#F2C811]';
+    return 'border-[#D83B01]';
+  };
+  
   return (
-    <div className="space-y-6">
-      <Card className="shadow-sm">
-        <CardHeader className="pb-3 border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-semibold text-slate-800">Regulatory Compliance Scorecard</CardTitle>
-              <CardDescription className="mt-1 text-sm text-slate-500">
-                Analyze your CER against EU MDR, FDA, and ISO standards
-              </CardDescription>
-            </div>
-            <Button
-              onClick={runComplianceAnalysis}
-              disabled={analyzing || sections.length === 0}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              size="sm"
-            >
-              {analyzing ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>Check Compliance</>
-              )}
-            </Button>
+    <div className="space-y-4">
+      {/* Compliance Analysis Panel */}
+      <div className="bg-white p-4 border border-[#E1DFDD] rounded">
+        <div className="flex items-center justify-between border-b border-[#E1DFDD] pb-3 mb-3">
+          <div>
+            <h3 className="text-base font-semibold text-[#323130]">Regulatory Compliance Analysis</h3>
+            <p className="text-xs text-[#616161] mt-1">Analyze your report against EU MDR, ISO 14155, and FDA standards</p>
           </div>
-        </CardHeader>
+          <Button
+            onClick={runComplianceAnalysis}
+            disabled={analyzing || sections.length === 0}
+            className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+            size="sm"
+          >
+            {analyzing ? (
+              <>
+                <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin" />
+                <span>Analyzing...</span>
+              </>
+            ) : (
+              <>Check Compliance</>
+            )}
+          </Button>
+        </div>
         
-        <CardContent className="pt-4">
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <XCircle className="h-4 w-4" />
-              <AlertTitle>Analysis Failed</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
-          {!complianceData && !analyzing && !error && (
-            <Alert className="mb-4 bg-blue-50 text-blue-700 border-blue-200">
-              <Info className="h-4 w-4" />
-              <AlertTitle className="text-blue-800 font-medium text-sm">Regulatory Compliance Check</AlertTitle>
-              <AlertDescription className="text-sm">
-                Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 regulatory standards.
-                This will evaluate each section for content quality, completeness, and alignment with regulatory requirements.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {analyzing && (
-            <div className="space-y-4">
-              <p className="text-sm text-slate-600">Analyzing regulatory compliance against standards...</p>
-              <div className="space-y-2">
-                <Skeleton className="h-[28px] w-full" />
-                <Skeleton className="h-[100px] w-full" />
-                <div className="grid grid-cols-3 gap-4">
-                  <Skeleton className="h-[120px]" />
-                  <Skeleton className="h-[120px]" />
-                  <Skeleton className="h-[120px]" />
-                </div>
-                <Skeleton className="h-[180px] w-full" />
+        {error && (
+          <div className="p-3 my-3 bg-[#FDE7E9] border border-[#D83B01] rounded">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-[#D83B01] mr-2 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-[#323130]">Analysis Failed</p>
+                <p className="text-xs text-[#616161] mt-1">{error}</p>
               </div>
             </div>
-          )}
-          
-          {complianceData && (
-            <div className="space-y-5">
-              {/* Overall Score */}
-              <Card className="shadow-none border border-slate-200">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-medium text-slate-800">Overall Compliance</CardTitle>
-                  <CardDescription className="text-xs text-slate-500">Regulatory readiness assessment</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-xs font-medium text-slate-600">Compliance Score</span>
-                        <span className={`text-sm font-bold ${getScoreColor(complianceData.overallScore)}`}>
-                          {formatPercent(complianceData.overallScore)}
-                        </span>
-                      </div>
-                      <Progress
-                        value={complianceData.overallScore * 100}
-                        className="h-2"
-                      />
-                    </div>
-                    <div className="flex justify-between items-start">
-                      <p className="text-xs text-slate-700 flex-grow mr-4">
-                        {complianceData.summary || 
-                         `This report scores ${formatPercent(complianceData.overallScore)} overall against ${complianceData.primary || 'regulatory'} standards. ${complianceData.overallScore >= 0.8 ? 'The document is compliant and ready for submission.' : complianceData.overallScore >= 0.6 ? 'Some improvements are recommended before submission.' : 'Significant improvements are needed before submission.'}`}
-                      </p>
-                      <Button
-                        onClick={handleExportPDF}
-                        disabled={exporting}
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-xs"
-                      >
-                        {exporting ? (
-                          <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                        ) : (
-                          <FileText className="h-3 w-3 mr-1" />
-                        )}
-                        <span>{exporting ? 'Exporting...' : 'Export Report'}</span>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Standards Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {Object.entries(complianceData.standards || {}).map(([standard, data]) => (
-                  <Card key={standard} className="shadow-none border border-slate-200">
-                    <CardHeader className="pb-2 pt-3 px-4">
-                      <CardTitle className="text-sm font-medium text-slate-800">{standard}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-4 pb-4 pt-0">
-                      <div className="text-xl font-bold mb-1 flex items-center gap-2 text-slate-800">
-                        {formatPercent(data.overallScore)}
-                        <Badge variant={getBadgeVariant(data.overallScore)} className="text-xs ml-1">
-                          {data.overallScore >= 0.8 ? 'Pass' : data.overallScore >= 0.6 ? 'Needs Work' : 'Non-compliant'}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-slate-500">
-                        {Object.keys(data.sectionScores || {}).length} sections analyzed
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
+          </div>
+        )}
+        
+        {!complianceData && !analyzing && !error && (
+          <div className="p-3 my-3 bg-[#E5F2FF] border border-[#0F6CBD] rounded">
+            <div className="flex">
+              <Info className="h-5 w-5 text-[#0F6CBD] mr-2 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-[#323130]">Regulatory Compliance Check</p>
+                <p className="text-xs text-[#616161] mt-1">
+                  Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 standards.
+                  This will evaluate content quality, completeness, and alignment with regulatory requirements.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {analyzing && (
+          <div className="space-y-4 my-3">
+            <p className="text-sm text-[#616161]">Analyzing regulatory compliance against standards...</p>
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <div className="grid grid-cols-3 gap-4">
+                <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
+              </div>
+              <Skeleton className="h-40 w-full" />
+            </div>
+          </div>
+        )}
+        
+        {complianceData && (
+          <div className="space-y-5">
+            {/* Overall Score */}
+            <div className="p-4 border border-[#E1DFDD] rounded bg-white">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-[#323130]">Overall Compliance</h4>
+                  <p className="text-xs text-[#616161] mt-0.5">Regulatory readiness assessment</p>
+                </div>
+                <Badge variant="outline" className={`text-xs border px-2 py-0.5 ${getScoreBgClass(complianceData.overallScore)} ${getScoreColorClass(complianceData.overallScore)} ${getScoreBorderClass(complianceData.overallScore)}`}>
+                  {complianceData.overallScore >= 0.8 ? 'Compliant' : complianceData.overallScore >= 0.6 ? 'Needs Improvement' : 'Non-compliant'}
+                </Badge>
               </div>
               
-              {/* Section Breakdown by Framework */}
-              {Object.entries(complianceData.standards || {}).map(([framework, frameworkData]) => (
-                <Card key={framework} className="mt-4 shadow-none border border-slate-200">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base font-medium text-slate-800">{framework} Section Analysis</CardTitle>
-                    <CardDescription className="text-xs text-slate-500">Detailed compliance analysis by section</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Accordion type="single" collapsible className="border rounded-md">
-                      {Object.entries(frameworkData.sectionScores || {}).map(([sectionType, score]) => {
-                        // Find matching section in generated sections
-                        const matchingSection = sections.find(s => s.type === sectionType);
-                        if (!matchingSection) return null;
-                        
-                        return (
-                          <AccordionItem value={sectionType} key={sectionType} className="border-b last:border-0">
-                            <AccordionTrigger className="hover:no-underline py-3 px-4">
-                              <div className="flex items-center justify-between w-full pr-4">
-                                <span className="text-sm text-slate-700">{matchingSection.title}</span>
-                                <span className={`${getScoreColor(score)} font-semibold text-sm`}>
-                                  {formatPercent(score)}
-                                </span>
-                              </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="px-4 pb-3">
-                              <div className="pt-2">
-                                <div className="border rounded-md p-3 bg-slate-50">
-                                  <h4 className="font-medium mb-2 text-sm text-slate-700">Compliance Analysis</h4>
-                                  <p className="text-xs text-slate-600">
-                                    {score >= 0.8 ? 
-                                      `This section meets ${framework} requirements and is compliant.` : 
-                                      score >= 0.6 ? 
-                                      `This section needs some improvements to fully meet ${framework} requirements.` : 
-                                      `This section requires significant revisions to meet ${framework} requirements.`}
-                                  </p>
-                                  
-                                  {score < 0.8 && (
-                                    <div className="mt-3">
-                                      <h5 className="text-xs font-medium mb-1 text-slate-700">Improvement Suggestions:</h5>
-                                      <ul className="list-disc list-inside text-xs space-y-1 text-slate-600">
-                                        {score < 0.6 && (
-                                          <li>Add more detailed information specific to {framework} requirements</li>
-                                        )}
-                                        <li>Enhance content with specific references to {framework} standards</li>
-                                        <li>Include more quantitative data and analysis</li>
-                                      </ul>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        );
-                      })}
-                    </Accordion>
-                  </CardContent>
-                </Card>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-xs font-medium text-[#616161]">Compliance Score</span>
+                    <span className={`text-sm font-semibold ${getScoreColorClass(complianceData.overallScore)}`}>
+                      {formatPercent(complianceData.overallScore)}
+                    </span>
+                  </div>
+                  <Progress
+                    value={complianceData.overallScore * 100}
+                    className={`h-2 ${getScoreBgClass(complianceData.overallScore)}`}
+                  />
+                </div>
+                
+                <div className="flex justify-between items-start">
+                  <p className="text-xs text-[#616161] flex-grow pr-4">
+                    {complianceData.summary || 
+                     `This report has an overall compliance score of ${formatPercent(complianceData.overallScore)} against regulatory standards. ${complianceData.overallScore >= 0.8 ? 'The document meets regulatory requirements and is ready for submission.' : complianceData.overallScore >= 0.6 ? 'Some improvements are recommended before submission.' : 'Significant improvements are needed to meet regulatory requirements.'}`}
+                  </p>
+                  <Button
+                    onClick={handleExportPDF}
+                    disabled={exporting}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 border-[#0F6CBD] text-[#0F6CBD] text-xs hover:bg-[#EFF6FC]"
+                  >
+                    {exporting ? (
+                      <RefreshCw className="h-3 w-3 mr-1.5 animate-spin" />
+                    ) : (
+                      <FileText className="h-3 w-3 mr-1.5" />
+                    )}
+                    <span>{exporting ? 'Exporting...' : 'Export Report'}</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Standards Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {Object.entries(complianceData.standards || {}).map(([standard, data]) => (
+                <div key={standard} className="p-4 border border-[#E1DFDD] rounded bg-white">
+                  <h4 className="text-sm font-semibold text-[#323130] mb-2">{standard}</h4>
+                  <div className="text-xl font-bold text-[#323130] flex items-center gap-2">
+                    {formatPercent(data.overallScore)}
+                    <Badge variant="outline" className={`text-xs border px-2 py-0.5 ${getScoreBgClass(data.overallScore)} ${getScoreColorClass(data.overallScore)} ${getScoreBorderClass(data.overallScore)}`}>
+                      {data.overallScore >= 0.8 ? 'Pass' : data.overallScore >= 0.6 ? 'Needs Work' : 'Non-compliant'}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-[#616161] mt-1">
+                    {Object.keys(data.sectionScores || {}).length} sections analyzed
+                  </p>
+                </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+            
+            {/* Section Breakdown by Framework */}
+            {Object.entries(complianceData.standards || {}).map(([framework, frameworkData]) => (
+              <div key={framework} className="p-4 border border-[#E1DFDD] rounded bg-white">
+                <h4 className="text-sm font-semibold text-[#323130] mb-1">{framework} Section Analysis</h4>
+                <p className="text-xs text-[#616161] mb-3">Detailed compliance analysis by section</p>
+                
+                <Accordion type="single" collapsible className="border border-[#E1DFDD] rounded-sm divide-y divide-[#E1DFDD]">
+                  {Object.entries(frameworkData.sectionScores || {}).map(([sectionType, score]) => {
+                    // Find matching section in generated sections
+                    const matchingSection = sections.find(s => s.type === sectionType);
+                    if (!matchingSection) return null;
+                    
+                    return (
+                      <AccordionItem value={sectionType} key={sectionType} className="border-0">
+                        <AccordionTrigger className="hover:no-underline py-2.5 px-3">
+                          <div className="flex items-center justify-between w-full pr-2">
+                            <span className="text-sm text-[#323130]">{matchingSection.title}</span>
+                            <span className={`${getScoreColorClass(score)} font-medium text-sm`}>
+                              {formatPercent(score)}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-3 pb-3 pt-0">
+                          <div className="pt-1">
+                            <div className={`p-3 rounded ${getScoreBgClass(score)} border ${getScoreBorderClass(score)}`}>
+                              <h5 className="font-medium mb-1.5 text-sm text-[#323130]">Compliance Analysis</h5>
+                              <p className="text-xs text-[#616161]">
+                                {score >= 0.8 ? 
+                                  `This section meets ${framework} requirements and is compliant.` : 
+                                  score >= 0.6 ? 
+                                  `This section needs some improvements to fully meet ${framework} requirements.` : 
+                                  `This section requires significant revisions to meet ${framework} requirements.`}
+                              </p>
+                              
+                              {score < 0.8 && (
+                                <div className="mt-2">
+                                  <h6 className="text-xs font-medium mb-1 text-[#323130]">Improvement Suggestions:</h6>
+                                  <ul className="list-disc list-outside text-xs space-y-1 text-[#616161] ml-3">
+                                    {score < 0.6 && (
+                                      <li>Add more detailed information specific to {framework} requirements</li>
+                                    )}
+                                    <li>Enhance content with specific references to {framework} standards</li>
+                                    <li>Include more quantitative data and analysis</li>
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
