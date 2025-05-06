@@ -484,5 +484,22 @@ cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle, c
   }
 };
 
+/**
+ * Helper function to initiate a file download from a blob
+ * @param {Blob} blob - The blob to download
+ * @param {string} filename - The filename to use for the download
+ */
+cerApiService.downloadBlob = (blob, filename) => {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+};
+
 // Export the service object for use in other components
 export { cerApiService };

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { cerApiService } from '@/services/CerAPIService';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -182,10 +183,73 @@ export default function DocumentVaultPanel({ jobId }) {
   };
   
   // Download file handler
-  const handleDownloadFile = (doc) => {
+  const handleDownloadFile = async (doc) => {
     console.log('Downloading document:', doc);
-    // In a real app, this would trigger a download
-    window.open(`/api/documents/${doc.id}/download`, '_blank');
+    try {
+      // For CER documents, use the CerAPIService to create and download a PDF
+      if (doc.type === 'cer') {
+        // Mock data for CER export - in a real app, this would be fetched based on doc.id
+        const mockCerData = {
+          title: doc.name,
+          sections: [
+            { id: 'sec1', title: 'Executive Summary', content: 'This is a sample CER document.' },
+            { id: 'sec2', title: 'Device Description', content: 'Device description content would appear here.' },
+            { id: 'sec3', title: 'Clinical Evaluation', content: 'Clinical evaluation data would be presented here.' }
+          ],
+          faers: [],
+          comparators: [],
+          metadata: {
+            author: doc.author,
+            version: doc.version,
+            category: doc.category
+          }
+        };
+        
+        // Generate PDF using the CerAPIService
+        const pdfBlob = await cerApiService.exportToPDF(mockCerData);
+        
+        // Initiate download of the generated PDF
+        const url = window.URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `${doc.name.replace(/\s+/g, '_').toLowerCase()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        // For non-CER documents, simulate a standard file download
+        // Create a mock PDF blob (this would normally be fetched from the server)
+        const response = await fetch('/api/cer/export-pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: doc.name,
+            documentType: doc.type,
+            metadata: {
+              author: doc.author,
+              category: doc.category,
+              version: doc.version,
+              created: doc.dateCreated,
+              tags: doc.tags
+            }
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Download failed: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        cerApiService.downloadBlob(blob, `${doc.name.replace(/\s+/g, '_').toLowerCase()}.pdf`);
+      }
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Download failed. Please try again later.');
+    }
   };
   
   // Share file handler
