@@ -1185,6 +1185,609 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  // CER Report methods
+  async getCerReport(id: string): Promise<schema.CerReport | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const reports = await db.select().from(schema.cerReports).where(eq(schema.cerReports.id, id));
+      return reports[0];
+    } catch (error) {
+      logger.error('Failed to get CER report', { id, error });
+      return undefined;
+    }
+  }
+  
+  async getCerReports(options: { 
+    limit?: number; 
+    offset?: number;
+    status?: string;
+    deviceName?: string;
+    search?: string;
+  } = {}): Promise<schema.CerReport[]> {
+    if (!db) return [];
+    
+    const { limit = 20, offset = 0, status, deviceName, search } = options;
+    
+    try {
+      let query = db.select().from(schema.cerReports);
+      
+      // Apply filters
+      if (status) {
+        query = query.where(eq(schema.cerReports.status, status));
+      }
+      
+      if (deviceName) {
+        query = query.where(like(schema.cerReports.deviceName, `%${deviceName}%`));
+      }
+      
+      if (search) {
+        query = query.where(
+          or(
+            like(schema.cerReports.title, `%${search}%`),
+            like(schema.cerReports.deviceName, `%${search}%`),
+            like(schema.cerReports.manufacturer, `%${search}%`)
+          )
+        );
+      }
+      
+      // Apply sorting and pagination
+      const reports = await query
+        .orderBy(desc(schema.cerReports.updatedAt))
+        .limit(limit)
+        .offset(offset);
+      
+      return reports;
+    } catch (error) {
+      logger.error('Failed to get CER reports', { options, error });
+      return [];
+    }
+  }
+  
+  async createCerReport(cerReport: schema.InsertCerReport): Promise<schema.CerReport> {
+    if (!db) {
+      throw new Error('Database connection not available');
+    }
+    
+    try {
+      // Set timestamps if not provided
+      const now = new Date();
+      const reportData = {
+        ...cerReport,
+        createdAt: cerReport.createdAt || now,
+        updatedAt: cerReport.updatedAt || now,
+      };
+      
+      const [newReport] = await db.insert(schema.cerReports).values(reportData).returning();
+      return newReport;
+    } catch (error) {
+      logger.error('Failed to create CER report', { cerReport, error });
+      throw error;
+    }
+  }
+  
+  async updateCerReport(id: string, reportData: Partial<schema.InsertCerReport>): Promise<schema.CerReport | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      // Update timestamp
+      const now = new Date();
+      const updatedData = {
+        ...reportData,
+        updatedAt: now
+      };
+      
+      const [updatedReport] = await db
+        .update(schema.cerReports)
+        .set(updatedData)
+        .where(eq(schema.cerReports.id, id))
+        .returning();
+      
+      return updatedReport;
+    } catch (error) {
+      logger.error('Failed to update CER report', { id, reportData, error });
+      return undefined;
+    }
+  }
+  
+  async deleteCerReport(id: string): Promise<boolean> {
+    if (!db) return false;
+    
+    try {
+      await db
+        .delete(schema.cerReports)
+        .where(eq(schema.cerReports.id, id));
+      
+      return true;
+    } catch (error) {
+      logger.error('Failed to delete CER report', { id, error });
+      return false;
+    }
+  }
+  
+  // CER Section methods
+  async getCerSection(id: string): Promise<schema.CerSection | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const sections = await db.select().from(schema.cerSections).where(eq(schema.cerSections.id, id));
+      return sections[0];
+    } catch (error) {
+      logger.error('Failed to get CER section', { id, error });
+      return undefined;
+    }
+  }
+  
+  async getCerSections(reportId: string, options: { orderBy?: string } = {}): Promise<schema.CerSection[]> {
+    if (!db) return [];
+    
+    try {
+      let query = db
+        .select()
+        .from(schema.cerSections)
+        .where(eq(schema.cerSections.reportId, reportId));
+      
+      // Apply sorting
+      if (!options.orderBy || options.orderBy === 'order') {
+        query = query.orderBy(schema.cerSections.order);
+      } else if (options.orderBy === 'title') {
+        query = query.orderBy(schema.cerSections.title);
+      } else if (options.orderBy === 'updatedAt') {
+        query = query.orderBy(desc(schema.cerSections.updatedAt));
+      }
+      
+      const sections = await query;
+      return sections;
+    } catch (error) {
+      logger.error('Failed to get CER sections', { reportId, options, error });
+      return [];
+    }
+  }
+  
+  async createCerSection(section: schema.InsertCerSection): Promise<schema.CerSection> {
+    if (!db) {
+      throw new Error('Database connection not available');
+    }
+    
+    try {
+      // Set timestamps if not provided
+      const now = new Date();
+      const sectionData = {
+        ...section,
+        createdAt: section.createdAt || now,
+        updatedAt: section.updatedAt || now,
+      };
+      
+      const [newSection] = await db.insert(schema.cerSections).values(sectionData).returning();
+      return newSection;
+    } catch (error) {
+      logger.error('Failed to create CER section', { section, error });
+      throw error;
+    }
+  }
+  
+  async updateCerSection(id: string, sectionData: Partial<schema.InsertCerSection>): Promise<schema.CerSection | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      // Update timestamp
+      const now = new Date();
+      const updatedData = {
+        ...sectionData,
+        updatedAt: now
+      };
+      
+      const [updatedSection] = await db
+        .update(schema.cerSections)
+        .set(updatedData)
+        .where(eq(schema.cerSections.id, id))
+        .returning();
+      
+      return updatedSection;
+    } catch (error) {
+      logger.error('Failed to update CER section', { id, sectionData, error });
+      return undefined;
+    }
+  }
+  
+  async deleteCerSection(id: string): Promise<boolean> {
+    if (!db) return false;
+    
+    try {
+      await db
+        .delete(schema.cerSections)
+        .where(eq(schema.cerSections.id, id));
+      
+      return true;
+    } catch (error) {
+      logger.error('Failed to delete CER section', { id, error });
+      return false;
+    }
+  }
+  
+  // CER FAERS Data methods
+  async getCerFaersData(id: string): Promise<schema.CerFaersData | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const data = await db.select().from(schema.cerFaersData).where(eq(schema.cerFaersData.id, id));
+      return data[0];
+    } catch (error) {
+      logger.error('Failed to get CER FAERS data', { id, error });
+      return undefined;
+    }
+  }
+  
+  async getCerFaersDataByReportId(reportId: string): Promise<schema.CerFaersData[]> {
+    if (!db) return [];
+    
+    try {
+      const data = await db
+        .select()
+        .from(schema.cerFaersData)
+        .where(eq(schema.cerFaersData.reportId, reportId));
+      
+      return data;
+    } catch (error) {
+      logger.error('Failed to get CER FAERS data by report ID', { reportId, error });
+      return [];
+    }
+  }
+  
+  async createCerFaersData(faersData: schema.InsertCerFaersData): Promise<schema.CerFaersData> {
+    if (!db) {
+      throw new Error('Database connection not available');
+    }
+    
+    try {
+      // Set timestamps if not provided
+      const now = new Date();
+      const data = {
+        ...faersData,
+        createdAt: faersData.createdAt || now,
+        updatedAt: faersData.updatedAt || now,
+      };
+      
+      const [newData] = await db.insert(schema.cerFaersData).values(data).returning();
+      return newData;
+    } catch (error) {
+      logger.error('Failed to create CER FAERS data', { faersData, error });
+      throw error;
+    }
+  }
+  
+  async updateCerFaersData(id: string, faersData: Partial<schema.InsertCerFaersData>): Promise<schema.CerFaersData | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      // Update timestamp
+      const now = new Date();
+      const updatedData = {
+        ...faersData,
+        updatedAt: now
+      };
+      
+      const [updated] = await db
+        .update(schema.cerFaersData)
+        .set(updatedData)
+        .where(eq(schema.cerFaersData.id, id))
+        .returning();
+      
+      return updated;
+    } catch (error) {
+      logger.error('Failed to update CER FAERS data', { id, faersData, error });
+      return undefined;
+    }
+  }
+  
+  // CER Literature methods
+  async getCerLiterature(id: string): Promise<schema.CerLiterature | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const literature = await db.select().from(schema.cerLiterature).where(eq(schema.cerLiterature.id, id));
+      return literature[0];
+    } catch (error) {
+      logger.error('Failed to get CER literature', { id, error });
+      return undefined;
+    }
+  }
+  
+  async getCerLiteratureByReportId(reportId: string, options: { 
+    limit?: number; 
+    offset?: number;
+    relevanceThreshold?: number;
+    includedOnly?: boolean;
+  } = {}): Promise<schema.CerLiterature[]> {
+    if (!db) return [];
+    
+    const { 
+      limit = 50, 
+      offset = 0, 
+      relevanceThreshold = 0,
+      includedOnly = false 
+    } = options;
+    
+    try {
+      let query = db
+        .select()
+        .from(schema.cerLiterature)
+        .where(eq(schema.cerLiterature.reportId, reportId));
+      
+      if (relevanceThreshold > 0) {
+        query = query.where(
+          or(
+            isNull(schema.cerLiterature.relevanceScore),
+            gte(schema.cerLiterature.relevanceScore, relevanceThreshold)
+          )
+        );
+      }
+      
+      if (includedOnly) {
+        query = query.where(eq(schema.cerLiterature.includedInReport, true));
+      }
+      
+      const literature = await query
+        .orderBy(desc(schema.cerLiterature.relevanceScore))
+        .limit(limit)
+        .offset(offset);
+      
+      return literature;
+    } catch (error) {
+      logger.error('Failed to get CER literature by report ID', { reportId, options, error });
+      return [];
+    }
+  }
+  
+  async createCerLiterature(literature: schema.InsertCerLiterature): Promise<schema.CerLiterature> {
+    if (!db) {
+      throw new Error('Database connection not available');
+    }
+    
+    try {
+      // Set timestamps if not provided
+      const now = new Date();
+      const data = {
+        ...literature,
+        createdAt: literature.createdAt || now,
+        updatedAt: literature.updatedAt || now,
+      };
+      
+      const [newLiterature] = await db.insert(schema.cerLiterature).values(data).returning();
+      return newLiterature;
+    } catch (error) {
+      logger.error('Failed to create CER literature', { literature, error });
+      throw error;
+    }
+  }
+  
+  async updateCerLiterature(id: string, literature: Partial<schema.InsertCerLiterature>): Promise<schema.CerLiterature | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      // Update timestamp
+      const now = new Date();
+      const updatedData = {
+        ...literature,
+        updatedAt: now
+      };
+      
+      const [updated] = await db
+        .update(schema.cerLiterature)
+        .set(updatedData)
+        .where(eq(schema.cerLiterature.id, id))
+        .returning();
+      
+      return updated;
+    } catch (error) {
+      logger.error('Failed to update CER literature', { id, literature, error });
+      return undefined;
+    }
+  }
+  
+  // CER Compliance methods
+  async getCerComplianceCheck(id: string): Promise<schema.CerComplianceCheck | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const checks = await db.select().from(schema.cerComplianceChecks).where(eq(schema.cerComplianceChecks.id, id));
+      return checks[0];
+    } catch (error) {
+      logger.error('Failed to get CER compliance check', { id, error });
+      return undefined;
+    }
+  }
+  
+  async getCerComplianceChecksByReportId(reportId: string): Promise<schema.CerComplianceCheck[]> {
+    if (!db) return [];
+    
+    try {
+      const checks = await db
+        .select()
+        .from(schema.cerComplianceChecks)
+        .where(eq(schema.cerComplianceChecks.reportId, reportId))
+        .orderBy(desc(schema.cerComplianceChecks.checkDate));
+      
+      return checks;
+    } catch (error) {
+      logger.error('Failed to get CER compliance checks by report ID', { reportId, error });
+      return [];
+    }
+  }
+  
+  async createCerComplianceCheck(check: schema.InsertCerComplianceCheck): Promise<schema.CerComplianceCheck> {
+    if (!db) {
+      throw new Error('Database connection not available');
+    }
+    
+    try {
+      // Set timestamps if not provided
+      const now = new Date();
+      const data = {
+        ...check,
+        checkDate: check.checkDate || now,
+        createdAt: check.createdAt || now,
+        updatedAt: check.updatedAt || now,
+      };
+      
+      const [newCheck] = await db.insert(schema.cerComplianceChecks).values(data).returning();
+      return newCheck;
+    } catch (error) {
+      logger.error('Failed to create CER compliance check', { check, error });
+      throw error;
+    }
+  }
+  
+  async updateCerComplianceCheck(id: string, check: Partial<schema.InsertCerComplianceCheck>): Promise<schema.CerComplianceCheck | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      // Update timestamp
+      const now = new Date();
+      const updatedData = {
+        ...check,
+        updatedAt: now
+      };
+      
+      const [updated] = await db
+        .update(schema.cerComplianceChecks)
+        .set(updatedData)
+        .where(eq(schema.cerComplianceChecks.id, id))
+        .returning();
+      
+      return updated;
+    } catch (error) {
+      logger.error('Failed to update CER compliance check', { id, check, error });
+      return undefined;
+    }
+  }
+  
+  // CER Workflow methods
+  async getCerWorkflow(id: string): Promise<schema.CerWorkflow | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const workflows = await db.select().from(schema.cerWorkflows).where(eq(schema.cerWorkflows.id, id));
+      return workflows[0];
+    } catch (error) {
+      logger.error('Failed to get CER workflow', { id, error });
+      return undefined;
+    }
+  }
+  
+  async getCerWorkflowByReportId(reportId: string): Promise<schema.CerWorkflow | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const workflows = await db
+        .select()
+        .from(schema.cerWorkflows)
+        .where(eq(schema.cerWorkflows.reportId, reportId));
+      
+      return workflows[0]; // There should only be one workflow per report
+    } catch (error) {
+      logger.error('Failed to get CER workflow by report ID', { reportId, error });
+      return undefined;
+    }
+  }
+  
+  async createCerWorkflow(workflow: schema.InsertCerWorkflow): Promise<schema.CerWorkflow> {
+    if (!db) {
+      throw new Error('Database connection not available');
+    }
+    
+    try {
+      // Set timestamps if not provided
+      const now = new Date();
+      const data = {
+        ...workflow,
+        startedAt: workflow.startedAt || now,
+        lastUpdated: workflow.lastUpdated || now
+      };
+      
+      const [newWorkflow] = await db.insert(schema.cerWorkflows).values(data).returning();
+      return newWorkflow;
+    } catch (error) {
+      logger.error('Failed to create CER workflow', { workflow, error });
+      throw error;
+    }
+  }
+  
+  async updateCerWorkflow(id: string, workflow: Partial<schema.InsertCerWorkflow>): Promise<schema.CerWorkflow | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      // Update timestamp
+      const now = new Date();
+      const updatedData = {
+        ...workflow,
+        lastUpdated: now
+      };
+      
+      const [updated] = await db
+        .update(schema.cerWorkflows)
+        .set(updatedData)
+        .where(eq(schema.cerWorkflows.id, id))
+        .returning();
+      
+      return updated;
+    } catch (error) {
+      logger.error('Failed to update CER workflow', { id, workflow, error });
+      return undefined;
+    }
+  }
+  
+  // CER Export methods
+  async getCerExport(id: string): Promise<schema.CerExport | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const exports = await db.select().from(schema.cerExports).where(eq(schema.cerExports.id, id));
+      return exports[0];
+    } catch (error) {
+      logger.error('Failed to get CER export', { id, error });
+      return undefined;
+    }
+  }
+  
+  async getCerExportsByReportId(reportId: string): Promise<schema.CerExport[]> {
+    if (!db) return [];
+    
+    try {
+      const exports = await db
+        .select()
+        .from(schema.cerExports)
+        .where(eq(schema.cerExports.reportId, reportId))
+        .orderBy(desc(schema.cerExports.exportedAt));
+      
+      return exports;
+    } catch (error) {
+      logger.error('Failed to get CER exports by report ID', { reportId, error });
+      return [];
+    }
+  }
+  
+  async createCerExport(export_: schema.InsertCerExport): Promise<schema.CerExport> {
+    if (!db) {
+      throw new Error('Database connection not available');
+    }
+    
+    try {
+      // Set export date if not provided
+      const now = new Date();
+      const data = {
+        ...export_,
+        exportedAt: export_.exportedAt || now
+      };
+      
+      const [newExport] = await db.insert(schema.cerExports).values(data).returning();
+      return newExport;
+    } catch (error) {
+      logger.error('Failed to create CER export', { export_, error });
+      throw error;
+    }
+  }
+  
   // Health check
   async healthCheck(): Promise<boolean> {
     if (!pool) return false;
