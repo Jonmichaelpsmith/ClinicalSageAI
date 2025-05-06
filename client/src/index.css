@@ -94,16 +94,11 @@ body {
 }
 
 /* Global dropdown and select component styling */
-.dark-select-content,
-.dark-dropdown-menu-content,
-.dark-popover-content,
-.dark-dialog-content,
-.dark-command-dialog,
-div[data-radix-popper-content-wrapper] *[role="listbox"],
-div[data-radix-popper-content-wrapper] div[role="menu"],
-div[data-radix-popper-content-wrapper] div[role="dialog"],
-div[data-radix-popper-content-wrapper] div.select-content,
-div[data-radix-popper-content-wrapper] div.dropdown-menu-content {
+div.select-content,
+div.popover-content,
+div.command-dialog,
+div.dialog-content,
+div.dropdown-menu-content {
   --bg-color: white;
   --text-color: #1a202c;
   --border-color: #e2e8f0;
@@ -129,14 +124,9 @@ div[data-radix-popper-content-wrapper] div.dropdown-menu-content {
 }
 
 /* Select items and dropdown items */
-div[data-radix-popper-content-wrapper] *[role="option"],
-div[data-radix-popper-content-wrapper] *[role="menuitem"],
-li.select-item,
-li.dropdown-menu-item,
-li.command-item,
-:where(.select-item),
-:where(.dropdown-menu-item),
-:where(.command-item) {
+.select-item,
+.dropdown-menu-item,
+.command-item {
   color: #111827 !important;
   background-color: transparent !important;
   cursor: pointer !important;
@@ -149,21 +139,17 @@ li.command-item,
   align-items: center !important;
 }
 
-/* Hover state for all dropdown items */
-:where(.select-item:hover),
-:where(.dropdown-menu-item:hover),
-:where(.command-item:hover),
-div[data-radix-popper-content-wrapper] *[role="option"]:hover,
-div[data-radix-popper-content-wrapper] *[role="menuitem"]:hover {
+/* Hover state for dropdown items */
+.select-item:hover,
+.dropdown-menu-item:hover,
+.command-item:hover {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
 }
 
-/* Selected/Checked state for all types */
-:where(.select-item[data-state="checked"]),
-:where(.dropdown-menu-item[data-state="checked"]),
-div[data-radix-popper-content-wrapper] *[role="option"][aria-selected="true"],
-div[data-radix-popper-content-wrapper] *[role="menuitem"][aria-checked="true"] {
+/* Selected/Checked state */
+.select-item[data-state="checked"],
+.dropdown-menu-item[data-state="checked"] {
   background-color: #e0f2fe !important;
   color: #1e40af !important;
   font-weight: 500 !important;
