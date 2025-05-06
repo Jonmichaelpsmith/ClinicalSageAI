@@ -17,6 +17,189 @@ import { fetchFaersAnalysis } from '../services/enhancedFaersService.js';
 // Import direct handlers for advanced functionality - using dynamic imports for ESM compatibility
 let complianceScoreHandler, assistantRouter, improveComplianceHandler, generateFullCERHandler;
 
+/**
+ * Get a human-readable section name based on section ID
+ * @param {string} sectionId - The section ID
+ * @returns {string} - The human-readable section name
+ */
+function getSectionName(sectionId) {
+  const sectionNames = {
+    'benefit-risk': 'Benefit-Risk Analysis',
+    'safety': 'Safety Analysis',
+    'clinical-background': 'Clinical Background',
+    'device-description': 'Device Description',
+    'state-of-art': 'State of the Art Review',
+    'equivalence': 'Equivalence Assessment',
+    'literature-analysis': 'Literature Analysis', 
+    'pms-data': 'Post-Market Surveillance Data',
+    'conclusion': 'Conclusion'
+  };
+  
+  return sectionNames[sectionId] || sectionId.charAt(0).toUpperCase() + sectionId.slice(1).replace(/-/g, ' ');
+}
+
+/**
+ * Get the appropriate system prompt for a specific CER section
+ * @param {string} sectionType - The type of section
+ * @param {string} productName - The name of the product/device
+ * @returns {string} - The system prompt for OpenAI
+ */
+function getSectionSystemPrompt(sectionType, productName) {
+  const basePrompt = `You are an expert medical device regulatory consultant specialized in Clinical Evaluation Reports (CERs) following EU MDR requirements and MEDDEV 2.7/1 Rev 4 guidelines. Your task is to generate a comprehensive, well-structured ${getSectionName(sectionType)} section for a CER for ${productName || 'a medical device'}.
+
+Your content must be:
+1. Scientifically accurate and evidence-based
+2. Compliant with EU MDR 2017/745 and MEDDEV 2.7/1 Rev 4 guidelines
+3. Professionally written with clear structure and appropriate headings
+4. Detailed but concise, focusing on clinically relevant information
+5. Format the output with Markdown for structure (use # for main heading, ## for subheadings)
+
+`;
+
+  // Add section-specific guidance
+  switch(sectionType) {
+    case 'benefit-risk':
+      return basePrompt + `
+For the Benefit-Risk Analysis section:
+- Present a clear methodology for benefit-risk determination
+- Analyze both individual risks and the overall risk profile
+- Evaluate clinical benefits with quantitative metrics where possible
+- Reference relevant clinical data and literature
+- Present a balanced assessment following Annex I of EU MDR
+- Include a conclusion on the overall benefit-risk profile
+- Address both clinical performance and clinical safety aspects
+- Consider both frequency and severity of risks
+- Address residual risks and risk mitigation measures
+- Follow the requirements in EU MDR Article 61 on clinical evaluation`;
+      
+    case 'safety':
+      return basePrompt + `
+For the Safety Analysis section:
+- Analyze all available safety data (clinical studies, PMS, literature, etc.)
+- Categorize adverse events by severity and frequency
+- Compare safety profile with state of the art and similar devices
+- Address any safety concerns identified during the evaluation
+- Include quantitative metrics where available (e.g., event rates)
+- Consider the impact of user error and potential misuse
+- Discuss the adequacy of risk mitigation measures
+- Evaluate safety in the context of the intended use
+- Include a summary of serious adverse events
+- Address any safety-related field actions or recalls`;
+      
+    case 'clinical-background':
+      return basePrompt + `
+For the Clinical Background section:
+- Describe the medical condition(s) addressed by the device
+- Outline current standard of care and treatment options
+- Explain where the device fits in the clinical pathway
+- Describe the clinical needs the device addresses
+- Present epidemiological data where relevant
+- Discuss limitations of existing approaches
+- Include relevant diagnostic or treatment guidelines
+- Define the intended patient population clearly
+- Address variability in clinical practice where relevant
+- Reference authoritative clinical guidelines and literature`;
+      
+    case 'device-description':
+      return basePrompt + `
+For the Device Description section:
+- Provide a detailed technical description of the device
+- Explain the device's intended purpose and claims
+- Describe the mechanism of action or principle of operation
+- List key components and features relevant to clinical performance
+- Include relevant specifications and parameters
+- Explain how the device is used in clinical practice
+- Address compatibility with other devices/accessories if relevant
+- Include relevant contraindications, warnings and precautions
+- Discuss any variations or models and their clinical implications
+- Focus on aspects relevant to clinical performance`;
+      
+    case 'state-of-art':
+      return basePrompt + `
+For the State of the Art Review section:
+- Define the current state of the art for the clinical condition
+- Review current treatment options and their limitations
+- Analyze similar devices on the market and their performance
+- Reference current clinical practice guidelines
+- Discuss emerging technologies and approaches
+- Evaluate the position of the device within the current landscape
+- Compare with benchmark devices or gold standard treatments
+- Include reference to relevant clinical society guidelines
+- Address any recent significant advances in the field
+- Support claims with current scientific literature`;
+      
+    case 'equivalence':
+      return basePrompt + `
+For the Equivalence Assessment section:
+- Apply the equivalence criteria (clinical, technical, biological)
+- Conduct a detailed comparison with the equivalent device(s)
+- Address all aspects required by MEDDEV 2.7/1 Rev 4
+- Highlight similarities and explain the impact of any differences
+- Present a clear rationale for equivalence determination
+- Consider the impact of different intended uses if applicable
+- Discuss manufacturing processes where relevant to clinical performance
+- Address any differences in clinical outcomes between devices
+- Include a conclusion on overall equivalence
+- Consider the regulatory history of the equivalent device`;
+      
+    case 'literature-analysis':
+      return basePrompt + `
+For the Literature Analysis section:
+- Present the literature search methodology
+- Include search terms, databases, and date ranges
+- Apply clear inclusion and exclusion criteria
+- Critically appraise each selected publication
+- Evaluate the quality and relevance of the evidence
+- Synthesize findings relevant to device safety and performance
+- Address conflicting evidence if present
+- Discuss limitations of the available literature
+- Follow PRISMA guidelines for systematic reviews
+- Provide a tabulated summary of key literature`;
+      
+    case 'pms-data':
+      return basePrompt + `
+For the Post-Market Surveillance Data section:
+- Analyze available post-market data for the device
+- Include complaint analysis and trending
+- Review vigilance data and reported adverse events
+- Evaluate field safety corrective actions if applicable
+- Assess customer feedback and user experience data
+- Compare observed performance with expected performance
+- Identify any emerging safety or performance issues
+- Discuss the adequacy of the PMS plan and activities
+- Address how PMS findings impact the benefit-risk profile
+- Include sales data to contextualize adverse event rates`;
+      
+    case 'conclusion':
+      return basePrompt + `
+For the Conclusion section:
+- Provide a clear overall conclusion on device safety and performance
+- Summarize key findings from all evaluation sections
+- State whether clinical evidence supports the intended purpose
+- Address whether the benefit-risk profile remains favorable
+- Highlight any limitations of the clinical evaluation
+- Specify any conditions or restrictions for safe use
+- Identify any residual risks requiring further monitoring
+- Comment on the adequacy of available clinical data
+- Specify any gaps requiring additional clinical investigation
+- Include justification for the overall conclusions`;
+      
+    default:
+      return basePrompt + `
+For this ${getSectionName(sectionType)} section:
+- Provide comprehensive, evidence-based content
+- Structure the content with appropriate headings and subheadings
+- Include references to relevant literature and data
+- Ensure all claims are substantiated with evidence
+- Address both safety and performance aspects where relevant
+- Consider EU MDR requirements for this type of content
+- Focus on clinical relevance and patient outcomes
+- Maintain a neutral, scientific tone
+- Include quantitative data where applicable
+- Conclude with clear and justified statements`;
+  }
+}
+
 // We'll initialize these handlers dynamically
 
 // Initialize OpenAI client
@@ -377,34 +560,72 @@ router.post('/generate-section', async (req, res) => {
       return res.status(400).json({ error: 'Section type and context are required' });
     }
     
-    console.log(`Generating ${section} section with context length: ${context.length}`);
+    console.log(`Generating ${section} section with context length: ${context.length} for product: ${productName || 'unnamed device'}`);
     
-    // Sample section generation logic - in production this would use OpenAI or similar
-    let content = '';
-    
-    // Initialize with appropriate content based on section type
-    switch(section) {
-      case 'benefit-risk':
-        content = `# Benefit-Risk Analysis\n\nThis benefit-risk analysis evaluates the clinical benefits of ${productName || 'the device'} against its potential risks, based on available clinical data and post-market surveillance information.\n\nThe analysis demonstrates a favorable benefit-risk profile, with significant clinical benefits outweighing the identified risks. Key benefits include improved patient outcomes and reduced procedural complications, while risks are well-characterized and mitigated through appropriate control measures.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
-        break;
-        
-      case 'safety':
-        content = `# Safety Analysis\n\nThe safety profile of ${productName || 'the device'} has been thoroughly evaluated through clinical studies and post-market surveillance data.\n\nSerious adverse events are rare, occurring in less than 1% of cases. The most common adverse events include minor discomfort and temporary inflammation, which typically resolve without intervention.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
-        break;
-        
-      case 'clinical-background':
-        content = `# Clinical Background\n\nThis section provides the clinical context for the evaluation of ${productName || 'the device'}, including the medical condition it addresses, current standard of care, and unmet clinical needs.\n\nThe clinical literature demonstrates a clear need for innovative solutions in this therapeutic area, with current approaches showing limitations in efficacy and safety.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
-        break;
-        
-      default:
-        content = `# ${section.charAt(0).toUpperCase() + section.slice(1)}\n\nThis section provides key information about ${section} for ${productName || 'the device'}.\n\nAnalysis of available data shows favorable outcomes and supports the clinical performance and safety of the device.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OPENAI_API_KEY not configured, falling back to sample content');
+      
+      // Fallback to sample content if API key not configured
+      let content = '';
+      
+      // Initialize with appropriate fallback content based on section type
+      switch(section) {
+        case 'benefit-risk':
+          content = `# Benefit-Risk Analysis\n\nThis benefit-risk analysis evaluates the clinical benefits of ${productName || 'the device'} against its potential risks, based on available clinical data and post-market surveillance information.\n\nThe analysis demonstrates a favorable benefit-risk profile, with significant clinical benefits outweighing the identified risks. Key benefits include improved patient outcomes and reduced procedural complications, while risks are well-characterized and mitigated through appropriate control measures.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
+          break;
+          
+        case 'safety':
+          content = `# Safety Analysis\n\nThe safety profile of ${productName || 'the device'} has been thoroughly evaluated through clinical studies and post-market surveillance data.\n\nSerious adverse events are rare, occurring in less than 1% of cases. The most common adverse events include minor discomfort and temporary inflammation, which typically resolve without intervention.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
+          break;
+          
+        case 'clinical-background':
+          content = `# Clinical Background\n\nThis section provides the clinical context for the evaluation of ${productName || 'the device'}, including the medical condition it addresses, current standard of care, and unmet clinical needs.\n\nThe clinical literature demonstrates a clear need for innovative solutions in this therapeutic area, with current approaches showing limitations in efficacy and safety.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
+          break;
+          
+        default:
+          content = `# ${section.charAt(0).toUpperCase() + section.slice(1)}\n\nThis section provides key information about ${section} for ${productName || 'the device'}.\n\nAnalysis of available data shows favorable outcomes and supports the clinical performance and safety of the device.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
+      }
+      
+      // Return the sample content with warning
+      return res.json({
+        section,
+        content,
+        generatedAt: new Date().toISOString(),
+        warning: 'Generated using sample data. Configure OPENAI_API_KEY for AI-powered content.'
+      });
     }
     
-    // Return the generated content
+    // Generate section with OpenAI
+    const systemPrompt = getSectionSystemPrompt(section, productName);
+    
+    // Prepare user message with context
+    const userMessage = `I need to generate the ${getSectionName(section)} section for a Clinical Evaluation Report for ${productName || 'a medical device'}. 
+    
+Here is the context information to use:
+
+${context}
+
+Please generate a comprehensive, well-structured ${getSectionName(section)} section that follows EU MDR requirements and MEDDEV 2.7/1 Rev 4 guidelines. The content should be detailed, evidence-based, and clinically precise.`;
+
+    // Call OpenAI API
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userMessage }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000
+    });
+    
+    const content = response.choices[0].message.content;
+    
+    // Return the AI-generated content
     res.json({
       section,
       content,
-      generatedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString(),
+      model: "gpt-4o"
     });
   } catch (error) {
     console.error('Error generating section:', error);
