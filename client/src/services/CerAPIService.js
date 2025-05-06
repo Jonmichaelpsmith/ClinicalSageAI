@@ -9,12 +9,15 @@
  * and regulatory compliance analysis based on EU MDR, ISO 14155, and FDA guidelines.
  */
 
+// Create a single export object for consistent API access
+const cerApiService = {};
+
 /**
  * Fetch FAERS data for a given product
  * @param {string} productName - The name of the product to fetch FAERS data for
  * @returns {Promise<Object>} - The FAERS data for the product
  */
-export const fetchFaersData = async (productName) => {
+cerApiService.fetchFaersData = async (productName) => {
   try {
     const response = await fetch(`/api/cer/fetch-faers?product=${encodeURIComponent(productName)}`);
     
@@ -37,7 +40,7 @@ export const fetchFaersData = async (productName) => {
  * @param {string} params.context - The context for the section
  * @returns {Promise<Object>} - The generated section
  */
-export const generateSection = async ({ sectionType, context }) => {
+cerApiService.generateSection = async ({ sectionType, context }) => {
   try {
     const response = await fetch('/api/cer/generate-section', {
       method: 'POST',
@@ -67,7 +70,7 @@ export const generateSection = async ({ sectionType, context }) => {
  * @param {Object} cerData - The CER data to export
  * @returns {Promise<Blob>} - The PDF file as a Blob
  */
-export const exportToPDF = async (cerData) => {
+cerApiService.exportToPDF = async (cerData) => {
   try {
     const response = await fetch('/api/cer/export-pdf', {
       method: 'POST',
@@ -94,7 +97,7 @@ export const exportToPDF = async (cerData) => {
  * @param {Object} cerData - The CER data to export
  * @returns {Promise<Blob>} - The Word document as a Blob
  */
-export const exportToWord = async (cerData) => {
+cerApiService.exportToWord = async (cerData) => {
   try {
     const response = await fetch('/api/cer/export-docx', {
       method: 'POST',
@@ -121,7 +124,7 @@ export const exportToWord = async (cerData) => {
  * @param {Blob} blob - The Blob to download
  * @param {string} filename - The name to give the downloaded file
  */
-export const downloadBlob = (blob, filename) => {
+cerApiService.downloadBlob = (blob, filename) => {
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -140,7 +143,7 @@ export const downloadBlob = (blob, filename) => {
  * @param {Array} params.standards - Optional array of regulatory standards to check against (defaults to EU MDR, ISO 14155, FDA)
  * @returns {Promise<Object>} - The compliance score results
  */
-export const getComplianceScore = async ({ sections, title, standards = ['EU MDR', 'ISO 14155', 'FDA'] }) => {
+cerApiService.getComplianceScore = async ({ sections, title, standards = ['EU MDR', 'ISO 14155', 'FDA'] }) => {
   try {
     const response = await fetch('/api/cer/compliance-score', {
       method: 'POST',
@@ -171,7 +174,7 @@ export const getComplianceScore = async ({ sections, title, standards = ['EU MDR
  * @param {Object} data - The compliance score data to include in the report
  * @returns {Promise<Blob>} - The PDF report as a Blob
  */
-export const exportCompliancePDF = async (data) => {
+cerApiService.exportCompliancePDF = async (data) => {
   try {
     const response = await fetch('/api/cer/export-compliance', {
       method: 'POST',
@@ -206,7 +209,7 @@ export const exportCompliancePDF = async (data) => {
  * @param {Object} params.fdaData - Optional FAERS data
  * @returns {Promise<Object>} - The fully generated CER with all required sections
  */
-export const generateFullCER = async ({ 
+cerApiService.generateFullCER = async ({ 
   deviceInfo = {}, 
   templateId = 'eu-mdr',
   literature = [],
@@ -261,7 +264,7 @@ export const generateFullCER = async ({
  * @param {string} params.standard - The regulatory standard to optimize for
  * @returns {Promise<Object>} - The improved section content
  */
-export const getComplianceImprovements = async ({ section, complianceData, standard }) => {
+cerApiService.getComplianceImprovements = async ({ section, complianceData, standard }) => {
   try {
     const response = await fetch('/api/cer/improve-compliance', {
       method: 'POST',
@@ -293,7 +296,7 @@ export const getComplianceImprovements = async ({ section, complianceData, stand
  * @param {Object} context - Optional context about the current CER
  * @returns {Promise<Object>} - The AI assistant response
  */
-export const getCerAssistantResponse = async (query, context = {}) => {
+cerApiService.getAssistantResponse = async (query, context = {}) => {
   try {
     const response = await fetch('/api/cer/assistant', {
       method: 'POST',
@@ -313,7 +316,10 @@ export const getCerAssistantResponse = async (query, context = {}) => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error in getCerAssistantResponse:', error);
+    console.error('Error in getAssistantResponse:', error);
     throw error;
   }
 };
+
+// Export the service object for use in other components
+export { cerApiService };
