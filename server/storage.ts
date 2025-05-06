@@ -8,7 +8,7 @@ import { createContextLogger } from './utils/logger';
 import { pool, query, transaction, db } from './db';
 import { eq, desc, and, or, like, isNull, not } from 'drizzle-orm';
 import * as schema from '../shared/schema';
-import { generateRandomId } from './utils/id-generator';
+import { generateUuid } from './utils/id-generator';
 
 const logger = createContextLogger({ module: 'storage' });
 
@@ -163,37 +163,154 @@ export class MemStorage implements IStorage {
   }
   
   // Document methods
-  async getDocument(id: number): Promise<any | undefined> {
-    return this.documents.find(d => d.id === id);
+  async getDocument(id: string): Promise<schema.Document | undefined> {
+    return this.documents.find(d => d.id === id) as schema.Document | undefined;
   }
   
-  async getDocuments(options: { limit?: number; offset?: number; } = {}): Promise<any[]> {
-    const { limit = 10, offset = 0 } = options;
-    return this.documents.slice(offset, offset + limit);
+  async getDocumentByName(name: string): Promise<schema.Document | undefined> {
+    return this.documents.find(d => d.name === name) as schema.Document | undefined;
   }
   
-  async createDocument(document: any): Promise<any> {
-    const id = this.documents.length > 0 
-      ? Math.max(...this.documents.map(d => d.id)) + 1 
-      : 1;
+  async getDocuments(options: { 
+    limit?: number; 
+    offset?: number;
+    folderId?: string;
+    status?: string;
+    type?: string;
+    search?: string;
+  } = {}): Promise<schema.Document[]> {
+    const { limit = 20, offset = 0, folderId, status, type, search } = options;
     
-    const newDocument = { id, ...document };
+    // Filter documents based on provided criteria
+    let result = this.documents as schema.Document[];
+    
+    if (folderId) {
+      result = result.filter(d => d.folderId === folderId);
+    }
+    
+    if (status) {
+      result = result.filter(d => d.status === status);
+    }
+    
+    if (type) {
+      result = result.filter(d => d.type === type);
+    }
+    
+    if (search) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(d => 
+        d.name.toLowerCase().includes(searchLower) || 
+        (d.description && d.description.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    // Sort by modified date (descending)
+    result = result.sort((a, b) => {
+      const dateA = a.modifiedAt ? new Date(a.modifiedAt).getTime() : 0;
+      const dateB = b.modifiedAt ? new Date(b.modifiedAt).getTime() : 0;
+      return dateB - dateA;
+    });
+    
+    return result.slice(offset, offset + limit);
+  }
+  
+  async createDocument(document: schema.InsertDocument): Promise<schema.Document> {
+    // Generate UUID for document
+    const id = generateUuid();
+    
+    // Set timestamps if not provided
+    const now = new Date();
+    const newDocument = { 
+      ...document,
+      id,
+      createdAt: document.createdAt || now,
+      modifiedAt: document.modifiedAt || now,
+      isLatest: true,
+    } as schema.Document;
+    
     this.documents.push(newDocument);
     return newDocument;
   }
   
-  async updateDocument(id: number, documentData: any): Promise<any | undefined> {
+  async updateDocument(id: string, documentData: Partial<schema.InsertDocument>): Promise<schema.Document | undefined> {
     const index = this.documents.findIndex(d => d.id === id);
     if (index === -1) return undefined;
     
-    this.documents[index] = { ...this.documents[index], ...documentData };
-    return this.documents[index];
+    // Update modified timestamp
+    const now = new Date();
+    this.documents[index] = { 
+      ...this.documents[index], 
+      ...documentData,
+      modifiedAt: now
+    };
+    
+    return this.documents[index] as schema.Document;
   }
   
-  async deleteDocument(id: number): Promise<boolean> {
+  async deleteDocument(id: string): Promise<boolean> {
     const initialLength = this.documents.length;
     this.documents = this.documents.filter(d => d.id !== id);
     return initialLength > this.documents.length;
+  }
+  
+  // Document folder methods
+  private folders: schema.DocumentFolder[] = [];
+  
+  async getFolder(id: string): Promise<schema.DocumentFolder | undefined> {
+    return this.folders.find(f => f.id === id);
+  }
+  
+  async getFolders(options: { parentId?: string | null } = {}): Promise<schema.DocumentFolder[]> {
+    // If parentId is explicitly null, return root folders
+    if (options.parentId === null) {
+      return this.folders.filter(f => f.parentId === null);
+    }
+    
+    // If parentId is specified, return child folders
+    if (options.parentId) {
+      return this.folders.filter(f => f.parentId === options.parentId);
+    }
+    
+    // Return all folders if no filter specified
+    return this.folders;
+  }
+  
+  async createFolder(folderData: schema.InsertDocumentFolder): Promise<schema.DocumentFolder> {
+    // Generate UUID for folder
+    const id = generateUuid();
+    
+    // Set timestamps if not provided
+    const now = new Date();
+    const newFolder = { 
+      ...folderData,
+      id,
+      createdAt: folderData.createdAt || now,
+      updatedAt: folderData.updatedAt || now
+    } as schema.DocumentFolder;
+    
+    this.folders.push(newFolder);
+    return newFolder;
+  }
+  
+  async updateFolder(id: string, folderData: Partial<schema.InsertDocumentFolder>): Promise<schema.DocumentFolder | undefined> {
+    const index = this.folders.findIndex(f => f.id === id);
+    if (index === -1) return undefined;
+    
+    // Update timestamp
+    const now = new Date();
+    this.folders[index] = { 
+      ...this.folders[index], 
+      ...folderData,
+      updatedAt: now
+    };
+    
+    return this.folders[index];
+  }
+  
+  async deleteFolder(id: string): Promise<boolean> {
+    const initialLength = this.folders.length;
+    this.folders = this.folders.filter(f => f.id !== id);
+    return initialLength > this.folders.length;
   }
   
   // Health check
