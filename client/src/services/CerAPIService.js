@@ -322,6 +322,44 @@ cerApiService.getAssistantResponse = async (query, context = {}) => {
 };
 
 /**
+ * Ask the CER AI Assistant a question and get a contextual response
+ * This specialized assistant understands regulatory requirements and can explain CER decisions
+ * @param {Object} params - Parameters for the assistant
+ * @param {string} params.question - The user's question about CER or regulatory requirements
+ * @param {Object} params.context - Optional context including sections, FAERS data, and selected section
+ * @returns {Promise<Object>} - The AI assistant response with answer and relevant references
+ */
+cerApiService.askCerAssistant = async ({ question, context = {} }) => {
+  try {
+    const response = await fetch('/api/cer/assistant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        question,
+        context: {
+          sections: context.sections || [],
+          faers: context.faers || [],
+          selectedSection: context.selectedSection || null,
+          title: context.title || 'Clinical Evaluation Report'
+        }
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error getting CER assistant response: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in askCerAssistant:', error);
+    throw error;
+  }
+};
+
+/**
  * Generate a section for the CER
  * @param {Object} params - Parameters for generating the section
  * @param {string} params.section - The type of section to generate
