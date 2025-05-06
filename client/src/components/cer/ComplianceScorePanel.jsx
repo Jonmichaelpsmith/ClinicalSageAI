@@ -20,13 +20,23 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Info, CheckCircle, AlertCircle, RefreshCw, FileText } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { Info, CheckCircle, AlertCircle, RefreshCw, FileText, Sparkles, Zap, XCircle, Plus } from 'lucide-react';
 
 export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
   const [complianceData, setComplianceData] = useState(null);
+  const [improvingSection, setImprovingSection] = useState(null);
+  const [selectedStandard, setSelectedStandard] = useState(null);
+  const [isImproving, setIsImproving] = useState(false);
+  const [improvedContent, setImprovedContent] = useState('');
+  const { toast } = useToast();
   
   // Update parent component with compliance data if callback provided
   useEffect(() => {
@@ -40,9 +50,11 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
     }
   }, [complianceData, onComplianceChange, onStatusChange]);
   
-  // Function to run compliance analysis
-  const runComplianceAnalysis = async () => {
-    if (!sections || sections.length === 0) {
+  // Function to run compliance analysis with optional custom sections
+  const runComplianceAnalysis = async (customSections = null) => {
+    const sectionsToAnalyze = customSections || sections;
+    
+    if (!sectionsToAnalyze || sectionsToAnalyze.length === 0) {
       setError('Please add sections to your report before running compliance analysis');
       return;
     }
@@ -52,7 +64,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
       setError(null);
       
       const response = await cerApiService.getComplianceScore({
-        sections,
+        sections: sectionsToAnalyze,
         title,
         standards: ['EU MDR', 'ISO 14155', 'FDA']
       });
@@ -295,6 +307,18 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
                                     <li>Enhance content with specific references to {framework} standards</li>
                                     <li>Include more quantitative data and analysis</li>
                                   </ul>
+                                  
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setImprovingSection(matchingSection);
+                                      setSelectedStandard(framework);
+                                    }}
+                                    className="mt-2 h-8 bg-[#0F6CBD] hover:bg-[#115EA3] text-white text-xs"
+                                  >
+                                    <Sparkles className="h-3 w-3 mr-1.5" />
+                                    <span>AI-Improve Section</span>
+                                  </Button>
                                 </div>
                               )}
                             </div>
@@ -309,6 +333,170 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
           </div>
         )}
       </div>
+      
+      {/* AI-Powered Improvement Dialog */}
+      {improvingSection && (
+        <Dialog open={!!improvingSection} onOpenChange={(open) => {
+          if (!open) {
+            setImprovingSection(null);
+            setSelectedStandard(null);
+            setImprovedContent('');
+          }
+        }}>
+          <DialogContent className="sm:max-w-[700px]">
+            <DialogHeader>
+              <DialogTitle className="text-[#323130] flex items-center">
+                <Sparkles className="h-4 w-4 mr-2 text-[#0F6CBD]" />
+                AI-Powered Compliance Improvement
+              </DialogTitle>
+              <DialogDescription className="text-[#616161]">
+                Automatically enhance the "{improvingSection?.title}" section to increase {selectedStandard} compliance.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              {!improvedContent ? (
+                <div className="p-4 bg-[#E5F2FF] border border-[#0F6CBD] rounded">
+                  <h4 className="text-sm font-medium text-[#323130] mb-2">How AI Improvement Works</h4>
+                  <p className="text-xs text-[#616161] mb-3">
+                    Our AI will analyze your current content against {selectedStandard} requirements and suggest improvements to:
+                  </p>
+                  <ul className="list-disc list-inside text-xs text-[#616161] space-y-1.5 mb-3">
+                    <li>Add missing regulatory references</li>
+                    <li>Enhance compliance with {selectedStandard} guidelines</li> 
+                    <li>Improve structure and completeness</li>
+                    <li>Maintain your original content while enhancing regulatory aspects</li>
+                  </ul>
+                  
+                  <Button
+                    onClick={async () => {
+                      try {
+                        setIsImproving(true);
+                        const result = await cerApiService.getComplianceImprovements({
+                          section: improvingSection,
+                          complianceData: complianceData?.standards?.[selectedStandard]?.sectionScores || {},
+                          standard: selectedStandard
+                        });
+                        setImprovedContent(result.improvedContent || result.content);
+                        
+                        toast({
+                          title: "Improvement Generated",
+                          description: "Review the AI-suggested improvements and apply them if satisfied.",
+                          variant: "success"
+                        });
+                      } catch (error) {
+                        console.error('Error improving content:', error);
+                        toast({
+                          title: "Improvement Failed",
+                          description: error.message || "Failed to generate improvements",
+                          variant: "destructive"
+                        });
+                      } finally {
+                        setIsImproving(false);
+                      }
+                    }}
+                    className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white text-sm w-full"
+                    disabled={isImproving}
+                  >
+                    {isImproving ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Generating Improvements...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-4 w-4 mr-2" />
+                        Generate Compliant Version
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="improved-content" className="text-[#323130] flex items-center">
+                      <CheckCircle className="h-3.5 w-3.5 text-[#107C10] mr-1.5" />
+                      AI-Enhanced Content
+                    </Label>
+                    <Textarea
+                      id="improved-content"
+                      value={improvedContent}
+                      onChange={(e) => setImprovedContent(e.target.value)}
+                      className="h-48 text-sm border-[#E1DFDD] focus:border-[#0F6CBD] focus:ring-[#0F6CBD]"
+                    />
+                    <p className="text-xs text-[#616161]">
+                      You can further edit the content before applying it to your report.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2 p-3 border border-[#E1DFDD] rounded bg-[#FAF9F8]">
+                    <h5 className="text-xs font-medium text-[#323130] mb-1">Compliance Improvements</h5>
+                    <ul className="list-disc list-inside text-xs text-[#616161] space-y-1">
+                      <li>Added specific {selectedStandard} regulatory references</li>
+                      <li>Enhanced compliance language</li>
+                      <li>Structured content according to regulatory guidelines</li>
+                      <li>Added necessary technical detail and precision</li>
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
+            
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setImprovingSection(null);
+                  setSelectedStandard(null);
+                  setImprovedContent('');
+                }}
+                className="border-[#E1DFDD] text-[#616161]"
+              >
+                <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                Cancel
+              </Button>
+              
+              {improvedContent && (
+                <Button
+                  onClick={() => {
+                    // Find and update the target section with improved content
+                    const updatedSections = sections.map(section => {
+                      if (section.id === improvingSection.id) {
+                        return {
+                          ...section,
+                          content: improvedContent,
+                        };
+                      }
+                      return section;
+                    });
+                    
+                    // Update sections through callback
+                    if (onComplianceChange) {
+                      // Re-run compliance check with updated content
+                      runComplianceAnalysis(updatedSections);
+                    }
+                    
+                    toast({
+                      title: "Section Updated",
+                      description: `"${improvingSection.title}" has been updated with improved content.`,
+                      variant: "success"
+                    });
+                    
+                    // Close dialog
+                    setImprovingSection(null);
+                    setSelectedStandard(null);
+                    setImprovedContent('');
+                  }}
+                  className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  Apply Improvements
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

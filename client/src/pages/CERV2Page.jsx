@@ -3,95 +3,85 @@ import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
 import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
 import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
+import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
+  const [deviceName, setDeviceName] = useState('');
+  const [manufacturer, setManufacturer] = useState('');
+  const [intendedUse, setIntendedUse] = useState('');
   const [faers, setFaers] = useState([]);
   const [comparators, setComparators] = useState([]);
   const [sections, setSections] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [activeTab, setActiveTab] = useState('builder');
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
   const [isComplianceRunning, setIsComplianceRunning] = useState(false);
+  const [isGeneratingFullCER, setIsGeneratingFullCER] = useState(false);
+  const [showDeviceInfoDialog, setShowDeviceInfoDialog] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('eu-mdr');
   const { toast } = useToast();
 
-  // Load FAERS data when title changes
-  useEffect(() => {
-    const loadFaersData = async () => {
-      if (!title || title === 'Clinical Evaluation Report') return;
-      
-      try {
-        setIsLoading(true);
-        const data = await cerApiService.fetchFaersData(title);
-        if (data) {
-          setFaers(data.reports || []);
-          setComparators(data.comparators || []);
-        }
-      } catch (error) {
-        console.error('Failed to load FAERS data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Debounce the FAERS data loading
-    const timer = setTimeout(() => {
-      loadFaersData();
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [title]);
-
-  // Run compliance check
-  const runComplianceCheck = async () => {
-    if (sections.length === 0) {
-      toast({
-        title: "No sections to analyze", 
-        description: "Please add at least one section to your report.",
-        variant: "destructive"
-      });
-      return;
-    }
+  // Load FAERS data when device name changes
+  const loadFaersData = async (device = deviceName) => {
+    if (!device || device.trim() === '') return;
     
     try {
-      setIsComplianceRunning(true);
-      const result = await cerApiService.getComplianceScore({
-        sections,
-        title,
-        standards: ['EU MDR', 'ISO 14155', 'FDA']
-      });
+      setIsFetchingFaers(true);
+      setFaers([]);
+      setComparators([]);
       
-      setCompliance(result);
+      const data = await cerApiService.fetchFaersData(device);
       
-      if (result.overallScore >= 0.8) {
-        setDraftStatus('ready-for-review');
+      if (data) {
+        setFaers(data.reports || []);
+        setComparators(data.comparators || []);
+        
+        toast({
+          title: 'FAERS Data Retrieved',
+          description: `Found ${data.reports?.length || 0} adverse event reports and ${data.comparators?.length || 0} comparator products.`,
+          variant: 'success'
+        });
       }
-      
-      toast({
-        title: "Compliance check complete",
-        description: `Overall score: ${Math.round(result.overallScore * 100)}%`,
-        variant: result.overallScore >= 0.8 ? "success" : "warning"
-      });
     } catch (error) {
-      console.error('Compliance check failed:', error);
+      console.error('Failed to load FAERS data:', error);
       toast({
-        title: "Compliance check failed",
-        description: error.message || "An error occurred during analysis",
-        variant: "destructive"
+        title: 'FAERS Data Error',
+        description: error.message || 'Could not retrieve FDA adverse event data',
+        variant: 'destructive'
       });
     } finally {
-      setIsComplianceRunning(false);
+      setIsFetchingFaers(false);
     }
   };
+  
+  // Auto-load FAERS data when device name changes
+  useEffect(() => {
+    if (deviceName && deviceName.trim() !== '') {
+      // Debounce the FAERS data loading
+      const timer = setTimeout(() => {
+        loadFaersData(deviceName);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [deviceName]);
+
+  // Removed duplicate runComplianceCheck function
 
   // Handle export
   const handleExport = async (format) => {
@@ -152,15 +142,129 @@ export default function CERV2Page() {
     }
   };
 
+  // Generate a full CER using the "Zero-Click Report" feature
+  const generateFullCER = async () => {
+    if (!deviceName.trim()) {
+      setShowDeviceInfoDialog(true);
+      return;
+    }
+    
+    try {
+      setIsGeneratingFullCER(true);
+      
+      const deviceInfo = {
+        name: deviceName,
+        type: deviceType,
+        manufacturer: manufacturer || 'Not specified',
+        intendedUse: intendedUse || 'Not specified'
+      };
+      
+      const result = await cerApiService.generateFullCER({
+        deviceInfo,
+        templateId: selectedTemplate,
+        fdaData: faers.length > 0 ? { reports: faers, comparators } : null
+      });
+      
+      // Update sections with generated content
+      if (result && result.sections) {
+        setSections(result.sections);
+        setTitle(`${deviceName} Clinical Evaluation Report`);
+        
+        // Auto-run compliance check on the generated report
+        await runComplianceCheck(result.sections);
+        
+        toast({
+          title: 'CER Generation Complete',
+          description: `Generated ${result.sections.length} sections following ${selectedTemplate.toUpperCase()} requirements.`,
+          variant: 'success'
+        });
+        
+        // Switch to preview tab
+        setActiveTab('preview');
+      }
+    } catch (error) {
+      console.error('Zero-click CER generation failed:', error);
+      toast({
+        title: 'Generation Failed',
+        description: error.message || 'An error occurred while generating the CER',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsGeneratingFullCER(false);
+    }
+  };
+  
+  // Run compliance check with specified sections or current sections
+  const runComplianceCheck = async (sectionsToCheck = sections) => {
+    if (sectionsToCheck.length === 0) {
+      toast({
+        title: "No sections to analyze", 
+        description: "Please add at least one section to your report.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      setIsComplianceRunning(true);
+      const result = await cerApiService.getComplianceScore({
+        sections: sectionsToCheck,
+        title,
+        standards: ['EU MDR', 'ISO 14155', 'FDA']
+      });
+      
+      setCompliance(result);
+      
+      if (result.overallScore >= 0.8) {
+        setDraftStatus('ready-for-review');
+      }
+      
+      toast({
+        title: "Compliance check complete",
+        description: `Overall score: ${Math.round(result.overallScore * 100)}%`,
+        variant: result.overallScore >= 0.8 ? "success" : "warning"
+      });
+    } catch (error) {
+      console.error('Compliance check failed:', error);
+      toast({
+        title: "Compliance check failed",
+        description: error.message || "An error occurred during analysis",
+        variant: "destructive"
+      });
+    } finally {
+      setIsComplianceRunning(false);
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen">
       {/* MS365-inspired header */}
       <div className="border-b border-[#E1DFDD] px-4 py-3 flex justify-between items-center bg-white sticky top-0 z-10">
         <div className="flex items-center">
           <FileText className="h-5 w-5 text-[#0F6CBD] mr-2" />
-          <h1 className="text-lg font-semibold text-[#323130]">Clinical Evaluation Report</h1>
+          <h1 className="text-lg font-semibold text-[#323130]">{title}</h1>
         </div>
         <div className="flex items-center gap-2">
+          {/* Zero-click generation button */}
+          <Button 
+            onClick={() => setShowDeviceInfoDialog(true)}
+            className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white h-8 mr-2"
+            size="sm"
+            disabled={isGeneratingFullCER}
+          >
+            {isGeneratingFullCER ? (
+              <>
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <ZapIcon className="h-3.5 w-3.5 mr-1.5" />
+                <span>Zero-Click Report</span>
+              </>
+            )}
+          </Button>
+          
           {/* MS365-style status badges */}
           <Badge variant="outline" className={`px-2 py-1 text-xs font-normal border rounded-sm ${getDraftStatusColor()}`}>
             {getDraftStatusIcon()}
@@ -173,13 +277,20 @@ export default function CERV2Page() {
               <span>Compliance: {Math.round(compliance.overallScore * 100)}%</span>
             </Badge>
           )}
+          
+          {isFetchingFaers && (
+            <Badge variant="outline" className="px-2 py-1 text-xs font-normal border rounded-sm bg-[#E5F2FF] text-[#0F6CBD] border-[#0F6CBD]">
+              <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+              <span>Fetching FAERS...</span>
+            </Badge>
+          )}
         </div>
       </div>
       
       {/* MS365-inspired main container */}
       <div className="container mx-auto p-4 bg-[#FAF9F8]">
         {/* MS365-style tabs */}
-        <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab}>
+        <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
           <TabsList className="flex bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full">
             <TabsTrigger 
               value="builder" 
@@ -203,10 +314,17 @@ export default function CERV2Page() {
               Compliance
             </TabsTrigger>
             <TabsTrigger 
+              value="assistant" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Assistant
+            </TabsTrigger>
+            <TabsTrigger 
               value="preview" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <FileText className="h-4 w-4 mr-2" />
+              <BarChart className="h-4 w-4 mr-2" />
               Preview
             </TabsTrigger>
             <TabsTrigger 
@@ -251,6 +369,14 @@ export default function CERV2Page() {
               title={title}
               onComplianceChange={setCompliance}
               onStatusChange={setDraftStatus}
+            />
+          </TabsContent>
+          
+          <TabsContent value="assistant" className="mt-0">
+            <CerAssistantPanel
+              sections={sections}
+              title={title}
+              faers={faers}
             />
           </TabsContent>
 
@@ -321,6 +447,127 @@ export default function CERV2Page() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Device Info Dialog for Zero-Click Report Generation */}
+      <Dialog open={showDeviceInfoDialog} onOpenChange={setShowDeviceInfoDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-[#323130]">Zero-Click CER Generation</DialogTitle>
+            <DialogDescription className="text-[#616161]">
+              Enter your medical device information to generate a complete CER with regulatory compliance built-in.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="device-name" className="text-[#323130]">
+                Device Name <span className="text-[#D83B01]">*</span>
+              </Label>
+              <Input
+                id="device-name"
+                value={deviceName}
+                onChange={(e) => setDeviceName(e.target.value)}
+                placeholder="e.g., Stentra LX"
+                className="border-[#E1DFDD]"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="device-type" className="text-[#323130]">
+                Device Classification <span className="text-[#D83B01]">*</span>
+              </Label>
+              <Select value={deviceType} onValueChange={setDeviceType}>
+                <SelectTrigger id="device-type" className="border-[#E1DFDD]">
+                  <SelectValue placeholder="Select device classification" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Class I Medical Device">Class I Medical Device</SelectItem>
+                  <SelectItem value="Class II Medical Device">Class II Medical Device</SelectItem>
+                  <SelectItem value="Class III Medical Device">Class III Medical Device</SelectItem>
+                  <SelectItem value="IVD Device">IVD Device</SelectItem>
+                  <SelectItem value="Software as Medical Device">Software as Medical Device</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="manufacturer" className="text-[#323130]">
+                Manufacturer
+              </Label>
+              <Input
+                id="manufacturer"
+                value={manufacturer}
+                onChange={(e) => setManufacturer(e.target.value)}
+                placeholder="e.g., MedTech Innovations Inc."
+                className="border-[#E1DFDD]"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="intended-use" className="text-[#323130]">
+                Intended Use
+              </Label>
+              <Input
+                id="intended-use"
+                value={intendedUse}
+                onChange={(e) => setIntendedUse(e.target.value)}
+                placeholder="e.g., Cardiac monitoring and diagnostic use"
+                className="border-[#E1DFDD]"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="template" className="text-[#323130]">
+                Regulatory Template <span className="text-[#D83B01]">*</span>
+              </Label>
+              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                <SelectTrigger id="template" className="border-[#E1DFDD]">
+                  <SelectValue placeholder="Select regulatory template" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="eu-mdr">EU MDR (Annex XIV)</SelectItem>
+                  <SelectItem value="iso-14155">ISO 14155</SelectItem>
+                  <SelectItem value="fda-510k">FDA 510(k)</SelectItem>
+                  <SelectItem value="eu-ivdr">EU IVDR</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {deviceName && (
+              <div className="rounded-md p-2 bg-[#E5F2FF] border border-[#0F6CBD] text-xs text-[#323130]">
+                <p>FAERS data will be automatically retrieved for "{deviceName}" to include adverse event analysis.</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDeviceInfoDialog(false)}
+              className="border-[#E1DFDD] text-[#616161]"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowDeviceInfoDialog(false);
+                generateFullCER();
+              }}
+              disabled={!deviceName.trim() || !deviceType || isGeneratingFullCER}
+              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+            >
+              {isGeneratingFullCER ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>Generate Full CER</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
