@@ -83,6 +83,60 @@ export interface IStorage {
   updateFolder(id: string, folderData: Partial<schema.InsertDocumentFolder>): Promise<schema.DocumentFolder | undefined>;
   deleteFolder(id: string): Promise<boolean>;
   
+  // CER Report methods
+  getCerReport(id: string): Promise<schema.CerReport | undefined>;
+  getCerReports(options?: { 
+    limit?: number; 
+    offset?: number;
+    status?: string;
+    deviceName?: string;
+    search?: string;
+  }): Promise<schema.CerReport[]>;
+  createCerReport(cerReport: schema.InsertCerReport): Promise<schema.CerReport>;
+  updateCerReport(id: string, reportData: Partial<schema.InsertCerReport>): Promise<schema.CerReport | undefined>;
+  deleteCerReport(id: string): Promise<boolean>;
+  
+  // CER Section methods
+  getCerSection(id: string): Promise<schema.CerSection | undefined>;
+  getCerSections(reportId: string, options?: { orderBy?: string }): Promise<schema.CerSection[]>;
+  createCerSection(section: schema.InsertCerSection): Promise<schema.CerSection>;
+  updateCerSection(id: string, sectionData: Partial<schema.InsertCerSection>): Promise<schema.CerSection | undefined>;
+  deleteCerSection(id: string): Promise<boolean>;
+
+  // CER FAERS Data methods
+  getCerFaersData(id: string): Promise<schema.CerFaersData | undefined>;
+  getCerFaersDataByReportId(reportId: string): Promise<schema.CerFaersData[]>;
+  createCerFaersData(faersData: schema.InsertCerFaersData): Promise<schema.CerFaersData>;
+  updateCerFaersData(id: string, faersData: Partial<schema.InsertCerFaersData>): Promise<schema.CerFaersData | undefined>;
+  
+  // CER Literature methods
+  getCerLiterature(id: string): Promise<schema.CerLiterature | undefined>;
+  getCerLiteratureByReportId(reportId: string, options?: { 
+    limit?: number; 
+    offset?: number;
+    relevanceThreshold?: number;
+    includedOnly?: boolean;
+  }): Promise<schema.CerLiterature[]>;
+  createCerLiterature(literature: schema.InsertCerLiterature): Promise<schema.CerLiterature>;
+  updateCerLiterature(id: string, literature: Partial<schema.InsertCerLiterature>): Promise<schema.CerLiterature | undefined>;
+  
+  // CER Compliance methods
+  getCerComplianceCheck(id: string): Promise<schema.CerComplianceCheck | undefined>;
+  getCerComplianceChecksByReportId(reportId: string): Promise<schema.CerComplianceCheck[]>;
+  createCerComplianceCheck(check: schema.InsertCerComplianceCheck): Promise<schema.CerComplianceCheck>;
+  updateCerComplianceCheck(id: string, check: Partial<schema.InsertCerComplianceCheck>): Promise<schema.CerComplianceCheck | undefined>;
+  
+  // CER Workflow methods
+  getCerWorkflow(id: string): Promise<schema.CerWorkflow | undefined>;
+  getCerWorkflowByReportId(reportId: string): Promise<schema.CerWorkflow | undefined>;
+  createCerWorkflow(workflow: schema.InsertCerWorkflow): Promise<schema.CerWorkflow>;
+  updateCerWorkflow(id: string, workflow: Partial<schema.InsertCerWorkflow>): Promise<schema.CerWorkflow | undefined>;
+  
+  // CER Export methods
+  getCerExport(id: string): Promise<schema.CerExport | undefined>;
+  getCerExportsByReportId(reportId: string): Promise<schema.CerExport[]>;
+  createCerExport(export_: schema.InsertCerExport): Promise<schema.CerExport>;
+  
   // Health check
   healthCheck(): Promise<boolean>;
 }
@@ -94,6 +148,14 @@ export class MemStorage implements IStorage {
   private users: User[] = [...mockUsers];
   private trials: any[] = [];
   private documents: any[] = [];
+  private folders: schema.DocumentFolder[] = [];
+  private cerReports: schema.CerReport[] = [];
+  private cerSections: schema.CerSection[] = [];
+  private cerFaersData: schema.CerFaersData[] = [];
+  private cerLiterature: schema.CerLiterature[] = [];
+  private cerComplianceChecks: schema.CerComplianceCheck[] = [];
+  private cerWorkflows: schema.CerWorkflow[] = [];
+  private cerExports: schema.CerExport[] = [];
   
   // User methods
   async getUser(id: number): Promise<User | undefined> {
@@ -254,8 +316,6 @@ export class MemStorage implements IStorage {
   }
   
   // Document folder methods
-  private folders: schema.DocumentFolder[] = [];
-  
   async getFolder(id: string): Promise<schema.DocumentFolder | undefined> {
     return this.folders.find(f => f.id === id);
   }
@@ -311,6 +371,381 @@ export class MemStorage implements IStorage {
     const initialLength = this.folders.length;
     this.folders = this.folders.filter(f => f.id !== id);
     return initialLength > this.folders.length;
+  }
+  
+  // CER Report methods
+  async getCerReport(id: string): Promise<schema.CerReport | undefined> {
+    return this.cerReports.find(r => r.id === id);
+  }
+  
+  async getCerReports(options: { 
+    limit?: number; 
+    offset?: number;
+    status?: string;
+    deviceName?: string;
+    search?: string;
+  } = {}): Promise<schema.CerReport[]> {
+    const { limit = 20, offset = 0, status, deviceName, search } = options;
+    
+    // Filter reports based on provided criteria
+    let result = [...this.cerReports];
+    
+    if (status) {
+      result = result.filter(r => r.status === status);
+    }
+    
+    if (deviceName) {
+      result = result.filter(r => r.deviceName.toLowerCase().includes(deviceName.toLowerCase()));
+    }
+    
+    if (search) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(r => 
+        r.title.toLowerCase().includes(searchLower) || 
+        r.deviceName.toLowerCase().includes(searchLower) ||
+        r.manufacturer.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Sort by updatedAt date (descending)
+    result = result.sort((a, b) => {
+      const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return dateB - dateA;
+    });
+    
+    return result.slice(offset, offset + limit);
+  }
+  
+  async createCerReport(cerReport: schema.InsertCerReport): Promise<schema.CerReport> {
+    // Generate UUID for report
+    const id = generateUUID();
+    
+    // Set timestamps if not provided
+    const now = new Date();
+    const newReport = { 
+      ...cerReport,
+      id,
+      createdAt: cerReport.createdAt || now,
+      updatedAt: cerReport.updatedAt || now,
+    } as schema.CerReport;
+    
+    this.cerReports.push(newReport);
+    return newReport;
+  }
+  
+  async updateCerReport(id: string, reportData: Partial<schema.InsertCerReport>): Promise<schema.CerReport | undefined> {
+    const index = this.cerReports.findIndex(r => r.id === id);
+    if (index === -1) return undefined;
+    
+    // Update timestamp
+    const now = new Date();
+    this.cerReports[index] = { 
+      ...this.cerReports[index], 
+      ...reportData,
+      updatedAt: now
+    };
+    
+    return this.cerReports[index];
+  }
+  
+  async deleteCerReport(id: string): Promise<boolean> {
+    const initialLength = this.cerReports.length;
+    this.cerReports = this.cerReports.filter(r => r.id !== id);
+    return initialLength > this.cerReports.length;
+  }
+  
+  // CER Section methods
+  async getCerSection(id: string): Promise<schema.CerSection | undefined> {
+    return this.cerSections.find(s => s.id === id);
+  }
+  
+  async getCerSections(reportId: string, options: { orderBy?: string } = {}): Promise<schema.CerSection[]> {
+    // Get sections for the specified report
+    let sections = this.cerSections.filter(s => s.reportId === reportId);
+    
+    // Sort by order if no other sort is specified
+    if (!options.orderBy || options.orderBy === 'order') {
+      sections = sections.sort((a, b) => a.order - b.order);
+    } else if (options.orderBy === 'title') {
+      sections = sections.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (options.orderBy === 'updatedAt') {
+      sections = sections.sort((a, b) => {
+        const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        return dateB - dateA;
+      });
+    }
+    
+    return sections;
+  }
+  
+  async createCerSection(section: schema.InsertCerSection): Promise<schema.CerSection> {
+    // Generate UUID for section
+    const id = generateUUID();
+    
+    // Set timestamps if not provided
+    const now = new Date();
+    const newSection = { 
+      ...section,
+      id,
+      createdAt: section.createdAt || now,
+      updatedAt: section.updatedAt || now,
+    } as schema.CerSection;
+    
+    this.cerSections.push(newSection);
+    return newSection;
+  }
+  
+  async updateCerSection(id: string, sectionData: Partial<schema.InsertCerSection>): Promise<schema.CerSection | undefined> {
+    const index = this.cerSections.findIndex(s => s.id === id);
+    if (index === -1) return undefined;
+    
+    // Update timestamp
+    const now = new Date();
+    this.cerSections[index] = { 
+      ...this.cerSections[index], 
+      ...sectionData,
+      updatedAt: now
+    };
+    
+    return this.cerSections[index];
+  }
+  
+  async deleteCerSection(id: string): Promise<boolean> {
+    const initialLength = this.cerSections.length;
+    this.cerSections = this.cerSections.filter(s => s.id !== id);
+    return initialLength > this.cerSections.length;
+  }
+  
+  // CER FAERS Data methods
+  async getCerFaersData(id: string): Promise<schema.CerFaersData | undefined> {
+    return this.cerFaersData.find(f => f.id === id);
+  }
+  
+  async getCerFaersDataByReportId(reportId: string): Promise<schema.CerFaersData[]> {
+    return this.cerFaersData.filter(f => f.reportId === reportId);
+  }
+  
+  async createCerFaersData(faersData: schema.InsertCerFaersData): Promise<schema.CerFaersData> {
+    // Generate UUID for FAERS data
+    const id = generateUUID();
+    
+    // Set timestamps if not provided
+    const now = new Date();
+    const newFaersData = { 
+      ...faersData,
+      id,
+      createdAt: faersData.createdAt || now,
+      updatedAt: faersData.updatedAt || now,
+    } as schema.CerFaersData;
+    
+    this.cerFaersData.push(newFaersData);
+    return newFaersData;
+  }
+  
+  async updateCerFaersData(id: string, faersData: Partial<schema.InsertCerFaersData>): Promise<schema.CerFaersData | undefined> {
+    const index = this.cerFaersData.findIndex(f => f.id === id);
+    if (index === -1) return undefined;
+    
+    // Update timestamp
+    const now = new Date();
+    this.cerFaersData[index] = { 
+      ...this.cerFaersData[index], 
+      ...faersData,
+      updatedAt: now
+    };
+    
+    return this.cerFaersData[index];
+  }
+  
+  // CER Literature methods
+  async getCerLiterature(id: string): Promise<schema.CerLiterature | undefined> {
+    return this.cerLiterature.find(l => l.id === id);
+  }
+  
+  async getCerLiteratureByReportId(reportId: string, options: { 
+    limit?: number; 
+    offset?: number;
+    relevanceThreshold?: number;
+    includedOnly?: boolean;
+  } = {}): Promise<schema.CerLiterature[]> {
+    const { 
+      limit = 50, 
+      offset = 0, 
+      relevanceThreshold = 0,
+      includedOnly = false 
+    } = options;
+    
+    // Filter literature entries
+    let result = this.cerLiterature.filter(l => l.reportId === reportId);
+    
+    if (relevanceThreshold > 0) {
+      result = result.filter(l => (l.relevanceScore || 0) >= relevanceThreshold);
+    }
+    
+    if (includedOnly) {
+      result = result.filter(l => l.includedInReport);
+    }
+    
+    // Sort by relevance score (descending)
+    result = result.sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0));
+    
+    return result.slice(offset, offset + limit);
+  }
+  
+  async createCerLiterature(literature: schema.InsertCerLiterature): Promise<schema.CerLiterature> {
+    // Generate UUID for literature
+    const id = generateUUID();
+    
+    // Set timestamps if not provided
+    const now = new Date();
+    const newLiterature = { 
+      ...literature,
+      id,
+      createdAt: literature.createdAt || now,
+      updatedAt: literature.updatedAt || now,
+    } as schema.CerLiterature;
+    
+    this.cerLiterature.push(newLiterature);
+    return newLiterature;
+  }
+  
+  async updateCerLiterature(id: string, literature: Partial<schema.InsertCerLiterature>): Promise<schema.CerLiterature | undefined> {
+    const index = this.cerLiterature.findIndex(l => l.id === id);
+    if (index === -1) return undefined;
+    
+    // Update timestamp
+    const now = new Date();
+    this.cerLiterature[index] = { 
+      ...this.cerLiterature[index], 
+      ...literature,
+      updatedAt: now
+    };
+    
+    return this.cerLiterature[index];
+  }
+  
+  // CER Compliance methods
+  async getCerComplianceCheck(id: string): Promise<schema.CerComplianceCheck | undefined> {
+    return this.cerComplianceChecks.find(c => c.id === id);
+  }
+  
+  async getCerComplianceChecksByReportId(reportId: string): Promise<schema.CerComplianceCheck[]> {
+    // Get compliance checks for the specified report, sorted by date (newest first)
+    return this.cerComplianceChecks
+      .filter(c => c.reportId === reportId)
+      .sort((a, b) => {
+        const dateA = a.checkDate ? new Date(a.checkDate).getTime() : 0;
+        const dateB = b.checkDate ? new Date(b.checkDate).getTime() : 0;
+        return dateB - dateA;
+      });
+  }
+  
+  async createCerComplianceCheck(check: schema.InsertCerComplianceCheck): Promise<schema.CerComplianceCheck> {
+    // Generate UUID for compliance check
+    const id = generateUUID();
+    
+    // Set timestamps if not provided
+    const now = new Date();
+    const newCheck = { 
+      ...check,
+      id,
+      checkDate: check.checkDate || now,
+      createdAt: check.createdAt || now,
+      updatedAt: check.updatedAt || now,
+    } as schema.CerComplianceCheck;
+    
+    this.cerComplianceChecks.push(newCheck);
+    return newCheck;
+  }
+  
+  async updateCerComplianceCheck(id: string, check: Partial<schema.InsertCerComplianceCheck>): Promise<schema.CerComplianceCheck | undefined> {
+    const index = this.cerComplianceChecks.findIndex(c => c.id === id);
+    if (index === -1) return undefined;
+    
+    // Update timestamp
+    const now = new Date();
+    this.cerComplianceChecks[index] = { 
+      ...this.cerComplianceChecks[index], 
+      ...check,
+      updatedAt: now
+    };
+    
+    return this.cerComplianceChecks[index];
+  }
+  
+  // CER Workflow methods
+  async getCerWorkflow(id: string): Promise<schema.CerWorkflow | undefined> {
+    return this.cerWorkflows.find(w => w.id === id);
+  }
+  
+  async getCerWorkflowByReportId(reportId: string): Promise<schema.CerWorkflow | undefined> {
+    return this.cerWorkflows.find(w => w.reportId === reportId);
+  }
+  
+  async createCerWorkflow(workflow: schema.InsertCerWorkflow): Promise<schema.CerWorkflow> {
+    // Generate UUID for workflow
+    const id = generateUUID();
+    
+    // Set timestamps if not provided
+    const now = new Date();
+    const newWorkflow = { 
+      ...workflow,
+      id,
+      startedAt: workflow.startedAt || now,
+      lastUpdated: workflow.lastUpdated || now
+    } as schema.CerWorkflow;
+    
+    this.cerWorkflows.push(newWorkflow);
+    return newWorkflow;
+  }
+  
+  async updateCerWorkflow(id: string, workflow: Partial<schema.InsertCerWorkflow>): Promise<schema.CerWorkflow | undefined> {
+    const index = this.cerWorkflows.findIndex(w => w.id === id);
+    if (index === -1) return undefined;
+    
+    // Update timestamp
+    const now = new Date();
+    this.cerWorkflows[index] = { 
+      ...this.cerWorkflows[index], 
+      ...workflow,
+      lastUpdated: now
+    };
+    
+    return this.cerWorkflows[index];
+  }
+  
+  // CER Export methods
+  async getCerExport(id: string): Promise<schema.CerExport | undefined> {
+    return this.cerExports.find(e => e.id === id);
+  }
+  
+  async getCerExportsByReportId(reportId: string): Promise<schema.CerExport[]> {
+    // Get exports for the specified report, sorted by date (newest first)
+    return this.cerExports
+      .filter(e => e.reportId === reportId)
+      .sort((a, b) => {
+        const dateA = a.exportedAt ? new Date(a.exportedAt).getTime() : 0;
+        const dateB = b.exportedAt ? new Date(b.exportedAt).getTime() : 0;
+        return dateB - dateA;
+      });
+  }
+  
+  async createCerExport(export_: schema.InsertCerExport): Promise<schema.CerExport> {
+    // Generate UUID for export
+    const id = generateUUID();
+    
+    // Set export date if not provided
+    const now = new Date();
+    const newExport = { 
+      ...export_,
+      id,
+      exportedAt: export_.exportedAt || now
+    } as schema.CerExport;
+    
+    this.cerExports.push(newExport);
+    return newExport;
   }
   
   // Health check
