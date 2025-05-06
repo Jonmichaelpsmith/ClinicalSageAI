@@ -427,10 +427,13 @@ cerApiService.exportToWord = async (exportData, productName) => {
  * @param {Object} params.section - The section to improve
  * @param {string} params.standard - The regulatory standard to optimize for
  * @param {string} [params.cerTitle] - Optional CER title for context
- * @returns {Promise<Object>} - The improved section content
+ * @param {Object} [params.complianceData] - Optional compliance scores for the section
+ * @returns {Promise<Object>} - The improved section content including original and improved versions
  */
-cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle }) => {
+cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle, complianceData }) => {
   try {
+    console.log(`Improving section "${section.title}" for ${standard} compliance`);
+    
     const response = await fetch('/api/cer/improve-section', {
       method: 'POST',
       headers: {
@@ -439,6 +442,7 @@ cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle })
       body: JSON.stringify({
         section,
         standard,
+        complianceData,
         cerTitle: cerTitle || 'Clinical Evaluation Report'
       }),
     });
@@ -448,6 +452,7 @@ cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle })
     }
     
     const data = await response.json();
+    console.log('Received improved section:', data);
     return data;
   } catch (error) {
     console.error('Error in improveSectionCompliance:', error);

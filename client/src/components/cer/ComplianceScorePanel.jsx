@@ -137,7 +137,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
         cerTitle: title
       });
       
-      setImprovedContent(result.content);
+      setImprovedContent(result.improvedContent || result.content);
       
       toast({
         title: 'Section Improvement Complete',
