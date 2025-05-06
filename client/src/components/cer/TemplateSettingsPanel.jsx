@@ -12,65 +12,82 @@ import { Check, Edit, FileText, Layout, Settings } from 'lucide-react';
 
 export default function TemplateSettingsPanel() {
   const [currentTab, setCurrentTab] = useState('template-selection');
-  const [selectedTemplate, setSelectedTemplate] = useState('eu-mdr-default');
+  const [selectedTemplate, setSelectedTemplate] = useState('meddev-271-rev4');
   const [showJsonEditor, setShowJsonEditor] = useState(false);
   const [jsonConfig, setJsonConfig] = useState(JSON.stringify({
-    "template": "eu-mdr-default",
+    "template": "meddev-271-rev4",
     "sections": {
-      "deviceIdentification": true,
-      "regulatoryBackground": true,
-      "clinicalEvaluationProcedure": true,
-      "clinicalData": true,
+      "executiveSummary": true,
+      "revisionHistory": true,
+      "scopeOfEvaluation": true,
+      "productDescription": true,
+      "intendedUse": true,
+      "regulatoryHistory": true,
+      "clinicalBackground": true,
       "equivalenceAssessment": true,
-      "riskAnalysis": true,
-      "postMarketSurveillance": true,
       "literatureReview": true,
-      "clinicalEvaluationConclusions": true
+      "clinicalInvestigation": true,
+      "postMarketData": true,
+      "riskBenefitAnalysis": true,
+      "conclusions": true,
+      "qualificationsOfEvaluators": true,
+      "references": true,
+      "appendices": true
     },
     "styling": {
       "headerLogo": true,
       "footerPagination": true,
-      "colorScheme": "blue",
+      "colorScheme": "navy",
       "fontFamily": "Arial",
       "coverPage": true,
       "tableOfContents": true,
-      "executiveSummary": true
+      "confidentialWatermark": true
     },
     "customization": {
-      "companyName": "Concept2Cures MedTech",
-      "authorName": "Regulatory Affairs Team",
-      "documentNumber": "CER-2025-042",
-      "revisionDate": "2025-04-29",
-      "revisionNumber": "1.0",
-      "confidentialityStatement": "This document contains confidential information and is protected by copyright law. It may not be copied or distributed without prior written consent."
+      "companyName": "Arthrosurface, Inc.",
+      "authorName": "Regulatory Affairs Department",
+      "documentNumber": "AS-001, AS-001B, AS-001C, AS-001H, AS-001HA and AS-004",
+      "revisionDate": "2021-10-07",
+      "revisionNumber": "Rev C",
+      "confidentialityStatement": "CONFIDENTIAL"
     }
   }, null, 2));
 
   const [templateSettings, setTemplateSettings] = useState({
-    deviceIdentification: true,
-    regulatoryBackground: true,
-    clinicalEvaluationProcedure: true,
-    clinicalData: true,
+    // MEDDEV 2.7/1 Rev 4 section structure
+    executiveSummary: true,
+    revisionHistory: true,
+    scopeOfEvaluation: true,
+    productDescription: true,
+    intendedUse: true,
+    regulatoryHistory: true,
+    clinicalBackground: true,
     equivalenceAssessment: true,
-    riskAnalysis: true,
-    postMarketSurveillance: true,
     literatureReview: true,
-    clinicalEvaluationConclusions: true,
+    clinicalInvestigation: true,
+    postMarketData: true,
+    riskBenefitAnalysis: true,
+    conclusions: true,
+    qualificationsOfEvaluators: true,
+    references: true,
+    appendices: true,
     
+    // Styling options
     headerLogo: true,
     footerPagination: true,
-    colorScheme: 'blue',
+    colorScheme: 'navy',
     fontFamily: 'Arial',
     coverPage: true,
     tableOfContents: true,
-    executiveSummary: true,
+    confidentialWatermark: true,
     
-    companyName: 'Concept2Cures MedTech',
-    authorName: 'Regulatory Affairs Team',
-    documentNumber: 'CER-2025-042',
-    revisionDate: '2025-04-29',
-    revisionNumber: '1.0',
-    confidentialityStatement: 'This document contains confidential information and is protected by copyright law. It may not be copied or distributed without prior written consent.'
+    // Arthrosurface document information
+    companyName: 'Arthrosurface, Inc.',
+    authorName: 'Regulatory Affairs Department',
+    documentNumber: 'AS-001, AS-001B, AS-001C, AS-001H, AS-001HA and AS-004',
+    revisionDate: '2021-10-07',
+    revisionNumber: 'Rev C',
+    confidentialityStatement: 'CONFIDENTIAL'
   });
 
   const handleSettingChange = (key, value) => {
@@ -99,6 +116,37 @@ export default function TemplateSettingsPanel() {
 
     // In a real app, we would fetch the template config from the server
     const templateConfigs = {
+      'meddev-271-rev4': {
+        name: 'MEDDEV 2.7/1 Rev 4',
+        description: 'Exact match to the Arthrosurface Shoulder Arthroplasty Systems CER format',
+        sections: { 
+          executiveSummary: true,
+          revisionHistory: true,
+          scopeOfEvaluation: true,
+          productDescription: true,
+          intendedUse: true,
+          regulatoryHistory: true,
+          clinicalBackground: true,
+          equivalenceAssessment: true,
+          literatureReview: true,
+          clinicalInvestigation: true,
+          postMarketData: true,
+          riskBenefitAnalysis: true,
+          conclusions: true,
+          qualificationsOfEvaluators: true,
+          references: true,
+          appendices: true
+        },
+        styling: {
+          headerLogo: true,
+          footerPagination: true,
+          colorScheme: 'navy',
+          fontFamily: 'Arial',
+          coverPage: true,
+          tableOfContents: true,
+          confidentialWatermark: true
+        }
+      },
       'eu-mdr-default': {
         name: 'EU MDR Default',
         description: 'Standard template following EU MDR 2017/745 requirements',
@@ -242,6 +290,14 @@ export default function TemplateSettingsPanel() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
                     {
+                      id: 'meddev-271-rev4',
+                      name: 'MEDDEV 2.7/1 Rev 4',
+                      description: 'Exact match to the Arthrosurface Shoulder Arthroplasty Systems CER format',
+                      sections: '16 sections',
+                      lastUpdated: 'May 6, 2025',
+                      highlight: true
+                    },
+                    {
                       id: 'eu-mdr-default',
                       name: 'EU MDR Default',
                       description: 'Standard template following EU MDR 2017/745 requirements',
@@ -282,12 +338,21 @@ export default function TemplateSettingsPanel() {
                       className={`border rounded-lg p-4 cursor-pointer transition-all ${
                         selectedTemplate === template.id 
                           ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+                          : template.highlight 
+                            ? 'border-blue-300 bg-blue-50/40 shadow-md hover:shadow-lg' 
+                            : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
                       }`}
                       onClick={() => handleTemplateChange(template.id)}
                     >
                       <div className="flex justify-between items-start">
-                        <h4 className="font-medium">{template.name}</h4>
+                        <div>
+                          <h4 className="font-medium">{template.name}</h4>
+                          {template.highlight && (
+                            <div className="mt-1 inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">
+                              Exact Match Template
+                            </div>
+                          )}
+                        </div>
                         {selectedTemplate === template.id && (
                           <div className="bg-blue-500 text-white rounded-full p-1">
                             <Check className="h-3 w-3" />
@@ -312,15 +377,22 @@ export default function TemplateSettingsPanel() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
-                      { id: 'deviceIdentification', label: 'Device Identification & Description' },
-                      { id: 'regulatoryBackground', label: 'Regulatory Background' },
-                      { id: 'clinicalEvaluationProcedure', label: 'Clinical Evaluation Procedure' },
-                      { id: 'clinicalData', label: 'Clinical Data Analysis' },
+                      { id: 'executiveSummary', label: 'Executive Summary' },
+                      { id: 'revisionHistory', label: 'Revision History' },
+                      { id: 'scopeOfEvaluation', label: 'Scope of the Evaluation' },
+                      { id: 'productDescription', label: 'Product Description' },
+                      { id: 'intendedUse', label: 'Intended Use / Indications' },
+                      { id: 'regulatoryHistory', label: 'Regulatory History' },
+                      { id: 'clinicalBackground', label: 'Clinical Background' },
                       { id: 'equivalenceAssessment', label: 'Equivalence Assessment' },
-                      { id: 'riskAnalysis', label: 'Risk Analysis' },
-                      { id: 'postMarketSurveillance', label: 'Post-Market Surveillance' },
-                      { id: 'literatureReview', label: 'Literature Review' },
-                      { id: 'clinicalEvaluationConclusions', label: 'Clinical Evaluation Conclusions' }
+                      { id: 'literatureReview', label: 'Literature Review & Analysis' },
+                      { id: 'clinicalInvestigation', label: 'Clinical Investigation Data' },
+                      { id: 'postMarketData', label: 'Post-Market Data' },
+                      { id: 'riskBenefitAnalysis', label: 'Risk/Benefit Analysis' },
+                      { id: 'conclusions', label: 'Conclusions' },
+                      { id: 'qualificationsOfEvaluators', label: 'Qualifications of Evaluators' },
+                      { id: 'references', label: 'References' },
+                      { id: 'appendices', label: 'Appendices' }
                     ].map(section => (
                       <div key={section.id} className="flex items-center justify-between p-3 border rounded-md">
                         <Label htmlFor={section.id} className="cursor-pointer">{section.label}</Label>
@@ -379,6 +451,14 @@ export default function TemplateSettingsPanel() {
                             id="footerPagination"
                             checked={templateSettings.footerPagination}
                             onCheckedChange={(value) => handleSettingChange('footerPagination', value)}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="confidentialWatermark">Confidential Watermark</Label>
+                          <Switch 
+                            id="confidentialWatermark"
+                            checked={templateSettings.confidentialWatermark}
+                            onCheckedChange={(value) => handleSettingChange('confidentialWatermark', value)}
                           />
                         </div>
                       </div>
