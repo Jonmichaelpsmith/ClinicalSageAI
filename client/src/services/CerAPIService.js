@@ -348,22 +348,46 @@ cerApiService.getPreview = async ({ title, sections, faers, comparators }) => {
 };
 
 /**
- * Export the CER as a PDF
+ * Export the CER as a PDF following MEDDEV 2.7/1 Rev 4 format
  * @param {Object} exportData - The export data
  * @param {string} exportData.title - The title of the CER
  * @param {Array} exportData.sections - The sections of the CER
  * @param {Array} exportData.faers - FAERS data
  * @param {Array} exportData.comparators - Comparator data
+ * @param {Object} exportData.metadata - Additional metadata for the document
+ * @param {string} exportData.templateId - Template ID (eu-mdr, meddev, fda)
  * @returns {Promise<Blob>} - The PDF file as a Blob
  */
 cerApiService.exportToPDF = async (exportData) => {
   try {
+    console.log('Exporting CER to PDF with template:', exportData.templateId || 'meddev');
+    // Default to MEDDEV 2.7/1 Rev 4 if no template specified
+    const templateId = exportData.templateId || 'meddev';
+    
+    // Add metadata for the PDF
+    const enhancedExportData = {
+      ...exportData,
+      metadata: {
+        ...(exportData.metadata || {}),
+        standard: 'MEDDEV 2.7/1 Rev 4',
+        generatedAt: new Date().toISOString(),
+        complianceScore: exportData.complianceData?.overallScore || null,
+        documentId: `CER-${Date.now()}`,
+        version: '1.0.0',
+        confidential: true,
+        showWatermark: true,
+        author: 'TrialSage AI',
+        reviewStatus: exportData.draftStatus || 'draft'
+      },
+      templateId
+    };
+    
     const response = await fetch('/api/cer/export-pdf', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(exportData),
+      body: JSON.stringify(enhancedExportData),
     });
     
     if (!response.ok) {
