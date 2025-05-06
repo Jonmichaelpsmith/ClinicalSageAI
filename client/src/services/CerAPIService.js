@@ -38,9 +38,10 @@ cerApiService.fetchFaersData = async (productName) => {
  * @param {Object} params - Parameters for generating the section
  * @param {string} params.sectionType - The type of section to generate
  * @param {string} params.context - The context for the section
+ * @param {string} [params.productName] - Optional product name for context
  * @returns {Promise<Object>} - The generated section
  */
-cerApiService.generateSection = async ({ sectionType, context }) => {
+cerApiService.generateSection = async ({ sectionType, context, productName }) => {
   try {
     const response = await fetch('/api/cer/generate-section', {
       method: 'POST',
@@ -48,8 +49,9 @@ cerApiService.generateSection = async ({ sectionType, context }) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        sectionType,
+        section: sectionType,
         context,
+        productName
       }),
     });
     
@@ -65,59 +67,7 @@ cerApiService.generateSection = async ({ sectionType, context }) => {
   }
 };
 
-/**
- * Export the CER as a PDF
- * @param {Object} cerData - The CER data to export
- * @returns {Promise<Blob>} - The PDF file as a Blob
- */
-cerApiService.exportToPDF = async (cerData) => {
-  try {
-    const response = await fetch('/api/cer/export-pdf', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(cerData),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error exporting to PDF: ${response.statusText}`);
-    }
-    
-    const blob = await response.blob();
-    return blob;
-  } catch (error) {
-    console.error('Error in exportToPDF:', error);
-    throw error;
-  }
-};
-
-/**
- * Export the CER as a Word document
- * @param {Object} cerData - The CER data to export
- * @returns {Promise<Blob>} - The Word document as a Blob
- */
-cerApiService.exportToWord = async (cerData) => {
-  try {
-    const response = await fetch('/api/cer/export-docx', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(cerData),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error exporting to Word: ${response.statusText}`);
-    }
-    
-    const blob = await response.blob();
-    return blob;
-  } catch (error) {
-    console.error('Error in exportToWord:', error);
-    throw error;
-  }
-};
+// First implementation of exportToPDF and exportToWord removed to fix duplication
 
 /**
  * Download a Blob as a file
@@ -359,39 +309,7 @@ cerApiService.askCerAssistant = async ({ question, context = {} }) => {
   }
 };
 
-/**
- * Generate a section for the CER
- * @param {Object} params - Parameters for generating the section
- * @param {string} params.section - The type of section to generate
- * @param {string} params.context - The context for the section
- * @param {string} params.productName - The name of the product
- * @returns {Promise<Object>} - The generated section content
- */
-cerApiService.generateSection = async ({ section, context, productName }) => {
-  try {
-    const response = await fetch('/api/cer/generate-section', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        section,
-        context,
-        productName,
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error generating section: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error in generateSection:', error);
-    throw error;
-  }
-};
+// Second implementation of generateSection removed to fix duplication
 
 /**
  * Get a preview of the CER

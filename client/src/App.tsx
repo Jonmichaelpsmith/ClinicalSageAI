@@ -40,6 +40,7 @@ function Router() {
       <ProtectedRoute path="/cmc" component={CMCPage} />
       <ProtectedRoute path="/coauthor" component={CoAuthor} />
       <ProtectedRoute path="/CSRAnalyzer" component={CSRAnalyzer} />
+      <ProtectedRoute path="/cer" component={CERV2Page} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
