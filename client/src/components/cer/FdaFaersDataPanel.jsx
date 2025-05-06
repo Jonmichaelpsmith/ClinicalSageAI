@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,9 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4, BarChartHorizontal, HelpCircle, FileText } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4, BarChartHorizontal, HelpCircle, FileText, FileCheck, Filter, Calendar, Zap, Download, ChevronRight } from 'lucide-react';
 import { FaersRiskBadge } from './FaersRiskBadge';
 import { FaersHowToModal } from './FaersHowToModal';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * FDA FAERS Data Panel Component
@@ -17,19 +22,39 @@ import { FaersHowToModal } from './FaersHowToModal';
  * from the FDA FAERS (FDA Adverse Event Reporting System) database for inclusion
  * in Clinical Evaluation Reports.
  */
-const FdaFaersDataPanel = ({ onDataFetched }) => {
-  const [productName, setProductName] = useState('');
-  const [manufacturerName, setManufacturerName] = useState('');
+const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', initialProductName = '' }) => {
+  const [productName, setProductName] = useState(initialProductName || deviceName || '');
+  const [manufacturerName, setManufacturerName] = useState('Arthrosurface, Inc.');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [searchMethod, setSearchMethod] = useState('standard'); // standard or advanced
+  const [dataSource, setDataSource] = useState('fda-faers'); // fda-faers, eu-eudamed, etc.
   
   const [isLoading, setIsLoading] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const [error, setError] = useState(null);
   const [faersData, setFaersData] = useState(null);
   const [faersAnalysis, setFaersAnalysis] = useState(null);
+  const [riskAssessment, setRiskAssessment] = useState(null);
   const [activeTab, setActiveTab] = useState('raw-data');
   const [showHowTo, setShowHowTo] = useState(false);
   const [showFullReport, setShowFullReport] = useState(false);
+  const [isIntegratedInReport, setIsIntegratedInReport] = useState(false);
+  const { toast } = useToast();
+  
+  // Auto-fetch data if product name is provided initially
+  useEffect(() => {
+    if (initialProductName || deviceName) {
+      fetchFaersData();
+    }
+  }, []);
+  
+  // Auto-integrate successful analysis into report
+  useEffect(() => {
+    if (faersAnalysis && !isIntegratedInReport) {
+      integrateIntoReport();
+    }
+  }, [faersAnalysis]);
   
   /**
    * Fetch raw FAERS data from the API
@@ -352,6 +377,320 @@ const FdaFaersDataPanel = ({ onDataFetched }) => {
     );
   };
   
+  /**
+   * Generate a risk assessment based on FAERS data
+   */
+  const generateRiskAssessment = async () => {
+    if (!faersAnalysis) {
+      toast({
+        title: 'Analysis Required',
+        description: 'Please fetch and analyze FAERS data first',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Call API to generate risk assessment
+      const response = await fetch('/api/cer/faers/risk-assessment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          faersAnalysis,
+          productName,
+          manufacturerName,
+          context: {
+            deviceType: 'Shoulder Arthroplasty System',
+            indication: 'Shoulder arthritis and rotator cuff disease'
+          }
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error generating risk assessment: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setRiskAssessment(data);
+      setActiveTab('risk-assessment');
+      
+      toast({
+        title: 'Risk Assessment Generated',
+        description: 'The risk assessment has been successfully generated',
+      });
+      
+    } catch (error) {
+      console.error('Error generating risk assessment:', error);
+      setError(error.message || 'Failed to generate risk assessment');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to generate risk assessment',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  /**
+   * Integrate FAERS analysis into the clinical evaluation report
+   */
+  const integrateIntoReport = () => {
+    if (!faersAnalysis) return;
+    
+    // Call the callback if provided
+    if (onAnalysisFetched) {
+      onAnalysisFetched(faersAnalysis);
+      setIsIntegratedInReport(true);
+      
+      toast({
+        title: 'Analysis Integrated',
+        description: 'FAERS data analysis has been integrated into your report',
+      });
+    }
+  };
+  
+  /**
+   * Export analysis as PDF
+   */
+  const exportAsPdf = async () => {
+    if (!faersAnalysis) {
+      toast({
+        title: 'Analysis Required',
+        description: 'Please fetch and analyze FAERS data first',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    try {
+      setExportingPdf(true);
+      setError(null);
+      
+      // Call API to export as PDF
+      const response = await fetch('/api/cer/faers/export-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          faersAnalysis,
+          riskAssessment,
+          productName,
+          manufacturerName
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error exporting PDF: ${response.statusText}`);
+      }
+      
+      // Get blob from response
+      const blob = await response.blob();
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `FAERS_Analysis_${productName.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      
+      toast({
+        title: 'PDF Exported',
+        description: 'The FAERS analysis has been exported as PDF',
+      });
+      
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      setError(error.message || 'Failed to export PDF');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to export PDF',
+        variant: 'destructive'
+      });
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+  
+  /**
+   * Render the risk assessment view
+   */
+  const renderRiskAssessmentView = () => {
+    if (!riskAssessment) {
+      return (
+        <div className="py-8 text-center text-gray-500">
+          <Shield className="mx-auto h-12 w-12 mb-3 text-gray-400" />
+          <p>No risk assessment available. Generate a risk assessment based on the FAERS data.</p>
+          <Button 
+            onClick={generateRiskAssessment} 
+            className="mt-4"
+            disabled={!faersAnalysis || isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Zap className="mr-2 h-4 w-4" />
+                Generate Risk Assessment
+              </>
+            )}
+          </Button>
+        </div>
+      );
+    }
+    
+    const { 
+      overallRisk,
+      riskFactors, 
+      benefitRiskBalance, 
+      mitigationMeasures,
+      recommendations,
+      conclusion
+    } = riskAssessment;
+    
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="col-span-1 md:col-span-3">
+            <CardHeader className="py-4">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-lg">Overall Risk Assessment</CardTitle>
+                <Badge 
+                  variant={overallRisk.level === 'Low' ? 'outline' : 
+                          overallRisk.level === 'Medium' ? 'secondary' : 'destructive'}
+                  className="text-xs py-1"
+                >
+                  {overallRisk.level} Risk
+                </Badge>
+              </div>
+              <CardDescription>{overallRisk.summary}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">{overallRisk.explanation}</p>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="risk-factors">
+            <AccordionTrigger>Risk Factors</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4">
+                {riskFactors.map((factor, index) => (
+                  <div key={index} className="border p-3 rounded-md">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium">{factor.name}</h4>
+                      <Badge 
+                        variant={factor.severity === 'Low' ? 'outline' : 
+                                factor.severity === 'Medium' ? 'secondary' : 'destructive'}
+                      >
+                        {factor.severity}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600">{factor.description}</p>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="benefit-risk">
+            <AccordionTrigger>Benefit-Risk Balance</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2">
+                <p className="mb-4">{benefitRiskBalance.summary}</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Benefits</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside space-y-1">
+                        {benefitRiskBalance.benefits.map((item, index) => (
+                          <li key={index} className="text-sm">{item}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Risks</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside space-y-1">
+                        {benefitRiskBalance.risks.map((item, index) => (
+                          <li key={index} className="text-sm">{item}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="mitigation">
+            <AccordionTrigger>Risk Mitigation Measures</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-3">
+                {mitigationMeasures.map((measure, index) => (
+                  <div key={index} className="flex items-start border-b pb-2">
+                    <div className="bg-blue-100 rounded-full p-1 mr-2 mt-0.5">
+                      <CheckCircle className="h-4 w-4 text-blue-700" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{measure.title}</p>
+                      <p className="text-sm text-gray-600">{measure.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="recommendations">
+            <AccordionTrigger>Recommendations</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-3">
+                {recommendations.map((rec, index) => (
+                  <div key={index} className="flex items-start">
+                    <div className="mr-2 mt-0.5">
+                      <ChevronRight className="h-4 w-4 text-blue-700" />
+                    </div>
+                    <p className="text-sm">{rec}</p>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="conclusion">
+            <AccordionTrigger>Conclusion</AccordionTrigger>
+            <AccordionContent>
+              <p className="text-sm whitespace-pre-line">{conclusion}</p>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Search Form */}
