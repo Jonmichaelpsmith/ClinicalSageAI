@@ -383,6 +383,9 @@ router.post('/export-pdf', async (req, res) => {
   }
 });
 
+// POST /api/cer/compliance-score - Calculate compliance score using GPT-4o
+router.post('/compliance-score', complianceScoreHandler);
+
 // POST /api/cer/export-docx - Export CER as DOCX
 router.post('/export-docx', async (req, res) => {
   try {

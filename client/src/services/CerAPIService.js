@@ -4,6 +4,9 @@
  * Provides utility functions for interacting with the CER Generator API endpoints.
  * Centralizes all API calls related to CER generation, export, FAERS data fetching,
  * and regulatory compliance scoring.
+ * 
+ * This service integrates with GPT-4o powered endpoints for intelligent document generation
+ * and regulatory compliance analysis based on EU MDR, ISO 14155, and FDA guidelines.
  */
 
 /**
@@ -186,6 +189,118 @@ export const exportCompliancePDF = async (data) => {
     return blob;
   } catch (error) {
     console.error('Error in exportCompliancePDF:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a complete CER using GPT-4o intelligence
+ * @param {Object} params - Parameters for generating the full CER
+ * @param {string} params.deviceName - The name of the device
+ * @param {string} params.deviceType - The type/classification of the device
+ * @param {string} params.regulatoryPath - The regulatory framework to follow (EU MDR, ISO 14155, FDA)
+ * @param {string} params.intendedUse - The intended use of the device
+ * @param {Array} params.uploadedFiles - Optional array of files that have been uploaded
+ * @param {Array} params.dataSources - Optional array of data sources to use (FAERS, PubMed, MAUDE, etc.)
+ * @returns {Promise<Object>} - The fully generated CER with all required sections
+ */
+export const generateFullCER = async ({ 
+  deviceName, 
+  deviceType, 
+  regulatoryPath, 
+  intendedUse, 
+  uploadedFiles = [],
+  dataSources = []
+}) => {
+  try {
+    const response = await fetch('/api/cer/generate-full', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceName,
+        deviceType,
+        regulatoryPath,
+        intendedUse,
+        uploadedFiles,
+        dataSources,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating full CER: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateFullCER:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get AI-generated improvements for a CER section to increase compliance
+ * @param {Object} params - Parameters for compliance improvements
+ * @param {Object} params.section - The section to improve
+ * @param {Object} params.complianceData - The compliance data for this section
+ * @param {string} params.standard - The regulatory standard to optimize for
+ * @returns {Promise<Object>} - The improved section content
+ */
+export const getComplianceImprovements = async ({ section, complianceData, standard }) => {
+  try {
+    const response = await fetch('/api/cer/improve-compliance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        section,
+        complianceData,
+        standard,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error getting compliance improvements: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getComplianceImprovements:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get AI assistant response for CER development questions
+ * @param {string} query - The user query about CER development
+ * @param {Object} context - Optional context about the current CER
+ * @returns {Promise<Object>} - The AI assistant response
+ */
+export const getCerAssistantResponse = async (query, context = {}) => {
+  try {
+    const response = await fetch('/api/cer/assistant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        context,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error getting AI assistant response: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getCerAssistantResponse:', error);
     throw error;
   }
 };
