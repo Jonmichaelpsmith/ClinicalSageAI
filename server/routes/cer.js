@@ -128,12 +128,26 @@ router.post('/generate-full', async (req, res) => {
   try {
     const { deviceInfo, literature, fdaData, templateId } = req.body;
     
-    // Generate CER with enhanced AI workflow
-    const report = await generateFullCER({ deviceInfo, literature, fdaData, templateId });
-    res.json(report);
+    // Log request details
+    console.log(`Starting zero-click CER generation for ${deviceInfo?.name || 'unnamed device'}`);
+    console.log(`Template: ${templateId}, Literature items: ${literature?.length || 0}`);
+    console.log(`FAERS data: ${fdaData ? 'Provided' : 'Not provided'}`);
+    
+    // Use the advanced implementation from the dedicated module
+    const generateFullCERHandler = require('./cer/generateFullCER');
+    
+    // Call the handler directly with the request and response
+    await generateFullCERHandler(req, res);
   } catch (error) {
     console.error('Error generating full CER:', error);
-    res.status(500).json({ error: 'Failed to generate CER report' });
+    res.status(500).json({ 
+      error: 'Failed to generate CER report', 
+      message: error.message,
+      requestData: {
+        deviceName: req.body.deviceInfo?.name,
+        templateId: req.body.templateId
+      }
+    });
   }
 });
 
