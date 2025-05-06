@@ -259,12 +259,12 @@ cerApiService.generateFullCER = async ({
 /**
  * Get AI-generated improvements for a CER section to increase compliance
  * @param {Object} params - Parameters for compliance improvements
- * @param {Object} params.section - The section to improve
- * @param {Object} params.complianceData - The compliance data for this section
- * @param {string} params.standard - The regulatory standard to optimize for
- * @returns {Promise<Object>} - The improved section content
+ * @param {string} params.section - The type or ID of the section to improve
+ * @param {string} params.currentContent - The current content of the section
+ * @param {string} params.standard - The regulatory standard to optimize for (EU MDR, ISO 14155, FDA)
+ * @returns {Promise<Object>} - The improved section content with recommendations
  */
-cerApiService.getComplianceImprovements = async ({ section, complianceData, standard }) => {
+cerApiService.getComplianceImprovements = async ({ section, currentContent, standard }) => {
   try {
     const response = await fetch('/api/cer/improve-compliance', {
       method: 'POST',
@@ -273,7 +273,7 @@ cerApiService.getComplianceImprovements = async ({ section, complianceData, stan
       },
       body: JSON.stringify({
         section,
-        complianceData,
+        currentContent,
         standard,
       }),
     });
@@ -331,13 +331,13 @@ cerApiService.getAssistantResponse = async (query, context = {}) => {
  */
 cerApiService.askCerAssistant = async ({ question, context = {} }) => {
   try {
-    const response = await fetch('/api/cer/assistant', {
+    const response = await fetch('/api/cer/assistant/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        question,
+        message: question,
         context: {
           sections: context.sections || [],
           faers: context.faers || [],
