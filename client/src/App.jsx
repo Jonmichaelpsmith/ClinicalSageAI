@@ -18,9 +18,10 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       <Switch>
         {/* CER Builder page with full features */}
-        <Route path="/cerv2" component={CERPage} />
+        <Route path="/cer" component={CERPage} />
         
-        {/* Old CER page kept for backward compatibility */}
+        {/* Additional routes for backward compatibility */}
+        <Route path="/cerv2" component={CERPage} />
         <Route path="/cer-old" component={CERV2Page} />
         
         {/* Default route - placeholder while redirecting */}
