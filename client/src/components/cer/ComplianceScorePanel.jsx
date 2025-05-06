@@ -21,11 +21,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Info, CheckCircle, AlertCircle, RefreshCw, FileText, Sparkles, Zap, XCircle, Plus } from 'lucide-react';
+import { Info, CheckCircle, AlertCircle, RefreshCw, FileText, Sparkles, Zap, XCircle, Plus, Shield, BarChart4, AArrowRight, ExternalLink, FileCheck, BookOpen } from 'lucide-react';
 
 export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
   const [analyzing, setAnalyzing] = useState(false);
@@ -50,6 +52,21 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
     }
   }, [complianceData, onComplianceChange, onStatusChange]);
   
+  // Various regulatory standards for compliance analysis
+  const availableStandards = [
+    { id: 'EU_MDR', name: 'EU MDR 2017/745', description: 'European Medical Device Regulation' },
+    { id: 'ISO_14155', name: 'ISO 14155:2020', description: 'Clinical investigation of medical devices' },
+    { id: 'FDA_21CFR812', name: 'FDA 21 CFR 812', description: 'Investigational Device Exemptions' },
+    { id: 'ISO_13485', name: 'ISO 13485:2016', description: 'Quality management systems' },
+    { id: 'MEDDEV_271', name: 'MEDDEV 2.7/1 Rev 4', description: 'Clinical evaluation guidance' },
+    { id: 'IVDR_2017746', name: 'EU IVDR 2017/746', description: 'In Vitro Diagnostic Regulation' },
+    { id: 'FDA_21CFR820', name: 'FDA 21 CFR 820', description: 'Quality System Regulation' },
+    { id: 'IMDRF_MDCE', name: 'IMDRF MDCE', description: 'Medical Device Clinical Evaluation guidance' }
+  ];
+  
+  // Selected regulatory standards (default to EU MDR, ISO 14155, and FDA)
+  const [selectedStandards, setSelectedStandards] = useState(['EU_MDR', 'ISO_14155', 'FDA_21CFR812']);
+  
   // Function to run compliance analysis with optional custom sections
   const runComplianceAnalysis = async (customSections = null) => {
     const sectionsToAnalyze = customSections || sections;
@@ -63,10 +80,16 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
       setAnalyzing(true);
       setError(null);
       
+      // Get the standard names for API from their IDs
+      const standardNames = selectedStandards.map(id => {
+        const standard = availableStandards.find(s => s.id === id);
+        return standard ? standard.name : id;
+      });
+      
       const response = await cerApiService.getComplianceScore({
         sections: sectionsToAnalyze,
         title,
-        standards: ['EU MDR', 'ISO 14155', 'FDA']
+        standards: standardNames
       });
       
       setComplianceData(response);
@@ -132,23 +155,84 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
         <div className="flex items-center justify-between border-b border-[#E1DFDD] pb-3 mb-3">
           <div>
             <h3 className="text-base font-semibold text-[#323130]">Regulatory Compliance Analysis</h3>
-            <p className="text-xs text-[#616161] mt-1">Analyze your report against EU MDR, ISO 14155, and FDA standards</p>
+            <p className="text-xs text-[#616161] mt-1">Analyze your report against multiple standards including EU MDR, ISO 14155, FDA 21 CFR 812</p>
           </div>
-          <Button
-            onClick={runComplianceAnalysis}
-            disabled={analyzing || sections.length === 0}
-            className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
-            size="sm"
-          >
-            {analyzing ? (
-              <>
-                <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin" />
-                <span>Analyzing...</span>
-              </>
-            ) : (
-              <>Check Compliance</>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 border-[#E1DFDD] text-[#323130] hover:bg-[#F5F5F5] text-xs"
+                >
+                  <Shield className="h-3.5 w-3.5 mr-1.5 text-[#0F6CBD]" />
+                  <span>Standards</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Select Regulatory Standards</DialogTitle>
+                  <DialogDescription>
+                    Choose the standards to check your CER against. Select multiple standards for a comprehensive analysis.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  {availableStandards.map((standard) => (
+                    <div key={standard.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={standard.id}
+                        checked={selectedStandards.includes(standard.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedStandards([...selectedStandards, standard.id]);
+                          } else {
+                            // Don't allow deselecting all standards
+                            if (selectedStandards.length > 1) {
+                              setSelectedStandards(selectedStandards.filter(id => id !== standard.id));
+                            }
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-gray-300 text-[#0F6CBD] focus:ring-[#0F6CBD]"
+                      />
+                      <Label
+                        htmlFor={standard.id}
+                        className="text-sm font-medium cursor-pointer flex-grow"
+                      >
+                        {standard.name}
+                        <span className="text-xs text-[#616161] block">{standard.description}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+                    onClick={() => document.querySelector('[role="dialog"]')?.querySelector('[role="button"][aria-label="Close"]')?.click()}
+                  >
+                    Done
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
+            <Button
+              onClick={runComplianceAnalysis}
+              disabled={analyzing || sections.length === 0}
+              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+              size="sm"
+            >
+              {analyzing ? (
+                <>
+                  <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <><BarChart4 className="h-3.5 w-3.5 mr-1.5" />Check Compliance</>
+              )}
+            </Button>
+          </div>
         </div>
         
         {error && (
