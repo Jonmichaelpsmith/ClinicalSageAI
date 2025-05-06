@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getComplianceScore, exportCompliancePDF } from '../../services/CerAPIService';
+import { cerApiService } from '../../services/CerAPIService';
 import {
   Card,
   CardContent,
@@ -50,7 +50,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
       setAnalyzing(true);
       setError(null);
       
-      const response = await getComplianceScore({
+      const response = await cerApiService.getComplianceScore({
         sections,
         title,
         standards: ['EU MDR', 'ISO 14155', 'FDA']
@@ -71,7 +71,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
     
     try {
       setExporting(true);
-      const blob = await exportCompliancePDF(complianceData);
+      const blob = await cerApiService.exportCompliancePDF(complianceData);
       
       // Create a download link
       const url = window.URL.createObjectURL(blob);
