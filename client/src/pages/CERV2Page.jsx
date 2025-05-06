@@ -1,660 +1,539 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
+import React, { useState, useEffect, useRef } from 'react';
+import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
+import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
+import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
+import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
+import QAChecklistButton from '@/components/cer/QAChecklistButton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  ChevronLeft,
-  FileText,
-  Save,
-  User,
-  Building,
-  Calendar,
-  FileCheck,
-  AlertTriangle,
-  LineChart,
-  Download,
-  Printer,
-  BarChart4
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { exportToPDF, exportToWord, downloadBlob, fetchFaersData, getComplianceScore } from '@/services/CerAPIService';
+import { useToast } from '@/hooks/use-toast';
+import { ClipboardCheck, Clock, Download, FileCheck, FileText, CheckCircle, AlertCircle, ChevronDown, FileWarning, BookOpen, Calendar, Layers, CircleCheck, CircleAlert } from 'lucide-react';
 
-import CerBuilderPanel from '../components/cer/CerBuilderPanel';
-import ComplianceScorePanel from '../components/cer/ComplianceScorePanel';
-import ComplianceRadarChart from '../components/cer/ComplianceRadarChart';
-
-// CERV2Page - Enhanced Clinical Evaluation Report page with enterprise styling
 export default function CERV2Page() {
-  const [location, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [cerTitle, setCerTitle] = useState('Clinical Evaluation Report: CardioStent XR');
-  const [cerSections, setCerSections] = useState([]);
-  const [complianceScores, setComplianceScores] = useState(null);
-  const [selectedVersion, setSelectedVersion] = useState('v1.0');
-  
-  // Compliance threshold settings
-  const complianceThresholds = {
-    OVERALL_THRESHOLD: 0.80, // 80% threshold for passing
-    FLAG_THRESHOLD: 0.70     // 70% threshold for warnings/flagging
-  };
-  
-  // Sample data for metadata display
-  const reportMetadata = {
-    device: 'CardioStent XR',
-    manufacturer: 'MedDevice Technologies, Inc.',
-    productCode: 'MDT-CS-221',
-    reportDate: new Date().toISOString().split('T')[0],
-    author: 'Dr. Elizabeth Chen',
-    reviewers: ['Dr. James Wilson', 'Dr. Sarah Johnson'],
-    version: selectedVersion,
-    status: 'Draft',
-    lastUpdated: new Date().toISOString().split('T')[0],
-  };
-  
-  // Handle compliance scores generation
-  const handleComplianceScoresGenerated = (scores) => {
-    setComplianceScores(scores);
-  };
-  
-  // List of versions for the dropdown
-  const versions = [
-    { id: 'v1.0', label: 'Version 1.0 (Current Draft)' },
-    { id: 'v0.9', label: 'Version 0.9 (Review)' },
-    { id: 'v0.8', label: 'Version 0.8 (Initial Draft)' },
-  ];
-  
-  return (
-    <div className="flex flex-col h-full">
-      {/* Top navigation - styled like Omnia header with dark blue background */}
-      <header className="bg-[#1a237e] text-white p-2 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-white hover:bg-blue-800"
-            onClick={() => setLocation('/')}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-          
-          <div className="grid grid-cols-4 gap-6">
-            <div>
-              <div className="text-xs opacity-80">Device Name</div>
-              <div className="font-semibold">{reportMetadata.device}</div>
-            </div>
-            
-            <div>
-              <div className="text-xs opacity-80">Manufacturer</div>
-              <div className="font-semibold">{reportMetadata.manufacturer}</div>
-            </div>
-            
-            <div>
-              <div className="text-xs opacity-80">Product Code</div>
-              <div className="font-semibold">{reportMetadata.productCode}</div>
-            </div>
-            
-            <div>
-              <div className="text-xs opacity-80">Report Status</div>
-              <div className="flex items-center">
-                <Badge className="bg-teal-500 hover:bg-teal-600">{reportMetadata.status}</Badge>
-                <Badge className="ml-2 bg-blue-100 text-blue-800 hover:bg-blue-200">{reportMetadata.version}</Badge>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" className="text-white hover:bg-blue-800">
-            <Save className="h-4 w-4 mr-1" />
-            Save
-          </Button>
-          
-          <Button variant="ghost" size="sm" className="text-white hover:bg-blue-800">
-            <User className="h-4 w-4 mr-1" />
-            Share
-          </Button>
-          
-          <div className="border-l border-blue-700 h-8 mx-2"></div>
-          
-          <span className="text-sm mr-2">Production</span>
-          <div className="h-4 w-4 rounded-full bg-green-500"></div>
-        </div>
-      </header>
+  const [title, setTitle] = useState('Clinical Evaluation Report');
+  const [faers, setFaers] = useState([]);
+  const [comparators, setComparators] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [instructionsOpen, setInstructionsOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('builder');
+  const [compliance, setCompliance] = useState(null);
+  const [draftStatus, setDraftStatus] = useState('in-progress'); // in-progress, ready-for-review, finalized
+  const [exportTimestamp, setExportTimestamp] = useState(null);
+  const [wordCount, setWordCount] = useState(0);
+  const [citationCount, setCitationCount] = useState(0);
+  const [sectionCoverage, setSectionCoverage] = useState(0);
+  const [isComplianceRunning, setIsComplianceRunning] = useState(false);
+  const { toast } = useToast();
+
+  // Refs for floating buttons
+  const previewPanelRef = useRef(null);
+
+  // Calculate document stats
+  useEffect(() => {
+    if (sections.length === 0) return;
+    
+    // Calculate total word count
+    let totalWords = 0;
+    let totalCitations = 0;
+    
+    sections.forEach(section => {
+      // Count words in content
+      if (section.content) {
+        const words = section.content.trim().split(/\s+/).length;
+        totalWords += words;
+      }
       
-      {/* Main content */}
-      <div className="flex-1 overflow-hidden">
-        {/* Navigation tabs - styled like Omnia tabs */}
-        <div className="border-b bg-gray-50">
-          <div className="max-w-screen-2xl mx-auto">
-            <Tabs 
-              value={activeTab} 
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList className="bg-transparent h-12 w-full justify-start border-b-0 p-0">
-                <TabsTrigger 
-                  value="overview" 
-                  className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none h-12 px-4"
-                >
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="builder" 
-                  className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none h-12 px-4"
-                >
-                  Report Builder
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="compliance" 
-                  className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none h-12 px-4"
-                >
-                  Compliance Assessment
-                  {complianceScores && (
-                    <Badge 
-                      className={`ml-2 ${complianceScores.overallScore >= complianceThresholds.OVERALL_THRESHOLD * 100 ? 'bg-green-100 text-green-800' : 
-                                      complianceScores.overallScore >= complianceThresholds.FLAG_THRESHOLD * 100 ? 'bg-amber-100 text-amber-800' : 
-                                      'bg-red-100 text-red-800'}`}
-                    >
-                      {complianceScores.overallScore}%
-                    </Badge>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="export" 
-                  className="data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none h-12 px-4"
-                >
-                  Export & Publish
-                </TabsTrigger>
-              </TabsList>
-              
-              <div className="p-0">
-                {/* Overview Tab */}
-                <TabsContent value="overview" className="m-0 p-0">
-                  <div className="bg-white p-6">
-                    <div className="max-w-screen-2xl mx-auto">
-                      <div className="flex justify-between items-start mb-6">
-                        <div>
-                          <h1 className="text-2xl font-bold mb-2">{cerTitle}</h1>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <div className="flex items-center mr-4">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              Last updated: {reportMetadata.lastUpdated}
-                            </div>
-                            <div className="flex items-center mr-4">
-                              <User className="h-4 w-4 mr-1" />
-                              Author: {reportMetadata.author}
-                            </div>
-                            <div className="flex items-center">
-                              <Building className="h-4 w-4 mr-1" />
-                              {reportMetadata.manufacturer}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <div className="relative">
-                            <select 
-                              className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-w-[160px]"
-                              value={selectedVersion}
-                              onChange={(e) => setSelectedVersion(e.target.value)}
-                            >
-                              {versions.map(version => (
-                                <option key={version.id} value={version.id}>{version.label}</option>
-                              ))}
-                            </select>
-                          </div>
-                          
-                          <Button size="sm">
-                            <FileText className="h-4 w-4 mr-1" />
-                            View Full Report
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-6">
-                        {/* Summary Card */}
-                        <div className="col-span-1">
-                          <div className="bg-white border rounded-md shadow-sm overflow-hidden">
-                            <div className="border-b px-4 py-3 bg-gray-50 font-medium flex items-center">
-                              <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                              Report Summary
-                            </div>
-                            <div className="p-4 space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <div className="text-xs text-gray-500">Device</div>
-                                  <div className="font-medium">{reportMetadata.device}</div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-gray-500">Product Code</div>
-                                  <div className="font-medium">{reportMetadata.productCode}</div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-gray-500">Version</div>
-                                  <div className="font-medium">{reportMetadata.version}</div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-gray-500">Status</div>
-                                  <div className="font-medium">{reportMetadata.status}</div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-gray-500">Report Date</div>
-                                  <div className="font-medium">{reportMetadata.reportDate}</div>
-                                </div>
-                                <div>
-                                  <div className="text-xs text-gray-500">Last Updated</div>
-                                  <div className="font-medium">{reportMetadata.lastUpdated}</div>
-                                </div>
-                              </div>
-                              
-                              <div className="pt-2">
-                                <div className="text-xs text-gray-500 mb-1">Author</div>
-                                <div className="flex items-center">
-                                  <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-medium mr-2">
-                                    {reportMetadata.author.split(' ').map(n => n[0]).join('')}
-                                  </div>
-                                  <span className="font-medium">{reportMetadata.author}</span>
-                                </div>
-                              </div>
-                              
-                              <div className="pt-2">
-                                <div className="text-xs text-gray-500 mb-1">Reviewers</div>
-                                <div className="flex flex-col space-y-2">
-                                  {reportMetadata.reviewers.map((reviewer, index) => (
-                                    <div key={index} className="flex items-center">
-                                      <div className="h-6 w-6 rounded-full bg-gray-100 text-gray-800 flex items-center justify-center text-xs font-medium mr-2">
-                                        {reviewer.split(' ').map(n => n[0]).join('')}
-                                      </div>
-                                      <span>{reviewer}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="bg-white border rounded-md shadow-sm overflow-hidden mt-6">
-                            <div className="border-b px-4 py-3 bg-gray-50 font-medium flex items-center">
-                              <LineChart className="h-4 w-4 mr-2 text-gray-500" />
-                              Compliance Overview
-                            </div>
-                            <div className="p-4">
-                              {complianceScores ? (
-                                <div>
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium">Overall Score</span>
-                                    <Badge 
-                                      className={`${complianceScores.overallScore >= complianceThresholds.OVERALL_THRESHOLD * 100 ? 'bg-green-100 text-green-800' : 
-                                                complianceScores.overallScore >= complianceThresholds.FLAG_THRESHOLD * 100 ? 'bg-amber-100 text-amber-800' : 
-                                                'bg-red-100 text-red-800'}`}
-                                    >
-                                      {complianceScores.overallScore}%
-                                    </Badge>
-                                  </div>
-                                  
-                                  <ComplianceRadarChart 
-                                    scores={complianceScores}
-                                    complianceThresholds={complianceThresholds}
-                                    variant="compact"
-                                    height={200}
-                                    enableLegend={false}
-                                  />
-                                  
-                                  <div className="mt-4">
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="w-full"
-                                      onClick={() => setActiveTab('compliance')}
-                                    >
-                                      <FileCheck className="h-4 w-4 mr-1" />
-                                      View Full Compliance Report
-                                    </Button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                  <AlertTriangle className="h-10 w-10 mx-auto mb-2 text-amber-500" />
-                                  <p className="text-sm mb-4">No compliance assessment has been run yet</p>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => setActiveTab('compliance')}
-                                  >
-                                    Run Compliance Check
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Main Content Area */}
-                        <div className="col-span-2">
-                          <div className="bg-white border rounded-md shadow-sm">
-                            <div className="border-b px-4 py-3 bg-gray-50 font-medium flex items-center justify-between">
-                              <div className="flex items-center">
-                                <BarChart4 className="h-4 w-4 mr-2 text-gray-500" />
-                                Key Statistics
-                              </div>
-                              <Button variant="ghost" size="sm">
-                                Refresh
-                              </Button>
-                            </div>
-                            <div className="grid grid-cols-3 gap-6 p-6">
-                              <div className="border rounded-md p-4">
-                                <div className="text-xs text-gray-500 mb-1">Sections</div>
-                                <div className="text-3xl font-bold">{cerSections.length || 0}</div>
-                                <div className="text-sm text-gray-500 mt-1">Total report sections</div>
-                              </div>
-                              
-                              <div className="border rounded-md p-4">
-                                <div className="text-xs text-gray-500 mb-1">Compliance</div>
-                                <div className="text-3xl font-bold">
-                                  {complianceScores ? `${complianceScores.overallScore}%` : 'N/A'}
-                                </div>
-                                <div className="text-sm text-gray-500 mt-1">Overall score</div>
-                              </div>
-                              
-                              <div className="border rounded-md p-4">
-                                <div className="text-xs text-gray-500 mb-1">Critical Gaps</div>
-                                <div className="text-3xl font-bold">
-                                  {complianceScores && complianceScores.standards ? 
-                                    Object.values(complianceScores.standards).reduce(
-                                      (count, standard) => count + (standard.criticalGaps?.length || 0), 0
-                                    ) : 
-                                    'N/A'}
-                                </div>
-                                <div className="text-sm text-gray-500 mt-1">Issues to address</div>
-                              </div>
-                            </div>
-                            
-                            <div className="border-t px-6 py-4">
-                              <div className="font-medium mb-3">Progress Tracker</div>
-                              <div className="space-y-4">
-                                <div>
-                                  <div className="flex justify-between text-sm mb-1">
-                                    <span>Report Content</span>
-                                    <span>{cerSections.length > 0 ? `${Math.min(100, cerSections.length * 10)}%` : '0%'}</span>
-                                  </div>
-                                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <div 
-                                      className="h-full bg-blue-600" 
-                                      style={{ width: `${cerSections.length > 0 ? Math.min(100, cerSections.length * 10) : 0}%` }}
-                                    ></div>
-                                  </div>
-                                </div>
-                                
-                                <div>
-                                  <div className="flex justify-between text-sm mb-1">
-                                    <span>Compliance Score</span>
-                                    <span>{complianceScores ? `${complianceScores.overallScore}%` : '0%'}</span>
-                                  </div>
-                                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full ${complianceScores?.overallScore >= 80 ? 'bg-green-500' : 
-                                                          complianceScores?.overallScore >= 70 ? 'bg-amber-500' : 
-                                                          'bg-red-500'}`}
-                                      style={{ width: `${complianceScores ? complianceScores.overallScore : 0}%` }}
-                                    ></div>
-                                  </div>
-                                </div>
-                                
-                                <div>
-                                  <div className="flex justify-between text-sm mb-1">
-                                    <span>Review Status</span>
-                                    <span>33%</span>
-                                  </div>
-                                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-indigo-500 w-1/3"></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-6 mt-6">
-                            <div className="bg-white border rounded-md shadow-sm overflow-hidden">
-                              <div className="border-b px-4 py-3 bg-gray-50 font-medium">
-                                Recent Activities
-                              </div>
-                              <div className="divide-y">
-                                <div className="p-3 flex items-start">
-                                  <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-medium mr-3 flex-shrink-0">
-                                    EC
-                                  </div>
-                                  <div>
-                                    <p className="text-sm"><span className="font-medium">Dr. Elizabeth Chen</span> added a new section</p>
-                                    <p className="text-xs text-gray-500">Today, 10:42 AM</p>
-                                  </div>
-                                </div>
-                                <div className="p-3 flex items-start">
-                                  <div className="h-8 w-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-medium mr-3 flex-shrink-0">
-                                    JW
-                                  </div>
-                                  <div>
-                                    <p className="text-sm"><span className="font-medium">Dr. James Wilson</span> ran compliance check</p>
-                                    <p className="text-xs text-gray-500">Yesterday, 4:15 PM</p>
-                                  </div>
-                                </div>
-                                <div className="p-3 flex items-start">
-                                  <div className="h-8 w-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-medium mr-3 flex-shrink-0">
-                                    SJ
-                                  </div>
-                                  <div>
-                                    <p className="text-sm"><span className="font-medium">Dr. Sarah Johnson</span> added literature review</p>
-                                    <p className="text-xs text-gray-500">Yesterday, 2:30 PM</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="bg-white border rounded-md shadow-sm overflow-hidden">
-                              <div className="border-b px-4 py-3 bg-gray-50 font-medium">
-                                Quick Actions
-                              </div>
-                              <div className="p-4 space-y-3">
-                                <Button variant="outline" className="w-full justify-start" onClick={() => setActiveTab('builder')}>
-                                  <FileText className="h-4 w-4 mr-2" />
-                                  Add New Section
-                                </Button>
-                                <Button variant="outline" className="w-full justify-start" onClick={() => setActiveTab('compliance')}>
-                                  <FileCheck className="h-4 w-4 mr-2" />
-                                  Run Compliance Check
-                                </Button>
-                                <Button variant="outline" className="w-full justify-start" onClick={() => setActiveTab('export')}>
-                                  <Download className="h-4 w-4 mr-2" />
-                                  Export Report
-                                </Button>
-                                <Button variant="outline" className="w-full justify-start">
-                                  <Printer className="h-4 w-4 mr-2" />
-                                  Print Report
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+      // Count citations (assuming format like [1], [2], etc.)
+      if (section.content) {
+        const citations = (section.content.match(/\[\d+\]/g) || []).length;
+        totalCitations += citations;
+      }
+    });
+    
+    setWordCount(totalWords);
+    setCitationCount(totalCitations);
+    
+    // Calculate section coverage (based on required sections for a complete CER)
+    const requiredSections = ['clinical-background', 'device-description', 'state-of-art', 'benefit-risk', 'safety', 'literature-analysis', 'conclusion'];
+    const presentSections = sections.map(s => s.type || s.sectionType);
+    const coveredSections = requiredSections.filter(req => presentSections.some(p => p.includes(req)));
+    const coveragePercent = (coveredSections.length / requiredSections.length) * 100;
+    
+    setSectionCoverage(coveragePercent);
+  }, [sections]);
+
+  // Load FAERS data when title changes
+  useEffect(() => {
+    const loadFaersData = async () => {
+      if (!title || title === 'Clinical Evaluation Report') return;
+      
+      try {
+        setIsLoading(true);
+        const data = await fetchFaersData(title);
+        if (data) {
+          setFaers(data.reports || []);
+          setComparators(data.comparators || []);
+        }
+      } catch (error) {
+        console.error('Failed to load FAERS data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Debounce the FAERS data loading to avoid excessive API calls
+    const timer = setTimeout(() => {
+      loadFaersData();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [title]);
+
+  // Function to run compliance check
+  const runComplianceCheck = async () => {
+    if (sections.length === 0) {
+      toast({
+        title: "No sections to analyze", 
+        description: "Please add at least one section to your report before running compliance check.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      setIsComplianceRunning(true);
+      const result = await getComplianceScore({
+        sections,
+        title,
+        standards: ['EU MDR', 'ISO 14155', 'FDA']
+      });
+      
+      setCompliance(result);
+      
+      // Update draft status based on compliance score
+      if (result.overallScore >= 0.8) {
+        setDraftStatus('ready-for-review');
+      }
+      
+      toast({
+        title: "Compliance check complete",
+        description: `Overall score: ${Math.round(result.overallScore * 100)}%`,
+        variant: result.overallScore >= 0.8 ? "success" : "warning"
+      });
+    } catch (error) {
+      console.error('Compliance check failed:', error);
+      toast({
+        title: "Compliance check failed",
+        description: error.message || "An error occurred while checking compliance",
+        variant: "destructive"
+      });
+    } finally {
+      setIsComplianceRunning(false);
+    }
+  };
+
+  // Handle export
+  const handleExport = async (format) => {
+    try {
+      let blob;
+      if (format === 'pdf') {
+        blob = await exportToPDF({ title, faers, comparators, sections });
+        downloadBlob(blob, 'cer_report.pdf');
+      } else {
+        blob = await exportToWord({ title, faers, comparators, sections });
+        downloadBlob(blob, 'cer_report.docx');
+      }
+      
+      // Update export timestamp
+      setExportTimestamp(new Date());
+      
+      toast({
+        title: `Export successful`,
+        description: `Your report has been exported as ${format.toUpperCase()}.`,
+        variant: "success"
+      });
+    } catch (error) {
+      console.error(`Failed to export ${format}:`, error);
+      toast({
+        title: `Export failed`,
+        description: `Failed to export your report as ${format.toUpperCase()}.`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Draft status badge color
+  const getDraftStatusColor = () => {
+    switch (draftStatus) {
+      case 'in-progress': return 'bg-amber-100 text-amber-800 border-amber-300';
+      case 'ready-for-review': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'finalized': return 'bg-green-100 text-green-800 border-green-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  // Draft status text
+  const getDraftStatusText = () => {
+    switch (draftStatus) {
+      case 'in-progress': return 'Draft: In Progress';
+      case 'ready-for-review': return 'Draft: Ready for Review';
+      case 'finalized': return 'Finalized';
+      default: return 'Draft';
+    }
+  };
+
+  // Draft status icon
+  const getDraftStatusIcon = () => {
+    switch (draftStatus) {
+      case 'in-progress': return <Clock className="h-4 w-4 mr-1" />;
+      case 'ready-for-review': return <FileCheck className="h-4 w-4 mr-1" />;
+      case 'finalized': return <ClipboardCheck className="h-4 w-4 mr-1" />;
+      default: return <FileText className="h-4 w-4 mr-1" />;
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Top Bar with CER title, compliance badge, export status, timestamp */}
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">{title || "Clinical Evaluation Report"}</h1>
+            <div className="flex items-center text-sm text-gray-600 mt-1">
+              <Calendar className="h-4 w-4 mr-1" />
+              <span>Created: {new Date().toLocaleDateString()}</span>
+              {exportTimestamp && (
+                <span className="ml-4 flex items-center">
+                  <Download className="h-4 w-4 mr-1" />
+                  Last Export: {exportTimestamp.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* Document status badge */}
+            <div className={`flex items-center px-3 py-1 rounded-full border ${getDraftStatusColor()}`}>
+              {getDraftStatusIcon()}
+              <span className="text-sm font-medium">{getDraftStatusText()}</span>
+            </div>
+            
+            {/* Compliance score badge - only show when we have data */}
+            {compliance && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className={`flex items-center px-3 py-1 rounded-full border ${compliance.overallScore >= 0.8 ? 'bg-green-100 text-green-800 border-green-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
+                      {compliance.overallScore >= 0.8 
+                        ? <CheckCircle className="h-4 w-4 mr-1" /> 
+                        : <AlertCircle className="h-4 w-4 mr-1" />}
+                      <span className="text-sm font-medium">Compliance: {Math.round(compliance.overallScore * 100)}%</span>
                     </div>
-                  </div>
-                </TabsContent>
-                
-                {/* Report Builder Tab */}
-                <TabsContent value="builder" className="m-0 p-0">
-                  <div className="bg-white p-6">
-                    <div className="max-w-screen-2xl mx-auto">
-                      <CerBuilderPanel
-                        title={cerTitle}
-                        sections={cerSections}
-                        onTitleChange={setCerTitle}
-                        onSectionsChange={setCerSections}
-                        onComplianceScoreChange={handleComplianceScoresGenerated}
-                        complianceThresholds={complianceThresholds}
-                        hideHeader
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                {/* Compliance Assessment Tab */}
-                <TabsContent value="compliance" className="m-0 p-0">
-                  <div className="bg-white p-6">
-                    <div className="max-w-screen-2xl mx-auto">
-                      <div className="grid grid-cols-3 gap-6">
-                        <div className="col-span-2">
-                          <ComplianceScorePanel
-                            cerTitle={cerTitle}
-                            sections={cerSections}
-                            complianceThresholds={complianceThresholds}
-                            onScoresGenerated={handleComplianceScoresGenerated}
-                          />
-                        </div>
-                        
-                        <div className="col-span-1 space-y-6">
-                          {complianceScores && (
-                            <ComplianceRadarChart 
-                              scores={complianceScores}
-                              complianceThresholds={complianceThresholds}
-                              title="Multi-dimensional Assessment"
-                              description="Compliance visualization across key regulatory frameworks"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                {/* Export & Publish Tab */}
-                <TabsContent value="export" className="m-0 p-0">
-                  <div className="bg-white p-6">
-                    <div className="max-w-screen-2xl mx-auto">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h2 className="text-xl font-bold mb-4">Export Options</h2>
-                          <div className="space-y-4">
-                            <div className="bg-white border rounded-md overflow-hidden">
-                              <div className="border-b p-4">
-                                <h3 className="font-medium">PDF Export</h3>
-                                <p className="text-sm text-gray-500 mt-1">High-quality PDF with regulatory formatting</p>
-                              </div>
-                              <div className="p-4">
-                                <div className="flex justify-between items-center">
-                                  <div className="space-y-2">
-                                    <div className="flex items-center">
-                                      <input type="checkbox" id="include-appendices" className="h-4 w-4 mr-2" />
-                                      <label htmlFor="include-appendices" className="text-sm">Include appendices</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                      <input type="checkbox" id="include-attachments" className="h-4 w-4 mr-2" />
-                                      <label htmlFor="include-attachments" className="text-sm">Include attachments</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                      <input type="checkbox" id="include-compliance" className="h-4 w-4 mr-2" checked readOnly />
-                                      <label htmlFor="include-compliance" className="text-sm">Include compliance summary</label>
-                                    </div>
-                                  </div>
-                                  
-                                  <Button>
-                                    <Download className="h-4 w-4 mr-1" />
-                                    Export PDF
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="bg-white border rounded-md overflow-hidden">
-                              <div className="border-b p-4">
-                                <h3 className="font-medium">Word Document (DOCX)</h3>
-                                <p className="text-sm text-gray-500 mt-1">Editable document for further modifications</p>
-                              </div>
-                              <div className="p-4">
-                                <div className="flex justify-between items-center">
-                                  <div className="space-y-2">
-                                    <div className="flex items-center">
-                                      <input type="checkbox" id="include-styles" className="h-4 w-4 mr-2" checked readOnly />
-                                      <label htmlFor="include-styles" className="text-sm">Include styles</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                      <input type="checkbox" id="include-toc" className="h-4 w-4 mr-2" checked readOnly />
-                                      <label htmlFor="include-toc" className="text-sm">Include table of contents</label>
-                                    </div>
-                                  </div>
-                                  
-                                  <Button variant="outline">
-                                    <Download className="h-4 w-4 mr-1" />
-                                    Export DOCX
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h2 className="text-xl font-bold mb-4">Publish Options</h2>
-                          <div className="space-y-4">
-                            <div className="bg-white border rounded-md overflow-hidden">
-                              <div className="border-b p-4">
-                                <h3 className="font-medium">Internal Publication</h3>
-                                <p className="text-sm text-gray-500 mt-1">Share this report with your organization</p>
-                              </div>
-                              <div className="p-4">
-                                <div className="mb-4">
-                                  <label className="text-sm font-medium block mb-1">Approval Status</label>
-                                  <select className="w-full h-9 rounded-md border border-input px-3 py-1 text-sm">
-                                    <option>Draft - Internal Review</option>
-                                    <option>Pending Approval</option>
-                                    <option>Approved</option>
-                                  </select>
-                                </div>
-                                
-                                <div className="mb-4">
-                                  <label className="text-sm font-medium block mb-1">Document Classification</label>
-                                  <select className="w-full h-9 rounded-md border border-input px-3 py-1 text-sm">
-                                    <option>Confidential</option>
-                                    <option>Internal Use Only</option>
-                                    <option>Public</option>
-                                  </select>
-                                </div>
-                                
-                                <Button className="w-full">
-                                  Publish Internally
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <div className="bg-white border rounded-md overflow-hidden">
-                              <div className="border-b p-4">
-                                <h3 className="font-medium">Regulatory Submission</h3>
-                                <p className="text-sm text-gray-500 mt-1">Prepare for submission to regulatory bodies</p>
-                              </div>
-                              <div className="p-4">
-                                <div className="mb-4">
-                                  <label className="text-sm font-medium block mb-1">Submission Format</label>
-                                  <select className="w-full h-9 rounded-md border border-input px-3 py-1 text-sm">
-                                    <option>EU MDR Format</option>
-                                    <option>FDA Submission Format</option>
-                                    <option>Generic Regulatory Format</option>
-                                  </select>
-                                </div>
-                                
-                                <Button variant="outline" className="w-full">
-                                  Prepare for Submission
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-              </div>
-            </Tabs>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Based on {compliance.standards ? Object.keys(compliance.standards).join(', ') : 'regulatory'} standards</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            
+            {/* QA Checklist button */}
+            <QAChecklistButton variant="outline" />
           </div>
         </div>
+      </div>
+      
+      {/* Collapsible instructions panel */}
+      <Collapsible 
+        open={instructionsOpen} 
+        onOpenChange={setInstructionsOpen}
+        className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden"
+      >
+        <div className="p-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800">🧠 How to Use the CER Generator</h2>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <ChevronDown className={`h-5 w-5 transform transition-transform ${instructionsOpen ? '' : 'rotate-180'}`} />
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+        <CollapsibleContent>
+          <div className="px-4 pb-4">
+            <ol className="list-decimal list-inside space-y-1 text-gray-700">
+              <li>Select a section type and provide context</li>
+              <li>Generate and add each needed section to your report</li>
+              <li>Use the compliance scorecard to validate your CER against standards</li>
+              <li>Preview and export your complete CER as PDF or DOCX</li>
+            </ol>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Main content area with tabs */}
+      <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+        <div className="pb-4 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800">Clinical Evaluation Report Builder</h2>
+          <p className="text-sm text-gray-600 mt-1">Generate, review, and export your Clinical Evaluation Report with FAERS data integration</p>
+        </div>
+
+        <Tabs defaultValue="builder" className="w-full mt-4" onValueChange={setActiveTab}>
+          <TabsList className="flex flex-wrap gap-2 mb-4">
+            <TabsTrigger value="builder" className="flex gap-1 items-center">
+              <Layers className="h-4 w-4" />
+              <span>Section Generator</span>
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="flex gap-1 items-center">
+              <FileText className="h-4 w-4" />
+              <span>Report Preview</span>
+            </TabsTrigger>
+            <TabsTrigger value="literature" className="flex gap-1 items-center">
+              <BookOpen className="h-4 w-4" />
+              <span>Literature Review</span>
+            </TabsTrigger>
+            <TabsTrigger value="compliance" className="flex gap-1 items-center">
+              <ClipboardCheck className="h-4 w-4" />
+              <span>Compliance Scorecard</span>
+            </TabsTrigger>
+            <TabsTrigger value="export" className="flex gap-1 items-center">
+              <Download className="h-4 w-4" />
+              <span>Export Options</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="builder">
+            <CerBuilderPanel
+              title={title}
+              faers={faers}
+              comparators={comparators}
+              sections={sections}
+              onTitleChange={setTitle}
+              onSectionsChange={setSections}
+              onFaersChange={setFaers}
+              onComparatorsChange={setComparators}
+            />
+          </TabsContent>
+
+          <TabsContent value="preview" ref={previewPanelRef}>
+            {/* Preview stats bar */}
+            <div className="mb-4 bg-gray-50 border rounded-md p-3 flex flex-wrap gap-4 justify-between items-center">
+              <div className="flex gap-4">
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-gray-500">Word Count</span>
+                  <span className="text-lg font-bold">{wordCount.toLocaleString()}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-gray-500">Citations</span>
+                  <span className="text-lg font-bold">{citationCount}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-gray-500">Section Coverage</span>
+                  <div className="flex items-center gap-2">
+                    <Progress value={sectionCoverage} className="w-24 h-2" />
+                    <span className="text-sm font-medium">{Math.round(sectionCoverage)}%</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Floating actions */}
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex items-center gap-1"
+                  onClick={runComplianceCheck}
+                  disabled={isComplianceRunning || sections.length === 0}
+                >
+                  {isComplianceRunning ? (
+                    <>
+                      <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-1" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <ClipboardCheck className="h-4 w-4" />
+                      Check Compliance
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex items-center gap-1"
+                  onClick={() => handleExport('pdf')}
+                  disabled={sections.length === 0}
+                >
+                  <FileText className="h-4 w-4" />
+                  Export PDF
+                </Button>
+              </div>
+            </div>
+            
+            <CerPreviewPanel
+              title={title}
+              faers={faers}
+              comparators={comparators}
+              sections={sections}
+            />
+          </TabsContent>
+
+          <TabsContent value="literature">
+            <LiteratureSearchPanel
+              onAddSection={(newSection) => {
+                // Add the new section to the sections array
+                const updatedSections = [...sections, newSection];
+                setSections(updatedSections);
+                
+                // Show success notification
+                toast({
+                  title: "Literature Review Added",
+                  description: "The generated literature review has been added to your CER.",
+                  variant: "success",
+                });
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="compliance">
+            <ComplianceScorePanel
+              sections={sections}
+              title={title}
+              onComplianceChange={setCompliance}
+              onStatusChange={setDraftStatus}
+            />
+          </TabsContent>
+
+          <TabsContent value="export">
+            <div className="space-y-6">
+              <div className="bg-gray-50 rounded-md p-4 border">
+                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <FileWarning className="h-5 w-5 text-amber-600" />
+                  Export Readiness Check
+                </h3>
+                
+                <div className="space-y-3 mt-4">
+                  <div className="flex items-center">
+                    <div className="mr-3">
+                      {wordCount > 1000 ? (
+                        <CircleCheck className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <CircleAlert className="h-5 w-5 text-amber-600" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">Content Length</p>
+                      <p className="text-sm text-gray-600">
+                        {wordCount > 1000 
+                          ? "Your document meets the minimum expected length" 
+                          : "Your document may be too short for a complete CER"}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="mr-3">
+                      {sectionCoverage >= 80 ? (
+                        <CircleCheck className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <CircleAlert className="h-5 w-5 text-amber-600" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">Section Coverage</p>
+                      <p className="text-sm text-gray-600">
+                        {sectionCoverage >= 80 
+                          ? "Your document includes all required sections" 
+                          : "Your document is missing some required sections"}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="mr-3">
+                      {citationCount >= 5 ? (
+                        <CircleCheck className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <CircleAlert className="h-5 w-5 text-amber-600" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">Citations</p>
+                      <p className="text-sm text-gray-600">
+                        {citationCount >= 5 
+                          ? "Your document includes sufficient literature citations" 
+                          : "Your document needs more literature citations"}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <div className="mr-3">
+                      {compliance && compliance.overallScore >= 0.7 ? (
+                        <CircleCheck className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <CircleAlert className="h-5 w-5 text-amber-600" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">Compliance Score</p>
+                      <p className="text-sm text-gray-600">
+                        {compliance && compliance.overallScore >= 0.7 
+                          ? "Your document meets regulatory compliance requirements" 
+                          : compliance ? "Your document needs compliance improvements" : "Run compliance check to validate against standards"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Export Your Report</h3>
+                <div className="flex flex-wrap gap-4">
+                  <button
+                    onClick={() => handleExport('pdf')}
+                    disabled={sections.length === 0}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-md flex items-center gap-2 transition"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Download PDF
+                  </button>
+                  <button
+                    onClick={() => handleExport('docx')}
+                    disabled={sections.length === 0}
+                    className="bg-purple-700 hover:bg-purple-800 disabled:bg-purple-300 text-white px-4 py-2 rounded-md flex items-center gap-2 transition"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Download Word
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!compliance || compliance.overallScore < 0.7) {
+                        runComplianceCheck();
+                      } else {
+                        setDraftStatus('finalized');
+                        toast({
+                          title: "CER Finalized",
+                          description: "Your CER has been marked as finalized.",
+                          variant: "success"
+                        });
+                      }
+                    }}
+                    disabled={sections.length === 0}
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white px-4 py-2 rounded-md flex items-center gap-2 transition"
+                  >
+                    <ClipboardCheck className="h-4 w-4" />
+                    Finalize CER
+                  </button>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

@@ -1,365 +1,289 @@
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { AlertTriangle, CheckCircle, FileText, Info, Printer, Download } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Loader2, AlertCircle, ShieldCheck, FileClock } from 'lucide-react';
+import { FaersRiskBadge } from './FaersRiskBadge';
+import { FaersDemographicsCharts } from './FaersDemographicsCharts';
+import { FaersComparativeChart } from './FaersComparativeChart';
 
 /**
- * CerReportPreview - Component for displaying a preview of the Clinical Evaluation Report
+ * CER Report Preview Component
+ * 
+ * Displays a fully formatted preview of the Clinical Evaluation Report with all sections,
+ * FAERS data integration, and regulatory formatting
  */
-export default function CerReportPreview({ 
+export function CerReportPreview({ 
+  previewData, 
   isLoading = false,
-  previewData = {},
-  productName = 'Medical Device',
-  complianceData = null,
-  complianceThresholds = {
-    OVERALL_THRESHOLD: 0.8, // 80% threshold for passing
-    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings/flagging
-  }
+  productName = 'Device'
 }) {
-  const { title, sections = [], faersData, comparatorData = [], generatedAt, metadata = {} } = previewData;
-  
-  // Format date for display
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (e) {
-      return dateStr;
-    }
-  };
-  
-  // Get section compliance status
-  const getSectionComplianceStatus = (sectionTitle) => {
-    if (!complianceData || !complianceData.sectionScores) return null;
-    
-    const sectionScore = complianceData.sectionScores.find(s => 
-      s.title.toLowerCase() === sectionTitle.toLowerCase()
-    );
-    
-    if (!sectionScore) return null;
-    
-    if (sectionScore.averageScore >= complianceThresholds.OVERALL_THRESHOLD) {
-      return { status: 'compliant', score: sectionScore.averageScore };
-    } else if (sectionScore.averageScore >= complianceThresholds.FLAG_THRESHOLD) {
-      return { status: 'warning', score: sectionScore.averageScore };
-    } else {
-      return { status: 'non-compliant', score: sectionScore.averageScore };
-    }
-  };
-  
-  // Render loading skeleton
   if (isLoading) {
+    return <CerReportSkeleton />;
+  }
+  
+  if (!previewData) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-3/5" />
-          <Skeleton className="h-8 w-24" />
-        </div>
-        
-        <div className="space-y-4">
-          <Skeleton className="h-6 w-2/5" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
+      <div className="flex flex-col items-center justify-center p-8 text-center border rounded-lg bg-muted/20">
+        <AlertCircle className="h-10 w-10 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium">No preview available</h3>
+        <p className="text-sm text-muted-foreground max-w-md mt-2">
+          Generate and add sections to your report using the Section Generator, then switch to Preview.
+        </p>
       </div>
     );
   }
   
-  // If no sections, show empty state
-  if (sections.length === 0) {
-    return (
-      <div className="border rounded-lg p-8 text-center">
-        <Info className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-        <h3 className="text-lg font-medium mb-2">No Report Sections Yet</h3>
-        <p className="text-muted-foreground max-w-md mx-auto mb-6">
-          Use the Section Generator to create content for your Clinical Evaluation Report, or import FAERS data to automatically generate safety sections.
-        </p>
-        <Button variant="outline">
-          <FileText className="mr-2 h-4 w-4" />
-          Start with a Template
-        </Button>
-      </div>
-    );
-  }
+  const { title, sections, faersData, comparatorData, metadata, generatedAt } = previewData;
   
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center border-b pb-4">
-        <div>
-          <h2 className="text-2xl font-bold">{title || 'Clinical Evaluation Report'}</h2>
-          <p className="text-sm text-muted-foreground">
-            Report Preview • {formatDate(generatedAt)} • {sections.length} sections
-          </p>
+    <div className="space-y-6 pb-8">
+      {/* Report Header */}
+      <div className="border-b pb-6">
+        <h1 className="text-2xl font-bold">{title || 'Clinical Evaluation Report'}</h1>
+        <div className="flex items-center text-sm text-muted-foreground mt-2">
+          <FileClock className="h-4 w-4 mr-2" />
+          Generated: {new Date(generatedAt || Date.now()).toLocaleString()}
         </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Printer className="mr-2 h-4 w-4" />
-            Print
-          </Button>
-          
-          <Button size="sm">
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
+        <div className="flex flex-wrap gap-2 mt-4">
+          <Badge variant="outline" className="bg-blue-50">
+            {sections?.length || 0} Sections
+          </Badge>
+          {metadata?.hasFaersData && (
+            <Badge variant="outline" className="bg-green-50">
+              FAERS Data Included
+            </Badge>
+          )}
+          {metadata?.hasComparatorData && (
+            <Badge variant="outline" className="bg-purple-50">
+              Comparative Analysis
+            </Badge>
+          )}
         </div>
       </div>
       
-      {/* Report Content Preview */}
+      {/* Table of Contents */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>EU MDR Clinical Evaluation Report</CardTitle>
-          <CardDescription>
-            {productName} • Generated {formatDate(generatedAt)}
-          </CardDescription>
+        <CardHeader>
+          <CardTitle>Table of Contents</CardTitle>
         </CardHeader>
-        
-        <CardContent className="p-0">
-          <Tabs defaultValue="content">
-            <div className="border-b px-6">
-              <TabsList className="border-b-0">
-                <TabsTrigger value="content" className="p-3">Content Preview</TabsTrigger>
-                <TabsTrigger value="structure" className="p-3">Document Structure</TabsTrigger>
-                {complianceData && (
-                  <TabsTrigger value="compliance" className="p-3">
-                    Compliance
-                    <Badge 
-                      className={`ml-2 ${complianceData.overallScore >= complianceThresholds.OVERALL_THRESHOLD ? 'bg-green-100 text-green-800' : 
-                                      complianceData.overallScore >= complianceThresholds.FLAG_THRESHOLD ? 'bg-amber-100 text-amber-800' : 
-                                      'bg-red-100 text-red-800'}`}
-                    >
-                      {Math.round(complianceData.overallScore * 100)}%
-                    </Badge>
-                  </TabsTrigger>
-                )}
-              </TabsList>
-            </div>
-            
-            <TabsContent value="content" className="p-0">
-              <ScrollArea className="h-[500px] p-6">
-                <div className="max-w-3xl mx-auto space-y-8">
-                  <div className="text-center py-4">
-                    <h1 className="text-2xl font-bold mb-1">{title || 'Clinical Evaluation Report'}</h1>
-                    <p className="text-muted-foreground">For: {productName}</p>
-                    <p className="text-sm text-muted-foreground mt-2">Generated: {formatDate(generatedAt)}</p>
-                  </div>
-                  
-                  <div className="space-y-1 text-sm">
-                    <p><strong>Document ID:</strong> CER-{Date.now().toString().slice(-6)}</p>
-                    <p><strong>Version:</strong> 1.0</p>
-                    <p><strong>Status:</strong> Draft</p>
-                  </div>
-                  
-                  {/* Table of Contents */}
-                  <div>
-                    <h2 className="text-lg font-semibold mb-2">Table of Contents</h2>
-                    <ol className="list-decimal list-inside space-y-1 text-sm">
-                      {sections.map((section, index) => (
-                        <li key={section.id || index} className="pl-2">
-                          {section.title}
-                          
-                          {/* If we have compliance data, show status */}
-                          {getSectionComplianceStatus(section.title) && (
-                            <span className="ml-2">
-                              {getSectionComplianceStatus(section.title).status === 'compliant' ? (
-                                <CheckCircle className="inline h-3 w-3 text-green-500" />
-                              ) : getSectionComplianceStatus(section.title).status === 'warning' ? (
-                                <AlertTriangle className="inline h-3 w-3 text-amber-500" />
-                              ) : (
-                                <AlertTriangle className="inline h-3 w-3 text-red-500" />
-                              )}
-                            </span>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                  
-                  {/* Section Content */}
-                  {sections.map((section, index) => {
-                    const complianceStatus = getSectionComplianceStatus(section.title);
-                    
-                    return (
-                      <div key={section.id || index} className="pb-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h2 className="text-lg font-semibold border-b pb-1">
-                            {index + 1}. {section.title}
-                          </h2>
-                          
-                          {complianceStatus && (
-                            <Badge 
-                              className={`${complianceStatus.status === 'compliant' ? 'bg-green-100 text-green-800' : 
-                                        complianceStatus.status === 'warning' ? 'bg-amber-100 text-amber-800' : 
-                                        'bg-red-100 text-red-800'}`}
-                            >
-                              {Math.round(complianceStatus.score * 100)}% Compliant
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="text-sm space-y-2 prose prose-sm max-w-none">
-                          {section.content.split('\n').map((paragraph, idx) => (
-                            <p key={idx}>{paragraph}</p>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            
-            <TabsContent value="structure" className="p-0">
-              <ScrollArea className="h-[500px] p-6">
-                <div className="max-w-3xl mx-auto">
-                  <div className="space-y-4">
-                    <h3 className="font-medium">Document Structure</h3>
-                    <p className="text-sm text-muted-foreground">
-                      This Clinical Evaluation Report follows the structure defined in MEDDEV 2.7/1 Rev. 4 and EU MDR Annex XIV.
-                    </p>
-                    
-                    <div className="space-y-4">
-                      {sections.map((section, index) => (
-                        <Card key={section.id || index}>
-                          <CardHeader className="py-3">
-                            <div className="flex justify-between items-center">
-                              <CardTitle className="text-base">{index + 1}. {section.title}</CardTitle>
-                              <Badge variant="outline">{section.type || 'Section'}</Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="py-2">
-                            <div className="text-sm text-muted-foreground line-clamp-2">
-                              {section.content.split('\n')[0]}
-                            </div>
-                          </CardContent>
-                          <CardFooter className="py-2 text-xs text-muted-foreground border-t bg-muted/20">
-                            Added: {formatDate(section.dateAdded)}
-                            {section.source && (
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                Source: {section.source}
-                              </Badge>
-                            )}
-                          </CardFooter>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            
-            {complianceData && (
-              <TabsContent value="compliance" className="p-0">
-                <ScrollArea className="h-[500px] p-6">
-                  <div className="max-w-3xl mx-auto space-y-6">
-                    <div className="text-center py-4">
-                      <h3 className="text-lg font-semibold">Regulatory Compliance Analysis</h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Based on EU MDR, ISO 14155, and FDA 21 CFR 812 requirements
-                      </p>
-                    </div>
-                    
-                    <div className="p-4 border rounded-md bg-muted/10">
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-sm font-medium">Overall Compliance Score</span>
-                        <span className="font-semibold text-lg">
-                          {Math.round(complianceData.overallScore * 100)}%
-                        </span>
-                      </div>
-                      
-                      <Progress
-                        value={complianceData.overallScore * 100}
-                        className={`h-2 ${complianceData.overallScore >= complianceThresholds.OVERALL_THRESHOLD ? 'bg-green-600' : 
-                                        complianceData.overallScore >= complianceThresholds.FLAG_THRESHOLD ? 'bg-amber-600' : 
-                                        'bg-red-600'}`}
-                      />
-                      
-                      <div className="text-sm mt-2 space-y-1">
-                        <p><strong>Assessment:</strong> {complianceData.summary}</p>
-                        
-                        <div className="flex gap-4 mt-2">
-                          <Badge variant="outline" className="bg-green-50 text-green-800">
-                            Pass: ≥{Math.round(complianceThresholds.OVERALL_THRESHOLD * 100)}%
-                          </Badge>
-                          <Badge variant="outline" className="bg-amber-50 text-amber-800">
-                            Warning: ≥{Math.round(complianceThresholds.FLAG_THRESHOLD * 100)}%
-                          </Badge>
-                          <Badge variant="outline" className="bg-red-50 text-red-800">
-                            Fail: &lt;{Math.round(complianceThresholds.FLAG_THRESHOLD * 100)}%
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {complianceData.standards && Object.entries(complianceData.standards).map(([standard, data]) => (
-                        <Card key={standard}>
-                          <CardHeader className="py-3">
-                            <CardTitle className="text-base">{standard}</CardTitle>
-                          </CardHeader>
-                          <CardContent className="py-2">
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-sm">Score</span>
-                              <Badge 
-                                className={`${data.score >= complianceThresholds.OVERALL_THRESHOLD ? 'bg-green-100 text-green-800' : 
-                                          data.score >= complianceThresholds.FLAG_THRESHOLD ? 'bg-amber-100 text-amber-800' : 
-                                          'bg-red-100 text-red-800'}`}
-                              >
-                                {Math.round(data.score * 100)}%
-                              </Badge>
-                            </div>
-                            <Progress
-                              value={data.score * 100}
-                              className="h-1.5"
-                            />
-                          </CardContent>
-                          <CardFooter className="py-2 text-xs border-t">
-                            {data.criticalGaps?.length > 0 ? (
-                              <div className="w-full">
-                                <p className="font-medium flex items-center text-amber-800">
-                                  <AlertTriangle className="h-3 w-3 mr-1 text-amber-500" />
-                                  Critical Gaps: {data.criticalGaps.length}
-                                </p>
-                                <ul className="list-disc list-inside mt-1 text-amber-700">
-                                  {data.criticalGaps.slice(0, 2).map((gap, i) => (
-                                    <li key={i} className="line-clamp-1">{gap}</li>
-                                  ))}
-                                  {data.criticalGaps.length > 2 && (
-                                    <li>+ {data.criticalGaps.length - 2} more</li>
-                                  )}
-                                </ul>
-                              </div>
-                            ) : (
-                              <div className="text-green-700 flex items-center">
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                No critical issues found
-                              </div>
-                            )}
-                          </CardFooter>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                </ScrollArea>
-              </TabsContent>
+        <CardContent>
+          <ol className="list-decimal list-inside space-y-1 pl-2">
+            {sections?.map((section, index) => (
+              <li key={section.id || index} className="text-blue-600 hover:underline cursor-pointer">
+                {section.title || 'Untitled Section'}
+              </li>
+            ))}
+            {faersData && faersData.length > 0 && (
+              <li className="text-blue-600 hover:underline cursor-pointer">
+                FDA Adverse Event Analysis
+              </li>
             )}
-          </Tabs>
+            {comparatorData && comparatorData.length > 0 && (
+              <li className="text-blue-600 hover:underline cursor-pointer">
+                Comparative Product Analysis
+              </li>
+            )}
+          </ol>
         </CardContent>
       </Card>
+      
+      {/* Report Sections */}
+      {sections?.map((section, index) => (
+        <Card key={section.id || index} id={`section-${index}`} className="overflow-hidden">
+          <CardHeader className="bg-muted/30">
+            <div className="flex justify-between items-start">
+              <CardTitle>{section.title || 'Untitled Section'}</CardTitle>
+              <Badge variant="outline">
+                Section {index + 1}
+              </Badge>
+            </div>
+            {section.description && (
+              <CardDescription>{section.description}</CardDescription>
+            )}
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="prose max-w-none dark:prose-invert">
+              {section.content ? (
+                section.content.split('\n').map((paragraph, idx) => (
+                  <p key={idx}>{paragraph}</p>
+                ))
+              ) : (
+                <p className="text-muted-foreground italic">No content available for this section.</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+      
+      {/* FAERS Data Section */}
+      {faersData && faersData.length > 0 && (
+        <Card id="faers-analysis">
+          <CardHeader className="bg-muted/30">
+            <div className="flex justify-between items-start">
+              <CardTitle>FDA Adverse Event Analysis</CardTitle>
+              <Badge variant="outline" className="bg-blue-50">
+                FAERS Data
+              </Badge>
+            </div>
+            <CardDescription>
+              Analysis of adverse event reports from the FDA Adverse Event Reporting System (FAERS)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-muted/20 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium mb-2">Safety Assessment</h3>
+                  <div className="flex items-center">
+                    <FaersRiskBadge 
+                      riskLevel={previewData.faersData?.severityAssessment?.toLowerCase() || 'low'} 
+                      score={previewData.faersData?.riskScore || 2} 
+                    />
+                  </div>
+                </div>
+                
+                <div className="bg-muted/20 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium mb-2">Report Summary</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Total Reports</p>
+                      <p className="text-xl font-semibold">{previewData.faersData?.totalReports || faersData.length}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Serious Events</p>
+                      <p className="text-xl font-semibold">{previewData.faersData?.seriousEvents?.length || '—'}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-muted/20 p-4 rounded-lg">
+                  <h3 className="text-sm font-medium mb-2">Most Common Reactions</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {previewData.faersData?.topReactions?.slice(0, 5).map((reaction, idx) => (
+                      <Badge key={idx} variant="secondary">
+                        {reaction.term || reaction.event} ({reaction.count})
+                      </Badge>
+                    )) || (
+                      <p className="text-xs text-muted-foreground">No reaction data available</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* FAERS Demographics Charts */}
+              {previewData.faersData && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium mb-4">Demographics Analysis</h3>
+                  <div className="border rounded-lg p-4">
+                    <FaersDemographicsCharts faersData={previewData.faersData} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Comparator Analysis Section */}
+      {comparatorData && comparatorData.length > 0 && (
+        <Card id="comparative-analysis">
+          <CardHeader className="bg-muted/30">
+            <div className="flex justify-between items-start">
+              <CardTitle>Comparative Product Analysis</CardTitle>
+              <Badge variant="outline" className="bg-purple-50">
+                Comparator Data
+              </Badge>
+            </div>
+            <CardDescription>
+              Analysis of {comparatorData.length} similar products for comparative safety and performance
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              <p>
+                This section provides a comparative analysis of {productName} against {comparatorData.length} similar products 
+                identified based on pharmacological class, mechanism of action, and therapeutic use.
+              </p>
+              
+              {/* Comparator Chart */}
+              <div className="border rounded-lg p-4">
+                <h3 className="text-sm font-medium mb-4">Adverse Event Comparison</h3>
+                <FaersComparativeChart 
+                  productName={productName} 
+                  faersData={{ comparators: comparatorData }} 
+                />
+              </div>
+              
+              {/* Conclusions */}
+              <div className="bg-muted/20 p-4 rounded-lg mt-4">
+                <div className="flex items-start">
+                  <ShieldCheck className="h-5 w-5 text-green-600 mt-0.5 mr-2" />
+                  <div>
+                    <h3 className="text-sm font-medium">Safety Profile Assessment</h3>
+                    <p className="text-sm mt-1">
+                      Based on comparative analysis, {productName} demonstrates a {' '}
+                      {previewData.faersData?.comparisonResult?.toLowerCase() || 'favorable'} safety profile 
+                      relative to similar products in its class.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// Loading skeleton for the CER Report Preview
+function CerReportSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="border-b pb-6">
+        <Skeleton className="h-8 w-2/3" />
+        <Skeleton className="h-4 w-1/3 mt-2" />
+        <div className="flex gap-2 mt-4">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-6 w-24" />
+        </div>
+      </div>
+      
+      <div className="border rounded-lg p-4">
+        <Skeleton className="h-6 w-40 mb-4" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </div>
+      
+      <div className="border rounded-lg">
+        <div className="p-4 border-b">
+          <Skeleton className="h-6 w-1/3" />
+        </div>
+        <div className="p-6 space-y-4">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      </div>
+      
+      <div className="border rounded-lg">
+        <div className="p-4 border-b">
+          <Skeleton className="h-6 w-1/3" />
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+          <Skeleton className="h-56 w-full" />
+        </div>
+      </div>
     </div>
   );
 }
