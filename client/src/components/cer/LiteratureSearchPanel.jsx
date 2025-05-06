@@ -1,7 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { searchLiterature, generateCitations, summarizePaper } from '@/services/LiteratureAPIService';
+import React, { useState, useEffect, useCallback } from 'react';
+import { searchLiterature, generateCitations, summarizePaper, generateLiteratureReview, analyzePaperPDF } from '@/services/LiteratureAPIService';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, BookOpen, Search, Plus, Check, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, BookOpen, Search, Plus, Check, FileText, Upload, Download, DownloadCloud, FileUp, RefreshCw, Sparkles, CheckCircle, AlertCircle, BookOpenCheck, BookmarkCheck, Zap, Trophy, CheckSquare, BookMarked } from 'lucide-react';
 
 /**
  * Literature Search Panel Component for CER Generator
@@ -9,23 +21,47 @@ import { Loader2, BookOpen, Search, Plus, Check, FileText } from 'lucide-react';
  * Provides functionality to search PubMed and Google Scholar for literature related to a medical device,
  * select relevant papers, generate summaries, and create citations for integration into the CER.
  */
-const LiteratureSearchPanel = ({ cerTitle, onAddToCER }) => {
+const LiteratureSearchPanel = ({ cerTitle, onAddToCER, deviceName = 'Shoulder Arthroplasty System', manufacturer = 'Arthrosurface, Inc.' }) => {
+  const { toast } = useToast();
+  
+  // Search state
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState({
-    yearFrom: new Date().getFullYear() - 5, // Default to last 5 years
+    yearFrom: new Date().getFullYear() - 10, // Default to last 10 years for medical devices
     yearTo: new Date().getFullYear(),
-    journalType: ''
+    journalType: '',
+    relevanceFilter: 'high' // high, medium, all
   });
-  const [searchSources, setSearchSources] = useState(['pubmed', 'googleScholar']);
+  const [searchSources, setSearchSources] = useState(['pubmed', 'googleScholar', 'clinicalTrials']);
+  const [activeTab, setActiveTab] = useState('search'); // search, upload, review, generate
+  const [searchMethod, setSearchMethod] = useState('keywords'); // keywords, clinical, meddev
+  
+  // Results and selection state
   const [results, setResults] = useState([]);
   const [selectedPapers, setSelectedPapers] = useState([]);
   const [citations, setCitations] = useState('');
+  const [generatedReview, setGeneratedReview] = useState(null);
+  const [literatureReviewOptions, setLiteratureReviewOptions] = useState({
+    focus: 'both', // safety, efficacy, both
+    format: 'comprehensive', // comprehensive, concise
+    citationStyle: 'vancouverStyle',
+    includeEvidenceGrading: true,
+    conformToMeddev: true
+  });
+  
+  // Loading states
   const [isLoading, setIsLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [generatingReview, setGeneratingReview] = useState(false);
+  
+  // UI states
   const [error, setError] = useState(null);
   const [searchMetadata, setSearchMetadata] = useState(null);
   const [paperSummaries, setPaperSummaries] = useState({});
   const [activePaper, setActivePaper] = useState(null);
+  const [fileUploadError, setFileUploadError] = useState(null);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
 
   // Default to using the CER title as the query if no query is entered
   const effectiveQuery = query || cerTitle; 
@@ -188,12 +224,164 @@ ${citations}
     onAddToCER(literatureSection);
   };
 
+  // Handle file upload and analysis
+  const handleFileUpload = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setFileUploadError('No file selected');
+      return;
+    }
+    
+    // Verify file is a PDF
+    if (file.type !== 'application/pdf') {
+      setFileUploadError('Please upload a PDF file');
+      return;
+    }
+    
+    try {
+      setUploadLoading(true);
+      setFileUploadError(null);
+      
+      const data = await analyzePaperPDF({
+        file,
+        context: {
+          cerTitle,
+          deviceName,
+          manufacturer
+        }
+      });
+      
+      // Create a result object similar to search results
+      const paperResult = {
+        id: `upload-${Date.now()}`,
+        title: data.title || 'Uploaded Paper',
+        authors: data.authors || [],
+        journal: data.journal || 'Unknown Journal',
+        publicationDate: data.publicationDate || 'Unknown Date',
+        abstract: data.abstract || '',
+        fullText: data.fullText || '',
+        source: 'Upload',
+        url: '#'
+      };
+      
+      // Add the paper to results and select it
+      setResults(prev => [paperResult, ...prev]);
+      setSelectedPapers(prev => [...prev, paperResult]);
+      setActivePaper(paperResult.id);
+      
+      // Generate summary
+      setPaperSummaries(prev => ({
+        ...prev,
+        [paperResult.id]: data.summary || 'No summary generated.'
+      }));
+      
+      toast({
+        title: 'PDF Analyzed Successfully',
+        description: 'The paper has been analyzed and added to your selections.',
+      });
+      
+    } catch (err) {
+      console.error('PDF analysis failed:', err);
+      setFileUploadError(`Failed to analyze PDF: ${err.message}`);
+      toast({
+        title: 'PDF Analysis Failed',
+        description: err.message || 'Please try another file',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploadLoading(false);
+    }
+  }, [cerTitle, deviceName, manufacturer, toast]);
+  
+  // Generate a comprehensive literature review with AI
+  const generateAILiteratureReview = async () => {
+    if (selectedPapers.length === 0) {
+      toast({
+        title: 'No Papers Selected',
+        description: 'Please select at least one paper to generate a review',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    try {
+      setGeneratingReview(true);
+      setError(null);
+      
+      // Prepare papers with summaries
+      const papersWithSummaries = selectedPapers.map(paper => ({
+        ...paper,
+        summary: paperSummaries[paper.id] || paper.abstract
+      }));
+      
+      const data = await generateLiteratureReview({
+        papers: papersWithSummaries,
+        context: {
+          cerTitle,
+          deviceName,
+          manufacturer,
+          standard: 'MEDDEV 2.7/1 Rev 4',
+          section: 'Literature Review'
+        },
+        options: literatureReviewOptions
+      });
+      
+      setGeneratedReview(data.review);
+      setCitations(data.citations);
+      setShowReviewDialog(true);
+      
+      toast({
+        title: 'Literature Review Generated',
+        description: 'Your MEDDEV 2.7/1 Rev 4 compliant literature review is ready',
+      });
+      
+    } catch (err) {
+      console.error('Literature review generation failed:', err);
+      setError(`Failed to generate literature review: ${err.message}`);
+      toast({
+        title: 'Generation Failed',
+        description: err.message || 'Please try again with different papers',
+        variant: 'destructive'
+      });
+    } finally {
+      setGeneratingReview(false);
+    }
+  };
+
+  // Handle adding the generated review to the CER
+  const addGeneratedReviewToCER = () => {
+    if (!generatedReview) return;
+    
+    const literatureSection = {
+      type: 'Literature Review',
+      content: generatedReview
+    };
+    
+    onAddToCER(literatureSection);
+    setShowReviewDialog(false);
+    
+    toast({
+      title: 'Added to CER',
+      description: 'Literature review has been added to your report',
+    });
+  };
+
   return (
-    <div className="space-y-6 p-4 border rounded-md bg-white">
-      <div>
-        <h2 className="text-xl font-bold">Literature AI Search</h2>
-        <p className="text-sm text-gray-500">Search scientific literature for your Clinical Evaluation Report</p>
-      </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Literature Review AI</CardTitle>
+              <CardDescription>
+                Generate a MEDDEV 2.7/1 Rev 4 compliant literature review for your Clinical Evaluation Report
+              </CardDescription>
+            </div>
+            <Badge variant="outline" className="ml-2">
+              MEDDEV 2.7/1 Rev 4 Compliant
+            </Badge>
+          </div>
+        </CardHeader>
       
       {error && (
         <div className="p-3 text-sm bg-red-50 border border-red-200 text-red-600 rounded">
