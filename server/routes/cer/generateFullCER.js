@@ -14,6 +14,103 @@ const openai = new OpenAI({
 });
 
 /**
+ * Calculate initial compliance score based on section content
+ * @param {Array} sections - Generated CER sections
+ * @param {string} regulatoryPath - The regulatory framework used
+ * @returns {Object} - Compliance scores by framework
+ */
+function calculateComplianceScore(sections, regulatoryPath) {
+  // Define compliance criteria by regulatory framework
+  const criteriaBySections = {
+    'EU-MDR': {
+      'device-description': ['detailed description', 'components', 'specifications', 'materials'],
+      'intended-purpose': ['intended use', 'indications', 'contraindications', 'patient population'],
+      'state-of-art': ['current technology', 'alternative treatments', 'standards', 'benchmarks'],
+      'clinical-data': ['clinical evidence', 'patient outcomes', 'data analysis', 'effectiveness'],
+      'post-market': ['surveillance', 'vigilance', 'monitoring', 'feedback'],
+      'literature-review': ['systematic review', 'search methodology', 'appraisal', 'synthesis'],
+      'benefit-risk': ['benefits', 'risks', 'mitigation', 'ratio analysis'],
+      'conclusion': ['summary findings', 'clinical evaluation', 'justification', 'recommendations']
+    },
+    'ISO-14155': {
+      'trial-design': ['study design', 'objectives', 'endpoints', 'methodology'],
+      'patient-selection': ['inclusion criteria', 'exclusion criteria', 'demographics', 'recruitment'],
+      'risk-assessment': ['risk analysis', 'mitigation measures', 'residual risks', 'safety'],
+      'device-description': ['specifications', 'components', 'mechanism of action', 'technical details'],
+      'safety-monitoring': ['adverse events', 'reporting procedures', 'safety assessment', 'monitoring'],
+      'endpoint-analysis': ['primary endpoints', 'secondary endpoints', 'success criteria', 'analysis'],
+      'statistical-methods': ['sample size', 'statistical tests', 'power analysis', 'confidence intervals']
+    },
+    'US-FDA': {
+      'device-description': ['detailed description', 'components', 'specifications', 'materials'],
+      'indications': ['indications for use', 'intended use', 'target population', 'medical conditions'],
+      'technological': ['technology', 'principles of operation', 'specifications', 'design'],
+      'performance-data': ['bench testing', 'animal studies', 'clinical data', 'validation'],
+      'safety-effectiveness': ['safety measures', 'effectiveness evidence', 'benefit-risk', 'analysis'],
+      'substantial-equivalence': ['predicate device', 'comparison', 'equivalence justification', 'differences'],
+      'conclusion': ['summary findings', 'clinical evaluation', 'justification', 'recommendations']
+    }
+  };
+  
+  // Calculate framework-specific scores
+  const frameworkScores = {};
+  const frameworks = ['EU-MDR', 'ISO-14155', 'US-FDA'];
+  
+  for (const framework of frameworks) {
+    const criteria = criteriaBySections[framework];
+    if (!criteria) continue;
+    
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+    const sectionScores = {};
+    
+    // For each section type in the criteria
+    for (const [sectionType, keywords] of Object.entries(criteria)) {
+      const matchingSection = sections.find(s => s.type === sectionType);
+      if (!matchingSection) continue;
+      
+      // Score based on keyword presence
+      let sectionScore = 0;
+      const content = matchingSection.content.toLowerCase();
+      
+      for (const keyword of keywords) {
+        if (content.includes(keyword.toLowerCase())) {
+          sectionScore += 1;
+        }
+      }
+      
+      // Calculate percentage score for this section
+      const sectionPercentage = keywords.length > 0 ? (sectionScore / keywords.length) : 0;
+      sectionScores[sectionType] = sectionPercentage;
+      
+      totalScore += sectionScore;
+      maxPossibleScore += keywords.length;
+    }
+    
+    // Calculate overall framework score
+    const overallScore = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) : 0;
+    
+    frameworkScores[framework] = {
+      overallScore,
+      sectionScores
+    };
+  }
+  
+  // Determine primary framework score (the one used for generation)
+  const primaryFramework = regulatoryPath || 'EU-MDR';
+  const primaryScore = frameworkScores[primaryFramework] || { overallScore: 0.5, sectionScores: {} };
+  
+  // Return complete compliance data
+  return {
+    overallScore: primaryScore.overallScore,
+    primary: primaryFramework,
+    standards: frameworkScores,
+    compliance_date: new Date().toISOString(),
+    evaluationMethod: 'automated-keyword-analysis'
+  };
+}
+
+/**
  * Generate required sections for a regulatory framework
  * @param {string} framework - The regulatory framework (EU-MDR, ISO-14155, US-FDA)
  * @returns {Array} Array of required section objects
@@ -159,19 +256,26 @@ async function generateFullCER(req, res) {
       await new Promise(resolve => setTimeout(resolve, 200));
     }
     
+    // Calculate initial compliance scores
+    const complianceScore = calculateComplianceScore(generatedSections, regulatoryPath);
+    
     // Prepare the full CER response
     const fullCER = {
       title: `Clinical Evaluation Report: ${deviceName}`,
       deviceName,
       deviceType,
+      manufacturer,
       regulatoryPath,
       generatedAt: new Date().toISOString(),
       sections: generatedSections,
+      complianceScore,
       metadata: {
         generationMethod: 'Zero-Click AI-powered CER',
         model: 'gpt-4o',
         dataSources,
-        uploadedFiles
+        literatureCount: literature.length || 0,
+        faersReportCount: fdaData ? fdaData.reportCount || 0 : 0,
+        literatureSourceCount: literature.length || 0
       }
     };
     

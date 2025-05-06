@@ -185,7 +185,10 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
                   />
                 </div>
                 <div className="flex justify-between items-start">
-                  <p className="text-sm flex-grow mr-4">{complianceData.summary}</p>
+                  <p className="text-sm flex-grow mr-4">
+                    {complianceData.summary || 
+                     `This report scores ${formatPercent(complianceData.overallScore)} overall against ${complianceData.primary || 'regulatory'} standards. ${complianceData.overallScore >= 0.8 ? 'The document is compliant and ready for submission.' : complianceData.overallScore >= 0.6 ? 'Some improvements are recommended before submission.' : 'Significant improvements are needed before submission.'}`}
+                  </p>
                   <button
                     onClick={handleExportPDF}
                     disabled={exporting}
@@ -212,72 +215,77 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold mb-2 flex items-center gap-2">
-                    {formatPercent(data.score)}
-                    <Badge variant={getBadgeVariant(data.score)} className="text-xs">
-                      {data.score >= 0.8 ? 'Pass' : data.score >= 0.6 ? 'Needs Improvement' : 'Non-compliant'}
+                    {formatPercent(data.overallScore)}
+                    <Badge variant={getBadgeVariant(data.overallScore)} className="text-xs">
+                      {data.overallScore >= 0.8 ? 'Pass' : data.overallScore >= 0.6 ? 'Needs Improvement' : 'Non-compliant'}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {data.criticalGaps?.length ? 
-                      `${data.criticalGaps.length} critical issues identified` : 
-                      'No critical issues found'}
+                    {Object.keys(data.sectionScores || {}).length} sections analyzed
                   </p>
                 </CardContent>
               </Card>
             ))}
           </div>
           
-          {/* Section Breakdown */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle>Section Compliance Breakdown</CardTitle>
-              <CardDescription>Detailed analysis by section</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="single" collapsible>
-                {complianceData.sectionScores?.map((section) => (
-                  <AccordionItem value={section.id} key={section.id}>
-                    <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center justify-between w-full pr-4">
-                        <span>{section.title}</span>
-                        <span className={`${getScoreColor(section.averageScore)} font-semibold`}>
-                          {formatPercent(section.averageScore)}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4 pt-2">
-                        {/* Standards breakdown for this section */}
-                        <div className="grid grid-cols-1 gap-4">
-                          {Object.entries(section.standards || {}).map(([standard, data]) => (
-                            <div key={standard} className="border rounded-md p-3">
-                              <div className="flex justify-between items-center mb-2">
-                                <h4 className="font-medium">{standard}</h4>
-                                <Badge variant={getBadgeVariant(data.score)}>
-                                  {formatPercent(data.score)}
-                                </Badge>
-                              </div>
-                              <p className="text-sm mb-2">{data.feedback}</p>
-                              {data.suggestions?.length > 0 && (
-                                <div>
-                                  <h5 className="text-sm font-medium mb-1">Suggestions:</h5>
+          {/* Section Breakdown by Framework */}
+          {Object.entries(complianceData.standards || {}).map(([framework, frameworkData]) => (
+            <Card key={framework} className="mt-4">
+              <CardHeader className="pb-2">
+                <CardTitle>{framework} Section Analysis</CardTitle>
+                <CardDescription>Detailed compliance analysis by section</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible>
+                  {Object.entries(frameworkData.sectionScores || {}).map(([sectionType, score]) => {
+                    // Find matching section in generated sections
+                    const matchingSection = sections.find(s => s.type === sectionType);
+                    if (!matchingSection) return null;
+                    
+                    return (
+                      <AccordionItem value={sectionType} key={sectionType}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div className="flex items-center justify-between w-full pr-4">
+                            <span>{matchingSection.title}</span>
+                            <span className={`${getScoreColor(score)} font-semibold`}>
+                              {formatPercent(score)}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-4 pt-2">
+                            <div className="border rounded-md p-3">
+                              <h4 className="font-medium mb-2">Compliance Analysis</h4>
+                              <p className="text-sm">
+                                {score >= 0.8 ? 
+                                  `This section meets ${framework} requirements and is compliant.` : 
+                                  score >= 0.6 ? 
+                                  `This section needs some improvements to fully meet ${framework} requirements.` : 
+                                  `This section requires significant revisions to meet ${framework} requirements.`}
+                              </p>
+                              
+                              {score < 0.8 && (
+                                <div className="mt-3">
+                                  <h5 className="text-sm font-medium mb-1">Improvement Suggestions:</h5>
                                   <ul className="list-disc list-inside text-sm space-y-1">
-                                    {data.suggestions.map((suggestion, idx) => (
-                                      <li key={idx}>{suggestion}</li>
-                                    ))}
+                                    {score < 0.6 && (
+                                      <li>Add more detailed information specific to {framework} requirements</li>
+                                    )}
+                                    <li>Enhance content with specific references to {framework} standards</li>
+                                    <li>Include more quantitative data and analysis</li>
                                   </ul>
                                 </div>
                               )}
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
