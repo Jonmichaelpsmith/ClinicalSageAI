@@ -355,26 +355,70 @@ router.post('/preview', async (req, res) => {
   }
 });
 
-// POST /api/cer/export-pdf - Export CER as PDF
+// POST /api/cer/export-pdf - Export CER as PDF following MEDDEV 2.7/1 Rev 4 format
 router.post('/export-pdf', async (req, res) => {
   try {
-    const { title, sections, faers, comparators } = req.body;
+    const { 
+      title, 
+      sections, 
+      faers, 
+      comparators, 
+      metadata = {}, 
+      templateId, 
+      deviceInfo = {} 
+    } = req.body;
     
-    // In a real implementation, this would generate a PDF using a library like PDFKit
-    // For now, we'll return a mock PDF response
+    console.log(`Exporting PDF with title: ${title}, sections: ${sections?.length || 0}, template: ${templateId || 'meddev'}`);
     
-    console.log(`Exporting PDF with title: ${title}, sections: ${sections?.length || 0}`);
+    // Import the PDF exporter service
+    const { generateCerPdf } = require('../services/cerPdfExporter');
+    
+    // Prepare data for PDF generation
+    const pdfData = {
+      title: title || 'Clinical Evaluation Report',
+      sections: sections || [],
+      deviceInfo: {
+        name: deviceInfo.name || deviceInfo.deviceName || title?.split(' - ')[0] || 'Medical Device',
+        manufacturer: deviceInfo.manufacturer || 'Manufacturer',
+        type: deviceInfo.type || deviceInfo.deviceType || 'Class IIb',
+        ...deviceInfo
+      },
+      metadata: {
+        standard: metadata.standard || (
+          templateId === 'fda-510k' ? 'FDA 510(k)' : 
+          templateId === 'iso-14155' ? 'ISO 14155' : 
+          'MEDDEV 2.7/1 Rev 4'
+        ),
+        documentId: metadata.documentId || `CER-${Date.now().toString().substring(0, 8)}`,
+        version: metadata.version || '1.0.0',
+        generatedAt: metadata.generatedAt || new Date().toISOString(),
+        author: metadata.author || 'TrialSage AI',
+        confidential: metadata.confidential !== false,
+        showWatermark: metadata.showWatermark !== false,
+        includeAppendices: true,
+        reviewStatus: metadata.reviewStatus || 'draft',
+        ...metadata
+      },
+      faers: faers || [],
+      comparators: comparators || []
+    };
+    
+    // Generate the PDF
+    const pdfBuffer = await generateCerPdf(pdfData);
+    
+    // Format the filename
+    const sanitizedTitle = title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'clinical_evaluation_report';
+    const filename = `${sanitizedTitle}_${new Date().toISOString().split('T')[0]}.pdf`;
     
     // Set the response headers
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="cer_report.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     
-    // In a real implementation, we would generate and stream the PDF here
-    // For demonstration, we'll just send a placeholder message
-    res.send('PDF generation would happen here in production');
+    // Send the PDF
+    res.send(pdfBuffer);
   } catch (error) {
     console.error('Error exporting PDF:', error);
-    res.status(500).json({ error: 'Failed to export PDF' });
+    res.status(500).json({ error: `Failed to export PDF: ${error.message}` });
   }
 });
 
