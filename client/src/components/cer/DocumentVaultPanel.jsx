@@ -576,99 +576,117 @@ export default function DocumentVaultPanel({ jobId }) {
       
       {/* Upload Dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white border-none shadow-lg">
           <DialogHeader>
-            <DialogTitle>Upload Document</DialogTitle>
+            <DialogTitle className="text-[#323130] text-lg font-semibold">Upload Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-3">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <UploadCloud className="h-10 w-10 text-gray-400 mx-auto mb-4" />
-              <h3 className="font-medium mb-1">Drag and drop files</h3>
-              <p className="text-sm text-gray-500 mb-3">or click to browse</p>
-              <Button>Select Files</Button>
+            <div className="border-2 border-dashed border-[#E1DFDD] rounded-lg p-6 text-center bg-[#FAF9F8]">
+              <UploadCloud className="h-10 w-10 text-[#0F6CBD] mx-auto mb-4" />
+              <h3 className="font-medium mb-1 text-[#323130]">Drag and drop files</h3>
+              <p className="text-sm text-[#616161] mb-3">or click to browse</p>
+              <Button className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white">
+                Select Files
+              </Button>
             </div>
-            <div className="text-sm text-gray-500">
-              <p>Supported file types: PDF, DOCX, XLSX, PPTX</p>
+            <div className="text-sm text-[#616161]">
+              <p className="mb-1">Supported file types: PDF, DOCX, XLSX, PPTX</p>
               <p>Maximum file size: 50MB</p>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowUploadDialog(false)}
+              className="border-[#E1DFDD] text-[#616161]"
+            >
               Cancel
             </Button>
-            <Button>Upload Files</Button>
+            <Button className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white">
+              Upload Files
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
       {/* Share Dialog */}
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white border-none shadow-lg">
           <DialogHeader>
-            <DialogTitle>Share Document</DialogTitle>
+            <DialogTitle className="text-[#323130] text-lg font-semibold">Share Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-3">
             {selectedDocument && (
-              <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-md">
+              <div className="flex items-start space-x-3 p-3 bg-[#FAF9F8] rounded-md border border-[#E1DFDD]">
                 {getFileIcon(selectedDocument.type)}
                 <div>
-                  <div className="font-medium">{selectedDocument.name}</div>
-                  <div className="text-sm text-gray-500">v{selectedDocument.version} • {selectedDocument.size}</div>
+                  <div className="font-medium text-[#323130]">{selectedDocument.name}</div>
+                  <div className="text-sm text-[#616161]">v{selectedDocument.version} • {selectedDocument.size}</div>
                 </div>
               </div>
             )}
             
             <div className="space-y-3">
-              <h4 className="font-medium text-sm">Share with People</h4>
+              <h4 className="font-medium text-sm text-[#323130]">Share with People</h4>
               <div className="flex space-x-2">
-                <Input placeholder="Enter email addresses" className="flex-1" />
-                <Button variant="outline">
-                  <Users className="h-4 w-4" />
+                <Input placeholder="Enter email addresses" className="flex-1 border-[#E1DFDD] focus:border-[#0F6CBD] focus:ring-1 focus:ring-[#0F6CBD]" />
+                <Button variant="outline" className="border-[#E1DFDD]">
+                  <Users className="h-4 w-4 text-[#0F6CBD]" />
                 </Button>
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-medium text-sm">Permission Settings</h4>
+                <h4 className="font-medium text-sm text-[#323130]">Permission Settings</h4>
                 <div className="flex items-center space-x-2">
                   <input
                     type="radio"
                     id="view-only"
                     name="permission"
                     defaultChecked
+                    className="text-[#0F6CBD] focus:ring-[#0F6CBD]"
                   />
-                  <label htmlFor="view-only" className="text-sm">View Only</label>
+                  <label htmlFor="view-only" className="text-sm text-[#323130]">View Only</label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
                     type="radio"
                     id="view-download"
                     name="permission"
+                    className="text-[#0F6CBD] focus:ring-[#0F6CBD]"
                   />
-                  <label htmlFor="view-download" className="text-sm">View & Download</label>
+                  <label htmlFor="view-download" className="text-sm text-[#323130]">View & Download</label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
                     type="radio"
                     id="edit"
                     name="permission"
+                    className="text-[#0F6CBD] focus:ring-[#0F6CBD]"
                   />
-                  <label htmlFor="edit" className="text-sm">Edit</label>
+                  <label htmlFor="edit" className="text-sm text-[#323130]">Edit</label>
                 </div>
               </div>
             </div>
             
-            <div className="bg-blue-50 p-3 rounded-md">
-              <div className="flex items-start text-sm text-blue-700">
-                <CheckCircle2 className="h-4 w-4 mr-2 mt-0.5 text-blue-500 flex-shrink-0" />
+            <div className="bg-[#E5F2FF] p-3 rounded-md border border-[#0F6CBD] border-opacity-30">
+              <div className="flex items-start text-sm text-[#0F6CBD]">
+                <CheckCircle2 className="h-4 w-4 mr-2 mt-0.5 text-[#0F6CBD] flex-shrink-0" />
                 <p>An email with access instructions will be sent to all recipients.</p>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowShareDialog(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowShareDialog(false)}
+              className="border-[#E1DFDD] text-[#616161]"
+            >
               Cancel
             </Button>
-            <Button onClick={() => setShowShareDialog(false)}>
+            <Button 
+              onClick={() => setShowShareDialog(false)}
+              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+            >
               Share Document
             </Button>
           </DialogFooter>
