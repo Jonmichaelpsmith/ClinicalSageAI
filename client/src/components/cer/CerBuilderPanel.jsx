@@ -105,25 +105,46 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
   const addToReport = () => {
     if (!generatedSection) return;
     
+    // Check if we need to handle additional metadata from AI generation
+    const content = generatedSection.content;
+    const model = generatedSection.model || 'gpt-4o';
+    
     const newSection = {
       id: `section-${Date.now()}`,
       type: selectedSectionType,
       title: getSelectedSectionLabel(),
-      content: generatedSection.content,
+      content: content,
+      markdown: true, // Flag to indicate markdown formatting
       dateAdded: new Date().toISOString(),
+      metadata: {
+        generatedBy: model,
+        contextLength: sectionContext.length,
+        regulatoryStandard: 'EU MDR 2017/745',
+        complianceChecked: false
+      }
     };
     
-    const updatedSections = [...cerSections, newSection];
+    // Add to beginning if it's a device description or clinical background
+    // otherwise add to the end
+    let updatedSections;
+    if (['device-description', 'clinical-background'].includes(selectedSectionType) && cerSections.length > 0) {
+      updatedSections = [newSection, ...cerSections];
+    } else {
+      updatedSections = [...cerSections, newSection];
+    }
+    
     setCerSections(updatedSections);
     onSectionsChange(updatedSections);
     
+    // Show toast with additional model info if available
     toast({
       title: 'Section added',
-      description: `${newSection.title} added to report.`,
+      description: `${newSection.title} added to report${model ? ` (generated with ${model})` : ''}.`,
     });
     
-    // Clear generated section
+    // Clear generated section and context for a fresh start
     setGeneratedSection(null);
+    setSectionContext('');
   };
   
   // Get the human-readable label for the selected section type
@@ -233,16 +254,41 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
             {generatedSection && (
               <div className="bg-white border border-[#E1DFDD] rounded mt-4">
                 <div className="p-4 border-b border-[#E1DFDD] bg-[#FAF9F8]">
-                  <h3 className="text-base font-semibold text-[#323130]">{getSelectedSectionLabel()}</h3>
-                  <p className="text-xs text-[#616161] mt-1">
-                    AI-generated content based on your inputs
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-semibold text-[#323130]">{getSelectedSectionLabel()}</h3>
+                      <p className="text-xs text-[#616161] mt-1">
+                        AI-generated content based on your inputs
+                      </p>
+                    </div>
+                    {generatedSection.model && (
+                      <Badge variant="outline" className="bg-[#E5F2FF] text-[#0F6CBD] text-xs border-[#0F6CBD] px-2 py-0.5">
+                        Model: {generatedSection.model}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <div className="p-4">
-                  <div className="text-sm text-[#323130] leading-relaxed">
-                    {generatedSection.content.split('\n').map((paragraph, index) => (
-                      <p key={index} className="mb-3 last:mb-0">{paragraph}</p>
-                    ))}
+                  <div className="text-sm text-[#323130] leading-relaxed markdown-content">
+                    {generatedSection.content.split('\n').map((paragraph, index) => {
+                      // Handle Markdown heading formats
+                      if (paragraph.startsWith('# ')) {
+                        return <h1 key={index} className="text-xl font-bold mb-3">{paragraph.replace('# ', '')}</h1>;
+                      } else if (paragraph.startsWith('## ')) {
+                        return <h2 key={index} className="text-lg font-semibold mb-3">{paragraph.replace('## ', '')}</h2>;
+                      } else if (paragraph.startsWith('### ')) {
+                        return <h3 key={index} className="text-base font-semibold mb-3">{paragraph.replace('### ', '')}</h3>;
+                      } else if (paragraph.startsWith('- ')) {
+                        // Handle bullet points
+                        return <li key={index} className="ml-4 mb-2">{paragraph.replace('- ', '')}</li>;
+                      } else if (paragraph.trim() === '') {
+                        // Handle empty lines
+                        return <div key={index} className="h-2"></div>;
+                      } else {
+                        // Handle regular paragraphs
+                        return <p key={index} className="mb-3 last:mb-0">{paragraph}</p>;
+                      }
+                    })}
                   </div>
                 </div>
                 <div className="p-3 flex justify-end border-t border-[#E1DFDD] bg-[#FAF9F8]">
@@ -295,10 +341,38 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     >
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h4 className="text-sm font-medium text-[#323130]">{section.title}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-medium text-[#323130]">{section.title}</h4>
+                            {section.metadata?.generatedBy && (
+                              <Badge 
+                                variant="outline" 
+                                className="text-xs bg-[#E5F2FF] text-[#0F6CBD] border-[#0F6CBD] px-2 py-0.5"
+                              >
+                                AI
+                              </Badge>
+                            )}
+                            {section.metadata?.complianceChecked && (
+                              <Badge 
+                                variant="outline" 
+                                className="text-xs bg-[#E8F7EE] text-[#107C41] border-[#107C41] px-2 py-0.5"
+                              >
+                                Verified
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-xs text-[#616161] mt-1 line-clamp-2">
                             {section.content.substring(0, 100)}...
                           </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs text-[#616161]">
+                              {new Date(section.dateAdded).toLocaleDateString()}
+                            </p>
+                            {section.metadata?.regulatoryStandard && (
+                              <p className="text-xs text-[#616161]">
+                                {section.metadata.regulatoryStandard}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <Button 
                           variant="ghost" 
