@@ -888,101 +888,35 @@ const aiGenerateCER = async (req, res) => {
     console.log('Literature count:', literature?.length || 0);
     console.log('FAERS data available:', !!fdaData);
     
-    // This is where we would call OpenAI to generate a CER
-    // For now, we'll use our enhanced structure but with more realistic content
-    
-    // Prepare device information string
-    const deviceName = deviceInfo?.name || 'Medical Device';
-    const deviceType = deviceInfo?.type || 'Standard Medical Device';
-    const manufacturer = deviceInfo?.manufacturer || 'Medical Device Manufacturer';
-    const intendedUse = deviceInfo?.intendedUse || 'Medical treatment';
-    
-    // Generate device description based on provided information
-    const deviceDescription = `This ${deviceType} called "${deviceName}", manufactured by ${manufacturer}, is intended for ${intendedUse}. The design incorporates modern medical technology standards and meets all applicable safety requirements for its classification.`;
-    
-    // Generate clinical evaluation based on regulatory framework
-    let clinicalEvalApproach = '';
-    if (templateId === 'eu-mdr') {
-      clinicalEvalApproach = 'follows the EU MDR 2017/745 requirements, with particular attention to Annex XIV and MDCG 2020-13 guidance documents';
-    } else if (templateId === 'fda-510k') {
-      clinicalEvalApproach = 'follows FDA 510(k) requirements for substantial equivalence demonstration and clinical evidence standards';
-    } else if (templateId === 'meddev') {
-      clinicalEvalApproach = 'follows MEDDEV 2.7/1 Rev 4 guidelines for clinical evaluation reports';
-    } else {
-      clinicalEvalApproach = 'follows international standards for medical device evaluation';
+    // Verify OpenAI API key is available for generation
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured. Cannot generate CER content.');
     }
     
-    // Generate FAERS data summary if available
-    let faersDataSummary = '';
-    if (fdaData) {
-      const reportCount = fdaData.reports?.length || 'multiple';
-      faersDataSummary = `\n\nAnalysis of ${reportCount} reports from the FDA Adverse Event Reporting System (FAERS) was included in this evaluation.`;
-    }
+    // Call the actual implementation in cerService.js that uses GPT-4o
+    const report = await generateFullCER({
+      deviceInfo,
+      literature,
+      fdaData,
+      templateId: templateId || 'eu-mdr-full'
+    });
     
-    // Generate literature review summary if available
-    let literatureReviewSummary = '';
-    if (literature && literature.length > 0) {
-      literatureReviewSummary = `\n\nA systematic literature review identified ${literature.length} relevant publications that were critically appraised following the methodology described in this report.`;
-    }
-    
-    // Enhanced structure with more meaningful content
-    const report = {
-      id: `CER-${Date.now()}`,
-      title: `Clinical Evaluation Report: ${deviceName}`,
-      status: 'draft',
-      generatedAt: new Date().toISOString(),
-      deviceInfo: deviceInfo || {},
-      sections: [
-        {
-          id: 'device-description',
-          title: 'Device Description',
-          content: deviceDescription,
-          status: 'completed',
-          complianceScore: 0.92
-        },
-        {
-          id: 'clinical-evaluation',
-          title: 'Clinical Evaluation Methodology',
-          content: `This clinical evaluation ${clinicalEvalApproach}. The evaluation methodology includes a systematic literature search using PubMed, Embase, and other relevant databases, with predefined inclusion and exclusion criteria. Data appraisal was conducted using a standardized assessment tool that evaluates methodological quality, relevance, and contribution to the benefit-risk determination.${literatureReviewSummary}${faersDataSummary}`,
-          status: 'completed',
-          complianceScore: 0.87
-        },
-        {
-          id: 'clinical-data',
-          title: 'Clinical Data Analysis',
-          content: `This section analyzes relevant clinical data for ${deviceName}, including published literature, post-market surveillance data, and clinical investigations. The data demonstrates that the device achieves its intended performance and is suitable for its intended purpose within the specified indication.`,
-          status: 'completed',
-          complianceScore: 0.85
-        },
-        {
-          id: 'benefit-risk',
-          title: 'Benefit-Risk Analysis',
-          content: `This section evaluates the clinical benefits of ${deviceName} against its potential risks, based on available clinical data. The benefits include ${intendedUse} with minimal complications, while identified risks are managed through appropriate control measures described in the risk management documentation.`,
-          status: 'completed',
-          complianceScore: 0.90
-        },
-        {
-          id: 'conclusion',
-          title: 'Conclusion',
-          content: `Based on the clinical evaluation presented in this report, ${deviceName} demonstrates a favorable benefit-risk profile for its intended purpose of ${intendedUse}. The device meets applicable safety and performance requirements specified in Annex I of MDR 2017/745, and this clinical evaluation will be updated regularly as new clinical data becomes available.`,
-          status: 'completed',
-          complianceScore: 0.95
-        }
-      ],
+    // Format and return the response
+    res.json({
+      ...report,
+      title: `Clinical Evaluation Report: ${deviceInfo?.name || 'Medical Device'}`,
       metadata: {
-        regulatoryFramework: templateId || 'eu-mdr',
-        complianceScore: 0.89,
+        regulatoryFramework: report.regulatoryFramework,
+        complianceScore: report.complianceScore.overall,
         aiEnhanced: true,
         generationModel: 'gpt-4o',
         includedLiterature: literature?.length || 0,
         includedAdverseEvents: fdaData?.reports?.length || 0
       }
-    };
-    
-    res.json(report);
+    });
   } catch (error) {
     console.error('Error generating full CER:', error);
-    res.status(500).json({ error: 'Failed to generate CER report' });
+    res.status(500).json({ error: `Failed to generate CER report: ${error.message}` });
   }
 };
 router.post('/generate-full', aiGenerateCER);
