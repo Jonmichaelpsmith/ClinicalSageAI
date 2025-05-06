@@ -50,7 +50,7 @@ body {
 /* Smooth hover transitions */
 
 /* Enhanced tab styling */
-.tabs-list {
+[role="tablist"] {
   background-color: #f8fafc;
   border-radius: 0.5rem;
   padding: 0.25rem;
@@ -60,7 +60,7 @@ body {
   border: 1px solid #e2e8f0;
 }
 
-.tabs-trigger {
+[role="tab"] {
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   font-weight: 500;
@@ -76,29 +76,34 @@ body {
   gap: 0.5rem;
 }
 
-.tabs-trigger[data-state="active"] {
+[role="tab"][data-state="active"] {
   background-color: white;
   color: #1e40af;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   font-weight: 600;
 }
 
-.tabs-trigger:hover:not([data-state="active"]) {
+[role="tab"]:hover:not([data-state="active"]) {
   background-color: rgba(241, 245, 249, 0.7);
   color: #334155;
 }
 
-.tabs-content {
+[role="tabpanel"] {
   padding: 1rem 0;
   animation: fadeIn 0.2s ease-in-out;
 }
 
 /* Global dropdown and select component styling */
-:where(.select-content),
-:where(.popover-content),
-:where(.command-dialog),
-:where(.dialog-content),
-:where(.dropdown-menu-content) {
+.dark-select-content,
+.dark-dropdown-menu-content,
+.dark-popover-content,
+.dark-dialog-content,
+.dark-command-dialog,
+div[data-radix-popper-content-wrapper] *[role="listbox"],
+div[data-radix-popper-content-wrapper] div[role="menu"],
+div[data-radix-popper-content-wrapper] div[role="dialog"],
+div[data-radix-popper-content-wrapper] div.select-content,
+div[data-radix-popper-content-wrapper] div.dropdown-menu-content {
   --bg-color: white;
   --text-color: #1a202c;
   --border-color: #e2e8f0;
@@ -114,11 +119,25 @@ body {
   margin-top: 0.25rem !important;
 }
 
+/* Custom select trigger styling */
+.select-trigger {
+  border: 1px solid rgba(226, 232, 240, 1) !important;
+  background-color: white !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  color: #334155 !important;
+  font-weight: 500 !important;
+}
+
 /* Select items and dropdown items */
+div[data-radix-popper-content-wrapper] *[role="option"],
+div[data-radix-popper-content-wrapper] *[role="menuitem"],
+li.select-item,
+li.dropdown-menu-item,
+li.command-item,
 :where(.select-item),
 :where(.dropdown-menu-item),
 :where(.command-item) {
-  color: var(--text-color) !important;
+  color: #111827 !important;
   background-color: transparent !important;
   cursor: pointer !important;
   padding: 0.5rem 0.75rem !important;
@@ -130,18 +149,23 @@ body {
   align-items: center !important;
 }
 
-/* Hover state */
+/* Hover state for all dropdown items */
 :where(.select-item:hover),
 :where(.dropdown-menu-item:hover),
-:where(.command-item:hover) {
-  background-color: rgba(243, 244, 246, 0.8) !important;
+:where(.command-item:hover),
+div[data-radix-popper-content-wrapper] *[role="option"]:hover,
+div[data-radix-popper-content-wrapper] *[role="menuitem"]:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
 }
 
-/* Selected/Checked state */
+/* Selected/Checked state for all types */
 :where(.select-item[data-state="checked"]),
-:where(.dropdown-menu-item[data-state="checked"]) {
-  background-color: rgba(239, 246, 255, 0.8) !important;
-  color: #1d4ed8 !important;
+:where(.dropdown-menu-item[data-state="checked"]),
+div[data-radix-popper-content-wrapper] *[role="option"][aria-selected="true"],
+div[data-radix-popper-content-wrapper] *[role="menuitem"][aria-checked="true"] {
+  background-color: #e0f2fe !important;
+  color: #1e40af !important;
   font-weight: 500 !important;
 }
 
