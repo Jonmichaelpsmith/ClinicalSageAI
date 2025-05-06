@@ -12,6 +12,7 @@ import CMCPage from '@/pages/CMCPage';
 import CoAuthor from '@/pages/CoAuthor';
 // Import your existing CSR Analyzer pages
 import CSRAnalyzer from '@/pages/CSRAnalyzer.jsx';
+import CERV2Page from '@/pages/CERV2Page.jsx';
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from './hooks/use-auth';
 import AppShell from '@/components/layout/AppShell';
