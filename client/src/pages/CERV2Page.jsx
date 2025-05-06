@@ -15,12 +15,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { exportToPDF, exportToWord, downloadBlob, fetchFaersData, getComplianceScore } from '@/services/CerAPIService';
+import { exportToPDF, exportToWord, downloadBlob, fetchFaersData, getComplianceScore, generateFullCER, getCerAssistantResponse, getComplianceImprovements } from '@/services/CerAPIService';
 import { useToast } from '@/hooks/use-toast';
 import { ClipboardCheck, Clock, Download, FileCheck, FileText, CheckCircle, AlertCircle, ChevronDown, FileWarning, BookOpen, Calendar, Layers, CircleCheck, CircleAlert, Database, MessageSquare, UploadCloud, Loader2, Info } from 'lucide-react';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
+  const [deviceType, setDeviceType] = useState('Class II Medical Device');
+  const [manufacturer, setManufacturer] = useState('Medical Device Manufacturer');
+  const [intendedUse, setIntendedUse] = useState('The device is intended for use in clinical settings for diagnostic or therapeutic purposes.');
+  const [regulatoryPath, setRegulatoryPath] = useState('EU MDR');
   const [faers, setFaers] = useState([]);
   const [comparators, setComparators] = useState([]);
   const [sections, setSections] = useState([]);
@@ -28,6 +32,7 @@ export default function CERV2Page() {
   const [instructionsOpen, setInstructionsOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('builder');
   const [compliance, setCompliance] = useState(null);
+  const [complianceScores, setComplianceScores] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress'); // in-progress, ready-for-review, finalized
   const [exportTimestamp, setExportTimestamp] = useState(null);
   const [wordCount, setWordCount] = useState(0);
@@ -626,76 +631,91 @@ export default function CERV2Page() {
                       </div>
                       
                       <div className="pt-2">
-                        <Button size="lg" className="w-full" onClick={() => {
-                          toast({
-                            title: "AI-Generated CER",
-                            description: "Your zero-click report has started processing. This will take approximately 15 minutes.",
-                          });
-                          
-                          // In a real implementation, we would call an API to start the generation process
-                          // and then update the sections state when complete
-                          setTimeout(() => {
-                            const newSections = [
-                              {
-                                title: "Device Description",
-                                type: "device-description",
-                                content: `# Device Description\n\nThis section provides a detailed description of ${title || "the medical device"}, including its components, functional characteristics, and technical specifications. The device is designed in accordance with the relevant standards and regulatory requirements.\n\nThe device consists of specialized components engineered to ensure safety and efficacy in clinical use. Manufacturing processes follow strict quality control protocols to ensure consistency and reliability.`
-                              },
-                              {
-                                title: "Intended Purpose",
-                                type: "intended-purpose",
-                                content: `# Intended Purpose\n\n${title || "The medical device"} is intended for use in clinical settings to provide diagnostic or therapeutic benefit to patients with specific conditions. The device is indicated for use under the supervision of healthcare professionals trained in its operation.\n\nThe target patient population and clinical settings are clearly defined based on the device's specific characteristics and performance capabilities.`
-                              },
-                              {
-                                title: "State of the Art",
-                                type: "state-of-art",
-                                content: `# State of the Art\n\nThis section provides a comprehensive overview of the current state of the art in the field related to ${title || "the medical device"}. It includes an analysis of existing technologies, alternative treatments, and current clinical practices.\n\nThe review demonstrates that ${title || "the device"} incorporates the latest technological advancements and is comparable or superior to existing alternatives in terms of safety and performance.`
-                              },
-                              {
-                                title: "Clinical Data Analysis",
-                                type: "clinical-data",
-                                content: `# Clinical Data Analysis\n\nThis section presents an analysis of clinical data related to ${title || "the medical device"}, including clinical investigations, published literature, and post-market surveillance data.\n\nThe analysis demonstrates that the device meets its intended purpose and performs as expected in clinical use. Safety and performance data support the device's benefit-risk profile.`
-                              },
-                              {
-                                title: "Post-Market Surveillance",
-                                type: "post-market",
-                                content: `# Post-Market Surveillance\n\nThis section describes the post-market surveillance system in place for ${title || "the medical device"}, including mechanisms for collecting and analyzing data on device performance and safety in real-world use.\n\nThe surveillance system is designed to identify any emerging risks or issues related to the device and to implement corrective actions as needed.`
-                              },
-                              {
-                                title: "Literature Review",
-                                type: "literature-review",
-                                content: `# Literature Review\n\nThis section presents a systematic review of published literature related to ${title || "the medical device"} and similar devices. The review includes clinical studies, case reports, and other relevant publications.\n\nThe literature review supports the safety and performance of the device and provides context for its use in clinical practice. Key findings from the literature are integrated into the overall clinical evaluation.`
-                              },
-                              {
-                                title: "Benefit-Risk Analysis",
-                                type: "benefit-risk",
-                                content: `# Benefit-Risk Analysis\n\nThis section presents a comprehensive analysis of the benefits and risks associated with ${title || "the medical device"}, based on available clinical data and literature.\n\nThe analysis demonstrates that the benefits of the device outweigh the risks when used as intended. Residual risks are identified and mitigation measures are described.`
-                              },
-                              {
-                                title: "Conclusion",
-                                type: "conclusion",
-                                content: `# Conclusion\n\nBased on the comprehensive clinical evaluation presented in this report, ${title || "the medical device"} is determined to be safe and effective for its intended purpose when used as specified.\n\nThe device meets all applicable regulatory requirements and standards. The benefit-risk profile is favorable, and the device represents a valuable option for clinical use in the specified indications.`
-                              }
-                            ];
-                            
-                            setSections(newSections);
-                            setActiveTab("preview");
+                        <Button 
+                          size="lg" 
+                          className="w-full" 
+                          onClick={async () => {
+                            setIsLoading(true);
                             
                             toast({
-                              title: "CER Generation Complete",
-                              description: "Your AI-generated Clinical Evaluation Report is ready for review.",
-                              variant: "success"
+                              title: "AI-Generated CER",
+                              description: "Your zero-click report has started processing. This will take approximately 5-10 minutes.",
                             });
                             
-                            // Auto-trigger compliance check
-                            setTimeout(() => {
-                              runComplianceCheck();
-                            }, 1000);
-                            
-                          }, 3000); // Simulated delay for demo purposes
-                        }}>
-                          <FileText className="h-5 w-5 mr-2" />
-                          Generate Zero-Click CER Report
+                            try {
+                              // Get selected data sources
+                              const selectedDataSources = [];
+                              if (document.getElementById('faers')?.checked) selectedDataSources.push('FAERS');
+                              if (document.getElementById('literature')?.checked) selectedDataSources.push('PubMed');
+                              if (document.getElementById('maude')?.checked) selectedDataSources.push('MAUDE');
+                              if (document.getElementById('eudamed')?.checked) selectedDataSources.push('EUDAMED');
+                              
+                              // Map template ID based on regulatoryPath
+                              let templateId = 'eu-mdr';
+                              if (regulatoryPath === 'FDA') templateId = 'fda-510k';
+                              else if (regulatoryPath === 'MEDDEV') templateId = 'meddev';
+                              else if (regulatoryPath === 'ISO 14155') templateId = 'iso-14155';
+                              
+                              // Construct device info
+                              const deviceInfo = {
+                                name: title || 'Medical Device',
+                                type: deviceType || 'Class II Medical Device',
+                                manufacturer: manufacturer || 'Medical Device Manufacturer',
+                                intendedUse: intendedUse || ''
+                              };
+                              
+                              // Call the API to generate the full CER
+                              const generationResult = await generateFullCER({
+                                deviceInfo,
+                                templateId,
+                                literature: [], // In a real implementation, this would be populated from uploaded documents
+                                fdaData: faers.length > 0 ? { reports: faers, reportCount: faers.length } : null
+                              });
+                              
+                              console.log('Generation result:', generationResult);
+                              
+                              if (generationResult && generationResult.sections) {
+                                // Update state with the generated sections
+                                setSections(generationResult.sections);
+                                setActiveTab("preview");
+                                
+                                // Save compliance score if available
+                                if (generationResult.complianceScore) {
+                                  setComplianceScores(generationResult.complianceScore);
+                                }
+                                
+                                toast({
+                                  title: "CER Generation Complete",
+                                  description: "Your AI-generated Clinical Evaluation Report is ready for review.",
+                                  variant: "success"
+                                });
+                              } else {
+                                throw new Error('No sections returned from generation');
+                              }
+                            } catch (error) {
+                              console.error('Error generating CER:', error);
+                              toast({
+                                title: "Generation Error",
+                                description: `Failed to generate report: ${error.message}`,
+                                variant: "destructive"
+                              });
+                            } finally {
+                              setIsLoading(false);
+                            }
+                          }}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                              Generating Report...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="h-5 w-5 mr-2" />
+                              Generate Zero-Click CER Report
+                            </>
+                          )}
                         </Button>
                         
                         <p className="text-xs text-center mt-2 text-gray-500">
