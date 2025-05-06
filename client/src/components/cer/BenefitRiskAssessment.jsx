@@ -1,278 +1,608 @@
-import React from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AlertTriangle, CheckCircle, HelpCircle, Lightbulb, Shield, ShieldAlert, ShieldCheck, ShieldX } from 'lucide-react';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { 
+  FileCheck, 
+  Shield, 
+  AlertTriangle, 
+  Check, 
+  X, 
+  Download, 
+  Plus,
+  ChevronDown,
+  BarChart4,
+  Scale,
+  FileText
+} from 'lucide-react';
 
 /**
- * BenefitRiskAssessment - Component for displaying benefit-risk assessment information
- * Implements section 7 of the CER Master Data Model
+ * BenefitRiskAssessment - Professional component for visualizing and managing benefit-risk
+ * assessments for CER reports, matching the Omnia design system
  */
-export default function BenefitRiskAssessment({ 
-  benefitRiskData,
-  complianceThresholds = {
-    OVERALL_THRESHOLD: 0.8, // 80% threshold for passing
-    FLAG_THRESHOLD: 0.7     // 70% threshold for warnings/flagging
-  },
-  readOnly = false
-}) {
-  // If no data is provided, show placeholder/empty state
-  if (!benefitRiskData || !benefitRiskData.benefits || !benefitRiskData.risks) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Benefit-Risk Assessment</CardTitle>
-          <CardDescription>
-            Structured assessment of benefits versus risks per ISO 14971
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center justify-center py-6 text-center">
-          <ShieldAlert className="h-10 w-10 text-amber-500 mb-3" />
-          <h3 className="text-lg font-medium">No Benefit-Risk Data Available</h3>
-          <p className="text-sm text-muted-foreground mt-1 max-w-md">
-            A comprehensive benefit-risk assessment is required for your Clinical Evaluation Report.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+export default function BenefitRiskAssessment() {
+  const [activeTab, setActiveTab] = useState('summary');
   
-  // Get risk acceptability color based on matrix
-  const getRiskAcceptabilityColor = (acceptability) => {
-    if (!acceptability) return 'text-gray-500';
-    
-    switch (acceptability.toLowerCase()) {
-      case 'acceptable':
+  // Sample data for demo
+  const assessmentData = {
+    deviceName: 'CardioStent XR',
+    version: '1.2',
+    summary: {
+      benefitRiskRatio: 4.2, // > 1 means benefits outweigh risks
+      overallRating: 'Favorable',
+      regulatoryStatus: 'Compliant',
+      reviewDate: '2025-05-06',
+      nextReviewDate: '2026-05-06',
+      benefits: [
+        { name: 'Improved patient outcomes', rating: 'High', score: 87, clinicalEvidence: 'Strong' },
+        { name: 'Reduced procedure time', rating: 'Medium', score: 72, clinicalEvidence: 'Moderate' },
+        { name: 'Decreased complication rate', rating: 'High', score: 85, clinicalEvidence: 'Strong' },
+        { name: 'Extended device longevity', rating: 'Medium', score: 76, clinicalEvidence: 'Moderate' }
+      ],
+      risks: [
+        { name: 'Infection risk', rating: 'Low', score: 32, mitigationMeasures: 'Comprehensive' },
+        { name: 'Device migration', rating: 'Low', score: 25, mitigationMeasures: 'Comprehensive' },
+        { name: 'Thrombosis', rating: 'Medium', score: 56, mitigationMeasures: 'Adequate' },
+        { name: 'Allergic reaction', rating: 'Very Low', score: 12, mitigationMeasures: 'Comprehensive' }
+      ],
+      uncertainties: [
+        { name: 'Long-term performance beyond 10 years', impact: 'Medium', mitigationPlan: 'Extended follow-up study' },
+        { name: 'Performance in pediatric populations', impact: 'Low', mitigationPlan: 'Additional clinical investigation' }
+      ]
+    },
+    benefitAnalysis: {
+      clinicalOutcomes: [
+        { outcome: 'Increased procedure success rate', value: '+12.5%', evidence: 'Strong', source: 'Multicenter RCT' },
+        { outcome: 'Reduced reoperation rate', value: '-8.3%', evidence: 'Strong', source: 'Multicenter RCT' },
+        { outcome: 'Improved quality of life scores', value: '+18.7%', evidence: 'Moderate', source: 'Post-market surveillance' },
+        { outcome: 'Shortened recovery time', value: '-2.4 days', evidence: 'Strong', source: 'Comparative study' },
+      ],
+      comparisonData: [
+        { metric: 'Primary success rate', thisDev: '94.2%', predicate: '85.7%', difference: '+8.5%' },
+        { metric: 'Complication rate', thisDev: '3.2%', predicate: '7.5%', difference: '-4.3%' },
+        { metric: 'Reoperation need at 1 year', thisDev: '2.1%', predicate: '8.4%', difference: '-6.3%' },
+        { metric: 'Patient satisfaction', thisDev: '91.3%', predicate: '82.5%', difference: '+8.8%' },
+      ]
+    },
+    riskAnalysis: {
+      knownRisks: [
+        { risk: 'Infection', frequency: '2.1%', severity: 'Moderate', trend: 'Stable', mitigationEffectiveness: 'High' },
+        { risk: 'Device migration', frequency: '1.5%', severity: 'Moderate', trend: 'Decreasing', mitigationEffectiveness: 'High' },
+        { risk: 'Thrombosis', frequency: '3.2%', severity: 'Serious', trend: 'Stable', mitigationEffectiveness: 'Medium' },
+        { risk: 'Allergic reaction', frequency: '0.8%', severity: 'Mild', trend: 'Stable', mitigationEffectiveness: 'High' },
+      ],
+      emergingRisks: [
+        { risk: 'Material degradation at >5 years', status: 'Under Investigation', potentialImpact: 'Medium', action: 'Extended surveillance study initiated' },
+      ],
+      riskCategories: {
+        critical: 0,
+        high: 1,
+        medium: 2,
+        low: 5,
+        negligible: 4
+      }
+    },
+    evaluationHistory: [
+      { version: '1.2', date: '2025-05-06', outcome: 'Favorable', reviewer: 'Dr. Sarah Johnson', changes: 'Updated with latest clinical data' },
+      { version: '1.1', date: '2024-11-12', outcome: 'Favorable', reviewer: 'Dr. James Wilson', changes: 'Added emerging risk assessment' },
+      { version: '1.0', date: '2024-05-28', outcome: 'Favorable', reviewer: 'Dr. Elizabeth Chen', changes: 'Initial assessment' },
+    ]
+  };
+  
+  // Get color based on rating
+  const getRatingColor = (rating) => {
+    switch(rating.toLowerCase()) {
+      case 'high':
+        return 'bg-green-100 text-green-800';
+      case 'medium':
+        return 'bg-blue-100 text-blue-800';
+      case 'low':
+        return 'bg-amber-100 text-amber-800';
+      case 'very low':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+  
+  // Get color based on evidence
+  const getEvidenceColor = (evidence) => {
+    switch(evidence.toLowerCase()) {
+      case 'strong':
+        return 'bg-green-100 text-green-800';
+      case 'moderate':
+        return 'bg-blue-100 text-blue-800';
+      case 'limited':
+        return 'bg-amber-100 text-amber-800';
+      case 'insufficient':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+  
+  // Get color based on mitigation
+  const getMitigationColor = (mitigation) => {
+    switch(mitigation.toLowerCase()) {
+      case 'comprehensive':
+        return 'bg-green-100 text-green-800';
+      case 'adequate':
+        return 'bg-blue-100 text-blue-800';
+      case 'partial':
+        return 'bg-amber-100 text-amber-800';
+      case 'limited':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+  
+  // Get color for difference values (positive is good)
+  const getDifferenceColor = (value) => {
+    if (value.startsWith('+')) return 'text-green-600';
+    if (value.startsWith('-')) {
+      // For complication-related metrics, negative is good
+      if (activeMetric?.toLowerCase().includes('complication') || 
+          activeMetric?.toLowerCase().includes('reoperation')) {
         return 'text-green-600';
-      case 'acceptable with mitigation':
-      case 'needs mitigation':
-        return 'text-amber-600';
-      case 'unacceptable':
-        return 'text-red-600';
-      default:
-        return 'text-gray-500';
+      }
+      return 'text-red-600';
     }
+    return 'text-gray-900';
   };
   
-  // Get risk acceptability badge
-  const getRiskAcceptabilityBadge = (acceptability) => {
-    if (!acceptability) return null;
-    
-    switch (acceptability.toLowerCase()) {
-      case 'acceptable':
-        return (
-          <Badge className="bg-green-100 text-green-800 font-medium">
-            <ShieldCheck className="h-3 w-3 mr-1" />
-            Acceptable
-          </Badge>
-        );
-      case 'acceptable with mitigation':
-      case 'needs mitigation':
-        return (
-          <Badge className="bg-amber-100 text-amber-800 font-medium">
-            <Shield className="h-3 w-3 mr-1" />
-            With Mitigation
-          </Badge>
-        );
-      case 'unacceptable':
-        return (
-          <Badge className="bg-red-100 text-red-800 font-medium">
-            <ShieldX className="h-3 w-3 mr-1" />
-            Unacceptable
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline">
-            Not Assessed
-          </Badge>
-        );
-    }
+  // Get color for benefit-risk ratio
+  const getBRRatioColor = (ratio) => {
+    if (ratio >= 4) return 'text-green-600';
+    if (ratio >= 2) return 'text-blue-600';
+    if (ratio >= 1) return 'text-amber-600';
+    return 'text-red-600';
   };
   
-  // Calculate benefit-risk ratio
-  const calculateBenefitRiskRatio = () => {
-    const totalBenefitScore = benefitRiskData.benefits.reduce((sum, benefit) => sum + benefit.score, 0);
-    const totalRiskScore = benefitRiskData.risks.reduce((sum, risk) => sum + risk.score, 0);
-    
-    if (totalRiskScore === 0) return 'N/A';
-    return (totalBenefitScore / totalRiskScore).toFixed(2);
+  // Get color for overall rating
+  const getOverallRatingColor = (rating) => {
+    switch(rating.toLowerCase()) {
+      case 'favorable':
+        return 'bg-green-100 text-green-800';
+      case 'moderately favorable':
+        return 'bg-blue-100 text-blue-800';
+      case 'neutral':
+        return 'bg-amber-100 text-amber-800';
+      case 'unfavorable':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
   
   return (
-    <Card className="border-indigo-200">
-      <CardHeader className="bg-indigo-50 border-b border-indigo-100">
-        <div className="flex justify-between items-start">
+    <Card className="shadow-md border border-gray-200">
+      <CardHeader className="bg-gray-50 border-b">
+        <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Benefit-Risk Assessment</CardTitle>
+            <CardTitle className="text-xl">Benefit-Risk Assessment</CardTitle>
             <CardDescription>
-              Based on ISO 14971 Risk Management and EU MDR Annex I requirements
+              Comprehensive evaluation of clinical benefits and risks for {assessmentData.deviceName}
             </CardDescription>
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Overall Assessment:</span>
-            {getRiskAcceptabilityBadge(benefitRiskData.overallAcceptability)}
+          
+          <div className="flex items-center gap-2">
+            <Badge className={getOverallRatingColor(assessmentData.summary.overallRating)}>
+              {assessmentData.summary.overallRating}
+            </Badge>
+            
+            <Button variant="outline" size="sm">
+              <FileText className="h-4 w-4 mr-2" />
+              Export Assessment
+            </Button>
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="pt-6 space-y-6">
-        {/* Summary Section */}
-        <div className="bg-gray-50 border rounded-md p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-1">
-              <div className="text-sm font-medium">Benefit-Risk Ratio</div>
-              <div className="text-2xl font-bold text-indigo-600">{calculateBenefitRiskRatio()}</div>
-              <div className="text-xs text-gray-500">Benefit score / Risk score</div>
-            </div>
-            
-            <div className="space-y-1">
-              <div className="text-sm font-medium">Risk Management File</div>
-              <div className="text-base font-medium">{benefitRiskData.riskManagementFileReference || 'N/A'}</div>
-              <div className="text-xs text-gray-500">ISO 14971 compliance</div>
-            </div>
-            
-            <div className="space-y-1">
-              <div className="text-sm font-medium">Risk Analysis Method</div>
-              <div className="text-base font-medium">{benefitRiskData.riskAnalysisMethodology || 'N/A'}</div>
-              <div className="text-xs text-gray-500">e.g., FMEA, FTA, HAZOP</div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Benefits Table */}
-        <div>
-          <h3 className="font-medium text-base mb-3 flex items-center">
-            <Lightbulb className="h-4 w-4 mr-2 text-indigo-500" />
-            Clinical Benefits
-          </h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">Benefit</TableHead>
-                <TableHead>Evidence Level</TableHead>
-                <TableHead>Strength</TableHead>
-                <TableHead>Description</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {benefitRiskData.benefits.map((benefit, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="font-medium">{benefit.name}</TableCell>
-                  <TableCell>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center">
-                            <Badge variant="outline" className="bg-blue-50 text-blue-800 font-medium">
-                              {benefit.evidenceLevel || 'Unknown'}
-                            </Badge>
-                            <HelpCircle className="h-3.5 w-3.5 ml-1 text-gray-400" />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          <p className="text-xs">
-                            Evidence Levels: High (Multiple well-designed clinical studies), 
-                            Moderate (Limited clinical data), Low (Theoretical or bench data only)
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <div className="flex items-center">
-                        <Progress value={benefit.score * 20} className="h-1.5 w-20 mr-2" />
-                        <span>{benefit.score}/5</span>
+      <CardContent className="p-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="bg-gray-100 w-full justify-start rounded-none px-6 h-12">
+            <TabsTrigger value="summary" className="data-[state=active]:bg-white">
+              Summary
+            </TabsTrigger>
+            <TabsTrigger value="benefits" className="data-[state=active]:bg-white">
+              Benefits
+            </TabsTrigger>
+            <TabsTrigger value="risks" className="data-[state=active]:bg-white">
+              Risks
+            </TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-white">
+              History
+            </TabsTrigger>
+          </TabsList>
+          
+          <div className="p-6">
+            {/* Summary Tab */}
+            <TabsContent value="summary" className="m-0">
+              <div className="grid grid-cols-3 gap-6">
+                <div className="col-span-1">
+                  <div className="bg-white border rounded-md p-4 mb-6">
+                    <h3 className="font-medium mb-3">Assessment Overview</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">Device Name</span>
+                        <span className="font-medium">{assessmentData.deviceName}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">Version</span>
+                        <span className="font-medium">{assessmentData.version}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">Review Date</span>
+                        <span className="font-medium">{assessmentData.summary.reviewDate}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">Next Review</span>
+                        <span className="font-medium">{assessmentData.summary.nextReviewDate}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">Regulatory Status</span>
+                        <Badge variant="outline" className="font-normal">
+                          {assessmentData.summary.regulatoryStatus}
+                        </Badge>
                       </div>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm">{benefit.description}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        
-        {/* Risks Table */}
-        <div>
-          <h3 className="font-medium text-base mb-3 flex items-center">
-            <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
-            Identified Risks
-          </h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[250px]">Risk</TableHead>
-                <TableHead>Severity</TableHead>
-                <TableHead>Probability</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead>Mitigation</TableHead>
-                <TableHead>Acceptability</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {benefitRiskData.risks.map((risk, idx) => (
-                <TableRow key={idx}>
-                  <TableCell className="font-medium">{risk.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={risk.severity.toLowerCase() === 'high' ? 'bg-red-50 text-red-800' : 
-                      risk.severity.toLowerCase() === 'medium' ? 'bg-amber-50 text-amber-800' : 'bg-blue-50 text-blue-800'}
-                    >
-                      {risk.severity || 'Unknown'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={risk.probability.toLowerCase() === 'high' ? 'bg-red-50 text-red-800' : 
-                      risk.probability.toLowerCase() === 'medium' ? 'bg-amber-50 text-amber-800' : 'bg-blue-50 text-blue-800'}
-                    >
-                      {risk.probability || 'Unknown'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{risk.score}/5</TableCell>
-                  <TableCell className="text-sm">{risk.mitigation || 'None'}</TableCell>
-                  <TableCell>
-                    <span className={getRiskAcceptabilityColor(risk.acceptability)}>
-                      {risk.acceptability || 'Not assessed'}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        
-        {/* Comparison to Standard of Care */}
-        {benefitRiskData.standardOfCareComparison && (
-          <div className="border rounded-md p-4">
-            <h3 className="font-medium text-base mb-3 flex items-center">
-              <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-              Comparison to Standard of Care
-            </h3>
-            <div className="prose prose-sm max-w-none">
-              <p>{benefitRiskData.standardOfCareComparison}</p>
-            </div>
+                  </div>
+                  
+                  <div className="bg-white border rounded-md p-4">
+                    <h3 className="font-medium mb-3">Benefit-Risk Ratio</h3>
+                    <div className="flex flex-col items-center justify-center pt-4 pb-6">
+                      <div className="relative w-36 h-36 flex items-center justify-center mb-4 rounded-full border-8 border-blue-100">
+                        <div className={`text-3xl font-bold ${getBRRatioColor(assessmentData.summary.benefitRiskRatio)}`}>
+                          {assessmentData.summary.benefitRiskRatio}
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        <Scale className="inline-block h-4 w-4 mr-1 mb-1" />
+                        B:R Ratio
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2 text-center border-t text-sm">
+                      <div className="text-gray-500 mb-1">Assessment</div>
+                      <Badge className={getOverallRatingColor(assessmentData.summary.overallRating)}>
+                        {assessmentData.summary.overallRating}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="col-span-2">
+                  <div className="bg-white border rounded-md p-4 mb-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-medium">Key Benefits</h3>
+                      <Button variant="outline" size="sm" className="text-xs">
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add Benefit
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {assessmentData.summary.benefits.map((benefit, index) => (
+                        <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
+                          <div>
+                            <div className="font-medium">{benefit.name}</div>
+                            <div className="flex items-center mt-1 space-x-2">
+                              <Badge className={getRatingColor(benefit.rating)}>
+                                {benefit.rating}
+                              </Badge>
+                              <Badge className={getEvidenceColor(benefit.clinicalEvidence)}>
+                                {benefit.clinicalEvidence} Evidence
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-green-600">{benefit.score}</div>
+                            <div className="text-xs text-gray-500">Benefit Score</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white border rounded-md p-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-medium">Key Risks</h3>
+                      <Button variant="outline" size="sm" className="text-xs">
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add Risk
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {assessmentData.summary.risks.map((risk, index) => (
+                        <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
+                          <div>
+                            <div className="font-medium">{risk.name}</div>
+                            <div className="flex items-center mt-1 space-x-2">
+                              <Badge className={getRatingColor(risk.rating)}>
+                                {risk.rating}
+                              </Badge>
+                              <Badge className={getMitigationColor(risk.mitigationMeasures)}>
+                                {risk.mitigationMeasures} Mitigation
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-amber-600">{risk.score}</div>
+                            <div className="text-xs text-gray-500">Risk Score</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white border rounded-md p-4 mt-6">
+                <h3 className="font-medium mb-4">Uncertainties & Data Gaps</h3>
+                
+                {assessmentData.summary.uncertainties.length === 0 ? (
+                  <div className="text-center py-6 text-gray-500">
+                    No outstanding uncertainties or data gaps identified.
+                  </div>
+                ) : (
+                  <div className="overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Uncertainty</TableHead>
+                          <TableHead>Impact</TableHead>
+                          <TableHead>Mitigation Plan</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {assessmentData.summary.uncertainties.map((uncertainty, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{uncertainty.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{uncertainty.impact}</Badge>
+                            </TableCell>
+                            <TableCell>{uncertainty.mitigationPlan}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+            
+            {/* Benefits Tab */}
+            <TabsContent value="benefits" className="m-0">
+              <div className="bg-white border rounded-md p-4 mb-6">
+                <h3 className="font-medium mb-4">Clinical Outcomes</h3>
+                
+                <div className="overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Clinical Outcome</TableHead>
+                        <TableHead>Improvement</TableHead>
+                        <TableHead>Evidence Quality</TableHead>
+                        <TableHead>Source</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {assessmentData.benefitAnalysis.clinicalOutcomes.map((outcome, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{outcome.outcome}</TableCell>
+                          <TableCell className="text-green-600 font-medium">{outcome.value}</TableCell>
+                          <TableCell>
+                            <Badge className={getEvidenceColor(outcome.evidence)}>
+                              {outcome.evidence}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{outcome.source}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+              
+              <div className="bg-white border rounded-md p-4">
+                <h3 className="font-medium mb-4">Comparison to Predicate Device</h3>
+                
+                <div className="overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Metric</TableHead>
+                        <TableHead>{assessmentData.deviceName}</TableHead>
+                        <TableHead>Predicate Device</TableHead>
+                        <TableHead>Difference</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {assessmentData.benefitAnalysis.comparisonData.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{item.metric}</TableCell>
+                          <TableCell>{item.thisDev}</TableCell>
+                          <TableCell>{item.predicate}</TableCell>
+                          <TableCell className={getDifferenceColor(item.difference)}>
+                            <strong>{item.difference}</strong>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </TabsContent>
+            
+            {/* Risks Tab */}
+            <TabsContent value="risks" className="m-0">
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="bg-white border rounded-md p-4 flex flex-col items-center justify-center">
+                  <div className="text-3xl font-bold text-red-600">
+                    {assessmentData.riskAnalysis.riskCategories.critical}
+                  </div>
+                  <div className="text-sm text-gray-500">Critical</div>
+                </div>
+                
+                <div className="bg-white border rounded-md p-4 flex flex-col items-center justify-center">
+                  <div className="text-3xl font-bold text-amber-600">
+                    {assessmentData.riskAnalysis.riskCategories.high}
+                  </div>
+                  <div className="text-sm text-gray-500">High</div>
+                </div>
+                
+                <div className="bg-white border rounded-md p-4 flex flex-col items-center justify-center">
+                  <div className="text-3xl font-bold text-yellow-600">
+                    {assessmentData.riskAnalysis.riskCategories.medium}
+                  </div>
+                  <div className="text-sm text-gray-500">Medium</div>
+                </div>
+                
+                <div className="bg-white border rounded-md p-4 flex flex-col items-center justify-center">
+                  <div className="text-3xl font-bold text-blue-600">
+                    {assessmentData.riskAnalysis.riskCategories.low}
+                  </div>
+                  <div className="text-sm text-gray-500">Low</div>
+                </div>
+              </div>
+              
+              <div className="bg-white border rounded-md p-4 mb-6">
+                <h3 className="font-medium mb-4">Known Risks</h3>
+                
+                <div className="overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Risk</TableHead>
+                        <TableHead>Frequency</TableHead>
+                        <TableHead>Severity</TableHead>
+                        <TableHead>Trend</TableHead>
+                        <TableHead>Mitigation Effectiveness</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {assessmentData.riskAnalysis.knownRisks.map((risk, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{risk.risk}</TableCell>
+                          <TableCell>{risk.frequency}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              className={risk.severity === 'Serious' ? 'bg-red-100 text-red-800' : 
+                                       risk.severity === 'Moderate' ? 'bg-amber-100 text-amber-800' : 
+                                       'bg-blue-100 text-blue-800'}
+                            >
+                              {risk.severity}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {risk.trend}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              className={risk.mitigationEffectiveness === 'High' ? 'bg-green-100 text-green-800' : 
+                                       risk.mitigationEffectiveness === 'Medium' ? 'bg-blue-100 text-blue-800' : 
+                                       'bg-amber-100 text-amber-800'}
+                            >
+                              {risk.mitigationEffectiveness}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+              
+              <div className="bg-white border rounded-md p-4">
+                <h3 className="font-medium mb-4">Emerging Risks</h3>
+                
+                {assessmentData.riskAnalysis.emergingRisks.length === 0 ? (
+                  <div className="text-center py-6 text-gray-500">
+                    No emerging risks identified.
+                  </div>
+                ) : (
+                  <div className="overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Risk</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Potential Impact</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {assessmentData.riskAnalysis.emergingRisks.map((risk, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{risk.risk}</TableCell>
+                            <TableCell>
+                              <Badge className="bg-amber-100 text-amber-800">
+                                {risk.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{risk.potentialImpact}</TableCell>
+                            <TableCell>{risk.action}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+            
+            {/* History Tab */}
+            <TabsContent value="history" className="m-0">
+              <div className="bg-white border rounded-md p-4">
+                <h3 className="font-medium mb-4">Assessment History</h3>
+                
+                <div className="overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Version</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Outcome</TableHead>
+                        <TableHead>Reviewer</TableHead>
+                        <TableHead>Changes</TableHead>
+                        <TableHead className="w-[100px]">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {assessmentData.evaluationHistory.map((record, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{record.version}</TableCell>
+                          <TableCell>{record.date}</TableCell>
+                          <TableCell>
+                            <Badge className={getOverallRatingColor(record.outcome)}>
+                              {record.outcome}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{record.reviewer}</TableCell>
+                          <TableCell>{record.changes}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm">
+                              <FileText className="h-4 w-4" />
+                              <span className="sr-only">View</span>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </TabsContent>
           </div>
-        )}
+        </Tabs>
       </CardContent>
-      
-      <CardFooter className="bg-gray-50 border-t p-4">
-        <div className="w-full flex flex-col space-y-2">
-          <div className="text-sm font-medium">Conclusion</div>
-          <div className="text-sm">
-            {benefitRiskData.conclusion || 'No conclusion has been provided for this benefit-risk assessment.'}
-          </div>
-        </div>
-      </CardFooter>
     </Card>
   );
 }
