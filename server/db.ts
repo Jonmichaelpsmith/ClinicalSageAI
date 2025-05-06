@@ -32,7 +32,7 @@ try {
     const testConnection = (retries = 3, delay = 3000) => {
       pool!.query('SELECT NOW()', (err, res) => {
         if (err) {
-          logger.error('Database connection test failed', { error: err.message, retriesLeft: retries });
+          logger.error('Database connection test failed', err, { retriesLeft: retries });
           
           if (retries > 0) {
             logger.info(`Retrying database connection in ${delay/1000} seconds...`);
@@ -54,13 +54,13 @@ try {
     
     // Log database errors
     pool.on('error', (err) => {
-      logger.error('Unexpected database error', { error: err.message, stack: err.stack });
+      logger.error('Unexpected database error', err);
     });
   } else {
     logger.warn('DATABASE_URL not found, database features will be unavailable');
   }
 } catch (error: any) {
-  logger.error('Failed to initialize database', { error: error.message, stack: error.stack });
+  logger.error('Failed to initialize database', error);
   pool = null;
 }
 
@@ -85,10 +85,7 @@ export async function runMigrations(): Promise<void> {
     await migrate(db, { migrationsFolder });
     logger.info('Database migrations completed successfully');
   } catch (error: any) {
-    logger.error('Failed to run migrations', { 
-      error: error.message, 
-      stack: error.stack 
-    });
+    logger.error('Failed to run migrations', error);
     throw error;
   }
 }
@@ -118,8 +115,7 @@ export async function query(text: string, params: any[] = []): Promise<any> {
     
     return result;
   } catch (error: any) {
-    logger.error('Database query error', { 
-      error: error.message, 
+    logger.error('Database query error', error, { 
       query: text, 
       params 
     });
@@ -161,9 +157,7 @@ export async function healthCheck(): Promise<boolean> {
     const result = await pool.query('SELECT 1');
     return result.rows.length > 0;
   } catch (error) {
-    logger.error('Database health check failed', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
+    logger.error('Database health check failed', error);
     return false;
   }
 }
