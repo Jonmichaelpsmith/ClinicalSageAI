@@ -33,7 +33,11 @@ documentApiService.getDocuments = async (options = {}) => {
     const response = await fetch(`/api/documents?${queryParams.toString()}`);
     
     if (!response.ok) {
-      throw new Error(`Error fetching documents: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.error || 
+        `Error fetching documents: ${response.status} ${response.statusText}`
+      );
     }
     
     const data = await response.json();
@@ -67,25 +71,22 @@ documentApiService.getDocument = async (id) => {
 
 /**
  * Upload a new document
- * @param {Object} documentData - The document metadata
- * @param {File} file - The document file to upload
+ * @param {FormData} formData - The form data containing file and metadata
  * @returns {Promise<Object>} - The created document object
  */
-documentApiService.uploadDocument = async (documentData, file) => {
+documentApiService.uploadDocument = async (formData) => {
   try {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    // Add document metadata as JSON
-    formData.append('data', JSON.stringify(documentData));
-    
     const response = await fetch('/api/documents/upload', {
       method: 'POST',
       body: formData,
     });
     
     if (!response.ok) {
-      throw new Error(`Error uploading document: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.error || 
+        `Error uploading document: ${response.status} ${response.statusText}`
+      );
     }
     
     const data = await response.json();
