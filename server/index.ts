@@ -39,6 +39,12 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Serve static files from the js directory
+app.use('/js', express.static(path.join(process.cwd(), 'js')));
+
+// Serve static files from public directory for other assets
+app.use('/public', express.static(path.join(process.cwd(), 'public')));
+
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
@@ -72,6 +78,12 @@ app.get('/client-portal', (req, res) => {
     console.error('Client portal page not found at:', portalPath);
     res.status(404).send('Client portal page not found');
   }
+});
+
+// CER Module route
+app.get('/cer', (req, res) => {
+  console.log('Redirecting to CER module in the React app');
+  res.redirect('/');
 });
 
 // Register API routes
