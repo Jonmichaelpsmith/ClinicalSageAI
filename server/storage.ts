@@ -5,7 +5,10 @@
  * The system automatically falls back to in-memory storage if no database is available.
  */
 import { createContextLogger } from './utils/logger';
-import { pool, query, transaction } from './db';
+import { pool, query, transaction, db } from './db';
+import { eq, desc, and, or, like, isNull, not } from 'drizzle-orm';
+import * as schema from '../shared/schema';
+import { generateRandomId } from './utils/id-generator';
 
 const logger = createContextLogger({ module: 'storage' });
 
@@ -59,11 +62,26 @@ export interface IStorage {
   deleteTrial(id: number): Promise<boolean>;
   
   // Document methods
-  getDocument(id: number): Promise<any | undefined>;
-  getDocuments(options?: { limit?: number; offset?: number; }): Promise<any[]>;
-  createDocument(document: any): Promise<any>;
-  updateDocument(id: number, documentData: any): Promise<any | undefined>;
-  deleteDocument(id: number): Promise<boolean>;
+  getDocument(id: string): Promise<schema.Document | undefined>;
+  getDocumentByName(name: string): Promise<schema.Document | undefined>;
+  getDocuments(options?: { 
+    limit?: number; 
+    offset?: number;
+    folderId?: string;
+    status?: string;
+    type?: string;
+    search?: string;
+  }): Promise<schema.Document[]>;
+  createDocument(document: schema.InsertDocument): Promise<schema.Document>;
+  updateDocument(id: string, documentData: Partial<schema.InsertDocument>): Promise<schema.Document | undefined>;
+  deleteDocument(id: string): Promise<boolean>;
+  
+  // Document folder methods
+  getFolder(id: string): Promise<schema.DocumentFolder | undefined>;
+  getFolders(options?: { parentId?: string | null }): Promise<schema.DocumentFolder[]>;
+  createFolder(folder: schema.InsertDocumentFolder): Promise<schema.DocumentFolder>;
+  updateFolder(id: string, folderData: Partial<schema.InsertDocumentFolder>): Promise<schema.DocumentFolder | undefined>;
+  deleteFolder(id: string): Promise<boolean>;
   
   // Health check
   healthCheck(): Promise<boolean>;
@@ -381,102 +399,236 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Document methods
-  async getDocument(id: number): Promise<any | undefined> {
-    if (!pool) return undefined;
+  async getDocument(id: string): Promise<schema.Document | undefined> {
+    if (!db) return undefined;
     
     try {
-      const result = await query('SELECT * FROM documents WHERE id = $1', [id]);
-      return result.rows[0];
+      const documents = await db.select().from(schema.documents).where(eq(schema.documents.id, id));
+      return documents[0];
     } catch (error) {
       logger.error('Failed to get document', { id, error });
       return undefined;
     }
   }
   
-  async getDocuments(options: { limit?: number; offset?: number; } = {}): Promise<any[]> {
-    if (!pool) return [];
-    
-    const { limit = 10, offset = 0 } = options;
+  async getDocumentByName(name: string): Promise<schema.Document | undefined> {
+    if (!db) return undefined;
     
     try {
-      const result = await query(
-        'SELECT * FROM documents ORDER BY id DESC LIMIT $1 OFFSET $2',
-        [limit, offset]
-      );
+      const documents = await db.select().from(schema.documents).where(eq(schema.documents.name, name));
+      return documents[0];
+    } catch (error) {
+      logger.error('Failed to get document by name', { name, error });
+      return undefined;
+    }
+  }
+  
+  async getDocuments(options: { 
+    limit?: number; 
+    offset?: number;
+    folderId?: string;
+    status?: string;
+    type?: string;
+    search?: string;
+  } = {}): Promise<schema.Document[]> {
+    if (!db) return [];
+    
+    const { limit = 20, offset = 0, folderId, status, type, search } = options;
+    
+    try {
+      let query = db.select().from(schema.documents);
       
-      return result.rows;
+      // Apply filters
+      if (folderId) {
+        query = query.where(eq(schema.documents.folderId, folderId));
+      }
+      
+      if (status) {
+        query = query.where(eq(schema.documents.status, status));
+      }
+      
+      if (type) {
+        query = query.where(eq(schema.documents.type, type));
+      }
+      
+      if (search) {
+        query = query.where(
+          or(
+            like(schema.documents.name, `%${search}%`),
+            like(schema.documents.description || '', `%${search}%`)
+          )
+        );
+      }
+      
+      // Apply sorting, limit, and offset
+      query = query.orderBy(desc(schema.documents.modifiedAt)).limit(limit).offset(offset);
+      
+      const documents = await query;
+      return documents;
     } catch (error) {
       logger.error('Failed to get documents', { options, error });
       return [];
     }
   }
   
-  async createDocument(document: any): Promise<any> {
-    if (!pool) {
+  async createDocument(documentData: schema.InsertDocument): Promise<schema.Document> {
+    if (!db) {
       throw new Error('Database connection not available');
     }
     
     try {
-      // Dynamically create INSERT statement based on document object
-      const columns = Object.keys(document).filter(k => k !== 'id');
-      const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
-      const values = columns.map(col => document[col]);
+      // Add creation timestamp if not provided
+      if (!documentData.createdAt) {
+        documentData.createdAt = new Date();
+      }
       
-      const result = await query(
-        `INSERT INTO documents (${columns.join(', ')}) VALUES (${placeholders}) RETURNING *`,
-        values
-      );
+      // Add modified timestamp if not provided
+      if (!documentData.modifiedAt) {
+        documentData.modifiedAt = new Date();
+      }
       
-      return result.rows[0];
+      const results = await db.insert(schema.documents).values(documentData).returning();
+      return results[0];
     } catch (error) {
-      logger.error('Failed to create document', { document, error });
+      logger.error('Failed to create document', { documentData, error });
       throw error;
     }
   }
   
-  async updateDocument(id: number, documentData: any): Promise<any | undefined> {
-    if (!pool) return undefined;
+  async updateDocument(id: string, documentData: Partial<schema.InsertDocument>): Promise<schema.Document | undefined> {
+    if (!db) return undefined;
     
     try {
-      // Build SET clause and values array
-      const setClauses: string[] = [];
-      const values: any[] = [];
-      let paramIndex = 1;
+      // Always update the modified timestamp
+      documentData.modifiedAt = new Date();
       
-      Object.entries(documentData).forEach(([key, value]) => {
-        if (key !== 'id') {
-          setClauses.push(`${key} = $${paramIndex}`);
-          values.push(value);
-          paramIndex++;
-        }
-      });
+      const results = await db
+        .update(schema.documents)
+        .set(documentData)
+        .where(eq(schema.documents.id, id))
+        .returning();
       
-      if (setClauses.length === 0) {
-        return this.getDocument(id);
-      }
-      
-      values.push(id); // Add ID as the last parameter
-      
-      const result = await query(
-        `UPDATE documents SET ${setClauses.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-        values
-      );
-      
-      return result.rows[0];
+      return results[0];
     } catch (error) {
       logger.error('Failed to update document', { id, documentData, error });
       return undefined;
     }
   }
   
-  async deleteDocument(id: number): Promise<boolean> {
-    if (!pool) return false;
+  async deleteDocument(id: string): Promise<boolean> {
+    if (!db) return false;
     
     try {
-      const result = await query('DELETE FROM documents WHERE id = $1', [id]);
-      return result.rowCount > 0;
+      const results = await db
+        .delete(schema.documents)
+        .where(eq(schema.documents.id, id))
+        .returning({ id: schema.documents.id });
+      
+      return results.length > 0;
     } catch (error) {
       logger.error('Failed to delete document', { id, error });
+      return false;
+    }
+  }
+  
+  // Document folders methods
+  async getFolders(options: { parentId?: string | null } = {}): Promise<schema.DocumentFolder[]> {
+    if (!db) return [];
+    
+    try {
+      let query = db.select().from(schema.documentFolders);
+      
+      if (options.parentId === null) {
+        // Get root folders (where parentId is null)
+        query = query.where(isNull(schema.documentFolders.parentId));
+      } else if (options.parentId) {
+        // Get child folders of a specific parent
+        query = query.where(eq(schema.documentFolders.parentId, options.parentId));
+      }
+      
+      return await query.orderBy(schema.documentFolders.name);
+    } catch (error) {
+      logger.error('Failed to get folders', { options, error });
+      return [];
+    }
+  }
+  
+  async getFolder(id: string): Promise<schema.DocumentFolder | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      const folders = await db
+        .select()
+        .from(schema.documentFolders)
+        .where(eq(schema.documentFolders.id, id));
+      
+      return folders[0];
+    } catch (error) {
+      logger.error('Failed to get folder', { id, error });
+      return undefined;
+    }
+  }
+  
+  async createFolder(folderData: schema.InsertDocumentFolder): Promise<schema.DocumentFolder> {
+    if (!db) {
+      throw new Error('Database connection not available');
+    }
+    
+    try {
+      // Add timestamps if not provided
+      if (!folderData.createdAt) {
+        folderData.createdAt = new Date();
+      }
+      
+      if (!folderData.updatedAt) {
+        folderData.updatedAt = new Date();
+      }
+      
+      const results = await db
+        .insert(schema.documentFolders)
+        .values(folderData)
+        .returning();
+      
+      return results[0];
+    } catch (error) {
+      logger.error('Failed to create folder', { folderData, error });
+      throw error;
+    }
+  }
+  
+  async updateFolder(id: string, folderData: Partial<schema.InsertDocumentFolder>): Promise<schema.DocumentFolder | undefined> {
+    if (!db) return undefined;
+    
+    try {
+      // Always update the updatedAt timestamp
+      folderData.updatedAt = new Date();
+      
+      const results = await db
+        .update(schema.documentFolders)
+        .set(folderData)
+        .where(eq(schema.documentFolders.id, id))
+        .returning();
+      
+      return results[0];
+    } catch (error) {
+      logger.error('Failed to update folder', { id, folderData, error });
+      return undefined;
+    }
+  }
+  
+  async deleteFolder(id: string): Promise<boolean> {
+    if (!db) return false;
+    
+    try {
+      // Delete the folder
+      const results = await db
+        .delete(schema.documentFolders)
+        .where(eq(schema.documentFolders.id, id))
+        .returning({ id: schema.documentFolders.id });
+      
+      return results.length > 0;
+    } catch (error) {
+      logger.error('Failed to delete folder', { id, error });
       return false;
     }
   }

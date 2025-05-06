@@ -1,11 +1,15 @@
 /**
  * Database Configuration for TrialSage
  * 
- * Provides a centralized database connection and query interface for the application.
- * In development mode, it falls back to in-memory storage if no database connection is available.
+ * Provides a centralized database connection with Drizzle ORM
+ * integration for type-safe database operations.
  */
 import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { createContextLogger } from './utils/logger';
+import * as schema from '../shared/schema';
+import path from 'path';
 
 const logger = createContextLogger({ module: 'database' });
 
@@ -21,7 +25,7 @@ try {
       connectionString: process.env.DATABASE_URL,
       max: 20, // Maximum number of clients in the pool
       idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
-      connectionTimeoutMillis: 10000, // How long to wait for a connection to become available (increased to 10 seconds for Replit environment)
+      connectionTimeoutMillis: 10000, // How long to wait for a connection to become available
     });
     
     // Test connection with retry mechanism
@@ -60,8 +64,37 @@ try {
   pool = null;
 }
 
+// Initialize Drizzle ORM
+export const db = pool ? drizzle(pool, { schema }) : null;
+
 /**
- * Execute a database query with error handling
+ * Run database migrations
+ */
+export async function runMigrations(): Promise<void> {
+  if (!db || !pool) {
+    logger.warn('Cannot run migrations: database connection not available');
+    return;
+  }
+  
+  try {
+    logger.info('Running database migrations...');
+    // Check if migrations folder exists
+    const migrationsFolder = path.resolve(__dirname, '../migrations');
+    
+    // Run migrations
+    await migrate(db, { migrationsFolder });
+    logger.info('Database migrations completed successfully');
+  } catch (error: any) {
+    logger.error('Failed to run migrations', { 
+      error: error.message, 
+      stack: error.stack 
+    });
+    throw error;
+  }
+}
+
+/**
+ * Execute a raw database query with error handling
  */
 export async function query(text: string, params: any[] = []): Promise<any> {
   if (!pool) {
