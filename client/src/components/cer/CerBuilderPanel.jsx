@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { cerApiService } from '../../services/CerAPIService';
 import LiteratureSearchPanel from './LiteratureSearchPanel';
+import ComplianceScorePanel from './ComplianceScorePanel';
 import { useToast } from '@/hooks/use-toast';
 import {
   Card,
@@ -255,31 +256,39 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
   // Render the UI
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Clinical Evaluation Report Builder</CardTitle>
-          <CardDescription>
-            Generate, review, and export your Clinical Evaluation Report with FAERS data integration
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Clinical Evaluation Report Builder</h1>
+        <p className="text-muted-foreground mt-2">
+          Generate, review, and export your Clinical Evaluation Report with FAERS data integration
+        </p>
+      </div>
+      
+      <Card className="shadow-sm border-gray-200">
+        <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="generator">
-                <AlignLeft className="mr-2 h-4 w-4" />
-                Section Generator
+            <TabsList className="grid grid-cols-5 mb-6">
+              <TabsTrigger value="generator" className="flex items-center justify-center py-2">
+                <AlignLeft className="h-4 w-4 mr-2" />
+                <span>Section Generator</span>
               </TabsTrigger>
-              <TabsTrigger value="literature">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Literature AI
+              <TabsTrigger value="literature" className="flex items-center justify-center py-2">
+                <BookOpen className="h-4 w-4 mr-2" />
+                <span>Literature AI</span>
               </TabsTrigger>
-              <TabsTrigger value="preview">
-                <FileText className="mr-2 h-4 w-4" />
-                Report Preview
+              <TabsTrigger value="preview" className="flex items-center justify-center py-2">
+                <FileText className="h-4 w-4 mr-2" />
+                <span>Report Preview</span>
               </TabsTrigger>
-              <TabsTrigger value="export">
-                <FileDown className="mr-2 h-4 w-4" />
-                Export Options
+              <TabsTrigger value="compliance" className="flex items-center justify-center py-2">
+                <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />
+                  <path d="M9 14l2 2 4-4" />
+                </svg>
+                <span>Compliance</span>
+              </TabsTrigger>
+              <TabsTrigger value="export" className="flex items-center justify-center py-2">
+                <FileDown className="h-4 w-4 mr-2" />
+                <span>Export</span>
               </TabsTrigger>
             </TabsList>
             
@@ -293,14 +302,14 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                       value={selectedSectionType} 
                       onValueChange={setSelectedSectionType}
                     >
-                      <SelectTrigger id="sectionType">
+                      <SelectTrigger id="sectionType" className="bg-white border-slate-200">
                         <SelectValue placeholder="Select section type" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white border border-slate-200 shadow-md">
                         <SelectGroup>
-                          <SelectLabel>CER Sections</SelectLabel>
+                          <SelectLabel className="text-slate-500 font-medium">CER Sections</SelectLabel>
                           {sectionTypes.map(section => (
-                            <SelectItem key={section.id} value={section.id}>
+                            <SelectItem key={section.id} value={section.id} className="text-slate-800 hover:bg-slate-50">
                               {section.label}
                             </SelectItem>
                           ))}
@@ -435,6 +444,22 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
               </div>
             </TabsContent>
             
+            {/* Compliance Tab */}
+            <TabsContent value="compliance">
+              <ComplianceScorePanel 
+                sections={cerSections}
+                title={cerTitle}
+                onComplianceChange={(complianceData) => {
+                  // Handle compliance data updates if needed
+                  console.log('Compliance data updated:', complianceData);
+                }}
+                onStatusChange={(status) => {
+                  // Handle status changes if needed
+                  console.log('Compliance status changed:', status);
+                }}
+              />
+            </TabsContent>
+            
             {/* Export Options Tab */}
             <TabsContent value="export">
               <div className="space-y-6">
@@ -447,40 +472,40 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="exportFormat">File Format</Label>
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="exportFormat" className="text-base font-medium">File Format</Label>
+                          <p className="text-sm text-slate-500 mt-1">Choose the format for your exported document</p>
+                        </div>
                         <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input 
-                              type="radio" 
-                              id="pdf-format" 
-                              value="pdf" 
-                              checked={exportFormat === 'pdf'}
-                              onChange={() => setExportFormat('pdf')}
-                            />
-                            <Label htmlFor="pdf-format">PDF</Label>
+                          <div className="flex items-center space-x-2 bg-white border border-slate-200 rounded-md px-3 py-2 hover:bg-slate-50 cursor-pointer" onClick={() => setExportFormat('pdf')}>
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-primary">
+                              {exportFormat === 'pdf' && <div className="h-2.5 w-2.5 rounded-full bg-primary"></div>}
+                            </div>
+                            <Label htmlFor="pdf-format" className="cursor-pointer font-medium">PDF</Label>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <input 
-                              type="radio" 
-                              id="docx-format" 
-                              value="docx" 
-                              checked={exportFormat === 'docx'}
-                              onChange={() => setExportFormat('docx')}
-                            />
-                            <Label htmlFor="docx-format">Word (DOCX)</Label>
+                          <div className="flex items-center space-x-2 bg-white border border-slate-200 rounded-md px-3 py-2 hover:bg-slate-50 cursor-pointer" onClick={() => setExportFormat('docx')}>
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-primary">
+                              {exportFormat === 'docx' && <div className="h-2.5 w-2.5 rounded-full bg-primary"></div>}
+                            </div>
+                            <Label htmlFor="docx-format" className="cursor-pointer font-medium">Word (DOCX)</Label>
                           </div>
                         </div>
                       </div>
                       
                       {/* Additional export options can be added here */}
                       
-                      <div className="space-y-1">
-                        <Label htmlFor="reportTitle">Report Title</Label>
+                      <div className="space-y-3 mt-6">
+                        <div>
+                          <Label htmlFor="reportTitle" className="text-base font-medium">Report Title</Label>
+                          <p className="text-sm text-slate-500 mt-1">This will appear at the top of your exported document</p>
+                        </div>
                         <Input 
                           id="reportTitle"
                           value={cerTitle}
                           onChange={(e) => setCerTitle(e.target.value)}
+                          className="bg-white border-slate-200 focus:border-blue-400 font-medium"
+                          placeholder="Enter report title..."
                         />
                       </div>
                     </div>

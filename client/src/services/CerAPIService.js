@@ -391,5 +391,79 @@ cerApiService.getPreview = async ({ title, sections, faers, comparators }) => {
   }
 };
 
+/**
+ * Export the CER as a PDF
+ * @param {Object} exportData - The export data
+ * @param {string} exportData.title - The title of the CER
+ * @param {Array} exportData.sections - The sections of the CER
+ * @param {Array} exportData.faers - FAERS data
+ * @param {Array} exportData.comparators - Comparator data
+ * @returns {Promise<Blob>} - The PDF file as a Blob
+ */
+cerApiService.exportToPDF = async (exportData) => {
+  try {
+    const response = await fetch('/api/cer/export-pdf', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(exportData),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`PDF export failed: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    return blob;
+  } catch (error) {
+    console.error('Error in exportToPDF:', error);
+    throw error;
+  }
+};
+
+/**
+ * Export the CER as a Word document
+ * @param {Object} exportData - The export data
+ * @param {string} exportData.title - The title of the CER
+ * @param {Array} exportData.sections - The sections of the CER
+ * @param {Array} exportData.faers - FAERS data
+ * @param {Array} exportData.comparators - Comparator data
+ * @param {string} productName - The name of the product
+ * @returns {Promise<void>} - The Word document is downloaded via browser
+ */
+cerApiService.exportToWord = async (exportData, productName) => {
+  try {
+    const response = await fetch('/api/cer/export-docx', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...exportData,
+        productName,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`DOCX export failed: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `cer_${productName.replace(/\s+/g, '_').toLowerCase()}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('Error in exportToWord:', error);
+    throw error;
+  }
+};
+
 // Export the service object for use in other components
 export { cerApiService };
