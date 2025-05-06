@@ -384,6 +384,7 @@ router.post('/export-pdf', async (req, res) => {
 });
 
 // POST /api/cer/compliance-score - Calculate compliance score using GPT-4o
+const complianceScoreHandler = require('./cer/complianceScore');
 router.post('/compliance-score', complianceScoreHandler);
 
 // POST /api/cer/export-docx - Export CER as DOCX
@@ -850,6 +851,10 @@ router.post('/export/:id', async (req, res) => {
   }
 });
 
+// POST /api/cer/generate-full - Generate a complete CER with AI
+const generateFullCER = require('./cer/generateFullCER');
+router.post('/generate-full', generateFullCER);
+
 // GET /api/cer/templates - Get available CER templates
 router.get('/templates', (req, res) => {
   try {
@@ -1111,6 +1116,14 @@ router.post('/preview-test', async (req, res) => {
 
 // POST /api/cer/compliance-score - Analyze CER content for regulatory compliance
 router.post('/compliance-score', complianceScoreHandler);
+
+// POST /api/cer/assistant - Get AI assistant response for CER development questions
+const cerAssistantHandler = require('./cer/assistant');
+router.post('/assistant', cerAssistantHandler);
+
+// POST /api/cer/improve-compliance - Get AI-generated improvements for compliance
+const improveComplianceHandler = require('./cer/improveCompliance');
+router.post('/improve-compliance', improveComplianceHandler);
 
 export { router as default };
 
