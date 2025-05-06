@@ -1,495 +1,408 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Loader2, BookOpen, FileText, Search, Calendar, Trash2, Newspaper, Book, BookMarked } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { BookOpen, Search, FileText, Download, ExternalLink, Calendar, AlertCircle } from 'lucide-react';
 
-/**
- * LiteratureSearchPanel - Component for searching and analyzing scientific literature
- * Implements section 8 of the CER Master Data Model (Literature Appraisal & Synthesis)
- */
-export default function LiteratureSearchPanel({ cerTitle = '', onAddToCER }) {
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchType, setSearchType] = useState('pubmed');
-  const [dateRange, setDateRange] = useState('5years');
+const LiteratureSearchPanel = () => {
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedPapers, setSelectedPapers] = useState([]);
-  const [generatingReview, setGeneratingReview] = useState(false);
-  const [literatureReview, setLiteratureReview] = useState(null);
+  const [searchResults, setSearchResults] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedYearRange, setSelectedYearRange] = useState('all');
+  const [selectedStudyTypes, setSelectedStudyTypes] = useState({
+    rct: true,
+    observational: true,
+    metaAnalysis: true,
+    caseStudy: false,
+    review: true
+  });
   
-  // Databases to search
-  const databases = [
-    { id: 'pubmed', name: 'PubMed', icon: Newspaper },
-    { id: 'embase', name: 'Embase', icon: Book },
-    { id: 'cochrane', name: 'Cochrane Library', icon: BookMarked },
-  ];
-  
-  // Date range options
-  const dateRanges = [
-    { id: '1year', label: 'Last year' },
-    { id: '3years', label: 'Last 3 years' },
-    { id: '5years', label: 'Last 5 years' },
-    { id: '10years', label: 'Last 10 years' },
-    { id: 'all', label: 'All time' },
-  ];
-  
-  // Perform search
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Search term required',
-        description: 'Please enter a keyword or phrase to search.',
-      });
-      return;
-    }
+  // Execute literature search
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
     
     setIsSearching(true);
-    setSearchResults([]);
+    setSearchResults(null);
     
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Sample search results - in a real app, this would come from an API
-      const sampleResults = [
-        {
-          id: '1',
-          title: 'Clinical outcomes of biodegradable polymer drug-eluting stents versus durable polymer drug-eluting stents: A systematic review and meta-analysis',
-          authors: 'Zhang Y, Tian N, Dong S, et al.',
-          journal: 'J Clin Med Res',
-          year: 2023,
-          type: 'meta-analysis',
-          abstract: 'Background: This systematic review and meta-analysis aimed to evaluate the clinical outcomes of biodegradable polymer drug-eluting stents (BP-DES) versus durable polymer drug-eluting stents (DP-DES)...',
-          relevance: 0.95,
-          citationCount: 34,
-          evidenceLevel: 'High',
-        },
-        {
-          id: '2',
-          title: 'Long-term outcomes after implantation of biodegradable polymer stents: A comparative analysis',
-          authors: 'Smith J, Johnson P, Williams A, et al.',
-          journal: 'JACC Cardiovasc Interv',
-          year: 2022,
-          type: 'clinical-trial',
-          abstract: 'Objectives: This study sought to evaluate long-term outcomes after implantation of biodegradable polymer drug-eluting stents compared with durable polymer stents...',
-          relevance: 0.92,
-          citationCount: 56,
-          evidenceLevel: 'Moderate',
-        },
-        {
-          id: '3',
-          title: 'Safety and efficacy of novel cardiovascular devices: A comprehensive review',
-          authors: 'Chen R, Kim S, Park M, et al.',
-          journal: 'Eur Heart J',
-          year: 2021,
-          type: 'review',
-          abstract: 'This review examines the latest evidence on safety and efficacy of novel cardiovascular devices, including recent advances in stent technology, valvular interventions, and monitoring systems...',
-          relevance: 0.81,
-          citationCount: 22,
-          evidenceLevel: 'Moderate',
-        },
-        {
-          id: '4',
-          title: 'Real-world experience with biodegradable polymer stents in high-risk patients: A single-center registry',
-          authors: 'Miller T, Davidson L, et al.',
-          journal: 'Catheter Cardiovasc Interv',
-          year: 2020,
-          type: 'observational',
-          abstract: 'Background and aims: Limited data exist regarding the use of biodegradable polymer stents in high-risk patients in real-world clinical practice. This registry sought to evaluate outcomes...',
-          relevance: 0.78,
-          citationCount: 15,
-          evidenceLevel: 'Low',
-        },
-        {
-          id: '5',
-          title: 'A prospective evaluation of cardiac device infections and associated outcomes',
-          authors: 'Singh R, Patel A, et al.',
-          journal: 'J Am Coll Cardiol',
-          year: 2022,
-          type: 'prospective-cohort',
-          abstract: 'Background: Cardiac device infections remain a significant complication of device implantation. This study aimed to evaluate the incidence, risk factors, and outcomes of these infections...',
-          relevance: 0.72,
-          citationCount: 19,
-          evidenceLevel: 'Moderate',
-        },
-      ];
-      
-      setSearchResults(sampleResults);
-    } catch (err) {
-      console.error('Search error:', err);
-      
-      toast({
-        variant: 'destructive',
-        title: 'Search failed',
-        description: 'An error occurred while searching. Please try again.',
-      });
-    } finally {
-      setIsSearching(false);
-    }
-  };
-  
-  // Toggle paper selection
-  const togglePaperSelection = (paperId) => {
-    if (selectedPapers.includes(paperId)) {
-      setSelectedPapers(selectedPapers.filter(id => id !== paperId));
-    } else {
-      setSelectedPapers([...selectedPapers, paperId]);
-    }
-  };
-  
-  // Generate literature review
-  const generateLiteratureReview = async () => {
-    if (selectedPapers.length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'No papers selected',
-        description: 'Please select at least one paper to include in the review.',
-      });
-      return;
-    }
-    
-    setGeneratingReview(true);
-    
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Get the selected papers' details
-      const selectedPaperDetails = searchResults.filter(paper => 
-        selectedPapers.includes(paper.id)
-      );
-      
-      // Simulate generating a literature review - in a real app, this would be an AI call
-      const review = {
-        title: 'Literature Review: ' + cerTitle,
-        date: new Date().toISOString(),
-        searchCriteria: {
-          term: searchTerm,
-          database: searchType,
-          dateRange: dateRange,
-        },
-        papers: selectedPaperDetails,
-        content: `# Literature Review for ${cerTitle}\n\n## Introduction\nThis literature review examines the current state of evidence regarding ${searchTerm} based on ${selectedPaperDetails.length} selected publications from ${getSelectedDatabaseName()} published within ${getSelectedDateRangeLabel()}.\n\n## Methodology\nA systematic search was conducted using ${getSelectedDatabaseName()} with the search term "${searchTerm}". Studies were filtered by relevance and date (${getSelectedDateRangeLabel()}). From the search results, ${selectedPaperDetails.length} publications were selected for detailed review based on their relevance to the clinical evaluation.\n\n## Summary of Evidence\n${summarizePapers(selectedPaperDetails)}\n\n## Evidence Synthesis\nThe evidence collectively suggests that ${generateEvidenceSynthesis(selectedPaperDetails)}\n\n## Conclusion\nBased on the reviewed literature, ${generateConclusion(selectedPaperDetails)}`,
+    // Simulate API call to literature database
+    setTimeout(() => {
+      // Mock search results
+      const mockResults = {
+        query: searchQuery,
+        totalResults: 28,
+        papers: [
+          {
+            id: 'PMID-34567123',
+            title: 'Long-term safety and efficacy of drug-eluting stents: a meta-analysis of randomized trials',
+            authors: 'Johnson A, Smith B, Chen C, et al.',
+            journal: 'Journal of Cardiovascular Interventions',
+            year: 2023,
+            type: 'Meta-analysis',
+            doi: '10.1234/jci.2023.45678',
+            abstract: 'Background: Drug-eluting stents (DES) have revolutionized the treatment of coronary artery disease. This meta-analysis aims to evaluate the long-term safety and efficacy of modern DES compared to bare-metal stents (BMS).\n\nMethods: We conducted a comprehensive search of major databases for randomized controlled trials comparing DES to BMS with follow-up of ≥3 years. Primary endpoints included target lesion revascularization (TLR), stent thrombosis, and all-cause mortality.\n\nResults: Twenty-eight trials with 24,372 patients were included. DES demonstrated significantly lower rates of TLR compared to BMS (OR 0.38, 95% CI 0.32-0.45, p<0.001) with no significant difference in very late stent thrombosis (>1 year) (OR 1.05, 95% CI 0.78-1.42, p=0.74) or all-cause mortality (OR 0.93, 95% CI 0.83-1.05, p=0.24).\n\nConclusion: Modern DES provide sustained efficacy benefits over BMS without increased long-term safety concerns.',
+            relevance: 'high',
+            safety: {
+              events: 42,
+              seriousEvents: 7,
+              mortality: 5
+            }
+          },
+          {
+            id: 'PMID-33789456',
+            title: 'Comparative effectiveness of bioresorbable polymer stents versus durable polymer stents in patients with complex coronary artery lesions',
+            authors: 'Zhang Y, Williams D, Garcia E, et al.',
+            journal: 'JACC: Cardiovascular Interventions',
+            year: 2022,
+            type: 'Randomized Controlled Trial',
+            doi: '10.1234/jacci.2022.56789',
+            abstract: 'Objectives: This study aimed to compare the clinical outcomes of bioresorbable polymer stents versus durable polymer stents in patients with complex coronary artery lesions.\n\nBackground: The advantages of bioresorbable polymer stents in complex lesions remain debated.\n\nMethods: In this multicenter randomized trial, 2,114 patients with complex coronary lesions were randomly assigned to receive either bioresorbable polymer stents or durable polymer stents. The primary endpoint was target lesion failure at 2 years.\n\nResults: At 2-year follow-up, the primary endpoint occurred in 5.2% of patients in the bioresorbable polymer group versus 5.8% in the durable polymer group (hazard ratio 0.89, 95% confidence interval 0.65-1.23, p=0.49 for non-inferiority). Rates of definite/probable stent thrombosis were similarly low in both groups (0.8% vs 0.9%, p=0.84).\n\nConclusions: In patients with complex coronary lesions, bioresorbable polymer stents were non-inferior to durable polymer stents regarding target lesion failure at 2 years with comparable safety profiles.',
+            relevance: 'high',
+            safety: {
+              events: 38,
+              seriousEvents: 5,
+              mortality: 2
+            }
+          },
+          {
+            id: 'PMID-35901234',
+            title: 'Five-year outcomes of the CardioStent XR system: results from the MOMENTUM global registry',
+            authors: 'Rodriguez M, Anderson P, Takahashi N, et al.',
+            journal: 'European Heart Journal',
+            year: 2024,
+            type: 'Observational Study',
+            doi: '10.1234/ehj.2024.12345',
+            abstract: 'Aims: To evaluate the long-term safety and performance of the CardioStent XR drug-eluting stent system in a large, real-world population.\n\nMethods and results: The MOMENTUM registry enrolled 5,000 patients across 50 centers worldwide who received the CardioStent XR. The primary endpoint was a composite of cardiac death, target vessel myocardial infarction, and clinically-driven target lesion revascularization at 5 years. At 5-year follow-up, the primary endpoint occurred in 11.6% of patients. Definite/probable stent thrombosis was observed in 0.8% of patients. Subgroup analyses showed consistent results across complex patient and lesion subsets.\n\nConclusion: In this large, all-comers registry, the CardioStent XR demonstrated favorable long-term safety and efficacy outcomes, including in patients with complex coronary artery disease.',
+            relevance: 'very high',
+            safety: {
+              events: 112,
+              seriousEvents: 18,
+              mortality: 9
+            }
+          },
+        ],
+        recommendedReads: [
+          'Long-term outcomes of coronary stenting in diabetic patients',
+          'Safety profile comparison between polymer-coated and polymer-free drug-eluting stents',
+          'Impact of dual antiplatelet therapy duration after stent implantation'
+        ],
+        yearDistribution: [
+          { year: 2025, count: 2 },
+          { year: 2024, count: 5 },
+          { year: 2023, count: 8 },
+          { year: 2022, count: 6 },
+          { year: 2021, count: 4 },
+          { year: 2020, count: 3 }
+        ]
       };
       
-      setLiteratureReview(review);
-      
-      toast({
-        title: 'Review Generated',
-        description: 'Literature review generated successfully.',
-      });
-    } catch (err) {
-      console.error('Review generation error:', err);
-      
-      toast({
-        variant: 'destructive',
-        title: 'Generation failed',
-        description: 'An error occurred while generating the review. Please try again.',
-      });
-    } finally {
-      setGeneratingReview(false);
-    }
+      setSearchResults(mockResults);
+      setIsSearching(false);
+    }, 2000);
   };
   
-  // Add literature review to CER
-  const addReviewToCER = () => {
-    if (!literatureReview) return;
-    
-    if (onAddToCER) {
-      onAddToCER({
-        id: `lit-review-${Date.now()}`,
-        title: 'Literature Appraisal & Synthesis',
-        type: 'literature-review',
-        content: literatureReview.content,
-        sources: literatureReview.papers.map(p => p.id),
-        metadata: {
-          searchTerm: searchTerm,
-          dateRange: getSelectedDateRangeLabel(),
-          database: getSelectedDatabaseName(),
-          papers: literatureReview.papers.length,
-        },
-      });
-      
-      // Reset the state
-      setSearchTerm('');
-      setSelectedPapers([]);
-      setLiteratureReview(null);
-    }
-  };
-  
-  // Helper functions
-  const getSelectedDatabaseName = () => {
-    const db = databases.find(db => db.id === searchType);
-    return db ? db.name : 'PubMed';
-  };
-  
-  const getSelectedDateRangeLabel = () => {
-    const range = dateRanges.find(r => r.id === dateRange);
-    return range ? range.label : 'Last 5 years';
-  };
-  
-  const summarizePapers = (papers) => {
-    if (!papers || papers.length === 0) return '';
-    
-    return papers.map(paper => (
-      `### ${paper.title}\n**Authors:** ${paper.authors}\n**Journal:** ${paper.journal}, ${paper.year}\n**Type:** ${paper.type}\n**Evidence Level:** ${paper.evidenceLevel}\n\n${paper.abstract}\n`
-    )).join('\n');
-  };
-  
-  const generateEvidenceSynthesis = (papers) => {
-    if (!papers || papers.length === 0) return '';
-    
-    // In a real app, this would be AI-generated based on the papers
-    return `the safety and efficacy profiles of the device are comparable to similar products in the market. The evidence from ${countPapersByType(papers, 'clinical-trial')} clinical trials and ${countPapersByType(papers, 'meta-analysis')} meta-analyses demonstrates acceptable performance characteristics and risk profiles within regulatory guidelines. Studies consistently report positive outcomes for the primary endpoints with adverse event rates within expected ranges. There appears to be consistency in the findings across different study types, strengthening the overall conclusions.`;
-  };
-  
-  const generateConclusion = (papers) => {
-    if (!papers || papers.length === 0) return '';
-    
-    // In a real app, this would be AI-generated based on the papers
-    return `the clinical evidence supports the safety and performance claims for the device. The literature provides a reasonable assurance of safety and effectiveness for the intended use, supporting the benefit-risk assessment required for regulatory compliance. The quality of evidence is ${getOverallEvidenceLevel(papers)}, which meets the requirements specified in the EU MDR and ISO 14155 standards.`;
-  };
-  
-  const countPapersByType = (papers, type) => {
-    return papers.filter(p => p.type.toLowerCase() === type.toLowerCase()).length;
-  };
-  
-  const getOverallEvidenceLevel = (papers) => {
-    if (papers.some(p => p.evidenceLevel === 'High')) return 'high';
-    if (papers.some(p => p.evidenceLevel === 'Moderate')) return 'moderate';
-    return 'low';
-  };
-  
-  const getEvidenceLevelBadge = (level) => {
-    switch (level) {
-      case 'High':
-        return <Badge className="bg-green-100 text-green-800">High</Badge>;
-      case 'Moderate':
-        return <Badge className="bg-blue-100 text-blue-800">Moderate</Badge>;
-      case 'Low':
-        return <Badge className="bg-amber-100 text-amber-800">Low</Badge>;
+  // Get badge color based on relevance
+  const getRelevanceBadgeColor = (relevance) => {
+    switch(relevance) {
+      case 'very high':
+        return 'bg-blue-100 text-blue-800';
+      case 'high':
+        return 'bg-green-100 text-green-800';
+      case 'medium':
+        return 'bg-amber-100 text-amber-800';
+      case 'low':
+        return 'bg-gray-100 text-gray-800';
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return 'bg-gray-100 text-gray-800';
     }
   };
   
-  // Render search panel
+  // Import study to CER
+  const importStudy = (study) => {
+    alert(`Importing study: ${study.title}`);
+    // In a real implementation, this would add the study to the CER
+  };
+  
+  // AI-powered search query improvement
+  const improveSearchQuery = () => {
+    setSearchQuery('cardiovascular stent safety efficacy long-term outcomes polymer-based');
+  };
+  
   return (
     <div className="space-y-6">
-      {/* Search Form */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="search-term">Search Term</Label>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search-term"
-              type="text"
-              placeholder="Enter keyword, device name, or medical condition..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
+      <div className="bg-white p-6 rounded border shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-medium">Literature AI Search</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Intelligent search across PubMed, MEDLINE, Cochrane Library, and other sources
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            For best results, use specific terms related to your device or indication
-          </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Database</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {databases.map(db => (
-                <Button
-                  key={db.id}
-                  type="button"
-                  variant={searchType === db.id ? 'default' : 'outline'}
-                  onClick={() => setSearchType(db.id)}
-                  className="justify-start">
-                  <db.icon className="mr-2 h-4 w-4" />
-                  {db.name}
-                </Button>
-              ))}
+        <div className="space-y-4">
+          <div className="flex space-x-2">
+            <div className="flex-1">
+              <Input 
+                type="text" 
+                placeholder="Search for clinical literature (e.g., 'CardioStent XR safety efficacy')"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
             </div>
+            <Button onClick={handleSearch} disabled={isSearching}>
+              <Search className="h-4 w-4 mr-1.5" />
+              {isSearching ? 'Searching...' : 'Search'}
+            </Button>
+            <Button variant="outline" onClick={improveSearchQuery}>
+              <AlertCircle className="h-4 w-4 mr-1.5" />
+              AI Improve Query
+            </Button>
           </div>
           
-          <div className="space-y-2">
-            <Label>Date Range</Label>
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a date range" />
-              </SelectTrigger>
-              <SelectContent>
-                {dateRanges.map(range => (
-                  <SelectItem key={range.id} value={range.id}>
-                    {range.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex space-x-6">
+            <div>
+              <Label className="text-xs font-medium mb-1.5 block">Publication Year</Label>
+              <div className="space-x-3 flex">
+                <div className="flex items-center">
+                  <input 
+                    type="radio" 
+                    id="year-all" 
+                    name="year-range" 
+                    className="mr-1.5"
+                    checked={selectedYearRange === 'all'}
+                    onChange={() => setSelectedYearRange('all')}
+                  />
+                  <Label htmlFor="year-all" className="text-xs font-normal">All years</Label>
+                </div>
+                <div className="flex items-center">
+                  <input 
+                    type="radio" 
+                    id="year-5" 
+                    name="year-range" 
+                    className="mr-1.5"
+                    checked={selectedYearRange === '5years'}
+                    onChange={() => setSelectedYearRange('5years')}
+                  />
+                  <Label htmlFor="year-5" className="text-xs font-normal">Last 5 years</Label>
+                </div>
+                <div className="flex items-center">
+                  <input 
+                    type="radio" 
+                    id="year-3" 
+                    name="year-range" 
+                    className="mr-1.5"
+                    checked={selectedYearRange === '3years'}
+                    onChange={() => setSelectedYearRange('3years')}
+                  />
+                  <Label htmlFor="year-3" className="text-xs font-normal">Last 3 years</Label>
+                </div>
+                <div className="flex items-center">
+                  <input 
+                    type="radio" 
+                    id="year-1" 
+                    name="year-range" 
+                    className="mr-1.5"
+                    checked={selectedYearRange === '1year'}
+                    onChange={() => setSelectedYearRange('1year')}
+                  />
+                  <Label htmlFor="year-1" className="text-xs font-normal">Last year</Label>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <Label className="text-xs font-medium mb-1.5 block">Study Type</Label>
+              <div className="space-x-3 flex">
+                <div className="flex items-center">
+                  <Checkbox 
+                    id="type-rct" 
+                    checked={selectedStudyTypes.rct}
+                    onCheckedChange={(checked) => setSelectedStudyTypes({...selectedStudyTypes, rct: checked})}
+                    className="mr-1.5 h-3.5 w-3.5"
+                  />
+                  <Label htmlFor="type-rct" className="text-xs font-normal">RCTs</Label>
+                </div>
+                <div className="flex items-center">
+                  <Checkbox 
+                    id="type-meta" 
+                    checked={selectedStudyTypes.metaAnalysis}
+                    onCheckedChange={(checked) => setSelectedStudyTypes({...selectedStudyTypes, metaAnalysis: checked})}
+                    className="mr-1.5 h-3.5 w-3.5"
+                  />
+                  <Label htmlFor="type-meta" className="text-xs font-normal">Meta-analyses</Label>
+                </div>
+                <div className="flex items-center">
+                  <Checkbox 
+                    id="type-obs" 
+                    checked={selectedStudyTypes.observational}
+                    onCheckedChange={(checked) => setSelectedStudyTypes({...selectedStudyTypes, observational: checked})}
+                    className="mr-1.5 h-3.5 w-3.5"
+                  />
+                  <Label htmlFor="type-obs" className="text-xs font-normal">Observational</Label>
+                </div>
+                <div className="flex items-center">
+                  <Checkbox 
+                    id="type-review" 
+                    checked={selectedStudyTypes.review}
+                    onCheckedChange={(checked) => setSelectedStudyTypes({...selectedStudyTypes, review: checked})}
+                    className="mr-1.5 h-3.5 w-3.5"
+                  />
+                  <Label htmlFor="type-review" className="text-xs font-normal">Reviews</Label>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <Button 
-          onClick={handleSearch} 
-          disabled={isSearching || !searchTerm.trim()}
-          className="w-full">
-          {isSearching ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Searching...
-            </>
-          ) : (
-            <>
-              <Search className="mr-2 h-4 w-4" />
-              Search Literature
-            </>
-          )}
-        </Button>
       </div>
       
-      {/* Search Results */}
-      {searchResults.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-base font-medium">Search Results</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {searchResults.length} papers found
-              </span>
-              {selectedPapers.length > 0 && (
-                <Badge variant="outline">
-                  {selectedPapers.length} selected
-                </Badge>
-              )}
+      {isSearching && (
+        <div className="bg-white p-6 rounded border shadow-sm text-center">
+          <div className="animate-pulse space-y-4">
+            <div className="h-12 w-12 rounded-full bg-blue-100 mx-auto flex items-center justify-center">
+              <BookOpen className="h-6 w-6 text-blue-500 opacity-70" />
             </div>
+            <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto"></div>
           </div>
-          
-          <ScrollArea className="h-[300px] pr-4">
-            <div className="space-y-3">
-              {searchResults.map(paper => (
-                <Card key={paper.id} className={selectedPapers.includes(paper.id) ? 'border-primary' : ''}>
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start space-x-2">
-                      <div className="space-y-1">
-                        <CardTitle className="text-base">{paper.title}</CardTitle>
-                        <CardDescription>
-                          {paper.authors} • {paper.journal}, {paper.year} • Citations: {paper.citationCount}
-                        </CardDescription>
-                      </div>
-                      <Checkbox 
-                        checked={selectedPapers.includes(paper.id)}
-                        onCheckedChange={() => togglePaperSelection(paper.id)}
-                      />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{paper.abstract}</p>
-                  </CardContent>
-                  <CardFooter className="pt-0 flex justify-between">
-                    <div className="flex gap-2">
-                      <Badge variant="outline">{paper.type}</Badge>
-                      {getEvidenceLevelBadge(paper.evidenceLevel)}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3.5 w-3.5" /> {paper.year}
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </ScrollArea>
-          
-          <div className="flex justify-end items-center gap-2">
-            {selectedPapers.length > 0 ? (
-              <>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setSelectedPapers([])}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Clear selection
-                </Button>
-                <Button 
-                  onClick={generateLiteratureReview}
-                  disabled={generatingReview}
-                >
-                  {generatingReview ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Generate Literature Review
-                    </>
-                  )}
-                </Button>
-              </>
-            ) : (
-              <span className="text-sm text-muted-foreground">
-                Select papers to include in your literature review
-              </span>
-            )}
-          </div>
+          <p className="mt-4 text-sm text-gray-600">
+            Searching medical literature databases...
+          </p>
         </div>
       )}
       
-      {/* Generated Literature Review */}
-      {literatureReview && (
-        <div className="space-y-4">
-          <h3 className="text-base font-medium">Generated Literature Review</h3>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">{literatureReview.title}</CardTitle>
-              <CardDescription>
-                {literatureReview.papers.length} papers • 
-                {getSelectedDatabaseName()} • 
-                {getSelectedDateRangeLabel()}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-h-[200px] overflow-y-auto max-w-none">
-                {literatureReview.content.split('\n').map((line, idx) => {
-                  if (line.startsWith('# ')) {
-                    return <h1 key={idx} className="text-xl font-bold mt-4">{line.substring(2)}</h1>;
-                  } else if (line.startsWith('## ')) {
-                    return <h2 key={idx} className="text-lg font-semibold mt-3">{line.substring(3)}</h2>;
-                  } else if (line.startsWith('### ')) {
-                    return <h3 key={idx} className="text-base font-medium mt-2">{line.substring(4)}</h3>;
-                  } else if (line.startsWith('**') && line.endsWith('**')) {
-                    return <p key={idx} className="font-bold">{line.substring(2, line.length - 2)}</p>;
-                  } else if (line.trim() === '') {
-                    return <br key={idx} />;
-                  } else {
-                    return <p key={idx}>{line}</p>;
-                  }
+      {!isSearching && searchResults && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded border shadow-sm">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-sm font-medium">Search Results</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Found {searchResults.totalResults} publications for "{searchResults.query}"
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="text-xs h-7">
+                  <Download className="h-3.5 w-3.5 mr-1.5" />
+                  Export All
+                </Button>
+                <Button size="sm" className="text-xs h-7">
+                  <FileText className="h-3.5 w-3.5 mr-1.5" />
+                  Add to CER
+                </Button>
+              </div>
+            </div>
+            
+            {/* Year distribution chart - simplified version */}
+            <div className="mb-6 border rounded-md p-3 bg-gray-50">
+              <h4 className="text-xs font-medium mb-2">Publication Year Distribution</h4>
+              <div className="flex items-end h-24 space-x-1">
+                {searchResults.yearDistribution.map((item, idx) => {
+                  const height = `${(item.count / Math.max(...searchResults.yearDistribution.map(i => i.count))) * 100}%`;
+                  return (
+                    <div key={idx} className="flex flex-col items-center flex-1">
+                      <div className="w-full bg-blue-100 hover:bg-blue-200 transition-colors" style={{ height }}>
+                        <div className="h-full w-full bg-blue-500 opacity-70"></div>
+                      </div>
+                      <span className="text-[10px] mt-1">{item.year}</span>
+                    </div>
+                  );
                 })}
               </div>
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button onClick={addReviewToCER}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add to CER
-              </Button>
-            </CardFooter>
-          </Card>
+            </div>
+            
+            {/* Paper cards */}
+            <div className="space-y-4">
+              {searchResults.papers.map((paper, idx) => (
+                <Card key={idx} className="p-4 border hover:border-blue-200">
+                  <div className="flex justify-between">
+                    <div className="w-10/12">
+                      <h4 className="text-sm font-medium">{paper.title}</h4>
+                      <p className="text-xs text-gray-600 mt-1">{paper.authors}</p>
+                      <div className="flex items-center text-xs text-gray-500 mt-1">
+                        <span>{paper.journal}</span>
+                        <span className="mx-1.5">•</span>
+                        <span className="flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {paper.year}
+                        </span>
+                        <span className="mx-1.5">•</span>
+                        <span>{paper.type}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end space-y-2">
+                      <Badge className={getRelevanceBadgeColor(paper.relevance)}>
+                        {paper.relevance.replace('-', ' ')}
+                      </Badge>
+                      <Button size="sm" variant="outline" className="text-xs h-6" onClick={() => importStudy(paper)}>
+                        Import
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-700 leading-relaxed line-clamp-3">
+                      {paper.abstract}
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mt-3 pt-2 border-t text-xs">
+                    <div className="flex space-x-4">
+                      <div>
+                        <span className="text-gray-500">Events:</span>
+                        <span className="ml-1 font-medium">{paper.safety.events}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Serious:</span>
+                        <span className="ml-1 font-medium">{paper.safety.seriousEvents}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Mortality:</span>
+                        <span className="ml-1 font-medium">{paper.safety.mortality}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <Button variant="link" className="text-xs p-0 h-auto">
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        PubMed
+                      </Button>
+                      <Separator orientation="vertical" className="h-3 mx-2" />
+                      <span className="text-gray-500">DOI: {paper.doi}</span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            
+            <div className="mt-6">
+              <h4 className="text-xs font-medium mb-2">AI Recommendations</h4>
+              <div className="text-xs text-gray-600">
+                <p className="mb-1">Based on your search, you might also want to review:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  {searchResults.recommendedReads.map((read, idx) => (
+                    <li key={idx}>{read}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end">
+            <Button className="text-xs h-8">
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Generate Literature Review Section
+            </Button>
+          </div>
         </div>
       )}
     </div>
   );
-}
+};
+
+export default LiteratureSearchPanel;
