@@ -14,6 +14,183 @@ import OpenAI from 'openai';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
+ * Generate a specific section of the CER using AI
+ * 
+ * @param {string} sectionTitle - The title of the section
+ * @param {string} sectionPrompt - The specific prompt for this section
+ * @param {string} systemPrompt - The system prompt with overall context
+ * @returns {Object} - Generated section data
+ */
+async function generateSectionWithAI(sectionTitle, sectionPrompt, systemPrompt) {
+  try {
+    // Generate a type identifier from the section title
+    const typeId = sectionTitle.toLowerCase().replace(/\s+/g, '-');
+    
+    console.log(`Generating ${sectionTitle} section with AI...`);
+    
+    // Use GPT-4o to generate the section content
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: sectionPrompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 2500,
+    });
+    
+    // Extract the generated content
+    const content = response.choices[0].message.content;
+    
+    // Return the structured section
+    return {
+      title: sectionTitle,
+      type: typeId,
+      content: content,
+      wordCount: content.split(/\s+/).length,
+      generatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`Error generating ${sectionTitle} section:`, error);
+    // Provide a placeholder in case of error
+    return {
+      title: sectionTitle,
+      type: sectionTitle.toLowerCase().replace(/\s+/g, '-'),
+      content: `# ${sectionTitle}\n\nContent generation failed. Please try again.`,
+      wordCount: 0,
+      generatedAt: new Date().toISOString(),
+      error: error.message
+    };
+  }
+}
+
+/**
+ * Calculate initial compliance score based on section completeness
+ * 
+ * @param {Array} sections - Generated CER sections
+ * @param {string} regulatoryFramework - Regulatory framework used
+ * @returns {Object} - Compliance scores by framework
+ */
+function calculateInitialComplianceScore(sections, regulatoryFramework) {
+  // Define required sections by regulatory framework
+  const frameworkRequirements = {
+    'EU MDR 2017/745': [
+      { section: 'device-description', weight: 1.0 },
+      { section: 'intended-purpose', weight: 1.0 },
+      { section: 'state-of-art', weight: 1.0 },
+      { section: 'clinical-data', weight: 1.5 },
+      { section: 'post-market', weight: 1.2 },
+      { section: 'literature-review', weight: 1.3 },
+      { section: 'benefit-risk', weight: 1.4 },
+      { section: 'conclusion', weight: 1.0 }
+    ],
+    'FDA 510(k)': [
+      { section: 'device-description', weight: 1.0 },
+      { section: 'intended-purpose', weight: 1.0 },
+      { section: 'state-of-art', weight: 0.8 },
+      { section: 'clinical-data', weight: 1.5 },
+      { section: 'literature-review', weight: 1.2 },
+      { section: 'benefit-risk', weight: 1.3 },
+      { section: 'conclusion', weight: 1.0 }
+    ],
+    'MEDDEV 2.7/1 Rev 4': [
+      { section: 'device-description', weight: 1.0 },
+      { section: 'intended-purpose', weight: 1.0 },
+      { section: 'state-of-art', weight: 1.2 },
+      { section: 'clinical-data', weight: 1.5 },
+      { section: 'post-market', weight: 1.3 },
+      { section: 'literature-review', weight: 1.4 },
+      { section: 'benefit-risk', weight: 1.5 },
+      { section: 'conclusion', weight: 1.0 }
+    ],
+    'ISO 14155': [
+      { section: 'device-description', weight: 1.0 },
+      { section: 'intended-purpose', weight: 1.0 },
+      { section: 'clinical-data', weight: 1.5 },
+      { section: 'literature-review', weight: 1.3 },
+      { section: 'benefit-risk', weight: 1.4 },
+      { section: 'conclusion', weight: 1.0 }
+    ]
+  };
+  
+  // Default to EU MDR if framework not found
+  const requirements = frameworkRequirements[regulatoryFramework] || frameworkRequirements['EU MDR 2017/745'];
+  
+  // Score each section based on presence and content quality
+  let totalScore = 0.0;
+  let totalPossible = 0;
+  
+  const sectionScores = {};
+  const typeMap = {};
+  sections.forEach(section => typeMap[section.type] = section);
+  
+  for (const req of requirements) {
+    const section = typeMap[req.section];
+    let sectionScore = 0;
+    
+    if (section) {
+      const wordCount = section.wordCount || 0;
+      // Score based on word count (quality metric)
+      if (wordCount > 1000) {
+        sectionScore = 1.0 * req.weight; // Full score for comprehensive sections
+      } else if (wordCount > 500) {
+        sectionScore = 0.8 * req.weight; // Good score for moderate sections
+      } else if (wordCount > 200) {
+        sectionScore = 0.6 * req.weight; // Partial score for minimal sections
+      } else {
+        sectionScore = 0.3 * req.weight; // Poor score for very brief sections
+      }
+    }
+    
+    sectionScores[req.section] = {
+      score: sectionScore,
+      possible: req.weight,
+      percentage: section ? (sectionScore / req.weight) * 100 : 0,
+      name: req.section
+    };
+    
+    totalScore += sectionScore;
+    totalPossible += req.weight;
+  }
+  
+  // Calculate framework compliance scores
+  const percentageScore = (totalScore / totalPossible) * 100;
+  
+  // Calculate scores for all frameworks for comparison
+  const frameworkScores = {};
+  for (const framework in frameworkRequirements) {
+    if (framework === regulatoryFramework) {
+      frameworkScores[framework] = percentageScore;
+    } else {
+      // Calculate cross-framework compliance
+      let fwScore = 0;
+      let fwPossible = 0;
+      
+      for (const req of frameworkRequirements[framework]) {
+        const section = typeMap[req.section];
+        if (section) {
+          const wordCount = section.wordCount || 0;
+          if (wordCount > 1000) fwScore += 1.0 * req.weight;
+          else if (wordCount > 500) fwScore += 0.8 * req.weight;
+          else if (wordCount > 200) fwScore += 0.6 * req.weight;
+          else fwScore += 0.3 * req.weight;
+        }
+        fwPossible += req.weight;
+      }
+      
+      frameworkScores[framework] = (fwScore / fwPossible) * 100;
+    }
+  }
+  
+  return {
+    overall: Math.round(percentageScore * 10) / 10, // Round to 1 decimal place
+    bySection: sectionScores,
+    byFramework: frameworkScores,
+    primaryFramework: regulatoryFramework
+  };
+}
+
+/**
  * Generate a mock CER for demonstration purposes
  */
 export async function generateMockCER(templateId = 'eu-mdr-full') {
@@ -36,34 +213,226 @@ export async function generateMockCER(templateId = 'eu-mdr-full') {
  * @param {Array} params.literature - Clinical literature references
  * @param {Object} params.fdaData - FDA adverse event data
  * @param {string} params.templateId - Template ID to use
- * @returns {Object} - Generated report metadata
+ * @returns {Object} - Generated report sections and metadata
  */
 export async function generateFullCER({ deviceInfo, literature, fdaData, templateId }) {
-  // In a real implementation, this would initiate a workflow process
-  // and generate a background job
-  
-  const jobId = `JOB-${Date.now()}`;
-  
-  // Log the incoming data for debugging
   console.log(`Generating CER with template ${templateId}`);
   console.log(`Device: ${deviceInfo?.name || 'Unknown device'}`);
   console.log(`Literature items: ${literature?.length || 0}`);
   
+  // Generate a unique job ID for tracking
+  const jobId = `CER-${Date.now()}`;
+  
   try {
-    // In a production system, this would initiate a background job
-    // For demonstration, we'll simulate this by returning a job reference
+    // Determine which regulatory standard to use based on template
+    let regulatoryFramework = 'EU MDR 2017/745';
+    if (templateId === 'fda-510k') {
+      regulatoryFramework = 'FDA 510(k)';
+    } else if (templateId === 'meddev') {
+      regulatoryFramework = 'MEDDEV 2.7/1 Rev 4';
+    } else if (templateId === 'iso-14155') {
+      regulatoryFramework = 'ISO 14155';
+    }
+    
+    // Generate section content using GPT-4o - each section is generated separately
+    // to allow for better context management and to stay within token limits
+    
+    // Use a single system prompt that sets the context for all sections
+    const systemPrompt = `You are an expert medical device regulatory specialist with expertise in clinical evaluations.
+    You are generating a comprehensive Clinical Evaluation Report (CER) for a medical device according to ${regulatoryFramework} standards.
+    The device is: ${deviceInfo?.name || 'Unknown device'} (${deviceInfo?.type || 'Medical device'}).
+    Manufacturer: ${deviceInfo?.manufacturer || 'Unknown manufacturer'}.
+    
+    When creating this report, adhere to the following rules:
+    1. Write with precise, clinical, and professional language appropriate for regulatory submissions
+    2. Organize content with clear headings and subheadings
+    3. Incorporate relevant safety data and literature evidence where available
+    4. Ensure all claims are substantiated and evidence-based
+    5. Address potential risks and mitigations specific to this device type
+    6. Structure content to follow regulatory guidelines exactly
+    7. Provide specific, detailed content rather than general statements
+    8. Use proper medical terminology throughout
+    9. Format the response in Markdown with appropriate headers, lists, and tables
+    10. Be comprehensive and thorough - each section should be detailed and complete`;
+    
+    // For real implementation, generate each section asynchronously
+    const sections = [];
+    
+    // Device Description section
+    const deviceDescPrompt = `Create the Device Description section of the CER for ${deviceInfo?.name}. 
+    Include detailed information about the device's:
+    - Complete technical description
+    - Components and accessories
+    - Key functional characteristics
+    - Principles of operation
+    - Device classification
+    - Primary performance specifications
+    - Packaging and labeling information
+    - Sterilization methods (if applicable)
+    - Manufacturing processes relevant to safety
+    
+    Structure this as a comprehensive section ready for a regulatory submission.`;
+    
+    const deviceDescSection = await generateSectionWithAI("Device Description", deviceDescPrompt, systemPrompt);
+    sections.push(deviceDescSection);
+    
+    // Intended Purpose section
+    const intendedPurposePrompt = `Create the Intended Purpose section of the CER for ${deviceInfo?.name}.
+    Include detailed information about:
+    - The device's intended medical indications
+    - Target patient population (age, conditions, contraindications)
+    - Intended users/operators
+    - Clinical context/environment of use
+    - Primary and secondary functions
+    - Duration and frequency of use
+    - Contraindications, warnings, and precautions
+    - Claims about performance and safety
+    
+    Structure this as a comprehensive section ready for a regulatory submission.`;
+    
+    const intendedPurposeSection = await generateSectionWithAI("Intended Purpose", intendedPurposePrompt, systemPrompt);
+    sections.push(intendedPurposeSection);
+    
+    // State of the Art section
+    const stateOfArtPrompt = `Create the State of the Art section of the CER for ${deviceInfo?.name}.
+    Include detailed information about:
+    - Current medical practice related to this device type
+    - Existing alternative treatments or devices
+    - Overview of current clinical guidelines relevant to this device type
+    - Benchmark standards for safety and performance
+    - Recent advancements in the field
+    - Position of this device relative to alternatives
+    - Key performance indicators for this device category
+    
+    Structure this as a comprehensive section ready for a regulatory submission.`;
+    
+    const stateOfArtSection = await generateSectionWithAI("State of the Art", stateOfArtPrompt, systemPrompt);
+    sections.push(stateOfArtSection);
+    
+    // Clinical Data Analysis section
+    let clinicalDataPrompt = `Create the Clinical Data Analysis section of the CER for ${deviceInfo?.name}.
+    Include detailed information about:
+    - Summary of clinical investigations conducted
+    - Evaluation methodology used
+    - Patient demographics in studies
+    - Primary endpoints and results
+    - Statistical significance of findings
+    - Comparison with predicate or similar devices
+    - Safety outcomes
+    - Efficacy/performance outcomes
+    - Limitations of available data
+    
+    Structure this as a comprehensive section ready for a regulatory submission.`;
+    
+    // Add FAERS data context if available
+    if (fdaData && fdaData.reportCount) {
+      clinicalDataPrompt += `\n\nIncorporate analysis of ${fdaData.reportCount} adverse events from FDA FAERS database, including:
+      - Breakdown by severity (${fdaData.reports?.filter(r => r.serious).length || 0} serious events)
+      - Most common event types
+      - Any signals or trends identified
+      - Comparison to similar devices (if data available)\n`;
+    }
+    
+    const clinicalDataSection = await generateSectionWithAI("Clinical Data Analysis", clinicalDataPrompt, systemPrompt);
+    sections.push(clinicalDataSection);
+    
+    // Post-Market Surveillance section
+    const pmsPrompt = `Create the Post-Market Surveillance section of the CER for ${deviceInfo?.name}.
+    Include detailed information about:
+    - PMS system overview
+    - Methods for data collection
+    - Summary of post-market data collected
+    - Complaint handling procedures
+    - Vigilance reporting systems
+    - Identified trends or signals
+    - Corrective actions taken (if any)
+    - Ongoing surveillance activities
+    - Integration with risk management
+    
+    Structure this as a comprehensive section ready for a regulatory submission.`;
+    
+    const pmsSection = await generateSectionWithAI("Post-Market Surveillance", pmsPrompt, systemPrompt);
+    sections.push(pmsSection);
+    
+    // Literature Review section
+    let literaturePrompt = `Create the Literature Review section of the CER for ${deviceInfo?.name}.
+    Include detailed information about:
+    - Search methodology
+    - Databases searched
+    - Search terms used
+    - Inclusion/exclusion criteria
+    - Summary of relevant publications
+    - Critical appraisal of literature
+    - Evidence quality assessment
+    - Key findings relevant to safety and performance
+    - Identified gaps in the literature
+    
+    Structure this as a comprehensive section ready for a regulatory submission.`;
+    
+    // Add literature context if available
+    if (literature && literature.length > 0) {
+      literaturePrompt += `\n\nIncorporate analysis of ${literature.length} literature references provided, including their relevance to safety and performance claims.\n`;
+    }
+    
+    const literatureSection = await generateSectionWithAI("Literature Review", literaturePrompt, systemPrompt);
+    sections.push(literatureSection);
+    
+    // Benefit-Risk Analysis section
+    const brAnalysisPrompt = `Create the Benefit-Risk Analysis section of the CER for ${deviceInfo?.name}.
+    Include detailed information about:
+    - Identified benefits based on clinical data
+    - Quantification of benefits where possible
+    - Known and potential risks
+    - Risk mitigations in place
+    - Benefit-risk ratio calculation methodology
+    - Comparison to alternative treatments
+    - Conclusions regarding acceptable benefit-risk profile
+    - Uncertainty analysis
+    - Populations with different benefit-risk profiles
+    
+    Structure this as a comprehensive section ready for a regulatory submission.`;
+    
+    const brAnalysisSection = await generateSectionWithAI("Benefit-Risk Analysis", brAnalysisPrompt, systemPrompt);
+    sections.push(brAnalysisSection);
+    
+    // Conclusion section
+    const conclusionPrompt = `Create the Conclusion section of the CER for ${deviceInfo?.name}.
+    Include detailed information about:
+    - Summary of overall findings
+    - Compliance with essential requirements
+    - Statement on demonstration of conformity
+    - Adequacy of clinical evidence
+    - Residual risks and acceptability
+    - Recommendations for post-market activities
+    - Intervals for CER updates
+    - Final clinical evaluation statement
+    - Data limitations and impact on conclusions
+    
+    Structure this as a comprehensive section ready for a regulatory submission.`;
+    
+    const conclusionSection = await generateSectionWithAI("Conclusion", conclusionPrompt, systemPrompt);
+    sections.push(conclusionSection);
+    
+    // Calculate an estimated compliance score based on content completeness
+    const complianceScore = calculateInitialComplianceScore(sections, regulatoryFramework);
+    
     return {
-      job_id: jobId,
-      status: 'pending',
+      id: jobId,
+      status: 'completed',
       templateId,
       deviceInfo: {
         name: deviceInfo?.name || 'Unknown device',
-        type: deviceInfo?.type || 'Unspecified'
+        type: deviceInfo?.type || 'Unspecified',
+        manufacturer: deviceInfo?.manufacturer || 'Unknown manufacturer'
       },
-      created_at: new Date().toISOString()
+      sections,
+      complianceScore,
+      regulatoryFramework,
+      created_at: new Date().toISOString(),
+      completed_at: new Date().toISOString()
     };
   } catch (error) {
-    console.error('Error initiating CER generation:', error);
+    console.error('Error generating CER with AI:', error);
     throw new Error(`Failed to generate CER: ${error.message}`);
   }
 }
