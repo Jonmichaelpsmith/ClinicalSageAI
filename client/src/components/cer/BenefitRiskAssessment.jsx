@@ -141,12 +141,12 @@ export default function BenefitRiskAssessment() {
   };
   
   // Get color for difference values (positive is good)
-  const getDifferenceColor = (value) => {
+  const getDifferenceColor = (value, metric = '') => {
     if (value.startsWith('+')) return 'text-green-600';
     if (value.startsWith('-')) {
       // For complication-related metrics, negative is good
-      if (activeMetric?.toLowerCase().includes('complication') || 
-          activeMetric?.toLowerCase().includes('reoperation')) {
+      if (metric.toLowerCase().includes('complication') || 
+          metric.toLowerCase().includes('reoperation')) {
         return 'text-green-600';
       }
       return 'text-red-600';
@@ -428,7 +428,7 @@ export default function BenefitRiskAssessment() {
                           <TableCell className="font-medium">{item.metric}</TableCell>
                           <TableCell>{item.thisDev}</TableCell>
                           <TableCell>{item.predicate}</TableCell>
-                          <TableCell className={getDifferenceColor(item.difference)}>
+                          <TableCell className={getDifferenceColor(item.difference, item.metric)}>
                             <strong>{item.difference}</strong>
                           </TableCell>
                         </TableRow>
