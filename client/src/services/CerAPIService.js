@@ -493,5 +493,196 @@ cerApiService.analyzeAdverseEvents = async (fdaData) => {
   }
 };
 
+/**
+ * Trigger autonomous data retrieval for a CER report
+ * @param {string} reportId - The ID of the CER report
+ * @returns {Promise<Object>} - Status of the data retrieval process
+ */
+cerApiService.retrieveDataForCER = async (reportId) => {
+  try {
+    const response = await fetch(`/api/cer-data/retrieve/${reportId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error triggering data retrieval: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in retrieveDataForCER:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get the status of the data retrieval process for a CER report
+ * @param {string} reportId - The ID of the CER report
+ * @returns {Promise<Object>} - Status information
+ */
+cerApiService.getDataRetrievalStatus = async (reportId) => {
+  try {
+    const response = await fetch(`/api/cer-data/status/${reportId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching data retrieval status: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getDataRetrievalStatus:', error);
+    throw error;
+  }
+};
+
+/**
+ * Search for scientific literature related to a device
+ * @param {Object} params - Search parameters
+ * @param {string} params.query - Search query
+ * @param {Object} params.deviceInfo - Device information for context
+ * @param {Object} [params.filters] - Optional filters
+ * @param {number} [params.limit] - Maximum results to return
+ * @returns {Promise<Object>} - Search results
+ */
+cerApiService.searchLiterature = async ({ query, deviceInfo, filters, limit }) => {
+  try {
+    const response = await fetch('/api/cer-data/literature/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        deviceInfo,
+        filters,
+        limit
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error searching literature: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in searchLiterature:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a literature review from selected papers
+ * @param {Object} params - Parameters
+ * @param {Array} params.papers - Array of papers
+ * @param {Object} params.context - Context information
+ * @param {Object} [params.options] - Generation options
+ * @returns {Promise<Object>} - Generated literature review
+ */
+cerApiService.generateLiteratureReview = async ({ papers, context, options }) => {
+  try {
+    const response = await fetch('/api/cer-data/literature/generate-review', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        papers,
+        context,
+        options
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating literature review: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateLiteratureReview:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get literature items for a CER report
+ * @param {string} reportId - The ID of the CER report
+ * @returns {Promise<Object>} - Literature items
+ */
+cerApiService.getLiteratureForReport = async (reportId) => {
+  try {
+    const response = await fetch(`/api/cer-data/literature/${reportId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching literature for report: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getLiteratureForReport:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch enhanced FAERS data for a product and store it for a CER report
+ * @param {Object} params - Parameters
+ * @param {string} params.productName - The name of the product
+ * @param {string} [params.reportId] - Optional CER report ID
+ * @returns {Promise<Object>} - FAERS data
+ */
+cerApiService.fetchEnhancedFaersData = async ({ productName, reportId }) => {
+  try {
+    const response = await fetch('/api/cer-data/faers/fetch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        productName,
+        reportId
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching enhanced FAERS data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in fetchEnhancedFaersData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get FAERS data for a CER report
+ * @param {string} reportId - The ID of the CER report
+ * @returns {Promise<Object>} - FAERS data
+ */
+cerApiService.getFaersDataForReport = async (reportId) => {
+  try {
+    const response = await fetch(`/api/cer-data/faers/${reportId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching FAERS data for report: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getFaersDataForReport:', error);
+    throw error;
+  }
+};
+
 // Export the service object for use in other components
 export { cerApiService };
