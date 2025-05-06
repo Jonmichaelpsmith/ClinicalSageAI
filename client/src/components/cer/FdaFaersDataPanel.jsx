@@ -10,10 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4, BarChartHorizontal, HelpCircle, FileText, FileCheck, Filter, Calendar, Zap, Download, ChevronRight } from 'lucide-react';
+import { Loader2, Search, CheckCircle, AlertCircle, DatabaseIcon, BarChart4, BarChartHorizontal, HelpCircle, FileText, FileCheck, Filter, Calendar, Zap, Download, ChevronRight, RefreshCw, ExternalLink } from 'lucide-react';
 import { FaersRiskBadge } from './FaersRiskBadge';
 import { FaersHowToModal } from './FaersHowToModal';
 import { useToast } from '@/hooks/use-toast';
+import { cerApiService } from '@/services/CerAPIService';
 
 /**
  * FDA FAERS Data Panel Component
@@ -22,13 +23,15 @@ import { useToast } from '@/hooks/use-toast';
  * from the FDA FAERS (FDA Adverse Event Reporting System) database for inclusion
  * in Clinical Evaluation Reports.
  */
-const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', initialProductName = '' }) => {
+const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', initialProductName = '', reportId = '' }) => {
   const [productName, setProductName] = useState(initialProductName || deviceName || '');
   const [manufacturerName, setManufacturerName] = useState('Arthrosurface, Inc.');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchMethod, setSearchMethod] = useState('standard'); // standard or advanced
   const [dataSource, setDataSource] = useState('fda-faers'); // fda-faers, eu-eudamed, etc.
+  const [currentReportId, setCurrentReportId] = useState(reportId);
+  const [dataRetrievalStatus, setDataRetrievalStatus] = useState(null);
   
   const [isLoading, setIsLoading] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
@@ -55,6 +58,119 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       integrateIntoReport();
     }
   }, [faersAnalysis]);
+  
+  // Check data retrieval status periodically if we have a reportId
+  useEffect(() => {
+    if (currentReportId) {
+      const checkStatus = async () => {
+        try {
+          const status = await cerApiService.getDataRetrievalStatus(currentReportId);
+          setDataRetrievalStatus(status);
+          
+          // If FAERS data is complete, load it
+          if (status?.faersStatus === 'completed') {
+            await fetchReportFaersData();
+          }
+        } catch (error) {
+          console.error('Error checking data retrieval status:', error);
+        }
+      };
+      
+      // Check immediately
+      checkStatus();
+      
+      // Setup interval to check every 5 seconds
+      const interval = setInterval(checkStatus, 5000);
+      
+      // Cleanup interval on unmount
+      return () => clearInterval(interval);
+    }
+  }, [currentReportId]);
+  
+  /**
+   * Trigger autonomous data retrieval for the current report
+   */
+  const triggerAutonomousDataRetrieval = async () => {
+    if (!currentReportId) {
+      toast({
+        title: 'Report ID Required',
+        description: 'A report ID is required to trigger autonomous data retrieval',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const result = await cerApiService.retrieveDataForCER(currentReportId);
+      
+      toast({
+        title: 'Data Retrieval Initiated',
+        description: 'Autonomous data retrieval has been started for this report',
+      });
+      
+      setDataRetrievalStatus(result);
+      
+    } catch (error) {
+      console.error('Error triggering data retrieval:', error);
+      setError(error.message || 'Failed to trigger autonomous data retrieval');
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to trigger autonomous data retrieval',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  /**
+   * Fetch FAERS data for the current report
+   */
+  const fetchReportFaersData = async () => {
+    if (!currentReportId) {
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const data = await cerApiService.getFaersDataForReport(currentReportId);
+      
+      if (data) {
+        setFaersData(data);
+        setFaersAnalysis(data.analysis || null);
+        
+        // Call callbacks if provided
+        if (onDataFetched) {
+          onDataFetched(data);
+        }
+        
+        if (onAnalysisFetched && data.analysis) {
+          onAnalysisFetched(data.analysis);
+        }
+        
+        // Switch to analysis tab if analysis is available
+        if (data.analysis) {
+          setActiveTab('analysis');
+        }
+        
+        toast({
+          title: 'FAERS Data Loaded',
+          description: 'FAERS data has been loaded from the report',
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error fetching report FAERS data:', error);
+      setError(error.message || 'Failed to fetch FAERS data for report');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   /**
    * Fetch raw FAERS data from the API

@@ -35,5 +35,16 @@ export default function setupApiRoutes(app) {
       console.error('❌ Failed to load advisor routes:', err);
     });
 
-  // Add more API routes here
+  // Import CER data retrieval routes
+  import('./cerDataRetrieval.js')
+    .then(cerDataModule => {
+      const cerDataRoutes = cerDataModule.default;
+      console.log('✅ CER Data Retrieval routes loaded dynamically');
+      
+      app.use('/api/cer-data', cerDataRoutes);
+      console.log('✅ Mounted CER data retrieval routes at /api/cer-data');
+    })
+    .catch(err => {
+      console.error('❌ Failed to load CER data retrieval routes:', err);
+    });
 }
