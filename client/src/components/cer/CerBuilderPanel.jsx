@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, AlignLeft, FileDown, FileText, BookOpen, Search } from 'lucide-react';
+import { Loader2, AlignLeft, FileDown, FileText, BookOpen, Search, Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useExportFAERS } from '../../hooks/useExportFAERS';

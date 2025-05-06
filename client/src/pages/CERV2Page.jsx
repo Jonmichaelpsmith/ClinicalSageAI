@@ -1,23 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
-import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
-import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
-import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
-import QAChecklistButton from '@/components/cer/QAChecklistButton';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { cerApiService } from '@/services/CerAPIService';
-import { useToast } from '@/hooks/use-toast';
-import { ClipboardCheck, Clock, Download, FileCheck, FileText, CheckCircle, AlertCircle, ChevronDown, FileWarning, BookOpen, Calendar, Layers, CircleCheck, CircleAlert, Database, MessageSquare, UploadCloud, Loader2, Info, Send } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare } from 'lucide-react';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
@@ -41,8 +30,8 @@ export default function CERV2Page() {
   const [isComplianceRunning, setIsComplianceRunning] = useState(false);
   const { toast } = useToast();
 
-  // Refs for floating buttons
-  const previewPanelRef = useRef(null);
+  // Track tab progress
+  const previewPanelRef = React.useRef(null);
 
   // Calculate document stats
   useEffect(() => {
