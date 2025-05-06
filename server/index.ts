@@ -62,6 +62,18 @@ app.get('/marketing', (req, res) => {
   }
 });
 
+// Client portal route
+app.get('/client-portal', (req, res) => {
+  console.log('Serving client portal page');
+  const portalPath = path.join(process.cwd(), 'client-portal.html');
+  if (fs.existsSync(portalPath)) {
+    res.sendFile(portalPath);
+  } else {
+    console.error('Client portal page not found at:', portalPath);
+    res.status(404).send('Client portal page not found');
+  }
+});
+
 // Register API routes
 registerRoutes(app);
 
