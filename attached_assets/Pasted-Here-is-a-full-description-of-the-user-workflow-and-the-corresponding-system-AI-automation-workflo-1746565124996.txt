@@ -1,0 +1,110 @@
+Here is a full description of the user workflow and the corresponding system (AI/automation) workflow inside the TrialSage CER Generator — as it’s now designed to function as a complete, intelligent, end-to-end CER automation platform.
+
+⸻
+
+👤 USER WORKFLOW vs 🤖 SYSTEM WORKFLOW
+
+Goal: Generate a fully compliant, regulator-ready Clinical Evaluation Report (CER) with near-zero manual effort.
+
+⸻
+
+🧭 Step 1: Project Kickoff – “Create New CER”
+
+👤 User Action	🤖 System Behavior
+Clicks “Create New CER”	Initializes new report instance with unique ID
+Enters product name (e.g., “Stentra LX”)	Auto-fetches regulatory metadata: UNII, ATC class, GMDN, MoA
+Selects device type & regulatory region	Pre-loads section requirements based on EU MDR / FDA track
+Clicks “Begin”	Launches Section Generator and triggers FAERS ingestion
+
+
+
+⸻
+
+🧱 Step 2: Core Section Generation
+
+👤 User Action	🤖 System Behavior
+Chooses section (e.g., Safety Profile)	Retrieves relevant data context (FAERS, comparators, clinical)
+Provides optional context or files	Auto-parses content using NLP/OCR
+Clicks “Generate”	GPT-4o writes full section with formatted content and citations
+Reviews, edits, and confirms	Stores section in report draft state
+
+
+
+⸻
+
+🧬 Step 3: Automated Data Intelligence
+
+👤 User Action	🤖 System Behavior
+[No input]	System auto-fetches FAERS data via OpenFDA
+	Maps product → UNII → FAERS → AE profiles
+	Scores risk (weighted algorithm: death, hospitalization, etc.)
+	Identifies comparators by ATC class
+	Fetches comparator risk scores and writes summary language
+Opens “Preview” tab	CER preview shows all sections, FAERS tables, and risk charts
+
+
+
+⸻
+
+📚 Step 4: Literature Review (Optional / Recommended)
+
+👤 User Action	🤖 System Behavior
+Uploads PDFs or searches studies	AI extracts methods, endpoints, sample size, and outcomes
+Reviews summaries and selects studies	GPT-4o generates Literature Review section with citations
+Adds to report	Automatically inserted into CER draft
+
+
+
+⸻
+
+⚖️ Step 5: Regulatory Scoring & Validation
+
+👤 User Action	🤖 System Behavior
+Clicks “Validate CER”	System checks compliance: EU MDR Annex XIV, ISO 14155, FDA flags
+	Identifies missing sections, low-quality data, non-compliant phrasing
+	Auto-fixes minor gaps (e.g., missing rationale for equivalence)
+Views dashboard	See pass/fail, score % by section, suggested remediations
+
+
+
+⸻
+
+📤 Step 6: Export, Archive, Submit
+
+👤 User Action	🤖 System Behavior
+Clicks “Export PDF” or “Export Word”	Generates formatted file: TOC, FAERS tables, citations, appendices
+Clicks “Save to Vault”	Saves version with timestamp, author, and hash
+(Optional) Sends to reviewer/client	System generates share link (public or role-protected)
+
+
+
+⸻
+
+🧠 Optional: AI Q&A Review
+
+👤 User Action	🤖 System Behavior
+Clicks “Ask about this section”	GPT explains AI’s reasoning, justifies risk assessments
+Types question (e.g., “Why is risk low?”)	Answers using real-world data, studies, and regulatory logic
+
+
+
+⸻
+
+🔁 SYSTEM WORKFLOW SUMMARY (Behind the Scenes)
+
+🔧 System Task	Description
+FAERS Pull	Product → UNII → FAERS search → Risk scoring → Store in DB
+Comparator Analysis	ATC class match → Pull peer substances → Score → Compare
+Literature AI	PubMed & PDF upload → GPT summarization → Evidence table → AI drafting
+Clinical Ingestion	CSV, XLSX parsing → Endpoint detection → Table generator
+Section Generation	GPT-4o prompt → Context → Formatting → Markdown → Save
+Compliance Engine	Rule engine: EU MDR, ISO 14155 → Flag → Remediate → Score
+Export System	Render full report in PDF/Word, inject TOC, charts, annexes
+Document Vault	Store per version, track redlines, attach authorship metadata
+Q&A Chat	Contextual chat over section with justification, citations, GPT-4
+
+
+
+⸻
+
+Would you like me to now create a workflow diagram, or begin finalizing the Literature Review tab with PDF upload + AI summary?
