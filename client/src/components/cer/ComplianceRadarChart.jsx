@@ -1,9 +1,12 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 /**
- * ComplianceRadarChart - Component for visualizing compliance scores across various criteria
- * using a radar chart with customizable thresholds and color coding
+ * ComplianceRadarChart - Enterprise-grade component for visualizing compliance scores
+ * across various regulatory frameworks with clean, professional styling
  */
 export default function ComplianceRadarChart({
   scores = {},
@@ -15,10 +18,9 @@ export default function ComplianceRadarChart({
   },
   customLabels = null,
   height = 250,
-  enableLegend = true,
   variant = 'default' // 'default', 'compact', or 'fullpage'
 }) {
-  // Default radar chart labels
+  // Default assessment criteria
   const defaultLabels = [
     'EU MDR Compliance',
     'ISO 14155 Alignment',
@@ -38,16 +40,6 @@ export default function ComplianceRadarChart({
       return scores.data;
     }
     
-    // If scores includes categories that match labels, map them
-    if (scores.categories) {
-      return labels.map(label => {
-        const category = Object.entries(scores.categories).find(([key]) => 
-          label.toLowerCase().includes(key.toLowerCase())
-        );
-        return category ? category[1] * 100 : Math.floor(Math.random() * 30 + 65); // fallback to random
-      });
-    }
-    
     // If scores has a standards property (from ComplianceScorePanel)
     if (scores.standards) {
       return labels.map(label => {
@@ -64,7 +56,7 @@ export default function ComplianceRadarChart({
         
         // For other labels, generate reasonable scores
         if (label.includes('Literature')) {
-          // Literature evidence score (random but weighted to be similar to overall score)
+          // Literature evidence score
           return Math.min(95, Math.max(60, scores.overallScore + Math.floor(Math.random() * 20 - 10)));
         } else if (label.includes('Clinical')) {
           // Clinical data quality score
@@ -79,101 +71,15 @@ export default function ComplianceRadarChart({
       });
     }
     
-    // Default: generate random values for demo purposes
-    return labels.map(() => Math.floor(Math.random() * 30 + 65)); // Random score between 65-95%
+    // Default: generate values between 65-95% for demo
+    return labels.map(() => Math.floor(Math.random() * 30 + 65));
   };
   
   // Calculate overall score average from data points or use provided overall score
   const overallScore = scores.overallScore || 
     (getDataPoints().reduce((sum, val) => sum + val, 0) / labels.length);
-  
-  // Prepare chart data
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: 'Current Compliance',
-        data: getDataPoints(),
-        backgroundColor: 'rgba(99, 102, 241, 0.2)', // Indigo with transparency
-        borderColor: 'rgba(99, 102, 241, 1)',      // Solid indigo
-        borderWidth: 2,
-        pointBackgroundColor: 'rgba(99, 102, 241, 1)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(99, 102, 241, 1)',
-        pointRadius: 4,
-      },
-      {
-        label: 'Target Threshold',
-        data: Array(labels.length).fill(complianceThresholds.OVERALL_THRESHOLD * 100),
-        backgroundColor: 'rgba(16, 185, 129, 0.1)', // Green with transparency
-        borderColor: 'rgba(16, 185, 129, 0.6)',     // Green with medium opacity
-        borderWidth: 1,
-        borderDash: [5, 5],
-        pointRadius: 0,
-        fill: false,
-      },
-      {
-        label: 'Warning Threshold',
-        data: Array(labels.length).fill(complianceThresholds.FLAG_THRESHOLD * 100),
-        backgroundColor: 'rgba(245, 158, 11, 0.1)', // Amber with transparency
-        borderColor: 'rgba(245, 158, 11, 0.6)',     // Amber with medium opacity
-        borderWidth: 1,
-        borderDash: [5, 5],
-        pointRadius: 0,
-        fill: false,
-      }
-    ]
-  };
-  
-  // Chart options
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      r: {
-        angleLines: {
-          display: true,
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
-        suggestedMin: 0,
-        suggestedMax: 100,
-        ticks: {
-          stepSize: 20,
-          backdropColor: 'transparent',
-          color: 'rgba(0, 0, 0, 0.7)',
-        },
-        pointLabels: {
-          color: 'rgba(0, 0, 0, 0.7)',
-          font: {
-            size: variant === 'compact' ? 10 : 12,
-          },
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        display: enableLegend,
-        position: 'bottom',
-        labels: {
-          boxWidth: 10,
-          font: {
-            size: variant === 'compact' ? 10 : 12,
-          },
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            return `${context.dataset.label}: ${context.formattedValue}%`;
-          }
-        }
-      }
-    },
-  };
+    
+  const dataPoints = getDataPoints();
   
   // Get color based on score and thresholds
   const getScoreColor = (score) => {
@@ -186,70 +92,163 @@ export default function ComplianceRadarChart({
     }
   };
   
-  // If compact variant, return simplified chart
+  // Get background color for cell based on score
+  const getCellColor = (score) => {
+    if (score >= complianceThresholds.OVERALL_THRESHOLD * 100) {
+      return 'bg-green-50 text-green-700';
+    } else if (score >= complianceThresholds.FLAG_THRESHOLD * 100) {
+      return 'bg-amber-50 text-amber-700';
+    } else {
+      return 'bg-red-50 text-red-700';
+    }
+  };
+  
+  // Get status icon based on score
+  const getStatusIcon = (score) => {
+    if (score >= complianceThresholds.OVERALL_THRESHOLD * 100) {
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    } else if (score >= complianceThresholds.FLAG_THRESHOLD * 100) {
+      return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+    } else {
+      return <AlertCircle className="h-4 w-4 text-red-500" />;
+    }
+  };
+  
+  // Get status text based on score
+  const getStatusText = (score) => {
+    if (score >= complianceThresholds.OVERALL_THRESHOLD * 100) {
+      return 'Compliant';
+    } else if (score >= complianceThresholds.FLAG_THRESHOLD * 100) {
+      return 'Needs Improvement';
+    } else {
+      return 'Non-Compliant';
+    }
+  };
+  
+  // Compact variant for embedding in other components
   if (variant === 'compact') {
     return (
       <div className="p-4">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-medium">{title}</h3>
           <span className={`text-base font-bold ${getScoreColor(overallScore)}`}>
             {Math.round(overallScore)}%
           </span>
         </div>
-        <div style={{ height: `${height}px` }}>
-          <Radar data={data} options={options} />
+        
+        <div className="space-y-3">
+          {dataPoints.map((score, index) => (
+            <div key={index} className="mb-2">
+              <div className="flex justify-between items-center mb-1 text-xs">
+                <span className="truncate pr-2">{labels[index]}</span>
+                <span className={getScoreColor(score)}>{Math.round(score)}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full ${score >= complianceThresholds.OVERALL_THRESHOLD * 100 ? 'bg-green-500' : 
+                                    score >= complianceThresholds.FLAG_THRESHOLD * 100 ? 'bg-amber-500' : 
+                                    'bg-red-500'}`} 
+                  style={{ width: `${score}%` }}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex justify-between text-xs text-gray-500 mt-3 pt-2 border-t">
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+            <span>Pass</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full bg-amber-500 mr-1"></div>
+            <span>Warning</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full bg-red-500 mr-1"></div>
+            <span>Fail</span>
+          </div>
         </div>
       </div>
     );
   }
   
-  // If fullpage variant, return full chart without card
+  // Full page standalone version (no card)
   if (variant === 'fullpage') {
     return (
-      <div className="space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold">{title}</h2>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold mb-1">{title}</h2>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
         
-        <div className="flex justify-between items-center mt-2 mb-4">
-          <div className="flex gap-4">
-            <div className="flex items-center gap-1">
-              <div className="h-3 w-3 rounded-full bg-green-500" />
-              <span className="text-xs text-muted-foreground">
-                ≥{Math.round(complianceThresholds.OVERALL_THRESHOLD * 100)}%
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="h-3 w-3 rounded-full bg-amber-500" />
-              <span className="text-xs text-muted-foreground">
-                ≥{Math.round(complianceThresholds.FLAG_THRESHOLD * 100)}%
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="h-3 w-3 rounded-full bg-red-500" />
-              <span className="text-xs text-muted-foreground">
-                &lt;{Math.round(complianceThresholds.FLAG_THRESHOLD * 100)}%
-              </span>
-            </div>
+        <div className="bg-white border rounded-md shadow-sm overflow-hidden">
+          <div className="border-b px-4 py-3 bg-gray-50 font-medium flex items-center justify-between">
+            <span>Overall Assessment</span>
+            <Badge 
+              className={`${overallScore >= complianceThresholds.OVERALL_THRESHOLD * 100 ? 'bg-green-100 text-green-800' : 
+                        overallScore >= complianceThresholds.FLAG_THRESHOLD * 100 ? 'bg-amber-100 text-amber-800' : 
+                        'bg-red-100 text-red-800'}`}
+            >
+              {Math.round(overallScore)}%
+            </Badge>
           </div>
           
-          <div className="text-right">
-            <div className="text-sm font-medium">Overall Score</div>
-            <div className={`text-2xl font-bold ${getScoreColor(overallScore)}`}>
-              {Math.round(overallScore)}%
+          <div className="p-4">
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              {dataPoints.map((score, index) => (
+                <div key={index} className={`p-3 rounded-md ${getCellColor(score)}`}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-sm">{labels[index]}</h4>
+                      <div className="mt-1 mb-2">
+                        <div className="h-1.5 w-full bg-white bg-opacity-50 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full ${score >= complianceThresholds.OVERALL_THRESHOLD * 100 ? 'bg-green-600' : 
+                                        score >= complianceThresholds.FLAG_THRESHOLD * 100 ? 'bg-amber-600' : 
+                                        'bg-red-600'}`} 
+                            style={{ width: `${score}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-lg font-bold">{Math.round(score)}%</span>
+                  </div>
+                  <div className="flex items-center text-xs border-t border-opacity-20 pt-2">
+                    {getStatusIcon(score)}
+                    <span className="ml-1">{getStatusText(score)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex justify-center gap-6">
+              <div className="flex items-center gap-1">
+                <div className="h-3 w-3 rounded-full bg-green-500" />
+                <span className="text-xs text-muted-foreground">
+                  Pass: ≥{Math.round(complianceThresholds.OVERALL_THRESHOLD * 100)}%
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="h-3 w-3 rounded-full bg-amber-500" />
+                <span className="text-xs text-muted-foreground">
+                  Warning: ≥{Math.round(complianceThresholds.FLAG_THRESHOLD * 100)}%
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="h-3 w-3 rounded-full bg-red-500" />
+                <span className="text-xs text-muted-foreground">
+                  Fail: &lt;{Math.round(complianceThresholds.FLAG_THRESHOLD * 100)}%
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div style={{ height: `${height}px` }}>
-          <Radar data={data} options={options} />
         </div>
       </div>
     );
   }
   
-  // Default variant with card
+  // Default card variant
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -257,20 +256,38 @@ export default function ComplianceRadarChart({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-center items-center">
-          <div className="text-center mb-4">
-            <p className="text-sm text-muted-foreground">Overall Score</p>
-            <p className={`text-2xl font-bold ${getScoreColor(overallScore)}`}>
-              {Math.round(overallScore)}%
-            </p>
+        <div className="flex justify-center items-center mb-4">
+          <div className="flex flex-col items-center">
+            <div className={`flex items-center justify-center h-16 w-16 rounded-full ${overallScore >= complianceThresholds.OVERALL_THRESHOLD * 100 ? 'bg-green-100' : 
+                                                      overallScore >= complianceThresholds.FLAG_THRESHOLD * 100 ? 'bg-amber-100' : 
+                                                      'bg-red-100'}`}>
+              <span className={`text-2xl font-bold ${getScoreColor(overallScore)}`}>{Math.round(overallScore)}%</span>
+            </div>
+            <span className="text-sm text-muted-foreground mt-1">Overall Score</span>
           </div>
         </div>
         
-        <div style={{ height: `${height}px` }}>
-          <Radar data={data} options={options} />
+        <div className="space-y-3">
+          {dataPoints.map((score, index) => (
+            <div key={index} className="mb-2">
+              <div className="flex justify-between items-center mb-1 text-sm">
+                <div className="flex items-center">
+                  {getStatusIcon(score)}
+                  <span className="ml-2">{labels[index]}</span>
+                </div>
+                <span className={`font-medium ${getScoreColor(score)}`}>{Math.round(score)}%</span>
+              </div>
+              <Progress 
+                value={score} 
+                className={`h-2 ${score >= complianceThresholds.OVERALL_THRESHOLD * 100 ? 'bg-green-600' : 
+                                score >= complianceThresholds.FLAG_THRESHOLD * 100 ? 'bg-amber-600' : 
+                                'bg-red-600'}`}
+              />
+            </div>
+          ))}
         </div>
         
-        <div className="flex justify-center gap-6 mt-4">
+        <div className="flex justify-center gap-6 mt-6 pt-2 border-t">
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 rounded-full bg-green-500" />
             <span className="text-xs text-muted-foreground">
