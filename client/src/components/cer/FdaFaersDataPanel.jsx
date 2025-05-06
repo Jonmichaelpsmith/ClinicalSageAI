@@ -15,6 +15,7 @@ import { FaersRiskBadge } from './FaersRiskBadge';
 import { FaersHowToModal } from './FaersHowToModal';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
+import DataRetrievalStatus from './DataRetrievalStatus';
 
 /**
  * FDA FAERS Data Panel Component
