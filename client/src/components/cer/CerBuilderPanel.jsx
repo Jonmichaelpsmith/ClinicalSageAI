@@ -3,6 +3,7 @@ import { cerApiService } from '../../services/CerAPIService';
 import LiteratureSearchPanel from './LiteratureSearchPanel';
 import ComplianceScorePanel from './ComplianceScorePanel';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import {
   Card,
   CardContent,
@@ -265,27 +266,57 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       <Card className="shadow-sm border-gray-200">
         <CardContent className="pt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 mb-6">
-              <TabsTrigger value="generator" className="flex items-center justify-center py-2">
+            <TabsList className="grid grid-cols-5 mb-6 bg-slate-50 p-1 rounded-md border border-slate-200">
+              <TabsTrigger 
+                value="generator" 
+                className={cn(
+                  "flex items-center justify-center py-2 rounded-md transition-all",
+                  activeTab === 'generator' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'hover:bg-slate-100'
+                )}
+              >
                 <AlignLeft className="h-4 w-4 mr-2" />
                 <span>Section Generator</span>
               </TabsTrigger>
-              <TabsTrigger value="literature" className="flex items-center justify-center py-2">
+              <TabsTrigger 
+                value="literature" 
+                className={cn(
+                  "flex items-center justify-center py-2 rounded-md transition-all",
+                  activeTab === 'literature' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'hover:bg-slate-100'
+                )}
+              >
                 <BookOpen className="h-4 w-4 mr-2" />
                 <span>Literature AI</span>
               </TabsTrigger>
-              <TabsTrigger value="preview" className="flex items-center justify-center py-2">
+              <TabsTrigger 
+                value="preview" 
+                className={cn(
+                  "flex items-center justify-center py-2 rounded-md transition-all",
+                  activeTab === 'preview' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'hover:bg-slate-100'
+                )}
+              >
                 <FileText className="h-4 w-4 mr-2" />
                 <span>Report Preview</span>
               </TabsTrigger>
-              <TabsTrigger value="compliance" className="flex items-center justify-center py-2">
+              <TabsTrigger 
+                value="compliance" 
+                className={cn(
+                  "flex items-center justify-center py-2 rounded-md transition-all",
+                  activeTab === 'compliance' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'hover:bg-slate-100'
+                )}
+              >
                 <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />
                   <path d="M9 14l2 2 4-4" />
                 </svg>
                 <span>Compliance</span>
               </TabsTrigger>
-              <TabsTrigger value="export" className="flex items-center justify-center py-2">
+              <TabsTrigger 
+                value="export" 
+                className={cn(
+                  "flex items-center justify-center py-2 rounded-md transition-all",
+                  activeTab === 'export' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'hover:bg-slate-100'
+                )}
+              >
                 <FileDown className="h-4 w-4 mr-2" />
                 <span>Export</span>
               </TabsTrigger>

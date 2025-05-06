@@ -109,23 +109,38 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Regulatory Compliance Scorecard</h2>
-        <button
-          onClick={runComplianceAnalysis}
-          disabled={analyzing || sections.length === 0}
-          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md disabled:bg-blue-300"
-        >
-          {analyzing ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Analyzing...
-            </>
-          ) : (
-            <>Check Compliance</>
-          )}
-        </button>
-      </div>
+      <Card className="bg-white border-slate-200 shadow-sm">
+        <CardHeader className="pb-3 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl font-semibold">Regulatory Compliance Scorecard</CardTitle>
+              <CardDescription className="mt-1">
+                Analyze your CER against EU MDR, FDA, and ISO standards
+              </CardDescription>
+            </div>
+            <button
+              onClick={runComplianceAnalysis}
+              disabled={analyzing || sections.length === 0}
+              className={cn(
+                "flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors",
+                "text-white font-medium",
+                analyzing || sections.length === 0 
+                  ? "bg-blue-300 cursor-not-allowed" 
+                  : "bg-blue-600 hover:bg-blue-700 shadow-sm"
+              )}
+            >
+              {analyzing ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>Check Compliance</>
+              )}
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
       
       {error && (
         <Alert variant="destructive">
