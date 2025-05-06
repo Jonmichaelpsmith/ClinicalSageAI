@@ -421,5 +421,39 @@ cerApiService.exportToWord = async (exportData, productName) => {
   }
 };
 
+/**
+ * Improve a section's content to better comply with a specific regulatory standard
+ * @param {Object} params - Parameters for section improvement
+ * @param {Object} params.section - The section to improve
+ * @param {string} params.standard - The regulatory standard to optimize for
+ * @param {string} [params.cerTitle] - Optional CER title for context
+ * @returns {Promise<Object>} - The improved section content
+ */
+cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle }) => {
+  try {
+    const response = await fetch('/api/cer/improve-section', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        section,
+        standard,
+        cerTitle: cerTitle || 'Clinical Evaluation Report'
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error improving section compliance: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in improveSectionCompliance:', error);
+    throw error;
+  }
+};
+
 // Export the service object for use in other components
 export { cerApiService };
