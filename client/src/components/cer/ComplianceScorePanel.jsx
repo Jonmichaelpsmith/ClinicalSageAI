@@ -69,38 +69,141 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
   
   // Function to run compliance analysis with optional custom sections
   const runComplianceAnalysis = async (customSections = null) => {
-    const sectionsToAnalyze = customSections || sections;
-    
-    if (!sectionsToAnalyze || sectionsToAnalyze.length === 0) {
-      setError('Please add sections to your report before running compliance analysis');
-      return;
-    }
-    
     try {
       setAnalyzing(true);
       setError(null);
       
-      // Get the standard names for API from their IDs
+      // Use provided sections or current sections prop
+      const sectionsToAnalyze = customSections || sections;
+      
+      if (!sectionsToAnalyze || sectionsToAnalyze.length === 0) {
+        setError('No sections to analyze');
+        setAnalyzing(false);
+        return;
+      }
+      
+      console.log(`Running compliance analysis for ${sectionsToAnalyze.length} sections against ${selectedStandards.length} standards`);
+      
+      // Map standard IDs to full names for API call
       const standardNames = selectedStandards.map(id => {
         const standard = availableStandards.find(s => s.id === id);
         return standard ? standard.name : id;
       });
       
-      const response = await cerApiService.getComplianceScore({
+      // Call the compliance score API
+      const scoreData = await cerApiService.getComplianceScore({
         sections: sectionsToAnalyze,
         title,
         standards: standardNames
       });
       
-      setComplianceData(response);
-    } catch (err) {
-      console.error('Compliance analysis error:', err);
-      setError(err.message || 'Failed to analyze compliance');
+      setComplianceData(scoreData);
+      
+      toast({
+        title: 'Compliance Analysis Complete',
+        description: `Overall compliance score: ${(scoreData.overall * 100).toFixed(1)}%`,
+        variant: scoreData.overall >= 0.8 ? 'default' : 'destructive'
+      });
+      
+    } catch (error) {
+      console.error('Error running compliance analysis:', error);
+      setError(error.message || 'Failed to analyze compliance');
+      
+      toast({
+        title: 'Analysis Failed',
+        description: error.message || 'Could not complete compliance analysis',
+        variant: 'destructive'
+      });
     } finally {
       setAnalyzing(false);
     }
   };
   
+  // Function to handle section improvement requests
+  const handleImproveSectionRequest = async (section, standard) => {
+    try {
+      setImprovingSection(section);
+      setSelectedStandard(standard);
+      setIsImproving(true);
+      setImprovedContent('');
+      setError(null);
+      
+      console.log(`Requesting AI improvement for "${section.title}" section using ${standard} standard`);
+      
+      // Call the service to improve compliance
+      const result = await cerApiService.improveSectionCompliance({
+        section,
+        standard,
+        cerTitle: title
+      });
+      
+      setImprovedContent(result.content);
+      
+      toast({
+        title: 'Section Improvement Complete',
+        description: `Successfully enhanced section for ${standard} compliance`,
+        variant: 'default'
+      });
+      
+    } catch (error) {
+      console.error('Error improving section:', error);
+      setError(error.message || 'Failed to improve section');
+      
+      toast({
+        title: 'Improvement Failed',
+        description: error.message || 'Could not improve section compliance',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsImproving(false);
+    }
+  };
+  
+  // Function to handle applying improved content to a section
+  const handleApplyImprovedContent = () => {
+    if (!improvingSection || !improvedContent) return;
+    
+    // Create a copy of the sections array
+    const updatedSections = sections.map(section => {
+      // Find the section being improved
+      if (section.id === improvingSection.id || 
+          (section.type === improvingSection.type && section.title === improvingSection.title)) {
+        // Return a new section object with updated content
+        return {
+          ...section,
+          content: improvedContent,
+          lastUpdated: new Date().toISOString(),
+          complianceUpdated: true,
+          appliedStandard: selectedStandard
+        };
+      }
+      return section;
+    });
+    
+    // Update parent component with new sections if callback provided
+    if (onComplianceChange) {
+      // Create a new compliance data object with updated sections
+      const updatedComplianceData = {
+        ...complianceData,
+        sections: updatedSections
+      };
+      onComplianceChange(updatedComplianceData);
+    }
+    
+    // Reset dialog state
+    setImprovingSection(null);
+    setSelectedStandard(null);
+    setImprovedContent('');
+    
+    toast({
+      title: 'Compliance Improved',
+      description: `Section updated with ${selectedStandard} compliant content`,
+      variant: 'default'
+    });
+    
+    // Run a new compliance analysis with the updated sections
+    runComplianceAnalysis(updatedSections);
+  };
   // Function to export compliance report as PDF
   const handleExportPDF = async () => {
     if (!complianceData) return;
@@ -358,6 +461,9 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
                     // Find matching section in generated sections
                     const matchingSection = sections.find(s => s.type === sectionType);
                     if (!matchingSection) return null;
+                    
+                    // Get the standard name to use when improving
+                    const standardName = framework; // Using the framework name directly
                     
                     return (
                       <AccordionItem value={sectionType} key={sectionType} className="border-0">
