@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { ChevronLeft, Share, FileText, BarChart4, Download, RefreshCw } from 'lucide-react';
+import { 
+  ChevronLeft, Share, FileText, BarChart4, Download, RefreshCw, Database,
+  Search, BookOpen, Check, AlertTriangle, Zap, LayoutDashboard, Archive
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -10,16 +13,29 @@ import { useToast } from '@/hooks/use-toast';
 import ComplianceScorePanel from '../components/cer/ComplianceScorePanel';
 import ComplianceRadarChart from '../components/cer/ComplianceRadarChart';
 import FaersSafetySignalAnalysis from '../components/cer/FaersSafetySignalAnalysis';
+import LiteratureSearchPanel from '../components/cer/LiteratureSearchPanel';
 
 export default function CERPage() {
   const [location, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState('compliance');
+  const [activeTab, setActiveTab] = useState('overview');
   const [complianceScores, setComplianceScores] = useState(null);
   const { toast } = useToast();
   
   // Sample state for the FDA FAERS integration
   const [faersData, setFaersData] = useState(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [reportSections, setReportSections] = useState({
+    deviceDescription: { status: 'not-started', progress: 0 },
+    clinicalData: { status: 'not-started', progress: 0 },
+    riskAnalysis: { status: 'not-started', progress: 0 },
+    literatureReview: { status: 'not-started', progress: 0 },
+    postMarketData: { status: 'not-started', progress: 0 },
+    benefitRiskProfile: { status: 'not-started', progress: 0 },
+    conclusion: { status: 'not-started', progress: 0 }
+  });
+  
+  // Literature review state
+  const [literatureData, setLiteratureData] = useState(null);
   
   // Compliance threshold settings
   const complianceThresholds = {
@@ -34,6 +50,18 @@ export default function CERPage() {
       title: "Compliance analysis complete",
       description: `Overall score: ${scores.overallScore}%. ${scores.overallScore >= 70 ? 'Report meets minimum requirements.' : 'Critical issues detected.'}`
     });
+    
+    // Update the report sections statuses based on compliance scores
+    const updatedSections = { ...reportSections };
+    Object.keys(updatedSections).forEach(key => {
+      // Random section progress for demo, in real app would be tied to compliance scores
+      const progress = Math.floor(Math.random() * 100);
+      updatedSections[key] = {
+        status: progress === 0 ? 'not-started' : progress < 100 ? 'in-progress' : 'complete',
+        progress
+      };
+    });
+    setReportSections(updatedSections);
   };
   
   // Generate PDF report
@@ -84,8 +112,48 @@ export default function CERPage() {
         description: `Found ${mockData.totalReports} adverse event reports for CardioStent XR.`,
         variant: "success"
       });
+      
+      // Update post market data section progress
+      const updatedSections = { ...reportSections };
+      updatedSections.postMarketData = { status: 'in-progress', progress: 65 };
+      setReportSections(updatedSections);
     }, 2000);
   };
+  
+  // Helper function to get status text/color
+  const getStatusDisplay = (status) => {
+    switch(status) {
+      case 'complete':
+        return { text: 'Complete', color: 'text-green-600' };
+      case 'in-progress':
+        return { text: 'In Progress', color: 'text-amber-600' };
+      case 'not-started':
+      default:
+        return { text: 'Not Started', color: 'text-gray-500' };
+    }
+  };
+  
+  // Auto-initialize the report on first render
+  useEffect(() => {
+    toast({
+      title: "CER Auto-Initialization",
+      description: "AI is analyzing device information and initializing your report..."
+    });
+    
+    // Simulate AI initialization
+    setTimeout(() => {
+      toast({
+        title: "CER Initialized",
+        description: "Device information detected: CardioStent XR (Class III). Report structure created.",
+        variant: "success"
+      });
+      
+      // Update device description section progress
+      const updatedSections = { ...reportSections };
+      updatedSections.deviceDescription = { status: 'in-progress', progress: 40 };
+      setReportSections(updatedSections);
+    }, 2500);
+  }, []);
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -121,7 +189,7 @@ export default function CERPage() {
                 <div>
                   <div className="text-xs text-gray-300">Report Status</div>
                   <div className="flex items-center">
-                    <Badge className="bg-green-500 text-xs font-normal hover:bg-green-600 rounded">Draft</Badge>
+                    <Badge className="bg-amber-500 text-xs font-normal hover:bg-amber-600 rounded">In Progress</Badge>
                     <Badge className="ml-2 bg-white text-blue-800 text-xs font-normal hover:bg-gray-100 rounded">v1.0</Badge>
                   </div>
                 </div>
@@ -140,8 +208,8 @@ export default function CERPage() {
               
               <div className="border-l border-blue-700 h-5 mx-2"></div>
               
-              <span className="text-xs mr-1">Production</span>
-              <div className="h-3 w-3 rounded-full bg-green-500"></div>
+              <span className="text-xs mr-1">FDA Submission Ready</span>
+              <div className="h-3 w-3 rounded-full bg-amber-500"></div>
             </div>
           </div>
         </div>
@@ -156,19 +224,41 @@ export default function CERPage() {
                 value="overview" 
                 className={`px-4 py-3 text-sm font-medium rounded-none data-[state=active]:border-b-2 data-[state=active]:shadow-none data-[state=active]:bg-white data-[state=active]:border-blue-600 data-[state=active]:text-blue-600`}
               >
+                <LayoutDashboard className="h-3.5 w-3.5 mr-1.5" />
                 Overview
               </TabsTrigger>
               <TabsTrigger 
                 value="builder" 
                 className={`px-4 py-3 text-sm font-medium rounded-none data-[state=active]:border-b-2 data-[state=active]:shadow-none data-[state=active]:bg-white data-[state=active]:border-blue-600 data-[state=active]:text-blue-600`}
               >
+                <FileText className="h-3.5 w-3.5 mr-1.5" />
                 Report Builder
+              </TabsTrigger>
+              <TabsTrigger 
+                value="literature" 
+                className={`px-4 py-3 text-sm font-medium rounded-none data-[state=active]:border-b-2 data-[state=active]:shadow-none data-[state=active]:bg-white data-[state=active]:border-blue-600 data-[state=active]:text-blue-600`}
+              >
+                <BookOpen className="h-3.5 w-3.5 mr-1.5" />
+                Literature AI
+              </TabsTrigger>
+              <TabsTrigger 
+                value="faers" 
+                className={`px-4 py-3 text-sm font-medium rounded-none data-[state=active]:border-b-2 data-[state=active]:shadow-none data-[state=active]:bg-white data-[state=active]:border-blue-600 data-[state=active]:text-blue-600`}
+              >
+                <Database className="h-3.5 w-3.5 mr-1.5" />
+                FAERS Analysis
+                {faersData && (
+                  <Badge className="ml-2 bg-amber-100 text-amber-800 text-xs">
+                    {faersData.totalReports}
+                  </Badge>
+                )}
               </TabsTrigger>
               <TabsTrigger 
                 value="compliance" 
                 className={`px-4 py-3 text-sm font-medium rounded-none data-[state=active]:border-b-2 data-[state=active]:shadow-none data-[state=active]:bg-white data-[state=active]:border-blue-600 data-[state=active]:text-blue-600`}
               >
-                Compliance Assessment
+                <Check className="h-3.5 w-3.5 mr-1.5" />
+                Compliance
                 {complianceScores && (
                   <Badge 
                     className={`ml-2 text-xs ${complianceScores.overallScore >= complianceThresholds.OVERALL_THRESHOLD * 100 ? 'bg-green-100 text-green-800' : 
@@ -180,16 +270,18 @@ export default function CERPage() {
                 )}
               </TabsTrigger>
               <TabsTrigger 
-                value="vault" 
-                className={`px-4 py-3 text-sm font-medium rounded-none data-[state=active]:border-b-2 data-[state=active]:shadow-none data-[state=active]:bg-white data-[state=active]:border-blue-600 data-[state=active]:text-blue-600`}
-              >
-                VAULT Documents
-              </TabsTrigger>
-              <TabsTrigger 
                 value="export" 
                 className={`px-4 py-3 text-sm font-medium rounded-none data-[state=active]:border-b-2 data-[state=active]:shadow-none data-[state=active]:bg-white data-[state=active]:border-blue-600 data-[state=active]:text-blue-600`}
               >
-                Export & Publish
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                Export & Submit
+              </TabsTrigger>
+              <TabsTrigger 
+                value="vault" 
+                className={`px-4 py-3 text-sm font-medium rounded-none data-[state=active]:border-b-2 data-[state=active]:shadow-none data-[state=active]:bg-white data-[state=active]:border-blue-600 data-[state=active]:text-blue-600`}
+              >
+                <Archive className="h-3.5 w-3.5 mr-1.5" />
+                VAULT
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -264,7 +356,7 @@ export default function CERPage() {
                         </div>
                         <div>
                           <div className="text-xs text-gray-500">Status</div>
-                          <div className="text-sm">Draft</div>
+                          <div className="text-sm">In Progress</div>
                         </div>
                         <div>
                           <div className="text-xs text-gray-500">Report Date</div>
@@ -355,7 +447,7 @@ export default function CERPage() {
                       <div className="grid grid-cols-3 gap-4 mb-6">
                         <div className="border rounded-md p-3">
                           <div className="text-xs text-gray-500">Sections</div>
-                          <div className="text-2xl font-bold">0</div>
+                          <div className="text-2xl font-bold">{Object.keys(reportSections).length}</div>
                           <div className="text-xs text-gray-500">Total report sections</div>
                         </div>
                         
@@ -375,27 +467,18 @@ export default function CERPage() {
                       <div>
                         <h3 className="text-xs font-medium mb-2">Progress Tracker</h3>
                         <div className="space-y-3">
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span>Device Description</span>
-                              <span className="text-gray-500">Not Started</span>
-                            </div>
-                            <Progress value={0} className="h-1" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span>Clinical Data</span>
-                              <span className="text-gray-500">Not Started</span>
-                            </div>
-                            <Progress value={0} className="h-1" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span>Risk Analysis</span>
-                              <span className="text-gray-500">Not Started</span>
-                            </div>
-                            <Progress value={0} className="h-1" />
-                          </div>
+                          {Object.entries(reportSections).map(([key, section]) => {
+                            const { text, color } = getStatusDisplay(section.status);
+                            return (
+                              <div key={key}>
+                                <div className="flex justify-between text-xs mb-1">
+                                  <span>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
+                                  <span className={color}>{text}</span>
+                                </div>
+                                <Progress value={section.progress} className="h-1" />
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -405,9 +488,7 @@ export default function CERPage() {
                   <div className="bg-white border rounded shadow-sm mt-6">
                     <div className="border-b px-4 py-2 bg-gray-50 text-sm font-medium flex justify-between items-center">
                       <div className="flex items-center">
-                        <svg className="h-3.5 w-3.5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+                        <Database className="h-3.5 w-3.5 mr-1.5 text-gray-500" />
                         FDA FAERS Analysis
                       </div>
                       <Button 
@@ -453,7 +534,11 @@ export default function CERPage() {
                           </div>
                           
                           <div className="mt-3 text-xs text-right">
-                            <Button variant="link" className="h-auto p-0 text-xs">
+                            <Button 
+                              variant="link" 
+                              className="h-auto p-0 text-xs"
+                              onClick={() => setActiveTab('faers')}
+                            >
                               View Complete FAERS Report
                             </Button>
                           </div>
@@ -474,9 +559,92 @@ export default function CERPage() {
             <TabsContent value="builder">
               <div className="bg-white p-6 rounded border shadow-sm">
                 <h2 className="text-lg font-medium mb-4">Report Builder</h2>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-gray-600 mb-6">
                   Create and edit sections of your Clinical Evaluation Report using AI assistance.
                 </p>
+                
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  {/* AI Auto-Generation Panel */}
+                  <Card className="p-4 border bg-blue-50">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-sm font-medium flex items-center">  
+                        <Zap className="h-4 w-4 text-blue-600 mr-1.5" />
+                        AI Auto-Generate Sections
+                      </h3>
+                      <Badge className="bg-blue-100 text-blue-800">Recommended</Badge>
+                    </div>
+                    
+                    <p className="text-xs text-gray-600 mb-4">
+                      Let AI analyze your device data and auto-generate complete report sections that follow regulatory guidelines.
+                    </p>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs">Device Description</span>
+                        <Button size="sm" className="h-6 text-xs px-2">Generate</Button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs">Clinical Evaluation</span>
+                        <Button size="sm" className="h-6 text-xs px-2">Generate</Button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs">Risk Analysis</span>
+                        <Button size="sm" className="h-6 text-xs px-2">Generate</Button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs">Benefit-Risk Determination</span>
+                        <Button size="sm" className="h-6 text-xs px-2">Generate</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <Button className="w-full text-xs">
+                        <Zap className="h-4 w-4 mr-1.5" />
+                        Auto-Generate Complete Report
+                      </Button>
+                    </div>
+                  </Card>
+                  
+                  {/* Report Template Selection */}
+                  <Card className="p-4 border">
+                    <h3 className="text-sm font-medium mb-4">Report Templates & Structure</h3>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="border rounded p-2 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+                        <div>
+                          <h4 className="text-xs font-medium">EU MDR Template</h4>
+                          <p className="text-xs text-gray-500">Compliant with MDCG 2020-1 and Annex XIV</p>
+                        </div>
+                        <Badge className="bg-green-100 text-green-800">Selected</Badge>
+                      </div>
+                      
+                      <div className="border rounded p-2 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+                        <div>
+                          <h4 className="text-xs font-medium">FDA 510(k) Template</h4>
+                          <p className="text-xs text-gray-500">Optimized for FDA submission pathway</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="h-6 text-xs px-2">Select</Button>
+                      </div>
+                      
+                      <div className="border rounded p-2 flex justify-between items-center hover:bg-gray-50 cursor-pointer">
+                        <div>
+                          <h4 className="text-xs font-medium">ISO 14155 Template</h4>
+                          <p className="text-xs text-gray-500">Clinical investigation focus</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="h-6 text-xs px-2">Select</Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <Button variant="outline" className="w-full text-xs">
+                        <FileText className="h-4 w-4 mr-1.5" />
+                        Create Custom Template
+                      </Button>
+                    </div>
+                  </Card>
+                </div>
+                
+                <h3 className="text-sm font-medium mt-6 mb-3">Available Section Templates</h3>
                 <div className="grid grid-cols-4 gap-4">
                   {/* Section templates */}
                   <Card className="p-4 border hover:shadow-md transition cursor-pointer">
@@ -503,6 +671,14 @@ export default function CERPage() {
               </div>
             </TabsContent>
             
+            <TabsContent value="literature">
+              <LiteratureSearchPanel />
+            </TabsContent>
+            
+            <TabsContent value="faers">
+              <FaersSafetySignalAnalysis />
+            </TabsContent>
+            
             <TabsContent value="compliance">
               <div className="bg-white p-6 rounded border shadow-sm">
                 <ComplianceScorePanel 
@@ -512,7 +688,6 @@ export default function CERPage() {
               </div>
             </TabsContent>
             
-            {/* VAULT Document Manager Integration */}
             <TabsContent value="vault">
               <div className="bg-white p-6 rounded border shadow-sm">
                 <div className="flex justify-between items-center mb-4">
@@ -654,9 +829,9 @@ export default function CERPage() {
             
             <TabsContent value="export">
               <div className="bg-white p-6 rounded border shadow-sm">
-                <h2 className="text-lg font-medium mb-4">Export & Publish</h2>
+                <h2 className="text-lg font-medium mb-4">Export & Submission</h2>
                 <p className="text-sm text-gray-600 mb-4">
-                  Generate PDF reports and publish your Clinical Evaluation Report.
+                  Generate submission-ready documentation for regulatory authorities.
                 </p>
                 
                 <div className="grid grid-cols-2 gap-6">
@@ -676,18 +851,86 @@ export default function CERPage() {
                   </div>
                   
                   <div className="border rounded-md p-4">
-                    <h3 className="text-sm font-medium mb-2">Publish Report</h3>
+                    <h3 className="text-sm font-medium mb-2">Regulatory Submission</h3>
                     <p className="text-xs text-gray-500 mb-4">
-                      Publish your report for review by regulatory stakeholders.
+                      Prepare your report for submission to regulatory authorities.
                     </p>
                     <Button variant="outline" className="w-full text-xs h-8">
                       <svg className="h-3.5 w-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
                       </svg>
-                      Publish for Review
+                      Prepare for Submission
+                    </Button>
+                  </div>
+                  
+                  <div className="border rounded-md p-4">
+                    <h3 className="text-sm font-medium mb-2">Export in Word Format</h3>
+                    <p className="text-xs text-gray-500 mb-4">
+                      Generate a Microsoft Word document with fully editable content.
+                    </p>
+                    <Button variant="outline" className="w-full text-xs h-8">
+                      <FileText className="h-3.5 w-3.5 mr-1.5" />
+                      Export as Word Document
+                    </Button>
+                  </div>
+                  
+                  <div className="border rounded-md p-4">
+                    <h3 className="text-sm font-medium mb-2">EUDAMED Export</h3>
+                    <p className="text-xs text-gray-500 mb-4">
+                      Prepare data for European Database on Medical Devices submission.
+                    </p>
+                    <Button variant="outline" className="w-full text-xs h-8">
+                      <svg className="h-3.5 w-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+                      </svg>
+                      Prepare EUDAMED Data
                     </Button>
                   </div>
                 </div>
+                
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium mb-3">Regulatory Submission Options</h3>
+                  
+                  <div className="border rounded-md overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left font-medium text-gray-500">Regulatory Body</th>
+                          <th className="px-4 py-2 text-left font-medium text-gray-500">Submission Type</th>
+                          <th className="px-4 py-2 text-left font-medium text-gray-500">Format</th>
+                          <th className="px-4 py-2 text-left font-medium text-gray-500">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        <tr>
+                          <td className="px-4 py-2">FDA (US)</td>
+                          <td className="px-4 py-2">510(k)</td>
+                          <td className="px-4 py-2">eSTAR</td>
+                          <td className="px-4 py-2">
+                            <Button size="sm" className="h-6 text-xs px-2">Prepare</Button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2">EU Notified Body</td>
+                          <td className="px-4 py-2">CE Mark</td>
+                          <td className="px-4 py-2">Technical File</td>
+                          <td className="px-4 py-2">
+                            <Button size="sm" className="h-6 text-xs px-2 bg-blue-600">Prepare</Button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2">Health Canada</td>
+                          <td className="px-4 py-2">Medical Device License</td>
+                          <td className="px-4 py-2">MDALL</td>
+                          <td className="px-4 py-2">
+                            <Button size="sm" className="h-6 text-xs px-2" variant="outline">Prepare</Button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
               </div>
             </TabsContent>
           </div>
