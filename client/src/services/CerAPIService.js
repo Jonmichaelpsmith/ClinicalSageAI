@@ -209,21 +209,21 @@ cerApiService.generateFullCER = async ({
 /**
  * Get AI-generated improvements for a CER section to increase compliance
  * @param {Object} params - Parameters for compliance improvements
- * @param {string} params.section - The type or ID of the section to improve
- * @param {string} params.currentContent - The current content of the section
- * @param {string} params.standard - The regulatory standard to optimize for (EU MDR, ISO 14155, FDA)
+ * @param {Object} params.section - The section object to improve
+ * @param {Object} params.complianceData - Optional section compliance scores
+ * @param {string} params.standard - The regulatory standard to optimize for (EU MDR, ISO 14155, FDA 21 CFR 812)
  * @returns {Promise<Object>} - The improved section content with recommendations
  */
-cerApiService.getComplianceImprovements = async ({ section, currentContent, standard }) => {
+cerApiService.getComplianceImprovements = async ({ section, complianceData, standard }) => {
   try {
-    const response = await fetch('/api/cer/improve-compliance', {
+    const response = await fetch('/api/cer/improve-section', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         section,
-        currentContent,
+        complianceData,
         standard,
       }),
     });

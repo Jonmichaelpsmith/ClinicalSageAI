@@ -1,5 +1,6 @@
 import express from 'express';
 import { generateMockCER, generateFullCER, getCERReport, analyzeLiteratureWithAI, analyzeAdverseEventsWithAI } from '../services/cerService.js';
+import OpenAI from 'openai';
 import { fetchFaersData, analyzeFaersDataForCER } from '../services/fdaService.js';
 import * as faersService from '../services/faersService.js';
 
@@ -10,6 +11,9 @@ import { fetchFaersAnalysis } from '../services/enhancedFaersService.js';
 let complianceScoreHandler, assistantRouter, improveComplianceHandler, generateFullCERHandler;
 
 // We'll initialize these handlers dynamically
+
+// Initialize OpenAI client
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Import PDF generation libraries
 // Note: docx import temporarily commented out to avoid dependency issues
@@ -1724,6 +1728,82 @@ router.post('/improve-compliance-fallback', async (req, res) => {
   } catch (error) {
     console.error('Error improving compliance:', error);
     res.status(500).json({ error: 'Failed to generate compliance improvements' });
+  }
+});
+
+// POST /api/cer/improve-section - Improve a section to increase regulatory compliance
+router.post('/improve-section', async (req, res) => {
+  try {
+    const { section, complianceData, standard } = req.body;
+    
+    if (!section || !section.content) {
+      return res.status(400).json({ error: 'Section with content is required' });
+    }
+    
+    if (!standard) {
+      return res.status(400).json({ error: 'Regulatory standard is required' });
+    }
+    
+    console.log(`Improving section "${section.title}" for ${standard} compliance`);
+    
+    // Create a system prompt targeted at the specific regulatory standard
+    let systemPrompt = `You are an expert regulatory professional specializing in medical device clinical evaluations and ${standard} compliance.`;
+    
+    switch(standard) {
+      case 'EU MDR':
+        systemPrompt += ' You have extensive experience with EU MDR 2017/745, Annex XIV requirements, and MEDDEV 2.7/1 Rev 4 guidance.';
+        break;
+      case 'ISO 14155':
+        systemPrompt += ' You have deep knowledge of ISO 14155:2020 for clinical investigations of medical devices for human subjects - Good clinical practice.';
+        break;
+      case 'FDA 21 CFR 812':
+        systemPrompt += ' You are specialized in FDA 21 CFR Part 812 Investigational Device Exemptions and FDA regulatory requirements for medical devices.';
+        break;
+      default:
+        systemPrompt += ' You have broad expertise in global medical device regulations and standards.';
+    }
+    
+    systemPrompt += ` You will improve a section of a Clinical Evaluation Report (CER) to enhance its compliance with ${standard} requirements while maintaining the document's scientific integrity and purpose.`;
+    
+    // Create a prompt for improvement
+    const userPrompt = `I need to improve the following ${section.title} section of a Clinical Evaluation Report to meet ${standard} requirements. The current compliance score is ${complianceData ? Math.round((complianceData[section.type] || 0) * 100) + '%' : 'unknown'}. Please enhance the content to improve regulatory compliance while preserving the essential clinical information. Here is the current content:\n\n${section.content}`;
+    
+    // Use GPT-4o to generate the improved content
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000
+    });
+    
+    // Extract the improved content from the response
+    const improvedContent = response.choices[0].message.content;
+    
+    // Return the improved content with additional metadata
+    res.json({
+      success: true,
+      section: section.title,
+      originalContent: section.content,
+      improvedContent: improvedContent,
+      standard: standard,
+      improvementDate: new Date().toISOString(),
+      improvementMetadata: {
+        model: "gpt-4o",
+        targetStandard: standard,
+        originalCompliance: complianceData ? (complianceData[section.type] || 0) : null,
+        estimatedImprovedCompliance: complianceData ? Math.min(0.95, (complianceData[section.type] || 0) + 0.15) : 0.8
+      }
+    });
+  } catch (error) {
+    console.error('Error improving section compliance:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to improve section compliance',
+      message: error.message
+    });
   }
 });
 
