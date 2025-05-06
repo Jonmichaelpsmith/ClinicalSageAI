@@ -257,10 +257,8 @@ export default function CERV2Page() {
       >
         <div className="p-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">🧠 How to Use the CER Generator</h2>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <ChevronDown className={`h-5 w-5 transform transition-transform ${instructionsOpen ? '' : 'rotate-180'}`} />
-            </Button>
+          <CollapsibleTrigger>
+            <ChevronDown className={`h-5 w-5 transform transition-transform ${instructionsOpen ? '' : 'rotate-180'}`} />
           </CollapsibleTrigger>
         </div>
         <CollapsibleContent>
@@ -379,6 +377,7 @@ export default function CERV2Page() {
               faers={faers}
               comparators={comparators}
               sections={sections}
+              complianceData={compliance}
             />
           </TabsContent>
 

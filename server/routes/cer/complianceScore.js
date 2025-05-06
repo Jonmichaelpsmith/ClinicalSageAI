@@ -1,271 +1,221 @@
 import OpenAI from 'openai';
 
-// Initialize OpenAI with API key from environment variables
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+/**
+ * Compliance Score module for CER AI
+ * 
+ * This module provides functionality to analyze a CER and score its compliance
+ * against multiple regulatory standards using GPT-4o.
+ */
+
+// Initialize OpenAI client
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
- * Analyzes CER sections for regulatory compliance
+ * Calculate compliance score for a CER using GPT-4o
+ * 
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-export const complianceScoreHandler = async (req, res) => {
+export async function complianceScoreHandler(req, res) {
   try {
     const { sections, title, standards = ['EU MDR', 'ISO 14155', 'FDA'] } = req.body;
-
-    // Validate input
-    if (!sections || !Array.isArray(sections) || sections.length === 0) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Invalid sections. Must provide an array of CER sections.'
-      });
-    }
-
-    if (!title) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Title is required for compliance analysis.'
-      });
-    }
-
-    console.log(`Performing compliance analysis for ${title} with ${sections.length} sections`);
     
-    // Extract section content for analysis
-    const sectionTexts = sections.map(section => {
-      return {
-        id: section.id || Math.random().toString(36).substring(2, 9),
-        title: section.title || 'Untitled Section',
-        content: section.content || '',
-        type: section.type || 'general'
-      };
-    });
-
-    // Prepare the analysis prompt for each regulatory standard
-    const standardsAnalysis = {};
-    let overallScore = 0;
-    let sectionScores = [];
-
-    for (const standard of standards) {
-      const standardScore = await analyzeComplianceForStandard(sectionTexts, title, standard);
-      standardsAnalysis[standard] = standardScore;
-      
-      // Aggregate scores for overall evaluation
-      if (standardScore.score) {
-        overallScore += standardScore.score;
-      }
-      
-      // Track individual section scores
-      if (standardScore.sectionAnalysis) {
-        for (const sectionAnalysis of standardScore.sectionAnalysis) {
-          const existingSection = sectionScores.find(s => s.id === sectionAnalysis.id);
-          
-          if (existingSection) {
-            existingSection.standards[standard] = {
-              score: sectionAnalysis.score,
-              feedback: sectionAnalysis.feedback,
-              suggestions: sectionAnalysis.suggestions
-            };
-            // Update the average score
-            const scores = Object.values(existingSection.standards).map(s => s.score);
-            existingSection.averageScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-          } else {
-            sectionScores.push({
-              id: sectionAnalysis.id,
-              title: sectionAnalysis.title,
-              standards: {
-                [standard]: {
-                  score: sectionAnalysis.score,
-                  feedback: sectionAnalysis.feedback,
-                  suggestions: sectionAnalysis.suggestions
-                }
-              },
-              averageScore: sectionAnalysis.score
-            });
-          }
-        }
-      }
+    if (!sections || !Array.isArray(sections) || sections.length === 0) {
+      return res.status(400).json({ error: 'At least one section is required' });
     }
-
-    // Calculate final overall score as average of all standards
-    const finalOverallScore = overallScore / standards.length;
-
-    // Prepare detailed response
+    
+    // Map the sections for analysis
+    const sectionsForAnalysis = sections.map(s => ({
+      title: s.section || s.title,
+      content: s.content
+    }));
+    
+    console.log(`Analyzing compliance for CER: ${title} with ${sectionsForAnalysis.length} sections against standards: ${standards.join(', ')}`);
+    
+    // Analyze each section individually
+    const sectionScores = await Promise.all(
+      sectionsForAnalysis.map(section => analyzeSection(section, standards))
+    );
+    
+    // Calculate overall compliance score (average of all section scores)
+    const overallScore = calculateOverallScore(sectionScores);
+    
+    // Prepare the final scoring response
     const response = {
-      success: true,
       title,
-      overallScore: Math.round(finalOverallScore * 100) / 100, // Round to 2 decimal places
-      standards: standardsAnalysis,
-      sectionScores: sectionScores.sort((a, b) => a.averageScore - b.averageScore), // Sort by ascending score (worst first)
-      summary: generateComplianceSummary(sectionScores, standards, finalOverallScore),
-      timestamp: new Date().toISOString()
+      overallScore,
+      standards: createStandardsBreakdown(sectionScores, standards),
+      sectionScores,
+      timestamp: new Date().toISOString(),
+      analysisMethod: 'gpt-4o',
     };
-
+    
     res.json(response);
   } catch (error) {
-    console.error('Error in compliance score analysis:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to analyze compliance',
-      message: error.message 
-    });
-  }
-};
-
-/**
- * Analyzes compliance for a specific regulatory standard
- * @param {Array} sections - Array of section objects with content
- * @param {string} title - Title of the CER
- * @param {string} standard - Regulatory standard to check against
- * @returns {Object} - Compliance analysis for the standard
- */
-async function analyzeComplianceForStandard(sections, title, standard) {
-  try {
-    // Build guidance prompt for specific standard
-    let guidancePrompt = '';
-    
-    switch(standard) {
-      case 'EU MDR':
-        guidancePrompt = 'The EU Medical Device Regulation (2017/745) requires Clinical Evaluation Reports to include: device description, clinical background and intended purpose, state of the art analysis, risk-benefit analysis, comprehensive literature search, clinical data evaluation, and post-market surveillance plan. Each section must be thorough, evidence-based, and traceable.';
-        break;
-        
-      case 'ISO 14155':
-        guidancePrompt = 'ISO 14155 requires clinical evaluation to address: device description, clinical evaluation plan, clinical evaluation methodology, data analysis methods, benefit-risk determination, literature review and data collection process. The evaluation must ensure scientific validity, ethical principles, and clinical evidence adequacy.';
-        break;
-        
-      case 'FDA':
-        guidancePrompt = 'FDA guidance requires clinical evaluation to include: indications for use, target population, device technological characteristics, summary of clinical evidence, benefit-risk profile, clinical data collection methods, and analysis of adverse events. Sections should contain objective evaluation of evidence quality and support for claims.';
-        break;
-        
-      default:
-        guidancePrompt = 'Evaluate the clinical evaluation report for completeness, clarity, scientific validity, evidence quality, and logical flow between sections. Each section should be comprehensive and well-supported by data.';
-    }
-    
-    // Prepare sections content for analysis
-    const sectionsContent = sections.map(s => `Section: ${s.title}\n${s.content.substring(0, 500)}...`).join('\n\n');
-    
-    // Generate the compliance analysis using OpenAI
-    const prompt = `
-      You are an expert in medical device regulatory compliance assessment. 
-      Analyze the following Clinical Evaluation Report (CER) titled "${title}" for compliance with ${standard} standards.
-      
-      Regulatory Requirements Context:
-      ${guidancePrompt}
-      
-      Report Sections:
-      ${sectionsContent}
-      
-      Please provide:
-      1. An overall compliance score from 0.0 to 1.0 (where 1.0 is fully compliant)
-      2. Individual assessment of each section with specific scores from 0.0 to 1.0
-      3. Detailed feedback for each section
-      4. Specific suggestions for improvement
-      5. A summary of the overall compliance status
-      
-      Format your response as a JSON object with the following structure:
-      {
-        "score": number, // Overall score from 0.0 to 1.0
-        "sectionAnalysis": [
-          {
-            "id": string, // Section ID
-            "title": string, // Section title
-            "score": number, // Section score from 0.0 to 1.0
-            "feedback": string, // Detailed feedback
-            "suggestions": [string] // Array of improvement suggestions
-          }
-        ],
-        "overallFeedback": string, // General compliance assessment
-        "criticalGaps": [string] // Array of critical compliance gaps
-      }
-    `;
-    
-    // Make the API call to OpenAI
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o', // Using the latest model which was trained on regulatory guidelines
-      messages: [
-        { role: 'system', content: 'You are a medical device regulatory expert specializing in Clinical Evaluation Reports. Provide detailed, actionable compliance analysis.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.3, // Lower temperature for more consistent, factual responses
-      max_tokens: 2000 // Allow sufficient space for detailed analysis
-    });
-    
-    // Parse the results
-    const analysisText = response.choices[0].message.content.trim();
-    let analysisJson;
-    
-    try {
-      // Extract JSON from the response (in case there's additional text)
-      const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        analysisJson = JSON.parse(jsonMatch[0]);
-      } else {
-        // Fall back to direct parsing if needed
-        analysisJson = JSON.parse(analysisText);
-      }
-    } catch (parseError) {
-      console.error('Error parsing compliance analysis JSON:', parseError);
-      console.log('Raw response:', analysisText);
-      
-      // Generate a fallback response with warning
-      return {
-        score: 0.5,
-        sectionAnalysis: sections.map(s => ({
-          id: s.id,
-          title: s.title,
-          score: 0.5,
-          feedback: 'Unable to generate detailed feedback. Please retry analysis.',
-          suggestions: ['Review against ' + standard + ' requirements manually']
-        })),
-        overallFeedback: 'Analysis encountered technical difficulties. Consider re-running with more focused content.',
-        criticalGaps: ['Unable to determine critical gaps due to analysis failure']
-      };
-    }
-    
-    return analysisJson;
-  } catch (error) {
-    console.error(`Error analyzing compliance for ${standard}:`, error);
-    throw error;
+    console.error('Error calculating compliance score:', error);
+    res.status(500).json({ error: 'Failed to calculate compliance score' });
   }
 }
 
 /**
- * Generates a summary of compliance status across all standards
- * @param {Array} sectionScores - Array of section scores
- * @param {Array} standards - Array of regulatory standards
- * @param {number} overallScore - Overall compliance score
- * @returns {string} - Summary text
+ * Analyze a single section for compliance against multiple standards
+ * 
+ * @param {Object} section - The section to analyze
+ * @param {Array} standards - Array of standard names to evaluate against
+ * @returns {Object} Section analysis results
  */
-function generateComplianceSummary(sectionScores, standards, overallScore) {
-  // Get sections with lowest scores to highlight issues
-  const sortedSections = [...sectionScores].sort((a, b) => a.averageScore - b.averageScore);
-  const lowScoringSections = sortedSections.filter(s => s.averageScore < 0.7).slice(0, 3);
-  
-  // Format standards for text
-  const standardsText = standards.join(', ');
-  
-  // Determine overall compliance level
-  let complianceLevel;
-  if (overallScore >= 0.9) {
-    complianceLevel = 'excellent';
-  } else if (overallScore >= 0.8) {
-    complianceLevel = 'good';
-  } else if (overallScore >= 0.7) {
-    complianceLevel = 'acceptable';
-  } else if (overallScore >= 0.6) {
-    complianceLevel = 'marginal';
-  } else {
-    complianceLevel = 'poor';
+async function analyzeSection(section, standards) {
+  try {
+    // Create prompt for the AI model
+    const prompt = createCompliancePrompt(section, standards);
+    
+    // Call OpenAI API with JSON response format
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const analysisResult = JSON.parse(response.choices[0].message.content);
+    
+    // Extract and format the response
+    const result = {
+      title: section.title,
+      content: section.content.substring(0, 100) + '...',  // Include just a preview
+      averageScore: calculateAverageScore(analysisResult.standards),
+      standards: analysisResult.standards,
+      suggestions: analysisResult.suggestions || [],
+      analysisTimestamp: new Date().toISOString()
+    };
+    
+    return result;
+  } catch (error) {
+    console.error(`Error analyzing section ${section.title}:`, error);
+    return {
+      title: section.title,
+      error: `Analysis failed: ${error.message}`,
+      averageScore: 0,
+      standards: {}
+    };
   }
+}
+
+/**
+ * Create a prompt for the compliance analysis
+ * 
+ * @param {Object} section - The section to analyze
+ * @param {Array} standards - Standards to check compliance against
+ * @returns {String} The formatted prompt
+ */
+function createCompliancePrompt(section, standards) {
+  return `You are a regulatory expert specializing in medical device Clinical Evaluation Reports (CERs).
+
+Please analyze the following CER section titled "${section.title}" against these regulatory standards: ${standards.join(', ')}.
+
+Section content:
+${section.content}
+
+Evaluate how well this section complies with each standard's requirements. Consider:
+- Completeness of information
+- Appropriate depth of analysis
+- Use of evidence-based conclusions
+- Appropriate risk assessment/benefit analysis (if applicable)
+- Proper rationale and justification
+- Clarity and structure
+
+Provide a compliance score from 0.0-1.0 for each standard, where:
+- 0.0-0.3: Significant non-compliance (missing critical elements)
+- 0.4-0.6: Partial compliance (has essential elements but requires improvement)
+- 0.7-0.9: Substantial compliance (meets most requirements with minor improvements needed)
+- 1.0: Full compliance (meets all requirements)
+
+Also provide specific improvement suggestions for non-compliant or partially compliant aspects.
+
+Format your response as a JSON object with this structure:
+{
+  "standards": {
+    "EU MDR": {
+      "score": 0.0-1.0,
+      "feedback": "Explanation of score and compliance assessment",
+      "suggestions": ["Specific improvement suggestion 1", "Suggestion 2"]
+    },
+    "ISO 14155": {
+      "score": 0.0-1.0,
+      "feedback": "Explanation of score and compliance assessment",
+      "suggestions": ["Specific improvement suggestion 1", "Suggestion 2"]
+    },
+    "FDA": {
+      "score": 0.0-1.0,
+      "feedback": "Explanation of score and compliance assessment",
+      "suggestions": ["Specific improvement suggestion 1", "Suggestion 2"]
+    }
+  },
+  "overall_assessment": "Brief summary of the overall compliance status",
+  "suggestions": ["Key improvement suggestion 1", "Key suggestion 2"]
+}`;
+}
+
+/**
+ * Calculate average score across all standards for a section
+ * 
+ * @param {Object} standards - Standards scoring object
+ * @returns {Number} The average score
+ */
+function calculateAverageScore(standards) {
+  const scores = Object.values(standards).map(s => s.score);
+  const sum = scores.reduce((acc, score) => acc + score, 0);
+  return scores.length > 0 ? sum / scores.length : 0;
+}
+
+/**
+ * Calculate overall compliance score
+ * 
+ * @param {Array} sectionScores - Scores for each section
+ * @returns {Number} Overall score
+ */
+function calculateOverallScore(sectionScores) {
+  const averageScores = sectionScores.map(s => s.averageScore);
+  const sum = averageScores.reduce((acc, score) => acc + score, 0);
+  return averageScores.length > 0 ? sum / averageScores.length : 0;
+}
+
+/**
+ * Create a breakdown of compliance by standard
+ * 
+ * @param {Array} sectionScores - Scores for each section
+ * @param {Array} standards - List of standards to include
+ * @returns {Object} Standards breakdown
+ */
+function createStandardsBreakdown(sectionScores, standards) {
+  const result = {};
   
-  // Generate appropriate message based on score
-  let summary;
-  if (lowScoringSections.length === 0) {
-    summary = `This Clinical Evaluation Report demonstrates ${complianceLevel} overall compliance (${Math.round(overallScore * 100)}%) with ${standardsText} standards. All sections meet the minimum compliance requirements, with consistent quality across the document.`;
-  } else {
-    const sectionNames = lowScoringSections.map(s => s.title).join(', ');
-    summary = `This Clinical Evaluation Report shows ${complianceLevel} overall compliance (${Math.round(overallScore * 100)}%) with ${standardsText} standards. To improve regulatory readiness, focus on enhancing the following sections: ${sectionNames}. Addressing the specific feedback for these sections will significantly improve overall compliance.`;
-  }
+  standards.forEach(standard => {
+    // Collect scores for this standard across all sections
+    const scores = sectionScores
+      .filter(section => section.standards && section.standards[standard])
+      .map(section => section.standards[standard].score);
+    
+    // Calculate average score for this standard
+    const sum = scores.reduce((acc, score) => acc + score, 0);
+    const averageScore = scores.length > 0 ? sum / scores.length : 0;
+    
+    // Collect feedback and suggestions for this standard
+    const feedback = sectionScores
+      .filter(section => section.standards && section.standards[standard])
+      .map(section => section.standards[standard].feedback)
+      .join(' ');
+      
+    const suggestions = sectionScores
+      .filter(section => section.standards && section.standards[standard] && section.standards[standard].suggestions)
+      .flatMap(section => section.standards[standard].suggestions);
+    
+    result[standard] = {
+      score: averageScore,
+      feedback: feedback,
+      suggestions: suggestions.slice(0, 5) // Limit to top 5 suggestions
+    };
+  });
   
-  return summary;
+  return result;
 }
