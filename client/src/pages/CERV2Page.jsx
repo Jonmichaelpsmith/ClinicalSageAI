@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { exportToPDF, exportToWord, downloadBlob, fetchFaersData, getComplianceScore, generateFullCER, getCerAssistantResponse, getComplianceImprovements } from '@/services/CerAPIService';
+import { cerApiService } from '@/services/CerAPIService';
 import { useToast } from '@/hooks/use-toast';
 import { ClipboardCheck, Clock, Download, FileCheck, FileText, CheckCircle, AlertCircle, ChevronDown, FileWarning, BookOpen, Calendar, Layers, CircleCheck, CircleAlert, Database, MessageSquare, UploadCloud, Loader2, Info } from 'lucide-react';
 
@@ -85,7 +85,7 @@ export default function CERV2Page() {
       
       try {
         setIsLoading(true);
-        const data = await fetchFaersData(title);
+        const data = await cerApiService.fetchFaersData(title);
         if (data) {
           setFaers(data.reports || []);
           setComparators(data.comparators || []);
@@ -118,7 +118,7 @@ export default function CERV2Page() {
     
     try {
       setIsComplianceRunning(true);
-      const result = await getComplianceScore({
+      const result = await cerApiService.getComplianceScore({
         sections,
         title,
         standards: ['EU MDR', 'ISO 14155', 'FDA']
@@ -153,11 +153,11 @@ export default function CERV2Page() {
     try {
       let blob;
       if (format === 'pdf') {
-        blob = await exportToPDF({ title, faers, comparators, sections });
-        downloadBlob(blob, 'cer_report.pdf');
+        blob = await cerApiService.exportToPDF({ title, faers, comparators, sections });
+        cerApiService.downloadBlob(blob, 'cer_report.pdf');
       } else {
-        blob = await exportToWord({ title, faers, comparators, sections });
-        downloadBlob(blob, 'cer_report.docx');
+        blob = await cerApiService.exportToWord({ title, faers, comparators, sections });
+        cerApiService.downloadBlob(blob, 'cer_report.docx');
       }
       
       // Update export timestamp
