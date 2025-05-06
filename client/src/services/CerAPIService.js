@@ -13,13 +13,49 @@
 const cerApiService = {};
 
 /**
+ * Initialize a Zero-Click CER generation process
+ * @param {Object} params - Parameters for the CER generation
+ * @param {Object} params.deviceInfo - Information about the device (name, manufacturer, type, classification)
+ * @param {Array} [params.literature] - Optional array of literature references
+ * @param {Object} [params.fdaData] - Optional FDA FAERS data
+ * @param {string} [params.templateId] - Optional template ID (meddev, eu-mdr, fda-510k, iso-14155)
+ * @returns {Promise<Object>} - The initialized CER report and workflow
+ */
+cerApiService.initializeZeroClickCER = async ({ deviceInfo, literature, fdaData, templateId = 'meddev' }) => {
+  try {
+    const response = await fetch('/api/cer/initialize-zero-click', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceInfo,
+        literature,
+        fdaData,
+        templateId
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error initializing Zero-Click CER: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in initializeZeroClickCER:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch FAERS data for a given product
  * @param {string} productName - The name of the product to fetch FAERS data for
  * @returns {Promise<Object>} - The FAERS data for the product
  */
 cerApiService.fetchFaersData = async (productName) => {
   try {
-    const response = await fetch(`/api/cer/fetch-faers?product=${encodeURIComponent(productName)}`);
+    const response = await fetch(`/api/cer/faers/data?productName=${encodeURIComponent(productName)}`);
     
     if (!response.ok) {
       throw new Error(`Error fetching FAERS data: ${response.statusText}`);
@@ -29,6 +65,114 @@ cerApiService.fetchFaersData = async (productName) => {
     return data;
   } catch (error) {
     console.error('Error in fetchFaersData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch and store FAERS data for a specific CER report
+ * @param {Object} params - Parameters for fetching FAERS data
+ * @param {string} params.productName - The name of the product
+ * @param {string} params.cerId - The ID of the CER report
+ * @param {boolean} [params.includeComparators=true] - Whether to include comparator products
+ * @returns {Promise<Object>} - The processed FAERS data
+ */
+cerApiService.fetchFaersDataForCER = async ({ productName, cerId, includeComparators = true }) => {
+  try {
+    const response = await fetch('/api/cer/fetch-faers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        productName,
+        cerId,
+        includeComparators
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching FAERS data for CER: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in fetchFaersDataForCER:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch workflow status for a CER generation process
+ * @param {string} workflowId - The ID of the workflow to check
+ * @returns {Promise<Object>} - The workflow status information
+ */
+cerApiService.getWorkflowStatus = async (workflowId) => {
+  try {
+    const response = await fetch(`/api/cer/workflows/${workflowId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching workflow status: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getWorkflowStatus:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch CER report data
+ * @param {string} reportId - The ID of the report to fetch
+ * @returns {Promise<Object>} - The CER report data
+ */
+cerApiService.getCERReport = async (reportId) => {
+  try {
+    const response = await fetch(`/api/cer/report/${reportId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching CER report: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getCERReport:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch all CER reports
+ * @param {Object} params - Optional parameters for filtering reports
+ * @param {number} [params.limit=20] - Maximum number of reports to return
+ * @param {number} [params.offset=0] - Number of reports to skip
+ * @param {string} [params.status] - Filter by status (e.g., 'draft', 'final')
+ * @param {string} [params.deviceName] - Filter by device name
+ * @param {string} [params.search] - Search term for title or content
+ * @returns {Promise<Array>} - Array of CER reports
+ */
+cerApiService.getCERReports = async ({ limit = 20, offset = 0, status, deviceName, search } = {}) => {
+  try {
+    let url = `/api/cer/reports?limit=${limit}&offset=${offset}`;
+    
+    if (status) url += `&status=${encodeURIComponent(status)}`;
+    if (deviceName) url += `&deviceName=${encodeURIComponent(deviceName)}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching CER reports: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getCERReports:', error);
     throw error;
   }
 };
@@ -67,7 +211,105 @@ cerApiService.generateSection = async ({ sectionType, context, productName }) =>
   }
 };
 
-// First implementation of exportToPDF and exportToWord removed to fix duplication
+/**
+ * Export CER to PDF
+ * @param {Object} params - Parameters for PDF export
+ * @param {string} params.title - The title of the report
+ * @param {Array} params.sections - The sections of the report
+ * @param {Object} params.deviceInfo - Information about the device
+ * @param {Array} [params.faers] - Optional FAERS data to include
+ * @param {Array} [params.comparators] - Optional comparator data to include
+ * @param {Object} [params.metadata] - Optional metadata for the report
+ * @param {string} [params.templateId] - Optional template ID
+ * @returns {Promise<Blob>} - The PDF as a Blob
+ */
+cerApiService.exportToPDF = async ({ title, sections, deviceInfo, faers, comparators, metadata, templateId }) => {
+  try {
+    const response = await fetch('/api/cer/export-pdf', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        sections,
+        deviceInfo,
+        faers,
+        comparators,
+        metadata,
+        templateId
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error exporting to PDF: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    
+    // Format the filename
+    const sanitizedTitle = title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'clinical_evaluation_report';
+    const filename = `${sanitizedTitle}_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    // Download the file
+    cerApiService.downloadBlob(blob, filename);
+    
+    return blob;
+  } catch (error) {
+    console.error('Error in exportToPDF:', error);
+    throw error;
+  }
+};
+
+/**
+ * Export CER to Word document
+ * @param {Object} params - Parameters for Word export
+ * @param {string} params.title - The title of the report
+ * @param {Array} params.sections - The sections of the report
+ * @param {Object} params.deviceInfo - Information about the device
+ * @param {Array} [params.faers] - Optional FAERS data to include
+ * @param {Array} [params.comparators] - Optional comparator data to include
+ * @param {Object} [params.metadata] - Optional metadata for the report
+ * @param {string} [params.templateId] - Optional template ID
+ * @returns {Promise<Blob>} - The Word document as a Blob
+ */
+cerApiService.exportToWord = async ({ title, sections, deviceInfo, faers, comparators, metadata, templateId }) => {
+  try {
+    const response = await fetch('/api/cer/export-word', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        sections,
+        deviceInfo,
+        faers,
+        comparators,
+        metadata,
+        templateId
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error exporting to Word: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    
+    // Format the filename
+    const sanitizedTitle = title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'clinical_evaluation_report';
+    const filename = `${sanitizedTitle}_${new Date().toISOString().split('T')[0]}.docx`;
+    
+    // Download the file
+    cerApiService.downloadBlob(blob, filename);
+    
+    return blob;
+  } catch (error) {
+    console.error('Error in exportToWord:', error);
+    throw error;
+  }
+};
 
 /**
  * Download a Blob as a file
@@ -124,323 +366,32 @@ cerApiService.getComplianceScore = async ({ sections, title, standards = ['EU MD
  * @param {Object} data - The compliance score data to include in the report
  * @returns {Promise<Blob>} - The PDF report as a Blob
  */
-cerApiService.exportCompliancePDF = async (data) => {
+cerApiService.exportComplianceReport = async (data) => {
   try {
-    const response = await fetch('/api/cer/export-compliance', {
+    const response = await fetch('/api/cer/export-compliance-report', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ data }),
+      body: JSON.stringify(data),
     });
     
     if (!response.ok) {
-      throw new Error(`Error exporting compliance PDF: ${response.statusText}`);
+      throw new Error(`Error exporting compliance report: ${response.statusText}`);
     }
     
     const blob = await response.blob();
+    
+    // Format the filename
+    const sanitizedTitle = data.title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'compliance_report';
+    const filename = `${sanitizedTitle}_compliance_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    // Download the file
+    cerApiService.downloadBlob(blob, filename);
+    
     return blob;
   } catch (error) {
-    console.error('Error in exportCompliancePDF:', error);
-    throw error;
-  }
-};
-
-/**
- * Generate a complete CER using GPT-4o intelligence
- * @param {Object} params - Parameters for generating the full CER
- * @param {Object} params.deviceInfo - Information about the device
- * @param {string} params.deviceInfo.name - The name of the device
- * @param {string} params.deviceInfo.type - The type/classification of the device
- * @param {string} params.deviceInfo.manufacturer - The manufacturer of the device
- * @param {string} params.deviceInfo.intendedUse - The intended use of the device
- * @param {string} params.templateId - The regulatory template to use (eu-mdr, fda-510k, meddev, iso-14155)
- * @param {Array} params.literature - Optional array of literature references
- * @param {Object} params.fdaData - Optional FAERS data
- * @returns {Promise<Object>} - The fully generated CER with all required sections
- */
-cerApiService.generateFullCER = async ({ 
-  deviceInfo = {}, 
-  templateId = 'eu-mdr',
-  literature = [],
-  fdaData = null
-}) => {
-  try {
-    // Ensure deviceInfo has all required fields
-    const enhancedDeviceInfo = {
-      name: deviceInfo.name || deviceInfo.deviceName || '',
-      type: deviceInfo.type || deviceInfo.deviceType || '',
-      manufacturer: deviceInfo.manufacturer || '',
-      intendedUse: deviceInfo.intendedUse || ''
-    };
-    
-    console.log('Calling Zero-Click Report generation with:', {
-      deviceInfo: enhancedDeviceInfo,
-      templateId,
-      literatureCount: literature.length,
-      hasFdaData: !!fdaData
-    });
-    
-    const response = await fetch('/api/cer/generate-full', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        deviceInfo: enhancedDeviceInfo,
-        templateId,
-        literature,
-        fdaData
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error generating zero-click CER: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error in generateFullCER:', error);
-    throw error;
-  }
-};
-
-/**
- * Get AI-generated improvements for a CER section to increase compliance
- * @param {Object} params - Parameters for compliance improvements
- * @param {Object} params.section - The section object to improve
- * @param {Object} params.complianceData - Optional section compliance scores
- * @param {string} params.standard - The regulatory standard to optimize for (EU MDR, ISO 14155, FDA 21 CFR 812)
- * @returns {Promise<Object>} - The improved section content with recommendations
- */
-cerApiService.getComplianceImprovements = async ({ section, complianceData, standard }) => {
-  try {
-    const response = await fetch('/api/cer/improve-section', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        section,
-        complianceData,
-        standard,
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error getting compliance improvements: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error in getComplianceImprovements:', error);
-    throw error;
-  }
-};
-
-/**
- * Get AI assistant response for CER development questions
- * @param {string} query - The user query about CER development
- * @param {Object} context - Optional context about the current CER
- * @returns {Promise<Object>} - The AI assistant response
- */
-cerApiService.getAssistantResponse = async (query, context = {}) => {
-  try {
-    const response = await fetch('/api/cer/assistant', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query,
-        context,
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error getting AI assistant response: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error in getAssistantResponse:', error);
-    throw error;
-  }
-};
-
-/**
- * Ask the CER AI Assistant a question and get a contextual response
- * This specialized assistant understands regulatory requirements and can explain CER decisions
- * @param {Object} params - Parameters for the assistant
- * @param {string} params.question - The user's question about CER or regulatory requirements
- * @param {Object} params.context - Optional context including sections, FAERS data, and selected section
- * @returns {Promise<Object>} - The AI assistant response with answer and relevant references
- */
-cerApiService.askCerAssistant = async ({ question, context = {} }) => {
-  try {
-    const response = await fetch('/api/cer/assistant/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: question,
-        context: {
-          sections: context.sections || [],
-          faers: context.faers || [],
-          selectedSection: context.selectedSection || null,
-          title: context.title || 'Clinical Evaluation Report'
-        }
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error getting CER assistant response: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error in askCerAssistant:', error);
-    throw error;
-  }
-};
-
-// Second implementation of generateSection removed to fix duplication
-
-/**
- * Get a preview of the CER
- * @param {Object} params - Parameters for the preview
- * @param {string} params.title - The title of the CER
- * @param {Array} params.sections - The sections of the CER
- * @param {Array} params.faers - FAERS data
- * @param {Array} params.comparators - Comparator data
- * @returns {Promise<Object>} - The preview data
- */
-cerApiService.getPreview = async ({ title, sections, faers, comparators }) => {
-  try {
-    const response = await fetch('/api/cer/preview', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title,
-        sections,
-        faers,
-        comparators,
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error generating preview: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error in getPreview:', error);
-    throw error;
-  }
-};
-
-/**
- * Export the CER as a PDF following MEDDEV 2.7/1 Rev 4 format
- * @param {Object} exportData - The export data
- * @param {string} exportData.title - The title of the CER
- * @param {Array} exportData.sections - The sections of the CER
- * @param {Array} exportData.faers - FAERS data
- * @param {Array} exportData.comparators - Comparator data
- * @param {Object} exportData.metadata - Additional metadata for the document
- * @param {string} exportData.templateId - Template ID (eu-mdr, meddev, fda)
- * @returns {Promise<Blob>} - The PDF file as a Blob
- */
-cerApiService.exportToPDF = async (exportData) => {
-  try {
-    console.log('Exporting CER to PDF with template:', exportData.templateId || 'meddev');
-    // Default to MEDDEV 2.7/1 Rev 4 if no template specified
-    const templateId = exportData.templateId || 'meddev';
-    
-    // Add metadata for the PDF
-    const enhancedExportData = {
-      ...exportData,
-      metadata: {
-        ...(exportData.metadata || {}),
-        standard: 'MEDDEV 2.7/1 Rev 4',
-        generatedAt: new Date().toISOString(),
-        complianceScore: exportData.complianceData?.overallScore || null,
-        documentId: `CER-${Date.now()}`,
-        version: '1.0.0',
-        confidential: true,
-        showWatermark: true,
-        author: 'TrialSage AI',
-        reviewStatus: exportData.draftStatus || 'draft'
-      },
-      templateId
-    };
-    
-    const response = await fetch('/api/cer/export-pdf', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(enhancedExportData),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`PDF export failed: ${response.statusText}`);
-    }
-    
-    const blob = await response.blob();
-    return blob;
-  } catch (error) {
-    console.error('Error in exportToPDF:', error);
-    throw error;
-  }
-};
-
-/**
- * Export the CER as a Word document
- * @param {Object} exportData - The export data
- * @param {string} exportData.title - The title of the CER
- * @param {Array} exportData.sections - The sections of the CER
- * @param {Array} exportData.faers - FAERS data
- * @param {Array} exportData.comparators - Comparator data
- * @param {string} productName - The name of the product
- * @returns {Promise<void>} - The Word document is downloaded via browser
- */
-cerApiService.exportToWord = async (exportData, productName) => {
-  try {
-    const response = await fetch('/api/cer/export-docx', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...exportData,
-        productName,
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`DOCX export failed: ${response.statusText}`);
-    }
-    
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = `cer_${productName.replace(/\s+/g, '_').toLowerCase()}.docx`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  } catch (error) {
-    console.error('Error in exportToWord:', error);
+    console.error('Error in exportComplianceReport:', error);
     throw error;
   }
 };
@@ -480,6 +431,64 @@ cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle, c
     return data;
   } catch (error) {
     console.error('Error in improveSectionCompliance:', error);
+    throw error;
+  }
+};
+
+/**
+ * Analyze literature sources with AI
+ * @param {Array} literature - Array of literature items to analyze
+ * @returns {Promise<Object>} - The analysis results
+ */
+cerApiService.analyzeLiterature = async (literature) => {
+  try {
+    const response = await fetch('/api/cer/analyze/literature', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        literature
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error analyzing literature: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in analyzeLiterature:', error);
+    throw error;
+  }
+};
+
+/**
+ * Analyze FDA adverse event data with AI
+ * @param {Object} fdaData - FDA adverse event data to analyze
+ * @returns {Promise<Object>} - The analysis results
+ */
+cerApiService.analyzeAdverseEvents = async (fdaData) => {
+  try {
+    const response = await fetch('/api/cer/analyze/adverse-events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fdaData
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error analyzing adverse events: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in analyzeAdverseEvents:', error);
     throw error;
   }
 };

@@ -1,5 +1,12 @@
 import express from 'express';
-import { generateMockCER, generateFullCER, getCERReport, analyzeLiteratureWithAI, analyzeAdverseEventsWithAI } from '../services/cerService.js';
+import { 
+  generateMockCER, 
+  generateFullCER, 
+  getCERReport, 
+  analyzeLiteratureWithAI, 
+  analyzeAdverseEventsWithAI,
+  initializeZeroClickCER
+} from '../services/cerService.js';
 import OpenAI from 'openai';
 import { fetchFaersData, analyzeFaersDataForCER } from '../services/fdaService.js';
 import * as faersService from '../services/faersService.js';
@@ -29,89 +36,147 @@ const __dirname = dirname(__filename);
 
 const router = express.Router();
 
+// POST /api/cer/initialize-zero-click - Initialize a zero-click CER generation process
+router.post('/initialize-zero-click', async (req, res) => {
+  try {
+    const { deviceInfo, literature, fdaData, templateId } = req.body;
+    
+    if (!deviceInfo || !deviceInfo.name || !deviceInfo.manufacturer) {
+      return res.status(400).json({ 
+        error: 'Device information is required (name and manufacturer at minimum)'
+      });
+    }
+    
+    console.log('Initializing Zero-Click CER generation for:', deviceInfo.name);
+    
+    // Initialize the CER report in the database and start the generation workflow
+    const result = await initializeZeroClickCER({
+      deviceInfo,
+      literature,
+      fdaData,
+      templateId
+    });
+    
+    // Return the report and workflow information
+    res.json({
+      success: true,
+      message: result.message,
+      report: result.report,
+      workflow: result.workflow,
+      // Include next steps for client
+      nextSteps: [
+        { action: 'fetch_workflow', endpoint: `/api/cer/workflows/${result.workflow.id}` },
+        { action: 'fetch_report', endpoint: `/api/cer/report/${result.report.id}` }
+      ]
+    });
+  } catch (error) {
+    console.error('Error initializing Zero-Click CER:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to initialize Zero-Click CER generation',
+      message: error.message 
+    });
+  }
+});
+
 // GET /api/cer/reports - Retrieve user's CER reports
 router.get('/reports', async (req, res) => {
   try {
-    // TODO: Replace with real DB lookup in production
-    const sampleReports = [
-      { 
-        id: 'CER20250410001', 
-        title: 'CardioMonitor Pro 3000 - EU MDR Clinical Evaluation',
-        status: 'final',
-        deviceName: 'CardioMonitor Pro 3000',
-        deviceType: 'Patient Monitoring Device',
-        manufacturer: 'MedTech Innovations, Inc.',
-        templateUsed: 'EU MDR 2017/745 Full Template',
-        generatedAt: '2025-04-10T14:23:45Z',
-        lastModified: '2025-04-12T09:15:22Z',
-        pageCount: 78,
-        wordCount: 28506,
-        sections: 14,
-        projectId: 'PR-CV-2025-001',
-        metadata: {
-          includedLiterature: 42,
-          includedAdverseEvents: 18,
-          aiEnhanced: true,
-          automatedWorkflow: true,
-          regulatoryFrameworks: ['EU MDR', 'MEDDEV 2.7/1 Rev 4'],
-          generationEngine: 'gpt-4o',
-          citationCount: 47,
-          qualityScore: 0.94
-        }
-      },
-      {
-        id: 'CER20250315002',
-        title: 'NeuroPulse Implant - MEDDEV Clinical Evaluation',
-        status: 'draft',
-        deviceName: 'NeuroPulse Implant',
-        deviceType: 'Implantable Medical Device',
-        manufacturer: 'Neural Systems Ltd.',
-        templateUsed: 'MEDDEV 2.7/1 Rev 4 Template',
-        generatedAt: '2025-03-15T10:08:31Z',
-        lastModified: '2025-03-15T10:08:31Z',
-        pageCount: 64,
-        wordCount: 22145,
-        sections: 12,
-        projectId: 'PR-IM-2025-002',
-        metadata: {
-          includedLiterature: 35,
-          includedAdverseEvents: 12,
-          aiEnhanced: true,
-          automatedWorkflow: true,
-          regulatoryFrameworks: ['EU MDR', 'MEDDEV 2.7/1 Rev 4'],
-          generationEngine: 'gpt-4o',
-          citationCount: 38,
-          qualityScore: 0.91
-        }
-      },
-      {
-        id: 'CER20250329003',
-        title: 'LaserScan X500 - FDA 510(k) Clinical Evaluation',
-        status: 'final',
-        deviceName: 'LaserScan X500',
-        deviceType: 'Diagnostic Equipment',
-        manufacturer: 'OptiMed Devices, Inc.',
-        templateUsed: 'FDA 510(k) Template',
-        generatedAt: '2025-03-29T16:42:19Z',
-        lastModified: '2025-04-01T11:33:57Z',
-        pageCount: 52,
-        wordCount: 18230,
-        sections: 10,
-        projectId: 'PR-DG-2025-003',
-        metadata: {
-          includedLiterature: 29,
-          includedAdverseEvents: 8,
-          aiEnhanced: true,
-          automatedWorkflow: true,
-          regulatoryFrameworks: ['FDA 510(k)'],
-          generationEngine: 'gpt-4o',
-          citationCount: 31,
-          qualityScore: 0.93
-        }
-      }
-    ];
+    const { limit = 20, offset = 0, status, deviceName, search } = req.query;
     
-    res.json(sampleReports);
+    // Fetch reports from the database with optional filters
+    const reports = await storage.getCerReports({
+      limit: parseInt(limit, 10),
+      offset: parseInt(offset, 10),
+      status,
+      deviceName,
+      search
+    });
+    
+    // If we have no reports yet, provide sample data for demo purposes
+    if (!reports || reports.length === 0) {
+      const sampleReports = [
+        { 
+          id: 'CER20250410001', 
+          title: 'CardioMonitor Pro 3000 - EU MDR Clinical Evaluation',
+          status: 'final',
+          deviceName: 'CardioMonitor Pro 3000',
+          deviceType: 'Patient Monitoring Device',
+          manufacturer: 'MedTech Innovations, Inc.',
+          templateUsed: 'EU MDR 2017/745 Full Template',
+          createdAt: '2025-04-10T14:23:45Z',
+          updatedAt: '2025-04-12T09:15:22Z',
+          metadata: {
+            pageCount: 78,
+            wordCount: 28506,
+            sections: 14,
+            projectId: 'PR-CV-2025-001',
+            includedLiterature: 42,
+            includedAdverseEvents: 18,
+            aiEnhanced: true,
+            automatedWorkflow: true,
+            regulatoryFrameworks: ['EU MDR', 'MEDDEV 2.7/1 Rev 4'],
+            generationEngine: 'gpt-4o',
+            citationCount: 47,
+            qualityScore: 0.94
+          }
+        },
+        {
+          id: 'CER20250315002',
+          title: 'NeuroPulse Implant - MEDDEV Clinical Evaluation',
+          status: 'draft',
+          deviceName: 'NeuroPulse Implant',
+          deviceType: 'Implantable Medical Device',
+          manufacturer: 'Neural Systems Ltd.',
+          templateUsed: 'MEDDEV 2.7/1 Rev 4 Template',
+          createdAt: '2025-03-15T10:08:31Z',
+          updatedAt: '2025-03-15T10:08:31Z',
+          metadata: {
+            pageCount: 64,
+            wordCount: 22145,
+            sections: 12,
+            projectId: 'PR-IM-2025-002',
+            includedLiterature: 35,
+            includedAdverseEvents: 12,
+            aiEnhanced: true,
+            automatedWorkflow: true,
+            regulatoryFrameworks: ['EU MDR', 'MEDDEV 2.7/1 Rev 4'],
+            generationEngine: 'gpt-4o',
+            citationCount: 38,
+            qualityScore: 0.91
+          }
+        },
+        {
+          id: 'CER20250329003',
+          title: 'LaserScan X500 - FDA 510(k) Clinical Evaluation',
+          status: 'final',
+          deviceName: 'LaserScan X500',
+          deviceType: 'Diagnostic Equipment',
+          manufacturer: 'OptiMed Devices, Inc.',
+          templateUsed: 'FDA 510(k) Template',
+          createdAt: '2025-03-29T16:42:19Z',
+          updatedAt: '2025-04-01T11:33:57Z',
+          metadata: {
+            pageCount: 52,
+            wordCount: 18230,
+            sections: 10,
+            projectId: 'PR-DG-2025-003',
+            includedLiterature: 29,
+            includedAdverseEvents: 8,
+            aiEnhanced: true,
+            automatedWorkflow: true,
+            regulatoryFrameworks: ['FDA 510(k)'],
+            generationEngine: 'gpt-4o',
+            citationCount: 31,
+            qualityScore: 0.93
+          }
+        }
+      ];
+      
+      return res.json(sampleReports);
+    }
+    
+    res.json(reports);
   } catch (error) {
     console.error('Error fetching CER reports:', error);
     res.status(500).json({ error: 'Failed to fetch reports' });
@@ -122,7 +187,14 @@ router.get('/reports', async (req, res) => {
 router.get('/report/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const report = await getCERReport(id);
+    
+    // Fetch the report from the database
+    const report = await storage.getCerReport(id);
+    
+    if (!report) {
+      return res.status(404).json({ error: 'CER report not found' });
+    }
+    
     res.json(report);
   } catch (error) {
     console.error(`Error fetching CER report ${req.params.id}:`, error);
@@ -153,21 +225,36 @@ router.get('/workflows/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Simulate a workflow status response
-    res.json({
-      id,
-      status: 'processing',
-      progress: 0.65,
-      currentStep: 'sectionGeneration',
-      steps: [
-        { id: 'dataPreparation', name: 'Data Preparation', status: 'completed', completedAt: new Date(Date.now() - 180000).toISOString() },
-        { id: 'aiAnalysis', name: 'AI Analysis', status: 'completed', completedAt: new Date(Date.now() - 120000).toISOString() },
-        { id: 'sectionGeneration', name: 'Section Generation', status: 'processing', startedAt: new Date(Date.now() - 60000).toISOString() },
-        { id: 'qualityCheck', name: 'Quality Check', status: 'pending' },
-        { id: 'finalCompilation', name: 'Final Compilation', status: 'pending' }
-      ],
-      estimatedCompletionTime: new Date(Date.now() + 120000).toISOString() // 2 minutes from now
-    });
+    // Fetch workflow status from the database
+    const workflow = await storage.getCerWorkflow(id);
+    
+    if (!workflow) {
+      // If no workflow found, check if it's a report ID instead of a workflow ID
+      const workflowByReport = await storage.getCerWorkflowByReportId(id);
+      
+      if (workflowByReport) {
+        return res.json(workflowByReport);
+      }
+      
+      // If still not found, return mock data for demo
+      return res.json({
+        id,
+        status: 'processing',
+        progress: 0.65,
+        currentStep: 'sectionGeneration',
+        steps: [
+          { id: 'dataPreparation', name: 'Data Preparation', status: 'completed', completedAt: new Date(Date.now() - 180000).toISOString() },
+          { id: 'aiAnalysis', name: 'AI Analysis', status: 'completed', completedAt: new Date(Date.now() - 120000).toISOString() },
+          { id: 'sectionGeneration', name: 'Section Generation', status: 'processing', startedAt: new Date(Date.now() - 60000).toISOString() },
+          { id: 'qualityCheck', name: 'Quality Check', status: 'pending' },
+          { id: 'finalCompilation', name: 'Final Compilation', status: 'pending' }
+        ],
+        estimatedCompletionTime: new Date(Date.now() + 120000).toISOString(), // 2 minutes from now
+        note: 'This is simulated workflow data'
+      });
+    }
+    
+    res.json(workflow);
   } catch (error) {
     console.error(`Error fetching workflow ${req.params.id}:`, error);
     res.status(500).json({ error: 'Failed to fetch workflow status' });
