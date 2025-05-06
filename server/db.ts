@@ -7,11 +7,11 @@
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { createContextLogger } from './utils/logger';
+import { createScopedLogger } from './utils/logger';
 import * as schema from '../shared/schema';
 import path from 'path';
 
-const logger = createContextLogger({ module: 'database' });
+const logger = createScopedLogger('database');
 
 // Database connection pool
 let pool: Pool | null = null;

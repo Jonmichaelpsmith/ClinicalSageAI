@@ -1,70 +1,76 @@
 /**
- * ID Generator Utilities
+ * ID Generator Utility
  * 
- * Provides utility functions for generating unique identifiers.
- * These functions help avoid dependencies on third-party packages
- * and ensure consistent ID generation across the application.
+ * This utility provides standardized ID generation functions for 
+ * the various entities in the application following consistent patterns.
  */
 
 /**
- * Generate a UUID v4-compatible string without any dependencies
- * @returns {string} A UUID v4 string
+ * Generate a UUID v4 (simplified implementation)
+ * @returns {string} A random UUID v4-like string
  */
-export function generateUuid(): string {
-  let d = new Date().getTime();
-  if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-    d += performance.now(); // Add high-precision timer if available
-  }
-  
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (d + Math.random() * 16) % 16 | 0;
-    d = Math.floor(d / 16);
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+export function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
   });
 }
 
 /**
- * Generate a short, URL-friendly unique ID
- * @param {number} length - The desired length of the ID (default: 8)
- * @returns {string} A short unique ID
+ * Generate a document ID with a specified prefix
+ * @param {string} prefix - The prefix to use (default: 'DOC')
+ * @returns {string} A prefixed document ID
  */
-export function generateShortId(length: number = 8): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  const charsLength = chars.length;
-  
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * charsLength));
-  }
-  
-  return result;
+export function generateDocumentId(prefix: string = 'DOC'): string {
+  const uuid = generateUUID();
+  return `${prefix}_${uuid}`;
 }
 
 /**
- * Generate a numeric ID with a prefix
- * @param {string} prefix - The prefix to add to the ID (default: 'ID')
- * @returns {string} A numeric ID with prefix
+ * Generate a CER ID with a timestamp
+ * @returns {string} A CER ID
  */
-export function generateNumericId(prefix: string = 'ID'): string {
+export function generateCerId(): string {
   const timestamp = new Date().getTime();
-  const random = Math.floor(Math.random() * 10000);
-  return `${prefix}${timestamp}${random}`;
+  return `CER_${timestamp}_${generateUUID().substring(0, 8)}`;
 }
 
 /**
- * Generate a job ID with a formatted date
- * @param {string} prefix - The prefix to add to the ID (default: 'JOB')
- * @returns {string} A job ID with formatted date
+ * Generate a sequential ID based on a counter
+ * @param {number} counter - The current counter value
+ * @param {string} prefix - The prefix to use
+ * @param {number} padLength - The length to pad the number to
+ * @returns {string} A sequential ID
  */
-export function generateJobId(prefix: string = 'JOB'): string {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  
-  return `${prefix}-${year}${month}${day}-${hours}${minutes}${seconds}-${random}`;
+export function generateSequentialId(counter: number, prefix: string = 'ID', padLength: number = 4): string {
+  const paddedCounter = counter.toString().padStart(padLength, '0');
+  return `${prefix}_${paddedCounter}`;
+}
+
+/**
+ * Generate a session ID
+ * @returns {string} A session ID
+ */
+export function generateSessionId(): string {
+  const timestamp = new Date().getTime();
+  return `SESSION_${timestamp}_${generateUUID().substring(0, 8)}`;
+}
+
+/**
+ * Generate a folder ID
+ * @returns {string} A folder ID
+ */
+export function generateFolderId(): string {
+  return `FOLDER_${generateUUID()}`;
+}
+
+/**
+ * Generate a project ID
+ * @param {string} prefix - The prefix for the project type (e.g., 'CER', 'IND')
+ * @returns {string} A project ID
+ */
+export function generateProjectId(prefix: string = 'PRJ'): string {
+  const timestamp = new Date().getTime();
+  return `${prefix}_${timestamp}_${generateUUID().substring(0, 8)}`;
 }

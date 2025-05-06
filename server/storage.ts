@@ -4,13 +4,13 @@
  * Provides a unified storage interface with both in-memory and database implementations.
  * The system automatically falls back to in-memory storage if no database is available.
  */
-import { createContextLogger } from './utils/logger';
+import { createScopedLogger } from './utils/logger';
 import { pool, query, transaction, db } from './db';
 import { eq, desc, and, or, like, isNull, not } from 'drizzle-orm';
 import * as schema from '../shared/schema';
-import { generateUuid } from './utils/id-generator';
+import { generateUUID } from './utils/id-generator';
 
-const logger = createContextLogger({ module: 'storage' });
+const logger = createScopedLogger('storage');
 
 // Basic User type
 export interface User {
@@ -216,7 +216,7 @@ export class MemStorage implements IStorage {
   
   async createDocument(document: schema.InsertDocument): Promise<schema.Document> {
     // Generate UUID for document
-    const id = generateUuid();
+    const id = generateUUID();
     
     // Set timestamps if not provided
     const now = new Date();
@@ -277,7 +277,7 @@ export class MemStorage implements IStorage {
   
   async createFolder(folderData: schema.InsertDocumentFolder): Promise<schema.DocumentFolder> {
     // Generate UUID for folder
-    const id = generateUuid();
+    const id = generateUUID();
     
     // Set timestamps if not provided
     const now = new Date();
