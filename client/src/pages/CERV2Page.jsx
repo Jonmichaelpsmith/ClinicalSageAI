@@ -1008,6 +1008,59 @@ ${updatedCepData.evaluationCriteria || 'Not specified'}
               }}
             />
           </TabsContent>
+          
+          <TabsContent value="gspr-mapping" className="mt-0">
+            <GSPRMappingPanel
+              deviceName={deviceName}
+              faersData={faers}
+              literatureData={literatureResult?.papers || []}
+              sections={sections}
+              selectedGSPRs={cepData?.selectedGSPRs || ['1', '2', '3', '14', '14.2']}
+              initialMapping={gsprMapping}
+              onUpdateMapping={(updatedMapping) => {
+                setGsprMapping(updatedMapping);
+                
+                toast({
+                  title: "GSPR Mapping Saved",
+                  description: "Your requirements mapping has been saved.",
+                  variant: "success"
+                });
+              }}
+              onAddToReport={(gsprMappingSection) => {
+                // Check if we already have a GSPR mapping section
+                const existingIndex = sections.findIndex(
+                  section => section.type === 'gspr-mapping' || 
+                  (section.title && section.title.toLowerCase().includes('gspr mapping'))
+                );
+                
+                if (existingIndex >= 0) {
+                  // Update existing section
+                  const updatedSections = [...sections];
+                  updatedSections[existingIndex] = {
+                    ...updatedSections[existingIndex],
+                    content: gsprMappingSection.content,
+                    lastUpdated: new Date().toISOString()
+                  };
+                  setSections(updatedSections);
+                  
+                  toast({
+                    title: "GSPR Mapping Updated",
+                    description: "Requirements traceability has been updated in your CER.",
+                    variant: "success"
+                  });
+                } else {
+                  // Add new section
+                  setSections([...sections, gsprMappingSection]);
+                  
+                  toast({
+                    title: "GSPR Mapping Added",
+                    description: "Requirements traceability has been added to your CER.",
+                    variant: "success"
+                  });
+                }
+              }}
+            />
+          </TabsContent>
 
           <TabsContent value="export" className="mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 border border-[#E1DFDD] rounded">
