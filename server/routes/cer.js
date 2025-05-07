@@ -7,10 +7,9 @@ import {
   analyzeAdverseEventsWithAI,
   initializeZeroClickCER
 } from '../services/cerService.js';
+// Import services for CER and FAERS functionality
 import OpenAI from 'openai';
-import { fetchFaersData, analyzeFaersDataForCER } from '../services/fdaService.js';
 import * as faersService from '../services/faersService.js';
-import { fetchFaersAnalysis } from '../services/enhancedFaersService.js';
 
 // Initialize OpenAI for analysis capabilities
 const openai = new OpenAI({
@@ -478,85 +477,134 @@ router.post('/analyze/literature', async (req, res) => {
 // POST /api/cer/analyze/adverse-events - Analyze FDA adverse events with AI
 router.post('/analyze/adverse-events', async (req, res) => {
   try {
-    const { fdaData } = req.body;
+    const { fdaData, context } = req.body;
     
-    // Call AI analysis service
-    const analysis = await analyzeAdverseEventsWithAI(fdaData);
-    res.json(analysis);
+    if (!fdaData) {
+      return res.status(400).json({ 
+        error: 'FDA FAERS data is required',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Validate data source information for traceability
+    if (!fdaData.dataSource) {
+      console.warn('FAERS data missing data source attribution, adding default attribution');
+      fdaData.dataSource = {
+        name: "Unknown source",
+        retrievalDate: new Date().toISOString(),
+        authentic: false,
+        fallbackReason: "No source attribution provided"
+      };
+    }
+    
+    // Log the data source for auditing
+    console.log(`Analyzing FAERS data from source: ${fdaData.dataSource.name}, authentic: ${fdaData.dataSource.authentic || false}`);
+    
+    try {
+      // First see if we can use faersService directly for enhanced analysis
+      if (faersService.analyzeFaersDataForCER) {
+        const productName = fdaData.productName || (context?.productName || 'Medical Device');
+        const manufacturerName = context?.manufacturer || 'Unknown Manufacturer';
+        
+        console.log(`Using enhanced FAERS analysis for ${productName} from ${manufacturerName}`);
+        
+        // Use the enhanced direct analysis from faersService
+        const analysis = await faersService.analyzeFaersDataForCER(fdaData, {
+          productName,
+          manufacturerName,
+          context: {
+            deviceType: context?.deviceType || 'Medical device',
+            indication: context?.indication || 'Not specified'
+          }
+        });
+        
+        return res.json({
+          ...analysis,
+          timestamp: new Date().toISOString(),
+          apiVersion: 'v2.1'
+        });
+      }
+      
+      // Fall back to AI analysis if direct service not available
+      console.log('Enhanced direct FAERS analysis not available, using AI analysis');
+      const analysis = await analyzeAdverseEventsWithAI(fdaData);
+      
+      // Add data source attribution to maintain traceability
+      analysis.dataSourceAttribution = {
+        source: fdaData.dataSource.name || "Unknown source",
+        retrievalDate: fdaData.dataSource.retrievalDate || new Date().toISOString(),
+        authentic: fdaData.dataSource.authentic || false,
+        analysisDate: new Date().toISOString(),
+        analysisMethod: "AI-assisted analysis"
+      };
+      
+      return res.json(analysis);
+    } catch (error) {
+      console.error('Error with FAERS analysis:', error);
+      
+      return res.status(500).json({
+        error: 'FAERS Analysis Error',
+        message: `Unable to analyze FAERS data: ${error.message}`,
+        timestamp: new Date().toISOString()
+      });
+    }
   } catch (error) {
     console.error('Error analyzing adverse events with AI:', error);
-    res.status(500).json({ error: 'Failed to analyze adverse events' });
+    res.status(500).json({ 
+      error: 'Failed to analyze adverse events',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
 // GET /api/cer/faers/data - Fetch adverse event data from FDA FAERS database
 router.get('/faers/data', async (req, res) => {
   try {
-    const { productName, manufacturerName, startDate, endDate, limit } = req.query;
+    const { productName, useRealData = "true", limit = "100" } = req.query;
     
     if (!productName) {
-      return res.status(400).json({ error: 'Product name is required' });
+      return res.status(400).json({ 
+        error: 'Product name is required',
+        timestamp: new Date().toISOString()
+      });
     }
     
+    // Parse options
+    const options = {
+      useRealData: useRealData.toLowerCase() === 'true',
+      limit: parseInt(limit, 10) || 100
+    };
+    
+    console.log(`Fetching FAERS data for ${productName} (useRealData: ${options.useRealData})`);
+    
     try {
-      // Get the enhanced FAERS service for real FDA API data
-      const enhancedService = await getEnhancedFaersService();
+      // Use the updated FAERS service with FDA API integration
+      const faersData = await faersService.getFaersData(productName, options);
       
-      if (!enhancedService) {
-        return res.status(503).json({ 
-          error: 'FDA FAERS service temporarily unavailable',
-          message: 'Enhanced FDA FAERS data service is currently unavailable. Please try again later.',
-          serviceStatus: 'unavailable'
-        });
-      }
-      
-      console.log(`Fetching real FDA FAERS data for ${productName}`);
-      
-      // Fetch real FDA FAERS data
-      const faersAnalysis = await enhancedService.fetchFaersAnalysis(productName);
-      
-      // If no reports found for the product, return clear error
-      if (!faersAnalysis || !faersAnalysis.reportCount || faersAnalysis.reportCount === 0) {
+      // If we don't have data but should have gotten real data, return an error
+      if (!faersData && options.useRealData) {
         return res.status(404).json({
-          error: 'No FDA FAERS data found',
-          message: `No adverse event reports found for "${productName}" in the FDA FAERS database. Try a different product name or check spelling.`,
-          searchTerm: productName,
-          dataSource: 'FDA FAERS API',
-          serviceStatus: 'available'
+          error: 'No FAERS data found',
+          message: 'No adverse event data found for this product in the FDA FAERS database',
+          timestamp: new Date().toISOString(),
+          requestedProduct: productName
         });
       }
       
-      // Format the data to match expected structure
-      const formattedData = {
-        productName: faersAnalysis.productName,
-        totalReports: faersAnalysis.reportCount || 0,
-        seriousEvents: faersAnalysis.reportsData ? 
-          faersAnalysis.reportsData.filter(r => r.is_serious).map(r => r.reaction) : [],
-        adverseEventCounts: getEventCounts(faersAnalysis.reportsData || []),
-        riskScore: faersAnalysis.riskScore,
-        severityAssessment: getSeverityFromRiskScore(faersAnalysis.riskScore),
-        comparators: faersAnalysis.comparators || [],
-        demographics: getDemographicsFromReports(faersAnalysis.reportsData || []),
-        dataSource: {
-          name: 'FDA FAERS Database',
-          accessMethod: 'FDA OpenAPI v2',
-          retrievalDate: new Date().toISOString(),
-          authentic: true
-        }
-      };
-      
-      console.log(`Retrieved ${formattedData.totalReports} reports for ${productName}`);
-      res.json(formattedData);
-      
+      return res.json({
+        ...faersData,
+        timestamp: new Date().toISOString(),
+        requestedProduct: productName,
+        apiVersion: 'v2.1'
+      });
     } catch (error) {
-      console.error('Error with FDA FAERS API:', error);
+      console.error(`Error fetching FAERS data: ${error.message}`);
       
-      // Return proper error to client instead of using demo data
       return res.status(500).json({
-        error: 'FDA FAERS API Error',
-        message: `Unable to retrieve FDA FAERS data: ${error.message}`,
-        details: 'The FDA FAERS database connection experienced an error. Please try again later.',
-        serviceStatus: 'error'
+        error: 'Failed to fetch FAERS data',
+        message: error.message,
+        timestamp: new Date().toISOString()
       });
     }
   } catch (error) {
