@@ -395,10 +395,10 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
           </Card>
         </div>
         
-        <Alert className="mb-6">
-          <CheckCircle className="h-4 w-4" />
-          <AlertTitle>Real FDA FAERS Data</AlertTitle>
-          <AlertDescription>
+        <Alert className="mb-6 bg-indigo-50 border-indigo-200">
+          <CheckCircle className="h-4 w-4 text-indigo-600" />
+          <AlertTitle className="text-indigo-800 font-bold">Proxima CRO: Real FDA FAERS Data</AlertTitle>
+          <AlertDescription className="text-indigo-700">
             This data is retrieved directly from the FDA Adverse Event Reporting System (FAERS) using the official FDA API.
             {faersData.dataSource && (
               <span className="block mt-1 text-sm">

@@ -258,7 +258,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
         <div className="flex items-center justify-between border-b border-[#E1DFDD] pb-3 mb-3">
           <div>
             <h3 className="text-base font-semibold text-[#323130]">Regulatory Compliance Analysis</h3>
-            <p className="text-xs text-[#616161] mt-1">Analyze your report against multiple standards including EU MDR, ISO 14155, FDA 21 CFR 812</p>
+            <p className="text-xs text-[#616161] mt-1">Proxima CRO regulatory compliance analysis against EU MDR, ISO 14155, FDA 21 CFR 812 standards</p>
           </div>
           <div className="flex items-center gap-2">
             <Dialog>
