@@ -324,31 +324,31 @@ export default function CERV2Page() {
             </TabsTrigger>
             <TabsTrigger 
               value="preview" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <BarChart className="h-4 w-4 mr-2" />
-              Preview
+              <BarChart className="h-3.5 w-3.5 mr-1.5" />
+              <span>Preview</span>
             </TabsTrigger>
             <TabsTrigger 
               value="documents" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <FolderOpen className="h-4 w-4 mr-2" />
-              Documents
+              <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
+              <span>Documents</span>
             </TabsTrigger>
             <TabsTrigger 
               value="data-retrieval" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <Database className="h-4 w-4 mr-2" />
-              Data Retrieval
+              <Database className="h-3.5 w-3.5 mr-1.5" />
+              <span>Data Retrieval</span>
             </TabsTrigger>
             <TabsTrigger 
               value="export" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <Download className="h-4 w-4 mr-2" />
-              Export
+              <Download className="h-3.5 w-3.5 mr-1.5" />
+              <span>Export</span>
             </TabsTrigger>
           </TabsList>
 
