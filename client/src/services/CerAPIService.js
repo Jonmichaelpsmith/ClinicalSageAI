@@ -416,6 +416,44 @@ cerApiService.exportComplianceReport = async (data) => {
 };
 
 /**
+ * Save CER report to the document vault
+ * @param {Object} params - Parameters for saving to vault
+ * @param {string} params.title - The title of the report
+ * @param {Array} params.sections - The sections of the report
+ * @param {Object} [params.deviceInfo] - Information about the device
+ * @param {Object} [params.metadata] - Optional metadata for the report
+ * @returns {Promise<Object>} - The saved document information
+ */
+cerApiService.saveToVault = async ({ title, sections, deviceInfo, metadata }) => {
+  try {
+    console.log('Saving CER to vault:', title);
+    
+    const response = await fetch('/api/cer/save-to-vault', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        sections,
+        deviceInfo: deviceInfo || {},
+        metadata: metadata || {}
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error saving to vault: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in saveToVault:', error);
+    throw error;
+  }
+};
+
+/**
  * Improve a section's content to better comply with a specific regulatory standard
  * @param {Object} params - Parameters for section improvement
  * @param {Object} params.section - The section to improve
