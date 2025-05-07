@@ -430,6 +430,124 @@ router.post('/generate-review', async (req, res) => {
 });
 
 /**
+ * @route POST /api/literature/document-methodology
+ * @desc Generate a structured, reproducible literature search methodology section
+ * that meets EU MDR and MEDDEV 2.7/1 Rev 4 requirements for CERs
+ */
+router.post('/document-methodology', async (req, res) => {
+  try {
+    const {
+      deviceName,
+      deviceType,
+      manufacturer,
+      indication,
+      databases,
+      searchTerms,
+      inclusionCriteria,
+      exclusionCriteria,
+      searchDateRange,
+      languages,
+      reviewerName,
+      timestamp
+    } = req.body;
+    
+    if (!deviceName || !deviceType || !databases || !searchTerms || !inclusionCriteria || !exclusionCriteria || !searchDateRange) {
+      return res.status(400).json({ 
+        error: 'Required parameters missing. Must include deviceName, deviceType, databases, searchTerms, inclusionCriteria, exclusionCriteria, and searchDateRange.' 
+      });
+    }
+    
+    if (!openai) {
+      return res.status(500).json({ error: 'OpenAI client not initialized' });
+    }
+    
+    // Format the search terms for better readability
+    const formattedSearchTerms = searchTerms.map(term => `"${term}"`).join(', ');
+    
+    // Format inclusion criteria
+    const formattedInclusion = Object.entries(inclusionCriteria).map(([key, value]) => `- ${key}: ${value}`).join('\n');
+    
+    // Format exclusion criteria
+    const formattedExclusion = Object.entries(exclusionCriteria).map(([key, value]) => `- ${key}: ${value}`).join('\n');
+    
+    // Create a context-rich prompt for better results
+    const prompt = `
+      As a regulatory medical writer, document a literature search methodology section for a Clinical Evaluation Report (CER) 
+      that meets the requirements of MEDDEV 2.7/1 Rev 4 and EU MDR regulations.
+      
+      This must be a detailed, reproducible methodology that documents the exact search strategy used to identify
+      relevant clinical data for the following medical device:
+      
+      Device Name: ${deviceName}
+      Device Type/Classification: ${deviceType}
+      ${manufacturer ? `Manufacturer: ${manufacturer}` : ''}
+      ${indication ? `Intended Use/Indication: ${indication}` : ''}
+      
+      Databases searched: ${databases.join(', ')}
+      Search Terms: ${formattedSearchTerms}
+      Search Date Range: ${searchDateRange}
+      Languages: ${languages ? languages.join(', ') : 'English'}
+      ${reviewerName ? `Search Conducted by: ${reviewerName}` : ''}
+      
+      Inclusion Criteria:
+      ${formattedInclusion}
+      
+      Exclusion Criteria:
+      ${formattedExclusion}
+      
+      The methodology document should:
+      1. Begin with an introduction explaining the purpose of the literature search
+      2. Detail the exact search strategy including databases, search terms, and boolean operators used
+      3. Explain the screening process with clear inclusion/exclusion criteria
+      4. Include a PRISMA-style flow diagram described in text
+      5. Document how the quality of literature was assessed
+      6. Close with a statement on the completeness and currency of the search
+
+      Format the response as a well-structured, professional document suitable for direct inclusion in a CER.
+      Use Markdown formatting with appropriate headers and subheaders.
+    `;
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        { 
+          role: "system", 
+          content: "You are an expert regulatory medical writer specializing in EU MDR and MEDDEV 2.7/1 Rev 4 compliant Clinical Evaluation Reports."
+        },
+        { 
+          role: "user", 
+          content: prompt
+        }
+      ],
+      max_tokens: 3000,
+      temperature: 0.2,
+    });
+    
+    const methodologyContent = response.choices[0].message.content;
+    
+    res.json({
+      content: methodologyContent,
+      metadata: {
+        device: deviceName,
+        deviceType: deviceType,
+        databases: databases,
+        searchTerms: searchTerms,
+        dateRange: searchDateRange,
+        timestamp: timestamp || new Date().toISOString(),
+        compliant: {
+          euMdr: true,
+          meddev: true,
+          fda: false // FDA has different requirements than documented here
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Literature search methodology documentation error:', error);
+    res.status(500).json({ error: 'An error occurred during literature search documentation generation' });
+  }
+});
+
+/**
  * @route POST /api/literature/analyze-pdf
  * @desc Upload and analyze a PDF paper to extract and summarize content
  */
