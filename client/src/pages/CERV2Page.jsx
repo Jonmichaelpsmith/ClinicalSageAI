@@ -290,64 +290,64 @@ export default function CERV2Page() {
       </div>
       
       {/* MS365-inspired main container */}
-      <div className="container mx-auto p-4 bg-[#FAF9F8] cer-compact-ui">
+      <div className="container mx-auto p-4 bg-[#FAF9F8]">
         {/* MS365-style tabs */}
         <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
           <TabsList className="flex bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full">
             <TabsTrigger 
               value="builder" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <FileText className="h-3 w-3 mr-1" />
+              <FileText className="h-4 w-4 mr-2" />
               Builder
             </TabsTrigger>
             <TabsTrigger 
               value="literature" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <BookOpen className="h-3 w-3 mr-1" />
+              <BookOpen className="h-4 w-4 mr-2" />
               Literature
             </TabsTrigger>
             <TabsTrigger 
               value="compliance" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <CheckSquare className="h-3 w-3 mr-1" />
+              <CheckSquare className="h-4 w-4 mr-2" />
               Compliance
             </TabsTrigger>
             <TabsTrigger 
               value="assistant" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <MessageSquare className="h-3 w-3 mr-1" />
+              <MessageSquare className="h-4 w-4 mr-2" />
               Assistant
             </TabsTrigger>
             <TabsTrigger 
               value="preview" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <BarChart className="h-3 w-3 mr-1" />
+              <BarChart className="h-4 w-4 mr-2" />
               Preview
             </TabsTrigger>
             <TabsTrigger 
               value="documents" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <FolderOpen className="h-3 w-3 mr-1" />
+              <FolderOpen className="h-4 w-4 mr-2" />
               Documents
             </TabsTrigger>
             <TabsTrigger 
               value="data-retrieval" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <Database className="h-3 w-3 mr-1" />
-              Data
+              <Database className="h-4 w-4 mr-2" />
+              Data Retrieval
             </TabsTrigger>
             <TabsTrigger 
               value="export" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
             >
-              <Download className="h-3 w-3 mr-1" />
+              <Download className="h-4 w-4 mr-2" />
               Export
             </TabsTrigger>
           </TabsList>
@@ -490,17 +490,17 @@ export default function CERV2Page() {
       
       {/* Device Info Dialog for Zero-Click Report Generation */}
       <Dialog open={showDeviceInfoDialog} onOpenChange={setShowDeviceInfoDialog}>
-        <DialogContent className="sm:max-w-[500px] bg-white zero-click-dialog dialog-content">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="text-[#323130] font-semibold text-lg">Zero-Click CER Generation</DialogTitle>
-            <DialogDescription className="text-[#323130]">
+            <DialogTitle className="text-[#323130]">Zero-Click CER Generation</DialogTitle>
+            <DialogDescription className="text-[#616161]">
               Enter your medical device information to generate a complete CER with regulatory compliance built-in.
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="device-name" className="text-[#323130] font-medium">
+              <Label htmlFor="device-name" className="text-[#323130]">
                 Device Name <span className="text-[#D83B01]">*</span>
               </Label>
               <Input
@@ -508,30 +508,30 @@ export default function CERV2Page() {
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
                 placeholder="e.g., Stentra LX"
-                className="border-[#E1DFDD] bg-white text-[#323130]"
+                className="border-[#E1DFDD]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="device-type" className="text-[#323130] font-medium">
+              <Label htmlFor="device-type" className="text-[#323130]">
                 Device Classification <span className="text-[#D83B01]">*</span>
               </Label>
               <Select value={deviceType} onValueChange={setDeviceType}>
-                <SelectTrigger id="device-type" className="border-[#E1DFDD] bg-white text-[#323130]">
+                <SelectTrigger id="device-type" className="border-[#E1DFDD]">
                   <SelectValue placeholder="Select device classification" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-[#E1DFDD] shadow-lg max-h-80 overflow-y-auto z-50 text-[#323130]">
-                  <SelectItem value="Class I Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class I Medical Device</SelectItem>
-                  <SelectItem value="Class II Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class II Medical Device</SelectItem>
-                  <SelectItem value="Class III Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class III Medical Device</SelectItem>
-                  <SelectItem value="IVD Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">IVD Device</SelectItem>
-                  <SelectItem value="Software as Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Software as Medical Device</SelectItem>
+                <SelectContent>
+                  <SelectItem value="Class I Medical Device">Class I Medical Device</SelectItem>
+                  <SelectItem value="Class II Medical Device">Class II Medical Device</SelectItem>
+                  <SelectItem value="Class III Medical Device">Class III Medical Device</SelectItem>
+                  <SelectItem value="IVD Device">IVD Device</SelectItem>
+                  <SelectItem value="Software as Medical Device">Software as Medical Device</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="manufacturer" className="text-[#323130] font-medium">
+              <Label htmlFor="manufacturer" className="text-[#323130]">
                 Manufacturer
               </Label>
               <Input
@@ -539,12 +539,12 @@ export default function CERV2Page() {
                 value={manufacturer}
                 onChange={(e) => setManufacturer(e.target.value)}
                 placeholder="e.g., MedTech Innovations Inc."
-                className="border-[#E1DFDD] bg-white text-[#323130]"
+                className="border-[#E1DFDD]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="intended-use" className="text-[#323130] font-medium">
+              <Label htmlFor="intended-use" className="text-[#323130]">
                 Intended Use
               </Label>
               <Input
@@ -552,30 +552,30 @@ export default function CERV2Page() {
                 value={intendedUse}
                 onChange={(e) => setIntendedUse(e.target.value)}
                 placeholder="e.g., Cardiac monitoring and diagnostic use"
-                className="border-[#E1DFDD] bg-white text-[#323130]"
+                className="border-[#E1DFDD]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="template" className="text-[#323130] font-medium">
+              <Label htmlFor="template" className="text-[#323130]">
                 Regulatory Template <span className="text-[#D83B01]">*</span>
               </Label>
               <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                <SelectTrigger id="template" className="border-[#E1DFDD] bg-white text-[#323130]">
+                <SelectTrigger id="template" className="border-[#E1DFDD]">
                   <SelectValue placeholder="Select regulatory template" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-[#E1DFDD] shadow-lg max-h-80 overflow-y-auto z-50 text-[#323130]">
-                  <SelectItem value="eu-mdr" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">EU MDR (Annex XIV)</SelectItem>
-                  <SelectItem value="iso-14155" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">ISO 14155</SelectItem>
-                  <SelectItem value="fda-510k" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">FDA 510(k)</SelectItem>
-                  <SelectItem value="eu-ivdr" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">EU IVDR</SelectItem>
+                <SelectContent>
+                  <SelectItem value="eu-mdr">EU MDR (Annex XIV)</SelectItem>
+                  <SelectItem value="iso-14155">ISO 14155</SelectItem>
+                  <SelectItem value="fda-510k">FDA 510(k)</SelectItem>
+                  <SelectItem value="eu-ivdr">EU IVDR</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             {deviceName && (
-              <div className="rounded-md p-3 bg-[#E5F2FF] border border-[#0F6CBD] text-sm text-[#323130]">
-                <p className="font-medium">FAERS data will be automatically retrieved for "{deviceName}" to include adverse event analysis.</p>
+              <div className="rounded-md p-2 bg-[#E5F2FF] border border-[#0F6CBD] text-xs text-[#323130]">
+                <p>FAERS data will be automatically retrieved for "{deviceName}" to include adverse event analysis.</p>
               </div>
             )}
           </div>
@@ -584,7 +584,7 @@ export default function CERV2Page() {
             <Button 
               variant="outline" 
               onClick={() => setShowDeviceInfoDialog(false)}
-              className="border-[#E1DFDD] bg-white text-[#323130] hover:bg-gray-50"
+              className="border-[#E1DFDD] text-[#616161]"
             >
               Cancel
             </Button>
@@ -594,7 +594,7 @@ export default function CERV2Page() {
                 generateFullCER();
               }}
               disabled={!deviceName.trim() || !deviceType || isGeneratingFullCER}
-              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white font-medium px-6 py-2"
+              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
             >
               {isGeneratingFullCER ? (
                 <>

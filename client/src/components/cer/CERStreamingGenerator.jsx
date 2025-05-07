@@ -729,10 +729,10 @@ const CERStreamingGenerator = ({
               <SelectTrigger>
                 <SelectValue placeholder="Citation style" />
               </SelectTrigger>
-              <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
-                <SelectItem value="numbered" className="text-[#323130]">Numbered ([1], [2], ...)</SelectItem>
-                <SelectItem value="author-date" className="text-[#323130]">Author-Date (Smith, 2023)</SelectItem>
-                <SelectItem value="footnotes" className="text-[#323130]">Footnotes</SelectItem>
+              <SelectContent>
+                <SelectItem value="numbered">Numbered ([1], [2], ...)</SelectItem>
+                <SelectItem value="author-date">Author-Date (Smith, 2023)</SelectItem>
+                <SelectItem value="footnotes">Footnotes</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1024,12 +1024,12 @@ const CERStreamingGenerator = ({
               <SelectTrigger>
                 <SelectValue placeholder="Select template" />
               </SelectTrigger>
-              <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
-                <SelectItem value="standard" className="text-[#323130]">Standard CER Template</SelectItem>
-                <SelectItem value="mdr" className="text-[#323130]">MDR 2017/745 Compliant</SelectItem>
-                <SelectItem value="meddev" className="text-[#323130]">MEDDEV 2.7/1 Rev 4</SelectItem>
-                <SelectItem value="fda" className="text-[#323130]">FDA Submission Format</SelectItem>
-                <SelectItem value="pmda" className="text-[#323130]">PMDA (Japan) Format</SelectItem>
+              <SelectContent>
+                <SelectItem value="standard">Standard CER Template</SelectItem>
+                <SelectItem value="mdr">MDR 2017/745 Compliant</SelectItem>
+                <SelectItem value="meddev">MEDDEV 2.7/1 Rev 4</SelectItem>
+                <SelectItem value="fda">FDA Submission Format</SelectItem>
+                <SelectItem value="pmda">PMDA (Japan) Format</SelectItem>
               </SelectContent>
             </Select>
           </div>

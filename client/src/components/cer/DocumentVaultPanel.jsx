@@ -10,8 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription
+  DialogFooter
 } from '@/components/ui/dialog';
 import {
   Table,
@@ -435,42 +434,37 @@ export default function DocumentVaultPanel({ jobId }) {
       
       {/* Upload Dialog */}
       <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-        <DialogContent className="bg-white dialog-content">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-[#323130] font-semibold text-lg">Upload Document</DialogTitle>
-            <DialogDescription className="text-[#323130]">
-              Add documents to your regulatory vault
-            </DialogDescription>
+            <DialogTitle>Upload Document</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <label htmlFor="file" className="text-[#323130] font-medium">File</label>
-              <Input id="file" type="file" onChange={handleFileChange} className="bg-white text-[#323130] border-[#E1DFDD]" />
+              <label htmlFor="file">File</label>
+              <Input id="file" type="file" onChange={handleFileChange} />
             </div>
             <div className="grid gap-2">
-              <label htmlFor="name" className="text-[#323130] font-medium">Document Name</label>
+              <label htmlFor="name">Document Name</label>
               <Input
                 id="name"
                 value={uploadMetadata.name}
                 onChange={(e) => setUploadMetadata({ ...uploadMetadata, name: e.target.value })}
-                className="bg-white text-[#323130] border-[#E1DFDD]"
               />
             </div>
             <div className="grid gap-2">
-              <label htmlFor="description" className="text-[#323130] font-medium">Description</label>
+              <label htmlFor="description">Description</label>
               <Input
                 id="description"
                 value={uploadMetadata.description}
                 onChange={(e) => setUploadMetadata({ ...uploadMetadata, description: e.target.value })}
-                className="bg-white text-[#323130] border-[#E1DFDD]"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <label htmlFor="type" className="text-[#323130] font-medium">Type</label>
+                <label htmlFor="type">Type</label>
                 <select
                   id="type"
-                  className="flex h-9 w-full rounded-md border border-[#E1DFDD] bg-white px-3 py-1 text-sm text-[#323130] shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   value={uploadMetadata.type}
                   onChange={(e) => setUploadMetadata({ ...uploadMetadata, type: e.target.value })}
                 >
@@ -482,10 +476,10 @@ export default function DocumentVaultPanel({ jobId }) {
                 </select>
               </div>
               <div className="grid gap-2">
-                <label htmlFor="status" className="text-[#323130] font-medium">Status</label>
+                <label htmlFor="status">Status</label>
                 <select
                   id="status"
-                  className="flex h-9 w-full rounded-md border border-[#E1DFDD] bg-white px-3 py-1 text-sm text-[#323130] shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   value={uploadMetadata.status}
                   onChange={(e) => setUploadMetadata({ ...uploadMetadata, status: e.target.value })}
                 >
@@ -496,20 +490,17 @@ export default function DocumentVaultPanel({ jobId }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowUploadDialog(false)} className="border-[#E1DFDD] bg-white text-[#323130] hover:bg-gray-50">Cancel</Button>
-            <Button onClick={handleUpload} className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white font-medium">Upload</Button>
+            <Button variant="outline" onClick={() => setShowUploadDialog(false)}>Cancel</Button>
+            <Button onClick={handleUpload}>Upload</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
       {/* Share Dialog */}
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="bg-white dialog-content">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-[#323130] font-semibold text-lg">Share Document</DialogTitle>
-            <DialogDescription className="text-[#323130]">
-              Share selected document with team members
-            </DialogDescription>
+            <DialogTitle>Share Document</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             {selectedDocument && (
@@ -522,19 +513,14 @@ export default function DocumentVaultPanel({ jobId }) {
               </div>
             )}
             <div className="grid gap-2">
-              <label htmlFor="email" className="text-[#323130] font-medium">Share with Email</label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="Enter email address" 
-                className="bg-white text-[#323130] border-[#E1DFDD]"
-              />
+              <label htmlFor="email">Share with Email</label>
+              <Input id="email" type="email" placeholder="Enter email address" />
             </div>
             <div className="grid gap-2">
-              <label htmlFor="permission" className="text-[#323130] font-medium">Permission</label>
+              <label htmlFor="permission">Permission</label>
               <select
                 id="permission"
-                className="flex h-9 w-full rounded-md border border-[#E1DFDD] bg-white px-3 py-1 text-sm text-[#323130] shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="view">View only</option>
                 <option value="comment">Comment</option>
@@ -543,8 +529,8 @@ export default function DocumentVaultPanel({ jobId }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowShareDialog(false)} className="border-[#E1DFDD] bg-white text-[#323130] hover:bg-gray-50">Cancel</Button>
-            <Button className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white font-medium">Share</Button>
+            <Button variant="outline" onClick={() => setShowShareDialog(false)}>Cancel</Button>
+            <Button>Share</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
