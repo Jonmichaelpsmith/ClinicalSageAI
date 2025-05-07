@@ -4,6 +4,18 @@ import { Progress } from '@/components/ui/progress';
 import { X, AlertCircle, Info, CheckCircle, Clock, Database, BookOpen } from 'lucide-react';
 
 /**
+ * Render a text-based progress bar using block characters
+ * @param {number} percent - Progress percentage (0-100)
+ * @returns {string} - A text progress bar
+ */
+const renderProgressBar = (percent) => {
+  const blocks = 10;
+  const filled = Math.round((percent / 100) * blocks);
+  
+  return '▉'.repeat(filled) + '▁'.repeat(Math.max(0, blocks - filled));
+};
+
+/**
  * NotificationBanner Component
  * 
  * A Microsoft 365-style notification banner for displaying non-intrusive messages
@@ -124,44 +136,23 @@ export default function NotificationBanner({
             {/* Progress indicators */}
             {progress && (
               <div className="mt-2 space-y-2 w-full max-w-md">
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center">
-                      <Database className="w-3 h-3 mr-1 text-[#0F6CBD]" />
-                      <span className={styles.text}>FAERS</span>
-                    </div>
-                    <span className={styles.text}>{progress.faers}%</span>
-                  </div>
-                  <Progress value={progress.faers} className="h-1.5" />
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center">
-                      <BookOpen className="w-3 h-3 mr-1 text-[#0F6CBD]" />
-                      <span className={styles.text}>Literature</span>
-                    </div>
-                    <span className={styles.text}>{progress.literature}%</span>
-                  </div>
-                  <Progress value={progress.literature} className="h-1.5" />
+                <div className="text-xs font-mono mt-2">
+                  FAERS: {renderProgressBar(progress.faers)} {progress.faers}%  |  Literature: {renderProgressBar(progress.literature)} {progress.literature}%
                 </div>
               </div>
             )}
             
-            {/* Evidence snapshot */}
+            {/* Evidence Snapshot */}
             {evidenceSnapshot && (
-              <div className="mt-2 flex space-x-4 text-xs">
-                <div className="flex items-center">
-                  <Database className="w-3.5 h-3.5 mr-1 text-[#0F6CBD]" />
-                  <span className={`${styles.text} font-medium`}>
-                    📊 {evidenceSnapshot.faersCount} FAERS reports retrieved
-                  </span>
+              <div className="mt-2 space-y-1 text-xs font-medium">
+                <div className={`${styles.text}`}>
+                  📊 {evidenceSnapshot.faersCount} FAERS reports retrieved
                 </div>
-                <div className="flex items-center">
-                  <BookOpen className="w-3.5 h-3.5 mr-1 text-[#0F6CBD]" />
-                  <span className={`${styles.text} font-medium`}>
-                    📚 {evidenceSnapshot.literatureCount} studies fetched
-                  </span>
+                <div className={`${styles.text}`}>
+                  📚 {evidenceSnapshot.literatureCount} studies fetched
+                </div>
+                <div className="text-gray-600 text-xs mt-1">
+                  This reinforces the payoff—users see exactly how much data just landed.
                 </div>
               </div>
             )}
