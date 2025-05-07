@@ -11,6 +11,7 @@ import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
 import GSPRMappingPanel from '@/components/cer/GSPRMappingPanel';
+import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow';
 import CerOnboardingGuide from '@/components/cer/CerOnboardingGuide';
 import WizardStepper from '@/components/cer/WizardStepper';
 import NotificationBanner from '@/components/cer/NotificationBanner';

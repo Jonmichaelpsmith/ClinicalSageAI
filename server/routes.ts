@@ -4,6 +4,7 @@ import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';  // Using our simplified & fixed CER router
 import faersRouter from './routes/faers-api.js';  // Add direct FAERS API router
 import literatureRouter from './routes/literature.js';
+import literatureReviewRouter from './routes/literature-review.js';  // Add literature review workflow API
 import documentRouter from './routes/document-routes';
 import emergencyFixRouter from './routes/emergency-fix.js';
 import sotaRouter from './routes/sota-api.mjs';
@@ -95,6 +96,9 @@ export default function registerRoutes(app: Express): void {
 
   // Register Literature API routes
   app.use('/api/literature', literatureRouter);
+  
+  // Register Literature Review workflow API routes
+  app.use('/api/literature', literatureReviewRouter);
   
   // Register Document API routes
   app.use('/api/documents', documentRouter);
