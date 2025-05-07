@@ -321,119 +321,29 @@ div.dropdown-menu-content {
   margin-top: 0.25rem !important;
 }
 
-/* Critical Fix: Override SelectContent visibility issues */
-[data-radix-select-content],
-[data-radix-popper-content],
-.radix-select-content,
+/* Simple Fix for Select Dropdowns */
 .SelectContent {
   background-color: white !important;
   color: #333333 !important;
   border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
-  z-index: 9999 !important;
 }
 
-[data-radix-select-viewport],
-.radix-select-viewport,
-.SelectViewport {
-  background-color: white !important;
-  padding: 5px !important;
-}
-
-[data-radix-select-item],
-.radix-select-item,
 .SelectItem {
   color: #333333 !important;
   background-color: white !important;
-  font-size: 14px !important;
-  padding: 8px 10px !important;
-  margin: 2px 0 !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
 }
 
-[data-radix-select-item]:hover,
-.radix-select-item:hover,
 .SelectItem:hover {
-  background-color: #f0f0f0 !important;
-}
-
-[data-radix-select-item][data-highlighted],
-[data-radix-select-item][data-state="checked"],
-.radix-select-item[data-highlighted],
-.SelectItem[data-highlighted],
-.SelectItem[data-state="checked"] {
-  background-color: #e0f2fe !important;
-  color: #1e40af !important;
-  font-weight: 500 !important;
-}
-
-/* Additional Dialog and Popover style fixes */
-[data-radix-dialog-content],
-[data-radix-popover-content],
-.DialogContent,
-.PopoverContent {
-  background-color: white !important;
-  color: #333333 !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
-/* Override zero-click-dialog */
-.zero-click-dialog {
-  background-color: white !important;
-  color: #333333 !important;
-}
-
-.zero-click-dialog *:not([data-radix-select-content], 
-                         [data-radix-select-viewport], 
-                         [data-radix-select-item],
-                         .SelectContent,
-                         .SelectViewport,
-                         .SelectItem) {
-  color: #333333 !important;
-}
-
-/* Direct style override for dialog selects */
-.zero-click-dialog .SelectContent,
-.dialog-content .SelectContent,
-.dialog-content [data-radix-select-content] {
-  background-color: white !important;
-  color: #333333 !important;
-  border: 1px solid #d1d5db !important;
-  z-index: 99999 !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  overflow: hidden !important;
-  margin-top: 8px !important;
-  padding: 6px !important;
-}
-
-.zero-click-dialog .SelectItem,
-.dialog-content .SelectItem,
-.dialog-content [data-radix-select-item] {
-  background-color: white !important;
-  color: #333333 !important;
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-  padding: 8px 12px !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
-  outline: none !important;
-}
-
-.zero-click-dialog .SelectItem:hover,
-.dialog-content .SelectItem:hover,
-.dialog-content [data-radix-select-item]:hover {
   background-color: #f3f4f6 !important;
 }
 
-.zero-click-dialog .SelectItem[data-highlighted="true"],
-.dialog-content .SelectItem[data-highlighted="true"],
-.dialog-content [data-radix-select-item][data-highlighted="true"] {
-  background-color: #e0f2fe !important;
-  color: #1e40af !important;
+/* Zero-click dialog fixes */
+.zero-click-dialog {
+  background-color: white !important;
+}
+
+.zero-click-dialog * {
+  color: #333333 !important;
 }
 
 /* Custom select trigger styling */
