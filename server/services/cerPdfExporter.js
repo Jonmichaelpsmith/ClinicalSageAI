@@ -39,9 +39,10 @@ const pipeline = promisify(stream.pipeline);
 async function generateCerPdf(cerData) {
   return new Promise((resolve, reject) => {
     try {
-      // Create a new PDF document
+      console.log("Generating simplified, reliable demo PDF for CER...");
+      // Create a new PDF document with simplified settings
       const doc = new PDFDocument({
-        autoFirstPage: false,
+        autoFirstPage: true, 
         size: 'A4',
         margin: 50,
         info: {
@@ -548,6 +549,90 @@ async function generateCerPdf(cerData) {
   });
 }
 
+// Simplified PDF generation to create a reliable demo PDF
+const generateSimplePdf = (cerData) => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log("Creating simplified demo PDF for presentation");
+      const doc = new PDFDocument();
+
+      // Collect PDF data
+      const chunks = [];
+      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      // Add title page
+      doc.fontSize(24)
+         .font('Helvetica-Bold')
+         .text('CLINICAL EVALUATION REPORT', {
+            align: 'center',
+            underline: true
+         });
+        
+      doc.moveDown();
+      doc.fontSize(18)
+         .text(cerData.title || 'Medical Device', {
+            align: 'center'
+         });
+
+      doc.moveDown(2);
+      doc.fontSize(12)
+         .font('Helvetica')
+         .text(`Generated: ${new Date().toLocaleString()}`, {
+            align: 'center'
+         });
+
+      // Add sections
+      if (cerData.sections && cerData.sections.length > 0) {
+        // Table of contents
+        doc.addPage();
+        doc.fontSize(16)
+           .font('Helvetica-Bold')
+           .text('TABLE OF CONTENTS');
+        
+        doc.moveDown();
+        
+        cerData.sections.forEach((section, index) => {
+          doc.fontSize(12)
+             .font('Helvetica')
+             .text(`${index + 1}. ${section.title || section.type}`, {
+                continued: true
+             })
+             .text(`  ${index + 3}`, {
+                align: 'right'
+             });
+        });
+        
+        // Section content
+        cerData.sections.forEach((section, index) => {
+          doc.addPage();
+          doc.fontSize(16)
+             .font('Helvetica-Bold')
+             .text(`${index + 1}. ${section.title || section.type}`);
+          
+          doc.moveDown();
+          doc.fontSize(12)
+             .font('Helvetica')
+             .text(section.content || 'No content provided for this section.');
+        });
+      } else {
+        doc.moveDown(4);
+        doc.fontSize(14)
+           .text('This report contains no sections. Please add sections before generating the final report.', {
+              align: 'center'
+           });
+      }
+
+      // End the document
+      doc.end();
+    } catch (error) {
+      console.error('Error generating simplified PDF:', error);
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
-  generateCerPdf
+  generateCerPdf: generateSimplePdf
 };
