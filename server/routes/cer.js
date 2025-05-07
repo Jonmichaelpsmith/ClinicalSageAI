@@ -10,9 +10,12 @@ import {
 import OpenAI from 'openai';
 import { fetchFaersData, analyzeFaersDataForCER } from '../services/fdaService.js';
 import * as faersService from '../services/faersService.js';
+import { fetchFaersAnalysis } from '../services/enhancedFaersService.js';
 
-// We'll dynamically import the enhanced FAERS service to avoid initialization errors
-// since it requires database connection
+// Initialize OpenAI for analysis capabilities
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 // Import direct handlers for advanced functionality - using dynamic imports for ESM compatibility
 let complianceScoreHandler, assistantRouter, improveComplianceHandler, generateFullCERHandler;
@@ -200,10 +203,7 @@ For this ${getSectionName(sectionType)} section:
   }
 }
 
-// We'll initialize these handlers dynamically
-
-// Initialize OpenAI client
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// We'll initialize these handlers dynamically as needed
 
 // Import PDF generation libraries
 // Note: docx import temporarily commented out to avoid dependency issues
@@ -216,6 +216,16 @@ import { dirname } from 'path';
 // Get the current directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Set up dynamic imports for services
+const getEnhancedFaersService = async () => {
+  try {
+    return await import('../services/enhancedFaersService.js');
+  } catch (error) {
+    console.error('Error importing enhanced FAERS service:', error);
+    return null;
+  }
+};
 
 const router = express.Router();
 
@@ -482,12 +492,17 @@ router.get('/faers/data', async (req, res) => {
     }
     
     try {
-      // Import and use the enhanced FAERS service for real FDA API data
-      const { fetchFaersAnalysis } = await import('../services/enhancedFaersService.js');
+      // Get the enhanced FAERS service for real FDA API data
+      const enhancedService = await getEnhancedFaersService();
+      
+      if (!enhancedService) {
+        throw new Error('Enhanced FAERS service not available');
+      }
+      
       console.log(`Fetching real FDA FAERS data for ${productName}`);
       
       // Fetch real FDA FAERS data
-      const faersAnalysis = await fetchFaersAnalysis(productName);
+      const faersAnalysis = await enhancedService.fetchFaersAnalysis(productName);
       
       // Format the data to match expected structure
       const formattedData = {
@@ -606,14 +621,18 @@ router.post('/fetch-faers', async (req, res) => {
     }
     
     try {
-      // Import the enhanced FAERS service dynamically
-      const { fetchFaersAnalysis } = await import('../services/enhancedFaersService.js');
+      // Get the enhanced FAERS service for real FDA API data
+      const enhancedService = await getEnhancedFaersService();
+      
+      if (!enhancedService) {
+        throw new Error('Enhanced FAERS service not available');
+      }
       
       // Step 1: Fetch FAERS data with comparator analysis using our enhanced service
       console.log(`Fetching FAERS data for product: ${productName}, CER ID: ${cerId}, with comparators: ${includeComparators}, useATC: ${useATC}, useMoA: ${useMoA}`);
       
       // Use the enhanced FAERS analysis service that handles ATC codes and mechanism of action
-      const faersData = await fetchFaersAnalysis(productName, cerId);
+      const faersData = await enhancedService.fetchFaersAnalysis(productName, cerId);
       
       // Step 2: Process the data for the response
       const responseData = {
