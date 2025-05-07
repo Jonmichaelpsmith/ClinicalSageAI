@@ -197,13 +197,14 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     <SelectTrigger id="sectionType" className="h-9 border-[#E1DFDD] bg-white text-[#323130]">
                       <SelectValue placeholder="Select section type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-[#E1DFDD] shadow-lg max-h-80 overflow-y-auto z-50 text-[#323130]">
                       <SelectGroup>
-                        <SelectLabel>CER Sections</SelectLabel>
+                        <SelectLabel className="text-xs font-semibold text-[#616161]">CER Sections</SelectLabel>
                         {sectionTypes.map(section => (
                           <SelectItem 
                             key={section.id} 
                             value={section.id}
+                            className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer"
                           >
                             {section.label}
                           </SelectItem>

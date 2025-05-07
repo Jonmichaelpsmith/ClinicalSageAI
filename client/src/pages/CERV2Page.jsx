@@ -520,12 +520,12 @@ export default function CERV2Page() {
                 <SelectTrigger id="device-type" className="border-[#E1DFDD] bg-white text-[#323130]">
                   <SelectValue placeholder="Select device classification" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Class I Medical Device">Class I Medical Device</SelectItem>
-                  <SelectItem value="Class II Medical Device">Class II Medical Device</SelectItem>
-                  <SelectItem value="Class III Medical Device">Class III Medical Device</SelectItem>
-                  <SelectItem value="IVD Device">IVD Device</SelectItem>
-                  <SelectItem value="Software as Medical Device">Software as Medical Device</SelectItem>
+                <SelectContent className="bg-white border border-[#E1DFDD] shadow-lg max-h-80 overflow-y-auto z-50 text-[#323130]">
+                  <SelectItem value="Class I Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class I Medical Device</SelectItem>
+                  <SelectItem value="Class II Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class II Medical Device</SelectItem>
+                  <SelectItem value="Class III Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class III Medical Device</SelectItem>
+                  <SelectItem value="IVD Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">IVD Device</SelectItem>
+                  <SelectItem value="Software as Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Software as Medical Device</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -564,11 +564,11 @@ export default function CERV2Page() {
                 <SelectTrigger id="template" className="border-[#E1DFDD] bg-white text-[#323130]">
                   <SelectValue placeholder="Select regulatory template" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="eu-mdr">EU MDR (Annex XIV)</SelectItem>
-                  <SelectItem value="iso-14155">ISO 14155</SelectItem>
-                  <SelectItem value="fda-510k">FDA 510(k)</SelectItem>
-                  <SelectItem value="eu-ivdr">EU IVDR</SelectItem>
+                <SelectContent className="bg-white border border-[#E1DFDD] shadow-lg max-h-80 overflow-y-auto z-50 text-[#323130]">
+                  <SelectItem value="eu-mdr" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">EU MDR (Annex XIV)</SelectItem>
+                  <SelectItem value="iso-14155" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">ISO 14155</SelectItem>
+                  <SelectItem value="fda-510k" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">FDA 510(k)</SelectItem>
+                  <SelectItem value="eu-ivdr" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">EU IVDR</SelectItem>
                 </SelectContent>
               </Select>
             </div>
