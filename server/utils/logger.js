@@ -1,42 +1,46 @@
-import pino from 'pino';
-import * as Sentry from '@sentry/node';
+/**
+ * Simple logger utility for the application
+ */
 
-// Initialize Sentry with the DSN from environment variable
-Sentry.init({ 
-  dsn: process.env.SENTRY_DSN, 
-  tracesSampleRate: 0.1  // Adjust sample rate as needed
-});
-
-// Create a logger instance
-export const logger = pino({ 
-  level: 'info',
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true
+// Create a simple logger that outputs to console
+const logger = {
+  info: (message, context = {}) => {
+    console.log(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      message,
+      context
+    }, null, 2));
+  },
+  
+  error: (message, context = {}) => {
+    console.error(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      message,
+      context
+    }, null, 2));
+  },
+  
+  warn: (message, context = {}) => {
+    console.warn(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'warn',
+      message,
+      context
+    }, null, 2));
+  },
+  
+  debug: (message, context = {}) => {
+    if (process.env.DEBUG) {
+      console.debug(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'debug',
+        message,
+        context
+      }, null, 2));
     }
   }
-});
+};
 
-// Middleware for capturing exceptions in Sentry
-export function sentryMiddleware(err, req, res, next) {
-  // Capture the error in Sentry
-  Sentry.captureException(err);
-  
-  // Log the error locally
-  logger.error({
-    err: {
-      message: err.message,
-      stack: err.stack,
-      name: err.name
-    },
-    request: {
-      url: req.url,
-      method: req.method,
-      ip: req.ip
-    }
-  }, 'Error captured by Sentry middleware');
-  
-  // Continue to the next error handler
-  next(err);
-}
+export default logger;
