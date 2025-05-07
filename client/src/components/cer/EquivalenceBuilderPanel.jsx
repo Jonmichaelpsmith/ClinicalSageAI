@@ -347,7 +347,7 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
       // Get the active device
       const activeDevice = equivalentDevices.find(d => d.id === activeDeviceId);
       
-      const response = await fetch('/api/cer/generate-equivalence-rationale', {
+      const response = await fetch('/api/cer/equivalence/feature-rationale', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -429,7 +429,7 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
     }
     
     try {
-      const response = await fetch('/api/cer/generate-overall-equivalence', {
+      const response = await fetch('/api/cer/equivalence/overall-assessment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

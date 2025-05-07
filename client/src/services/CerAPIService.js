@@ -539,12 +539,15 @@ cerApiService.saveEquivalenceData = async ({ cerId, equivalenceData }) => {
   try {
     console.log(`Saving equivalence data to CER ${cerId}`);
     
-    const response = await fetch(`/api/cer/${cerId}/equivalence`, {
+    const response = await fetch('/api/cer/equivalence/save', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(equivalenceData),
+      body: JSON.stringify({
+        cerId,
+        equivalenceData,
+      }),
     });
     
     if (!response.ok) {
@@ -566,7 +569,7 @@ cerApiService.saveEquivalenceData = async ({ cerId, equivalenceData }) => {
  */
 cerApiService.getEquivalenceData = async (cerId) => {
   try {
-    const response = await fetch(`/api/cer/${cerId}/equivalence`);
+    const response = await fetch(`/api/cer/equivalence/${cerId}`);
     
     if (!response.ok) {
       throw new Error(`Error fetching equivalence data: ${response.statusText}`);
