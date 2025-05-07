@@ -900,7 +900,70 @@ cerApiService.prepareSubmission = async ({ documentId, version, title, sections,
 };
 
 /**
- * Generate a full CER using the Zero-Click approach
+ * Generate a full CER directly using the advanced Zero-Click API endpoint
+ * 
+ * This method connects to the new zero-click CER generation endpoint that fetches
+ * authentic data from FDA FAERS and creates a complete CER with minimal information.
+ *
+ * @param {Object} params - Parameters for CER generation
+ * @param {string} params.deviceName - Name of the medical device
+ * @param {string} params.manufacturer - Name of the device manufacturer
+ * @param {Array} [params.modelNumbers] - Optional array of model numbers
+ * @param {string} [params.description] - Optional device description
+ * @param {string} [params.indication] - Optional indication for use
+ * @param {string} [params.regulatoryClass] - Optional regulatory classification
+ * @param {boolean} [params.includeComparators=true] - Whether to include similar device comparisons
+ * @returns {Promise<Object>} - The complete generated CER report
+ */
+cerApiService.generateZeroClickCER = async ({ 
+  deviceName, 
+  manufacturer, 
+  modelNumbers = [],
+  description = '',
+  indication = '',
+  regulatoryClass = '',
+  includeComparators = true
+}) => {
+  try {
+    console.log(`Generating Zero-Click CER for device: ${deviceName}`);
+    
+    // Call the new direct Zero-Click API endpoint
+    const response = await fetch('/api/cer/generate-report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceName,
+        manufacturer,
+        modelNumbers,
+        description,
+        indication,
+        regulatoryClass,
+        includeComparators
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating Zero-Click CER: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to generate CER report');
+    }
+    
+    console.log(`Zero-Click CER generated successfully for ${deviceName}`);
+    return data;
+  } catch (error) {
+    console.error('Error in generateZeroClickCER:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a full CER using the older Zero-Click approach
  * @param {Object} params - Parameters for CER generation
  * @param {Object} params.deviceInfo - Information about the device
  * @param {string} [params.templateId] - Optional template ID to use
@@ -911,7 +974,22 @@ cerApiService.generateFullCER = async ({ deviceInfo, templateId = 'eu-mdr', fdaD
   try {
     console.log('EMERGENCY FIX: Starting Zero-Click CER generation for device:', deviceInfo.name);
     
-    // Initialize CER generation
+    // Check if we can use the new direct approach
+    if (deviceInfo.name) {
+      try {
+        return await cerApiService.generateZeroClickCER({
+          deviceName: deviceInfo.name,
+          manufacturer: deviceInfo.manufacturer,
+          indication: deviceInfo.intendedUse,
+          regulatoryClass: deviceInfo.type
+        });
+      } catch (err) {
+        console.log('New Zero-Click endpoint failed, falling back to old method:', err.message);
+        // Continue with the old method below
+      }
+    }
+    
+    // Initialize CER generation (legacy approach)
     const result = await cerApiService.initializeZeroClickCER({
       deviceInfo,
       templateId,
