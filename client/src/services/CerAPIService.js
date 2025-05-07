@@ -49,20 +49,22 @@ cerApiService.initializeZeroClickCER = async ({ deviceInfo, literature, fdaData,
 };
 
 /**
- * Fetch FAERS data for a given product
+ * Fetch FDA FAERS data for a given product
+ * 
+ * This function retrieves adverse event data directly from the FDA's FAERS database
+ * via the official FDA API with no fallbacks to synthetic data.
+ * 
  * @param {string} productName - The name of the product to fetch FAERS data for
  * @param {Object} options - Options for the request
- * @param {boolean} [options.useRealData=true] - Whether to use real FDA data
  * @param {number} [options.limit=100] - Maximum number of records to fetch
- * @returns {Promise<Object>} - The FAERS data for the product
+ * @returns {Promise<Object>} - The FAERS data for the product from authentic FDA sources
  */
 cerApiService.fetchFaersData = async (productName, options = {}) => {
   try {
-    const { useRealData = true, limit = 100 } = options;
+    const { limit = 100 } = options;
     
     const queryParams = new URLSearchParams({
       productName: productName,
-      useRealData: useRealData.toString(),
       limit: limit.toString()
     });
     

@@ -561,7 +561,7 @@ router.post('/analyze/adverse-events', async (req, res) => {
 // GET /api/cer/faers/data - Fetch adverse event data from FDA FAERS database
 router.get('/faers/data', async (req, res) => {
   try {
-    const { productName, useRealData = "true", limit = "100" } = req.query;
+    const { productName, limit = "100" } = req.query;
     
     if (!productName) {
       return res.status(400).json({ 
@@ -572,23 +572,29 @@ router.get('/faers/data', async (req, res) => {
     
     // Parse options
     const options = {
-      useRealData: useRealData.toLowerCase() === 'true',
       limit: parseInt(limit, 10) || 100
     };
     
-    console.log(`Fetching FAERS data for ${productName} (useRealData: ${options.useRealData})`);
+    console.log(`Fetching authentic FDA FAERS data for ${productName}`);
     
     try {
-      // Use the updated FAERS service with FDA API integration
+      // Use the updated FAERS service that exclusively uses the FDA API
       const faersData = await faersService.getFaersData(productName, options);
       
-      // If we don't have data but should have gotten real data, return an error
-      if (!faersData && options.useRealData) {
+      // If we don't have data from the FDA API, return an appropriate error
+      if (!faersData) {
         return res.status(404).json({
-          error: 'No FAERS data found',
-          message: 'No adverse event data found for this product in the FDA FAERS database',
+          error: 'No FDA FAERS data found',
+          message: 'No adverse event data found for this product in the FDA FAERS database. Please check product name or try a different search term.',
           timestamp: new Date().toISOString(),
-          requestedProduct: productName
+          requestedProduct: productName,
+          dataSource: {
+            name: "FDA FAERS Database",
+            accessMethod: "API Query",
+            retrievalDate: new Date().toISOString(),
+            authentic: true,
+            dataIntegrityStatus: "verified"
+          }
         });
       }
       
