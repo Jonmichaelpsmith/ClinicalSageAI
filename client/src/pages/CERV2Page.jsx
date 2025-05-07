@@ -10,12 +10,15 @@ import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import CerOnboardingGuide from '@/components/cer/CerOnboardingGuide';
+import WizardStepper from '@/components/cer/WizardStepper';
+import NotificationBanner from '@/components/cer/NotificationBanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked } from 'lucide-react';
+import { literatureAPIService } from '@/services/LiteratureAPIService';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -33,6 +36,7 @@ export default function CERV2Page() {
   const [equivalenceData, setEquivalenceData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
+  const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
   const [activeTab, setActiveTab] = useState('builder');
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
@@ -41,6 +45,10 @@ export default function CERV2Page() {
   const [isGeneratingFullCER, setIsGeneratingFullCER] = useState(false);
   const [showDeviceInfoDialog, setShowDeviceInfoDialog] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState('eu-mdr');
+  const [showFetchingBanner, setShowFetchingBanner] = useState(false);
+  const [showEvidenceReminder, setShowEvidenceReminder] = useState(false);
+  const [hasAutoFetched, setHasAutoFetched] = useState(false);
+  const [literatureResult, setLiteratureResult] = useState(null);
   const { toast } = useToast();
 
   // Load FAERS data when device name changes
@@ -76,17 +84,100 @@ export default function CERV2Page() {
     }
   };
   
-  // Auto-load FAERS data when device name changes
+  // Function to fetch literature data
+  const fetchLiteratureData = async (query = deviceName) => {
+    if (!query || query.trim() === '') return;
+    
+    try {
+      setIsFetchingLiterature(true);
+      
+      const result = await literatureAPIService.searchPubMed({
+        query: query,
+        manufacturer: manufacturer || '',
+        limit: 20
+      });
+      
+      if (result && result.papers) {
+        setLiteratureResult(result);
+        toast({
+          title: 'Literature Retrieved',
+          description: `Found ${result.papers.length} relevant publications.`,
+          variant: 'success'
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Failed to load literature data:', error);
+      toast({
+        title: 'Literature Data Error',
+        description: error.message || 'Could not retrieve literature data',
+        variant: 'destructive'
+      });
+      return null;
+    } finally {
+      setIsFetchingLiterature(false);
+    }
+  };
+  
+  // Function to run both FAERS and literature fetching in parallel
+  const runEnhancedDataRetrieval = async () => {
+    if (!deviceName || deviceName.trim() === '') {
+      toast({
+        title: 'Missing Device Name',
+        description: 'Please enter a device name first.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    setShowFetchingBanner(true);
+    setHasAutoFetched(true);
+    
+    // Run both in parallel
+    await Promise.all([
+      loadFaersData(deviceName),
+      fetchLiteratureData(deviceName)
+    ]);
+    
+    setShowFetchingBanner(false);
+    
+    toast({
+      title: 'Evidence Collection Complete',
+      description: 'All available evidence has been retrieved.',
+      variant: 'success'
+    });
+  };
+  
+  // Auto-trigger data collection when both device name and manufacturer are filled
   useEffect(() => {
-    if (deviceName && deviceName.trim() !== '') {
-      // Debounce the FAERS data loading
+    if (deviceName && deviceName.trim() !== '' && 
+        manufacturer && manufacturer.trim() !== '' && 
+        !hasAutoFetched) {
+      // Auto-trigger enhanced data retrieval
+      setShowFetchingBanner(true);
+      
+      // Give a slight delay so the user sees the banner first
       const timer = setTimeout(() => {
-        loadFaersData(deviceName);
-      }, 1500);
+        runEnhancedDataRetrieval();
+      }, 1000);
       
       return () => clearTimeout(timer);
     }
-  }, [deviceName]);
+  }, [deviceName, manufacturer, hasAutoFetched]);
+  
+  // Show reminder if user tries to use builder without retrieving data
+  useEffect(() => {
+    if (activeTab === 'builder' && 
+        deviceName && deviceName.trim() !== '' && 
+        !faers.length && 
+        !literatureResult &&
+        !hasAutoFetched) {
+      setShowEvidenceReminder(true);
+    } else {
+      setShowEvidenceReminder(false);
+    }
+  }, [activeTab, deviceName, faers, literatureResult, hasAutoFetched]);
 
   // Removed duplicate runComplianceCheck function
 
@@ -328,6 +419,31 @@ export default function CERV2Page() {
       
       {/* MS365-inspired main container */}
       <div className="container mx-auto p-4 bg-[#FAF9F8]">
+        {/* Notification Banners */}
+        {showFetchingBanner && (
+          <NotificationBanner
+            message="Fetching FDA FAERS + literature data—this usually takes ~20–30 seconds."
+            type="loading"
+            visible={showFetchingBanner}
+          />
+        )}
+        
+        {showEvidenceReminder && (
+          <NotificationBanner
+            message="🔍 We recommend running Enhanced Retrieval first to pre-load safety & literature data."
+            type="warning"
+            action={{
+              label: "Run now",
+              onClick: runEnhancedDataRetrieval
+            }}
+            secondaryAction={{
+              label: "Skip",
+              onClick: () => setShowEvidenceReminder(false)
+            }}
+            visible={showEvidenceReminder}
+          />
+        )}
+        
         {/* MS365-style tabs */}
         <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
           <TabsList className="flex flex-wrap bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full gap-1">
