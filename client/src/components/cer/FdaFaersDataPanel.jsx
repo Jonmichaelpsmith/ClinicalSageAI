@@ -205,6 +205,11 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
         variant: 'success'
       });
       
+      // Update data source information if available in response
+      if (data.dataSource) {
+        setDataSource(`FDA FAERS (${data.dataSource.accessMethod})`);
+      }
+      
       // Call the callback if provided
       if (onDataFetched) {
         onDataFetched(data);
@@ -234,12 +239,31 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       
     } catch (error) {
       console.error('Error fetching FAERS data:', error);
-      setError(error.message || 'Failed to fetch FDA FAERS data');
       
+      // Extract detailed error information from the response if available
+      const errorResponse = error.response?.data || {};
+      const errorMessage = errorResponse.message || error.message || 'Failed to fetch FDA FAERS data';
+      const errorDetails = errorResponse.details || '';
+      const errorStatus = errorResponse.serviceStatus || 'error';
+      
+      setError(errorMessage);
+      
+      // Set a more descriptive error message based on service status
+      let toastTitle = 'Error Fetching FAERS Data';
+      let toastVariant = 'destructive';
+      
+      if (errorStatus === 'unavailable') {
+        toastTitle = 'FDA FAERS Service Unavailable';
+      } else if (errorResponse.error === 'No FDA FAERS data found') {
+        toastTitle = 'No FDA FAERS Data Found';
+        toastVariant = 'warning'; // Use warning variant for "not found" instead of error
+      }
+      
+      // Show toast with detailed error information
       toast({
-        title: 'Error Fetching FAERS Data',
-        description: error.message || 'Could not retrieve FDA adverse event data. Please try again.',
-        variant: 'destructive'
+        title: toastTitle,
+        description: errorMessage + (errorDetails ? `\n${errorDetails}` : ''),
+        variant: toastVariant
       });
     } finally {
       setIsLoading(false);
@@ -291,12 +315,31 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       
     } catch (error) {
       console.error('Error analyzing FAERS data:', error);
-      setError(error.message || 'Failed to analyze FDA FAERS data');
       
+      // Extract detailed error information from the response if available
+      const errorResponse = error.response?.data || {};
+      const errorMessage = errorResponse.message || error.message || 'Failed to analyze FDA FAERS data';
+      const errorDetails = errorResponse.details || '';
+      const errorStatus = errorResponse.serviceStatus || 'error';
+      
+      setError(errorMessage);
+      
+      // Set a more descriptive error message based on service status
+      let toastTitle = 'Error Analyzing FAERS Data';
+      let toastVariant = 'destructive';
+      
+      if (errorStatus === 'unavailable') {
+        toastTitle = 'FDA FAERS Analysis Service Unavailable';
+      } else if (errorResponse.error === 'No FDA FAERS data found') {
+        toastTitle = 'No FDA FAERS Data Found for Analysis';
+        toastVariant = 'warning';
+      }
+      
+      // Show toast with detailed error information
       toast({
-        title: 'Error Analyzing FAERS Data',
-        description: error.message || 'Could not perform analysis on FAERS data. Please try again.',
-        variant: 'destructive'
+        title: toastTitle,
+        description: errorMessage + (errorDetails ? `\n${errorDetails}` : ''),
+        variant: toastVariant
       });
     } finally {
       setIsLoading(false);
@@ -357,6 +400,14 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
           <AlertTitle>Real FDA FAERS Data</AlertTitle>
           <AlertDescription>
             This data is retrieved directly from the FDA Adverse Event Reporting System (FAERS) using the official FDA API.
+            {faersData.dataSource && (
+              <span className="block mt-1 text-sm">
+                <strong>Data Source:</strong> {faersData.dataSource.name} via {faersData.dataSource.accessMethod} 
+                {faersData.dataSource.retrievalDate && (
+                  <span> • Retrieved: {new Date(faersData.dataSource.retrievalDate).toLocaleDateString()}</span>
+                )}
+              </span>
+            )}
           </AlertDescription>
         </Alert>
 
@@ -384,8 +435,13 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
               ))}
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex justify-between items-center">
             <p className="text-xs text-gray-500">Data source: <a href="https://open.fda.gov/apis/drug/event/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">FDA FAERS API</a></p>
+            {faersData.dataSource?.authentic && (
+              <Badge variant="outline" className="bg-green-50">
+                <CheckCircle className="h-3 w-3 mr-1 text-green-500" /> Authentic Data
+              </Badge>
+            )}
           </CardFooter>
         </Card>
       </div>
@@ -421,6 +477,14 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
           <AlertTitle className="text-blue-700">Real FDA Data Analysis</AlertTitle>
           <AlertDescription className="text-blue-600">
             Analysis based on authentic FDA FAERS data. This report meets EU MDR, MEDDEV 2.7/1 Rev 4, and ISO 14155 requirements for post-market surveillance data.
+            {faersAnalysis.dataSource && (
+              <span className="block mt-1 text-sm">
+                <strong>Data Source:</strong> {faersAnalysis.dataSource.name} via {faersAnalysis.dataSource.accessMethod} 
+                {faersAnalysis.dataSource.retrievalDate && (
+                  <span> • Retrieved: {new Date(faersAnalysis.dataSource.retrievalDate).toLocaleDateString()}</span>
+                )}
+              </span>
+            )}
           </AlertDescription>
         </Alert>
 
