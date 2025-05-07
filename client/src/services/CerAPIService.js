@@ -8,8 +8,9 @@
  * This service integrates with GPT-4o powered endpoints for intelligent document generation
  * and regulatory compliance analysis based on EU MDR, ISO 14155, and FDA guidelines.
  * 
- * Version: 2.0.1 - May 7, 2025
- * Update: Added Device Equivalence Assessment functionality (MEDDEV 2.7/1 Rev 4 compliant)
+ * Version: 2.1.0 - May 7, 2025
+ * Update: Added State of the Art (SOTA) Analysis functionality (MEDDEV 2.7/1 Rev 4 compliant)
+ *         Added Device Equivalence Assessment functionality (MEDDEV 2.7/1 Rev 4 compliant)
  */
 
 // Create a single export object for consistent API access
@@ -347,6 +348,56 @@ cerApiService.downloadBlob = (blob, filename) => {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+};
+
+/**
+ * Generate State of the Art (SOTA) analysis for a medical device
+ * 
+ * This function connects to the SOTA API endpoint that leverages the latest
+ * scientific literature, regulatory standards, and technical information to
+ * generate a comprehensive State of the Art analysis compliant with 
+ * MEDDEV 2.7/1 Rev 4 for CERs.
+ * 
+ * @param {Object} params - Parameters for the SOTA analysis
+ * @param {string} params.deviceName - The name of the medical device
+ * @param {string} [params.deviceType] - The type or classification of the device
+ * @param {string} [params.indication] - The intended use or indication of the device
+ * @param {string} [params.regulatoryFramework='EU MDR'] - The regulatory framework context
+ * @returns {Promise<Object>} - The generated SOTA section with clinical context
+ */
+cerApiService.generateStateOfArt = async ({ deviceName, deviceType, indication, regulatoryFramework = 'EU MDR' }) => {
+  try {
+    console.log('Generating State of the Art analysis for:', deviceName);
+    
+    const response = await fetch('/api/cer/sota', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceName,
+        deviceType,
+        indication,
+        regulatoryFramework
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating State of the Art analysis: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      title: "State of the Art Analysis",
+      type: "state-of-art",
+      content: data.content,
+      lastUpdated: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error in generateStateOfArt:', error);
+    throw error;
+  }
 };
 
 /**
