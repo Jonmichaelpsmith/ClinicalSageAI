@@ -6,6 +6,7 @@ import faersRouter from './routes/faers-api.js';  // Add direct FAERS API router
 import literatureRouter from './routes/literature.js';
 import documentRouter from './routes/document-routes';
 import emergencyFixRouter from './routes/emergency-fix.js';
+import sotaRouter from './routes/sota-api.mjs';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
@@ -97,6 +98,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Document API routes
   app.use('/api/documents', documentRouter);
+  
+  // Register SOTA API routes
+  app.use('/api/cer', sotaRouter);
   
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
