@@ -39,27 +39,30 @@ const pipeline = promisify(stream.pipeline);
 async function generateCerPdf(cerData) {
   return new Promise((resolve, reject) => {
     try {
-      console.log("Generating simplified, reliable demo PDF for CER...");
-      // Create a new PDF document with simplified settings
+      console.log("Generating professional MEDDEV 2.7/1 Rev 4 format PDF...");
+      
+      // Create a new PDF document with precise Arthrosurface CER format settings
       const doc = new PDFDocument({
-        autoFirstPage: true, 
+        autoFirstPage: false, // We'll create pages manually
         size: 'A4',
-        margin: 50,
+        margin: 72, // 1-inch margins (72 points)
         info: {
           Title: cerData.title || 'Clinical Evaluation Report',
-          Author: cerData.metadata?.author || 'TrialSage AI',
-          Subject: 'Clinical Evaluation Report',
-          Keywords: 'CER, MEDDEV 2.7/1 Rev 4, Clinical Evaluation, Medical Device',
+          Author: cerData.metadata?.author || 'TrialSage Medical',
+          Subject: 'Clinical Evaluation Report in accordance with MEDDEV 2.7/1 Rev 4',
+          Keywords: 'CER, MEDDEV, Clinical Evaluation, Medical Device, EU MDR',
           CreationDate: new Date(),
-          ModDate: new Date()
+          ModDate: new Date(),
+          Creator: 'TrialSage CER Generator',
+          Producer: 'TrialSage AI Platform'
         }
       });
 
       // Collect the PDF data in a buffer
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
+      doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
+      doc.on('error', (error) => reject(error));
 
       // Set up styles
       const styles = {
@@ -633,6 +636,6 @@ const generateSimplePdf = (cerData) => {
   });
 };
 
-module.exports = {
-  generateCerPdf: generateSimplePdf
+export default {
+  generateCerPdf
 };
