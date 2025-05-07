@@ -236,12 +236,12 @@ export default function InputDataPanel({ jobId }) {
                       <SelectTrigger>
                         <SelectValue placeholder="Select regulatory type" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="eu-mdr">EU MDR 2017/745</SelectItem>
-                        <SelectItem value="fda-510k">FDA 510(k)</SelectItem>
-                        <SelectItem value="fda-pma">FDA PMA</SelectItem>
-                        <SelectItem value="ivdr">EU IVDR</SelectItem>
-                        <SelectItem value="iso-14155">ISO 14155</SelectItem>
+                      <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
+                        <SelectItem value="eu-mdr" className="text-[#323130]">EU MDR 2017/745</SelectItem>
+                        <SelectItem value="fda-510k" className="text-[#323130]">FDA 510(k)</SelectItem>
+                        <SelectItem value="fda-pma" className="text-[#323130]">FDA PMA</SelectItem>
+                        <SelectItem value="ivdr" className="text-[#323130]">EU IVDR</SelectItem>
+                        <SelectItem value="iso-14155" className="text-[#323130]">ISO 14155</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -256,13 +256,13 @@ export default function InputDataPanel({ jobId }) {
                         <SelectTrigger>
                           <SelectValue placeholder="Select EU class" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="class-i">Class I</SelectItem>
-                          <SelectItem value="class-is">Class Is</SelectItem>
-                          <SelectItem value="class-im">Class Im</SelectItem>
-                          <SelectItem value="class-iia">Class IIa</SelectItem>
-                          <SelectItem value="class-iib">Class IIb</SelectItem>
-                          <SelectItem value="class-iii">Class III</SelectItem>
+                        <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
+                          <SelectItem value="class-i" className="text-[#323130]">Class I</SelectItem>
+                          <SelectItem value="class-is" className="text-[#323130]">Class Is</SelectItem>
+                          <SelectItem value="class-im" className="text-[#323130]">Class Im</SelectItem>
+                          <SelectItem value="class-iia" className="text-[#323130]">Class IIa</SelectItem>
+                          <SelectItem value="class-iib" className="text-[#323130]">Class IIb</SelectItem>
+                          <SelectItem value="class-iii" className="text-[#323130]">Class III</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -276,10 +276,10 @@ export default function InputDataPanel({ jobId }) {
                         <SelectTrigger>
                           <SelectValue placeholder="Select US class" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="class-i">Class I</SelectItem>
-                          <SelectItem value="class-ii">Class II</SelectItem>
-                          <SelectItem value="class-iii">Class III</SelectItem>
+                        <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
+                          <SelectItem value="class-i" className="text-[#323130]">Class I</SelectItem>
+                          <SelectItem value="class-ii" className="text-[#323130]">Class II</SelectItem>
+                          <SelectItem value="class-iii" className="text-[#323130]">Class III</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -432,10 +432,10 @@ export default function InputDataPanel({ jobId }) {
                     <SelectTrigger>
                       <SelectValue placeholder="Select risk category" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low Risk</SelectItem>
-                      <SelectItem value="medium">Medium Risk</SelectItem>
-                      <SelectItem value="high">High Risk</SelectItem>
+                    <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
+                      <SelectItem value="low" className="text-[#323130]">Low Risk</SelectItem>
+                      <SelectItem value="medium" className="text-[#323130]">Medium Risk</SelectItem>
+                      <SelectItem value="high" className="text-[#323130]">High Risk</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
