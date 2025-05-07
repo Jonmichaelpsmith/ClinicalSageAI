@@ -6,8 +6,223 @@
  */
 
 import * as drugClassService from './drugClassService.js';
+import axios from 'axios';
 
-// Mock FAERS database for development/demo purposes
+// FDA FAERS API endpoints
+const FDA_FAERS_BASE_URL = 'https://api.fda.gov/drug/event.json';
+const FDA_API_LIMIT = 100;
+
+/**
+ * Fetch real FAERS data from the FDA API
+ * 
+ * @param {string} productName - The name of the product to search for
+ * @param {Object} options - Options for the API request
+ * @param {number} options.limit - Maximum number of results to return
+ * @returns {Promise<Object>} - FDA FAERS data
+ */
+async function fetchRealFaersData(productName, options = {}) {
+  const { limit = FDA_API_LIMIT } = options;
+  
+  try {
+    // Construct the query to search for the product name in both brand_name and generic_name
+    const query = encodeURIComponent(`patient.drug.medicinalproduct:"${productName}" OR patient.drug.openfda.generic_name:"${productName}" OR patient.drug.openfda.brand_name:"${productName}"`);
+    
+    // Make the API request
+    const response = await axios.get(`${FDA_FAERS_BASE_URL}?search=${query}&limit=${limit}`);
+    
+    // Return the results
+    return {
+      success: true,
+      data: response.data,
+      meta: {
+        totalResults: response.data.meta.results.total,
+        retrievalDate: new Date().toISOString(),
+        searchTerm: productName,
+        authentic: true,
+        requestDetails: {
+          endpoint: FDA_FAERS_BASE_URL,
+          query: query,
+          limit: limit
+        }
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching FDA FAERS data:', error);
+    
+    if (error.response && error.response.status === 404) {
+      // No results found
+      return {
+        success: false,
+        error: 'No adverse event reports found for this product',
+        meta: {
+          retrievalDate: new Date().toISOString(),
+          searchTerm: productName,
+          authentic: true,
+          requestDetails: {
+            endpoint: FDA_FAERS_BASE_URL,
+            query: productName,
+            limit: limit
+          }
+        }
+      };
+    }
+    
+    // Other API errors
+    return {
+      success: false,
+      error: error.message || 'Error fetching FAERS data from FDA API',
+      meta: {
+        retrievalDate: new Date().toISOString(),
+        searchTerm: productName,
+        authentic: false
+      }
+    };
+  }
+}
+
+/**
+ * Transform raw FDA FAERS data into a structured format for the CER
+ * 
+ * @param {Object} rawData - Raw FDA FAERS API response
+ * @param {string} productName - The name of the product
+ * @returns {Object} - Structured FAERS data
+ */
+function transformFaersData(rawData, productName) {
+  if (!rawData.success || !rawData.data || !rawData.data.results) {
+    return {
+      productName: productName,
+      totalReports: 0,
+      seriousEvents: [],
+      topReactions: [],
+      reactionCounts: [],
+      demographics: {
+        ageGroups: {},
+        gender: {}
+      },
+      riskScore: 0,
+      severityAssessment: "Unknown",
+      dataSource: {
+        name: "FDA FAERS API",
+        accessMethod: "Direct API access",
+        retrievalDate: rawData.meta?.retrievalDate,
+        authentic: rawData.meta?.authentic || false
+      }
+    };
+  }
+  
+  const results = rawData.data.results;
+  
+  // Count reactions
+  const reactionMap = new Map();
+  let seriousEventsCount = 0;
+  
+  // Age and gender distributions
+  const ageGroups = {
+    "0-18": 0,
+    "19-44": 0,
+    "45-64": 0,
+    "65+": 0,
+    "Unknown": 0
+  };
+  
+  const genderCount = {
+    "Female": 0,
+    "Male": 0,
+    "Unknown": 0
+  };
+  
+  // Process each report
+  results.forEach(report => {
+    // Check if serious
+    if (report.serious) {
+      seriousEventsCount++;
+    }
+    
+    // Process reactions
+    if (report.patient && report.patient.reaction) {
+      report.patient.reaction.forEach(reaction => {
+        if (reaction.reactionmeddrapt) {
+          const reactionName = reaction.reactionmeddrapt.toLowerCase();
+          reactionMap.set(reactionName, (reactionMap.get(reactionName) || 0) + 1);
+        }
+      });
+    }
+    
+    // Process patient demographics
+    if (report.patient) {
+      // Age
+      if (report.patient.patientonsetage) {
+        const age = parseInt(report.patient.patientonsetage);
+        if (!isNaN(age)) {
+          if (age <= 18) ageGroups["0-18"]++;
+          else if (age <= 44) ageGroups["19-44"]++;
+          else if (age <= 64) ageGroups["45-64"]++;
+          else ageGroups["65+"]++;
+        } else {
+          ageGroups["Unknown"]++;
+        }
+      } else {
+        ageGroups["Unknown"]++;
+      }
+      
+      // Gender
+      if (report.patient.patientsex) {
+        const gender = report.patient.patientsex;
+        if (gender === "1") genderCount["Male"]++;
+        else if (gender === "2") genderCount["Female"]++;
+        else genderCount["Unknown"]++;
+      } else {
+        genderCount["Unknown"]++;
+      }
+    }
+  });
+  
+  // Sort reactions by count
+  const sortedReactions = Array.from(reactionMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([reaction, count]) => ({ reaction, count }));
+  
+  // Calculate total reports
+  const totalReports = results.length;
+  
+  // Calculate risk score and determine severity
+  let riskScore = 0;
+  if (totalReports > 0) {
+    riskScore = (seriousEventsCount / totalReports) * (Math.log10(totalReports) / 2);
+  }
+  
+  let severityAssessment = "Unknown";
+  if (riskScore < 0.5) severityAssessment = "Low";
+  else if (riskScore < 1.0) severityAssessment = "Medium";
+  else severityAssessment = "High";
+  
+  // Extract top reactions
+  const topReactions = sortedReactions.slice(0, 5).map(item => item.reaction);
+  
+  return {
+    productName: productName,
+    totalReports: totalReports,
+    seriousEvents: Array(seriousEventsCount).fill("serious"),
+    topReactions: topReactions,
+    reactionCounts: sortedReactions,
+    demographics: {
+      ageGroups: ageGroups,
+      gender: genderCount
+    },
+    riskScore: parseFloat(riskScore.toFixed(2)),
+    severityAssessment: severityAssessment,
+    dataSource: {
+      name: "FDA FAERS API",
+      accessMethod: "Direct API access",
+      retrievalDate: rawData.meta?.retrievalDate,
+      authentic: rawData.meta?.authentic || false,
+      totalResults: rawData.meta?.totalResults || totalReports
+    }
+  };
+}
+
+// Fallback database for when API calls fail or for testing
 const faersDatabase = {
   // Simulated FAERS data for common medications
   "lisinopril": {
@@ -380,12 +595,41 @@ function findSimilarProduct(name) {
  * Get FAERS data for a specific product
  * 
  * @param {string} productName - The name of the product to get data for
+ * @param {Object} options - Options for the request
+ * @param {boolean} options.useRealData - Whether to attempt to fetch real data from FDA
+ * @param {number} options.limit - Maximum number of results to return from FDA API
  * @returns {Object} - FAERS data for the product
  */
-async function getFaersData(productName) {
+async function getFaersData(productName, options = {}) {
   if (!productName) {
     throw new Error('Product name is required');
   }
+  
+  const { useRealData = true, limit = FDA_API_LIMIT } = options;
+  
+  // First attempt to get real data from the FDA API if requested
+  if (useRealData) {
+    try {
+      console.log(`Attempting to fetch real FDA FAERS data for ${productName}...`);
+      const rawFdaData = await fetchRealFaersData(productName, { limit });
+      
+      // If API call was successful and returned results
+      if (rawFdaData.success && rawFdaData.data && rawFdaData.data.results && rawFdaData.data.results.length > 0) {
+        console.log(`Successfully fetched ${rawFdaData.data.results.length} FDA FAERS records for ${productName}`);
+        
+        // Transform the raw data into our standard format
+        const transformedData = transformFaersData(rawFdaData, productName);
+        return transformedData;
+      } else {
+        console.log(`No FDA FAERS data found for ${productName}, falling back to database`);
+      }
+    } catch (error) {
+      console.error(`Error fetching real FDA FAERS data for ${productName}:`, error);
+      // Continue to fallback data below
+    }
+  }
+  
+  // If real data fetching failed or was not requested, use our database
   
   // Find a matching product in our database
   const matchedProduct = findSimilarProduct(productName.toLowerCase());
@@ -394,12 +638,32 @@ async function getFaersData(productName) {
     // Return a copy of the data with the requested product name
     const data = { ...faersDatabase[matchedProduct] };
     data.productName = productName; // Use the original product name from the request
+    
+    // Add data source info to indicate this is not from FDA API
+    data.dataSource = {
+      name: "TrialSage Database",
+      accessMethod: "Local database lookup",
+      retrievalDate: new Date().toISOString(),
+      authentic: false,
+      fallbackReason: useRealData ? "FDA API request failed or returned no results" : "Real data fetching not requested"
+    };
+    
     return data;
   }
   
   // No match found, return the default data with the requested product name
   const defaultData = { ...faersDatabase.default };
   defaultData.productName = productName;
+  
+  // Add data source info to indicate this is default data
+  defaultData.dataSource = {
+    name: "TrialSage Default Dataset",
+    accessMethod: "Default values",
+    retrievalDate: new Date().toISOString(),
+    authentic: false,
+    fallbackReason: "No matching product found in database"
+  };
+  
   return defaultData;
 }
 
@@ -468,8 +732,124 @@ async function getFaersDataWithComparators(productName, options = {}) {
   };
 }
 
+/**
+ * Analyze FAERS data to create a comprehensive report for CER
+ * 
+ * @param {Object} faersData - FAERS data for analysis 
+ * @param {Object} options - Analysis options
+ * @param {string} options.productName - Product name override
+ * @param {string} options.manufacturerName - Manufacturer name
+ * @param {Object} options.context - Additional context info
+ * @returns {Object} - Analyzed FAERS data for CER
+ */
+async function analyzeFaersDataForCER(faersData, options = {}) {
+  const { 
+    productName = faersData.productName,
+    manufacturerName = "Unknown Manufacturer",
+    context = {}
+  } = options;
+  
+  // Ensure we have FAERS data to analyze
+  if (!faersData || !faersData.reactionCounts || faersData.reactionCounts.length === 0) {
+    throw new Error('Valid FAERS data is required for analysis');
+  }
+  
+  // Calculate percentages for serious events
+  const seriousEventsCount = faersData.seriousEvents?.length || 0;
+  const totalReports = faersData.totalReports || 0;
+  const seriousEventsPercentage = totalReports > 0 
+    ? ((seriousEventsCount / totalReports) * 100).toFixed(1) + '%' 
+    : '0%';
+  
+  // Calculate event rate per 10,000 units (estimated)
+  // In a real implementation, this would use distribution/sale data
+  const estimatedUnits = 100000; // Placeholder for demo
+  const eventsPerTenThousand = (totalReports / estimatedUnits) * 10000;
+  
+  // Process demographics data
+  const ageDistribution = Object.entries(faersData.demographics?.ageGroups || {})
+    .filter(([group]) => group !== 'Unknown')
+    .map(([group, count]) => ({
+      group,
+      count,
+      percentage: totalReports > 0 ? ((count / totalReports) * 100).toFixed(1) + '%' : '0%'
+    }))
+    .sort((a, b) => b.count - a.count);
+  
+  const genderDistribution = Object.entries(faersData.demographics?.gender || {})
+    .filter(([gender]) => gender !== 'Unknown')
+    .map(([gender, count]) => ({
+      gender,
+      count,
+      percentage: totalReports > 0 ? ((count / totalReports) * 100).toFixed(1) + '%' : '0%'
+    }))
+    .sort((a, b) => b.count - a.count);
+  
+  // Process the top adverse events with percentages
+  const topEvents = faersData.reactionCounts
+    .slice(0, 10)
+    .map(item => ({
+      event: item.reaction,
+      count: item.count,
+      percentage: totalReports > 0 ? ((item.count / totalReports) * 100).toFixed(1) + '%' : '0%'
+    }));
+  
+  // Generate data-driven analysis conclusion text
+  let conclusion = `Based on analysis of ${totalReports.toLocaleString()} adverse event reports for ${productName} from the FDA FAERS database, `;
+  
+  if (seriousEventsCount > 0) {
+    conclusion += `${seriousEventsCount.toLocaleString()} (${seriousEventsPercentage}) were classified as serious. `;
+  } else {
+    conclusion += `no serious adverse events were identified. `;
+  }
+  
+  conclusion += `The most commonly reported adverse reactions were ${faersData.topReactions.slice(0, 3).join(', ')}. `;
+  
+  // Add reporting period information
+  const reportingPeriod = {
+    start: "Not specified in FDA FAERS data", // In real implementation, parse from API response
+    end: new Date().toISOString().split('T')[0],
+    duration: "Includes all available data through present date"
+  };
+  
+  // Assemble the final analysis object
+  const analysis = {
+    productInfo: {
+      productName: productName,
+      manufacturer: manufacturerName,
+      deviceType: context.deviceType || "Medical device",
+      indication: context.indication || "Not specified"
+    },
+    reportingPeriod: reportingPeriod,
+    summary: {
+      totalReports: totalReports,
+      seriousEvents: seriousEventsCount,
+      seriousEventsPercentage: seriousEventsPercentage,
+      eventsPerTenThousand: parseFloat(eventsPerTenThousand.toFixed(2)),
+      severityAssessment: faersData.severityAssessment || "Unknown"
+    },
+    topEvents: topEvents,
+    demographics: {
+      ageDistribution: ageDistribution,
+      genderDistribution: genderDistribution
+    },
+    conclusion: conclusion,
+    dataSource: faersData.dataSource || {
+      name: "FDA FAERS Database",
+      accessMethod: "API Query",
+      retrievalDate: new Date().toISOString(),
+      authentic: false
+    }
+  };
+  
+  return analysis;
+}
+
 // Export the functions
 export {
   getFaersData,
-  getFaersDataWithComparators
+  getFaersDataWithComparators,
+  fetchRealFaersData,
+  transformFaersData,
+  analyzeFaersDataForCER
 };

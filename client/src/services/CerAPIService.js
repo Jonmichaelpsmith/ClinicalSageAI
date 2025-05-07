@@ -51,17 +51,37 @@ cerApiService.initializeZeroClickCER = async ({ deviceInfo, literature, fdaData,
 /**
  * Fetch FAERS data for a given product
  * @param {string} productName - The name of the product to fetch FAERS data for
+ * @param {Object} options - Options for the request
+ * @param {boolean} [options.useRealData=true] - Whether to use real FDA data
+ * @param {number} [options.limit=100] - Maximum number of records to fetch
  * @returns {Promise<Object>} - The FAERS data for the product
  */
-cerApiService.fetchFaersData = async (productName) => {
+cerApiService.fetchFaersData = async (productName, options = {}) => {
   try {
-    const response = await fetch(`/api/cer/faers/data?productName=${encodeURIComponent(productName)}`);
+    const { useRealData = true, limit = 100 } = options;
+    
+    const queryParams = new URLSearchParams({
+      productName: productName,
+      useRealData: useRealData.toString(),
+      limit: limit.toString()
+    });
+    
+    const response = await fetch(`/api/cer/faers/data?${queryParams.toString()}`);
     
     if (!response.ok) {
       throw new Error(`Error fetching FAERS data: ${response.statusText}`);
     }
     
     const data = await response.json();
+    
+    // Log data source information
+    if (data.dataSource) {
+      console.log(`FAERS data source: ${data.dataSource.name} (authentic: ${data.dataSource.authentic})`);
+      if (!data.dataSource.authentic) {
+        console.warn(`Using non-authentic data source: ${data.dataSource.fallbackReason || 'Unknown reason'}`);
+      }
+    }
+    
     return data;
   } catch (error) {
     console.error('Error in fetchFaersData:', error);
@@ -467,17 +487,48 @@ cerApiService.analyzeLiterature = async (literature) => {
 /**
  * Analyze FDA adverse event data with AI
  * @param {Object} fdaData - FDA adverse event data to analyze
+ * @param {Object} options - Analysis options 
+ * @param {string} [options.productName] - Product name for context
+ * @param {string} [options.manufacturer] - Manufacturer name for context
+ * @param {string} [options.deviceType] - Device type classification for context
  * @returns {Promise<Object>} - The analysis results
  */
-cerApiService.analyzeAdverseEvents = async (fdaData) => {
+cerApiService.analyzeAdverseEvents = async (fdaData, options = {}) => {
   try {
+    if (!fdaData || !fdaData.productName) {
+      throw new Error('Valid FDA FAERS data is required for analysis');
+    }
+    
+    // Verify data source information is present
+    if (!fdaData.dataSource) {
+      console.warn('FAERS data is missing source attribution');
+      fdaData.dataSource = {
+        name: "Unknown source",
+        retrievalDate: new Date().toISOString(),
+        authentic: false
+      };
+    }
+    
+    // Log data source for auditing and transparency
+    console.log(`Analyzing FAERS data from: ${fdaData.dataSource.name}, authentic: ${fdaData.dataSource.authentic || false}`);
+    
+    // Prepare enhanced analysis context
+    const analysisContext = {
+      productName: options.productName || fdaData.productName,
+      manufacturer: options.manufacturer || "Not specified",
+      deviceType: options.deviceType || "Medical device",
+      dataAuthenticity: fdaData.dataSource.authentic || false,
+      analysisDate: new Date().toISOString()
+    };
+    
     const response = await fetch('/api/cer/analyze/adverse-events', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        fdaData
+        fdaData,
+        context: analysisContext
       }),
     });
     
@@ -486,6 +537,15 @@ cerApiService.analyzeAdverseEvents = async (fdaData) => {
     }
     
     const data = await response.json();
+    
+    // Add data source attribution to the analysis results
+    data.dataSourceAttribution = {
+      source: fdaData.dataSource.name || "Unknown source",
+      retrievalDate: fdaData.dataSource.retrievalDate || new Date().toISOString(),
+      authentic: fdaData.dataSource.authentic || false,
+      analysisDate: new Date().toISOString()
+    };
+    
     return data;
   } catch (error) {
     console.error('Error in analyzeAdverseEvents:', error);
