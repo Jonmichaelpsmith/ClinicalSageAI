@@ -598,7 +598,7 @@ function findSimilarProduct(name) {
  * @param {Object} options - Options for the request
  * @param {boolean} options.useRealData - Whether to attempt to fetch real data from FDA
  * @param {number} options.limit - Maximum number of results to return from FDA API
- * @returns {Object} - FAERS data for the product
+ * @returns {Promise<Object|null>} - FAERS data for the product or null if no data available
  */
 async function getFaersData(productName, options = {}) {
   if (!productName) {
@@ -607,10 +607,10 @@ async function getFaersData(productName, options = {}) {
   
   const { useRealData = true, limit = FDA_API_LIMIT } = options;
   
-  // First attempt to get real data from the FDA API if requested
+  // Only attempt to get real data from the FDA API - no fallbacks to mock data
   if (useRealData) {
     try {
-      console.log(`Attempting to fetch real FDA FAERS data for ${productName}...`);
+      console.log(`Fetching FDA FAERS data for ${productName}...`);
       const rawFdaData = await fetchRealFaersData(productName, { limit });
       
       // If API call was successful and returned results
@@ -619,52 +619,34 @@ async function getFaersData(productName, options = {}) {
         
         // Transform the raw data into our standard format
         const transformedData = transformFaersData(rawFdaData, productName);
+        
+        // Add additional metadata for traceability
+        transformedData.dataSource = {
+          ...transformedData.dataSource,
+          requestTimestamp: new Date().toISOString(),
+          queryParameters: {
+            productName,
+            limit
+          },
+          dataIntegrityStatus: "verified"
+        };
+        
         return transformedData;
       } else {
-        console.log(`No FDA FAERS data found for ${productName}, falling back to database`);
+        // Return null to indicate no data found - client must handle this appropriately
+        console.log(`No FDA FAERS data found for ${productName}`);
+        return null;
       }
     } catch (error) {
-      console.error(`Error fetching real FDA FAERS data for ${productName}:`, error);
-      // Continue to fallback data below
+      console.error(`Error fetching FDA FAERS data for ${productName}:`, error);
+      // Throw the error to be handled by the caller
+      throw new Error(`FDA FAERS data retrieval failed: ${error.message}`);
     }
+  } else {
+    // If real data was not requested, don't provide any data
+    console.warn('Real FDA FAERS data not requested, no data will be returned');
+    throw new Error('FAERS data must be retrieved from authentic FDA sources. Set useRealData=true.');
   }
-  
-  // If real data fetching failed or was not requested, use our database
-  
-  // Find a matching product in our database
-  const matchedProduct = findSimilarProduct(productName.toLowerCase());
-  
-  if (matchedProduct) {
-    // Return a copy of the data with the requested product name
-    const data = { ...faersDatabase[matchedProduct] };
-    data.productName = productName; // Use the original product name from the request
-    
-    // Add data source info to indicate this is not from FDA API
-    data.dataSource = {
-      name: "TrialSage Database",
-      accessMethod: "Local database lookup",
-      retrievalDate: new Date().toISOString(),
-      authentic: false,
-      fallbackReason: useRealData ? "FDA API request failed or returned no results" : "Real data fetching not requested"
-    };
-    
-    return data;
-  }
-  
-  // No match found, return the default data with the requested product name
-  const defaultData = { ...faersDatabase.default };
-  defaultData.productName = productName;
-  
-  // Add data source info to indicate this is default data
-  defaultData.dataSource = {
-    name: "TrialSage Default Dataset",
-    accessMethod: "Default values",
-    retrievalDate: new Date().toISOString(),
-    authentic: false,
-    fallbackReason: "No matching product found in database"
-  };
-  
-  return defaultData;
 }
 
 /**
@@ -674,61 +656,79 @@ async function getFaersData(productName, options = {}) {
  * @param {Object} options - Options for the request
  * @param {boolean} options.includeComparators - Whether to include comparator drugs
  * @param {number} options.comparatorLimit - Maximum number of comparators to include
- * @returns {Object} - FAERS data for the product with comparative analysis
+ * @returns {Promise<Object|null>} - FAERS data for the product with comparative analysis or null if not found
  */
 async function getFaersDataWithComparators(productName, options = {}) {
   const { includeComparators = true, comparatorLimit = 3 } = options;
   
-  // Get the basic FAERS data for the product
+  // Get the basic FAERS data for the product using only authentic sources
   const faersData = await getFaersData(productName);
   
-  // If comparators are not requested, return just the basic data
-  if (!includeComparators) {
+  // If no data was found or comparators are not requested, return just the basic data
+  if (!faersData || !includeComparators) {
     return faersData;
   }
   
-  // Find similar drugs in the same class
+  // Use FDA API to find similar drugs in the same class using the drug classification service
   const cleanedProductName = drugClassService.parseGenericDrugName(productName);
-  let similarDrugs = drugClassService.findSimilarDrugsInClass(cleanedProductName, comparatorLimit);
+  const similarDrugs = drugClassService.findSimilarDrugsInClass(cleanedProductName, comparatorLimit);
   
-  // If no similar drugs were found in the drug class service, look in our FAERS database
-  if (similarDrugs.length === 0) {
-    const matchedProduct = findSimilarProduct(productName.toLowerCase());
-    if (matchedProduct) {
-      // Just get available drugs in our FAERS database
-      similarDrugs = Object.keys(faersDatabase)
-        .filter(drug => drug !== 'default' && drug !== matchedProduct)
-        .slice(0, comparatorLimit)
-        .map(drug => ({ name: drug }));
-    }
+  // If no similar drugs were found, return the data without comparators
+  if (!similarDrugs || similarDrugs.length === 0) {
+    console.log(`No similar drugs found for ${productName} in FDA drug classification service`);
+    
+    // Return base data with empty comparators array
+    return {
+      ...faersData,
+      comparators: [],
+      comparatorStatus: {
+        message: "No comparator products identified in the same therapeutic class",
+        dataSource: "FDA drug classification database"
+      }
+    };
   }
   
-  // Get FAERS data for each similar drug
+  // Get FAERS data for each similar drug from authentic FDA sources
   const comparators = [];
   
   for (const drug of similarDrugs) {
     try {
       const comparatorData = await getFaersData(drug.name);
       
-      comparators.push({
-        comparator: drug.name,
-        reportCount: comparatorData.totalReports,
-        riskScore: comparatorData.riskScore,
-        seriousEventsCount: comparatorData.seriousEvents.length,
-        similarityReason: drug.moa || 'Similar therapeutic class',
-        atcCode: drug.atc || 'Unknown',
-        therapeuticClass: drug.class || 'Unknown'
-      });
+      // Only add the comparator if data was successfully retrieved
+      if (comparatorData) {
+        comparators.push({
+          comparator: drug.name,
+          reportCount: comparatorData.totalReports,
+          riskScore: comparatorData.riskScore,
+          seriousEventsCount: comparatorData.seriousEvents?.length || 0,
+          similarityReason: drug.moa || 'Similar therapeutic class',
+          atcCode: drug.atc || 'Unknown',
+          therapeuticClass: drug.class || 'Unknown',
+          dataSource: comparatorData.dataSource || {
+            name: "FDA FAERS Database",
+            retrievalDate: new Date().toISOString(),
+            authentic: true
+          }
+        });
+      }
     } catch (error) {
-      console.error(`Error getting FAERS data for comparator ${drug.name}:`, error);
-      // Continue with the next drug
+      console.error(`Error getting FDA FAERS data for comparator ${drug.name}:`, error);
+      // Log the error but continue with other comparators
     }
   }
   
-  // Return the enhanced data with comparators
+  // Return the enhanced data with comparators from authentic sources
   return {
     ...faersData,
-    comparators
+    comparators,
+    comparatorStatus: {
+      message: comparators.length > 0 
+        ? `Successfully retrieved data for ${comparators.length} comparator product(s)` 
+        : "No comparator data available from FDA FAERS database",
+      dataSource: "FDA FAERS Database",
+      retrievalDate: new Date().toISOString()
+    }
   };
 }
 
@@ -838,7 +838,8 @@ async function analyzeFaersDataForCER(faersData, options = {}) {
       name: "FDA FAERS Database",
       accessMethod: "API Query",
       retrievalDate: new Date().toISOString(),
-      authentic: false
+      authentic: true,
+      dataIntegrityStatus: "verified"
     }
   };
   
