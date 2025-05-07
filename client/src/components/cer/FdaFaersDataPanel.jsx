@@ -242,7 +242,7 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       
       // Extract detailed error information from the response if available
       const errorResponse = error.response?.data || {};
-      const errorMessage = errorResponse.message || error.message || 'Failed to fetch FDA FAERS data';
+      let errorMessage = errorResponse.message || error.message || 'Failed to fetch FDA FAERS data';
       const errorDetails = errorResponse.details || '';
       const errorStatus = errorResponse.serviceStatus || 'error';
       
@@ -254,9 +254,15 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       
       if (errorStatus === 'unavailable') {
         toastTitle = 'FDA FAERS Service Unavailable';
-      } else if (errorResponse.error === 'No FDA FAERS data found') {
+      } else if (errorResponse.error === 'No FDA FAERS data found' || error.message?.includes('No adverse event data found')) {
         toastTitle = 'No FDA FAERS Data Found';
         toastVariant = 'warning'; // Use warning variant for "not found" instead of error
+        
+        // Add detailed guidance for users
+        errorMessage = "No adverse event data found for this product in the FDA FAERS database. This could be because: \n" +
+          "1. The product name may be misspelled or use a different brand name \n" +
+          "2. This product may be too new to have FDA adverse event reports \n" +
+          "3. The FDA may classify this product under a different name";
       }
       
       // Show toast with detailed error information
@@ -318,7 +324,7 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       
       // Extract detailed error information from the response if available
       const errorResponse = error.response?.data || {};
-      const errorMessage = errorResponse.message || error.message || 'Failed to analyze FDA FAERS data';
+      let errorMessage = errorResponse.message || error.message || 'Failed to analyze FDA FAERS data';
       const errorDetails = errorResponse.details || '';
       const errorStatus = errorResponse.serviceStatus || 'error';
       
@@ -330,9 +336,15 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       
       if (errorStatus === 'unavailable') {
         toastTitle = 'FDA FAERS Analysis Service Unavailable';
-      } else if (errorResponse.error === 'No FDA FAERS data found') {
+      } else if (errorResponse.error === 'No FDA FAERS data found' || error.message?.includes('No adverse event data found')) {
         toastTitle = 'No FDA FAERS Data Found for Analysis';
         toastVariant = 'warning';
+        
+        // Add detailed guidance for users
+        errorMessage = "No adverse event data found for this product in the FDA FAERS database. This could be because: \n" +
+          "1. The product name may be misspelled or use a different brand name \n" +
+          "2. This product may be too new to have FDA adverse event reports \n" +
+          "3. The FDA may classify this product under a different name";
       }
       
       // Show toast with detailed error information

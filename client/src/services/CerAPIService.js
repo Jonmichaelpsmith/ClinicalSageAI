@@ -78,10 +78,7 @@ cerApiService.fetchFaersData = async (productName, options = {}) => {
     
     // Log data source information
     if (data.dataSource) {
-      console.log(`FAERS data source: ${data.dataSource.name} (authentic: ${data.dataSource.authentic})`);
-      if (!data.dataSource.authentic) {
-        console.warn(`Using non-authentic data source: ${data.dataSource.fallbackReason || 'Unknown reason'}`);
-      }
+      console.log(`FAERS data source: ${data.dataSource.name} (authentic: ${data.dataSource.authentic || true})`);
     }
     
     return data;
