@@ -125,6 +125,8 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isFeatureDialogOpen, setIsFeatureDialogOpen] = useState(false);
   const [isGeneratingRationale, setIsGeneratingRationale] = useState(false);
+  const [isGeneratingSectionE4, setIsGeneratingSectionE4] = useState(false);
+  const [sectionE4Content, setSectionE4Content] = useState('');
   const [rationaleSuggestion, setRationaleSuggestion] = useState('');
   const [dialogMode, setDialogMode] = useState('add'); // 'add' or 'edit'
   const [activeDeviceId, setActiveDeviceId] = useState(null);
@@ -484,6 +486,69 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
         description: error.message || 'Failed to generate overall assessment. Please try again.',
         variant: 'destructive',
       });
+    }
+  };
+  
+  // Generate Section E.4 for Clinical Evaluation Report
+  const generateSectionE4 = async () => {
+    if (!subjectDevice.name || equivalentDevices.length === 0) {
+      toast({
+        title: 'Missing data',
+        description: 'Please define the subject device and at least one equivalent device to generate the E.4 section.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Check if any device is missing features or overall rationale
+    const incompleteDevices = equivalentDevices.filter(
+      device => device.features.length === 0 || !device.overallRationale
+    );
+    
+    if (incompleteDevices.length > 0) {
+      const incompleteNames = incompleteDevices.map(d => d.name).join(', ');
+      toast({
+        title: 'Incomplete data',
+        description: `Please complete features and generate overall assessments for: ${incompleteNames}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsGeneratingSectionE4(true);
+    
+    try {
+      const response = await fetch('/api/cer/equivalence/generate-section', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subjectDevice,
+          equivalentDevices
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error generating E.4 section: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setSectionE4Content(data.sectionContent || data.text || '');
+      
+      toast({
+        title: 'Section E.4 generated',
+        description: 'The device equivalence section has been generated according to MEDDEV 2.7/1 Rev 4 requirements.',
+      });
+    } catch (error) {
+      console.error('Error generating E.4 section:', error);
+      toast({
+        title: 'Generation failed',
+        description: error.message || 'Failed to generate E.4 section. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGeneratingSectionE4(false);
     }
   };
   
