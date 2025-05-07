@@ -5,6 +5,7 @@ import cerRouter from './routes/cer-final.js';  // Using our simplified & fixed 
 import faersRouter from './routes/faers-api.js';  // Add direct FAERS API router
 import literatureRouter from './routes/literature.js';
 import documentRouter from './routes/document-routes';
+import emergencyFixRouter from './routes/emergency-fix.js';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
@@ -85,10 +86,10 @@ export default function registerRoutes(app: Express): void {
   // Register IND Wizard API routes
   app.use('/api/ind-wizard', indWizardRouter);
   
-  // Register our enhanced CER routes
-  app.use('/api/cer', cerRouter);
+  // Register our enhanced CER routes (using emergency-fix for client demo)
+  app.use('/api/cer', emergencyFixRouter);
   
-  // Register FAERS API routes
+  // Register FAERS API routes  
   app.use('/api/faers', faersRouter);
 
   // Register Literature API routes

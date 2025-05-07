@@ -315,6 +315,7 @@ const CerDataRetrievalPanel = ({ reportId, deviceName, onDataUpdated }) => {
           <TabsTrigger value="faers" className="flex-1">FAERS Data</TabsTrigger>
           <TabsTrigger value="literature" className="flex-1">Literature</TabsTrigger>
         </TabsList>
+        {/* CLIENT IS HERE - EMERGENCY FIX ACTIVE */}
         
         <TabsContent value="status" className="space-y-4">
           {renderStatusTab()}
