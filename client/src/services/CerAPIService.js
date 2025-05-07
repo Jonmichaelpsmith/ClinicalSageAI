@@ -624,13 +624,17 @@ cerApiService.retrieveDataForCER = async (reportId) => {
  */
 cerApiService.getDataRetrievalStatus = async (reportId) => {
   try {
-    const response = await fetch(`/api/cer-data/status/${reportId}`);
+    console.log('EMERGENCY FIX: Checking data retrieval status for:', reportId);
+    
+    // Emergency fix - use updated endpoint path 
+    const response = await fetch(`/api/cer/data-status/${reportId}`);
     
     if (!response.ok) {
       throw new Error(`Error fetching data retrieval status: ${response.statusText}`);
     }
     
     const data = await response.json();
+    console.log('EMERGENCY FIX: Data retrieval status:', data);
     return data;
   } catch (error) {
     console.error('Error in getDataRetrievalStatus:', error);
@@ -768,13 +772,17 @@ cerApiService.fetchEnhancedFaersData = async ({ productName, reportId }) => {
  */
 cerApiService.getFaersDataForReport = async (reportId) => {
   try {
-    const response = await fetch(`/api/cer-data/faers/${reportId}`);
+    console.log('EMERGENCY FIX: Fetching FAERS data for report:', reportId);
+    
+    // Emergency fix - use updated endpoint path
+    const response = await fetch(`/api/cer/data-faers/${reportId}`);
     
     if (!response.ok) {
       throw new Error(`Error fetching FAERS data for report: ${response.statusText}`);
     }
     
     const data = await response.json();
+    console.log('EMERGENCY FIX: FAERS data retrieved successfully');
     return data;
   } catch (error) {
     console.error('Error in getFaersDataForReport:', error);
