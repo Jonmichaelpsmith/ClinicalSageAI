@@ -555,10 +555,10 @@ export default function CERV2Page() {
         
         {/* MS365-style tabs */}
         <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
-          <TabsList className="flex flex-wrap bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full gap-1">
+          <TabsList className="flex flex-wrap bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full gap-3">
             <TabsTrigger 
               value="builder" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
+              className="cer-tab-trigger rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               <span>Builder</span>
@@ -670,7 +670,7 @@ export default function CERV2Page() {
           <TabsContent value="literature" className="mt-0">
             {/* Nested tabs for Literature section */}
             <Tabs defaultValue="search" className="w-full">
-              <TabsList className="bg-white border-b border-gray-200 rounded-none w-full flex justify-start">
+              <TabsList className="bg-white border-b border-gray-200 rounded-none w-full flex justify-start gap-2">
                 <TabsTrigger value="search" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161]">
                   Search & Analyze
                 </TabsTrigger>
