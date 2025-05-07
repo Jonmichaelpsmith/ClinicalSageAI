@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equivalence Builder for CER</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@17/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div id="root" class="max-w-5xl mx-auto bg-white p-8 rounded-lg shadow-lg"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const EquivalenceBuilder = () => {
+            // Predefined characteristics based on regulatory guidelines
+            const predefinedCharacteristics = [
+                "Intended Use", "Indications for Use", "Contraindications", 
+                "Patient Population", "Users", "Classification", 
+                "Materials", "Dimensions", "Principles of Operation", 
+                "Biocompatibility"
+            ];
+
+            // State for subject device
+            const [subjectDevice, setSubjectDevice] = useState({ 
+                name: '', 
+                model: '', 
+                euUsClass: '', 
+                description: '' 
+            });
+
+            // State for comparators
+            const [comparators, setComparators] = useState([{ name: '', model: '' }]);
+
+            // State for characteristics
+            const [characteristics, setCharacteristics] = useState([
+                { 
+                    name: '', 
+                    subjectValue: '', 
+                    comparatorValues: comparators.map(() => ({ value: '', isMatch: true, rationale: '' })) 
+                }
+            ]);
+
+            // State for generated section
+            const [generatedSection, setGeneratedSection] = useState('');
+
+            // Add comparator
+            const addComparator = () => {
+                const newComparator = { name: '', model: '' };
+                setComparators([...comparators, newComparator]);
+                setCharacteristics(prev => prev.map(char => ({
+                    ...char,
+                    comparatorValues: [...char.comparatorValues, { value: '', isMatch: true, rationale: '' }]
+                })));
+            };
+
+            // Remove comparator
+            const removeComparator = (index) => {
+                if (comparators.length > 1) {
+                    setComparators(comparators.filter((_, i) => i !== index));
+                    setCharacteristics(prev => prev.map(char => ({
+                        ...char,
+                        comparatorValues: char.comparatorValues.filter((_, i) => i !== index)
+                    })));
+                }
+            };
+
+            // Add characteristic
+            const addCharacteristic = () => {
+                const newCharacteristic = {
+                    name: '',
+                    subjectValue: '',
+                    comparatorValues: comparators.map(() => ({ value: '', isMatch: true, rationale: '' }))
+                };
+                setCharacteristics([...characteristics, newCharacteristic]);
+            };
+
+            // Remove characteristic
+            const removeCharacteristic = (index) => {
+                if (characteristics.length > 1) {
+                    setCharacteristics(characteristics.filter((_, i) => i !== index));
+                }
+            };
+
+            // Handle subject device changes
+            const handleSubjectChange = (e) => {
+                const { name, value } = e.target;
+                setSubjectDevice(prev => ({ ...prev, [name]: value }));
+            };
+
+            // Handle comparator changes
+            const handleComparatorChange = (index, field, value) => {
+                setComparators(prev => prev.map((comp, i) => i === index ? { ...comp, [field]: value } : comp));
+            };
+
+            // Handle characteristic changes
+            const handleCharacteristicChange = (index, field, value) => {
+                setCharacteristics(prev => prev.map((char, i) => i === index ? { ...char, [field]: value } : char));
+            };
+
+            // Handle comparator value changes
+            const handleComparatorValueChange = (charIndex, compIndex, field, value) => {
+                setCharacteristics(prev => prev.map((char, i) => i === charIndex ? {
+                    ...char,
+                    comparatorValues: char.comparatorValues.map((cv, j) => j === compIndex ? { ...cv, [field]: field === 'isMatch' ? value === 'match' : value } : cv)
+                } : char));
+            };
+
+            // Generate equivalence section
+            const generateEquivalenceSection = () => {
+                if (!subjectDevice.name || comparators.some(c => !c.name) || characteristics.some(c => !c.name || !c.subjectValue)) {
+                    alert('Please fill in all required fields (device names, characteristic names, and subject values).');
+                    return;
+                }
+
+                let section = `**Consideration of Equivalence (E.4)**\n\n`;
+                section += `The following table compares the ${subjectDevice.name} with `;
+                section += comparators.map(c => c.name).join(', ') + `:\n\n`;
+                section += `| Characteristic | ${subjectDevice.name} | ` + comparators.map(c => c.name).join(' | ') + ` | Match/Difference |\n`;
+                section += `|----------------|-----------------------|` + comparators.map(() => '---------------------').join('|') + `|------------------|\n`;
+                characteristics.forEach(char => {
+                    let row = `| ${char.name} | ${char.subjectValue} | `;
+                    char.comparatorValues.forEach((cv, i) => {
+                        row += `${cv.value} | `;
+                    });
+                    let matchDiff = char.comparatorValues.map(cv => cv.isMatch ? 'Match' : 'Difference').join(', ');
+                    row += `${matchDiff} |\n`;
+                    section += row;
+                });
+                section += `\n**Rationale for Differences:**\n`;
+                characteristics.forEach((char, charIndex) => {
+                    char.comparatorValues.forEach((cv, compIndex) => {
+                        if (!cv.isMatch && cv.rationale) {
+                            section += `- For ${char.name} with ${comparators[compIndex].name}: ${cv.rationale}\n`;
+                        }
+                    });
+                });
+                section += `\n**Conclusion:** The ${subjectDevice.name} is deemed equivalent to the listed comparator devices, as differences do not impact safety or performance per MDR Annex IX requirements.`;
+                return section;
+            };
+
+            // Handle generate button
+            const handleGenerate = () => {
+                const section = generateEquivalenceSection();
+                if (section) setGeneratedSection(section);
+            };
+
+            return (
+                <div>
+                    <h1 className="text-3xl font-bold mb-8 text-center text-blue-600">Equivalence Builder for CER</h1>
+
+                    {/* Subject Device Form */}
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-semibold mb-4 text-gray-700">Subject Device (E.1)</h2>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={subjectDevice.name}
+                                    onChange={handleSubjectChange}
+                                    placeholder="e.g., CardioSync Pacemaker"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md

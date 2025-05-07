@@ -65,6 +65,20 @@ const featureCategories = [
   { value: 'intended_use', label: 'Intended Use / Purpose' },
 ];
 
+// Predefined common characteristics based on regulatory guidance
+const predefinedCharacteristics = [
+  { category: 'intended_use', name: 'Intended Use' },
+  { category: 'intended_use', name: 'Indications for Use' },
+  { category: 'clinical', name: 'Contraindications' },
+  { category: 'clinical', name: 'Patient Population' },
+  { category: 'clinical', name: 'Users' },
+  { category: 'technical', name: 'Classification' },
+  { category: 'materials', name: 'Materials' },
+  { category: 'design', name: 'Dimensions' },
+  { category: 'principles', name: 'Principles of Operation' },
+  { category: 'biological', name: 'Biocompatibility' },
+];
+
 /**
  * This component allows users to build a structured equivalence justification
  * for Clinical Evaluation Reports.
@@ -942,12 +956,44 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
               
               <div className="space-y-2">
                 <Label htmlFor="feature-name" className="text-sm font-medium">Feature Name</Label>
-                <Input
-                  id="feature-name"
-                  placeholder="e.g. Material Composition"
-                  value={currentFeature.name}
-                  onChange={(e) => setCurrentFeature({...currentFeature, name: e.target.value})}
-                />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Input
+                      id="feature-name"
+                      placeholder="e.g. Material Composition"
+                      value={currentFeature.name}
+                      onChange={(e) => setCurrentFeature({...currentFeature, name: e.target.value})}
+                    />
+                  </div>
+                  <Select
+                    value=""
+                    onValueChange={(value) => {
+                      // Find the predefined characteristic
+                      const predefined = predefinedCharacteristics.find(c => c.name === value);
+                      if (predefined) {
+                        setCurrentFeature({
+                          ...currentFeature,
+                          category: predefined.category,
+                          name: predefined.name
+                        });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Predefined" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Common Characteristics</SelectLabel>
+                        {predefinedCharacteristics.map((characteristic) => (
+                          <SelectItem key={characteristic.name} value={characteristic.name}>
+                            {characteristic.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             
@@ -987,9 +1033,34 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="impact-assessment" className="text-sm font-medium">
-                  Impact Assessment
-                </Label>
+                <div className="flex justify-between items-start mb-2">
+                  <Label htmlFor="impact-assessment" className="text-sm font-medium">
+                    Impact Assessment
+                  </Label>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-500">Match/Difference:</span>
+                    <div className="flex border rounded overflow-hidden">
+                      <Button 
+                        type="button"
+                        size="sm"
+                        variant={currentFeature.impact === 'none' ? "default" : "outline"}
+                        className={`rounded-none px-2 py-0 h-7 ${currentFeature.impact === 'none' ? 'bg-green-600 text-white hover:bg-green-700' : ''}`}
+                        onClick={() => setCurrentFeature({...currentFeature, impact: 'none'})}
+                      >
+                        Match
+                      </Button>
+                      <Button 
+                        type="button"
+                        size="sm"
+                        variant={currentFeature.impact !== 'none' ? "default" : "outline"}
+                        className={`rounded-none px-2 py-0 h-7 ${currentFeature.impact !== 'none' ? 'bg-amber-600 text-white hover:bg-amber-700' : ''}`}
+                        onClick={() => currentFeature.impact === 'none' ? setCurrentFeature({...currentFeature, impact: 'minor'}) : null}
+                      >
+                        Difference
+                      </Button>
+                    </div>
+                  </div>
+                </div>
                 <Select 
                   value={currentFeature.impact} 
                   onValueChange={(value) => setCurrentFeature({...currentFeature, impact: value})}
