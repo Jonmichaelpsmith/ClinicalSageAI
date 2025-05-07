@@ -437,6 +437,9 @@ export default function DocumentVaultPanel({ jobId }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Upload Document</DialogTitle>
+            <DialogDescription>
+              Add documents to your regulatory vault
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -501,6 +504,9 @@ export default function DocumentVaultPanel({ jobId }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Share Document</DialogTitle>
+            <DialogDescription>
+              Share selected document with team members
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             {selectedDocument && (

@@ -290,64 +290,64 @@ export default function CERV2Page() {
       </div>
       
       {/* MS365-inspired main container */}
-      <div className="container mx-auto p-4 bg-[#FAF9F8]">
+      <div className="container mx-auto p-4 bg-[#FAF9F8] cer-compact-ui">
         {/* MS365-style tabs */}
         <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
           <TabsList className="flex bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full">
             <TabsTrigger 
               value="builder" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
             >
-              <FileText className="h-4 w-4 mr-2" />
+              <FileText className="h-3 w-3 mr-1" />
               Builder
             </TabsTrigger>
             <TabsTrigger 
               value="literature" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
             >
-              <BookOpen className="h-4 w-4 mr-2" />
+              <BookOpen className="h-3 w-3 mr-1" />
               Literature
             </TabsTrigger>
             <TabsTrigger 
               value="compliance" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
             >
-              <CheckSquare className="h-4 w-4 mr-2" />
+              <CheckSquare className="h-3 w-3 mr-1" />
               Compliance
             </TabsTrigger>
             <TabsTrigger 
               value="assistant" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
+              <MessageSquare className="h-3 w-3 mr-1" />
               Assistant
             </TabsTrigger>
             <TabsTrigger 
               value="preview" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
             >
-              <BarChart className="h-4 w-4 mr-2" />
+              <BarChart className="h-3 w-3 mr-1" />
               Preview
             </TabsTrigger>
             <TabsTrigger 
               value="documents" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
             >
-              <FolderOpen className="h-4 w-4 mr-2" />
+              <FolderOpen className="h-3 w-3 mr-1" />
               Documents
             </TabsTrigger>
             <TabsTrigger 
               value="data-retrieval" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
             >
-              <Database className="h-4 w-4 mr-2" />
-              Data Retrieval
+              <Database className="h-3 w-3 mr-1" />
+              Data
             </TabsTrigger>
             <TabsTrigger 
               value="export" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-2 py-1 font-normal text-[#616161] text-xs tabs-navigation"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-3 w-3 mr-1" />
               Export
             </TabsTrigger>
           </TabsList>
@@ -490,10 +490,10 @@ export default function CERV2Page() {
       
       {/* Device Info Dialog for Zero-Click Report Generation */}
       <Dialog open={showDeviceInfoDialog} onOpenChange={setShowDeviceInfoDialog}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] bg-white">
           <DialogHeader>
-            <DialogTitle className="text-[#323130]">Zero-Click CER Generation</DialogTitle>
-            <DialogDescription className="text-[#616161]">
+            <DialogTitle className="text-[#323130] font-semibold text-lg">Zero-Click CER Generation</DialogTitle>
+            <DialogDescription className="text-[#323130]">
               Enter your medical device information to generate a complete CER with regulatory compliance built-in.
             </DialogDescription>
           </DialogHeader>
