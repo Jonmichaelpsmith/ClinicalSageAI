@@ -637,6 +637,14 @@ export default function CERV2Page() {
             </TabsTrigger>
             
             <TabsTrigger 
+              value="literature-review" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
+            >
+              <BookOpen className="h-3.5 w-3.5 mr-1.5" />
+              <span>Literature Review</span>
+            </TabsTrigger>
+            
+            <TabsTrigger 
               value="export" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
