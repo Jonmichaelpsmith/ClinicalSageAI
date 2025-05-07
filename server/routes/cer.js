@@ -229,6 +229,13 @@ const getEnhancedFaersService = async () => {
 
 const router = express.Router();
 
+// Middleware to ensure proper content-type for API responses
+router.use((req, res, next) => {
+  // Set content type to JSON for API routes
+  res.setHeader('Content-Type', 'application/json');
+  next();
+});
+
 // POST /api/cer/initialize-zero-click - Initialize a zero-click CER generation process
 router.post('/initialize-zero-click', async (req, res) => {
   try {
