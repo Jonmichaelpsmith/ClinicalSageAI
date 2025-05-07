@@ -471,7 +471,7 @@ cerApiService.generateEquivalenceRationale = async ({ subjectDevice, equivalentD
   try {
     console.log('Generating equivalence rationale for feature:', subjectDevice.feature.name);
     
-    const response = await fetch('/api/cer/generate-equivalence-rationale', {
+    const response = await fetch('/api/cer/equivalence/feature-rationale', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -505,7 +505,7 @@ cerApiService.generateOverallEquivalence = async ({ subjectDevice, equivalentDev
   try {
     console.log('Generating overall equivalence assessment for:', equivalentDevice.name);
     
-    const response = await fetch('/api/cer/generate-overall-equivalence', {
+    const response = await fetch('/api/cer/equivalence/overall-assessment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

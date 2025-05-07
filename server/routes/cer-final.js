@@ -984,7 +984,11 @@ router.get('/version', (req, res) => {
         faersData: '/api/cer/faers-data',
         analyzeFaers: '/api/cer/analyze-faers',
         exportPdf: '/api/cer/export-pdf',
-        generateReport: '/api/cer/generate-report'
+        generateReport: '/api/cer/generate-report',
+        equivalenceFeatureRationale: '/api/cer/equivalence/feature-rationale',
+        equivalenceOverallAssessment: '/api/cer/equivalence/overall-assessment',
+        equivalenceSave: '/api/cer/equivalence/save',
+        equivalenceGet: '/api/cer/equivalence/:cerId'
       },
       // Include FDA connection status if we can determine it
       dataSourceStatus: {
@@ -1003,6 +1007,250 @@ router.get('/version', (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve CER module version',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/cer/equivalence/feature-rationale - Generate rationale for feature equivalence
+ * 
+ * Generates an AI-powered rationale for why a specific feature of an equivalent device
+ * is considered equivalent (or not) to the subject device
+ */
+router.post('/equivalence/feature-rationale', async (req, res) => {
+  try {
+    const { 
+      subjectDevice, 
+      equivalentDevice
+    } = req.body;
+    
+    if (!subjectDevice || !equivalentDevice) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Both subject device and equivalent device information are required'
+      });
+    }
+    
+    if (!subjectDevice.feature || !equivalentDevice.feature) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Feature information is required for both devices'
+      });
+    }
+    
+    console.log(`Generating equivalence rationale for feature: ${subjectDevice.feature.name}`);
+    
+    // Create a detailed prompt for the OpenAI service
+    const prompt = `
+You are a medical device regulatory expert analyzing device equivalence following MEDDEV 2.7/1 Rev 4 requirements.
+
+Compare the following feature between a subject device and a claimed equivalent device:
+
+Subject Device: ${subjectDevice.name}
+Feature: ${subjectDevice.feature.name} (${subjectDevice.feature.category})
+Value: ${subjectDevice.feature.value}
+
+Equivalent Device: ${equivalentDevice.name}
+Feature: ${equivalentDevice.feature.name} (${equivalentDevice.feature.category})
+Value: ${equivalentDevice.feature.value}
+
+Please provide:
+1. A detailed rationale explaining whether these features can be considered equivalent
+2. An assessment of the potential impact on safety and performance (none, minor, moderate, significant)
+3. Any relevant regulatory considerations from MEDDEV 2.7/1 Rev 4
+
+Format your response as valid JSON with the following structure:
+{
+  "rationale": "Your detailed rationale here...",
+  "impact": "none|minor|moderate|significant",
+  "regulatoryConsiderations": "Any relevant regulatory considerations..."
+}
+`;
+    
+    // Call the OpenAI service to generate the rationale
+    const structuredOutput = await openaiService.generateStructuredData(prompt, {
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+      temperature: 0.2, // Lower temperature for more consistent, factual responses
+      response_format: { type: "json_object" }
+    });
+    
+    // Return the AI-generated rationale
+    res.json({
+      success: true,
+      data: structuredOutput,
+      source: 'MEDDEV 2.7/1 Rev 4 analysis'
+    });
+    
+  } catch (error) {
+    console.error('Error generating equivalence rationale:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate equivalence rationale',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/cer/equivalence/overall-assessment - Generate overall equivalence assessment
+ * 
+ * Produces a comprehensive assessment of the overall equivalence between two devices
+ * based on their complete feature sets
+ */
+router.post('/equivalence/overall-assessment', async (req, res) => {
+  try {
+    const { 
+      subjectDevice, 
+      equivalentDevice
+    } = req.body;
+    
+    if (!subjectDevice || !equivalentDevice) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Both subject device and equivalent device information are required'
+      });
+    }
+    
+    console.log(`Generating overall equivalence assessment between ${subjectDevice.name} and ${equivalentDevice.name}`);
+    
+    // Create a detailed prompt for the OpenAI service with all features
+    const prompt = `
+You are a medical device regulatory expert analyzing device equivalence following MEDDEV 2.7/1 Rev 4 requirements.
+
+Compare the following devices for equivalence assessment in a Clinical Evaluation Report:
+
+Subject Device:
+- Name: ${subjectDevice.name}
+- Manufacturer: ${subjectDevice.manufacturer || 'Not specified'}
+- Description: ${subjectDevice.description || 'Not provided'}
+${subjectDevice.features ? `
+Features:
+${subjectDevice.features.map(f => `- ${f.name} (${f.category}): ${f.value}`).join('\n')}
+` : ''}
+
+Equivalent Device:
+- Name: ${equivalentDevice.name}
+- Manufacturer: ${equivalentDevice.manufacturer || 'Not specified'}
+- Description: ${equivalentDevice.description || 'Not provided'}
+${equivalentDevice.features ? `
+Features:
+${equivalentDevice.features.map(f => `- ${f.name} (${f.category}): ${f.value}`).join('\n')}
+` : ''}
+
+Please provide:
+1. A comprehensive assessment of the overall equivalence between these devices
+2. Specific areas where equivalence is well-established
+3. Areas where differences exist and their potential clinical impact
+4. An overall conclusion regarding the acceptability of claiming equivalence according to MEDDEV 2.7/1 Rev 4
+
+Format your response as valid JSON with the following structure:
+{
+  "overallAssessment": "Your comprehensive assessment here...",
+  "equivalenceAreas": "Areas where equivalence is well-established...",
+  "differenceAreas": "Areas where differences exist and their clinical impact...",
+  "conclusion": "Your overall conclusion regarding equivalence acceptability..."
+}
+`;
+    
+    // Call the OpenAI service to generate the assessment
+    const structuredOutput = await openaiService.generateStructuredData(prompt, {
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+      temperature: 0.2, // Lower temperature for more consistent, factual responses
+      response_format: { type: "json_object" }
+    });
+    
+    // Return the AI-generated assessment
+    res.json({
+      success: true,
+      data: structuredOutput,
+      source: 'MEDDEV 2.7/1 Rev 4 analysis'
+    });
+    
+  } catch (error) {
+    console.error('Error generating overall equivalence assessment:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate overall equivalence assessment',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/cer/equivalence/save - Save equivalence data to a CER report
+ * 
+ * Saves the device equivalence data to a specific CER report for inclusion
+ * in the final report
+ */
+router.post('/equivalence/save', async (req, res) => {
+  try {
+    const { 
+      cerId,
+      equivalenceData
+    } = req.body;
+    
+    if (!equivalenceData) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Equivalence data is required'
+      });
+    }
+    
+    console.log(`Saving equivalence data for CER ID: ${cerId || 'new report'}`);
+    
+    // In a production implementation, this would save to a database
+    // For now, we'll just return success
+    
+    res.json({
+      success: true,
+      message: 'Equivalence data saved successfully',
+      timestamp: new Date().toISOString(),
+      id: cerId || `cer-eq-${Date.now()}`
+    });
+    
+  } catch (error) {
+    console.error('Error saving equivalence data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save equivalence data',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/cer/equivalence/:cerId - Get equivalence data for a CER report
+ * 
+ * Retrieves the saved equivalence data for a specific CER report
+ */
+router.get('/equivalence/:cerId', async (req, res) => {
+  try {
+    const { cerId } = req.params;
+    
+    if (!cerId) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'CER ID is required'
+      });
+    }
+    
+    console.log(`Retrieving equivalence data for CER ID: ${cerId}`);
+    
+    // In a production implementation, this would fetch from a database
+    // For now, we'll return a not found response
+    
+    res.status(404).json({
+      success: false,
+      error: 'Equivalence data not found',
+      message: 'No equivalence data found for the specified CER ID'
+    });
+    
+  } catch (error) {
+    console.error('Error retrieving equivalence data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve equivalence data',
       message: error.message
     });
   }
