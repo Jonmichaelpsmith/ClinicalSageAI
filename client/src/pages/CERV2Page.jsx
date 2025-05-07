@@ -6,6 +6,7 @@ import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
 import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
 import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
+import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,7 @@ export default function CERV2Page() {
   const [faers, setFaers] = useState([]);
   const [comparators, setComparators] = useState([]);
   const [sections, setSections] = useState([]);
+  const [equivalenceData, setEquivalenceData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [activeTab, setActiveTab] = useState('builder');
