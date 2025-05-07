@@ -1070,6 +1070,46 @@ ${updatedCepData.evaluationCriteria || 'Not specified'}
               }}
             />
           </TabsContent>
+          
+          <TabsContent value="literature-review" className="mt-0">
+            <LiteratureReviewWorkflow
+              deviceName={deviceName}
+              manufacturer={manufacturer}
+              onAddSection={(literatureReviewSection) => {
+                // Check if we already have a literature review section
+                const existingIndex = sections.findIndex(
+                  section => section.type === 'literature-review' || 
+                  (section.title && section.title.toLowerCase().includes('literature review'))
+                );
+                
+                if (existingIndex >= 0) {
+                  // Update existing section
+                  const updatedSections = [...sections];
+                  updatedSections[existingIndex] = {
+                    ...updatedSections[existingIndex],
+                    content: literatureReviewSection.content,
+                    lastUpdated: new Date().toISOString()
+                  };
+                  setSections(updatedSections);
+                  
+                  toast({
+                    title: "Literature Review Updated",
+                    description: "Literature review has been updated in your CER.",
+                    variant: "success"
+                  });
+                } else {
+                  // Add new section
+                  setSections([...sections, literatureReviewSection]);
+                  
+                  toast({
+                    title: "Literature Review Added",
+                    description: "Literature review has been added to your CER.",
+                    variant: "success"
+                  });
+                }
+              }}
+            />
+          </TabsContent>
 
           <TabsContent value="export" className="mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 border border-[#E1DFDD] rounded">
