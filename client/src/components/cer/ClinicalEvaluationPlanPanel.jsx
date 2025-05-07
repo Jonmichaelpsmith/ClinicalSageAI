@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ClipboardList, BookMarked, FilePlus2, CheckSquare, AlertCircle, InfoIcon } from 'lucide-react';
+import { ClipboardList, BookMarked, FilePlus2, CheckSquare, AlertCircle, Info } from 'lucide-react';
 import CerTooltipWrapper from './CerTooltipWrapper';
 
 // GSPRs based on MDR
@@ -501,7 +501,7 @@ export default function ClinicalEvaluationPlanPanel({
         <CardContent className="p-6 space-y-4">
           <div className="bg-[#F3F2F1] p-4 rounded border border-[#E1DFDD] mb-4">
             <div className="flex items-start space-x-3">
-              <InfoIcon className="h-5 w-5 text-[#0F6CBD] mt-0.5" />
+              <Info className="h-5 w-5 text-[#0F6CBD] mt-0.5" />
               <div>
                 <h4 className="text-[#323130] font-medium">GSPR Selection Guidance</h4>
                 <p className="text-[#605E5C] text-sm">
