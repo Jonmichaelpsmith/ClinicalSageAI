@@ -6,6 +6,46 @@
  */
 
 /**
+ * Search PubMed for scientific literature
+ * @param {Object} params - Search parameters
+ * @param {string} params.query - Search query (device name)
+ * @param {string} params.manufacturer - Optional manufacturer name to refine search
+ * @param {number} params.limit - Maximum number of results to return
+ * @returns {Promise<Object>} Search results with papers array
+ */
+export const searchPubMed = async ({ query, manufacturer = '', limit = 20 }) => {
+  try {
+    const response = await fetch('/api/literature/pubmed', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query, manufacturer, limit }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to search PubMed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('PubMed search error:', error);
+    throw error;
+  }
+};
+
+// Export service object for easy imports
+export const literatureAPIService = {
+  searchPubMed,
+  searchLiterature,
+  summarizePaper,
+  generateCitations,
+  generateLiteratureReview,
+  analyzePaperPDF
+};
+
+/**
  * Search for scientific literature related to a product
  * @param {Object} params - Search parameters
  * @param {string} params.query - Search query
