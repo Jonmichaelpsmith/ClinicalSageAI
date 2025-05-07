@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
 import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
@@ -134,20 +134,64 @@ export default function CERV2Page() {
     setShowFetchingBanner(true);
     setHasAutoFetched(true);
     
-    // Run both in parallel
-    await Promise.all([
-      loadFaersData(deviceName),
-      fetchLiteratureData(deviceName)
-    ]);
-    
-    setShowFetchingBanner(false);
-    
-    toast({
-      title: 'Evidence Collection Complete',
-      description: 'All available evidence has been retrieved.',
-      variant: 'success'
-    });
+    try {
+      // Run both in parallel, but handle errors individually
+      const results = await Promise.allSettled([
+        loadFaersData(deviceName),
+        fetchLiteratureData(deviceName)
+      ]);
+      
+      // Check for errors
+      const faersResult = results[0];
+      const litResult = results[1];
+      
+      let hasFaersData = false;
+      let hasLiteratureData = false;
+      
+      if (faersResult.status === 'fulfilled') {
+        hasFaersData = true;
+      } else {
+        console.error('FAERS data retrieval failed:', faersResult.reason);
+      }
+      
+      if (litResult.status === 'fulfilled') {
+        hasLiteratureData = true;
+        if (litResult.value) {
+          setLiteratureResult(litResult.value);
+        }
+      } else {
+        console.error('Literature data retrieval failed:', litResult.reason);
+      }
+      
+      if (hasFaersData || hasLiteratureData) {
+        toast({
+          title: 'Evidence Collection Complete',
+          description: `Retrieved ${hasFaersData ? 'FAERS data' : ''}${hasFaersData && hasLiteratureData ? ' and ' : ''}${hasLiteratureData ? 'literature data' : ''}.`,
+          variant: 'success'
+        });
+      } else {
+        toast({
+          title: 'Evidence Collection Issue',
+          description: 'Could not retrieve data. Please try again or manually search in each tab.',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Enhanced data retrieval error:', error);
+      toast({
+        title: 'Data Retrieval Failed',
+        description: error.message || 'An error occurred during data retrieval',
+        variant: 'destructive'
+      });
+    } finally {
+      setShowFetchingBanner(false);
+    }
   };
+  
+  // Memoize the runEnhancedDataRetrieval function
+  const memoizedDataRetrieval = useCallback(() => {
+    runEnhancedDataRetrieval();
+  }, [deviceName, manufacturer]);
   
   // Auto-trigger data collection when both device name and manufacturer are filled
   useEffect(() => {
@@ -159,12 +203,12 @@ export default function CERV2Page() {
       
       // Give a slight delay so the user sees the banner first
       const timer = setTimeout(() => {
-        runEnhancedDataRetrieval();
+        memoizedDataRetrieval();
       }, 1000);
       
       return () => clearTimeout(timer);
     }
-  }, [deviceName, manufacturer, hasAutoFetched]);
+  }, [deviceName, manufacturer, hasAutoFetched, memoizedDataRetrieval]);
   
   // Show reminder if user tries to use builder without retrieving data
   useEffect(() => {
