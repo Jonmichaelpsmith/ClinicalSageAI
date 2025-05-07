@@ -195,6 +195,348 @@ export const analyzePaperPDF = async ({ file, context }) => {
   }
 };
 
+/**
+ * Generate a relevance appraisal for a study in the literature review
+ * @param {Object} study - The study to appraise
+ * @param {string} deviceName - The name of the device being evaluated
+ * @param {Array} inclusionCriteria - List of inclusion criteria for the review
+ * @param {Array} exclusionCriteria - List of exclusion criteria for the review
+ * @returns {Promise<Object>} Generated relevance appraisal
+ */
+export const generateRelevanceAppraisal = async (study, deviceName, inclusionCriteria = [], exclusionCriteria = []) => {
+  try {
+    const response = await fetch('/api/literature/appraise-relevance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        study, 
+        deviceName, 
+        inclusionCriteria, 
+        exclusionCriteria 
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to generate relevance appraisal');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Relevance appraisal error:', error);
+    // Use OpenAI directly if API endpoint fails
+    return generateAIRelevanceAppraisal(study, deviceName, inclusionCriteria, exclusionCriteria);
+  }
+};
+
+/**
+ * Generate a bias assessment for a study in the literature review
+ * @param {Object} study - The study to assess
+ * @param {Array} biasDomains - List of bias domains to assess
+ * @returns {Promise<Object>} Generated bias assessment
+ */
+export const generateBiasAssessment = async (study, biasDomains = []) => {
+  try {
+    const response = await fetch('/api/literature/assess-bias', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        study, 
+        biasDomains 
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to generate bias assessment');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Bias assessment error:', error);
+    // Use OpenAI directly if API endpoint fails
+    return generateAIBiasAssessment(study, biasDomains);
+  }
+};
+
+/**
+ * Generate a search summary for the literature review
+ * @param {Object} reviewData - The literature review data
+ * @returns {Promise<Object>} Generated search summary
+ */
+export const generateSearchSummary = async (reviewData) => {
+  try {
+    const response = await fetch('/api/literature/search-summary', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reviewData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to generate search summary');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Search summary error:', error);
+    // Use OpenAI directly if API endpoint fails
+    return generateAISearchSummary(reviewData);
+  }
+};
+
+// Fallback AI generators using OpenAI directly if API endpoints fail
+const generateAIRelevanceAppraisal = async (study, deviceName, inclusionCriteria, exclusionCriteria) => {
+  try {
+    // Use OpenAI API to generate relevance appraisal
+    // This is a fallback for when the server endpoint is unavailable
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert in clinical literature appraisal with specialized knowledge of medical devices. 
+            Your task is to assess the relevance of a scientific publication to a specific medical device evaluation.
+            Provide a structured JSON response with scores and justifications.`
+          },
+          {
+            role: "user",
+            content: `Please appraise the relevance of this study for a clinical evaluation of "${deviceName}".
+            
+            Study Title: ${study.title}
+            Authors: ${study.authors?.join(', ') || 'Unknown'}
+            ${study.abstract ? `Abstract: ${study.abstract}` : ''}
+            ${study.journal ? `Journal: ${study.journal}` : ''}
+            ${study.publication_date ? `Publication Date: ${study.publication_date}` : ''}
+            
+            Inclusion Criteria:
+            ${inclusionCriteria.map(criterion => `- ${criterion}`).join('\n')}
+            
+            Exclusion Criteria:
+            ${exclusionCriteria.map(criterion => `- ${criterion}`).join('\n')}
+            
+            Assess the study's relevance on these criteria:
+            1. Device relevance: How directly relevant is the study to the subject device?
+            2. Population relevance: How well does the study population match the intended use population?
+            3. Outcome relevance: How relevant are the studied outcomes to the intended performance and safety claims?
+            4. Setting relevance: How representative is the clinical setting to real-world use?
+            
+            Rate each criterion from 1-5 where 1=Not Relevant, 3=Moderately Relevant, 5=Highly Relevant.
+            Provide an overall relevance score and a summary of your assessment.`
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('OpenAI API request failed');
+    }
+
+    const responseData = await response.json();
+    const appraisal = JSON.parse(responseData.choices[0].message.content);
+    
+    return {
+      summary: appraisal.summary || 'No summary available',
+      scores: appraisal.scores || {},
+      criteriaAssessments: appraisal.criteriaAssessments || {},
+      overallScore: appraisal.overallScore || 3,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('AI relevance appraisal generation error:', error);
+    // Return a minimal default structure if all else fails
+    return {
+      summary: 'Could not generate automatic appraisal. Please assess manually.',
+      scores: {},
+      criteriaAssessments: {},
+      overallScore: null,
+      timestamp: new Date().toISOString()
+    };
+  }
+};
+
+const generateAIBiasAssessment = async (study, biasDomains) => {
+  try {
+    // Use OpenAI API to generate bias assessment
+    // This is a fallback for when the server endpoint is unavailable
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert in clinical literature appraisal with specialized knowledge in assessing bias in scientific studies.
+            Your task is to conduct a risk of bias assessment for a scientific publication.
+            Provide a structured JSON response with risk levels and justifications for each bias domain.`
+          },
+          {
+            role: "user",
+            content: `Please conduct a risk of bias assessment for this study:
+            
+            Study Title: ${study.title}
+            Authors: ${study.authors?.join(', ') || 'Unknown'}
+            ${study.abstract ? `Abstract: ${study.abstract}` : ''}
+            ${study.journal ? `Journal: ${study.journal}` : ''}
+            ${study.publication_date ? `Publication Date: ${study.publication_date}` : ''}
+            
+            Assess the risk of bias in these domains:
+            ${biasDomains.map(domain => `- ${domain.name}: ${domain.description}`).join('\n')}
+            
+            For each domain, assign a risk level of "low", "some_concerns", or "high", provide a brief justification, and include any notes.
+            Also provide an overall risk of bias assessment and a summary of your assessment.`
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('OpenAI API request failed');
+    }
+
+    const responseData = await response.json();
+    const assessment = JSON.parse(responseData.choices[0].message.content);
+    
+    return {
+      summary: assessment.summary || 'No summary available',
+      domainAssessments: assessment.domainAssessments || {},
+      overallRisk: assessment.overallRisk || 'unclear',
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('AI bias assessment generation error:', error);
+    // Return a minimal default structure if all else fails
+    return {
+      summary: 'Could not generate automatic bias assessment. Please assess manually.',
+      domainAssessments: {},
+      overallRisk: 'unclear',
+      timestamp: new Date().toISOString()
+    };
+  }
+};
+
+const generateAISearchSummary = async (reviewData) => {
+  try {
+    // Use OpenAI API to generate search summary
+    // This is a fallback for when the server endpoint is unavailable
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert in clinical literature reviews with specialized knowledge of medical devices.
+            Your task is to generate a comprehensive summary of a literature search methodology and results.
+            Provide both narrative text and structured tables in HTML format.`
+          },
+          {
+            role: "user",
+            content: `Please generate a comprehensive summary of this literature search for ${reviewData.device || 'a medical device'}:
+            
+            Databases searched: ${reviewData.databases?.join(', ') || 'Not specified'}
+            
+            Search period: From ${reviewData.searchPeriod?.startDate || 'Not specified'} to ${reviewData.searchPeriod?.endDate || 'Not specified'}
+            
+            Search queries used:
+            ${reviewData.searchQueries?.map(q => `- ${q.database}: ${q.query} (${q.results || 'Unknown'} results)`).join('\n') || 'Not specified'}
+            
+            Inclusion criteria:
+            ${reviewData.inclusionCriteria?.map(c => `- ${c}`).join('\n') || 'Not specified'}
+            
+            Exclusion criteria:
+            ${reviewData.exclusionCriteria?.map(c => `- ${c}`).join('\n') || 'Not specified'}
+            
+            PRISMA flow:
+            - Records identified: ${reviewData.prismaFlow?.identified || 0}
+            - Records screened: ${reviewData.prismaFlow?.screened || 0}
+            - Records assessed for eligibility: ${reviewData.prismaFlow?.eligible || 0}
+            - Studies included: ${reviewData.prismaFlow?.included || 0}
+            
+            Included studies:
+            ${reviewData.selectedStudies?.map(s => 
+              `- ${s.title} (${s.authors?.[0] || 'Unknown'} et al., ${new Date(s.publication_date).getFullYear() || 'Unknown'})
+               Type: ${s.studyType || 'Not specified'}
+               Relevance: ${s.overallRelevance ? (s.overallRelevance >= 4 ? 'High' : s.overallRelevance >= 3 ? 'Medium' : 'Low') : 'Not assessed'}
+               Quality: ${s.overallQuality || 'Not assessed'}`
+            ).join('\n') || 'No studies included'}
+            
+            Format your response as follows:
+            1. A comprehensive narrative summary of the search strategy and results in HTML format
+            2. A table of included studies with columns for Title, Year, Type, Relevance, and Quality
+            3. Key findings and implications for the clinical evaluation
+            
+            Use proper HTML formatting for the content and tables.`
+          }
+        ],
+        temperature: 0.3,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('OpenAI API request failed');
+    }
+
+    const responseData = await response.json();
+    const content = responseData.choices[0].message.content;
+    
+    // Extract HTML content and any tables
+    const contentMatch = content.match(/<html>([\s\S]*?)<\/html>/) || content.match(/<body>([\s\S]*?)<\/body>/);
+    const tableMatch = content.match(/<table>([\s\S]*?)<\/table>/g);
+    
+    // Create included studies table data
+    const includedStudiesTable = reviewData.selectedStudies?.map(s => ({
+      title: s.title || 'Unknown',
+      year: s.publication_date ? new Date(s.publication_date).getFullYear() : 'Unknown',
+      type: s.studyType || 'Not specified',
+      relevance: s.overallRelevance ? (s.overallRelevance >= 4 ? 'High' : s.overallRelevance >= 3 ? 'Medium' : 'Low') : 'Not assessed',
+      quality: s.overallQuality ? (s.overallQuality === 'high' ? 'High' : s.overallQuality === 'medium' ? 'Medium' : 'Low') : 'Not assessed'
+    })) || [];
+    
+    return {
+      content: contentMatch ? contentMatch[1] : content,
+      tables: {
+        included_studies: includedStudiesTable
+      },
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('AI search summary generation error:', error);
+    // Return a minimal default structure if all else fails
+    return {
+      content: '<p>Could not generate automatic search summary. Please review manually.</p>',
+      tables: {
+        included_studies: []
+      },
+      timestamp: new Date().toISOString()
+    };
+  }
+};
+
 // Export service object for easy imports (moved to end of file to fix circular dependency)
 export const literatureAPIService = {
   searchPubMed,
@@ -202,5 +544,8 @@ export const literatureAPIService = {
   summarizePaper,
   generateCitations,
   generateLiteratureReview,
-  analyzePaperPDF
+  analyzePaperPDF,
+  generateRelevanceAppraisal,
+  generateBiasAssessment,
+  generateSearchSummary
 };
