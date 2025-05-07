@@ -1,0 +1,243 @@
+Thought for 4 seconds
+
+
+Below is an **exhaustive, deeply detailed spec** of how the TrialSage AI-driven CER Generation Module should work—every UI component, API route, data model, AI prompt, background task, and compliance check—from the moment a user lands on the module through final report submission and ongoing monitoring.
+
+---
+
+# 1. High-Level Architecture
+
+```
+┌───────────────┐       ┌───────────────────────┐       ┌─────────────────┐
+│   Frontend    │ ⇄ API │    Express/Flask      │ ⇄ DB  │   PostgreSQL    │
+│ (React Tabs)  │       │ • Auth, Routing,      │       │ • cer_reports   │
+└───────────────┘       │   FAERS Client,       │       │ • faers_events  │
+                        │   LitSearch, RAG,     │       │ • sections      │
+┌───────────────┐       │   Exports, Compliance │       │ • literature    │
+│ AI Services   │ ⇄     └───────────────────────┘       └─────────────────┘
+│ • OpenAI      │               ▲
+│ • PubMed API  │               │
+│ • OCR/NLP     │───────────────┘
+└───────────────┘
+```
+
+---
+
+# 2. User-Facing Module & UI Flow
+
+## 2.1 Entry & Authentication
+
+1. **Login Gateway**
+
+   * Magic-link or OAuth SSO → JWT stored in `localStorage`.
+   * Protected Route: `/cer` redirects to `/login` if no valid token.
+
+2. **CER Dashboard** (`/cer`)
+
+   * **Hero Card** with “Create New CER” button + progress on existing drafts.
+   * **Recent Projects** list with status badges (Draft, In Review, Exported).
+
+## 2.2 Wizard & Metadata Capture
+
+* **Stepper Component** at top:
+
+  1. **Meta** → 2. **Data Ingestion** → 3. **Section Draft** → 4. **Review** → 5. **Export**
+* **Meta Form** collects:
+
+  * Device Name (typeahead linked to internal catalog)
+  * Manufacturer (dropdown or free text)
+  * Regulatory Pathway (EU MDR / 510(k) / PMA / De Novo)
+  * Device Classification (Class I–III)
+  * Versioning: auto-incremented “v1.0, v1.1”
+* On submit, front end calls `POST /api/cer/create` → returns `cerId`.
+
+## 2.3 Tabbed Workspace
+
+Once created, user sees three main tabs:
+
+1. **Section Generator**
+2. **Data Hub**
+3. **Report Preview & Export**
+
+### 2.3.1 Section Generator Tab
+
+* **SectionSelector** dropdown (14–18 section types).
+* **ContextEditor** textarea + optional file uploader.
+* **Generate Button** triggers `POST /api/cer/section` with `{ cerId, sectionType, context }`.
+* **AI Result** rendered in MarkdownViewer.
+* **“Add to Draft”** pushes to draft state and `POST /api/cer/section/{id}/save`.
+
+### 2.3.2 Data Hub Tab
+
+#### A. FAERS Panel
+
+* **Product Auto-Fetch**: upon Meta submit, client calls `GET /api/cer/{cerId}/faers`
+* Displays:
+
+  * Risk Score badge (e.g. 2.35)
+  * Adverse Event table (sortable by seriousness, date)
+  * Comparator Chart (bar graph via Chart.js)
+
+#### B. Literature Panel
+
+* **Search Form** for PubMed: keywords, date, filters → calls `GET /api/lit/search?q=…`
+* **Upload PDF** drag/drop → calls `POST /api/lit/upload` → returns extracted metadata
+* **“Summarize Study”** button calls `POST /api/lit/summarize` with text/metadata
+* Shows AI summary + “Add to Literature Review” action
+
+#### C. Clinical Data Panel (future)
+
+* Drag/drop CSV/XLSX → `POST /api/cer/{cerId}/clinical/upload`
+* Shows parsed endpoints, AE tables, summary stats
+
+### 2.3.3 Report Preview & Export Tab
+
+* **Live Preview**: fetch `GET /api/cer/{cerId}/preview` → returns full assembled JSON:
+
+  ```json
+  {
+    "meta": {...},
+    "sections": [{type, content, order}],
+    "faers": [...],
+    "comparators": [...],
+    "literature": [...],
+  }
+  ```
+* Render with a multi-accordion or paginated view.
+* **Export Buttons**:
+
+  * PDF → `POST /api/cer/{cerId}/export/pdf` (stream/download)
+  * DOCX → `POST /api/cer/{cerId}/export/docx`
+
+---
+
+# 3. Backend API & Data Models
+
+## 3.1 Routes
+
+| Method | Path                                  | Purpose                                  |
+| ------ | ------------------------------------- | ---------------------------------------- |
+| POST   | `/api/cer/create`                     | Create new CER metadata                  |
+| GET    | `/api/cer/:cerId/faers`               | Pull or retrieve FAERS + comparator data |
+| POST   | `/api/cer/:cerId/section`             | Generate one section via GPT-4o          |
+| PUT    | `/api/cer/:cerId/section/:secId/save` | Save edited section                      |
+| GET    | `/api/cer/:cerId/preview`             | Assemble full report JSON                |
+| POST   | `/api/cer/:cerId/export/pdf`          | Return finalized PDF                     |
+| POST   | `/api/cer/:cerId/export/docx`         | Return finalized DOCX                    |
+| GET    | `/api/lit/search`                     | PubMed / Scholar search proxy            |
+| POST   | `/api/lit/upload`                     | PDF upload + OCR                         |
+| POST   | `/api/lit/summarize`                  | GPT summarization of study               |
+
+## 3.2 Database Tables
+
+```sql
+CREATE TABLE cer_reports (
+  id UUID PRIMARY KEY,
+  title TEXT,
+  device_name TEXT,
+  manufacturer TEXT,
+  pathway TEXT,
+  classification TEXT,
+  version TEXT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+);
+
+CREATE TABLE faers_events (
+  id SERIAL PRIMARY KEY,
+  cer_id UUID REFERENCES cer_reports(id),
+  reaction TEXT,
+  serious BOOLEAN,
+  outcome TEXT,
+  age INT,
+  sex TEXT,
+  report_date DATE
+);
+
+CREATE TABLE comparators (
+  id SERIAL PRIMARY KEY,
+  cer_id UUID REFERENCES cer_reports(id),
+  name TEXT,
+  risk_score NUMERIC,
+  report_count INT
+);
+
+CREATE TABLE sections (
+  id SERIAL PRIMARY KEY,
+  cer_id UUID REFERENCES cer_reports(id),
+  section_type TEXT,
+  content TEXT,
+  order_idx INT,
+  created_at TIMESTAMP
+);
+
+CREATE TABLE literature (
+  id SERIAL PRIMARY KEY,
+  cer_id UUID REFERENCES cer_reports(id),
+  title TEXT,
+  authors TEXT,
+  journal TEXT,
+  pub_date DATE,
+  summary TEXT
+);
+```
+
+---
+
+# 4. AI Integration & Prompt Engineering
+
+## 4.1 FAERS Client
+
+* **Un II Resolver** via OpenFDA Label API
+* **Event Fetcher** with `limit=500`, error retries, caching per 24 h
+* **Risk Scorer**: weighted by outcome severity
+
+## 4.2 Section Generation Prompt Template
+
+```text
+You are a regulatory expert. Draft the "{{section_type}}" for a CER on "{{device_name}}", using:
+- FAERS data: {{faers_summary}}
+- Comparator scores: {{comparator_data}}
+- Literature insights: {{selected_studies}}
+- Clinical data: {{clinical_summary}}
+Write in professional, regulatory-compliant style, include embedded citations.
+```
+
+## 4.3 Literature Summarization
+
+* **RAG** vs. pure LLM:
+
+  * If PDF > 5 pages → chunk + embed + retrieve relevant chunks
+  * GPT-4o call per chunk, aggregate with “stitching” prompt
+
+---
+
+# 5. Automation & Background Tasks
+
+1. **Nightly FAERS Sync**
+
+   * Cron job → re-run FAERS & comparator fetch → update risk scores → flag significant changes → email alerts
+2. **Draft Auto-Save**
+
+   * Every 30 s or on field blur → save draft JSON to DB
+3. **Compliance Re-Check**
+
+   * On each section save → run rule engine for EU MDR / ISO checks → tag section with pass/fail
+
+---
+
+# 6. Advanced Features & Future Enhancements
+
+* **Interactive Q\&A**: GPT-4o chat widget scoped to `sections`, `faers`, `literature`.
+* **Reviewer Comments**: inline comment threads on each section.
+* **Version Diff Viewer**: show redline between versions.
+* **EUDAMED / eCTD Export**: auto-generate compliant metadata packages.
+* **Multi-Lingual Support**: generate CER in EN, FR, DE, ES via AI translation.
+
+---
+
+## In Summary
+
+This spec covers every piece—from authentication, routing, data models, AI prompt design, UI components, background automation, to future vision.  Implementing this will deliver a **truly zero-touch, AI-supercharged CER Authoring Suite** that guides the user through a seamless experience: click “Create”, watch data pour in and sections write themselves, preview in real-time, then export regulator-ready reports with one click.
+
+Let me know if you’d like code scaffolds for any part of this, or to start building the next feature set in Canvas/Replit!
