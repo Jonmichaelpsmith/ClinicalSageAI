@@ -1807,17 +1807,75 @@ router.post('/export-pdf', async (req, res) => {
     
     console.log(`Generating PDF export for ${productName || 'unknown product'}`);
     
-    // In a production environment, this would generate an actual PDF
-    // For this demo, we'll return a mock response
-    setTimeout(() => {
-      res.json({
-        success: true,
-        format: 'pdf',
-        filename: `faers_report_${productName?.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
-        message: 'PDF export generated successfully',
-        url: `/api/cer/downloads/faers_${Date.now()}.pdf`
+    // Use the real PDF exporter service to generate an actual PDF
+    const pdfExporter = require('../services/cerPdfExporter');
+    
+    try {
+      // Create CER data object with FAERS information
+      const cerData = {
+        title: `Clinical Evaluation Report: ${productName}`,
+        sections: [
+          {
+            title: 'FAERS Adverse Event Analysis',
+            content: `Analysis of FDA FAERS data for ${productName}`
+          }
+        ],
+        deviceInfo: {
+          name: productName,
+          manufacturer: faersData.productInfo?.manufacturer || 'Unknown Manufacturer',
+          modelNumber: faersData.productInfo?.modelNumber
+        },
+        metadata: {
+          author: 'TrialSage AI',
+          generatedAt: new Date().toISOString(),
+          version: '1.0.0',
+          reviewStatus: 'draft',
+          confidential: true
+        }
+      };
+      
+      // Generate the actual PDF
+      pdfExporter.generateCerPdf(cerData)
+        .then(pdfBuffer => {
+          // Save PDF to file
+          const timestamp = Date.now();
+          const filename = `faers_report_${productName?.replace(/\s+/g, '_')}_${timestamp}.pdf`;
+          const filePath = path.join(__dirname, '../public/downloads', filename);
+          
+          // Ensure directory exists
+          const dir = path.dirname(filePath);
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
+          
+          // Write the file
+          fs.writeFileSync(filePath, pdfBuffer);
+          
+          // Send response with URL
+          res.json({
+            success: true,
+            format: 'pdf',
+            filename: filename,
+            message: 'PDF export generated successfully',
+            url: `/api/cer/downloads/${filename}`
+          });
+        })
+        .catch(error => {
+          console.error('Error generating PDF:', error);
+          res.status(500).json({
+            success: false,
+            error: 'Failed to generate PDF export',
+            details: error.message
+          });
+        });
+    } catch (error) {
+      console.error('Error preparing PDF data:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to prepare data for PDF export',
+        details: error.message
       });
-    }, 1500);
+    }
   } catch (error) {
     console.error('Error exporting FAERS data to PDF:', error);
     res.status(500).json({ 
@@ -1842,17 +1900,105 @@ router.post('/export-word', async (req, res) => {
     
     console.log(`Generating Word export for ${productName || 'unknown product'}`);
     
-    // In a production environment, this would generate an actual DOCX file
-    // For this demo, we'll return a mock response
-    setTimeout(() => {
-      res.json({
-        success: true,
-        format: 'docx',
-        filename: `faers_report_${productName?.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.docx`,
-        message: 'Word document generated successfully',
-        url: `/api/cer/downloads/faers_${Date.now()}.docx`
+    // For Word exports, we'll use our existing PDF functionality
+    try {
+      // Use PDF generator to create content
+      const pdfExporter = require('../services/cerPdfExporter');
+      
+      // Create CER data object with FAERS information
+      const cerData = {
+        title: `Clinical Evaluation Report: ${productName}`,
+        sections: [
+          {
+            title: 'FAERS Adverse Event Analysis',
+            content: `Analysis of FDA FAERS data for ${productName}`
+          }
+        ],
+        deviceInfo: {
+          name: productName,
+          manufacturer: faersData.productInfo?.manufacturer || 'Unknown Manufacturer',
+          modelNumber: faersData.productInfo?.modelNumber
+        },
+        metadata: {
+          author: 'TrialSage AI',
+          generatedAt: new Date().toISOString(),
+          version: '1.0.0',
+          reviewStatus: 'draft',
+          confidential: true,
+          format: 'docx' // Signal that this is for Word format
+        }
+      };
+      
+      // Add reactions if available
+      if (faersData.reactionCounts && faersData.reactionCounts.length > 0) {
+        cerData.sections.push({
+          title: 'Adverse Event Frequency',
+          content: faersData.reactionCounts.map(r => `${r.reaction}: ${r.count} reports`).join('\n')
+        });
+      }
+      
+      // Add summary data if available
+      if (faersData.summary) {
+        cerData.sections.push({
+          title: 'Summary Statistics',
+          content: `Total Reports: ${faersData.summary.totalReports}\nSerious Events: ${faersData.summary.seriousEvents}\nRisk Score: ${faersData.summary.riskScore}`
+        });
+      }
+      
+      // Add conclusion
+      const conclusionText = faersData.conclusion || 
+        `This report presents the findings from FDA FAERS data analysis for ${productName}. ` +
+        `The data provides insights into the safety profile based on real-world adverse event reports. ` +
+        `This data should be considered as part of a comprehensive clinical evaluation.`;
+      
+      cerData.sections.push({
+        title: 'Conclusion',
+        content: conclusionText
       });
-    }, 1500);
+      
+      // Generate PDF (we'll use PDF as a fallback format)
+      pdfExporter.generateCerPdf(cerData)
+        .then(pdfBuffer => {
+          // Save file to disk
+          const timestamp = Date.now();
+          const filename = `faers_report_${productName?.replace(/\s+/g, '_')}_${timestamp}.pdf`;
+          const filePath = path.join(__dirname, '../public/downloads', filename);
+          
+          // Ensure directory exists
+          const dir = path.dirname(filePath);
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
+          
+          // Write the file
+          fs.writeFileSync(filePath, pdfBuffer);
+          
+          // Send response with URL - note that we're providing PDF instead of DOCX
+          res.json({
+            success: true,
+            format: 'pdf', // Honestly inform that this is PDF
+            filename: filename,
+            message: 'Document exported as PDF (DOCX format not available)',
+            url: `/api/cer/downloads/${filename}`
+          });
+        })
+        .catch(error => {
+          console.error('Error generating document:', error);
+          res.status(500).json({
+            success: false,
+            error: 'Failed to generate document',
+            details: error.message
+          });
+        });
+    } catch (error) {
+      console.error('Error preparing document export:', error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Failed to prepare document export',
+        details: error.message
+      });
+    }
   } catch (error) {
     console.error('Error exporting FAERS data to Word:', error);
     res.status(500).json({ 
@@ -2006,33 +2152,81 @@ router.post('/assistant', async (req, res) => {
       return res.status(400).json({ error: 'Query is required' });
     }
     
-    // In a production scenario, this would call the OpenAI API
-    // For now, we'll return a simulated response
-    
-    let response = '';
-    
-    if (query.toLowerCase().includes('section')) {
-      response = 'CER sections should be organized according to the standard template for your regulatory framework. For EU MDR, this includes device description, literature review, post-market data, equivalence analysis, and risk-benefit assessment.';
-    } else if (query.toLowerCase().includes('compliance')) {
-      response = 'To ensure compliance with regulatory standards, your CER should include comprehensive clinical data analysis, clear risk assessment methodology, and thorough benefit-risk analysis according to EU MDR requirements.';
-    } else if (query.toLowerCase().includes('data')) {
-      response = 'Clinical data for your CER should be gathered from published literature, post-market surveillance, clinical investigations, and competent authority databases. All data should be critically evaluated for relevance, methodological quality, and scientific validity.';
-    } else {
-      response = 'Your CER should demonstrate a positive benefit-risk profile for your device through comprehensive clinical evidence assessment. Make sure to include all relevant clinical data and critically evaluate each source.';
-    }
-    
-    // Simulate a slight delay for realism
-    setTimeout(() => {
+    // Use OpenAI to get an expert response
+    try {
+      // Require OpenAI service
+      const { Configuration, OpenAIApi } = require("openai");
+
+      // Check for OpenAI API key
+      if (!process.env.OPENAI_API_KEY) {
+        console.error('OpenAI API key is missing');
+        return res.status(500).json({ 
+          error: 'OpenAI API key is required for this feature',
+          message: 'Please configure the OPENAI_API_KEY environment variable'
+        });
+      }
+
+      // Configure OpenAI
+      const configuration = new Configuration({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+      const openai = new OpenAIApi(configuration);
+
+      // Prepare the system prompt
+      const systemPrompt = `You are an expert regulatory affairs consultant specializing in Clinical Evaluation Reports (CERs). 
+      You provide accurate, detailed, and compliant answers regarding CER development, focusing on regulatory standards like EU MDR 2017/745, 
+      MEDDEV 2.7/1 Rev 4, and other relevant standards. Cite specific regulatory sections when applicable.`;
+
+      // Prepare the query with context if available
+      let userPrompt = query;
+      if (context) {
+        userPrompt = `${query}\n\nContext: ${JSON.stringify(context)}`;
+      }
+
+      // Call OpenAI API
+      const completion = await openai.createChatCompletion({
+        model: "gpt-4",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 1000,
+      });
+
+      // Get the response
+      const response = completion.data.choices[0].message.content;
+
+      // Extract potential sources from the response
+      const sourcesRegex = /(MEDDEV|EU MDR|ISO|FDA|CFR)\s+([\d\.]+)(?::|,|\s|$)/g;
+      const matches = [...response.matchAll(sourcesRegex)];
+      
+      // Format sources
+      const sources = matches.map(match => ({
+        title: match[1] + ' ' + match[2],
+        section: match[1].includes('MEDDEV') ? 'Guidance Document' : 
+                match[1].includes('EU MDR') ? 'Regulation' : 
+                match[1].includes('ISO') ? 'Standard' : 'Regulatory Reference'
+      }));
+
+      // Return the response and identified sources
       res.json({
         query,
         response,
-        sources: [
-          { title: 'EU MDR 2017/745', section: 'Annex XIV' },
-          { title: 'MEDDEV 2.7/1 Rev 4', section: '7' },
-          { title: 'ISO 14155:2020', section: '9.3' }
+        sources: sources.length > 0 ? sources : [
+          { title: 'EU MDR 2017/745', section: 'Applicable sections' },
+          { title: 'MEDDEV 2.7/1 Rev 4', section: 'Guidance' }
         ]
       });
-    }, 500);
+    } catch (error) {
+      console.error('Error calling OpenAI API:', error);
+      
+      // Provide a graceful fallback
+      res.status(500).json({ 
+        error: 'Failed to process query with AI service',
+        message: error.message
+      });
+    }
   } catch (error) {
     console.error('Error processing assistant query:', error);
     res.status(500).json({ error: 'Failed to process query' });
@@ -2054,116 +2248,85 @@ router.post('/improve-compliance', async (req, res) => {
     console.log(`Analyzing ${section} compliance with ${standard} standard...`);
     console.log(`Content length: ${currentContent.length} characters`);
     
-    // This would call OpenAI API to analyze the content and generate improvements
-    // In a production implementation, we would use GPT-4o to analyze the content
-    // and provide improvement suggestions
-    
-    // For now, we'll provide enhanced examples tailored to section type and standard
-    let standardName = '';
-    let improvement = '';
-    let specificGuidance = [];
-    
-    // Determine standard name for resources and specific guidance
-    if (standard.toLowerCase().includes('eu mdr')) {
-      standardName = 'EU MDR 2017/745';
-      
-      // Tailor specific guidance based on section type
-      if (section.toLowerCase().includes('clinical') || section === 'clinical-data') {
-        specificGuidance = [
-          'Include more published clinical investigation data relevant to your device',
-          'Clearly state equivalence justification if claiming equivalence to another device',
-          'Include a systematic literature search strategy with inclusion/exclusion criteria',
-          'Add statistical significance of clinical outcomes where applicable',
-          'Strengthen the analysis of clinical data with quantitative measures'
-        ];
-      } else if (section.toLowerCase().includes('risk') || section === 'benefit-risk') {
-        specificGuidance = [
-          'Provide a more structured benefit-risk assessment with quantitative measures',
-          'Include detailed analysis of each identified risk and corresponding benefit',
-          'Add severity and probability assessments for each risk',
-          'Connect benefit-risk analysis to clinical data findings',
-          'Consider vulnerable populations in your risk assessment'
-        ];
-      } else if (section.toLowerCase().includes('device') || section === 'device-description') {
-        specificGuidance = [
-          'Include clear technical specifications with appropriate measurements',
-          'Add more details on materials used and their biocompatibility',
-          'Provide a comprehensive explanation of the design principles',
-          'Clarify the exact intended purpose with specific indications',
-          'Include relevant diagrams or technical drawings as appropriate'
-        ];
-      } else if (section.toLowerCase().includes('conclusion')) {
-        specificGuidance = [
-          'Strengthen the conclusion with specific references to data presented',
-          'Explicitly state conformity to General Safety and Performance Requirements',
-          'Address any residual risks and their acceptability',
-          'Provide clear justification for favorable benefit-risk determination',
-          'Include specific plans for post-market clinical follow-up'
-        ];
-      } else {
-        specificGuidance = [
-          'Add more quantitative data to support your clinical claims',
-          'Include a detailed comparison with current state of the art',
-          'Strengthen the connection between clinical data and risk analysis',
-          'Add explicit references to relevant harmonized standards',
-          'Expand on your post-market surveillance plan'
-        ];
+    // Use OpenAI to analyze the content and generate improvements
+    try {
+      // Check for OpenAI API key
+      if (!process.env.OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY is not configured. Cannot provide compliance improvement suggestions.');
       }
-    } else if (standard.toLowerCase().includes('iso')) {
-      standardName = 'ISO 14155:2020';
-      specificGuidance = [
-        'Add more methodological details for data collection',
-        'Include clearer statistical analysis methodology',
-        'Enhance subject protection information',
-        'Strengthen the device safety profile discussion',
-        'Expand validation methods for each endpoint'
-      ];
-    } else if (standard.toLowerCase().includes('fda')) {
-      standardName = 'FDA 21 CFR';
-      specificGuidance = [
-        'Add more substantial comparative analysis with predicate devices',
-        'Include detailed substantial equivalence rationale',
-        'Strengthen risk mitigation strategies',
-        'Add a comprehensive benefit-risk determination',
-        'Provide more quantitative performance data'
-      ];
-    } else {
-      standardName = 'International Standards';
-      specificGuidance = [
-        'Add more quantitative data to support your claims',
-        'Strengthen your risk-benefit analysis',
-        'Provide clearer connections between clinical evidence and conclusions',
-        'Include more precise references to relevant literature',
-        'Add details on methodological approach'
-      ];
+
+      // Import OpenAI if needed
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      // Build context-specific system prompt
+      let standardInfo = '';
+      if (standard.toLowerCase().includes('eu mdr')) {
+        standardInfo = 'EU MDR 2017/745, focusing on clinical evaluation requirements in Annex XIV and safety/performance requirements';
+      } else if (standard.toLowerCase().includes('iso')) {
+        standardInfo = 'ISO 14155:2020, focusing on clinical investigation design, conduct, and reporting';
+      } else if (standard.toLowerCase().includes('fda')) {
+        standardInfo = 'FDA 21 CFR regulations for medical devices, particularly Parts 812, 814, and applicable guidance documents';
+      } else {
+        standardInfo = 'general international standards for clinical evaluation of medical devices';
+      }
+
+      const systemPrompt = `You are an expert regulatory affairs consultant specializing in medical device documentation. 
+Your task is to analyze the provided content of a Clinical Evaluation Report (CER) section and suggest specific improvements to enhance compliance with ${standardInfo}.
+
+First, identify the strengths and weaknesses of the current content.
+Then, provide 5 specific, actionable recommendations to improve regulatory compliance, with justification for each.
+Finally, provide a brief implementation guidance paragraph with prioritization of the changes.
+
+Format your response as markdown with appropriate sections and bullet points.`;
+
+      // Prepare user prompt with content to analyze
+      const userPrompt = `I need to improve the "${section}" section of my CER to better comply with ${standard} requirements. Here is the current content:
+
+"""
+${currentContent}
+"""
+
+Please analyze this content and suggest specific improvements to enhance compliance.`;
+
+      // Call OpenAI API
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.2,
+        max_tokens: 1500,
+      });
+
+      // Extract the improvement recommendations
+      const improvement = completion.choices[0].message.content;
+      
+      // Determine standard name for resources
+      let standardName = 'International Standards';
+      if (standard.toLowerCase().includes('eu mdr')) {
+        standardName = 'EU MDR 2017/745';
+      } else if (standard.toLowerCase().includes('iso')) {
+        standardName = 'ISO 14155:2020';
+      } else if (standard.toLowerCase().includes('fda')) {
+        standardName = 'FDA 21 CFR';
+      }
+      
+      // Return the improvement suggestions with additional resources
+      return res.json({
+        section,
+        standard,
+        improvement,
+        aiGenerated: true,
+        generatedAt: new Date().toISOString(),
+        additionalResources: [
+          { title: 'EU MDR 2017/745 Guidance', url: 'https://ec.europa.eu/health/md_sector/new_regulations/guidance_en' },
+          { title: 'ISO 14155:2020 Key Points', url: 'https://www.iso.org/standard/71690.html' },
+          { title: 'FDA 21 CFR Part 812', url: 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfcfr/cfrsearch.cfm?cfrpart=812' }
+        ]
+      });
     }
-    
-    // Format the improvement suggestions as a detailed analysis
-    improvement = `## Compliance Improvement Recommendations for ${section.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Section
-
-Based on analysis of your current content against ${standardName} requirements, here are specific recommendations to enhance regulatory compliance:
-
-${specificGuidance.map((item, index) => `${index + 1}. ${item}`).join('\n')}
-
-### Implementation Guidance
-
-The most critical areas to address are points 1 and 3. Specifically, your section would benefit from more quantitative data and stronger connections between your evidence and conclusions.
-
-Consider reorganizing this section to more closely follow the structure outlined in ${standardName} guidance documents, which typically require a clear methodology, robust data presentation, and scientifically sound conclusions.`;
-    
-    // Return the improvement suggestions with additional resources
-    return res.json({
-      section,
-      standard,
-      improvement,
-      aiGenerated: true,
-      generatedAt: new Date().toISOString(),
-      additionalResources: [
-        { title: 'EU MDR 2017/745 Guidance', url: 'https://ec.europa.eu/health/md_sector/new_regulations/guidance_en' },
-        { title: 'ISO 14155:2020 Key Points', url: 'https://www.iso.org/standard/71690.html' },
-        { title: 'FDA 21 CFR Part 812', url: 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfcfr/cfrsearch.cfm?cfrpart=812' }
-      ]
-    });
   } catch (error) {
     console.error('Error improving compliance:', error);
     return res.status(500).json({ error: 'Failed to improve compliance' });
@@ -2180,20 +2343,28 @@ router.post('/assistant/chat', async (req, res) => {
     }
     
     console.log(`CER Assistant receiving message: ${message.substring(0, 50)}...`);
-    console.log(`Context available: ${JSON.stringify({
-      sectionCount: context?.sections?.length || 0,
-      faersDataAvailable: Array.isArray(context?.faers) && context.faers.length > 0,
-      selectedSection: context?.selectedSection?.title || 'None'
-    })}`);
     
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured. Cannot provide CER assistant responses.');
+    // Use our chat service to process the message
+    const cerChatService = require('../services/cerChatService');
+    
+    try {
+      // Process the message using our service
+      const result = await cerChatService.processMessage(message, context);
+      res.json(result);
+    } catch (serviceError) {
+      console.error('Chat service error:', serviceError);
+      res.status(500).json({ 
+        error: 'Failed to process message with AI service',
+        message: serviceError.message
+      });
     }
-
-    // Import OpenAI if needed
-    const OpenAI = (await import('openai')).default;
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  } catch (error) {
+    console.error('Error in CER Assistant:', error);
+    res.status(500).json({ 
+      error: 'Failed to process your message',
+      message: error.message
+    });
+  }
     
     // Build the system prompt with CER context
     const systemPrompt = `You are a Clinical Evaluation Report (CER) specialist assistant who helps medical device manufacturers prepare regulatory documentation.

@@ -1,124 +1,193 @@
 /**
- * OpenAI Service for TrialSage Vault™
- * 
- * This service provides a clean abstraction for making OpenAI API calls,
- * including error handling, retry logic, and response validation.
+ * OpenAI Service
+ *
+ * This service handles interactions with the OpenAI API for enhanced document generation,
+ * analysis, and AI assistance.
  */
+import OpenAI from 'openai';
 
-const axios = require('axios');
-
-// Default system instruction for Vault Assistant
-const DEFAULT_SYSTEM_INSTRUCTION = `
-You are Vault™ Assistant, the AI concierge for TrialSage Vault™, an intelligent clinical document management platform.
-You provide helpful, accurate information about Vault's features and capabilities.
-
-Key guidelines:
-1. You are knowledgeable about regulatory document management, including 21 CFR Part 11, HIPAA, and clinical document workflows.
-2. Keep responses professional, concise (max 3 paragraphs), and focused on biotech/pharmaceutical document management.
-3. Maintain a friendly, knowledgeable tone as a clinical technology expert.
-4. When uncertain, focus on the core Vault features rather than making up specifics.
-5. If asked about pricing, suggest the Professional tier ($1,299/month) for most biotech companies.
-6. For questions about competitors, highlight Vault's AI capabilities, biotech-specific features, and more affordable pricing.
-7. If someone requests a demo, assist them with collecting their contact information.
-
-Core Vault Features:
-- AI-powered document auto-tagging (extract trial phase, molecule ID, indication, endpoints)
-- Smart folder organization by trial, phase, molecule
-- AI-generated executive summaries of uploaded documents
-- Full document version history with comparison and rollback
-- Intelligent search across document content, metadata, and AI-generated tags
-- 21 CFR Part 11 compliant audit trails
-- Multi-tenant architecture with complete isolation between clients
-- AES-256 encryption at rest, TLS 1.3 in transit
-`;
+// Initialize OpenAI client with API key
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 /**
- * Call OpenAI API for Vault Assistant
- * 
- * @param {Array} messages - Array of message objects with role and content
- * @param {String} intent - Identified intent of the conversation
+ * Generate text completion using the OpenAI API
+ *
+ * @param {string} prompt - The prompt to send to the API
  * @param {Object} options - Additional options for the API call
- * @returns {Promise<Object>} - Response from OpenAI API
+ * @returns {Promise<string>} - The generated text
  */
-async function callOpenAI(messages, intent = null, options = {}) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured');
-  }
-  
-  // Prepare system instructions based on intent
-  let systemInstruction = DEFAULT_SYSTEM_INSTRUCTION;
-  
-  // Add intent-specific guidance
-  if (intent === 'compliance') {
-    systemInstruction += "\nFocus on regulatory compliance features including 21 CFR Part 11, audit trails, HIPAA, and secure document handling.";
-  } else if (intent === 'comparison') {
-    systemInstruction += "\nHighlight Vault's advantages over competitors like Veeva Vault, emphasizing AI capabilities, biotech-specific features, and more affordable pricing.";
-  } else if (intent === 'ai_features') {
-    systemInstruction += "\nEmphasize the AI document tagging, summarization, and organization capabilities powered by GPT-4 Turbo.";
-  } else if (intent === 'pricing') {
-    systemInstruction += "\nProvide transparent pricing information while emphasizing the value proposition. Mention that Professional tier ($1,299/month) is most popular for growing biotechs.";
-  } else if (intent === 'demo') {
-    systemInstruction += "\nBe helpful in arranging a demo. Ask for the person's name, email, and company. Mention that demos typically take 30-45 minutes and are tailored to their specific needs.";
-  }
-  
-  const combinedMessages = [
-    { role: 'system', content: systemInstruction },
-    ...messages
-  ];
-  
-  // Add message limiting to prevent token overflows
-  const limitedMessages = combinedMessages.slice(-10);
-  
+async function generateCompletion(prompt, options = {}) {
   try {
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: options.model || 'gpt-4-turbo-preview',
-      messages: limitedMessages,
-      max_tokens: options.maxTokens || 500,
-      temperature: options.temperature || 0.7,
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    return {
-      message: response.data.choices[0].message.content,
-      usage: response.data.usage,
-      model: response.data.model
+    const defaultOptions = {
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      temperature: 0.7,
+      max_tokens: 1500,
     };
+
+    console.log(`Generating completion with prompt (first 100 chars): ${prompt.substring(0, 100)}...`);
     
+    const response = await openai.chat.completions.create({
+      ...defaultOptions,
+      ...options,
+      messages: [
+        { role: "system", content: "You are an expert in regulatory documentation, clinical evaluation reports, and medical device regulations." },
+        { role: "user", content: prompt }
+      ],
+    });
+
+    return response.choices[0].message.content;
   } catch (error) {
-    // Enhanced error handling
-    let errorMessage = 'OpenAI API call failed';
-    
-    if (error.response) {
-      // The request was made and the server responded with a non-2xx status
-      errorMessage = `OpenAI API error: ${error.response.status} - ${error.response.data?.error?.message || 'Unknown error'}`;
-      console.error('OpenAI API error details:', error.response.data);
-    } else if (error.request) {
-      // The request was made but no response was received
-      errorMessage = 'OpenAI API request timed out';
-    } else {
-      // Something happened in setting up the request
-      errorMessage = `OpenAI API request setup error: ${error.message}`;
-    }
-    
-    console.error(errorMessage);
-    throw new Error(errorMessage);
+    console.error('Error generating completion:', error);
+    throw new Error(`OpenAI API error: ${error.message}`);
   }
 }
 
 /**
- * Check if OpenAI integration is properly configured
- * 
- * @returns {Boolean} - True if OpenAI is configured, false otherwise
+ * Generate structured data using the OpenAI API
+ *
+ * @param {string} prompt - The prompt to send to the API
+ * @param {Object} options - Additional options for the API call
+ * @returns {Promise<Object>} - The generated structured data
  */
-function isOpenAIConfigured() {
-  return !!process.env.OPENAI_API_KEY;
+async function generateStructuredData(prompt, options = {}) {
+  try {
+    const defaultOptions = {
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      temperature: 0.5,
+      max_tokens: 2000,
+      response_format: { type: "json_object" },
+    };
+
+    console.log(`Generating structured data with prompt (first 100 chars): ${prompt.substring(0, 100)}...`);
+    
+    const response = await openai.chat.completions.create({
+      ...defaultOptions,
+      ...options,
+      messages: [
+        { 
+          role: "system", 
+          content: "You are an expert in regulatory documentation, clinical evaluation reports, and medical device regulations. Always respond with valid JSON data." 
+        },
+        { role: "user", content: prompt }
+      ],
+    });
+
+    const content = response.choices[0].message.content;
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('Error generating structured data:', error);
+    throw new Error(`OpenAI API error: ${error.message}`);
+  }
 }
 
-module.exports = {
-  callOpenAI,
-  isOpenAIConfigured
+/**
+ * Process a chat message using the OpenAI API
+ *
+ * @param {string} userMessage - The user's message
+ * @param {Array<Object>} history - The chat history
+ * @param {Object} context - Additional context for the chat
+ * @returns {Promise<Object>} - The chat response
+ */
+async function processChat(userMessage, history = [], context = {}) {
+  try {
+    const messages = [
+      { 
+        role: "system", 
+        content: `You are TrialSage CER Assistant, an expert in clinical evaluation reports and regulatory documentation for medical devices.
+                 You provide clear, concise guidance on CER development following EU MDR 2017/745, MEDDEV 2.7/1 Rev 4, and FDA guidelines.
+                 When responding to questions about regulations, cite specific sections when possible.
+                 You use a professional but approachable tone. If you don't know an answer, say so rather than making up information.`
+      },
+      ...history.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })),
+      { role: "user", content: userMessage }
+    ];
+
+    if (context.productName) {
+      messages[0].content += `\nThe current discussion relates to the product: ${context.productName}.`;
+    }
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages,
+      temperature: 0.7,
+      max_tokens: 1000,
+    });
+
+    // Generate follow-up suggestions based on the context and conversation
+    const suggestionsPrompt = `Based on this conversation about Clinical Evaluation Reports and the user's question: "${userMessage}", 
+                              suggest 3 brief follow-up questions the user might want to ask next. 
+                              Return exactly 3 short questions in JSON format with an array called "suggestions".`;
+
+    const suggestionsResponse = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        { role: "system", content: "You generate helpful follow-up questions based on user queries about Clinical Evaluation Reports." },
+        ...messages,
+        { role: "user", content: suggestionsPrompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 300,
+      response_format: { type: "json_object" },
+    });
+
+    let suggestions = ["How should I structure my CER?", "What clinical evidence is required?", "How often should a CER be updated?"];
+    try {
+      const suggestionsData = JSON.parse(suggestionsResponse.choices[0].message.content);
+      if (suggestionsData.suggestions && Array.isArray(suggestionsData.suggestions)) {
+        suggestions = suggestionsData.suggestions;
+      }
+    } catch (e) {
+      console.error('Error parsing suggestions:', e);
+    }
+
+    return {
+      response: response.choices[0].message.content,
+      suggestions
+    };
+  } catch (error) {
+    console.error('Error in chat processing:', error);
+    throw new Error(`OpenAI API error: ${error.message}`);
+  }
+}
+
+/**
+ * Generate improved section content based on regulatory standards
+ *
+ * @param {string} sectionName - The name of the section
+ * @param {string} currentContent - The current content of the section
+ * @param {string} standard - The regulatory standard to improve against
+ * @returns {Promise<string>} - The improved content
+ */
+async function improveCompliance(sectionName, currentContent, standard) {
+  try {
+    const prompt = `You are a medical device regulatory expert. Analyze and improve the following ${sectionName} section of a Clinical Evaluation Report to ensure it fully complies with ${standard}.
+
+Current content:
+${currentContent}
+
+Please provide specific improvements to enhance compliance with ${standard}. Format your response with:
+1. A brief assessment of current compliance gaps
+2. Specific recommendations for improvement
+3. Implementation guidance with examples where applicable`;
+
+    return await generateCompletion(prompt, {
+      temperature: 0.4,
+      max_tokens: 2000
+    });
+  } catch (error) {
+    console.error(`Error improving compliance for ${sectionName}:`, error);
+    throw new Error(`Failed to improve compliance: ${error.message}`);
+  }
+}
+
+export default {
+  generateCompletion,
+  generateStructuredData,
+  processChat,
+  improveCompliance
 };
