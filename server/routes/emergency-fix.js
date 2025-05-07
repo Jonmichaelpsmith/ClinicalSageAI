@@ -12,7 +12,7 @@ const router = express.Router();
  */
 router.post('/generate-section', async (req, res) => {
   try {
-    const { section, productName } = req.body;
+    const { section, productName, context } = req.body;
     
     if (!section) {
       return res.status(400).json({ 
@@ -22,6 +22,7 @@ router.post('/generate-section', async (req, res) => {
     }
     
     console.log(`Emergency handler: generating CER section: ${section} for ${productName || 'unknown product'}`);
+    console.log(`Context provided: ${context ? 'Yes' : 'No'} (${context ? context.length : 0} chars)`);
     
     // Generate appropriate content based on section type without OpenAI dependency
     let content = '';
@@ -30,32 +31,32 @@ router.post('/generate-section', async (req, res) => {
     switch(section) {
       case 'device-description':
         title = 'Device Description';
-        content = getDeviceDescription(productName);
+        content = getDeviceDescription(productName, context);
         break;
         
       case 'regulatory-status':
         title = 'Regulatory Status';
-        content = getRegulatoryStatus(productName);
+        content = getRegulatoryStatus(productName, context);
         break;
         
       case 'clinical-data':
         title = 'Clinical Data Evaluation';
-        content = getClinicalData(productName);
+        content = getClinicalData(productName, context);
         break;
         
       case 'risk-analysis':
         title = 'Risk Analysis';
-        content = getRiskAnalysis(productName);
+        content = getRiskAnalysis(productName, context);
         break;
         
       case 'benefit-risk':
         title = 'Benefit-Risk Determination';
-        content = getBenefitRisk(productName);
+        content = getBenefitRisk(productName, context);
         break;
         
       default:
-        title = 'General Section';
-        content = getGeneralSection(section, productName);
+        title = getSelectedSectionTitle(section);
+        content = getGeneralSection(section, productName, context);
     }
     
     // Return the generated content
@@ -81,8 +82,25 @@ router.post('/generate-section', async (req, res) => {
   }
 });
 
+// Helper function to get section title from section ID
+function getSelectedSectionTitle(sectionId) {
+  const sectionTypes = {
+    'benefit-risk': 'Benefit-Risk Analysis',
+    'safety': 'Safety Analysis',
+    'clinical-background': 'Clinical Background',
+    'device-description': 'Device Description',
+    'state-of-art': 'State of the Art Review',
+    'equivalence': 'Equivalence Assessment',
+    'literature-analysis': 'Literature Analysis',
+    'pms-data': 'Post-Market Surveillance Data',
+    'conclusion': 'Conclusion',
+  };
+  
+  return sectionTypes[sectionId] || 'General Section';
+}
+
 // Pre-generated content functions
-function getDeviceDescription(productName) {
+function getDeviceDescription(productName, context) {
   return `# Device Description for ${productName || 'Medical Device'}
 
 ## Overview
@@ -115,7 +133,7 @@ The device functions by replacing the damaged articular surfaces of the glenohum
 The components are manufactured under a stringent quality management system compliant with ISO 13485:2016. Critical dimensions are verified using coordinate measuring machines (CMMs) with traceability to national standards.`;
 }
 
-function getRegulatoryStatus(productName) {
+function getRegulatoryStatus(productName, context) {
   return `# Regulatory Status of ${productName || 'Medical Device'}
 
 ## Classification and Applicable Legislation
