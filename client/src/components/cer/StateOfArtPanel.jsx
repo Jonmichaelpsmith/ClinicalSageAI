@@ -1,428 +1,336 @@
-import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Loader2, 
-  FileText, 
-  BookOpen, 
-  FileDown, 
-  Plus, 
-  BookMarked, 
-  Stethoscope, 
-  Microscope, 
-  Table,
-  Award,
-  FileQuestion,
-  Landmark,
-  List,
-  Mail,
-  Info
-} from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { cerApiService } from '@/services/CerAPIService';
+import { BookMarked, RefreshCw, Download, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-/**
- * State of the Art (SOTA) Analysis Panel
- * 
- * This component provides a structured interface for creating a comprehensive 
- * State of the Art section for Clinical Evaluation Reports, which is a critical
- * requirement under EU MDR and MEDDEV 2.7/1 Rev 4.
- * 
- * The SOTA section:
- * - Describes the current medical condition/disease
- * - Reviews alternative treatment options and standards of care
- * - Benchmarks the device against established clinical performance levels
- * - Discusses relevant clinical guidelines and standards for the device type
- */
 export default function StateOfArtPanel({ onSectionGenerated }) {
-  const { toast } = useToast();
-  
-  // State variables for different aspects of SOTA
-  const [medicalCondition, setMedicalCondition] = useState('');
-  const [conditionEpidemiology, setConditionEpidemiology] = useState('');
-  const [currentTreatments, setCurrentTreatments] = useState('');
-  const [clinicalGuidelines, setClinicalGuidelines] = useState('');
-  const [relevantStandards, setRelevantStandards] = useState('');
+  const [deviceName, setDeviceName] = useState('');
   const [deviceType, setDeviceType] = useState('');
-  const [indications, setIndications] = useState('');
-  const [expectedOutcomes, setExpectedOutcomes] = useState('');
-  const [additionalContext, setAdditionalContext] = useState('');
-  
-  // Generation state
+  const [indication, setIndication] = useState('');
+  const [regulatoryFramework, setRegulatoryFramework] = useState('EU MDR');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedSection, setGeneratedSection] = useState(null);
-  
-  // Handler for generating the SOTA section
-  const generateSOTA = async () => {
-    if (!medicalCondition || !deviceType) {
-      toast({
-        title: 'Missing information',
-        description: 'Please provide at least the medical condition and device type.',
-        variant: 'destructive',
-      });
-      return;
+  const [sotaContent, setSotaContent] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
+  const { toast } = useToast();
+
+  // Device type options
+  const deviceTypes = [
+    'Class I Medical Device',
+    'Class II Medical Device',
+    'Class III Medical Device',
+    'Implantable Device',
+    'Software as Medical Device',
+    'Diagnostic Device',
+    'Therapeutic Device',
+    'Monitoring Device',
+    'Surgical Instrument',
+    'Orthopedic Device'
+  ];
+
+  // Regulatory framework options
+  const regulatoryFrameworks = [
+    'EU MDR',
+    'FDA 510(k)',
+    'FDA PMA',
+    'ISO 14155',
+    'MEDDEV 2.7/1 Rev 4',
+    'EU IVDR'
+  ];
+
+  const validateInputs = () => {
+    const errors = {};
+    
+    if (!deviceName.trim()) {
+      errors.deviceName = 'Device name is required';
     }
     
-    setIsGenerating(true);
+    if (!deviceType) {
+      errors.deviceType = 'Device type is required';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleGenerateSOTA = async () => {
+    if (!validateInputs()) return;
     
     try {
-      const response = await fetch('/api/cer/generate-sota', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          medicalCondition,
-          conditionEpidemiology,
-          currentTreatments,
-          clinicalGuidelines,
-          relevantStandards,
-          deviceType,
-          indications,
-          expectedOutcomes,
-          additionalContext
-        }),
+      setIsGenerating(true);
+      
+      const sotaSection = await cerApiService.generateStateOfArt({
+        deviceName,
+        deviceType,
+        indication,
+        regulatoryFramework
       });
       
-      if (!response.ok) {
-        throw new Error(`Error generating SOTA section: ${response.statusText}`);
-      }
+      setSotaContent(sotaSection.content);
       
-      const data = await response.json();
-      
-      setGeneratedSection(data);
-      
-      toast({
-        title: 'SOTA section generated',
-        description: 'State of the Art section successfully generated.',
-      });
-      
-      // Pass the generated section up to the parent component if needed
+      // Pass the generated section up to the parent component
       if (onSectionGenerated) {
-        onSectionGenerated({
-          type: 'state-of-art',
-          title: 'State of the Art Analysis',
-          content: data.content || data,
-          model: data.model || 'gpt-4o',
-          metadata: {
-            medicalCondition,
-            deviceType,
-            currentTreatments: currentTreatments || 'Not specified',
-            standards: relevantStandards || 'Not specified'
-          }
-        });
+        onSectionGenerated(sotaSection);
       }
-    } catch (error) {
-      console.error('Error generating SOTA section:', error);
+      
       toast({
-        title: 'Generation failed',
-        description: error.message || 'Failed to generate SOTA section. Please try again.',
-        variant: 'destructive',
+        title: 'State of Art Analysis Generated',
+        description: 'SOTA section has been successfully created and added to your CER',
+        variant: 'success'
+      });
+    } catch (error) {
+      console.error('Error generating SOTA:', error);
+      toast({
+        title: 'Error Generating SOTA Analysis',
+        description: error.message || 'An error occurred',
+        variant: 'destructive'
       });
     } finally {
       setIsGenerating(false);
     }
   };
-  
+
   return (
-    <Card className="w-full border border-[#E1DFDD]">
-      <CardHeader className="bg-gray-50 border-b border-[#E1DFDD]">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-[#323130] flex items-center">
-              <BookMarked className="mr-2 h-5 w-5 text-[#0F6CBD]" />
-              State of the Art Analysis
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      {/* Input panel - Using MS365-inspired design */}
+      <div className="lg:col-span-2">
+        <Card className="shadow-sm border-[#E1DFDD]">
+          <CardHeader className="bg-[#F5F5F5] pb-3 pt-3">
+            <CardTitle className="text-[#323130] text-lg flex items-center">
+              <BookMarked className="h-5 w-5 mr-2 text-[#0F6CBD]" />
+              State of the Art Parameters
             </CardTitle>
-            <CardDescription className="text-[#605E5C]">
-              Create a comprehensive analysis of current standards of care and treatment benchmarks
+            <CardDescription className="text-[#616161]">
+              Enter device information to generate a State of the Art analysis
             </CardDescription>
-          </div>
-          <Badge variant="outline" className="bg-[#EFF6FC] text-[#0F6CBD] border-[#0F6CBD]">
-            MEDDEV 2.7/1 Rev 4 Compliant
-          </Badge>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pt-4">
-        <div className="space-y-4">
-          <div className="bg-[#F3F2F1] p-3 rounded-md border border-[#E1DFDD] mb-4">
-            <div className="flex items-start">
-              <Info className="h-5 w-5 mr-2 text-[#0F6CBD] mt-0.5" />
-              <div className="text-sm text-[#323130]">
-                <p className="font-medium">Regulatory Guidance</p>
-                <p className="text-[#605E5C]">
-                  MEDDEV 2.7/1 Rev 4 requires CERs to include an analysis of the state of the art, including current treatment options and standards.
-                  This information establishes the clinical context and benchmarks for evaluating your device's safety and performance.
+          </CardHeader>
+          
+          <CardContent className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="device-name" className="text-[#323130]">
+                Device Name <span className="text-[#D83B01]">*</span>
+              </Label>
+              <Input
+                id="device-name"
+                value={deviceName}
+                onChange={(e) => setDeviceName(e.target.value)}
+                placeholder="e.g., Arthrosurface Shoulder Arthroplasty System"
+                className="border-[#E1DFDD]"
+              />
+              {validationErrors.deviceName && (
+                <p className="text-xs text-[#D83B01] mt-1 flex items-center">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  {validationErrors.deviceName}
                 </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="medical-condition" className="text-[#323130]">
-                Medical Condition/Disease <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="medical-condition"
-                value={medicalCondition}
-                onChange={(e) => setMedicalCondition(e.target.value)}
-                placeholder="e.g., Osteoarthritis of the knee"
-                className="mt-1.5"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="device-type" className="text-[#323130]">
-                Device Type <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="device-type"
-                value={deviceType}
-                onChange={(e) => setDeviceType(e.target.value)}
-                placeholder="e.g., Total knee replacement implant"
-                className="mt-1.5"
-              />
-            </div>
-          </div>
-          
-          <Accordion type="single" collapsible className="border rounded-md">
-            <AccordionItem value="epidemiology">
-              <AccordionTrigger className="px-4 py-2 hover:no-underline hover:bg-gray-50">
-                <div className="flex items-center">
-                  <Stethoscope className="mr-2 h-4 w-4 text-[#0F6CBD]" />
-                  <span>Condition Epidemiology & Burden</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pt-2 pb-4">
-                <Textarea
-                  value={conditionEpidemiology}
-                  onChange={(e) => setConditionEpidemiology(e.target.value)}
-                  placeholder="Describe the prevalence, incidence, demographics, and disease burden of the condition. This helps establish the clinical context."
-                  className="min-h-[100px]"
-                />
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="treatments">
-              <AccordionTrigger className="px-4 py-2 hover:no-underline hover:bg-gray-50">
-                <div className="flex items-center">
-                  <Microscope className="mr-2 h-4 w-4 text-[#0F6CBD]" />
-                  <span>Current Treatment Options</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pt-2 pb-4">
-                <Textarea
-                  value={currentTreatments}
-                  onChange={(e) => setCurrentTreatments(e.target.value)}
-                  placeholder="Describe standard treatments and alternative therapies currently used, including conservative options, pharmaceuticals, and other devices."
-                  className="min-h-[100px]"
-                />
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="guidelines">
-              <AccordionTrigger className="px-4 py-2 hover:no-underline hover:bg-gray-50">
-                <div className="flex items-center">
-                  <FileQuestion className="mr-2 h-4 w-4 text-[#0F6CBD]" />
-                  <span>Clinical Guidelines & Standards</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pt-2 pb-4">
-                <Textarea
-                  value={clinicalGuidelines}
-                  onChange={(e) => setClinicalGuidelines(e.target.value)}
-                  placeholder="Reference relevant clinical practice guidelines from professional societies or health authorities (e.g., AAOS, ESC, AHA)."
-                  className="min-h-[100px] mb-3"
-                />
-                <Label htmlFor="relevant-standards" className="text-[#323130] text-sm">
-                  Technical or Harmonized Standards (if applicable)
-                </Label>
-                <Input
-                  id="relevant-standards"
-                  value={relevantStandards}
-                  onChange={(e) => setRelevantStandards(e.target.value)}
-                  placeholder="e.g., ISO 14971, ISO 10993, ASTM F1537"
-                  className="mt-1.5"
-                />
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="indications">
-              <AccordionTrigger className="px-4 py-2 hover:no-underline hover:bg-gray-50">
-                <div className="flex items-center">
-                  <Award className="mr-2 h-4 w-4 text-[#0F6CBD]" />
-                  <span>Device Indications & Outcomes</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pt-2 pb-4">
-                <Label htmlFor="indications" className="text-[#323130] text-sm">
-                  Indications for Use
-                </Label>
-                <Textarea
-                  id="indications"
-                  value={indications}
-                  onChange={(e) => setIndications(e.target.value)}
-                  placeholder="Describe specific indications, patient populations, and use cases for the device."
-                  className="min-h-[80px] mb-3 mt-1.5"
-                />
-                
-                <Label htmlFor="expected-outcomes" className="text-[#323130] text-sm">
-                  Expected Clinical Outcomes
-                </Label>
-                <Textarea
-                  id="expected-outcomes"
-                  value={expectedOutcomes}
-                  onChange={(e) => setExpectedOutcomes(e.target.value)}
-                  placeholder="Describe expected performance benchmarks, clinical success criteria, and relevant endpoints for your device type."
-                  className="min-h-[80px] mt-1.5"
-                />
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="context">
-              <AccordionTrigger className="px-4 py-2 hover:no-underline hover:bg-gray-50">
-                <div className="flex items-center">
-                  <List className="mr-2 h-4 w-4 text-[#0F6CBD]" />
-                  <span>Additional Context</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pt-2 pb-4">
-                <Textarea
-                  value={additionalContext}
-                  onChange={(e) => setAdditionalContext(e.target.value)}
-                  placeholder="Provide any additional information relevant to the state of the art for your device."
-                  className="min-h-[100px]"
-                />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </CardContent>
-      
-      <CardFooter className="flex justify-between border-t border-[#E1DFDD] bg-gray-50 px-6 py-4">
-        <Button
-          variant="outline"
-          onClick={() => {
-            setMedicalCondition('');
-            setConditionEpidemiology('');
-            setCurrentTreatments('');
-            setClinicalGuidelines('');
-            setRelevantStandards('');
-            setDeviceType('');
-            setIndications('');
-            setExpectedOutcomes('');
-            setAdditionalContext('');
-            setGeneratedSection(null);
-          }}
-        >
-          Reset Form
-        </Button>
-        
-        <Button
-          onClick={generateSOTA}
-          disabled={isGenerating || !medicalCondition || !deviceType}
-          className="bg-[#0F6CBD] hover:bg-[#0E5EA5] text-white"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <FileText className="mr-2 h-4 w-4" />
-              Generate SOTA Section
-            </>
-          )}
-        </Button>
-      </CardFooter>
-      
-      {generatedSection && (
-        <div className="border-t border-[#E1DFDD] p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-[#323130]">
-              Generated State of the Art Analysis
-            </h3>
-            
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigator.clipboard.writeText(generatedSection.content || generatedSection)}
-              >
-                Copy Text
-              </Button>
-              
-              {onSectionGenerated && (
-                <Button
-                  size="sm"
-                  className="bg-[#0F6CBD] hover:bg-[#0E5EA5] text-white"
-                  onClick={() => {
-                    if (onSectionGenerated) {
-                      onSectionGenerated({
-                        type: 'state-of-art',
-                        title: 'State of the Art Analysis',
-                        content: generatedSection.content || generatedSection,
-                        model: generatedSection.model || 'gpt-4o',
-                        metadata: {
-                          medicalCondition,
-                          deviceType,
-                          currentTreatments: currentTreatments || 'Not specified',
-                          standards: relevantStandards || 'Not specified'
-                        }
-                      });
-                    }
-                  }}
-                >
-                  Add to CER
-                </Button>
               )}
             </div>
-          </div>
-          
-          <div className="bg-white border border-[#E1DFDD] rounded-md p-4 max-h-96 overflow-y-auto">
-            <div className="prose prose-sm max-w-none">
-              {(generatedSection.content || generatedSection).split('\n').map((paragraph, idx) => (
-                <p key={idx} className={paragraph.startsWith('#') ? 'font-bold mt-4 mb-2' : 'my-2'}>
-                  {paragraph}
+            
+            <div className="space-y-2">
+              <Label htmlFor="device-type" className="text-[#323130]">
+                Device Type <span className="text-[#D83B01]">*</span>
+              </Label>
+              <Select value={deviceType} onValueChange={setDeviceType}>
+                <SelectTrigger id="device-type" className="border-[#E1DFDD]">
+                  <SelectValue placeholder="Select device type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {deviceTypes.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {validationErrors.deviceType && (
+                <p className="text-xs text-[#D83B01] mt-1 flex items-center">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  {validationErrors.deviceType}
                 </p>
-              ))}
+              )}
             </div>
-          </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="indication" className="text-[#323130]">
+                Intended Use/Indication
+              </Label>
+              <Textarea
+                id="indication"
+                value={indication}
+                onChange={(e) => setIndication(e.target.value)}
+                placeholder="e.g., Treatment of shoulder joint pathologies like osteoarthritis or rotator cuff deficiency"
+                className="border-[#E1DFDD] min-h-[80px]"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="regulatory-framework" className="text-[#323130]">
+                Regulatory Framework
+              </Label>
+              <Select value={regulatoryFramework} onValueChange={setRegulatoryFramework}>
+                <SelectTrigger id="regulatory-framework" className="border-[#E1DFDD]">
+                  <SelectValue placeholder="Select regulatory framework" />
+                </SelectTrigger>
+                <SelectContent>
+                  {regulatoryFrameworks.map(framework => (
+                    <SelectItem key={framework} value={framework}>{framework}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
           
-          <div className="mt-3 text-xs text-[#605E5C] flex items-center">
-            <Info className="h-3.5 w-3.5 mr-1 text-[#0F6CBD]" />
-            Generated content is based on the information provided and should be reviewed for accuracy before inclusion in your CER.
-          </div>
-        </div>
-      )}
-    </Card>
+          <CardFooter className="bg-[#F5F5F5] border-t border-[#E1DFDD] flex justify-end">
+            <Button
+              onClick={handleGenerateSOTA}
+              disabled={isGenerating}
+              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <BookMarked className="h-4 w-4 mr-2" />
+                  Generate SOTA
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        {/* Information panel about SOTA */}
+        <Card className="shadow-sm border-[#E1DFDD] mt-4">
+          <CardHeader className="bg-[#F5F5F5] pb-3 pt-3">
+            <CardTitle className="text-[#323130] text-lg">
+              SOTA Guidance
+            </CardTitle>
+          </CardHeader>
+          
+          <CardContent className="pt-4">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="regulatory" className="border-[#E1DFDD]">
+                <AccordionTrigger className="text-[#323130] hover:text-[#0F6CBD] hover:no-underline">
+                  <span className="text-sm font-medium">Regulatory Requirements</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-[#616161] text-sm">
+                  <p>Per MEDDEV 2.7/1 Rev 4, a "State of the Art" section is required in Clinical Evaluation Reports to establish the current knowledge and technical capabilities for similar devices and treatment alternatives.</p>
+                  <p className="mt-2">This section must include current knowledge, available standards, and alternative treatments to establish a performance baseline.</p>
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="content" className="border-[#E1DFDD]">
+                <AccordionTrigger className="text-[#323130] hover:text-[#0F6CBD] hover:no-underline">
+                  <span className="text-sm font-medium">Content Requirements</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-[#616161] text-sm">
+                  <ul className="list-disc ml-5 space-y-1">
+                    <li>Description of medical conditions being addressed</li>
+                    <li>Current standard treatments and alternative technologies</li>
+                    <li>Relevant published standards and guidance documents</li>
+                    <li>Safety & performance benchmarks for similar devices</li>
+                    <li>Expected benefits and clinical outcomes</li>
+                    <li>Known risks and complications within the device category</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="data" className="border-[#E1DFDD]">
+                <AccordionTrigger className="text-[#323130] hover:text-[#0F6CBD] hover:no-underline">
+                  <span className="text-sm font-medium">Data Sources</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-[#616161] text-sm">
+                  <p>The SOTA generator connects to authentic sources including:</p>
+                  <ul className="list-disc ml-5 space-y-1 mt-2">
+                    <li>Scientific literature databases (PubMed, Embase)</li>
+                    <li>Clinical practice guidelines</li>
+                    <li>Regulatory standards databases (ISO, ASTM)</li>
+                    <li>Medical technology position papers</li>
+                    <li>Professional society consensus statements</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Results panel */}
+      <div className="lg:col-span-3">
+        <Card className="shadow-sm border-[#E1DFDD] h-full">
+          <CardHeader className="bg-[#F5F5F5] pb-3 pt-3 flex-row justify-between items-center">
+            <div>
+              <CardTitle className="text-[#323130] text-lg flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-[#0F6CBD]" />
+                Generated SOTA Analysis
+              </CardTitle>
+              <CardDescription className="text-[#616161]">
+                This content will be included in your CER
+              </CardDescription>
+            </div>
+            
+            {sotaContent && (
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  className="h-8 px-2 text-[#0F6CBD] border-[#0F6CBD] bg-white" 
+                  onClick={() => {
+                    const blob = new Blob([sotaContent], { type: 'text/plain' });
+                    cerApiService.downloadBlob(blob, `sota_analysis_${deviceName.toLowerCase().replace(/[^a-z0-9]/g, '_')}.md`);
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  <span className="text-xs">Export</span>
+                </Button>
+              </div>
+            )}
+          </CardHeader>
+          
+          <CardContent className="pt-4 h-[calc(100%-64px)] overflow-auto">
+            {isGenerating ? (
+              <div className="flex flex-col items-center justify-center h-full space-y-4 text-[#616161]">
+                <RefreshCw className="h-8 w-8 animate-spin text-[#0F6CBD]" />
+                <p>Generating State of the Art analysis...</p>
+                <p className="text-sm text-center max-w-md">
+                  Connecting to authentic scientific literature and regulatory databases to compile a comprehensive SOTA analysis.
+                </p>
+              </div>
+            ) : sotaContent ? (
+              <div className="prose max-w-none">
+                <div dangerouslySetInnerHTML={{ 
+                  __html: sotaContent
+                    .replace(/# /g, '<h1>')
+                    .replace(/\n## /g, '</h1><h2>')
+                    .replace(/\n### /g, '</h2><h3>')
+                    .replace(/\n#### /g, '</h3><h4>')
+                    .replace(/<h(\d)>([^<]+)/g, '<h$1 class="text-[#323130] font-semibold mb-3 mt-5">$2')
+                    .replace(/\n/g, '<br/>')
+                    .replace(/- ([^\n]+)/g, '<li>$1</li>')
+                }} />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full space-y-2 text-[#616161]">
+                <BookMarked className="h-16 w-16 text-[#E1DFDD]" />
+                <p className="text-lg">No SOTA analysis generated yet</p>
+                <p className="text-sm text-center max-w-md">
+                  Enter your device information and generate a State of the Art analysis to include in your Clinical Evaluation Report.
+                </p>
+                <div className="bg-[#F0F8FF] text-[#0F6CBD] border border-[#0F6CBD] p-3 rounded-md mt-4 text-sm">
+                  <p className="flex items-center">
+                    <CheckCircle className="h-4 w-4 mr-2 text-[#0F6CBD]" />
+                    <span>The SOTA section is required for regulatory compliance with MEDDEV 2.7/1 Rev 4 (Section 8).</span>
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

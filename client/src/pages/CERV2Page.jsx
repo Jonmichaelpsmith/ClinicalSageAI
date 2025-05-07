@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -529,6 +529,44 @@ ${device.overallRationale}
                   toast({
                     title: "FAERS Data Retrieved",
                     description: `Loaded ${data.data.reports?.length || 0} adverse event reports.`,
+                    variant: "success"
+                  });
+                }
+              }}
+            />
+          </TabsContent>
+          
+          <TabsContent value="sota" className="mt-0">
+            <StateOfArtPanel
+              onSectionGenerated={(sotaSection) => {
+                // Check if we already have a SOTA section
+                const existingIndex = sections.findIndex(
+                  section => section.type === 'state-of-art' || 
+                  (section.title && section.title.toLowerCase().includes('state of the art'))
+                );
+                
+                if (existingIndex >= 0) {
+                  // Update existing section
+                  const updatedSections = [...sections];
+                  updatedSections[existingIndex] = {
+                    ...updatedSections[existingIndex],
+                    content: sotaSection.content,
+                    lastUpdated: new Date().toISOString()
+                  };
+                  setSections(updatedSections);
+                  
+                  toast({
+                    title: "State of the Art Section Updated",
+                    description: "SOTA analysis has been updated in your CER.",
+                    variant: "success"
+                  });
+                } else {
+                  // Add new section
+                  setSections([...sections, sotaSection]);
+                  
+                  toast({
+                    title: "State of the Art Section Added",
+                    description: "SOTA analysis has been added to your CER.",
                     variant: "success"
                   });
                 }
