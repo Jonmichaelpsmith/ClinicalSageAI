@@ -520,12 +520,12 @@ export default function CERV2Page() {
                 <SelectTrigger id="device-type" className="border-[#E1DFDD] bg-white text-[#323130]">
                   <SelectValue placeholder="Select device classification" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border border-[#E1DFDD] shadow-lg max-h-80 overflow-y-auto z-50 text-[#323130]">
-                  <SelectItem value="Class I Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class I Medical Device</SelectItem>
-                  <SelectItem value="Class II Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class II Medical Device</SelectItem>
-                  <SelectItem value="Class III Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Class III Medical Device</SelectItem>
-                  <SelectItem value="IVD Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">IVD Device</SelectItem>
-                  <SelectItem value="Software as Medical Device" className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer">Software as Medical Device</SelectItem>
+                <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
+                  <SelectItem value="Class I Medical Device" className="text-[#323130]">Class I Medical Device</SelectItem>
+                  <SelectItem value="Class II Medical Device" className="text-[#323130]">Class II Medical Device</SelectItem>
+                  <SelectItem value="Class III Medical Device" className="text-[#323130]">Class III Medical Device</SelectItem>
+                  <SelectItem value="IVD Device" className="text-[#323130]">IVD Device</SelectItem>
+                  <SelectItem value="Software as Medical Device" className="text-[#323130]">Software as Medical Device</SelectItem>
                 </SelectContent>
               </Select>
             </div>

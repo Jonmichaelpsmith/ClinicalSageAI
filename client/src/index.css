@@ -321,11 +321,7 @@ div.dropdown-menu-content {
   margin-top: 0.25rem !important;
 }
 
-/* Fix for SelectContent visibility - ensure text has proper contrast and appears */
-[data-radix-select-content] {
-  background-color: white;
-  color: #333333;
-}
+
 
 /* Custom select trigger styling */
 .select-trigger {
