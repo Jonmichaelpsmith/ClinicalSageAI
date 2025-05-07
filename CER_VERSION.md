@@ -12,6 +12,11 @@
 - Removed all mock/fallback data mechanisms
 - Fixed parameter mismatch in section generation functionality
 - Added complete Arthrosurface-style document formatting
+- Implemented MedDRA-based adverse event categorization by body system
+- Enhanced risk assessment methodology to comply with MEDDEV requirements
+- Added benefit-risk determination as required by EU MDR
+- Improved error handling for FDA API connectivity issues
+- Added standardized metadata and version tracking
 
 ### v2.0.0 - April 22, 2025
 - Complete redesign of CER module interface
@@ -80,14 +85,21 @@
 - [ ] Test all error handling scenarios
 - [ ] Verify authentication and permissions
 - [ ] Confirm data storage and backup mechanisms
+- [ ] Validate MedDRA categorization system with clinical reviewers
+- [ ] Test benefit-risk determination algorithm with realistic data
+- [ ] Verify compliance with MEDDEV 2.7/1 Rev 4 section requirements
+- [ ] Confirm data integrity policies are enforced (no mock data fallbacks)
+- [ ] Perform load testing on FDA API connections
 
 ## Future Roadmap
 
-### Planned for v2.1.0
-- Enhanced EUDAMED integration
-- Advanced literature analysis
-- Improved risk assessment algorithms
-- Multi-device comparison capabilities
+### Planned for v2.1.0 (Targeted for June 2025)
+- Enhanced EUDAMED integration with direct database connection
+- Advanced literature analysis with semantic search capabilities
+- Further refined risk assessment algorithms with clinical validation
+- Multi-device comparison capabilities for portfolio assessment
+- Enhanced authentication with digital signatures for 21 CFR Part 11 compliance
+- Expanded MedDRA classification with automated coding suggestions
 
 ### Planned for v2.2.0
 - Automated regulatory submission preparation
