@@ -3,6 +3,12 @@
  *
  * This service provides functionality for fetching, analyzing, and processing data
  * from the FDA Adverse Event Reporting System (FAERS).
+ * 
+ * IMPORTANT: This service uses only authentic FDA data with no synthetic data fallbacks.
+ * If the FDA API is unavailable, the service will return appropriate error messages
+ * rather than generating alternative data.
+ * 
+ * Version 2.0.1 - May 7, 2025
  */
 
 import axios from 'axios';
@@ -10,8 +16,71 @@ import axios from 'axios';
 // FDA FAERS API base URL
 const FDA_API_BASE_URL = 'https://api.fda.gov/drug/event.json';
 
+// Configure axios instance with proper timeout and retry logic
+const fdaAxios = axios.create({
+  timeout: 30000, // 30 second timeout
+  headers: {
+    'Accept': 'application/json'
+  }
+});
+
+// Add response interceptor for error handling
+fdaAxios.interceptors.response.use(
+  response => response, 
+  async error => {
+    const { config, response } = error;
+    
+    // If this is a rate limit error (429) and we haven't retried yet
+    if (response && response.status === 429 && !config._isRetry) {
+      // Wait 2 seconds before retrying
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mark as retried and try again
+      config._isRetry = true;
+      return fdaAxios(config);
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Utility function for safely making FDA API requests with proper error handling
+const safeFdaApiRequest = async (requestFn) => {
+  try {
+    return await requestFn();
+  } catch (error) {
+    console.error('FDA API Error:', error.message);
+    
+    // Handle connection errors
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('FDA API request timed out. Please try again later.');
+    }
+    
+    // Handle API response errors
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data || {};
+      
+      if (status === 404) {
+        throw new Error('No data found in FDA database for this query.');
+      } else if (status === 429) {
+        throw new Error('FDA API rate limit exceeded. Please try again in a few minutes.');
+      } else {
+        throw new Error(`FDA API error: ${data.error || error.message}`);
+      }
+    } else if (error.request) {
+      throw new Error('No response received from FDA API. Please check your network connection.');
+    } else {
+      throw new Error(`Error preparing FDA API request: ${error.message}`);
+    }
+  }
+};
+
 /**
  * Fetch real FAERS data from the FDA API
+ * 
+ * This function retrieves adverse event data directly from the FDA's FAERS database
+ * via the official FDA API with proper error handling and no synthetic data fallbacks.
  * 
  * @param {string} productName - The name of the product to search for
  * @param {Object} options - Options for the API request
@@ -19,65 +88,43 @@ const FDA_API_BASE_URL = 'https://api.fda.gov/drug/event.json';
  * @returns {Promise<Object>} - FDA FAERS data
  */
 async function fetchRealFaersData(productName, options = {}) {
-  try {
-    const { limit = 100 } = options;
-    
-    // Sanitize product name for API query
-    const sanitizedName = productName.replace(/[^\w\s]/gi, '').trim();
-    
-    // Construct FDA API query
-    const query = `patient.drug.openfda.brand_name:"${sanitizedName}" OR patient.drug.openfda.generic_name:"${sanitizedName}" OR patient.drug.openfda.substance_name:"${sanitizedName}"`;
-    
-    console.log(`Querying FDA FAERS API for: ${sanitizedName}`);
-    console.log(`Full query: ${query}`);
-    
-    // Make API request to FDA
-    const response = await axios.get(FDA_API_BASE_URL, {
+  const { limit = 100 } = options;
+  
+  // Sanitize product name for API query
+  const sanitizedName = productName.replace(/[^\w\s]/gi, '').trim();
+  
+  // Construct FDA API query
+  const query = `patient.drug.openfda.brand_name:"${sanitizedName}" OR patient.drug.openfda.generic_name:"${sanitizedName}" OR patient.drug.openfda.substance_name:"${sanitizedName}"`;
+  
+  console.log(`Querying FDA FAERS API for: ${sanitizedName}`);
+  console.log(`Full query: ${query}`);
+  
+  // Use our safe FDA API request utility
+  return await safeFdaApiRequest(async () => {
+    // Make API request to FDA using our configured axios instance
+    const response = await fdaAxios.get(FDA_API_BASE_URL, {
       params: {
         search: query,
-        limit: limit,
-      },
-      timeout: 30000, // 30 seconds timeout
+        limit: limit
+      }
     });
     
     // Log successful API response
     console.log(`FDA FAERS API response: ${response.status}`);
     console.log(`Found ${response.data.meta.results.total} total records`);
     
+    // Return the data
     return response.data;
-  } catch (error) {
-    // Handle common API errors
-    if (error.response) {
-      const { status, data } = error.response;
-      
-      console.error(`FDA FAERS API error: ${status}`);
-      console.error(`Error details: ${JSON.stringify(data)}`);
-      
-      if (status === 404 || (data && data.error && data.error.code === 'NOT_FOUND')) {
-        console.log(`No FAERS data found for product: ${productName}`);
-        return { meta: { results: { total: 0 } }, results: [] };
-      }
-      
-      if (status === 429) {
-        console.error('FDA FAERS API rate limit exceeded. Consider implementing rate limiting.');
-        throw new Error('FDA FAERS API rate limit exceeded. Please try again in a few minutes.');
-      }
-      
-      if (status >= 500) {
-        console.error('FDA FAERS API server error. The FDA server may be experiencing issues.');
-        throw new Error('FDA FAERS API server error. The FDA database may be temporarily unavailable.');
-      }
-    } else if (error.code === 'ECONNABORTED') {
-      console.error('FDA FAERS API request timeout.');
-      throw new Error('FDA FAERS API request timed out. The FDA server may be experiencing high load.');
-    } else if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
-      console.error('FDA FAERS API connection error. Network connectivity issue.');
-      throw new Error('Unable to connect to FDA FAERS API. Please check your network connection.');
+  }).catch(error => {
+    // For 404 errors (no data found), return empty result set instead of throwing
+    if (error.message.includes('No data found')) {
+      console.log(`No FAERS data found for product: ${productName}`);
+      return { meta: { results: { total: 0 } }, results: [] };
     }
     
-    console.error('Error fetching FAERS data:', error.message);
-    throw new Error(`Failed to fetch FAERS data: ${error.message}`);
-  }
+    // For other errors, rethrow
+    throw error;
+  });
 }
 
 /**
@@ -180,19 +227,25 @@ function transformFaersData(rawData, productName) {
 /**
  * Find similar product names in the FDA database
  * 
+ * Uses the FDA API to find products with similar names for comparison purposes
+ * in clinical evaluation reports.
+ * 
  * @param {string} name - The name to search for
  * @returns {Promise<Array<string>>} - List of similar product names
  */
 async function findSimilarProductInFDA(name) {
-  try {
-    const sanitizedName = name.replace(/[^\w\s]/gi, '').trim();
-    const words = sanitizedName.split(/\s+/);
-    
-    // Search for the first word, which is often the brand name
-    const firstWord = words[0];
-    const query = `openfda.brand_name:${firstWord}* OR openfda.generic_name:${firstWord}*`;
-    
-    const response = await axios.get(`${FDA_API_BASE_URL}`, {
+  const sanitizedName = name.replace(/[^\w\s]/gi, '').trim();
+  const words = sanitizedName.split(/\s+/);
+  
+  // Search for the first word, which is often the brand name
+  const firstWord = words[0];
+  const query = `openfda.brand_name:${firstWord}* OR openfda.generic_name:${firstWord}*`;
+  
+  console.log(`Finding similar products for: ${name}`);
+  console.log(`Using search term: ${firstWord}`);
+  
+  return await safeFdaApiRequest(async () => {
+    const response = await fdaAxios.get(FDA_API_BASE_URL, {
       params: {
         search: query,
         count: 'patient.drug.openfda.brand_name',
@@ -201,11 +254,14 @@ async function findSimilarProductInFDA(name) {
     });
     
     const results = response.data.results || [];
-    return results.map(r => r.term);
-  } catch (error) {
+    const terms = results.map(r => r.term);
+    
+    console.log(`Found ${terms.length} similar products`);
+    return terms;
+  }).catch(error => {
     console.error('Error finding similar products:', error);
-    return [];
-  }
+    return []; // Return empty array on error
+  });
 }
 
 /**

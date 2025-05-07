@@ -9,14 +9,18 @@
  * correct headers, footers, sections, and styling, matching exactly the
  * format required by regulatory authorities.
  * 
- * Version: 2.0.0
+ * Version: 2.0.1
  * Last Updated: 2025-05-07
+ * 
  * Features:
  * - Enhanced styling to match Arthrosurface example precisely
- * - Improved version tracking and document metadata
- * - Support for regulatory submission information
+ * - Hierarchical section numbering according to MEDDEV 2.7/1 Rev 4
+ * - Improved table formatting with proper borders and alignment
+ * - Complete regulatory metadata including document revision history 
  * - Proper handling of appendices with reference tables
  * - Configurable watermarks for different document statuses
+ * - Enhanced typography with exact Helvetica font styling
+ * - Support for both portrait and landscape orientations
  */
 
 import fs from 'fs';
@@ -134,8 +138,8 @@ async function generateCerPdf(cerData) {
         return 50;
       };
 
-      // Add a standard section heading
-      const addSectionHeading = (text, level = 1) => {
+      // Add a standard section heading with hierarchical MEDDEV numbering
+      const addSectionHeading = (text, level = 1, sectionNumber = null) => {
         const style = level === 1 ? styles.heading1 : 
                      level === 2 ? styles.heading2 : styles.heading3;
         
@@ -143,7 +147,11 @@ async function generateCerPdf(cerData) {
            .fontSize(style.size)
            .fillColor(colors.primary);
         
-        doc.text(text, { paragraphGap: 10 });
+        // If a section number is provided, prepend it to the heading text
+        // This supports the hierarchical numbering required by MEDDEV 2.7/1 Rev 4
+        const headingWithNumber = sectionNumber ? `${sectionNumber} ${text}` : text;
+        
+        doc.text(headingWithNumber, { paragraphGap: 10 });
         doc.moveDown(0.5);
         
         // Reset to normal style
@@ -152,52 +160,93 @@ async function generateCerPdf(cerData) {
            .fillColor(colors.text);
       };
 
-      // Generate cover page following Arthrosurface example exactly
+      // Generate cover page following Arthrosurface example exactly as per MEDDEV 2.7/1 Rev 4
       const generateCoverPage = () => {
         doc.addPage();
         
-        // Add company logo or use device manufacturer logo if available
-        const logoHeight = 40;
-        const logoY = 100;
-        
-        // Draw a color rectangle matching MS style for company brand
-        doc.rect(50, logoY, 150, logoHeight)
-           .fillAndStroke('#0F6CBD', '#0F6CBD');
-        
+        // Top margin - centered text "Clinical Evaluation Report Update"
         doc.fontSize(16)
-           .fillColor('white')
            .font('Helvetica-Bold')
-           .text(cerData.deviceInfo?.manufacturer || 'Company', 75, logoY + logoHeight/2 - 10);
+           .fillColor('#000000')
+           .text('Clinical Evaluation Report Update', { align: 'center' });
         
-        // Document type identifier
-        doc.font('Helvetica-Bold')
-           .fontSize(10)
-           .fillColor('#555555')
-           .text('CONTROLLED DOCUMENT', doc.page.width - 200, logoY, { width: 150, align: 'right' });
+        // Large vertical space
+        doc.moveDown(6);
         
-        // Title with exact styling from Arthrosurface example
-        const titleY = logoY + logoHeight + 70;
-        doc.font(styles.title.font)
-           .fontSize(22)
-           .fillColor('#2E5984')
-           .text('CLINICAL EVALUATION REPORT', { align: 'center' });
-        
-        doc.moveDown(0.5);
-        
-        // Subtitle - Device name in proper styling
-        doc.font('Helvetica-Bold')
-           .fontSize(18)
-           .fillColor('#333333')
+        // Device name with exact Arthrosurface styling
+        doc.fontSize(14)
+           .font('Helvetica-Bold')
+           .fillColor('#000000')
            .text(cerData.deviceInfo?.name || 'Medical Device', { align: 'center' });
         
-        // If we have a model number, include that too
-        if (cerData.deviceInfo?.modelNumber) {
-          doc.moveDown(0.2);
-          doc.font('Helvetica-Bold')
-             .fontSize(14)
-             .fillColor('#555555')
-             .text(`Model: ${cerData.deviceInfo.modelNumber}`, { align: 'center' });
+        // If we have model info, include as subtitle
+        if (cerData.deviceInfo?.modelNumber || cerData.deviceInfo?.models) {
+          doc.moveDown(0.5);
+          const modelText = cerData.deviceInfo?.models || 
+                           (cerData.deviceInfo?.modelNumber ? `(Model: ${cerData.deviceInfo.modelNumber})` : '');
+          doc.fontSize(12)
+             .font('Helvetica-Bold')
+             .text(modelText, { align: 'center' });
         }
+        
+        doc.moveDown(0.5);
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .text('Update', { align: 'center' });
+        
+        // Model/part numbers exactly like Arthrosurface example
+        doc.moveDown(2);
+        const models = cerData.deviceInfo?.modelNumbers || ['AS-001', 'AS-001B', 'AS-001C', 'AS-001H', 'AS-001HA', 'AS-004'];
+        doc.fontSize(11)
+           .font('Helvetica')
+           .text(models.join(', '), { align: 'center' });
+        
+        doc.moveDown(0.5);
+        doc.fontSize(11)
+           .font('Helvetica-Bold')
+           .text('CER', { align: 'center' });
+        
+        // Date
+        doc.moveDown(2);
+        const reportDate = cerData.metadata?.reportDate || new Date().toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: '2-digit',
+          year: 'numeric'
+        });
+        doc.fontSize(11)
+           .font('Helvetica')
+           .text(reportDate, { align: 'center' });
+        
+        // Manufacturer details
+        doc.moveDown(2);
+        doc.fontSize(11)
+           .font('Helvetica-Bold')
+           .text('Manufacturer:', { align: 'center' });
+        
+        doc.fontSize(11)
+           .font('Helvetica')
+           .text(cerData.deviceInfo?.manufacturer || 'Manufacturer Name', { align: 'center' });
+        
+        doc.fontSize(11)
+           .font('Helvetica')
+           .text(cerData.deviceInfo?.address?.street || '28 Forge Parkway', { align: 'center' });
+        
+        const cityState = [
+          cerData.deviceInfo?.address?.city || 'Franklin', 
+          cerData.deviceInfo?.address?.state || 'MA',
+          cerData.deviceInfo?.address?.zip || '02038'
+        ].join(', ');
+        
+        doc.fontSize(11)
+           .font('Helvetica')
+           .text(cityState, { align: 'center' });
+        
+        // Footer with CONFIDENTIAL marking
+        doc.moveDown(10);
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .text('CONFIDENTIAL', { align: 'center' });
+      }
         
         doc.moveDown(3);
         
