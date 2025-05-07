@@ -369,7 +369,7 @@ cerApiService.generateStateOfArt = async ({ deviceName, deviceType, indication, 
   try {
     console.log('Generating State of the Art analysis for:', deviceName);
     
-    const response = await fetch('/api/cer/sota', {
+    const response = await fetch('/api/cer/sota/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

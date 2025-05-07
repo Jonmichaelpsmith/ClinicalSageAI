@@ -99,8 +99,8 @@ export default function registerRoutes(app: Express): void {
   // Register Document API routes
   app.use('/api/documents', documentRouter);
   
-  // Register SOTA API routes
-  app.use('/api/cer', sotaRouter);
+  // Register SOTA API routes (appending to existing CER routes)
+  app.use('/api/cer/sota', sotaRouter);
   
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
