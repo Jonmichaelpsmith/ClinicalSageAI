@@ -9,6 +9,7 @@ import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
 import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
+import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
 import CerOnboardingGuide from '@/components/cer/CerOnboardingGuide';
 import WizardStepper from '@/components/cer/WizardStepper';
 import NotificationBanner from '@/components/cer/NotificationBanner';
@@ -51,6 +52,7 @@ export default function CERV2Page() {
   const [literatureResult, setLiteratureResult] = useState(null);
   const [retrievalProgress, setRetrievalProgress] = useState({ faers: 0, literature: 0 });
   const [evidenceSnapshot, setEvidenceSnapshot] = useState(null);
+  const [cepData, setCepData] = useState(null);
   const { toast } = useToast();
 
   // Load FAERS data when device name changes
@@ -616,6 +618,14 @@ export default function CERV2Page() {
             </TabsTrigger>
             
             <TabsTrigger 
+              value="cep" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
+            >
+              <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
+              <span>Evaluation Plan</span>
+            </TabsTrigger>
+            
+            <TabsTrigger 
               value="export" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
@@ -856,6 +866,134 @@ ${device.overallRationale}
                     description: "SOTA analysis has been added to your CER.",
                     variant: "success"
                   });
+                }
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="cep" className="mt-0">
+            <ClinicalEvaluationPlanPanel
+              deviceName={deviceName}
+              manufacturer={manufacturer}
+              initialData={cepData}
+              cerData={{
+                title,
+                deviceType,
+                sections
+              }}
+              onUpdateCEP={(updatedCepData, linkToCER = false) => {
+                // Store the updated CEP data
+                setCepData(updatedCepData);
+                
+                if (linkToCER) {
+                  // Generate a new section or update existing one based on CEP data
+                  const cepSection = {
+                    title: "Clinical Evaluation Plan",
+                    type: "clinical-evaluation-plan",
+                    content: `
+# Clinical Evaluation Plan
+
+## 1. Device Information
+**Device Name:** ${updatedCepData.deviceName || deviceName}
+**Manufacturer:** ${updatedCepData.manufacturer || manufacturer}
+**Model Numbers:** ${updatedCepData.modelNumbers || 'Not specified'}
+
+${updatedCepData.deviceDescription ? `**Device Description:**\n${updatedCepData.deviceDescription}\n` : ''}
+
+## 2. Scope of the Clinical Evaluation
+**Intended Purpose:**\n${updatedCepData.intendedPurpose || 'Not specified'}
+
+**Target Population:**\n${updatedCepData.targetPopulation || 'Not specified'}
+
+**Clinical Benefits:**\n${updatedCepData.clinicalBenefits || 'Not specified'}
+
+**Risk Profile:**\n${updatedCepData.riskProfile || 'Not specified'}
+
+## 3. Clinical Questions to be Addressed
+
+### Safety Questions:
+${updatedCepData.safetyQuestions || 'Not specified'}
+
+### Performance Questions:
+${updatedCepData.performanceQuestions || 'Not specified'}
+
+### Risk-Benefit Questions:
+${updatedCepData.riskBenefitQuestions || 'Not specified'}
+
+## 4. Data Sources for Clinical Evaluation
+${updatedCepData.useClinicalInvestigations ? '- **Clinical Investigations**: Studies specifically conducted for this device\n' : ''}
+${updatedCepData.usePMCF ? '- **Post-Market Clinical Follow-up**: PMCF studies and reports\n' : ''}
+${updatedCepData.useLiterature ? '- **Scientific Literature**: Published studies and papers\n' : ''}
+${updatedCepData.useRegistries ? '- **Registry Data**: Data from device registries\n' : ''}
+${updatedCepData.useComplaints ? '- **Complaints & Vigilance**: Post-market surveillance data\n' : ''}
+${updatedCepData.useNonClinical ? '- **Non-Clinical Studies**: Lab tests, bench testing, animal studies\n' : ''}
+${updatedCepData.useEquivalentDevices ? '- **Equivalent Device Data**: Clinical data from equivalent devices\n' : ''}
+
+${updatedCepData.useEquivalentDevices && updatedCepData.equivalentDeviceDetails ? `### Equivalent Device Details:
+${updatedCepData.equivalentDeviceDetails}\n` : ''}
+
+## 5. GSPRs to be Addressed in the Clinical Evaluation
+${updatedCepData.selectedGSPRs && updatedCepData.selectedGSPRs.length > 0 
+  ? updatedCepData.selectedGSPRs.map(gsprId => {
+      const gspr = (Array.isArray(gspr) && gspr.length > 0) 
+        ? gspr.find(g => g.id === gsprId) 
+        : { title: `GSPR ${gsprId}`, description: 'Not specified' };
+      return `### ${gspr?.title || `GSPR ${gsprId}`}
+${gspr?.description || 'Not specified'}
+
+**Justification Approach:**
+${updatedCepData.gspr_justifications[gsprId] || 'To be determined during clinical evaluation'}\n`;
+    }).join('\n')
+  : '- No specific GSPRs selected for this evaluation.\n'}
+
+## 6. Methods
+
+### Literature Search Strategy:
+${updatedCepData.literatureSearchStrategy || 'Not specified'}
+
+### Data Analysis Methods:
+${updatedCepData.dataAnalysisMethods || 'Not specified'}
+
+### Clinical Evaluation Team:
+${updatedCepData.clinicalEvaluationTeam || 'Not specified'}
+
+### Evaluation Criteria:
+${updatedCepData.evaluationCriteria || 'Not specified'}
+                    `,
+                    lastUpdated: new Date().toISOString()
+                  };
+                  
+                  // Check if we already have a CEP section
+                  const existingIndex = sections.findIndex(
+                    section => section.type === 'clinical-evaluation-plan' || 
+                    (section.title && section.title.toLowerCase().includes('clinical evaluation plan'))
+                  );
+                  
+                  if (existingIndex >= 0) {
+                    // Update existing section
+                    const updatedSections = [...sections];
+                    updatedSections[existingIndex] = {
+                      ...updatedSections[existingIndex],
+                      content: cepSection.content,
+                      lastUpdated: new Date().toISOString()
+                    };
+                    setSections(updatedSections);
+                    
+                    toast({
+                      title: "Clinical Evaluation Plan Updated",
+                      description: "CEP has been updated in your CER.",
+                      variant: "success"
+                    });
+                  } else {
+                    // Add new section
+                    setSections([...sections, cepSection]);
+                    
+                    toast({
+                      title: "Clinical Evaluation Plan Added",
+                      description: "CEP has been added to your CER.",
+                      variant: "success"
+                    });
+                  }
                 }
               }}
             />
