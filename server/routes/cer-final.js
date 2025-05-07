@@ -357,6 +357,99 @@ router.post('/assistant/chat', async (req, res) => {
   }
 });
 
+// POST /api/cer/generate-section - Generate a section for the CER
+router.post('/generate-section', async (req, res) => {
+  try {
+    const { section, productName, context } = req.body;
+    
+    if (!section) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Section type is required' 
+      });
+    }
+    
+    console.log(`Generating CER section: ${section} for ${productName || 'unknown product'}`);
+    
+    // Import the CER Chat Service for AI content generation
+    const cerChatService = (await import('../services/cerChatService.js')).default;
+    
+    // Generate appropriate content based on section type
+    let content = '';
+    let title = '';
+    
+    switch(section) {
+      case 'device-description':
+        title = 'Device Description';
+        content = await cerChatService.processMessage(
+          `Generate a professional device description section for a Clinical Evaluation Report about ${productName || 'a medical device'}. Include details about the device's components, intended use, technological characteristics, and principles of operation.`, 
+          { productName }
+        );
+        break;
+        
+      case 'regulatory-status':
+        title = 'Regulatory Status';
+        content = await cerChatService.processMessage(
+          `Generate a comprehensive regulatory status section for a Clinical Evaluation Report about ${productName || 'a medical device'}. Include information about relevant EU MDR compliance, classification details, and applicable standards.`,
+          { productName }
+        );
+        break;
+        
+      case 'clinical-data':
+        title = 'Clinical Data Evaluation';
+        content = await cerChatService.processMessage(
+          `Generate a clinical data evaluation section for a Clinical Evaluation Report about ${productName || 'a medical device'}. Include methodology for data collection, summary of clinical investigations, and analysis of clinical performance.`,
+          { productName }
+        );
+        break;
+        
+      case 'risk-analysis':
+        title = 'Risk Analysis';
+        content = await cerChatService.processMessage(
+          `Generate a risk analysis section for a Clinical Evaluation Report about ${productName || 'a medical device'}. Include identification of hazards, risk estimation, and evaluation against acceptance criteria.`,
+          { productName }
+        );
+        break;
+        
+      case 'benefit-risk':
+        title = 'Benefit-Risk Determination';
+        content = await cerChatService.processMessage(
+          `Generate a benefit-risk determination section for a Clinical Evaluation Report about ${productName || 'a medical device'}. Include assessment of benefits, residual risks, and overall benefit-risk conclusion.`,
+          { productName }
+        );
+        break;
+        
+      default:
+        title = 'General Section';
+        content = await cerChatService.processMessage(
+          `Generate a general section for a Clinical Evaluation Report about ${productName || 'a medical device'} focusing on ${section}.`,
+          { productName }
+        );
+    }
+    
+    // Return the generated content
+    res.json({
+      success: true,
+      section: {
+        id: `section-${Date.now()}`,
+        title,
+        type: section,
+        content: content.response,
+        aiGenerated: true,
+        wordCount: content.response.split(/\s+/).length,
+        createdAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Error generating CER section:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to generate CER section',
+      message: error.message
+    });
+  }
+});
+
 // Dummy downloads endpoint
 router.get('/downloads/:filename', (req, res) => {
   const { filename } = req.params;

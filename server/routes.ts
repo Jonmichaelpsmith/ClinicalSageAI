@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import path from 'path';
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';  // Using our simplified & fixed CER router
+import faersRouter from './routes/faers-api.js';  // Add direct FAERS API router
 import literatureRouter from './routes/literature.js';
 import documentRouter from './routes/document-routes';
 
@@ -86,6 +87,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register our enhanced CER routes
   app.use('/api/cer', cerRouter);
+  
+  // Register FAERS API routes
+  app.use('/api/faers', faersRouter);
 
   // Register Literature API routes
   app.use('/api/literature', literatureRouter);
