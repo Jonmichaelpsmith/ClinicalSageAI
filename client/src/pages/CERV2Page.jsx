@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
 import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
+import LiteratureMethodologyPanel from '@/components/cer/LiteratureMethodologyPanel';
 import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
 import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
@@ -385,16 +386,49 @@ export default function CERV2Page() {
           </TabsContent>
 
           <TabsContent value="literature" className="mt-0">
-            <LiteratureSearchPanel
-              onAddSection={(newSection) => {
-                setSections([...sections, newSection]);
-                toast({
-                  title: "Literature Review Added",
-                  description: "Added to your CER.",
-                  variant: "success",
-                });
-              }}
-            />
+            {/* Nested tabs for Literature section */}
+            <Tabs defaultValue="search" className="w-full">
+              <TabsList className="bg-white border-b border-gray-200 rounded-none w-full flex justify-start">
+                <TabsTrigger value="search" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161]">
+                  Search & Analyze
+                </TabsTrigger>
+                <TabsTrigger value="methodology" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161]">
+                  Search Methodology
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="search" className="mt-4">
+                <LiteratureSearchPanel
+                  onAddSection={(newSection) => {
+                    setSections([...sections, newSection]);
+                    toast({
+                      title: "Literature Review Added",
+                      description: "Added to your CER.",
+                      variant: "success",
+                    });
+                  }}
+                  deviceName={deviceName}
+                  manufacturer={manufacturer}
+                  cerTitle={title}
+                />
+              </TabsContent>
+              
+              <TabsContent value="methodology" className="mt-4">
+                <LiteratureMethodologyPanel
+                  onAddToCER={(newSection) => {
+                    setSections([...sections, newSection]);
+                    toast({
+                      title: "Literature Methodology Added",
+                      description: "Search methodology documentation added to your CER.",
+                      variant: "success",
+                    });
+                  }}
+                  deviceName={deviceName}
+                  deviceType={deviceType}
+                  manufacturer={manufacturer}
+                />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
           
           <TabsContent value="equivalence" className="mt-0">
