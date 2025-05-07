@@ -1,11 +1,19 @@
 # Clinical Evaluation Report Module - Version Control
 
-## Current Version: 2.0.1
+## Current Version: 2.0.2
 **Last Updated:** May 7, 2025
 
 ## Version History
 
-### v2.0.1 (Current) - May 7, 2025
+### v2.0.2 (Current) - May 7, 2025
+- Added State of the Art (SOTA) analysis feature required by MEDDEV 2.7/1 Rev 4 Section 8
+- Implemented MS365-styled SOTA panel with comprehensive input form
+- Created backend API endpoint with OpenAI GPT-4o integration
+- Added regulatory guidance section with SOTA requirements overview
+- Implemented automatic integration of SOTA section into final CER documents
+- Added device-specific content generation based on classification
+
+### v2.0.1 - May 7, 2025
 - Fixed Zero-Click dialog dark background styling issue
 - Enhanced PDF export to match MEDDEV 2.7/1 Rev 4 format exactly
 - Updated FDA FAERS integration to use authentic data sources only
@@ -45,14 +53,18 @@
 - `client/src/components/cer/CerPreviewPanel.jsx` - Report preview component
 - `client/src/components/cer/FdaFaersDataPanel.jsx` - FDA FAERS data display
 - `client/src/components/cer/ComplianceScorePanel.jsx` - Regulatory compliance checker
+- `client/src/components/cer/StateOfArtPanel.jsx` - State of the Art analysis interface
+- `client/src/components/cer/EquivalenceBuilderPanel.jsx` - Device equivalence assessment tool
 - `client/src/services/CerAPIService.js` - API service for CER functionality
 
 ### Backend Components
 - `server/routes/cer-final.js` - CER API routes
 - `server/routes/faers-api.js` - FDA FAERS data retrieval endpoints
+- `server/routes/sota-api.mjs` - State of the Art API endpoints
 - `server/services/faersService.js` - FAERS data processing service
 - `server/services/cerPdfExporter.js` - PDF generation in MEDDEV 2.7/1 Rev 4 format
 - `server/services/cerChatService.js` - Content generation service
+- `server/services/openaiService.js` - OpenAI integration for content generation
 
 ## Development Guidelines
 
