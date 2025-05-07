@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { searchLiterature, generateCitations, summarizePaper, generateLiteratureReview, analyzePaperPDF } from '@/services/LiteratureAPIService';
+import { 
+  searchPubMed, 
+  searchLiterature, 
+  generateCitations, 
+  summarizePaper, 
+  generateLiteratureReview, 
+  analyzePaperPDF 
+} from '@/services/LiteratureAPIService';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
