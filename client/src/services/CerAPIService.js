@@ -685,4 +685,112 @@ cerApiService.getFaersDataForReport = async (reportId) => {
 };
 
 // Export the service object for use in other components
+/**
+ * Save a version of a CER document
+ * @param {Object} params - Parameters for version saving
+ * @param {string} params.title - The title of the document
+ * @param {Array} params.sections - The document sections
+ * @param {Object} params.deviceInfo - Information about the device
+ * @param {Object} params.metadata - Document metadata
+ * @param {string} params.versionNotes - Notes about this version
+ * @param {string} params.versionType - Type of version increment (major, minor, patch)
+ * @returns {Promise<Object>} - The saved version information
+ */
+cerApiService.saveVersion = async ({ title, sections, deviceInfo, metadata, versionNotes = '', versionType = 'minor' }) => {
+  try {
+    const response = await fetch('/api/cer/version/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        sections,
+        deviceInfo,
+        metadata,
+        versionNotes,
+        versionType
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error saving version: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in saveVersion:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get version history for a CER document
+ * @param {string} documentId - ID of the CER document
+ * @returns {Promise<Object>} - The version history
+ */
+cerApiService.getVersionHistory = async (documentId) => {
+  try {
+    const response = await fetch(`/api/cer/version/${documentId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error getting version history: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getVersionHistory:', error);
+    throw error;
+  }
+};
+
+/**
+ * Prepare a CER document for regulatory submission
+ * @param {Object} params - Parameters for submission preparation
+ * @param {string} params.documentId - The document ID
+ * @param {string} params.version - The document version
+ * @param {string} params.title - The document title
+ * @param {Array} params.sections - The document sections
+ * @param {Object} params.deviceInfo - Information about the device
+ * @param {Object} params.metadata - Document metadata
+ * @param {string} params.submissionType - Type of submission (EU MDR, FDA, etc.)
+ * @returns {Promise<Object>} - The submission status
+ */
+cerApiService.prepareSubmission = async ({ documentId, version, title, sections, deviceInfo, metadata, submissionType = 'EU MDR' }) => {
+  try {
+    const response = await fetch('/api/cer/submission/prepare', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        documentId,
+        version,
+        title,
+        sections,
+        deviceInfo,
+        metadata,
+        submissionType
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error preparing submission: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in prepareSubmission:', error);
+    throw error;
+  }
+};
+
 export { cerApiService };

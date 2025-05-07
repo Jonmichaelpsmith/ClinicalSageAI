@@ -2464,6 +2464,235 @@ Scoring criteria:
 
 export { router as default };
 
+// POST /api/cer/version/save - Save a version of a CER document
+router.post('/version/save', async (req, res) => {
+  try {
+    const { 
+      title, 
+      sections, 
+      deviceInfo, 
+      metadata = {}, 
+      versionNotes = '',
+      versionType = 'minor'  // "major", "minor", or "patch"
+    } = req.body;
+
+    if (!title || !sections || sections.length === 0) {
+      return res.status(400).json({ 
+        error: 'Title and at least one section are required' 
+      });
+    }
+
+    console.log(`Saving version of CER: ${title}, Sections: ${sections.length}, Version type: ${versionType}`);
+
+    // Get the documentId or generate a new one if it doesn't exist
+    const documentId = metadata.documentId || `CER-${Date.now().toString().substring(0, 8)}`;
+    
+    // Calculate new version based on current version and version type
+    let currentVersion = metadata.version || '0.0.0';
+    let [major, minor, patch] = currentVersion.split('.').map(v => parseInt(v));
+
+    // Increment appropriate version component
+    if (versionType === 'major') {
+      major++;
+      minor = 0;
+      patch = 0;
+    } else if (versionType === 'minor') {
+      minor++;
+      patch = 0;
+    } else { // patch
+      patch++;
+    }
+
+    const newVersion = `${major}.${minor}.${patch}`;
+    
+    // Create version history if it doesn't exist
+    const versionHistory = metadata.versionHistory || [];
+
+    // Add current version to history if it exists
+    if (metadata.version) {
+      versionHistory.push({
+        version: metadata.version,
+        timestamp: metadata.updatedAt || new Date().toISOString(),
+        notes: versionNotes || 'Version saved'
+      });
+    }
+
+    // Create updated metadata
+    const updatedMetadata = {
+      ...metadata,
+      documentId,
+      version: newVersion,
+      previousVersion: metadata.version || null,
+      versionHistory,
+      updatedAt: new Date().toISOString()
+    };
+
+    // In a real implementation, we would save this to a database
+    // For now, we'll just return the updated document info
+    
+    res.json({
+      success: true,
+      documentId,
+      version: newVersion,
+      previousVersion: metadata.version || null,
+      title,
+      updatedAt: updatedMetadata.updatedAt,
+      sectionsCount: sections.length,
+      versionHistory,
+      message: `Version ${newVersion} saved successfully`
+    });
+  } catch (error) {
+    console.error('Error saving version:', error);
+    res.status(500).json({ error: `Failed to save version: ${error.message}` });
+  }
+});
+
+// GET /api/cer/version/:documentId - Get version history for a CER document
+router.get('/version/:documentId', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    
+    if (!documentId) {
+      return res.status(400).json({ error: 'Document ID is required' });
+    }
+    
+    // In a real implementation, this would query a database
+    // For now, we'll return simulated history data
+    
+    // Get current date for reference
+    const now = new Date();
+    
+    // Create some example version history
+    const versionHistory = [
+      {
+        version: '1.0.0',
+        timestamp: new Date(now.getTime() - (10 * 24 * 60 * 60 * 1000)).toISOString(), // 10 days ago
+        notes: 'Initial version of the CER for submission',
+        author: 'Dr. Jane Smith',
+        status: 'approved'
+      },
+      {
+        version: '0.9.0',
+        timestamp: new Date(now.getTime() - (15 * 24 * 60 * 60 * 1000)).toISOString(), // 15 days ago
+        notes: 'Pre-approval draft with all sections complete',
+        author: 'Dr. Jane Smith',
+        status: 'review'
+      },
+      {
+        version: '0.5.0',
+        timestamp: new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString(), // 30 days ago
+        notes: 'Initial draft with clinical data sections',
+        author: 'Dr. Jane Smith',
+        status: 'draft'
+      }
+    ];
+    
+    res.json({
+      documentId,
+      currentVersion: '1.0.0',
+      versionHistory,
+      title: 'Clinical Evaluation Report'
+    });
+  } catch (error) {
+    console.error('Error getting version history:', error);
+    res.status(500).json({ error: `Failed to get version history: ${error.message}` });
+  }
+});
+
+// POST /api/cer/submission/prepare - Prepare a CER for regulatory submission
+router.post('/submission/prepare', async (req, res) => {
+  try {
+    const { 
+      documentId,
+      version,
+      title,
+      sections, 
+      deviceInfo,
+      metadata = {},
+      submissionType = 'EU MDR', // EU MDR, FDA, etc.
+      checklistItems = []
+    } = req.body;
+    
+    if (!documentId || !version || !sections || sections.length === 0) {
+      return res.status(400).json({ 
+        error: 'Document ID, version, and sections are required' 
+      });
+    }
+    
+    console.log(`Preparing CER submission: ${title}, ID: ${documentId}, Version: ${version}, Type: ${submissionType}`);
+    
+    // In a production environment, we would:
+    // 1. Validate the document against regulatory requirements
+    // 2. Generate necessary supplementary files
+    // 3. Create a submission package
+    // 4. Store submission records
+    
+    // For now, we'll simulate these steps and return a submission report
+    
+    // Calculate completeness percentage based on sections
+    const requiredSections = [
+      'executive-summary', 'scope', 'device-description', 'intended-purpose',
+      'clinical-data-context', 'literature-review', 'clinical-experience', 
+      'risk-analysis', 'pms-data', 'equivalence', 'overall-assessment', 'conclusions'
+    ];
+    
+    const presentSections = sections.map(s => s.type);
+    const completedSections = requiredSections.filter(s => presentSections.includes(s));
+    const completenessPercentage = Math.round((completedSections.length / requiredSections.length) * 100);
+    
+    // Simulate validation results
+    const validationResults = {
+      completeness: completenessPercentage,
+      missingRequiredSections: requiredSections.filter(s => !presentSections.includes(s)),
+      regulatoryCompliance: {
+        'EU MDR': 0.82,
+        'ISO 14155': 0.79,
+        'FDA': 0.75
+      },
+      validationIssues: completenessPercentage < 100 ? [
+        { 
+          severity: 'error', 
+          message: 'Missing required sections',
+          details: `The following sections are required but missing: ${requiredSections.filter(s => !presentSections.includes(s)).join(', ')}`
+        }
+      ] : [],
+      recommendedActions: []
+    };
+    
+    // Add recommended actions based on validation
+    if (validationResults.completeness < 100) {
+      validationResults.recommendedActions.push('Complete all required sections');
+    }
+    
+    if (validationResults.regulatoryCompliance['EU MDR'] < 0.8) {
+      validationResults.recommendedActions.push('Improve EU MDR compliance score');
+    }
+    
+    // Create final submission status
+    const submissionStatus = {
+      documentId,
+      version,
+      title,
+      submissionType,
+      preparedAt: new Date().toISOString(),
+      validationResults,
+      readyForSubmission: validationResults.completeness === 100 && validationResults.validationIssues.length === 0,
+      submissionPackage: validationResults.completeness === 100 ? {
+        mainDocumentUrl: `/api/cer/export-pdf?documentId=${documentId}&version=${version}`,
+        supplementaryDocuments: [
+          { name: 'Checklist', url: `/api/cer/submission/checklist?documentId=${documentId}&version=${version}` },
+          { name: 'Submission Cover Letter', url: `/api/cer/submission/cover-letter?documentId=${documentId}&version=${version}` }
+        ]
+      } : null
+    };
+    
+    res.json(submissionStatus);
+  } catch (error) {
+    console.error('Error preparing submission:', error);
+    res.status(500).json({ error: `Failed to prepare submission: ${error.message}` });
+  }
+});
+
 // Export for CommonJS compatibility
 if (typeof module !== 'undefined') {
   module.exports = router;
