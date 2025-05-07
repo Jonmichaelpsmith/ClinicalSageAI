@@ -1,7 +1,7 @@
 import express, { Express } from 'express';
 import path from 'path';
 import indWizardRouter from './routes/indWizardAPI.js';
-import cerRouter from './routes/cer.js';
+import cerRouter from './routes/cer-final.js';  // Using our simplified & fixed CER router
 import literatureRouter from './routes/literature.js';
 import documentRouter from './routes/document-routes';
 
