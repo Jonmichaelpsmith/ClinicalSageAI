@@ -490,7 +490,7 @@ export default function CERV2Page() {
       
       {/* Device Info Dialog for Zero-Click Report Generation */}
       <Dialog open={showDeviceInfoDialog} onOpenChange={setShowDeviceInfoDialog}>
-        <DialogContent className="sm:max-w-[500px] bg-white">
+        <DialogContent className="sm:max-w-[500px] bg-white zero-click-dialog dialog-content">
           <DialogHeader>
             <DialogTitle className="text-[#323130] font-semibold text-lg">Zero-Click CER Generation</DialogTitle>
             <DialogDescription className="text-[#323130]">
