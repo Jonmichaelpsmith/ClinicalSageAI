@@ -651,7 +651,14 @@ router.post('/fetch-faers', async (req, res) => {
       const enhancedService = await getEnhancedFaersService();
       
       if (!enhancedService) {
-        throw new Error('Enhanced FAERS service not available');
+        return res.status(503).json({ 
+          success: false,
+          error: 'FDA FAERS service temporarily unavailable',
+          message: 'Enhanced FDA FAERS data service is currently unavailable. Please try again later.',
+          serviceStatus: 'unavailable',
+          productName,
+          cerId
+        });
       }
       
       // Step 1: Fetch FAERS data with comparator analysis using our enhanced service
@@ -659,6 +666,19 @@ router.post('/fetch-faers', async (req, res) => {
       
       // Use the enhanced FAERS analysis service that handles ATC codes and mechanism of action
       const faersData = await enhancedService.fetchFaersAnalysis(productName, cerId);
+      
+      // If no data found, return appropriate error
+      if (!faersData || !faersData.reportCount || faersData.reportCount === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'No FDA FAERS data found',
+          message: `No adverse event reports found for "${productName}" in the FDA FAERS database. Try a different product name or check spelling.`,
+          searchTerm: productName,
+          dataSource: 'FDA FAERS API',
+          serviceStatus: 'available',
+          cerId
+        });
+      }
       
       // Step 2: Process the data for the response
       const responseData = {
@@ -669,7 +689,13 @@ router.post('/fetch-faers', async (req, res) => {
         riskScore: faersData.riskScore,
         reportCount: faersData.reportCount,
         classification: faersData.classification,
-        message: `Successfully analyzed ${faersData.reportCount} FAERS reports for ${productName}`
+        message: `Successfully analyzed ${faersData.reportCount} FAERS reports for ${productName}`,
+        dataSource: {
+          name: 'FDA FAERS Database',
+          accessMethod: 'FDA OpenAPI v2',
+          retrievalDate: new Date().toISOString(),
+          authentic: true
+        }
       };
       
       // Add comparator data if it exists
@@ -692,32 +718,18 @@ router.post('/fetch-faers', async (req, res) => {
       res.json(responseData);
       
     } catch (error) {
-      console.error('Error with real FDA API, falling back to mock data:', error);
+      console.error('Error with FDA FAERS API:', error);
       
-      // Generate fallback response with mock data
-      // This ensures the demo flow continues to work even if FDA API is unavailable
-      const mockData = await faersService.getFaersDataWithComparators(productName, {
-        includeComparators,
-        comparatorLimit
-      });
-      
-      const responseData = {
-        success: true,
+      // Return clear error message to client instead of using mock data
+      return res.status(500).json({
+        success: false,
+        error: 'FDA FAERS API Error',
+        message: `Unable to retrieve FDA FAERS data: ${error.message}`,
+        details: 'The FDA FAERS database connection experienced an error. Please try again later or check product name spelling.',
+        serviceStatus: 'error',
         productName,
-        cerId,
-        reports: [],
-        riskScore: mockData.riskScore || 0.5,
-        reportCount: mockData.totalReports || 0,
-        classification: {
-          atcCodes: [],
-          mechanismOfAction: [],
-          pharmacologicalClass: []
-        },
-        message: `Retrieved ${mockData.totalReports || 0} reports for ${productName}`,
-        comparators: mockData.comparators || []
-      };
-      
-      res.json(responseData);
+        cerId
+      });
     }
   } catch (error) {
     console.error('Error fetching and storing FAERS data:', error);
@@ -1376,107 +1388,135 @@ router.get('/faers/analysis', async (req, res) => {
       return res.status(400).json({ error: 'Product name is required' });
     }
     
-    // Use the new enhanced FAERS service with ATC codes and MoA
-    console.log(`Analyzing FAERS data for ${productName} with comparative analysis`);
-    
-    // Fetch the enhanced analysis with ATC and MoA-based comparisons
-    const faersData = await fetchFaersAnalysis(productName);
-    
-    // Process the data for clinical evaluation reporting
-    const reportCount = faersData.reportCount || 0;
-    const seriousCount = faersData.reportsData?.filter(r => r.is_serious)?.length || 0;
-    const riskScore = faersData.riskScore || 0;
-    const severityLevel = getSeverityLevel(riskScore);
-    
-    // Extract most common adverse events
-    const eventCounts = {};
-    if (faersData.reportsData && faersData.reportsData.length > 0) {
-      faersData.reportsData.forEach(report => {
-        const reaction = report.reaction;
-        if (reaction) {
-          eventCounts[reaction] = (eventCounts[reaction] || 0) + 1;
-        }
-      });
-    }
-    
-    // Convert to sorted array of reaction counts
-    const topReactions = Object.entries(eventCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([reaction, count]) => ({
-        event: reaction,
-        count: count,
-        percentage: `${((count / reportCount) * 100).toFixed(1)}%`
-      }));
-    
-    // Extract demographics
-    const demographics = {
-      ageDistribution: extractAgeDistribution(faersData.reportsData || [], reportCount),
-      genderDistribution: extractGenderDistribution(faersData.reportsData || [], reportCount)
-    };
-    
-    // Format the response specifically for CER inclusion
-    const analysis = {
-      productInfo: {
-        name: productName,
-        unii: faersData.substance?.unii || null,
-        substanceName: faersData.substance || productName,
-        classification: faersData.classification || {}
-      },
-      reportingPeriod: {
-        start: "2020-01-01",  // In production, this should be dynamically determined
-        end: new Date().toISOString().split('T')[0],
-        durationMonths: 48
-      },
-      summary: {
-        totalReports: reportCount,
-        seriousEvents: seriousCount,
-        seriousEventsPercentage: reportCount > 0 ? `${((seriousCount / reportCount) * 100).toFixed(1)}%` : '0%',
-        eventsPerTenThousand: (riskScore * 100).toFixed(2),
-        severityAssessment: severityLevel
-      },
-      topEvents: topReactions,
-      demographics,
-    };
-    
-    // Add pharmacological classification information
-    if (faersData.classification) {
-      analysis.pharmacology = {
-        atcCodes: faersData.classification.atcCodes || [],
-        mechanismOfAction: faersData.classification.mechanismOfAction || [],
-        pharmacologicalClass: faersData.classification.pharmacologicalClass || []
-      };
-    }
-    
-    // Add comparator analysis if available
-    if (faersData.comparators && faersData.comparators.length > 0) {
-      analysis.comparativeAnalysis = {
-        products: faersData.comparators.map(comp => ({
-          name: comp.comparator,
-          riskScore: comp.riskScore,
-          reportCount: comp.reportCount,
-          severityAssessment: getSeverityLevel(comp.riskScore),
-          relativeSafety: getRelativeSafety(riskScore, comp.riskScore)
-        })),
-        matchingCriteria: buildMatchingCriteria(faersData.classification),
-        summary: `Compared to ${faersData.comparators.length} similar products in its class, ${productName} shows ${getComparativeConclusion(faersData.riskScore, faersData.comparators)}`
-      };
+    try {
+      // Use the new enhanced FAERS service with ATC codes and MoA
+      console.log(`Analyzing FAERS data for ${productName} with comparative analysis`);
       
-      // Enhanced conclusion with comparative data and classification info
-      let classificationInfo = '';
-      if (faersData.classification?.atcCodes?.length > 0) {
-        classificationInfo = ` As a ${faersData.classification.atcCodes[0].split(':')[0]} class pharmaceutical,`;
-      } else if (faersData.classification?.mechanismOfAction?.length > 0) {
-        classificationInfo = ` With a mechanism of action as ${faersData.classification.mechanismOfAction[0].toLowerCase()},`;
+      // Fetch the enhanced analysis with ATC and MoA-based comparisons
+      const faersData = await fetchFaersAnalysis(productName);
+      
+      // Check if we got data back
+      if (!faersData || !faersData.reportCount || faersData.reportCount === 0) {
+        return res.status(404).json({
+          error: 'No FDA FAERS data found',
+          message: `No adverse event reports found for "${productName}" in the FDA FAERS database. Try a different product name or check spelling.`,
+          searchTerm: productName,
+          dataSource: 'FDA FAERS API',
+          serviceStatus: 'available'
+        });
       }
       
-      analysis.conclusion = `Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, ${productName} demonstrates a ${severityLevel.toLowerCase()} risk profile with ${seriousCount} serious events reported.${classificationInfo} ${analysis.comparativeAnalysis.summary} The most common adverse events were ${topReactions.slice(0, 3).map(r => r.event).join(', ')}. This data should be considered in the overall benefit-risk assessment of the product.`;
-    } else {
-      // Standard conclusion without comparators
-      analysis.conclusion = `Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, ${productName} demonstrates a ${severityLevel.toLowerCase()} risk profile with ${seriousCount} serious events reported. The most common adverse events were ${topReactions.slice(0, 3).map(r => r.event).join(', ')}. This data should be considered in the overall benefit-risk assessment of the product.`;
-    }
+      // Process the data for clinical evaluation reporting
+      const reportCount = faersData.reportCount || 0;
+      const seriousCount = faersData.reportsData?.filter(r => r.is_serious)?.length || 0;
+      const riskScore = faersData.riskScore || 0;
+      const severityLevel = getSeverityLevel(riskScore);
+      
+      // Extract most common adverse events
+      const eventCounts = {};
+      if (faersData.reportsData && faersData.reportsData.length > 0) {
+        faersData.reportsData.forEach(report => {
+          const reaction = report.reaction;
+          if (reaction) {
+            eventCounts[reaction] = (eventCounts[reaction] || 0) + 1;
+          }
+        });
+      }
+      
+      // Convert to sorted array of reaction counts
+      const topReactions = Object.entries(eventCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([reaction, count]) => ({
+          event: reaction,
+          count: count,
+          percentage: `${((count / reportCount) * 100).toFixed(1)}%`
+        }));
+      
+      // Extract demographics
+      const demographics = {
+        ageDistribution: extractAgeDistribution(faersData.reportsData || [], reportCount),
+        genderDistribution: extractGenderDistribution(faersData.reportsData || [], reportCount)
+      };
+      
+      // Format the response specifically for CER inclusion
+      const analysis = {
+        productInfo: {
+          name: productName,
+          unii: faersData.substance?.unii || null,
+          substanceName: faersData.substance || productName,
+          classification: faersData.classification || {}
+        },
+        reportingPeriod: {
+          start: "2020-01-01",  // In production, this should be dynamically determined
+          end: new Date().toISOString().split('T')[0],
+          durationMonths: 48
+        },
+        summary: {
+          totalReports: reportCount,
+          seriousEvents: seriousCount,
+          seriousEventsPercentage: reportCount > 0 ? `${((seriousCount / reportCount) * 100).toFixed(1)}%` : '0%',
+          eventsPerTenThousand: (riskScore * 100).toFixed(2),
+          severityAssessment: severityLevel
+        },
+        topEvents: topReactions,
+        demographics,
+        dataSource: {
+          name: 'FDA FAERS Database',
+          accessMethod: 'FDA OpenAPI v2',
+          retrievalDate: new Date().toISOString(),
+          authentic: true
+        }
+      };
     
-    res.json(analysis);
+      // Add pharmacological classification information
+      if (faersData.classification) {
+        analysis.pharmacology = {
+          atcCodes: faersData.classification.atcCodes || [],
+          mechanismOfAction: faersData.classification.mechanismOfAction || [],
+          pharmacologicalClass: faersData.classification.pharmacologicalClass || []
+        };
+      }
+      
+      // Add comparator analysis if available
+      if (faersData.comparators && faersData.comparators.length > 0) {
+        analysis.comparativeAnalysis = {
+          products: faersData.comparators.map(comp => ({
+            name: comp.comparator,
+            riskScore: comp.riskScore,
+            reportCount: comp.reportCount,
+            severityAssessment: getSeverityLevel(comp.riskScore),
+            relativeSafety: getRelativeSafety(riskScore, comp.riskScore)
+          })),
+          matchingCriteria: buildMatchingCriteria(faersData.classification),
+          summary: `Compared to ${faersData.comparators.length} similar products in its class, ${productName} shows ${getComparativeConclusion(faersData.riskScore, faersData.comparators)}`
+        };
+        
+        // Enhanced conclusion with comparative data and classification info
+        let classificationInfo = '';
+        if (faersData.classification?.atcCodes?.length > 0) {
+          classificationInfo = ` As a ${faersData.classification.atcCodes[0].split(':')[0]} class pharmaceutical,`;
+        } else if (faersData.classification?.mechanismOfAction?.length > 0) {
+          classificationInfo = ` With a mechanism of action as ${faersData.classification.mechanismOfAction[0].toLowerCase()},`;
+        }
+        
+        analysis.conclusion = `Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, ${productName} demonstrates a ${severityLevel.toLowerCase()} risk profile with ${seriousCount} serious events reported.${classificationInfo} ${analysis.comparativeAnalysis.summary} The most common adverse events were ${topReactions.slice(0, 3).map(r => r.event).join(', ')}. This data should be considered in the overall benefit-risk assessment of the product.`;
+      } else {
+        // Standard conclusion without comparators
+        analysis.conclusion = `Based on the analysis of ${reportCount} adverse event reports from the FDA FAERS database, ${productName} demonstrates a ${severityLevel.toLowerCase()} risk profile with ${seriousCount} serious events reported. The most common adverse events were ${topReactions.slice(0, 3).map(r => r.event).join(', ')}. This data should be considered in the overall benefit-risk assessment of the product.`;
+      }
+      
+      res.json(analysis);
+    } catch (error) {
+      console.error('Error with FDA FAERS API:', error);
+      return res.status(500).json({
+        error: 'FDA FAERS API Error',
+        message: `Unable to retrieve FDA FAERS data: ${error.message}`,
+        details: 'The FDA FAERS database connection experienced an error. Please try again later or check product name spelling.',
+        serviceStatus: 'error',
+        productName
+      });
+    }
   } catch (error) {
     console.error('Error analyzing FAERS data for CER:', error);
     res.status(500).json({ 
