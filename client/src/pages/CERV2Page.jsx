@@ -293,34 +293,34 @@ export default function CERV2Page() {
       <div className="container mx-auto p-4 bg-[#FAF9F8]">
         {/* MS365-style tabs */}
         <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
-          <TabsList className="flex bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full">
+          <TabsList className="flex flex-wrap bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full gap-1">
             <TabsTrigger 
               value="builder" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <FileText className="h-4 w-4 mr-2" />
-              Builder
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              <span>Builder</span>
             </TabsTrigger>
             <TabsTrigger 
               value="literature" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <BookOpen className="h-4 w-4 mr-2" />
-              Literature
+              <BookOpen className="h-3.5 w-3.5 mr-1.5" />
+              <span>Literature</span>
             </TabsTrigger>
             <TabsTrigger 
               value="compliance" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <CheckSquare className="h-4 w-4 mr-2" />
-              Compliance
+              <CheckSquare className="h-3.5 w-3.5 mr-1.5" />
+              <span>Compliance</span>
             </TabsTrigger>
             <TabsTrigger 
               value="assistant" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-4 py-2 font-normal text-[#616161]"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Assistant
+              <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+              <span>Assistant</span>
             </TabsTrigger>
             <TabsTrigger 
               value="preview" 
