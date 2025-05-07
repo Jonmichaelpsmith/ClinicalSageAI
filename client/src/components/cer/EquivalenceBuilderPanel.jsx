@@ -51,7 +51,9 @@ import {
   Settings, 
   X, 
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  Info
 } from 'lucide-react';
 
 // Define feature categories based on MEDDEV 2.7/1 Rev 4 requirements
@@ -1198,6 +1200,85 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Section E.4 Generation Panel */}
+      {equivalentDevices.length > 0 && (
+        <div className="mt-8 bg-white p-4 border border-[#E1DFDD] rounded">
+          <div className="flex items-center justify-between border-b border-[#E1DFDD] pb-3 mb-3">
+            <div>
+              <h3 className="text-base font-semibold text-[#323130]">Generate Section E.4</h3>
+              <p className="text-xs text-[#616161]">
+                Creates a fully formatted device equivalence section following MEDDEV 2.7/1 Rev 4 requirements
+              </p>
+            </div>
+            <Button
+              variant="default"
+              disabled={isGeneratingSectionE4}
+              onClick={generateSectionE4}
+              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+            >
+              {isGeneratingSectionE4 ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <FileText className="mr-2 h-4 w-4" />
+                  <span>Generate E.4 Section</span>
+                </>
+              )}
+            </Button>
+          </div>
+
+          {sectionE4Content ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-[#323130]">
+                  Generated Section E.4: Comparison of Clinical, Technical and Biological Characteristics
+                </h4>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8"
+                  onClick={() => {
+                    navigator.clipboard.writeText(sectionE4Content);
+                    toast({
+                      title: 'Copied to clipboard',
+                      description: 'The E.4 section content has been copied to your clipboard.',
+                    });
+                  }}
+                >
+                  <Copy className="mr-2 h-3.5 w-3.5" />
+                  <span>Copy</span>
+                </Button>
+              </div>
+              <div className="p-4 bg-[#FAF9F8] rounded border border-[#E1DFDD] max-h-96 overflow-y-auto">
+                <div className="prose prose-sm max-w-none">
+                  {sectionE4Content.split('\n').map((paragraph, index) => (
+                    <p key={index} className="my-2">{paragraph}</p>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center pt-2 text-sm">
+                <Info className="h-4 w-4 text-[#0F6CBD] mr-2" />
+                <span className="text-[#616161]">
+                  This generated content can be used directly in Section E.4 of your CER.
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-8 bg-[#FAF9F8] rounded border border-[#E1DFDD] text-center">
+              <FileText className="h-10 w-10 text-[#A19F9D] mb-3" />
+              <p className="text-sm text-[#323130] font-medium">No E.4 section content generated yet</p>
+              <p className="text-xs text-[#616161] mt-1 max-w-md">
+                Click the "Generate E.4 Section" button above to create a complete device equivalence
+                section following MEDDEV 2.7/1 Rev 4 requirements.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
