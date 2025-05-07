@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -311,6 +311,13 @@ export default function CERV2Page() {
               <span>Literature</span>
             </TabsTrigger>
             <TabsTrigger 
+              value="equivalence" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
+            >
+              <GitCompare className="h-3.5 w-3.5 mr-1.5" />
+              <span>Equivalence</span>
+            </TabsTrigger>
+            <TabsTrigger 
               value="compliance" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
@@ -377,6 +384,94 @@ export default function CERV2Page() {
                   description: "Added to your CER.",
                   variant: "success",
                 });
+              }}
+            />
+          </TabsContent>
+          
+          <TabsContent value="equivalence" className="mt-0">
+            <EquivalenceBuilderPanel
+              onEquivalenceDataChange={(data) => {
+                setEquivalenceData(data);
+                
+                // Create a section for the Clinical Evaluation Report if we have equivalence data
+                if (data && data.subjectDevice && data.equivalentDevices && data.equivalentDevices.length > 0) {
+                  // Find existing equivalence section if it exists
+                  const existingIndex = sections.findIndex(
+                    section => section.type === 'device-equivalence' || 
+                    (section.title && section.title.toLowerCase().includes('equivalence'))
+                  );
+                  
+                  // Format the section content
+                  const formattedContent = `
+# Device Description and Equivalence Assessment
+
+## Subject Device Description
+**Device Name:** ${data.subjectDevice.name || 'Not specified'}
+**Manufacturer:** ${data.subjectDevice.manufacturer || 'Not specified'}
+**Model/Version:** ${data.subjectDevice.model || 'Not specified'}
+
+${data.subjectDevice.description ? `**Description:** ${data.subjectDevice.description}` : ''}
+
+## Equivalent Device Comparison
+This section presents a detailed comparison between the subject device and claimed equivalent devices, following MEDDEV 2.7/1 Rev 4 requirements for device equivalence justification.
+
+${data.equivalentDevices.map(device => `
+### ${device.name} (${device.manufacturer})
+${device.description ? `**Description:** ${device.description}\n` : ''}
+
+${device.features && device.features.length > 0 ? `
+#### Feature Comparison
+${device.features.map(feature => `
+- **${feature.name}** (${feature.category})
+  - Subject Device: ${feature.subjectValue}
+  - Equivalent Device: ${feature.equivalentValue}
+  - Assessment: ${feature.impact === 'none' ? 'No Significant Difference' : 
+                 feature.impact === 'minor' ? 'Minor Difference' : 
+                 feature.impact === 'moderate' ? 'Moderate Difference' : 
+                 'Significant Difference'}
+  - Rationale: ${feature.rationale || 'Not provided'}
+`).join('')}
+` : ''}
+
+${device.overallRationale ? `
+#### Overall Equivalence Assessment
+${device.overallRationale}
+` : ''}
+`).join('\n')}
+                  `;
+                  
+                  // Create or update section
+                  if (existingIndex >= 0) {
+                    const updatedSections = [...sections];
+                    updatedSections[existingIndex] = {
+                      ...updatedSections[existingIndex],
+                      content: formattedContent,
+                      lastUpdated: new Date().toISOString()
+                    };
+                    setSections(updatedSections);
+                    
+                    toast({
+                      title: "Equivalence Section Updated",
+                      description: "Device equivalence information has been updated in your CER.",
+                      variant: "success",
+                    });
+                  } else {
+                    const newSection = {
+                      title: "Device Description and Equivalence",
+                      type: "device-equivalence",
+                      content: formattedContent,
+                      lastUpdated: new Date().toISOString()
+                    };
+                    
+                    setSections([...sections, newSection]);
+                    
+                    toast({
+                      title: "Equivalence Section Added",
+                      description: "Device equivalence information has been added to your CER.",
+                      variant: "success",
+                    });
+                  }
+                }
               }}
             />
           </TabsContent>

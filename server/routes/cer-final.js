@@ -42,10 +42,16 @@ const CER_MODULE_VERSION = {
     faers: 'FDA Adverse Event Reporting System (authentic data)',
     literature: 'PubMed API (authentic data)',
     standards: 'MEDDEV 2.7/1 Rev 4, EU MDR 2017/745'
-  }
+  },
+  updatedFeatures: [
+    'Device Equivalence Assessment according to MEDDEV 2.7/1 Rev 4'
+  ]
 };
 
 const router = express.Router();
+
+// Import OpenAI service for equivalence rationale generation
+import openaiService from '../services/openaiService.js';
 
 // POST /api/cer/export-pdf - Export CER data to PDF
 router.post('/export-pdf', async (req, res) => {
