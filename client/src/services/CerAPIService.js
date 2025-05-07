@@ -8,8 +8,9 @@
  * This service integrates with GPT-4o powered endpoints for intelligent document generation
  * and regulatory compliance analysis based on EU MDR, ISO 14155, and FDA guidelines.
  * 
- * Version: 2.1.0 - May 7, 2025
- * Update: Added State of the Art (SOTA) Analysis functionality (MEDDEV 2.7/1 Rev 4 compliant)
+ * Version: 2.1.1 - May 7, 2025
+ * Update: Added Literature Search Methodology Documentation (EU MDR & MEDDEV 2.7/1 Rev 4 compliant)
+ *         Added State of the Art (SOTA) Analysis functionality (MEDDEV 2.7/1 Rev 4 compliant)
  *         Added Device Equivalence Assessment functionality (MEDDEV 2.7/1 Rev 4 compliant)
  */
 
@@ -698,6 +699,95 @@ cerApiService.analyzeLiterature = async (literature) => {
     return data;
   } catch (error) {
     console.error('Error in analyzeLiterature:', error);
+    throw error;
+  }
+};
+
+/**
+ * Document a literature search methodology for EU MDR compliance
+ * 
+ * This function creates a structured, reproducible literature search methodology
+ * section that meets the requirements of MEDDEV 2.7/1 Rev 4 and EU MDR for
+ * documenting literature search strategies in Clinical Evaluation Reports.
+ * 
+ * @param {Object} params - Parameters for documenting the literature search
+ * @param {string} params.deviceName - Name of the medical device
+ * @param {string} params.deviceType - Type or classification of the device
+ * @param {string} [params.manufacturer] - Manufacturer of the device
+ * @param {string} [params.indication] - Intended use/indication of the device
+ * @param {Array} params.databases - List of databases searched (e.g., PubMed, Embase)
+ * @param {Array} params.searchTerms - List of search terms used
+ * @param {Object} params.inclusionCriteria - Inclusion criteria used for screening
+ * @param {Object} params.exclusionCriteria - Exclusion criteria used for screening
+ * @param {string} params.searchDateRange - Date range of the search (e.g., "2010-2025")
+ * @param {Array} [params.languages] - Languages included in the search
+ * @param {string} [params.reviewerName] - Name of the person who conducted the search
+ * @returns {Promise<Object>} - Generated literature search methodology documentation
+ */
+cerApiService.documentLiteratureSearch = async ({
+  deviceName,
+  deviceType,
+  manufacturer,
+  indication,
+  databases,
+  searchTerms,
+  inclusionCriteria,
+  exclusionCriteria,
+  searchDateRange,
+  languages = ["English"],
+  reviewerName
+}) => {
+  try {
+    console.log('Documenting literature search methodology for:', deviceName);
+    
+    const response = await fetch('/api/literature/document-methodology', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceName,
+        deviceType,
+        manufacturer,
+        indication,
+        databases,
+        searchTerms,
+        inclusionCriteria,
+        exclusionCriteria,
+        searchDateRange,
+        languages,
+        reviewerName,
+        timestamp: new Date().toISOString()
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error documenting literature search: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      title: "Literature Search Methodology",
+      type: "literature-methodology",
+      content: data.content,
+      searchParams: {
+        deviceName,
+        deviceType,
+        manufacturer,
+        indication,
+        databases,
+        searchTerms,
+        inclusionCriteria,
+        exclusionCriteria,
+        searchDateRange,
+        languages,
+        reviewerName
+      },
+      lastUpdated: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error in documentLiteratureSearch:', error);
     throw error;
   }
 };
