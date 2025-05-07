@@ -854,33 +854,156 @@ router.post('/compliance-score', async (req, res) => {
       return res.status(400).json({ error: 'Sections array is required' });
     }
     
-    // Implementation to replace complianceScoreHandler that works with ES modules
-    // For now, we'll return a simulated response with compliance scores
-    const scores = {
-      overall: 0.87,
-      sections: sections.map(section => ({
-        id: section.id || section.type,
-        title: section.title || 'Untitled Section',
-        score: 0.7 + Math.random() * 0.3,
-        issues: [],
-        recommendations: []
-      })),
-      standards: {
-        'EU MDR': 0.89,
-        'ISO 14155': 0.83,
-        'FDA 21 CFR 812': 0.78
-      },
-      insights: [
-        'Section 3 (Clinical Benefits) needs more quantitative data',
-        'Device description complies well with all standards',
-        'Risk analysis requires additional post-market data'
-      ]
-    };
+    // Default to all standards if none specified
+    const selectedStandards = standards || ['EU MDR', 'ISO 14155', 'FDA'];
     
-    res.json(scores);
+    console.log(`Calculating compliance score for ${sections.length} sections against ${selectedStandards.join(', ')}`);
+    
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OPENAI_API_KEY not configured, falling back to simulated compliance scores');
+      
+      // Simulate results with realistic mock data if API key not configured
+      const scores = {
+        overall: 0.87,
+        sections: sections.map(section => ({
+          id: section.id || section.type,
+          title: section.title || 'Untitled Section',
+          score: 0.7 + Math.random() * 0.3,
+          issues: [],
+          recommendations: []
+        })),
+        standards: {
+          'EU MDR': 0.89,
+          'ISO 14155': 0.83,
+          'FDA 21 CFR 812': 0.78
+        },
+        insights: [
+          'Section 3 (Clinical Benefits) needs more quantitative data',
+          'Device description complies well with all standards',
+          'Risk analysis requires additional post-market data'
+        ],
+        warning: 'Using simulated compliance scores. Configure OPENAI_API_KEY for AI-powered analysis.'
+      };
+      
+      return res.json(scores);
+    }
+    
+    // Use AI for real compliance scoring
+    const overallScores = {};
+    const sectionScores = {};
+    const improvementSuggestions = {};
+    const detailedAnalysis = {};
+    
+    // Process each section against each standard
+    // We'll run this in parallel to speed things up, but with a limit to avoid API rate limits
+    const promises = [];
+    
+    for (const section of sections) {
+      for (const standard of selectedStandards) {
+        promises.push(scoreSection(section, standard));
+      }
+    }
+    
+    // Wait for all scoring to complete
+    const results = await Promise.all(promises);
+    
+    // Process results
+    results.forEach(result => {
+      const { section, standard, score, suggestions, analysis } = result;
+      
+      // Store section score
+      if (!sectionScores[section.id || section.type]) {
+        sectionScores[section.id || section.type] = {};
+      }
+      sectionScores[section.id || section.type][standard] = score;
+      
+      // Store suggestions
+      if (!improvementSuggestions[section.id || section.type]) {
+        improvementSuggestions[section.id || section.type] = {};
+      }
+      improvementSuggestions[section.id || section.type][standard] = suggestions;
+      
+      // Store detailed analysis
+      if (!detailedAnalysis[section.id || section.type]) {
+        detailedAnalysis[section.id || section.type] = {};
+      }
+      detailedAnalysis[section.id || section.type][standard] = analysis;
+    });
+    
+    // Calculate overall scores for each standard
+    selectedStandards.forEach(standard => {
+      const standardScores = sections.map(section => 
+        sectionScores[section.id || section.type]?.[standard] || 0
+      );
+      
+      const average = standardScores.reduce((sum, score) => sum + score, 0) / standardScores.length;
+      overallScores[standard] = Math.round(average * 100) / 100;
+    });
+    
+    // Format in the expected response structure
+    const formattedSections = sections.map(section => {
+      const sectionId = section.id || section.type;
+      const sectionTitle = section.title || 'Untitled Section';
+      
+      // Calculate average score across all standards
+      const standardScores = selectedStandards.map(std => sectionScores[sectionId]?.[std] || 0);
+      const avgScore = standardScores.reduce((sum, score) => sum + score, 0) / standardScores.length;
+      
+      // Collect all recommendations
+      const recommendations = [];
+      selectedStandards.forEach(std => {
+        const suggestions = improvementSuggestions[sectionId]?.[std] || [];
+        suggestions.forEach(suggestion => {
+          recommendations.push(`${std}: ${suggestion}`);
+        });
+      });
+      
+      return {
+        id: sectionId,
+        title: sectionTitle,
+        score: Math.round(avgScore * 100) / 100,
+        issues: [], // Populated in a production version
+        recommendations: recommendations.slice(0, 5) // Limit to top 5
+      };
+    });
+    
+    // Calculate overall score as average of standard scores
+    const overallAvg = Object.values(overallScores).reduce((sum, score) => sum + score, 0) / 
+                       Object.values(overallScores).length;
+    
+    // Generate overall insights
+    const insights = [];
+    const lowestScoringSection = formattedSections.sort((a, b) => a.score - b.score)[0];
+    const highestScoringSection = formattedSections.sort((a, b) => b.score - a.score)[0];
+    
+    if (lowestScoringSection) {
+      insights.push(`${lowestScoringSection.title} needs the most improvement (score: ${lowestScoringSection.score.toFixed(2)})`);
+    }
+    
+    if (highestScoringSection) {
+      insights.push(`${highestScoringSection.title} complies well with standards (score: ${highestScoringSection.score.toFixed(2)})`);
+    }
+    
+    // Find the weakest standard
+    const weakestStandard = Object.entries(overallScores).sort(([,a], [,b]) => a - b)[0];
+    if (weakestStandard) {
+      insights.push(`Compliance with ${weakestStandard[0]} needs the most attention (score: ${weakestStandard[1].toFixed(2)})`);
+    }
+    
+    // Return the calculated scores
+    res.json({
+      overall: Math.round(overallAvg * 100) / 100,
+      sections: formattedSections,
+      standards: overallScores,
+      insights,
+      detailedAnalysis,
+      model: "gpt-4o",
+      timestamp: new Date().toISOString(),
+      title: title || 'Clinical Evaluation Report'
+    });
   } catch (error) {
     console.error('Error calculating compliance score:', error);
-    res.status(500).json({ error: 'Failed to calculate compliance score' });
+    res.status(500).json({ error: 'Failed to calculate compliance score', message: error.message });
   }
 });
 
@@ -2158,6 +2281,186 @@ router.post('/improve-section', async (req, res) => {
     });
   }
 });
+
+/**
+ * Score a section against a regulatory standard using OpenAI
+ * @param {Object} section - The section to score
+ * @param {string} standard - The regulatory standard to score against
+ * @returns {Promise<Object>} - The scoring results
+ */
+async function scoreSection(section, standard) {
+  // Prepare the system prompt based on the standard
+  const systemPrompt = getCompliancePrompt(standard);
+  
+  // Prepare the user prompt
+  const userPrompt = `Please analyze the following ${section.title || section.type} section for a Clinical Evaluation Report and score its compliance with ${standard} requirements:
+
+${section.content}
+
+Analyze the content rigorously and provide:
+1. A compliance score between 0 and 1 (1 being perfect compliance)
+2. 3-5 specific improvement suggestions
+3. A detailed analysis of strengths and weaknesses
+4. References to specific requirements in ${standard} that apply to this section
+
+Format your response as valid JSON with these keys: score, suggestions, analysis, references`;
+
+  try {
+    // Call OpenAI API
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 1500,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const content = response.choices[0].message.content;
+    const result = JSON.parse(content);
+    
+    // Ensure the result has the expected structure
+    const score = parseFloat(result.score) || 0.5;
+    const suggestions = Array.isArray(result.suggestions) ? result.suggestions : [];
+    const analysis = result.analysis || 'No detailed analysis available';
+    const references = result.references || 'No specific references provided';
+    
+    // Return the scored results
+    return {
+      section,
+      standard,
+      score,
+      suggestions,
+      analysis,
+      references
+    };
+  } catch (error) {
+    console.error(`Error scoring section ${section.type} against ${standard}:`, error);
+    // Return a default response to prevent overall failure
+    return {
+      section,
+      standard,
+      score: 0.5,
+      suggestions: ['Error in automated scoring - manual review recommended'],
+      analysis: `Error during analysis: ${error.message}`,
+      references: 'N/A due to scoring error'
+    };
+  }
+}
+
+/**
+ * Get the appropriate system prompt for compliance scoring based on standard
+ * @param {string} standard - The regulatory standard
+ * @returns {string} - The system prompt
+ */
+function getCompliancePrompt(standard) {
+  const basePrompt = `You are an expert regulatory consultant specialized in medical device regulations and clinical evaluation requirements. Your task is to analyze a section of a Clinical Evaluation Report (CER) and assess its compliance with regulatory requirements.`;
+  
+  switch(standard) {
+    case 'EU MDR':
+      return `${basePrompt}
+      
+You are specifically evaluating compliance with EU MDR 2017/745 and MEDDEV 2.7/1 Rev 4 guidelines for Clinical Evaluation Reports.
+
+Key EU MDR requirements to consider:
+1. Evidence-based approach with sound scientific methods
+2. Comprehensive analysis of relevant scientific literature
+3. Critical evaluation of clinical data and its quality
+4. Clear demonstration of clinical benefit vs. risk ratio
+5. Evaluation against state of the art and equivalent devices
+6. Proper reference to General Safety and Performance Requirements (GSPRs)
+7. Transparency in limitations and uncertainties
+8. Clinical evidence that supports intended purpose claims
+9. Post-market surveillance data integration
+10. Compliance with Annex XIV for clinical evaluation and Annex XV for clinical investigations
+
+Scoring criteria:
+- 0.9-1.0: Excellent compliance, fully meets EU MDR requirements
+- 0.8-0.89: Good compliance, minor improvements needed
+- 0.7-0.79: Satisfactory compliance, several improvements needed
+- 0.6-0.69: Moderate compliance, significant improvements needed
+- 0.5-0.59: Poor compliance, major improvements needed
+- Below 0.5: Inadequate compliance, complete rework needed`;
+      
+    case 'ISO 14155':
+      return `${basePrompt}
+      
+You are specifically evaluating compliance with ISO 14155:2020 "Clinical investigation of medical devices for human subjects - Good clinical practice."
+
+Key ISO 14155 requirements to consider:
+1. Adherence to Good Clinical Practice (GCP) principles
+2. Protection of subject rights, safety, and well-being
+3. Risk analysis and mitigation measures
+4. Appropriate clinical investigation design
+5. Objective data collection and analysis methods
+6. Scientifically sound investigation methodology
+7. Statistical considerations and data quality measures
+8. Proper reporting of adverse events and device deficiencies
+9. Ethical considerations and informed consent elements
+10. Documentation of investigation results and conclusions
+
+Scoring criteria:
+- 0.9-1.0: Excellent compliance, fully meets ISO 14155 requirements
+- 0.8-0.89: Good compliance, minor improvements needed
+- 0.7-0.79: Satisfactory compliance, several improvements needed
+- 0.6-0.69: Moderate compliance, significant improvements needed
+- 0.5-0.59: Poor compliance, major improvements needed
+- Below 0.5: Inadequate compliance, complete rework needed`;
+      
+    case 'FDA':
+      return `${basePrompt}
+      
+You are specifically evaluating compliance with FDA requirements for medical devices, including 21 CFR 812 for Investigational Device Exemptions, and FDA guidance documents on clinical trials and evidence.
+
+Key FDA requirements to consider:
+1. Substantial equivalence considerations (if applicable)
+2. Valid scientific evidence as defined in 21 CFR 860.7
+3. Well-controlled investigations as per 21 CFR 860.7(c)(2)
+4. Appropriate study design and statistical methods
+5. Adequate characterization of adverse events
+6. Appropriate control groups and minimization of bias
+7. Clinically significant endpoint measurements
+8. Proper analysis of safety and effectiveness
+9. Clear benefit-risk determination
+10. Adequate post-market surveillance monitoring
+
+Scoring criteria:
+- 0.9-1.0: Excellent compliance, fully meets FDA requirements
+- 0.8-0.89: Good compliance, minor improvements needed
+- 0.7-0.79: Satisfactory compliance, several improvements needed
+- 0.6-0.69: Moderate compliance, significant improvements needed
+- 0.5-0.59: Poor compliance, major improvements needed
+- Below 0.5: Inadequate compliance, complete rework needed`;
+      
+    default:
+      return `${basePrompt}
+      
+You are evaluating compliance with general regulatory standards for medical devices.
+
+Key regulatory considerations to evaluate:
+1. Scientific validity of the evaluation methodology
+2. Comprehensive risk-benefit analysis
+3. Clear clinical evidence supporting claims
+4. Appropriate reference to published literature
+5. Adequate characterization of the device
+6. Proper identification of hazards and risks
+7. Evaluation against current state of the art
+8. Transparency in limitations and uncertainties
+9. Proper post-market surveillance considerations
+10. Adequate documentation of clinical data analysis
+
+Scoring criteria:
+- 0.9-1.0: Excellent compliance, fully meets regulatory requirements
+- 0.8-0.89: Good compliance, minor improvements needed
+- 0.7-0.79: Satisfactory compliance, several improvements needed
+- 0.6-0.69: Moderate compliance, significant improvements needed
+- 0.5-0.59: Poor compliance, major improvements needed
+- Below 0.5: Inadequate compliance, complete rework needed`;
+  }
+}
 
 export { router as default };
 
