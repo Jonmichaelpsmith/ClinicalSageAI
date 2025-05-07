@@ -13,12 +13,55 @@ const router = express.Router();
 // FDA API base URL
 const FDA_API_BASE_URL = 'https://api.fda.gov/drug/event.json';
 
+// Set up axios instance with timeouts and retry logic
+const fdaAxios = axios.create({
+  timeout: 10000, // 10 second timeout
+  headers: {
+    'Accept': 'application/json'
+  }
+});
+
+// Helper function to simplify error handling
+const safeApiFetch = async (fetchFn) => {
+  try {
+    return await fetchFn();
+  } catch (error) {
+    console.error('FDA API Error:', error.message);
+    
+    // Handle specific error types
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('FDA API request timed out. Please try again later.');
+    }
+    
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const status = error.response.status;
+      const data = error.response.data || {};
+      
+      if (status === 404) {
+        throw new Error('No data found in FDA database for this query.');
+      } else if (status === 429) {
+        throw new Error('FDA API rate limit exceeded. Please try again later.');
+      } else {
+        throw new Error(`FDA API error: ${data.error || error.message}`);
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      throw new Error('No response received from FDA API. Please check your network connection.');
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      throw new Error(`Error preparing FDA API request: ${error.message}`);
+    }
+  }
+};
+
 /**
  * POST /api/faers/search - Search for products in the FDA FAERS database
  */
 router.post('/search', async (req, res) => {
   try {
-    const { query, limit = 100 } = req.body;
+    const { query, limit = 20 } = req.body;
     
     if (!query) {
       return res.status(400).json({ 
@@ -29,16 +72,18 @@ router.post('/search', async (req, res) => {
     
     console.log(`FAERS search for: ${query}`);
     
-    // Create FDA API search query
-    const searchQuery = `patient.drug.openfda.brand_name:"${query}" OR patient.drug.openfda.generic_name:"${query}" OR patient.drug.openfda.substance_name:"${query}"`;
+    // Create FDA API search query with proper escaping
+    const encodedQuery = encodeURIComponent(query);
+    const searchQuery = `patient.drug.openfda.brand_name:"${encodedQuery}" OR patient.drug.openfda.generic_name:"${encodedQuery}" OR patient.drug.openfda.substance_name:"${encodedQuery}"`;
     
-    // Make request to FDA API
-    const response = await axios.get(FDA_API_BASE_URL, {
-      params: {
-        search: searchQuery,
-        limit: limit
-      },
-      timeout: 30000 // 30 second timeout
+    // Make request to FDA API safely
+    const response = await safeApiFetch(async () => {
+      return await fdaAxios.get(FDA_API_BASE_URL, {
+        params: {
+          search: searchQuery,
+          limit: limit
+        }
+      });
     });
     
     // Process and transform the data

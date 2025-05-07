@@ -371,8 +371,17 @@ router.post('/generate-section', async (req, res) => {
     
     console.log(`Generating CER section: ${section} for ${productName || 'unknown product'}`);
     
+    console.log('Starting section generation...');
+    
     // Import the CER Chat Service for AI content generation
-    const cerChatService = (await import('../services/cerChatService.js')).default;
+    let cerChatService;
+    try {
+      cerChatService = (await import('../services/cerChatService.js')).default;
+      console.log('Successfully imported CER Chat Service');
+    } catch (importError) {
+      console.error('Error importing CER Chat Service:', importError);
+      throw new Error('Failed to load AI generation service: ' + importError.message);
+    }
     
     // Generate appropriate content based on section type
     let content = '';
