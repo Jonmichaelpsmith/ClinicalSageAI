@@ -10,6 +10,7 @@ dotenv.config();
 // Create Express application
 const app = express();
 const port = process.env.PORT || 5000;
+const isDev = process.env.NODE_ENV !== 'production';
 
 // Middleware
 // CORS headers handled manually until cors package is installed
@@ -65,11 +66,27 @@ app.get('/marketing', (req, res) => {
 // Register API routes
 registerRoutes(app);
 
+// Add a route to handle the CER v2 page specifically
+app.get('/cerv2', (req, res, next) => {
+  console.log('Serving CER v2 page directly');
+  if (isDev) {
+    // Forward to Vite middleware for development
+    next();
+  } else {
+    // For production, serve the index.html
+    const indexPath = path.join(process.cwd(), 'dist/public/index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send('CER v2 page not available');
+    }
+  }
+});
+
 // Create HTTP server
 const httpServer = createHttpServer(app);
 
 // Setup Vite middleware in development mode
-const isDev = process.env.NODE_ENV !== 'production';
 if (isDev) {
   // Setup Vite dev middleware
   setupVite(app, httpServer).catch((err) => {
