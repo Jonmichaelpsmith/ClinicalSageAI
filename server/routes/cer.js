@@ -292,87 +292,14 @@ router.get('/reports', async (req, res) => {
       search
     });
     
-    // If we have no reports yet, provide sample data for demo purposes
+    // Return actual reports from the database
     if (!reports || reports.length === 0) {
-      const sampleReports = [
-        { 
-          id: 'CER20250410001', 
-          title: 'CardioMonitor Pro 3000 - EU MDR Clinical Evaluation',
-          status: 'final',
-          deviceName: 'CardioMonitor Pro 3000',
-          deviceType: 'Patient Monitoring Device',
-          manufacturer: 'MedTech Innovations, Inc.',
-          templateUsed: 'EU MDR 2017/745 Full Template',
-          createdAt: '2025-04-10T14:23:45Z',
-          updatedAt: '2025-04-12T09:15:22Z',
-          metadata: {
-            pageCount: 78,
-            wordCount: 28506,
-            sections: 14,
-            projectId: 'PR-CV-2025-001',
-            includedLiterature: 42,
-            includedAdverseEvents: 18,
-            aiEnhanced: true,
-            automatedWorkflow: true,
-            regulatoryFrameworks: ['EU MDR', 'MEDDEV 2.7/1 Rev 4'],
-            generationEngine: 'gpt-4o',
-            citationCount: 47,
-            qualityScore: 0.94
-          }
-        },
-        {
-          id: 'CER20250315002',
-          title: 'NeuroPulse Implant - MEDDEV Clinical Evaluation',
-          status: 'draft',
-          deviceName: 'NeuroPulse Implant',
-          deviceType: 'Implantable Medical Device',
-          manufacturer: 'Neural Systems Ltd.',
-          templateUsed: 'MEDDEV 2.7/1 Rev 4 Template',
-          createdAt: '2025-03-15T10:08:31Z',
-          updatedAt: '2025-03-15T10:08:31Z',
-          metadata: {
-            pageCount: 64,
-            wordCount: 22145,
-            sections: 12,
-            projectId: 'PR-IM-2025-002',
-            includedLiterature: 35,
-            includedAdverseEvents: 12,
-            aiEnhanced: true,
-            automatedWorkflow: true,
-            regulatoryFrameworks: ['EU MDR', 'MEDDEV 2.7/1 Rev 4'],
-            generationEngine: 'gpt-4o',
-            citationCount: 38,
-            qualityScore: 0.91
-          }
-        },
-        {
-          id: 'CER20250329003',
-          title: 'LaserScan X500 - FDA 510(k) Clinical Evaluation',
-          status: 'final',
-          deviceName: 'LaserScan X500',
-          deviceType: 'Diagnostic Equipment',
-          manufacturer: 'OptiMed Devices, Inc.',
-          templateUsed: 'FDA 510(k) Template',
-          createdAt: '2025-03-29T16:42:19Z',
-          updatedAt: '2025-04-01T11:33:57Z',
-          metadata: {
-            pageCount: 52,
-            wordCount: 18230,
-            sections: 10,
-            projectId: 'PR-DG-2025-003',
-            includedLiterature: 29,
-            includedAdverseEvents: 8,
-            aiEnhanced: true,
-            automatedWorkflow: true,
-            regulatoryFrameworks: ['FDA 510(k)'],
-            generationEngine: 'gpt-4o',
-            citationCount: 31,
-            qualityScore: 0.93
-          }
-        }
-      ];
-      
-      return res.json(sampleReports);
+      // No reports found, return empty array with appropriate message
+      return res.json({
+        reports: [],
+        count: 0,
+        message: "No reports found. You can create a new CER report."
+      });
     }
     
     res.json(reports);
@@ -435,21 +362,11 @@ router.get('/workflows/:id', async (req, res) => {
         return res.json(workflowByReport);
       }
       
-      // If still not found, return mock data for demo
-      return res.json({
-        id,
-        status: 'processing',
-        progress: 0.65,
-        currentStep: 'sectionGeneration',
-        steps: [
-          { id: 'dataPreparation', name: 'Data Preparation', status: 'completed', completedAt: new Date(Date.now() - 180000).toISOString() },
-          { id: 'aiAnalysis', name: 'AI Analysis', status: 'completed', completedAt: new Date(Date.now() - 120000).toISOString() },
-          { id: 'sectionGeneration', name: 'Section Generation', status: 'processing', startedAt: new Date(Date.now() - 60000).toISOString() },
-          { id: 'qualityCheck', name: 'Quality Check', status: 'pending' },
-          { id: 'finalCompilation', name: 'Final Compilation', status: 'pending' }
-        ],
-        estimatedCompletionTime: new Date(Date.now() + 120000).toISOString(), // 2 minutes from now
-        note: 'This is simulated workflow data'
+      // Return a 404 if the workflow is not found
+      return res.status(404).json({
+        error: 'Workflow not found',
+        message: 'No workflow found with the specified ID.',
+        timestamp: new Date().toISOString()
       });
     }
     
@@ -813,37 +730,61 @@ router.post('/generate-section', async (req, res) => {
     
     console.log(`Generating ${section} section with context length: ${context.length} for product: ${productName || 'unnamed device'}`);
     
-    // Always use sample content for demo purposes to ensure reliability
-    console.log('Using demo content for reliable presentation');
+    // Use OpenAI with GPT-4o to generate real content
+    console.log('Using OpenAI API with GPT-4o to generate section content');
+    
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({
+        error: "OpenAI API key not configured",
+        message: "The OpenAI API key is required to generate section content. Please configure it and try again.",
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    try {
+      // Import OpenAI
+      const OpenAI = await import('openai');
+      const openai = new OpenAI.default({ apiKey: process.env.OPENAI_API_KEY });
       
-    // Sample content for demo
-    let content = '';
+      // Get the appropriate system prompt for this section
+      const systemPrompt = getSectionSystemPrompt(section, productName);
       
-    // Initialize with appropriate demo content based on section type
-    switch(section) {
-        case 'benefit-risk':
-          content = `# Benefit-Risk Analysis\n\nThis benefit-risk analysis evaluates the clinical benefits of ${productName || 'the device'} against its potential risks, based on available clinical data and post-market surveillance information.\n\nThe analysis demonstrates a favorable benefit-risk profile, with significant clinical benefits outweighing the identified risks. Key benefits include improved patient outcomes and reduced procedural complications, while risks are well-characterized and mitigated through appropriate control measures.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
-          break;
-          
-        case 'safety':
-          content = `# Safety Analysis\n\nThe safety profile of ${productName || 'the device'} has been thoroughly evaluated through clinical studies and post-market surveillance data.\n\nSerious adverse events are rare, occurring in less than 1% of cases. The most common adverse events include minor discomfort and temporary inflammation, which typically resolve without intervention.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
-          break;
-          
-        case 'clinical-background':
-          content = `# Clinical Background\n\nThis section provides the clinical context for the evaluation of ${productName || 'the device'}, including the medical condition it addresses, current standard of care, and unmet clinical needs.\n\nThe clinical literature demonstrates a clear need for innovative solutions in this therapeutic area, with current approaches showing limitations in efficacy and safety.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
-          break;
-          
-        default:
-          content = `# ${section.charAt(0).toUpperCase() + section.slice(1)}\n\nThis section provides key information about ${section} for ${productName || 'the device'}.\n\nAnalysis of available data shows favorable outcomes and supports the clinical performance and safety of the device.\n\nBased on the context provided: ${context.substring(0, 100)}...`;
-      }
+      // Call OpenAI API
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: `Generate a comprehensive ${section} section for a Clinical Evaluation Report for "${productName || 'the medical device'}" based on the following context:\n\n${context}`
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.7,
+      });
       
-      // Return the sample content for demo
+      // Extract the generated content
+      const content = completion.choices[0].message.content;
+      
+      // Return the real AI-generated content
       return res.json({
         section,
         content,
         generatedAt: new Date().toISOString(),
-        model: "gpt-4o" // Simulate like it came from the real model
+        model: "gpt-4o",
+        tokenUsage: completion.usage
       });
+    } catch (error) {
+      console.error('Error calling OpenAI API:', error);
+      return res.status(500).json({
+        error: "AI Generation Error",
+        message: `Failed to generate content with OpenAI: ${error.message}`,
+        timestamp: new Date().toISOString()
+      });
+    }
   } catch (error) {
     console.error('Error generating section:', error);
     res.status(500).json({ error: 'Failed to generate section' });
@@ -960,99 +901,108 @@ router.post('/improve-section', async (req, res) => {
     
     console.log(`Improving section "${section.title || section.type}" to comply with ${standard} standard...`);
     
-    // In a production implementation, this would use the OpenAI API
-    // with GPT-4o to analyze and improve the section content
+    // Use OpenAI API to analyze and improve the section content
     
-    // For now, we'll simulate the API response with enhanced content
-    // that demonstrates improved regulatory compliance
+    // Check if API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({
+        error: "OpenAI API key not configured",
+        message: "The OpenAI API key is required to improve section content. Please configure it and try again.",
+        timestamp: new Date().toISOString()
+      });
+    }
     
     // Extract the original content
     const originalContent = section.content || '';
     const sectionType = section.type || '';
     const sectionTitle = section.title || 'Untitled Section';
     
-    // Generate improved content based on section type and standard
-    let improvedContent = originalContent;
-    
-    // Add regulatory references and enhancements
-    if (standard.includes('EU MDR')) {
-      improvedContent = `# ${sectionTitle}
-
-## Summary
-This section has been enhanced to meet EU MDR 2017/745 requirements, with specific attention to Annex XIV regarding clinical evaluation and relevant MEDDEV 2.7/1 Rev 4 guidance.
-
-## Compliant Content
-${originalContent}
-
-## Regulatory References
+    try {
+      // Import OpenAI
+      const OpenAI = await import('openai');
+      const openai = new OpenAI.default({ apiKey: process.env.OPENAI_API_KEY });
+      
+      // Prepare the prompt with regulatory standard details
+      let standardDetails = "general regulatory requirements";
+      let specificRequirements = "";
+      
+      if (standard.includes('EU MDR')) {
+        standardDetails = "EU MDR 2017/745 requirements";
+        specificRequirements = `
 - EU MDR 2017/745 Annex XIV: Clinical Evaluation
 - MEDDEV 2.7/1 Rev 4: Clinical Evaluation Guidance Document
 - EU MDR Article 61: Clinical Evaluation Requirements
-
-## Revision History
-- ${new Date().toISOString().split('T')[0]}: Section enhanced for EU MDR compliance`;
-    } 
-    else if (standard.includes('ISO 14155')) {
-      improvedContent = `# ${sectionTitle}
-
-## Summary
-This section has been enhanced to meet ISO 14155:2020 requirements for clinical investigation of medical devices for human subjects.
-
-## Compliant Content
-${originalContent}
-
-## Regulatory References
+`;
+      } 
+      else if (standard.includes('ISO 14155')) {
+        standardDetails = "ISO 14155:2020 requirements";
+        specificRequirements = `
 - ISO 14155:2020: Clinical investigation of medical devices for human subjects — Good clinical practice
 - ISO 14155:2020 Section 7: Ethical considerations
 - ISO 14155:2020 Section 9: Risk management
-
-## Revision History
-- ${new Date().toISOString().split('T')[0]}: Section enhanced for ISO 14155 compliance`;
-    }
-    else if (standard.includes('FDA')) {
-      improvedContent = `# ${sectionTitle}
-
-## Summary
-This section has been enhanced to meet FDA 21 CFR 812 requirements for Investigational Device Exemptions.
-
-## Compliant Content
-${originalContent}
-
-## Regulatory References
+`;
+      }
+      else if (standard.includes('FDA')) {
+        standardDetails = "FDA 21 CFR 812 requirements";
+        specificRequirements = `
 - FDA 21 CFR 812: Investigational Device Exemptions
 - FDA 21 CFR 814: Premarket Approval
 - FDA Guidance: Design Considerations for Pivotal Clinical Investigations
-
-## Revision History
-- ${new Date().toISOString().split('T')[0]}: Section enhanced for FDA compliance`;
+`;
+      }
+      
+      // Get system prompt for compliance
+      const systemPrompt = getCompliancePrompt(standard);
+      
+      // Call OpenAI API
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: `Improve the following section titled "${sectionTitle}" (type: ${sectionType}) of a Clinical Evaluation Report to comply with ${standardDetails}. The original content is:\n\n${originalContent}\n\nPlease provide specific improvements to meet the standard, ensuring the content is comprehensive, accurate, and properly formatted with appropriate regulatory references. Include the relevant specifics for ${standard}:\n${specificRequirements}`
+          }
+        ],
+        max_tokens: 2000,
+        temperature: 0.7,
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse the JSON response
+      const jsonResponse = JSON.parse(completion.choices[0].message.content);
+      
+      // If the model didn't properly format the response, handle it gracefully
+      if (!jsonResponse.content) {
+        jsonResponse.content = completion.choices[0].message.content;
+        jsonResponse.improvements = ["Content improved to meet regulatory requirements"];
+      }
+      
+      // Return the AI-improved content
+      res.json({
+        success: true,
+        content: jsonResponse.content || originalContent,
+        original: originalContent,
+        improvements: jsonResponse.improvements || ["Content improved to meet regulatory requirements"],
+        standard: standard,
+        sectionType: sectionType,
+        timestamp: new Date().toISOString(),
+        model: "gpt-4o",
+        tokenUsage: completion.usage
+      });
+    } catch (error) {
+      console.error('Error calling OpenAI API:', error);
+      
+      // If there's an OpenAI API error, return the appropriate error to the client
+      return res.status(500).json({
+        error: "AI Enhancement Error",
+        message: `Failed to improve content with OpenAI: ${error.message}`,
+        timestamp: new Date().toISOString()
+      });
     }
-    else {
-      improvedContent = `# ${sectionTitle}
-
-## Summary
-This section has been enhanced to meet general regulatory requirements.
-
-## Compliant Content
-${originalContent}
-
-## Revision History
-- ${new Date().toISOString().split('T')[0]}: Section enhanced for regulatory compliance`;
-    }
-    
-    res.json({
-      success: true,
-      content: improvedContent,
-      original: originalContent,
-      improvements: [
-        'Added regulatory references',
-        'Enhanced section structure for compliance',
-        'Added revision history',
-        'Improved formatting for regulatory submission'
-      ],
-      standard: standard,
-      sectionType: sectionType,
-      timestamp: new Date().toISOString()
-    });
   } catch (error) {
     console.error('Error improving section:', error);
     res.status(500).json({ 
@@ -1124,32 +1074,11 @@ router.post('/compliance-score', async (req, res) => {
     console.log(`Calculating compliance score for ${sections.length} sections against ${selectedStandards.join(', ')}`);
     
     if (!process.env.OPENAI_API_KEY) {
-      console.warn('OPENAI_API_KEY not configured, falling back to simulated compliance scores');
-      
-      // Simulate results with realistic mock data if API key not configured
-      const scores = {
-        overall: 0.87,
-        sections: sections.map(section => ({
-          id: section.id || section.type,
-          title: section.title || 'Untitled Section',
-          score: 0.7 + Math.random() * 0.3,
-          issues: [],
-          recommendations: []
-        })),
-        standards: {
-          'EU MDR': 0.89,
-          'ISO 14155': 0.83,
-          'FDA 21 CFR 812': 0.78
-        },
-        insights: [
-          'Section 3 (Clinical Benefits) needs more quantitative data',
-          'Device description complies well with all standards',
-          'Risk analysis requires additional post-market data'
-        ],
-        warning: 'Using simulated compliance scores. Configure OPENAI_API_KEY for AI-powered analysis.'
-      };
-      
-      return res.json(scores);
+      return res.status(503).json({
+        error: "OpenAI API key not configured",
+        message: "The OpenAI API key is required to calculate compliance scores. Please configure it and try again.",
+        timestamp: new Date().toISOString()
+      });
     }
     
     // Use AI for real compliance scoring
