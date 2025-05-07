@@ -1,0 +1,75 @@
+1. Wizard Stepper around Tabs (CERV2Page.jsx)
+   • Wrap your existing tab navigation in a <WizardStepper> component.
+   • Define steps: 
+       1. Input Data 
+       2. Data Retrieval 
+       3. Section Builder 
+       4. Export
+   • Track activeStep in state (e.g. useState(1)), and render only the corresponding tab.
+   
+2. Gated “Section Builder” (CERV2Page.jsx)
+   • In your tab click‐handler, if activeStep < 3, show a modal/toast:
+       “🔍 Please complete Data Retrieval first.” 
+     and prevent switching.
+   • Only allow the “Builder” tab when activeStep ≥ 3.
+
+3. Auto-Trigger Enhanced Retrieval (CerBuilderPanel.jsx / DataRetrievalPanel.jsx)
+   • After user fills required fields (deviceName, manufacturer), call your fetchEvidence() helper:
+       fetchEvidence(reportId)
+         .then(() => setActiveStep(3))
+   • Show a slim banner while running:
+       “Fetching FAERS & literature…(~20–30s)”
+
+4. Rename & Re-position Button (DataRetrievalPanel.jsx)
+   • Change “Start Enhanced Retrieval” → **“1-Click Evidence Fetch”**  
+   • Move it next to the **Zero-Click Report** button in CERV2Page header.
+
+5. Live Progress Indicators (DataRetrievalPanel.jsx)
+   • Under the button, add two linear progress bars:
+       FAERS: [■■■■■□□□□] 50%  
+       Literature: [■■■■■■■■□□] 80%
+   • Update these via your ingestion promise callbacks.
+
+6. Evidence Snapshot on Completion (DataRetrievalPanel.jsx)
+   • Once both tasks finish, render:
+       • 📊 **{faersCount} FAERS reports retrieved**  
+       • 📚 **{litCount} studies fetched**
+   • Style as a small “mini-dashboard” under the progress bars.
+
+7. Contextual Tooltips (DataRetrievalPanel.jsx & CERV2Page.jsx)
+   • Add an “ℹ️” icon next to the fetch button with tooltip:
+       “Pull in real-world adverse events & key studies so AI sections cite actual data.”
+   • Under the button, add grey helper text:
+       “Why run this? AI drafts will auto-incorporate FAERS + literature evidence.”
+
+8. One-Click Combo Mode (CERV2Page.jsx)
+   • Add a new button **“Fetch & Generate All Sections”**  
+   • Wire it to:
+       1. trigger fetchEvidence()
+       2. then trigger generateAllSections()
+       3. then advance activeStep → 4 (Export)
+
+9. First-Use Onboarding Popover (App.jsx or CERV2Page.jsx)
+   • Detect `localStorage.getItem('cerOnboardSeen') !== 'true'`  
+   • If not seen, show a 3-tooltip sequence:
+       1. “Click Builder to draft sections once data is loaded.”  
+       2. “Click Data Retrieval to fetch FAERS & literature.”  
+       3. “Click Export to finish your CER.”  
+   • On finish, set `localStorage.setItem('cerOnboardSeen', 'true')`.
+
+10. Update Sidebar Navigation (SidebarNav.jsx)
+    • Ensure `/cer` link is always enabled, but highlight current wizard step in the sidebar.
+
+---
+
+**After pasting**, restart your dev server. You should see:
+
+- A clear 4-step wizard bar
+- Data Retrieval as a mandatory, gated step
+- Auto-triggered evidence fetch on minimal input
+- Live progress bars + snapshot counts
+- Contextual tooltips explaining **why** it matters
+- A combined “Fetch & Generate” button for true zero-click workflows
+- A one-time onboarding pop-over guiding new users
+
+This makes **when**, **what**, and **why** crystal-clear in your CER build UX.
