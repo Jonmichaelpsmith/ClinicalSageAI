@@ -66,21 +66,11 @@ app.get('/marketing', (req, res) => {
 // Register API routes
 registerRoutes(app);
 
-// Add a route to handle the CER v2 page specifically
-app.get('/cerv2', (req, res, next) => {
-  console.log('Serving CER v2 page directly');
-  if (isDev) {
-    // Forward to Vite middleware for development
-    next();
-  } else {
-    // For production, serve the index.html
-    const indexPath = path.join(process.cwd(), 'dist/public/index.html');
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      res.status(404).send('CER v2 page not available');
-    }
-  }
+// Handle specific client-side routes before API setup
+// Create a direct router for client-side routes that bypasses Vite's catch-all
+app.get('/cerv2', (req, res) => {
+  console.log('Serving CER v2 page from special handler');
+  res.sendFile(path.join(process.cwd(), 'public/cerv2_redirect.html'));
 });
 
 // Create HTTP server
