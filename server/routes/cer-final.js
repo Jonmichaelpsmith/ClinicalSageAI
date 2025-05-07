@@ -10,6 +10,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Import our FAERS service
+import faersService from '../services/faersService.js';
+
 const router = express.Router();
 
 // POST /api/cer/export-pdf - Export FAERS data to PDF
@@ -183,6 +186,82 @@ router.post('/preview', async (req, res) => {
   }
 });
 
+// POST /api/cer/faers-data - Get real FAERS data from FDA
+router.post('/faers-data', async (req, res) => {
+  try {
+    const { productName, includeComparators = true } = req.body;
+    
+    if (!productName) {
+      return res.status(400).json({ error: 'Product name is required' });
+    }
+    
+    console.log(`Fetching FAERS data for product: ${productName}`);
+    
+    // Get FAERS data with comparators if requested
+    const faersData = await faersService.getFaersDataWithComparators(productName, {
+      includeComparators,
+      comparatorLimit: 3
+    });
+    
+    // Return the data
+    res.json({
+      success: true,
+      data: faersData,
+      dataSource: 'FDA FAERS API',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching FAERS data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch FAERS data',
+      message: error.message,
+      dataSource: 'FDA FAERS API'
+    });
+  }
+});
+
+// POST /api/cer/analyze-faers - Analyze FAERS data for a CER report
+router.post('/analyze-faers', async (req, res) => {
+  try {
+    const { productName, faersData, context = {} } = req.body;
+    
+    if (!productName && !faersData) {
+      return res.status(400).json({ error: 'Either product name or FAERS data is required' });
+    }
+    
+    console.log(`Analyzing FAERS data for CER: ${productName || 'Unknown product'}`);
+    
+    // If we have raw FAERS data, use it; otherwise fetch it
+    let data = faersData;
+    if (!data && productName) {
+      data = await faersService.getFaersData(productName);
+    }
+    
+    // Analyze the data
+    const analysis = await faersService.analyzeFaersDataForCER(data, {
+      productName: productName,
+      context
+    });
+    
+    // Return the analysis
+    res.json({
+      success: true,
+      analysis,
+      dataSource: 'FDA FAERS API',
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Error analyzing FAERS data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to analyze FAERS data',
+      message: error.message
+    });
+  }
+});
+
 // POST /api/cer/assistant - Get AI assistant response for CER development questions
 router.post('/assistant', async (req, res) => {
   try {
@@ -192,14 +271,16 @@ router.post('/assistant', async (req, res) => {
       return res.status(400).json({ error: 'Query is required' });
     }
     
-    // We'll implement a simple response here for now
-    // In a real implementation, this would call OpenAI
-    const response = "CER sections should follow regulatory standards, with comprehensive clinical evidence, clear risk analysis, and thorough benefit-risk assessment. Ensure you include all relevant medical device data and follow the latest EU MDR requirements.";
+    // Import the CER Chat Service for AI responses
+    const cerChatService = (await import('../services/cerChatService.js')).default;
+    
+    // Process the query using OpenAI
+    const chatResponse = await cerChatService.processMessage(query, context || {});
     
     // Return a structured response
     res.json({
       query,
-      response,
+      response: chatResponse.response,
       sources: [
         { title: 'EU MDR 2017/745', section: 'Annex XIV' },
         { title: 'MEDDEV 2.7/1 Rev 4', section: '7' }
@@ -225,43 +306,23 @@ router.post('/improve-compliance', async (req, res) => {
     console.log(`Analyzing ${section} compliance with ${standard} standard...`);
     console.log(`Content length: ${currentContent.length} characters`);
     
-    // Determine standard name
-    let standardName = 'International Standards';
-    if (standard.toLowerCase().includes('eu mdr')) {
-      standardName = 'EU MDR 2017/745';
-    } else if (standard.toLowerCase().includes('iso')) {
-      standardName = 'ISO 14155:2020';
-    } else if (standard.toLowerCase().includes('fda')) {
-      standardName = 'FDA 21 CFR';
-    }
+    // Import the CER Chat Service
+    const cerChatService = (await import('../services/cerChatService.js')).default;
     
-    // Generate sample compliance improvements
-    const improvement = `## Compliance Improvement Recommendations for ${section.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Section
-
-Based on analysis of your current content against ${standardName} requirements, here are specific recommendations to enhance regulatory compliance:
-
-1. Include more comprehensive clinical evidence with quantitative data
-2. Clearly state equivalence justification if claiming equivalence
-3. Strengthen the connection between clinical data and risk analysis
-4. Add explicit references to relevant harmonized standards
-5. Expand your post-market surveillance plan with specific timelines
-
-### Implementation Guidance
-
-The most critical areas to address are points 1 and 3. Specifically, your section would benefit from more quantitative data and stronger connections between your evidence and conclusions.`;
+    // Get real AI-generated improvement recommendations
+    const result = await cerChatService.improveCompliance(section, currentContent, standard);
     
-    // Return the improvement suggestions
+    // Add standard resources
+    const additionalResources = [
+      { title: 'EU MDR 2017/745 Guidance', url: 'https://ec.europa.eu/health/md_sector/new_regulations/guidance_en' },
+      { title: 'ISO 14155:2020 Key Points', url: 'https://www.iso.org/standard/71690.html' },
+      { title: 'FDA 21 CFR Part 812', url: 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfcfr/cfrsearch.cfm?cfrpart=812' }
+    ];
+    
+    // Return the AI-generated improvement suggestions
     return res.json({
-      section,
-      standard,
-      improvement,
-      aiGenerated: true,
-      generatedAt: new Date().toISOString(),
-      additionalResources: [
-        { title: 'EU MDR 2017/745 Guidance', url: 'https://ec.europa.eu/health/md_sector/new_regulations/guidance_en' },
-        { title: 'ISO 14155:2020 Key Points', url: 'https://www.iso.org/standard/71690.html' },
-        { title: 'FDA 21 CFR Part 812', url: 'https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfcfr/cfrsearch.cfm?cfrpart=812' }
-      ]
+      ...result,
+      additionalResources
     });
   } catch (error) {
     console.error('Error improving compliance:', error);
