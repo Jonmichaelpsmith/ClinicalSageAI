@@ -496,13 +496,28 @@ router.get('/faers/data', async (req, res) => {
       const enhancedService = await getEnhancedFaersService();
       
       if (!enhancedService) {
-        throw new Error('Enhanced FAERS service not available');
+        return res.status(503).json({ 
+          error: 'FDA FAERS service temporarily unavailable',
+          message: 'Enhanced FDA FAERS data service is currently unavailable. Please try again later.',
+          serviceStatus: 'unavailable'
+        });
       }
       
       console.log(`Fetching real FDA FAERS data for ${productName}`);
       
       // Fetch real FDA FAERS data
       const faersAnalysis = await enhancedService.fetchFaersAnalysis(productName);
+      
+      // If no reports found for the product, return clear error
+      if (!faersAnalysis || !faersAnalysis.reportCount || faersAnalysis.reportCount === 0) {
+        return res.status(404).json({
+          error: 'No FDA FAERS data found',
+          message: `No adverse event reports found for "${productName}" in the FDA FAERS database. Try a different product name or check spelling.`,
+          searchTerm: productName,
+          dataSource: 'FDA FAERS API',
+          serviceStatus: 'available'
+        });
+      }
       
       // Format the data to match expected structure
       const formattedData = {
@@ -514,17 +529,28 @@ router.get('/faers/data', async (req, res) => {
         riskScore: faersAnalysis.riskScore,
         severityAssessment: getSeverityFromRiskScore(faersAnalysis.riskScore),
         comparators: faersAnalysis.comparators || [],
-        demographics: getDemographicsFromReports(faersAnalysis.reportsData || [])
+        demographics: getDemographicsFromReports(faersAnalysis.reportsData || []),
+        dataSource: {
+          name: 'FDA FAERS Database',
+          accessMethod: 'FDA OpenAPI v2',
+          retrievalDate: new Date().toISOString(),
+          authentic: true
+        }
       };
       
       console.log(`Retrieved ${formattedData.totalReports} reports for ${productName}`);
       res.json(formattedData);
       
     } catch (error) {
-      console.error('Error with real FDA API, falling back to demo data:', error);
-      // Fallback to existing service if API fails
-      const faersData = await faersService.getFaersData(productName);
-      res.json(faersData);
+      console.error('Error with FDA FAERS API:', error);
+      
+      // Return proper error to client instead of using demo data
+      return res.status(500).json({
+        error: 'FDA FAERS API Error',
+        message: `Unable to retrieve FDA FAERS data: ${error.message}`,
+        details: 'The FDA FAERS database connection experienced an error. Please try again later.',
+        serviceStatus: 'error'
+      });
     }
   } catch (error) {
     console.error('Error fetching FAERS data:', error);
