@@ -57,6 +57,22 @@ async function fetchRealFaersData(productName, options = {}) {
         console.log(`No FAERS data found for product: ${productName}`);
         return { meta: { results: { total: 0 } }, results: [] };
       }
+      
+      if (status === 429) {
+        console.error('FDA FAERS API rate limit exceeded. Consider implementing rate limiting.');
+        throw new Error('FDA FAERS API rate limit exceeded. Please try again in a few minutes.');
+      }
+      
+      if (status >= 500) {
+        console.error('FDA FAERS API server error. The FDA server may be experiencing issues.');
+        throw new Error('FDA FAERS API server error. The FDA database may be temporarily unavailable.');
+      }
+    } else if (error.code === 'ECONNABORTED') {
+      console.error('FDA FAERS API request timeout.');
+      throw new Error('FDA FAERS API request timed out. The FDA server may be experiencing high load.');
+    } else if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
+      console.error('FDA FAERS API connection error. Network connectivity issue.');
+      throw new Error('Unable to connect to FDA FAERS API. Please check your network connection.');
     }
     
     console.error('Error fetching FAERS data:', error.message);
@@ -193,11 +209,10 @@ async function findSimilarProductInFDA(name) {
 }
 
 /**
- * Get FAERS data for a specific product
+ * Get FAERS data for a specific product from FDA FAERS API
  * 
  * @param {string} productName - The name of the product to get data for
  * @param {Object} options - Options for the request
- * @param {boolean} options.useRealData - Whether to attempt to fetch real data from FDA
  * @param {number} options.limit - Maximum number of results to return from FDA API
  * @returns {Promise<Object|null>} - FAERS data for the product or null if no data available
  */
