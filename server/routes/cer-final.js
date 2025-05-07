@@ -15,38 +15,87 @@ import faersService from '../services/faersService.js';
 
 const router = express.Router();
 
-// POST /api/cer/export-pdf - Export FAERS data to PDF
+// POST /api/cer/export-pdf - Export CER data to PDF
 router.post('/export-pdf', async (req, res) => {
   try {
-    const { productName, faersData } = req.body;
+    const { title, sections, deviceInfo, faers, comparators, metadata, templateId } = req.body;
     
-    if (!faersData) {
-      return res.status(400).json({ 
+    console.log(`EMERGENCY FIX: Generating real PDF export for ${title || 'unknown device'}`);
+    
+    // Import the PDF generation service dynamically (to avoid global dependency)
+    const { default: pdfService } = await import('../services/cerPdfExporter.js');
+    
+    // Generate the PDF binary content
+    const pdfBuffer = await pdfService.generateCerPdf({ 
+      title, 
+      sections, 
+      deviceInfo, 
+      faers,
+      comparators,
+      metadata,
+      templateId
+    });
+    
+    // Set appropriate headers for a PDF file
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="clinical_evaluation_report_${Date.now()}.pdf"`);
+    
+    // Send the PDF buffer directly to the client
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('EMERGENCY FIX: Error generating CER PDF:', error);
+    
+    // Fallback to a simple PDF if errors occur
+    try {
+      // Simple PDF generation as fallback using a Node PDF library
+      const PDFDocument = require('pdfkit');
+      const doc = new PDFDocument();
+      
+      // Create a buffer to store the PDF
+      const buffers = [];
+      doc.on('data', buffers.push.bind(buffers));
+      
+      // Finalize the PDF and end the stream
+      const pdfFinalize = new Promise((resolve) => {
+        doc.on('end', () => {
+          const pdfData = Buffer.concat(buffers);
+          resolve(pdfData);
+        });
+      });
+      
+      // Add content to PDF
+      doc.fontSize(25).text('Clinical Evaluation Report', 100, 100);
+      doc.fontSize(15).text('Emergency Backup PDF', 100, 150);
+      
+      if (sections && sections.length > 0) {
+        doc.moveDown();
+        doc.fontSize(12).text('Report contains the following sections:');
+        doc.moveDown();
+        sections.forEach((section, index) => {
+          doc.fontSize(10).text(`${index + 1}. ${section.title || 'Untitled Section'}`);
+        });
+      }
+      
+      // Finalize the PDF
+      doc.end();
+      
+      // Wait for the PDF to be fully generated
+      const pdfBuffer = await pdfFinalize;
+      
+      // Set appropriate headers for a PDF file
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="emergency_clinical_evaluation_report_${Date.now()}.pdf"`);
+      
+      // Send the PDF buffer directly to the client
+      res.send(pdfBuffer);
+    } catch (fallbackError) {
+      console.error('EMERGENCY FIX: Error in fallback PDF generation:', fallbackError);
+      res.status(500).json({ 
         success: false,
-        error: 'FAERS data is required' 
+        error: 'Failed to generate PDF',
+        message: error.message 
       });
     }
-    
-    console.log(`Generating PDF export for ${productName || 'unknown product'}`);
-    
-    // For now, just return a sample PDF URL
-    // In a real implementation, this would generate a PDF
-    const filename = `faers_report_${productName?.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
-    
-    res.json({
-      success: true,
-      format: 'pdf',
-      filename: filename,
-      message: 'PDF document generated successfully',
-      url: `/api/cer/downloads/${filename}`
-    });
-  } catch (error) {
-    console.error('Error exporting FAERS data to PDF:', error);
-    res.status(500).json({ 
-      success: false,
-      error: 'Failed to export FAERS data to PDF',
-      message: error.message 
-    });
   }
 });
 

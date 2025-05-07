@@ -19,11 +19,11 @@
  * - Configurable watermarks for different document statuses
  */
 
-const fs = require('fs');
-const path = require('path');
-const PDFDocument = require('pdfkit');
-const { promisify } = require('util');
-const stream = require('stream');
+import fs from 'fs';
+import path from 'path';
+import PDFDocument from 'pdfkit';
+import { promisify } from 'util';
+import * as stream from 'stream';
 const pipeline = promisify(stream.pipeline);
 
 /**
