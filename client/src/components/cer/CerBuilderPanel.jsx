@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { cerApiService } from '@/services/CerAPIService';
 import LiteratureSearchPanel from './LiteratureSearchPanel';
 import ComplianceScorePanel from './ComplianceScorePanel';
+import EvidenceGapDetector from './EvidenceGapDetector';
+import CerTooltipWrapper from './CerTooltipWrapper';
+import CerOnboardingGuide from './CerOnboardingGuide';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -25,7 +28,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, FileText, BookOpen, FileDown, Plus, Trash2 } from 'lucide-react';
+import { Loader2, FileText, BookOpen, FileDown, Plus, Trash2, Lightbulb, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useExportFAERS } from '../../hooks/useExportFAERS';
 import CerPreviewPanel from './CerPreviewPanel';
@@ -359,10 +362,35 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                       key={section.id} 
                       className="p-3 border border-[#E1DFDD] rounded mb-2 bg-white hover:bg-[#F3F2F1]"
                     >
+                      {/* Add Evidence Gap Detector before the section content */}
+                      <EvidenceGapDetector 
+                        section={section}
+                        onCitationNeeded={(gap) => {
+                          toast({
+                            title: 'Citation needed',
+                            description: `Add support for claim: "${gap.claim}"`,
+                            variant: 'warning',
+                          });
+                        }}
+                      />
+                    
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-medium text-[#323130]">{section.title}</h4>
+                            <h4 className="text-sm font-medium text-[#323130]">
+                              <CerTooltipWrapper 
+                                content={
+                                  <div>
+                                    <p className="font-semibold mb-1">{section.title}</p>
+                                    <p>Required by: {section.metadata?.regulatoryStandard || 'EU MDR 2017/745'}</p>
+                                    <p className="mt-1">Last updated: {new Date(section.dateAdded).toLocaleString()}</p>
+                                  </div>
+                                }
+                                showIcon={false}
+                              >
+                                {section.title}
+                              </CerTooltipWrapper>
+                            </h4>
                             {section.metadata?.generatedBy && (
                               <Badge 
                                 variant="outline" 
