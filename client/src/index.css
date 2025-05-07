@@ -51,6 +51,29 @@
       gap: calc(1rem * var(--compact-scale));
     }
     
+    /* Dialog specific styles for readability */
+    & .dialog-content {
+      background-color: white;
+    }
+    
+    /* Zero-Click Report Dialog */
+    & .zero-click-dialog {
+      background-color: white;
+      color: #333;
+    }
+    
+    & .zero-click-dialog label {
+      font-weight: 500;
+      color: #323130;
+    }
+    
+    & .zero-click-dialog input, 
+    & .zero-click-dialog select {
+      color: #323130;
+      background-color: white;
+      border-color: #DDD;
+    }
+    
     & .m-4 {
       margin: calc(1rem * var(--compact-scale));
     }
