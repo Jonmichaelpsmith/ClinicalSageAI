@@ -10,6 +10,7 @@ import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
+import GSPRMappingPanel from '@/components/cer/GSPRMappingPanel';
 import CerOnboardingGuide from '@/components/cer/CerOnboardingGuide';
 import WizardStepper from '@/components/cer/WizardStepper';
 import NotificationBanner from '@/components/cer/NotificationBanner';
@@ -53,6 +54,7 @@ export default function CERV2Page() {
   const [retrievalProgress, setRetrievalProgress] = useState({ faers: 0, literature: 0 });
   const [evidenceSnapshot, setEvidenceSnapshot] = useState(null);
   const [cepData, setCepData] = useState(null);
+  const [gsprMapping, setGsprMapping] = useState(null);
   const { toast } = useToast();
 
   // Load FAERS data when device name changes
@@ -623,6 +625,14 @@ export default function CERV2Page() {
             >
               <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
               <span>Evaluation Plan</span>
+            </TabsTrigger>
+            
+            <TabsTrigger 
+              value="gspr-mapping" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
+            >
+              <FileCheck className="h-3.5 w-3.5 mr-1.5" />
+              <span>GSPR Mapping</span>
             </TabsTrigger>
             
             <TabsTrigger 
