@@ -3,10 +3,13 @@
  * 
  * Provides utility functions for interacting with the CER Generator API endpoints.
  * Centralizes all API calls related to CER generation, export, FAERS data fetching,
- * and regulatory compliance scoring.
+ * device equivalence comparison, and regulatory compliance scoring.
  * 
  * This service integrates with GPT-4o powered endpoints for intelligent document generation
  * and regulatory compliance analysis based on EU MDR, ISO 14155, and FDA guidelines.
+ * 
+ * Version: 2.0.1 - May 7, 2025
+ * Update: Added Device Equivalence Assessment functionality (MEDDEV 2.7/1 Rev 4 compliant)
  */
 
 // Create a single export object for consistent API access
@@ -449,6 +452,130 @@ cerApiService.saveToVault = async ({ title, sections, deviceInfo, metadata }) =>
     return data;
   } catch (error) {
     console.error('Error in saveToVault:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a rationale for feature equivalence based on comparison data
+ * @param {Object} params - Parameters for generating the rationale
+ * @param {Object} params.subjectDevice - Information about the subject device
+ * @param {Object} params.subjectDevice.name - The name of the subject device
+ * @param {Object} params.subjectDevice.feature - The feature information for the subject device
+ * @param {Object} params.equivalentDevice - Information about the equivalent device
+ * @param {Object} params.equivalentDevice.name - The name of the equivalent device
+ * @param {Object} params.equivalentDevice.feature - The feature information for the equivalent device
+ * @returns {Promise<Object>} - The generated rationale and impact assessment
+ */
+cerApiService.generateEquivalenceRationale = async ({ subjectDevice, equivalentDevice }) => {
+  try {
+    console.log('Generating equivalence rationale for feature:', subjectDevice.feature.name);
+    
+    const response = await fetch('/api/cer/generate-equivalence-rationale', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subjectDevice,
+        equivalentDevice
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating equivalence rationale: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateEquivalenceRationale:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate an overall equivalence assessment for a device
+ * @param {Object} params - Parameters for generating the assessment
+ * @param {Object} params.subjectDevice - Information about the subject device
+ * @param {Object} params.equivalentDevice - Information about the equivalent device with all features
+ * @returns {Promise<Object>} - The generated overall assessment
+ */
+cerApiService.generateOverallEquivalence = async ({ subjectDevice, equivalentDevice }) => {
+  try {
+    console.log('Generating overall equivalence assessment for:', equivalentDevice.name);
+    
+    const response = await fetch('/api/cer/generate-overall-equivalence', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subjectDevice,
+        equivalentDevice
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating overall equivalence assessment: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateOverallEquivalence:', error);
+    throw error;
+  }
+};
+
+/**
+ * Save equivalence data to the CER
+ * @param {Object} params - Parameters for saving the equivalence data
+ * @param {string} params.cerId - The ID of the CER to save to
+ * @param {Object} params.equivalenceData - The equivalence data to save
+ * @returns {Promise<Object>} - The saved equivalence data
+ */
+cerApiService.saveEquivalenceData = async ({ cerId, equivalenceData }) => {
+  try {
+    console.log(`Saving equivalence data to CER ${cerId}`);
+    
+    const response = await fetch(`/api/cer/${cerId}/equivalence`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(equivalenceData),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error saving equivalence data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in saveEquivalenceData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get equivalence data for a CER
+ * @param {string} cerId - The ID of the CER to get equivalence data for
+ * @returns {Promise<Object>} - The equivalence data for the CER
+ */
+cerApiService.getEquivalenceData = async (cerId) => {
+  try {
+    const response = await fetch(`/api/cer/${cerId}/equivalence`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching equivalence data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getEquivalenceData:', error);
     throw error;
   }
 };
