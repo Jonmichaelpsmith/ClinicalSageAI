@@ -222,10 +222,13 @@ function transformFaersData(rawData, productName) {
   };
 }
 
-// Fallback database for when API calls fail or for testing
+// FDA FAERS data model documentation - This represents the expected structure
+// of data returned by the FDA FAERS API after transformation.
+// All data MUST come from authenticated sources (FDA API) with proper attribution.
+
+/* REMOVED mock data implementation to enforce data integrity policy
 const faersDatabase = {
-  // Simulated FAERS data for common medications
-  "lisinopril": {
+  "removed_mock_data": {
     productName: "Lisinopril",
     totalReports: 5784,
     seriousEvents: Array(1246).fill("serious"),
@@ -557,38 +560,72 @@ const faersDatabase = {
     resolvedInfo: null
   }
 };
+*/
 
 /**
- * Find a similar match for the product name in the database
+ * Find a similar product name by querying the FDA API
  * 
  * @param {string} name - The name to search for
- * @returns {string|null} - A matching product name or null if no matches
+ * @returns {Promise<string|null>} - A matching product name or null if no matches
  */
-function findSimilarProduct(name) {
+async function findSimilarProductInFDA(name) {
   if (!name) return null;
   
   const normalizedName = name.toLowerCase();
   
-  // Try exact match first
-  if (faersDatabase[normalizedName]) {
-    return normalizedName;
-  }
-  
-  // Try parsing the generic name
-  const parsedName = drugClassService.parseGenericDrugName(normalizedName);
-  if (faersDatabase[parsedName]) {
-    return parsedName;
-  }
-  
-  // Try partial match
-  for (const drug in faersDatabase) {
-    if (drug !== 'default' && normalizedName.includes(drug)) {
-      return drug;
+  try {
+    // Query the FDA API for exact match
+    console.log(`Querying FDA API for product: ${normalizedName}`);
+    const exactMatchResponse = await fetchRealFaersData(normalizedName, { limit: 1 });
+    
+    // If we got results, return the name
+    if (exactMatchResponse.success && 
+        exactMatchResponse.data?.results && 
+        exactMatchResponse.data.results.length > 0) {
+      const productName = exactMatchResponse.data.results[0].medicinalproduct || 
+                          exactMatchResponse.data.results[0].openfda?.brand_name?.[0] || 
+                          normalizedName;
+      return productName;
     }
+    
+    // Try parsing the generic name and searching again
+    const parsedName = drugClassService.parseGenericDrugName(normalizedName);
+    if (parsedName && parsedName !== normalizedName) {
+      console.log(`Trying FDA API with parsed generic name: ${parsedName}`);
+      const parsedNameResponse = await fetchRealFaersData(parsedName, { limit: 1 });
+      
+      if (parsedNameResponse.success && 
+          parsedNameResponse.data?.results && 
+          parsedNameResponse.data.results.length > 0) {
+        const productName = parsedNameResponse.data.results[0].medicinalproduct || 
+                            parsedNameResponse.data.results[0].openfda?.brand_name?.[0] || 
+                            parsedName;
+        return productName;
+      }
+    }
+    
+    // Try to get similar products from the drug classification service
+    const similarDrugs = drugClassService.findSimilarDrugsInClass(normalizedName, 3);
+    
+    // Try each similar drug
+    for (const drug of similarDrugs) {
+      const drugResponse = await fetchRealFaersData(drug.name, { limit: 1 });
+      
+      if (drugResponse.success && 
+          drugResponse.data?.results && 
+          drugResponse.data.results.length > 0) {
+        return drug.name;
+      }
+    }
+    
+    // No match found in FDA data
+    console.log(`No similar products found in FDA database for: ${name}`);
+    return null;
+  } 
+  catch (error) {
+    console.error(`Error finding similar product in FDA database for ${name}:`, error);
+    return null;
   }
-  
-  // No match found
-  return null;
 }
 
 /**
@@ -852,5 +889,6 @@ export {
   getFaersDataWithComparators,
   fetchRealFaersData,
   transformFaersData,
-  analyzeFaersDataForCER
+  analyzeFaersDataForCER,
+  findSimilarProductInFDA
 };
