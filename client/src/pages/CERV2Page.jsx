@@ -49,6 +49,8 @@ export default function CERV2Page() {
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(false);
   const [hasAutoFetched, setHasAutoFetched] = useState(false);
   const [literatureResult, setLiteratureResult] = useState(null);
+  const [retrievalProgress, setRetrievalProgress] = useState({ faers: 0, literature: 0 });
+  const [evidenceSnapshot, setEvidenceSnapshot] = useState(null);
   const { toast } = useToast();
 
   // Load FAERS data when device name changes
@@ -120,6 +122,28 @@ export default function CERV2Page() {
     }
   };
   
+  // Simulate progress for data retrieval processes
+  const simulateProgress = (type) => {
+    return new Promise((resolve) => {
+      let progress = 0;
+      const maxProgress = 95; // Only go to 95%, the final 5% when data is received
+      const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 10) + 5; // Increments between 5-15%
+        
+        if (progress >= maxProgress) {
+          progress = maxProgress;
+          clearInterval(interval);
+          resolve();
+        }
+        
+        setRetrievalProgress(prev => ({
+          ...prev,
+          [type]: progress
+        }));
+      }, 500);
+    });
+  };
+  
   // Function to run both FAERS and literature fetching in parallel
   const runEnhancedDataRetrieval = async () => {
     if (!deviceName || deviceName.trim() === '') {
@@ -131,15 +155,34 @@ export default function CERV2Page() {
       return;
     }
     
+    // Reset progress
+    setRetrievalProgress({ faers: 0, literature: 0 });
+    setEvidenceSnapshot(null);
     setShowFetchingBanner(true);
     setHasAutoFetched(true);
     
+    // Start progress simulation
+    const faersProgressPromise = simulateProgress('faers');
+    const literatureProgressPromise = simulateProgress('literature');
+    
     try {
-      // Run both in parallel, but handle errors individually
-      const results = await Promise.allSettled([
+      // Start the actual data fetching
+      const resultsPromise = Promise.allSettled([
         loadFaersData(deviceName),
         fetchLiteratureData(deviceName)
       ]);
+      
+      // Wait for both progress simulation and actual data fetching
+      await Promise.all([
+        faersProgressPromise,
+        literatureProgressPromise
+      ]);
+      
+      // Fetch the actual results
+      const results = await resultsPromise;
+      
+      // Set progress to 100% for both
+      setRetrievalProgress({ faers: 100, literature: 100 });
       
       // Check for errors
       const faersResult = results[0];
@@ -147,26 +190,37 @@ export default function CERV2Page() {
       
       let hasFaersData = false;
       let hasLiteratureData = false;
+      let faersCount = 0;
+      let litCount = 0;
       
       if (faersResult.status === 'fulfilled') {
         hasFaersData = true;
+        faersCount = faers.length || 0;
       } else {
         console.error('FAERS data retrieval failed:', faersResult.reason);
       }
       
       if (litResult.status === 'fulfilled') {
         hasLiteratureData = true;
-        if (litResult.value) {
+        if (litResult.value && litResult.value.papers) {
           setLiteratureResult(litResult.value);
+          litCount = litResult.value.papers.length || 0;
         }
       } else {
         console.error('Literature data retrieval failed:', litResult.reason);
       }
       
+      // Create evidence snapshot
+      setEvidenceSnapshot({
+        faersCount: faersCount,
+        literatureCount: litCount
+      });
+      
+      // Show toast notification
       if (hasFaersData || hasLiteratureData) {
         toast({
           title: 'Evidence Collection Complete',
-          description: `Retrieved ${hasFaersData ? 'FAERS data' : ''}${hasFaersData && hasLiteratureData ? ' and ' : ''}${hasLiteratureData ? 'literature data' : ''}.`,
+          description: `Retrieved ${hasFaersData ? `${faersCount} FAERS reports` : ''}${hasFaersData && hasLiteratureData ? ' and ' : ''}${hasLiteratureData ? `${litCount} literature studies` : ''}.`,
           variant: 'success'
         });
       } else {
@@ -176,6 +230,9 @@ export default function CERV2Page() {
           variant: 'destructive'
         });
       }
+      
+      // Keep the banner visible for a moment so user can see the 100% completion
+      await new Promise(resolve => setTimeout(resolve, 1500));
     } catch (error) {
       console.error('Enhanced data retrieval error:', error);
       toast({
@@ -469,6 +526,11 @@ export default function CERV2Page() {
             message="Fetching FDA FAERS + literature data—this usually takes ~20–30 seconds."
             type="loading"
             visible={showFetchingBanner}
+            progress={retrievalProgress}
+            evidenceSnapshot={evidenceSnapshot}
+            showInfoIcon={true}
+            infoTooltip="Pull in real-world adverse event data (FAERS) and key published studies—so your AI sections include actual safety and evidence."
+            additionalContent="Why run this? AI section drafts will cite and analyze FAERS + literature automatically."
           />
         )}
         
@@ -485,6 +547,9 @@ export default function CERV2Page() {
               onClick: () => setShowEvidenceReminder(false)
             }}
             visible={showEvidenceReminder}
+            showInfoIcon={true}
+            infoTooltip="Pull in real-world adverse event data (FAERS) and key published studies—so your AI sections include actual safety and evidence."
+            additionalContent="Why run this? AI section drafts will cite and analyze FAERS + literature automatically."
           />
         )}
         
