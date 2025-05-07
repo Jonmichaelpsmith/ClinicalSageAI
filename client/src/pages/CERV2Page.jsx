@@ -145,7 +145,7 @@ export default function CERV2Page() {
   };
   
   // Function to run both FAERS and literature fetching in parallel
-  const runEnhancedDataRetrieval = async () => {
+  const runEnhancedDataRetrieval = useCallback(async () => {
     if (!deviceName || deviceName.trim() === '') {
       toast({
         title: 'Missing Device Name',
@@ -243,12 +243,7 @@ export default function CERV2Page() {
     } finally {
       setShowFetchingBanner(false);
     }
-  };
-  
-  // Memoize the runEnhancedDataRetrieval function
-  const memoizedDataRetrieval = useCallback(() => {
-    runEnhancedDataRetrieval();
-  }, [deviceName, manufacturer]);
+  }, [deviceName, manufacturer, loadFaersData, fetchLiteratureData, toast, faers.length, setLiteratureResult, simulateProgress]);
   
   // Auto-trigger data collection when both device name and manufacturer are filled
   useEffect(() => {
@@ -260,12 +255,12 @@ export default function CERV2Page() {
       
       // Give a slight delay so the user sees the banner first
       const timer = setTimeout(() => {
-        memoizedDataRetrieval();
+        runEnhancedDataRetrieval();
       }, 1000);
       
       return () => clearTimeout(timer);
     }
-  }, [deviceName, manufacturer, hasAutoFetched, memoizedDataRetrieval]);
+  }, [deviceName, manufacturer, hasAutoFetched, runEnhancedDataRetrieval]);
   
   // Show reminder if user tries to use builder without retrieving data
   useEffect(() => {
