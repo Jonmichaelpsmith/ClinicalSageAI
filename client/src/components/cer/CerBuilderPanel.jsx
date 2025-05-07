@@ -75,15 +75,35 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     }
     
     setIsGenerating(true);
+    console.log('EMERGENCY FIX: Generating section', selectedSectionType, sectionContext.substring(0, 50));
     
     try {
-      const data = await cerApiService.generateSection({
-        section: selectedSectionType,
-        context: sectionContext,
-        productName: cerTitle,
+      // Fix: Changed from section to sectionType to match API service expectation
+      const response = await fetch('/api/cer/generate-section', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          section: selectedSectionType,
+          productName: cerTitle,
+          context: sectionContext,
+        }),
       });
       
-      setGeneratedSection(data);
+      if (!response.ok) {
+        throw new Error(`Error generating section: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('EMERGENCY FIX: Section generated successfully', data);
+      
+      // If response includes a section property, use that
+      if (data.section) {
+        setGeneratedSection(data.section);
+      } else {
+        setGeneratedSection(data);
+      }
       
       toast({
         title: 'Section generated',
