@@ -99,9 +99,9 @@ export const AiSectionGenerator = ({ onSectionGenerated }) => {
                 <SelectTrigger id="section-type">
                   <SelectValue placeholder="Select a section type" />
                 </SelectTrigger>
-                <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
+                <SelectContent>
                   {sectionTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id} className="text-[#323130]">
+                    <SelectItem key={type.id} value={type.id}>
                       {type.name}
                     </SelectItem>
                   ))}
