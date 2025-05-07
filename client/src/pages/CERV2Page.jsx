@@ -500,7 +500,7 @@ export default function CERV2Page() {
           
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="device-name" className="text-[#323130]">
+              <Label htmlFor="device-name" className="text-[#323130] font-medium">
                 Device Name <span className="text-[#D83B01]">*</span>
               </Label>
               <Input
@@ -508,16 +508,16 @@ export default function CERV2Page() {
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
                 placeholder="e.g., Stentra LX"
-                className="border-[#E1DFDD]"
+                className="border-[#E1DFDD] bg-white text-[#323130]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="device-type" className="text-[#323130]">
+              <Label htmlFor="device-type" className="text-[#323130] font-medium">
                 Device Classification <span className="text-[#D83B01]">*</span>
               </Label>
               <Select value={deviceType} onValueChange={setDeviceType}>
-                <SelectTrigger id="device-type" className="border-[#E1DFDD]">
+                <SelectTrigger id="device-type" className="border-[#E1DFDD] bg-white text-[#323130]">
                   <SelectValue placeholder="Select device classification" />
                 </SelectTrigger>
                 <SelectContent>
@@ -531,7 +531,7 @@ export default function CERV2Page() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="manufacturer" className="text-[#323130]">
+              <Label htmlFor="manufacturer" className="text-[#323130] font-medium">
                 Manufacturer
               </Label>
               <Input
@@ -539,12 +539,12 @@ export default function CERV2Page() {
                 value={manufacturer}
                 onChange={(e) => setManufacturer(e.target.value)}
                 placeholder="e.g., MedTech Innovations Inc."
-                className="border-[#E1DFDD]"
+                className="border-[#E1DFDD] bg-white text-[#323130]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="intended-use" className="text-[#323130]">
+              <Label htmlFor="intended-use" className="text-[#323130] font-medium">
                 Intended Use
               </Label>
               <Input
@@ -552,16 +552,16 @@ export default function CERV2Page() {
                 value={intendedUse}
                 onChange={(e) => setIntendedUse(e.target.value)}
                 placeholder="e.g., Cardiac monitoring and diagnostic use"
-                className="border-[#E1DFDD]"
+                className="border-[#E1DFDD] bg-white text-[#323130]"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="template" className="text-[#323130]">
+              <Label htmlFor="template" className="text-[#323130] font-medium">
                 Regulatory Template <span className="text-[#D83B01]">*</span>
               </Label>
               <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                <SelectTrigger id="template" className="border-[#E1DFDD]">
+                <SelectTrigger id="template" className="border-[#E1DFDD] bg-white text-[#323130]">
                   <SelectValue placeholder="Select regulatory template" />
                 </SelectTrigger>
                 <SelectContent>
@@ -574,8 +574,8 @@ export default function CERV2Page() {
             </div>
             
             {deviceName && (
-              <div className="rounded-md p-2 bg-[#E5F2FF] border border-[#0F6CBD] text-xs text-[#323130]">
-                <p>FAERS data will be automatically retrieved for "{deviceName}" to include adverse event analysis.</p>
+              <div className="rounded-md p-3 bg-[#E5F2FF] border border-[#0F6CBD] text-sm text-[#323130]">
+                <p className="font-medium">FAERS data will be automatically retrieved for "{deviceName}" to include adverse event analysis.</p>
               </div>
             )}
           </div>
@@ -584,7 +584,7 @@ export default function CERV2Page() {
             <Button 
               variant="outline" 
               onClick={() => setShowDeviceInfoDialog(false)}
-              className="border-[#E1DFDD] text-[#616161]"
+              className="border-[#E1DFDD] bg-white text-[#323130] hover:bg-gray-50"
             >
               Cancel
             </Button>
@@ -594,7 +594,7 @@ export default function CERV2Page() {
                 generateFullCER();
               }}
               disabled={!deviceName.trim() || !deviceType || isGeneratingFullCER}
-              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white font-medium px-6 py-2"
             >
               {isGeneratingFullCER ? (
                 <>
