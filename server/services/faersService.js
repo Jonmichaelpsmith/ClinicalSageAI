@@ -786,6 +786,9 @@ async function analyzeFaersDataForCER(faersData, options = {}) {
     context = {}
   } = options;
   
+  // Create array to collect analysis warnings for transparent reporting
+  const analysisWarnings = [];
+  
   // Ensure we have FAERS data to analyze
   if (!faersData || !faersData.reactionCounts || faersData.reactionCounts.length === 0) {
     throw new Error('Valid FAERS data is required for analysis');
@@ -798,10 +801,15 @@ async function analyzeFaersDataForCER(faersData, options = {}) {
     ? ((seriousEventsCount / totalReports) * 100).toFixed(1) + '%' 
     : '0%';
   
-  // Calculate event rate per 10,000 units (estimated)
-  // In a real implementation, this would use distribution/sale data
-  const estimatedUnits = 100000; // Placeholder for demo
-  const eventsPerTenThousand = (totalReports / estimatedUnits) * 10000;
+  // Calculate event rate per 10,000 units
+  // Note: A real calculation should use actual distribution/sales data from an authorized source
+  // For transparency, this is flagged as an estimate based on reported cases only
+  let eventsPerTenThousand = null;
+  
+  // Add a warning about estimate validity in the analysis
+  analysisWarnings.push(
+    "Event rate calculations require authorized distribution data and should be interpreted with caution."
+  );
   
   // Process demographics data
   const ageDistribution = Object.entries(faersData.demographics?.ageGroups || {})
@@ -862,7 +870,8 @@ async function analyzeFaersDataForCER(faersData, options = {}) {
       totalReports: totalReports,
       seriousEvents: seriousEventsCount,
       seriousEventsPercentage: seriousEventsPercentage,
-      eventsPerTenThousand: parseFloat(eventsPerTenThousand.toFixed(2)),
+      // No estimated rate provided due to data integrity requirements
+      eventsPerTenThousand: null,
       severityAssessment: faersData.severityAssessment || "Unknown"
     },
     topEvents: topEvents,
@@ -877,7 +886,8 @@ async function analyzeFaersDataForCER(faersData, options = {}) {
       retrievalDate: new Date().toISOString(),
       authentic: true,
       dataIntegrityStatus: "verified"
-    }
+    },
+    warnings: analysisWarnings
   };
   
   return analysis;
