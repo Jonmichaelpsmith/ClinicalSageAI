@@ -395,10 +395,10 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
           </Card>
         </div>
         
-        <Alert className="mb-6 bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertTitle className="text-green-800 font-bold">Real FDA FAERS Data for HeartcoR</AlertTitle>
-          <AlertDescription className="text-green-700">
+        <Alert className="mb-6">
+          <CheckCircle className="h-4 w-4" />
+          <AlertTitle>Real FDA FAERS Data</AlertTitle>
+          <AlertDescription>
             This data is retrieved directly from the FDA Adverse Event Reporting System (FAERS) using the official FDA API.
             {faersData.dataSource && (
               <span className="block mt-1 text-sm">
