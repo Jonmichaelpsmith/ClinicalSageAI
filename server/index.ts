@@ -66,12 +66,8 @@ app.get('/marketing', (req, res) => {
 // Register API routes
 registerRoutes(app);
 
-// Handle specific client-side routes before API setup
-// Create a direct router for client-side routes that bypasses Vite's catch-all
-app.get('/cerv2', (req, res) => {
-  console.log('Serving CER v2 page from special handler');
-  res.sendFile(path.join(process.cwd(), 'public/cerv2_redirect.html'));
-});
+// Direct access to cerv2 should be handled by Vite for client-side routing
+// No special handler needed
 
 // Create HTTP server
 const httpServer = createHttpServer(app);
