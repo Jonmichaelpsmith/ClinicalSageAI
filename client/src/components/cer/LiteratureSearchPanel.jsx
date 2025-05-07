@@ -376,7 +376,7 @@ ${citations}
     <div className="space-y-6 p-4 border rounded-md bg-white">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-bold">Literature AI Search</h2>
+          <h2 className="text-xl font-bold">Proxima CRO Literature AI</h2>
           <p className="text-sm text-gray-500">Generate MEDDEV 2.7/1 Rev 4 compliant literature reviews for your Clinical Evaluation Report</p>
         </div>
         <Badge variant="outline" className="px-2 py-1 border-blue-200 bg-blue-50 text-blue-700">
