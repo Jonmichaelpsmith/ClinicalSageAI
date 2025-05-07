@@ -520,12 +520,12 @@ export default function CERV2Page() {
                 <SelectTrigger id="device-type" className="border-[#E1DFDD] bg-white text-[#323130]">
                   <SelectValue placeholder="Select device classification" />
                 </SelectTrigger>
-                <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
-                  <SelectItem value="Class I Medical Device" className="text-[#323130]">Class I Medical Device</SelectItem>
-                  <SelectItem value="Class II Medical Device" className="text-[#323130]">Class II Medical Device</SelectItem>
-                  <SelectItem value="Class III Medical Device" className="text-[#323130]">Class III Medical Device</SelectItem>
-                  <SelectItem value="IVD Device" className="text-[#323130]">IVD Device</SelectItem>
-                  <SelectItem value="Software as Medical Device" className="text-[#323130]">Software as Medical Device</SelectItem>
+                <SelectContent>
+                  <SelectItem value="Class I Medical Device">Class I Medical Device</SelectItem>
+                  <SelectItem value="Class II Medical Device">Class II Medical Device</SelectItem>
+                  <SelectItem value="Class III Medical Device">Class III Medical Device</SelectItem>
+                  <SelectItem value="IVD Device">IVD Device</SelectItem>
+                  <SelectItem value="Software as Medical Device">Software as Medical Device</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -564,11 +564,11 @@ export default function CERV2Page() {
                 <SelectTrigger id="template" className="border-[#E1DFDD] bg-white text-[#323130]">
                   <SelectValue placeholder="Select regulatory template" />
                 </SelectTrigger>
-                <SelectContent className="bg-white text-[#323130] border-[#E1DFDD]">
-                  <SelectItem value="eu-mdr" className="text-[#323130]">EU MDR (Annex XIV)</SelectItem>
-                  <SelectItem value="iso-14155" className="text-[#323130]">ISO 14155</SelectItem>
-                  <SelectItem value="fda-510k" className="text-[#323130]">FDA 510(k)</SelectItem>
-                  <SelectItem value="eu-ivdr" className="text-[#323130]">EU IVDR</SelectItem>
+                <SelectContent>
+                  <SelectItem value="eu-mdr">EU MDR (Annex XIV)</SelectItem>
+                  <SelectItem value="iso-14155">ISO 14155</SelectItem>
+                  <SelectItem value="fda-510k">FDA 510(k)</SelectItem>
+                  <SelectItem value="eu-ivdr">EU IVDR</SelectItem>
                 </SelectContent>
               </Select>
             </div>
