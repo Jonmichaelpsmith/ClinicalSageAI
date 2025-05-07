@@ -500,11 +500,12 @@ cerApiService.analyzeAdverseEvents = async (fdaData) => {
  */
 cerApiService.retrieveDataForCER = async (reportId) => {
   try {
-    const response = await fetch(`/api/cer-data/retrieve/${reportId}`, {
+    const response = await fetch(`/api/cer/data-retrieval/start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
+      body: JSON.stringify({ reportId })
     });
     
     if (!response.ok) {

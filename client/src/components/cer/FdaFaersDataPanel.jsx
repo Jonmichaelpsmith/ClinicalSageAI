@@ -174,7 +174,7 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
   };
   
   /**
-   * Fetch raw FAERS data from the API
+   * Fetch raw FAERS data from the API using the enhanced service
    */
   const fetchFaersData = async () => {
     if (!productName) {
@@ -186,25 +186,36 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       setIsLoading(true);
       setError(null);
       
-      // Build query string for API request
-      let queryParams = `productName=${encodeURIComponent(productName)}`;
-      if (manufacturerName) queryParams += `&manufacturerName=${encodeURIComponent(manufacturerName)}`;
-      if (startDate) queryParams += `&startDate=${startDate}`;
-      if (endDate) queryParams += `&endDate=${endDate}`;
+      console.log(`Fetching real FDA FAERS data for "${productName}"`);
       
-      // Fetch data from our API
-      const response = await fetch(`/api/cer/faers/data?${queryParams}`);
+      // Use the API service to fetch FAERS data
+      const data = await cerApiService.fetchFaersData(productName);
       
-      if (!response.ok) {
-        throw new Error(`Error fetching FAERS data: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      console.log(`Retrieved ${data.totalReports || 0} FDA FAERS reports for "${productName}"`);
       setFaersData(data);
       
       // Call the callback if provided
       if (onDataFetched) {
         onDataFetched(data);
+      }
+      
+      // If we have a reportId, store this data for the report
+      if (currentReportId) {
+        try {
+          await cerApiService.fetchFaersDataForCER({
+            productName,
+            cerId: currentReportId,
+            includeComparators: true
+          });
+          
+          console.log(`Stored FAERS data for report ${currentReportId}`);
+          toast({
+            title: 'FAERS Data Stored',
+            description: `FAERS data for ${productName} has been stored with the report`,
+          });
+        } catch (reportError) {
+          console.error('Error storing FAERS data with report:', reportError);
+        }
       }
       
       // Automatically fetch analysis as well
@@ -213,6 +224,12 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
     } catch (error) {
       console.error('Error fetching FAERS data:', error);
       setError(error.message || 'Failed to fetch FDA FAERS data');
+      
+      toast({
+        title: 'Error Fetching FAERS Data',
+        description: error.message || 'Could not retrieve FDA adverse event data. Please try again.',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -231,26 +248,40 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       setIsLoading(true);
       setError(null);
       
-      // Build query string for API request
-      let queryParams = `productName=${encodeURIComponent(productName)}`;
-      if (manufacturerName) queryParams += `&manufacturerName=${encodeURIComponent(manufacturerName)}`;
-      if (startDate) queryParams += `&startDate=${startDate}`;
-      if (endDate) queryParams += `&endDate=${endDate}`;
+      console.log(`Analyzing FDA FAERS data for "${productName}"`);
       
-      // Fetch analysis from our API
-      const response = await fetch(`/api/cer/faers/analysis?${queryParams}`);
+      // Use the API service to analyze the FAERS data
+      const data = await cerApiService.analyzeAdverseEvents({
+        productName,
+        manufacturer: manufacturerName,
+        startDate,
+        endDate,
+        faersData: faersData // Pass the raw data if we have it
+      });
       
-      if (!response.ok) {
-        throw new Error(`Error fetching FAERS analysis: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      console.log(`Analysis complete with ${data.topEvents?.length || 0} identified events`);
       setFaersAnalysis(data);
       setActiveTab('analysis'); // Switch to analysis tab when data is loaded
       
+      // Call the callback if provided
+      if (onAnalysisFetched) {
+        onAnalysisFetched(data);
+      }
+      
+      toast({
+        title: 'FAERS Analysis Complete',
+        description: `FDA adverse event analysis for ${productName} is ready to review`,
+      });
+      
     } catch (error) {
-      console.error('Error fetching FAERS analysis:', error);
-      setError(error.message || 'Failed to fetch FDA FAERS analysis');
+      console.error('Error analyzing FAERS data:', error);
+      setError(error.message || 'Failed to analyze FDA FAERS data');
+      
+      toast({
+        title: 'Error Analyzing FAERS Data',
+        description: error.message || 'Could not perform analysis on FAERS data. Please try again.',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -511,34 +542,27 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       setIsLoading(true);
       setError(null);
       
-      // Call API to generate risk assessment
-      const response = await fetch('/api/cer/faers/risk-assessment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          faersAnalysis,
-          productName,
-          manufacturerName,
-          context: {
-            deviceType: 'Shoulder Arthroplasty System',
-            indication: 'Shoulder arthritis and rotator cuff disease'
-          }
-        }),
+      console.log(`Generating risk assessment for ${productName}`);
+      
+      // Use CerAPIService for risk assessment
+      const data = await cerApiService.analyzeAdverseEvents({
+        productName,
+        manufacturerName,
+        faersAnalysis,
+        includeRiskAssessment: true,
+        context: {
+          deviceType: 'Shoulder Arthroplasty System',
+          indication: 'Shoulder arthritis and rotator cuff disease'
+        }
       });
       
-      if (!response.ok) {
-        throw new Error(`Error generating risk assessment: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      setRiskAssessment(data);
+      // Extract the risk assessment from the response
+      setRiskAssessment(data.riskAssessment || data);
       setActiveTab('risk-assessment');
       
       toast({
         title: 'Risk Assessment Generated',
-        description: 'The risk assessment has been successfully generated',
+        description: 'The risk assessment has been successfully generated using FDA FAERS data',
       });
       
     } catch (error) {
@@ -589,38 +613,44 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
       setExportingPdf(true);
       setError(null);
       
-      // Call API to export as PDF
-      const response = await fetch('/api/cer/faers/export-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          faersAnalysis,
-          riskAssessment,
-          productName,
-          manufacturerName
-        }),
-      });
+      console.log(`Exporting FAERS data analysis for "${productName}" as PDF`);
       
-      if (!response.ok) {
-        throw new Error(`Error exporting PDF: ${response.statusText}`);
+      // Use CerAPIService to export PDF
+      const title = `FDA FAERS Analysis - ${productName}`;
+      const sections = [{
+        title: "Adverse Event Analysis",
+        content: faersAnalysis.conclusion || "Analysis of FDA FAERS data for the device.",
+        type: "safety"
+      }];
+      
+      if (riskAssessment) {
+        sections.push({
+          title: "Risk Assessment",
+          content: riskAssessment.conclusion || "Risk assessment based on FDA FAERS data.",
+          type: "benefit-risk"
+        });
       }
       
-      // Get blob from response
-      const blob = await response.blob();
+      const deviceInfo = {
+        name: productName,
+        manufacturer: manufacturerName,
+        type: "Medical Device",
+        classification: "Class II"
+      };
       
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(blob);
-      
-      // Create a temporary link and trigger download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `FAERS_Analysis_${productName.replace(/\s+/g, '_')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      // Export as PDF
+      await cerApiService.exportToPDF({
+        title,
+        sections,
+        deviceInfo,
+        faers: faersData ? [faersData] : [],
+        metadata: {
+          author: "TrialSage CER Module",
+          confidential: true,
+          generatedAt: new Date().toISOString(),
+          standard: "EU MDR"
+        }
+      });
       
       toast({
         title: 'PDF Exported',
