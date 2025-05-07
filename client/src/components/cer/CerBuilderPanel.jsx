@@ -203,7 +203,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                         {sectionTypes.map(section => (
                           <SelectItem 
                             key={section.id} 
-                            value={section.id}
+                            value={section.id} 
                             className="text-sm hover:bg-[#F3F2F1] hover:text-[#323130] cursor-pointer"
                           >
                             {section.label}
