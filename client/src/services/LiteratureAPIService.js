@@ -35,15 +35,7 @@ export const searchPubMed = async ({ query, manufacturer = '', limit = 20 }) => 
   }
 };
 
-// Export service object for easy imports
-export const literatureAPIService = {
-  searchPubMed,
-  searchLiterature,
-  summarizePaper,
-  generateCitations,
-  generateLiteratureReview,
-  analyzePaperPDF
-};
+// Service object will be exported at the end of the file
 
 /**
  * Search for scientific literature related to a product
@@ -201,4 +193,14 @@ export const analyzePaperPDF = async ({ file, context }) => {
     console.error('PDF analysis error:', error);
     throw error;
   }
+};
+
+// Export service object for easy imports (moved to end of file to fix circular dependency)
+export const literatureAPIService = {
+  searchPubMed,
+  searchLiterature,
+  summarizePaper,
+  generateCitations,
+  generateLiteratureReview,
+  analyzePaperPDF
 };
