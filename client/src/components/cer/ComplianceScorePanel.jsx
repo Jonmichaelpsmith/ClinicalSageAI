@@ -258,7 +258,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
         <div className="flex items-center justify-between border-b border-[#E1DFDD] pb-3 mb-3">
           <div>
             <h3 className="text-base font-semibold text-[#323130]">Regulatory Compliance Analysis</h3>
-            <p className="text-xs text-[#616161] mt-1">Analyze your report against multiple standards including EU MDR, ISO 14155, FDA 21 CFR 812</p>
+            <p className="text-xs text-[#616161] mt-1">HeartcoR regulatory compliance analysis against EU MDR, ISO 14155, FDA 21 CFR 812 standards</p>
           </div>
           <div className="flex items-center gap-2">
             <Dialog>
@@ -357,8 +357,8 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
               <div>
                 <p className="text-sm font-medium text-[#323130]">Regulatory Compliance Check</p>
                 <p className="text-xs text-[#616161] mt-1">
-                  Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 standards.
-                  This will evaluate content quality, completeness, and alignment with regulatory requirements.
+                  Click "Check Compliance" to analyze your HeartcoR CER against EU MDR, FDA, and ISO 14155 standards.
+                  This will evaluate document quality, completeness, and alignment with HeartcoR's regulatory requirements.
                 </p>
               </div>
             </div>
