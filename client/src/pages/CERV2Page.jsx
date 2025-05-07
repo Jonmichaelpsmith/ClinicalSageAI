@@ -245,6 +245,15 @@ export default function CERV2Page() {
 
   return (
     <div className="bg-white min-h-screen">
+      {/* Onboarding guide component */}
+      <CerOnboardingGuide onDismiss={() => {
+        toast({
+          title: "Welcome to the CER Builder",
+          description: "You can always restart the guide from the Help menu if you need it.",
+          variant: "default"
+        });
+      }} />
+
       {/* MS365-inspired header */}
       <div className="border-b border-[#E1DFDD] px-4 py-3 flex justify-between items-center bg-white sticky top-0 z-10">
         <div className="flex items-center">
@@ -252,6 +261,29 @@ export default function CERV2Page() {
           <h1 className="text-lg font-semibold text-[#323130]">{title}</h1>
         </div>
         <div className="flex items-center gap-2">
+          {/* 1-Click Evidence Fetch Button (moved from Data Retrieval tab) */}
+          <Button 
+            onClick={() => {
+              if (activeTab !== 'data-retrieval') {
+                setActiveTab('data-retrieval');
+                
+                // Give the tab time to render
+                setTimeout(() => {
+                  toast({
+                    title: "Data Retrieval Tab",
+                    description: "Use the 1-Click Evidence Fetch to get FAERS and literature data.",
+                    variant: "default"
+                  });
+                }, 500);
+              }
+            }}
+            className="bg-amber-500 hover:bg-amber-600 text-white h-8 mr-2"
+            size="sm"
+          >
+            <Database className="h-3.5 w-3.5 mr-1.5" />
+            <span>Get Evidence</span>
+          </Button>
+
           {/* Zero-click generation button */}
           <Button 
             onClick={() => setShowDeviceInfoDialog(true)}
