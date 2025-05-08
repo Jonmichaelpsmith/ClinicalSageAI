@@ -212,7 +212,14 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
   const [dataAccessInfo, setDataAccessInfo] = useState({
     manufacturerName: '',
     accessType: 'direct_contract', // 'direct_contract', 'indirect_access', 'published_literature', 'other'
-    accessDetails: ''
+    accessDetails: '',
+    contractReference: '',
+    thirdPartyService: '',
+    // EU MDR compliance checklist
+    hasTechnicalAccess: false,
+    hasBiologicalAccess: false,
+    hasClinicalAccess: false,
+    hasDocumentation: false
   });
   
   // Save whole equivalence data to parent
@@ -595,6 +602,35 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
       return;
     }
     
+    // Validate specific fields based on access type
+    if (dataAccessInfo.accessType === 'direct_contract' && !dataAccessInfo.contractReference) {
+      toast({
+        title: 'Missing contract reference',
+        description: 'Please provide the contract reference number for direct contract access.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (dataAccessInfo.accessType === 'indirect_access' && !dataAccessInfo.thirdPartyService) {
+      toast({
+        title: 'Missing third-party service',
+        description: 'Please select the third-party service providing access (e.g., greenlight.guru).',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // At minimum, one of the three access domains must be covered
+    if (!dataAccessInfo.hasTechnicalAccess && !dataAccessInfo.hasBiologicalAccess && !dataAccessInfo.hasClinicalAccess) {
+      toast({
+        title: 'Incomplete data access',
+        description: 'Per EU MDR Article 61(5), you must have access to at least one data domain (technical, biological, or clinical).',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setDataAccessStatus('checking');
     
     try {
@@ -610,7 +646,17 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
             manufacturer: device.manufacturer
           },
           accessType: dataAccessInfo.accessType,
-          accessDetails: dataAccessInfo.accessDetails
+          accessDetails: dataAccessInfo.accessDetails,
+          // Additional details
+          contractReference: dataAccessInfo.contractReference,
+          thirdPartyService: dataAccessInfo.thirdPartyService,
+          // EU MDR compliance details
+          accessDomains: {
+            technical: dataAccessInfo.hasTechnicalAccess,
+            biological: dataAccessInfo.hasBiologicalAccess,
+            clinical: dataAccessInfo.hasClinicalAccess,
+            documented: dataAccessInfo.hasDocumentation
+          }
         }),
       });
       
@@ -630,10 +676,9 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
             ...d,
             dataAccessStatus: data.complianceStatus,
             dataAccessDetails: {
-              manufacturerName: dataAccessInfo.manufacturerName,
-              accessType: dataAccessInfo.accessType,
-              accessDetails: dataAccessInfo.accessDetails,
-              assessment: data.assessment
+              ...dataAccessInfo,
+              assessment: data.assessment,
+              verifiedAt: new Date().toISOString()
             }
           };
         }
@@ -643,16 +688,18 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
       setEquivalentDevices(updatedDevices);
       
       toast({
-        title: 'Data access checked',
-        description: `Data access assessment for ${device.name} completed.`,
+        title: 'Data access verified',
+        description: data.complianceStatus === 'compliant'
+          ? `${device.name} complies with EU MDR Article 61(5) data access requirements.`
+          : `${device.name} data access verification completed. See assessment for details.`,
       });
     } catch (error) {
       console.error('Error checking data access:', error);
       setDataAccessStatus(null);
       
       toast({
-        title: 'Check failed',
-        description: error.message || 'Failed to check data access compliance. Please try again.',
+        title: 'Verification failed',
+        description: error.message || 'Failed to verify data access compliance. Please try again.',
         variant: 'destructive',
       });
     }
@@ -868,7 +915,7 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
               Data Access Verification
             </DialogTitle>
             <DialogDescription className="text-[#616161]">
-              EU MDR Article 61(5) requires manufacturers to verify sufficient data access for equivalent devices used in clinical evaluations.
+              EU MDR Article 61(5) requires manufacturers to verify sufficient data access for equivalent devices used in clinical evaluations. This is <span className="font-semibold">CRITICAL</span> for EU MDR/MEDDEV compliance when using literature from equivalent devices.
             </DialogDescription>
           </DialogHeader>
           
@@ -887,6 +934,16 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
               </Alert>
             )}
             
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+              <div className="flex items-start">
+                <AlertCircle className="h-4 w-4 text-amber-500 mt-1 mr-2 flex-shrink-0" />
+                <div className="text-xs text-amber-800">
+                  <p className="font-medium">Important Regulatory Notice:</p>
+                  <p className="mt-1">Using literature from equivalent devices requires evidence of sufficient access to technical, biological, and clinical data. Without proper documentation, Notified Bodies may reject your CER.</p>
+                </div>
+              </div>
+            </div>
+            
             <div className="space-y-3">
               <div className="space-y-2">
                 <Label htmlFor="data-manufacturer" className="text-sm font-medium text-[#323130]">
@@ -902,8 +959,9 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
               </div>
               
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-[#323130]">
+                <Label className="text-sm font-medium text-[#323130] flex items-center">
                   Data Access Type
+                  <span className="ml-1 text-[#D83B01] text-xs font-medium">*</span>
                 </Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div 
@@ -972,6 +1030,44 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
                 </div>
               </div>
               
+              {dataAccessInfo.accessType === 'direct_contract' && (
+                <div className="space-y-2">
+                  <Label htmlFor="contract-reference" className="text-sm font-medium text-[#323130]">
+                    Contract Reference Number
+                  </Label>
+                  <Input
+                    id="contract-reference"
+                    value={dataAccessInfo.contractReference || ''}
+                    onChange={(e) => setDataAccessInfo({...dataAccessInfo, contractReference: e.target.value})}
+                    className="h-9 border-[#E1DFDD] focus:border-[#0F6CBD] focus:ring-1 focus:ring-[#0F6CBD]"
+                    placeholder="e.g. CONT-2025-4893"
+                  />
+                </div>
+              )}
+              
+              {dataAccessInfo.accessType === 'indirect_access' && (
+                <div className="space-y-2">
+                  <Label htmlFor="thirdparty-service" className="text-sm font-medium text-[#323130]">
+                    Third-Party Service
+                  </Label>
+                  <Select 
+                    value={dataAccessInfo.thirdPartyService || ''}
+                    onValueChange={(value) => setDataAccessInfo({...dataAccessInfo, thirdPartyService: value})}
+                  >
+                    <SelectTrigger id="thirdparty-service">
+                      <SelectValue placeholder="Select third-party service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="greenlight.guru">greenlight.guru</SelectItem>
+                      <SelectItem value="emergo">Emergo by UL</SelectItem>
+                      <SelectItem value="bsi">BSI Group</SelectItem>
+                      <SelectItem value="tüv">TÜV SÜD</SelectItem>
+                      <SelectItem value="other">Other (specify in details)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="data-details" className="text-sm font-medium text-[#323130]">
                   Access Details
@@ -981,9 +1077,82 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
                   value={dataAccessInfo.accessDetails}
                   onChange={(e) => setDataAccessInfo({...dataAccessInfo, accessDetails: e.target.value})}
                   className="border-[#E1DFDD] focus:border-[#0F6CBD] focus:ring-1 focus:ring-[#0F6CBD] resize-none"
-                  placeholder="Provide additional details about your data access arrangement..."
+                  placeholder={dataAccessInfo.accessType === 'indirect_access' 
+                    ? "Please provide details including your greenlight.guru subscription level, access date, and any specific agreements in place..."
+                    : "Provide additional details about your data access arrangement..."}
                   rows={3}
                 />
+              </div>
+              
+              {/* Data access checklist for EU MDR compliance */}
+              <div className="space-y-3 p-3 border border-[#E1DFDD] rounded-md">
+                <div className="text-sm font-medium text-[#323130]">EU MDR Article 61(5) Compliance Checklist</div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="check-technical" 
+                      checked={dataAccessInfo.hasTechnicalAccess}
+                      onCheckedChange={(checked) => 
+                        setDataAccessInfo({...dataAccessInfo, hasTechnicalAccess: checked})
+                      }
+                    />
+                    <Label 
+                      htmlFor="check-technical" 
+                      className="text-xs text-[#323130] cursor-pointer"
+                    >
+                      Access to Technical Characteristics data
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="check-biological" 
+                      checked={dataAccessInfo.hasBiologicalAccess}
+                      onCheckedChange={(checked) => 
+                        setDataAccessInfo({...dataAccessInfo, hasBiologicalAccess: checked})
+                      }
+                    />
+                    <Label 
+                      htmlFor="check-biological" 
+                      className="text-xs text-[#323130] cursor-pointer"
+                    >
+                      Access to Biological Characteristics data
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="check-clinical" 
+                      checked={dataAccessInfo.hasClinicalAccess}
+                      onCheckedChange={(checked) => 
+                        setDataAccessInfo({...dataAccessInfo, hasClinicalAccess: checked})
+                      }
+                    />
+                    <Label 
+                      htmlFor="check-clinical" 
+                      className="text-xs text-[#323130] cursor-pointer"
+                    >
+                      Access to Clinical Characteristics data
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="check-documentation" 
+                      checked={dataAccessInfo.hasDocumentation}
+                      onCheckedChange={(checked) => 
+                        setDataAccessInfo({...dataAccessInfo, hasDocumentation: checked})
+                      }
+                    />
+                    <Label 
+                      htmlFor="check-documentation" 
+                      className="text-xs text-[#323130] cursor-pointer"
+                    >
+                      Documentation of data access is available for Notified Body review
+                    </Label>
+                  </div>
+                </div>
               </div>
               
               {dataAccessStatus && (
