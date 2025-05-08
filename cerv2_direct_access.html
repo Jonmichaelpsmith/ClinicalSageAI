@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CERV2 Module Direct Access</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9fb;
+            color: #333;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-top: 30px;
+        }
+        
+        h1 {
+            color: #ff1493;
+            margin-bottom: 15px;
+        }
+        
+        p {
+            margin-bottom: 20px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background-color: #ff1493;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        code {
+            font-family: monospace;
+        }
+        
+        .logs {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            height: 150px;
+            overflow-y: auto;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CERV2 Module Direct Access Test</h1>
+        
+        <p>This page helps test direct access to the CERV2 module without redirection to the client portal.</p>
+        
+        <p>We've fixed the issue where all module links were being redirected to /client-portal, making it impossible to directly access the CERV2 module by URL. This was caused by a global navigation rewrite in the client's router configuration that was too broad.</p>
+        
+        <div class="buttons">
+            <a href="/cerv2" class="btn btn-primary">Access CERV2 Directly</a>
+            <a href="/" class="btn btn-secondary">Back to Landing Page</a>
+        </div>
+        
+        <h2>Technical Summary of Fixes</h2>
+        
+        <p>The following changes were made to resolve this issue:</p>
+        
+        <pre><code>// Previous navigation code in ClientPortalLanding.jsx:
+onClick={() => {
+  console.log('Navigating to:', module.path);
+  // Use complete URL with origin
+  const fullUrl = window.location.origin + module.path;
+  console.log('Full URL:', fullUrl);
+  window.location.href = fullUrl;
+}}
+
+// Fixed navigation code:
+onClick={() => {
+  console.log('Navigating to:', module.path);
+  // Navigate directly to the module path without forcing client-portal prefix
+  window.location.href = module.path;
+}}</code></pre>
+        
+        <p>We also removed the misleading console log message that was incorrectly stating: "All module access links updated to point to /client-portal".</p>
+        
+        <div class="logs" id="consoleOutput">
+            <!-- Console output will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Simple test script to verify navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const consoleOutput = document.getElementById('consoleOutput');
+            
+            // Log redirect results
+            function log(message) {
+                const logItem = document.createElement('div');
+                logItem.textContent = message;
+                consoleOutput.appendChild(logItem);
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            }
+            
+            log('Test page loaded: ' + new Date().toISOString());
+            log('Current location: ' + window.location.href);
+            
+            // Check if the URL has a query parameter indicating a redirect test
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('redirect_test')) {
+                log('Redirect test successful! Return URL: ' + window.location.href);
+            }
+        });
+    </script>
+</body>
+</html>
