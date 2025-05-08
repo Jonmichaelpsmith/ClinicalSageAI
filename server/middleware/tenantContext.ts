@@ -1,151 +1,97 @@
+/**
+ * Tenant Context Middleware
+ * 
+ * This middleware extracts the tenant ID from the request
+ * and sets it in the request context for downstream handlers.
+ */
 import { Request, Response, NextFunction } from 'express';
-import { db } from '../db';
-import { organizations } from '../../shared/schema';
-import { eq } from 'drizzle-orm';
-import { verifyToken } from '../auth';
+import { createScopedLogger } from '../utils/logger';
 
-// Interface for tenant context that will be added to request
+const logger = createScopedLogger('tenant-context');
+
+// Augment Express Request type to include tenant information
 declare global {
   namespace Express {
     interface Request {
-      tenantContext?: {
-        organizationId: number;
-        organizationSlug: string;
-        tier: string;
-        settings?: any;
-      };
+      tenantId?: number;
+      tenantSlug?: string;
+      userRole?: string;
     }
   }
 }
 
 /**
- * Middleware that extracts tenant context from the request
- * and adds it to the request object for use in downstream handlers
+ * Extract tenant ID from request headers, cookies, or JWT token
+ * and add it to the request object
  */
-export const tenantContextMiddleware = async (
+export function tenantContextMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+) {
   try {
-    // Skip tenant context for public routes
-    if (isPublicRoute(req.path)) {
-      return next();
-    }
-
-    // Option 1: Extract tenant from subdomain (e.g., client1.domain.com)
-    const subdomain = extractSubdomain(req);
+    // First check for X-Tenant-ID header (most common in API requests)
+    let tenantId = req.headers['x-tenant-id'] as string;
     
-    // Option 2: Extract tenant from custom header
-    const tenantHeader = req.headers['x-tenant-id'] as string;
-    
-    // Option 3: Extract tenant from auth token
-    let userOrganizationId: number | undefined;
-    const authHeader = req.headers.authorization;
-    
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      try {
-        const decoded = verifyToken(token);
-        userOrganizationId = decoded.organizationId;
-      } catch (error) {
-        // Token verification failed, continue with other methods
-      }
+    // Then check for tenant in JWT token if not in headers
+    // (assuming auth middleware sets user object with tenant info)
+    if (!tenantId && (req as any).user?.tenantId) {
+      tenantId = (req as any).user.tenantId.toString();
     }
     
-    // Option 4: Extract from URL path parameter
-    const urlOrgSlug = extractOrgSlugFromUrl(req.path);
-    
-    // Try to find the organization using the available identifiers
-    let organization;
-    
-    if (subdomain) {
-      organization = await db.query.organizations.findFirst({
-        where: eq(organizations.slug, subdomain)
-      });
+    // Then check for tenant in URL parameters
+    if (!tenantId && req.params.tenantId) {
+      tenantId = req.params.tenantId;
     }
     
-    if (!organization && tenantHeader) {
-      const tenantId = parseInt(tenantHeader, 10);
-      if (!isNaN(tenantId)) {
-        organization = await db.query.organizations.findFirst({
-          where: eq(organizations.id, tenantId)
-        });
+    // Finally check for tenant in query parameters
+    if (!tenantId && req.query.tenantId) {
+      tenantId = req.query.tenantId as string;
+    }
+    
+    // Validate and set tenant ID if found
+    if (tenantId) {
+      const parsedTenantId = parseInt(tenantId, 10);
+      
+      if (!isNaN(parsedTenantId)) {
+        req.tenantId = parsedTenantId;
+        logger.debug(`Tenant ID set to ${parsedTenantId}`);
+        
+        // Get tenant slug and user role from user object if available
+        if ((req as any).user) {
+          req.tenantSlug = (req as any).user.tenantSlug;
+          req.userRole = (req as any).user.role;
+        }
       } else {
-        organization = await db.query.organizations.findFirst({
-          where: eq(organizations.slug, tenantHeader)
-        });
+        logger.warn(`Invalid tenant ID: ${tenantId}`);
       }
+    } else {
+      logger.warn('No tenant ID found in request');
     }
-    
-    if (!organization && userOrganizationId) {
-      organization = await db.query.organizations.findFirst({
-        where: eq(organizations.id, userOrganizationId)
-      });
-    }
-    
-    if (!organization && urlOrgSlug) {
-      organization = await db.query.organizations.findFirst({
-        where: eq(organizations.slug, urlOrgSlug)
-      });
-    }
-    
-    if (!organization) {
-      return res.status(401).json({
-        error: 'Tenant context could not be established',
-        message: 'Unable to determine organization for this request'
-      });
-    }
-    
-    // Add tenant context to request object
-    req.tenantContext = {
-      organizationId: organization.id,
-      organizationSlug: organization.slug || '',
-      tier: organization.tier || 'standard',
-      settings: organization.settings
-    };
     
     next();
   } catch (error) {
-    console.error('Error in tenant context middleware:', error);
-    res.status(500).json({
-      error: 'Internal server error',
-      message: 'Failed to establish tenant context'
-    });
+    logger.error('Error in tenant context middleware', error);
+    next(error);
   }
-};
+}
 
 /**
- * Helper functions
+ * Middleware to require a valid tenant ID
+ * Will return 400 if no tenant ID is found
  */
-
-function isPublicRoute(path: string): boolean {
-  const publicRoutes = [
-    '/api/health',
-    '/api/auth/login',
-    '/api/auth/register',
-    '/api/auth/forgot-password',
-    '/api/public'
-  ];
+export function requireTenantMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (!req.tenantId) {
+    logger.warn('Tenant ID required but not found in request');
+    return res.status(400).json({
+      error: 'Tenant ID is required',
+      message: 'Please provide a valid organization ID'
+    });
+  }
   
-  return publicRoutes.some(route => path.startsWith(route));
-}
-
-function extractSubdomain(req: Request): string | null {
-  // Get host from request (e.g., client1.domain.com)
-  const host = req.headers.host;
-  if (!host) return null;
-
-  // Split by dots and check if we have a subdomain
-  const parts = host.split('.');
-  if (parts.length < 3) return null;
-
-  // Return the subdomain
-  return parts[0];
-}
-
-function extractOrgSlugFromUrl(path: string): string | null {
-  // Look for organization slug in URLs like /api/orgs/:slug/...
-  const match = path.match(/\/api\/orgs\/([^\/]+)/);
-  return match ? match[1] : null;
+  next();
 }
