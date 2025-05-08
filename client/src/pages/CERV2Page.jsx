@@ -167,7 +167,7 @@ export default function CERV2Page() {
                     `}
                   >
                     {tab.icon}
-                    <span>{tab.label}</span>
+                    <span className="text-[#FF69B4]">{tab.label}</span>
                   </button>
                 ))}
               </div>
