@@ -40,6 +40,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Serve static JavaScript files
+app.use('/js', express.static(path.join(process.cwd(), 'js')));
+app.use('/public', express.static(path.join(process.cwd(), 'public')));
+
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
