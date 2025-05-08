@@ -136,7 +136,7 @@ const ValidationEngine = ({ documentId, onValidationComplete }) => {
       }
       
       // Display toast based on validation results and method
-      const validationMethod = data.validationMethod === 'ai' ? 'AI-Powered' : 'Standard';
+      const validationMethod = data.validationMethod === 'ai' ? 'GPT-4o AI-Powered' : 'Standard';
       
       if (data.summary.criticalIssues > 0) {
         toast({
@@ -315,7 +315,14 @@ const ValidationEngine = ({ documentId, onValidationComplete }) => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Validation Summary</span>
+                <span className="flex items-center gap-2">
+                  Validation Summary
+                  {validationData.aiValidated && (
+                    <span className="px-2 py-1 rounded-full text-xs bg-[#0F6CBD] text-white">
+                      GPT-4o AI Powered
+                    </span>
+                  )}
+                </span>
                 
                 <span className={`font-bold ${getScoreColor(validationData.summary.complianceScore)}`}>
                   <Gauge className="inline-block mr-2 h-5 w-5" />
