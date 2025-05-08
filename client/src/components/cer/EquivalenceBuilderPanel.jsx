@@ -41,6 +41,24 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { 
+  Alert,
+  AlertDescription,
+  AlertTitle 
+} from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
 import { 
   Loader2, 
   Plus, 
@@ -53,7 +71,14 @@ import {
   CheckCircle2,
   AlertCircle,
   Copy,
-  Info
+  Info,
+  Shield,
+  ShieldCheck,
+  ShieldAlert,
+  BarChart,
+  FileCheck,
+  Fingerprint,
+  Key
 } from 'lucide-react';
 
 // Define feature categories based on MEDDEV 2.7/1 Rev 4 requirements
@@ -501,6 +526,91 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
     }
   };
   
+  // Check data access compliance for equivalent device
+  const checkDataAccessCompliance = async (deviceId) => {
+    const device = equivalentDevices.find(d => d.id === deviceId);
+    
+    if (!device) {
+      toast({
+        title: 'Device not found',
+        description: 'Please select a valid equivalent device to check data access compliance.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (!dataAccessInfo.manufacturerName || !dataAccessInfo.accessType) {
+      toast({
+        title: 'Missing information',
+        description: 'Please provide manufacturer name and access type information.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setDataAccessStatus('checking');
+    
+    try {
+      const response = await fetch('/api/cer/equivalence/data-access-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          manufacturerName: dataAccessInfo.manufacturerName || subjectDevice.manufacturer,
+          equivalentDeviceInfo: {
+            name: device.name,
+            manufacturer: device.manufacturer
+          },
+          accessType: dataAccessInfo.accessType,
+          accessDetails: dataAccessInfo.accessDetails
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error checking data access: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      setDataAccessAssessment(data.assessment || '');
+      setDataAccessStatus(data.complianceStatus || 'uncertain');
+      
+      // Update device with data access status
+      const updatedDevices = equivalentDevices.map(d => {
+        if (d.id === deviceId) {
+          return {
+            ...d,
+            dataAccessStatus: data.complianceStatus,
+            dataAccessDetails: {
+              manufacturerName: dataAccessInfo.manufacturerName,
+              accessType: dataAccessInfo.accessType,
+              accessDetails: dataAccessInfo.accessDetails,
+              assessment: data.assessment
+            }
+          };
+        }
+        return d;
+      });
+      
+      setEquivalentDevices(updatedDevices);
+      
+      toast({
+        title: 'Data access checked',
+        description: `Data access assessment for ${device.name} completed.`,
+      });
+    } catch (error) {
+      console.error('Error checking data access:', error);
+      setDataAccessStatus(null);
+      
+      toast({
+        title: 'Check failed',
+        description: error.message || 'Failed to check data access compliance. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+  
   // Generate Section E.4 for Clinical Evaluation Report
   const generateSectionE4 = async () => {
     if (!subjectDevice.name || equivalentDevices.length === 0) {
@@ -524,6 +634,33 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
         description: `Please complete features and generate overall assessments for: ${incompleteNames}`,
         variant: 'destructive',
       });
+      return;
+    }
+    
+    // Check for data access verification
+    const unverifiedDevices = equivalentDevices.filter(
+      device => !device.dataAccessStatus || device.dataAccessStatus === 'non-compliant'
+    );
+    
+    if (unverifiedDevices.length > 0) {
+      const unverifiedNames = unverifiedDevices.map(d => d.name).join(', ');
+      toast({
+        title: 'Data access verification needed',
+        description: `Please verify data access for: ${unverifiedNames}. EU MDR Article 61(5) requires verification of sufficient access to the equivalent device's technical documentation.`,
+        variant: 'destructive',
+      });
+      
+      // Open data access dialog for the first unverified device
+      if (unverifiedDevices.length > 0) {
+        setActiveDeviceId(unverifiedDevices[0].id);
+        setDataAccessInfo({
+          manufacturerName: subjectDevice.manufacturer,
+          accessType: 'direct_contract',
+          accessDetails: ''
+        });
+        setIsDataAccessDialogOpen(true);
+      }
+      
       return;
     }
     
@@ -631,6 +768,200 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
   
   return (
     <div className="space-y-4">
+      {/* Data Access Verification Dialog */}
+      <Dialog open={isDataAccessDialogOpen} onOpenChange={setIsDataAccessDialogOpen}>
+        <DialogContent className="max-w-md md:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-[#323130] text-lg font-semibold flex items-center">
+              <Shield className="h-5 w-5 mr-2 text-[#0F6CBD]" />
+              Data Access Verification
+            </DialogTitle>
+            <DialogDescription className="text-[#616161]">
+              EU MDR Article 61(5) requires manufacturers to verify sufficient data access for equivalent devices used in clinical evaluations.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 my-2">
+            {activeDevice && (
+              <Alert variant="outline" className="bg-[#F2F6FB] border-[#0F6CBD]">
+                <div className="flex">
+                  <Info className="h-4 w-4 text-[#0F6CBD] mt-0.5 mr-2" />
+                  <div>
+                    <AlertTitle>Verifying access for {activeDevice.name}</AlertTitle>
+                    <AlertDescription className="text-[#616161] text-xs mt-1">
+                      Manufactured by {activeDevice.manufacturer || 'Unknown'}
+                    </AlertDescription>
+                  </div>
+                </div>
+              </Alert>
+            )}
+            
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="data-manufacturer" className="text-sm font-medium text-[#323130]">
+                  Your Manufacturer Name
+                </Label>
+                <Input
+                  id="data-manufacturer"
+                  value={dataAccessInfo.manufacturerName}
+                  onChange={(e) => setDataAccessInfo({...dataAccessInfo, manufacturerName: e.target.value})}
+                  className="h-9 border-[#E1DFDD] focus:border-[#0F6CBD] focus:ring-1 focus:ring-[#0F6CBD]"
+                  placeholder="e.g. Your Company, Inc."
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-[#323130]">
+                  Data Access Type
+                </Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div 
+                    className={cn(
+                      "flex items-start p-3 border rounded cursor-pointer",
+                      dataAccessInfo.accessType === 'direct_contract' 
+                        ? "border-[#0F6CBD] bg-[#F2F6FB]" 
+                        : "border-[#E1DFDD] hover:border-[#0F6CBD] hover:bg-[#F9FAFB]"
+                    )}
+                    onClick={() => setDataAccessInfo({...dataAccessInfo, accessType: 'direct_contract'})}
+                  >
+                    <Key className="h-5 w-5 text-[#0F6CBD] mt-0.5 mr-2" />
+                    <div>
+                      <p className="text-sm font-medium text-[#323130]">Direct Contract</p>
+                      <p className="text-xs text-[#616161] mt-1">Contractual agreement with the equivalent device manufacturer</p>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={cn(
+                      "flex items-start p-3 border rounded cursor-pointer",
+                      dataAccessInfo.accessType === 'published_literature' 
+                        ? "border-[#0F6CBD] bg-[#F2F6FB]" 
+                        : "border-[#E1DFDD] hover:border-[#0F6CBD] hover:bg-[#F9FAFB]"
+                    )}
+                    onClick={() => setDataAccessInfo({...dataAccessInfo, accessType: 'published_literature'})}
+                  >
+                    <FileCheck className="h-5 w-5 text-[#0F6CBD] mt-0.5 mr-2" />
+                    <div>
+                      <p className="text-sm font-medium text-[#323130]">Published Literature</p>
+                      <p className="text-xs text-[#616161] mt-1">Access through published scientific literature</p>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={cn(
+                      "flex items-start p-3 border rounded cursor-pointer",
+                      dataAccessInfo.accessType === 'indirect_access' 
+                        ? "border-[#0F6CBD] bg-[#F2F6FB]" 
+                        : "border-[#E1DFDD] hover:border-[#0F6CBD] hover:bg-[#F9FAFB]"
+                    )}
+                    onClick={() => setDataAccessInfo({...dataAccessInfo, accessType: 'indirect_access'})}
+                  >
+                    <Fingerprint className="h-5 w-5 text-[#0F6CBD] mt-0.5 mr-2" />
+                    <div>
+                      <p className="text-sm font-medium text-[#323130]">Indirect Access</p>
+                      <p className="text-xs text-[#616161] mt-1">Access through a third-party service (e.g., greenlight.guru)</p>
+                    </div>
+                  </div>
+                  
+                  <div 
+                    className={cn(
+                      "flex items-start p-3 border rounded cursor-pointer",
+                      dataAccessInfo.accessType === 'other' 
+                        ? "border-[#0F6CBD] bg-[#F2F6FB]" 
+                        : "border-[#E1DFDD] hover:border-[#0F6CBD] hover:bg-[#F9FAFB]"
+                    )}
+                    onClick={() => setDataAccessInfo({...dataAccessInfo, accessType: 'other'})}
+                  >
+                    <BarChart className="h-5 w-5 text-[#0F6CBD] mt-0.5 mr-2" />
+                    <div>
+                      <p className="text-sm font-medium text-[#323130]">Other Method</p>
+                      <p className="text-xs text-[#616161] mt-1">Other forms of access (please specify in details)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="data-details" className="text-sm font-medium text-[#323130]">
+                  Access Details
+                </Label>
+                <Textarea
+                  id="data-details"
+                  value={dataAccessInfo.accessDetails}
+                  onChange={(e) => setDataAccessInfo({...dataAccessInfo, accessDetails: e.target.value})}
+                  className="border-[#E1DFDD] focus:border-[#0F6CBD] focus:ring-1 focus:ring-[#0F6CBD] resize-none"
+                  placeholder="Provide additional details about your data access arrangement..."
+                  rows={3}
+                />
+              </div>
+              
+              {dataAccessStatus && (
+                <div className="mt-4">
+                  <div className="flex items-center mb-2">
+                    {dataAccessStatus === 'checking' ? (
+                      <Loader2 className="h-4 w-4 text-[#0F6CBD] animate-spin mr-2" />
+                    ) : dataAccessStatus === 'compliant' ? (
+                      <ShieldCheck className="h-4 w-4 text-green-600 mr-2" />
+                    ) : dataAccessStatus === 'non-compliant' ? (
+                      <ShieldAlert className="h-4 w-4 text-red-600 mr-2" />
+                    ) : (
+                      <Shield className="h-4 w-4 text-amber-600 mr-2" />
+                    )}
+                    
+                    <span className={cn(
+                      "text-sm font-medium",
+                      dataAccessStatus === 'checking' ? "text-[#0F6CBD]" : 
+                      dataAccessStatus === 'compliant' ? "text-green-600" :
+                      dataAccessStatus === 'non-compliant' ? "text-red-600" : 
+                      "text-amber-600"
+                    )}>
+                      {dataAccessStatus === 'checking' ? 'Verifying compliance...' : 
+                       dataAccessStatus === 'compliant' ? 'Compliant with EU MDR Article 61(5)' :
+                       dataAccessStatus === 'non-compliant' ? 'Non-compliant with EU MDR Article 61(5)' : 
+                       'Uncertain compliance status'}
+                    </span>
+                  </div>
+                  
+                  {dataAccessAssessment && (
+                    <div className="text-xs text-[#616161] p-3 bg-[#F9FAFB] border border-[#E1DFDD] rounded max-h-40 overflow-y-auto mt-2">
+                      {dataAccessAssessment.split('\n').map((paragraph, index) => (
+                        <p key={index} className="mb-2">{paragraph}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              className="text-[#616161] border-[#E1DFDD] hover:bg-[#F9FAFB] hover:text-[#323130]"
+              onClick={() => setIsDataAccessDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            
+            <Button 
+              variant="default" 
+              className="bg-[#0F6CBD] text-white hover:bg-[#0C5AA0]"
+              onClick={() => checkDataAccessCompliance(activeDeviceId)}
+              disabled={dataAccessStatus === 'checking'}
+            >
+              {dataAccessStatus === 'checking' ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                'Verify Access'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Subject Device Section */}
       <div className="bg-white p-4 border border-[#E1DFDD] rounded">
         <div className="flex items-center justify-between border-b border-[#E1DFDD] pb-3 mb-3">
