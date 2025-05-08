@@ -209,9 +209,10 @@ cerApiService.getCERReports = async ({ limit = 20, offset = 0, status, deviceNam
  * @param {string} params.sectionType - The type of section to generate
  * @param {string} params.context - The context for the section
  * @param {string} [params.productName] - Optional product name for context
+ * @param {Object} [params.qmpData] - Optional QMP data for ICH E6(R3) integration
  * @returns {Promise<Object>} - The generated section
  */
-cerApiService.generateSection = async ({ sectionType, context, productName }) => {
+cerApiService.generateSection = async ({ sectionType, context, productName, qmpData }) => {
   try {
     const response = await fetch('/api/cer/generate-section', {
       method: 'POST',
@@ -221,7 +222,8 @@ cerApiService.generateSection = async ({ sectionType, context, productName }) =>
       body: JSON.stringify({
         section: sectionType,
         context,
-        productName
+        productName,
+        qmpData // Include QMP data for ICH E6(R3) integration
       }),
     });
     
@@ -233,6 +235,79 @@ cerApiService.generateSection = async ({ sectionType, context, productName }) =>
     return data;
   } catch (error) {
     console.error('Error in generateSection:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a QMP-integrated CER section with ICH E6(R3) compliance
+ * This advanced function specifically integrates Quality Management Plan data
+ * into the CER generation process to ensure ICH E6(R3) risk-based quality 
+ * principles are embedded in the generated content.
+ * 
+ * @param {Object} params - Parameters for generating the QMP-integrated section
+ * @param {string} params.sectionType - The type of section to generate
+ * @param {string} params.context - The context for the section
+ * @param {Object} params.qmpData - QMP data with objectives and risk assessments
+ * @param {Array} [params.criticalFactors] - Critical-to-Quality factors relevant to this section
+ * @param {string} [params.regulatoryFramework] - Regulatory framework (default: 'EU MDR')
+ * @returns {Promise<Object>} - The generated QMP-integrated section
+ */
+cerApiService.generateQmpIntegratedSection = async ({ 
+  sectionType, 
+  context, 
+  qmpData, 
+  criticalFactors = [], 
+  regulatoryFramework = 'EU MDR' 
+}) => {
+  try {
+    // First fetch section-specific CtQ factors if not provided
+    let sectionCtqFactors = criticalFactors;
+    
+    if (!sectionCtqFactors || sectionCtqFactors.length === 0) {
+      // Try to get section-specific CtQ factors from the QMP API
+      try {
+        const ctqResponse = await fetch(`/api/qmp/ctq-for-section/${sectionType}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (ctqResponse.ok) {
+          const ctqData = await ctqResponse.json();
+          if (ctqData.success && ctqData.factors) {
+            sectionCtqFactors = ctqData.factors;
+          }
+        }
+      } catch (ctqError) {
+        console.warn('Failed to fetch CtQ factors, proceeding with generation:', ctqError);
+      }
+    }
+    
+    // Now generate the section with integrated QMP data
+    const response = await fetch('/api/cer/generate-qmp-section', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        section: sectionType,
+        context,
+        qmpData,
+        criticalFactors: sectionCtqFactors,
+        regulatoryFramework
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating QMP-integrated section: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateQmpIntegratedSection:', error);
     throw error;
   }
 };

@@ -62,6 +62,11 @@ declare module './routes/qmp-api.js' {
   export default router;
 }
 
+declare module './routes/cer-qmp-integration.js' {
+  const router: express.Router;
+  export default router;
+}
+
 // Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';
@@ -74,6 +79,7 @@ import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
 import internalClinicalDataRouter from './routes/internal-clinical-data.js';
 import qmpRouter from './routes/qmp-api.js';
+import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
