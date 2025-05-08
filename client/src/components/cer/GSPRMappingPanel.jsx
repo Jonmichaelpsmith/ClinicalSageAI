@@ -428,6 +428,7 @@ export default function GSPRMappingPanel({
   };
   
   const handleSetActiveGspr = (gsprId) => {
+    console.log('Setting active GSPR:', gsprId);
     setActiveGspr(gsprId);
     setEvidenceSearchTerm('');
     setFilteredEvidence(availableEvidence);
