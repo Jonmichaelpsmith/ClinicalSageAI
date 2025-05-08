@@ -23,6 +23,8 @@ import equivalenceRouter from './routes/equivalence-api.mjs';
 import internalClinicalDataRouter from './routes/internal-clinical-data.js';
 // @ts-ignore
 import qmpApiRouter from './routes/qmp-api.js';
+// @ts-ignore
+import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes
@@ -121,6 +123,10 @@ export default function registerRoutes(app: Express): void {
   
   // Register Internal Clinical Data API routes
   app.use('/api/cer/internal-data', internalClinicalDataRouter);
+  
+  // Register Quality Management Plan API routes
+  app.use('/api/qmp-api', qmpApiRouter);
+  console.log('QMP API routes registered');
   
   // Create a temporary CER AI Analysis router
   const cerAiAnalysisRouter = Router();
