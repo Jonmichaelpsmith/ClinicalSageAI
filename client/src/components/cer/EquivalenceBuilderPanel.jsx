@@ -750,7 +750,13 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
         setDataAccessInfo({
           manufacturerName: subjectDevice.manufacturer,
           accessType: 'direct_contract',
-          accessDetails: ''
+          accessDetails: '',
+          contractReference: '',
+          thirdPartyService: '',
+          hasTechnicalAccess: false,
+          hasBiologicalAccess: false,
+          hasClinicalAccess: false,
+          hasDocumentation: false
         });
         setIsDataAccessDialogOpen(true);
       }
