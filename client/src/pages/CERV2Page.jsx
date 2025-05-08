@@ -145,7 +145,7 @@ export default function CERV2Page() {
         {tabGroups.map((group, groupIndex) => (
           <div 
             key={groupIndex} 
-            className={`overflow-x-auto whitespace-nowrap bg-white border-b border-[#E1DFDD] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''}`}
+            className={`overflow-x-auto whitespace-nowrap bg-[#f3f2f1] border-b border-[#000000] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''}`}
           >
             <div className="flex items-center px-6">
               <div className="flex items-center mr-4 flex-shrink-0">
