@@ -549,13 +549,14 @@ _Document Generated: ${new Date().toLocaleDateString()}_
         color = 'bg-blue-100 text-blue-800 border-blue-200';
         icon = <ArrowRight className="mr-1 h-3 w-3" />;
         break;
-      case 'at-risk':
+      case 'blocked':
         color = 'bg-red-100 text-red-800 border-red-200';
-        icon = <AlertTriangle className="mr-1 h-3 w-3" />;
+        icon = <XCircle className="mr-1 h-3 w-3" />;
         break;
+      case 'planned':
       default:
         color = 'bg-gray-100 text-gray-800 border-gray-200';
-        icon = <AlertCircle className="mr-1 h-3 w-3" />;
+        icon = <Clock className="mr-1 h-3 w-3" />;
     }
     
     return (
@@ -600,7 +601,7 @@ _Document Generated: ${new Date().toLocaleDateString()}_
     const totalObjectives = objectives.length;
     const completedObjectives = objectives.filter(obj => obj.status === 'completed').length;
     const inProgressObjectives = objectives.filter(obj => obj.status === 'in-progress').length;
-    const atRiskObjectives = objectives.filter(obj => obj.status === 'at-risk').length;
+    const blockedObjectives = objectives.filter(obj => obj.status === 'blocked').length;
     
     const totalCtqFactors = ctqFactors.length;
     const highRiskFactors = ctqFactors.filter(factor => factor.riskLevel === 'high').length;
@@ -631,7 +632,7 @@ _Document Generated: ${new Date().toLocaleDateString()}_
       totalObjectives,
       completedObjectives,
       inProgressObjectives,
-      atRiskObjectives,
+      blockedObjectives,
       totalCtqFactors,
       highRiskFactors,
       mediumRiskFactors,
@@ -790,10 +791,10 @@ _Document Generated: ${new Date().toLocaleDateString()}_
               <div className="text-xs text-[#605E5C] mt-1 flex items-center">
                 <CheckCircle className="h-3 w-3 mr-1 text-green-500" /> 
                 {metrics.completedObjectives} Complete
-                {metrics.atRiskObjectives > 0 && (
+                {metrics.blockedObjectives > 0 && (
                   <span className="ml-2 text-red-500 flex items-center">
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    {metrics.atRiskObjectives} At Risk
+                    <XCircle className="h-3 w-3 mr-1" />
+                    {metrics.blockedObjectives} Blocked
                   </span>
                 )}
               </div>
@@ -1099,7 +1100,7 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                           <SelectItem value="planned">Planned</SelectItem>
                           <SelectItem value="in-progress">In Progress</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="at-risk">At Risk</SelectItem>
+                          <SelectItem value="blocked">Blocked</SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
