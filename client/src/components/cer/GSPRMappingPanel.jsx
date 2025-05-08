@@ -479,31 +479,20 @@ export default function GSPRMappingPanel({
         };
       });
       
-      // Make OpenAI API call directly
-      const response = await fetch('/api/cer/ai-gspr-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Use the cerApiService to call the AI analysis endpoint
+      setAiAnalysisProgress(50);
+      const result = await cerApiService.analyzeGsprWithAI({
+        deviceName,
+        gspr: {
+          id: gspr.id,
+          title: gspr.title,
+          description: gspr.description
         },
-        body: JSON.stringify({
-          deviceName,
-          gspr: {
-            id: gspr.id,
-            title: gspr.title,
-            description: gspr.description
-          },
-          evidenceContext,
-          currentAnalysis: mapping[gsprId]
-        }),
+        evidenceContext,
+        currentAnalysis: mapping[gsprId]
       });
       
-      setAiAnalysisProgress(70);
-      
-      if (!response.ok) {
-        throw new Error('Failed to generate AI analysis');
-      }
-      
-      const result = await response.json();
+      setAiAnalysisProgress(80);
       
       // Update the mapping with AI-generated content
       setMapping(prevMapping => ({
@@ -520,7 +509,9 @@ export default function GSPRMappingPanel({
           gapImpact: result.gapImpact || prevMapping[gsprId].gapImpact,
           nextSteps: result.nextSteps || prevMapping[gsprId].nextSteps,
           complianceStatus: result.complianceStatus || prevMapping[gsprId].complianceStatus,
-          risk: result.risk || prevMapping[gsprId].risk
+          risk: result.risk || prevMapping[gsprId].risk,
+          analysisByGpt4o: true,
+          analysisDate: result.analysisDate || new Date().toISOString()
         }
       }));
       
@@ -530,7 +521,7 @@ export default function GSPRMappingPanel({
       // Notify user that AI analysis is complete
       toast({
         title: "AI Analysis Complete",
-        description: `GSPR ${gsprId} analysis completed successfully.`,
+        description: `GSPR ${gsprId} analysis completed successfully with GPT-4o.`,
         variant: "success",
         duration: 5000
       });
