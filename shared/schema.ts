@@ -552,3 +552,196 @@ export type CerWorkflow = typeof cerWorkflows.$inferSelect;
 export type InsertCerWorkflow = z.infer<typeof insertCerWorkflowSchema>;
 export type CerExport = typeof cerExports.$inferSelect;
 export type InsertCerExport = z.infer<typeof insertCerExportSchema>;
+
+// ----------------------------------------------------------------------------
+// Multi-client CER Project Management Schema
+// ----------------------------------------------------------------------------
+
+// Client organizations table
+export const clients = pgTable('clients', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  contactName: text('contact_name'),
+  contactEmail: text('contact_email'),
+  phone: text('phone'),
+  address: text('address'),
+  logo: text('logo_url'),
+  status: text('status').default('active'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// CER projects table
+export const cerProjects = pgTable('cer_projects', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  clientId: integer('client_id').notNull().references(() => clients.id),
+  deviceName: text('device_name').notNull(),
+  deviceDescription: text('device_description'),
+  deviceClass: text('device_class'),
+  status: text('status').notNull().default('draft'),
+  progress: integer('progress').default(0),
+  regulatoryFrameworks: text('regulatory_frameworks').array(),
+  dueDate: timestamp('due_date'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  assignedUsers: integer('assigned_users').array(),
+  priority: text('priority').default('medium'),
+  tags: text('tags').array(),
+  templateId: text('template_id')
+});
+
+// CER project documents
+export const cerProjectDocuments = pgTable('cer_project_documents', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id').notNull().references(() => cerProjects.id),
+  cerReportId: uuid('cer_report_id').references(() => cerReports.id),
+  documentType: text('document_type').notNull(), // e.g., 'cer', 'literature', 'testing', etc.
+  title: text('title').notNull(),
+  version: text('version').default('1.0'),
+  status: text('status').default('draft'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  createdBy: integer('created_by').references(() => users.id),
+  notes: text('notes'),
+  documentId: uuid('document_id').references(() => documents.id),
+}, (table) => {
+  return {
+    projectDocument: unique().on(table.projectId, table.documentType, table.version)
+  }
+});
+
+// Project activities log
+export const projectActivities = pgTable('project_activities', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id').notNull().references(() => cerProjects.id),
+  userId: integer('user_id').references(() => users.id),
+  activityType: text('activity_type').notNull(), // e.g., 'create', 'update', 'review', etc.
+  description: text('description').notNull(),
+  metadata: jsonb('metadata').default({}),
+  timestamp: timestamp('timestamp').defaultNow()
+});
+
+// Project timeline milestones
+export const projectMilestones = pgTable('project_milestones', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id').notNull().references(() => cerProjects.id),
+  title: text('title').notNull(),
+  description: text('description'),
+  dueDate: timestamp('due_date'),
+  completedDate: timestamp('completed_date'),
+  status: text('status').default('pending'),
+  assignedTo: integer('assigned_to').references(() => users.id),
+  notifyBefore: integer('notify_before'), // days before due date to send notification
+  priority: text('priority').default('medium'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Client user permissions
+export const clientUserPermissions = pgTable('client_user_permissions', {
+  id: serial('id').primaryKey(),
+  clientId: integer('client_id').notNull().references(() => clients.id),
+  userId: integer('user_id').notNull().references(() => users.id),
+  permission: text('permission').notNull(), // e.g., 'admin', 'editor', 'viewer'
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+}, (table) => {
+  return {
+    userClientPermission: unique().on(table.clientId, table.userId)
+  }
+});
+
+// Set up relations
+export const clientsRelations = relations(clients, ({ many }) => ({
+  projects: many(cerProjects),
+  permissions: many(clientUserPermissions)
+}));
+
+export const cerProjectsRelations = relations(cerProjects, ({ one, many }) => ({
+  client: one(clients, {
+    fields: [cerProjects.clientId],
+    references: [clients.id]
+  }),
+  documents: many(cerProjectDocuments),
+  activities: many(projectActivities),
+  milestones: many(projectMilestones)
+}));
+
+export const cerProjectDocumentsRelations = relations(cerProjectDocuments, ({ one }) => ({
+  project: one(cerProjects, {
+    fields: [cerProjectDocuments.projectId],
+    references: [cerProjects.id]
+  }),
+  cerReport: one(cerReports, {
+    fields: [cerProjectDocuments.cerReportId],
+    references: [cerReports.id]
+  }),
+  document: one(documents, {
+    fields: [cerProjectDocuments.documentId],
+    references: [documents.id]
+  }),
+  creator: one(users, {
+    fields: [cerProjectDocuments.createdBy],
+    references: [users.id]
+  })
+}));
+
+export const projectActivitiesRelations = relations(projectActivities, ({ one }) => ({
+  project: one(cerProjects, {
+    fields: [projectActivities.projectId],
+    references: [cerProjects.id]
+  }),
+  user: one(users, {
+    fields: [projectActivities.userId],
+    references: [users.id]
+  })
+}));
+
+export const projectMilestonesRelations = relations(projectMilestones, ({ one }) => ({
+  project: one(cerProjects, {
+    fields: [projectMilestones.projectId],
+    references: [cerProjects.id]
+  }),
+  assignee: one(users, {
+    fields: [projectMilestones.assignedTo],
+    references: [users.id]
+  })
+}));
+
+export const clientUserPermissionsRelations = relations(clientUserPermissions, ({ one }) => ({
+  client: one(clients, {
+    fields: [clientUserPermissions.clientId],
+    references: [clients.id]
+  }),
+  user: one(users, {
+    fields: [clientUserPermissions.userId],
+    references: [users.id]
+  })
+}));
+
+// Create insert schemas for the new tables
+export const insertClientSchema = createInsertSchema(clients);
+export type InsertClient = z.infer<typeof insertClientSchema>;
+export type Client = typeof clients.$inferSelect;
+
+export const insertCerProjectSchema = createInsertSchema(cerProjects);
+export type InsertCerProject = z.infer<typeof insertCerProjectSchema>;
+export type CerProject = typeof cerProjects.$inferSelect;
+
+export const insertCerProjectDocumentSchema = createInsertSchema(cerProjectDocuments);
+export type InsertCerProjectDocument = z.infer<typeof insertCerProjectDocumentSchema>;
+export type CerProjectDocument = typeof cerProjectDocuments.$inferSelect;
+
+export const insertProjectActivitySchema = createInsertSchema(projectActivities);
+export type InsertProjectActivity = z.infer<typeof insertProjectActivitySchema>;
+export type ProjectActivity = typeof projectActivities.$inferSelect;
+
+export const insertProjectMilestoneSchema = createInsertSchema(projectMilestones);
+export type InsertProjectMilestone = z.infer<typeof insertProjectMilestoneSchema>;
+export type ProjectMilestone = typeof projectMilestones.$inferSelect;
+
+export const insertClientUserPermissionSchema = createInsertSchema(clientUserPermissions);
+export type InsertClientUserPermission = z.infer<typeof insertClientUserPermissionSchema>;
+export type ClientUserPermission = typeof clientUserPermissions.$inferSelect;
