@@ -361,7 +361,15 @@ The output should be a complete, well-structured Section E.4 ready for inclusion
  * Route: POST /api/cer/equivalence/data-access-check
  */
 router.post('/data-access-check', async (req, res) => {
-  const { manufacturerName, equivalentDeviceInfo, accessType } = req.body;
+  const { 
+    manufacturerName, 
+    equivalentDeviceInfo, 
+    accessType,
+    accessDetails,
+    contractReference,
+    thirdPartyService,
+    accessDomains
+  } = req.body;
 
   // Validate essential parameters
   if (!manufacturerName || !equivalentDeviceInfo || !accessType) {
@@ -387,6 +395,15 @@ Manufacturer: ${manufacturerName}
 Equivalent Device: ${equivalentDeviceInfo.name || 'Not specified'}
 ${equivalentDeviceInfo.manufacturer ? `Manufacturer of Equivalent Device: ${equivalentDeviceInfo.manufacturer}` : ''}
 Claimed Data Access Type: ${accessType}
+${accessType === 'direct_contract' && contractReference ? `Contract Reference: ${contractReference}` : ''}
+${accessType === 'indirect_access' && thirdPartyService ? `Third-Party Service: ${thirdPartyService}` : ''}
+${accessDetails ? `Additional Details: ${accessDetails}` : ''}
+
+EU MDR Compliance Areas:
+- Technical Data Access: ${accessDomains?.technical ? 'Claimed' : 'Not claimed'}
+- Biological Data Access: ${accessDomains?.biological ? 'Claimed' : 'Not claimed'}
+- Clinical Data Access: ${accessDomains?.clinical ? 'Claimed' : 'Not claimed'}
+- Documentation Available for Regulatory Review: ${accessDomains?.documented ? 'Yes' : 'No'}
 
 Based on EU MDR Article 61(5) and MEDDEV 2.7/1 Rev 4, assess:
 
@@ -418,15 +435,38 @@ Provide a structured assessment focused on regulatory compliance. Be thorough an
     // Get the generated content
     const generatedContent = response.choices[0].message.content;
 
-    // Parse content to determine compliance status
+    // Parse content to determine compliance status based on both AI assessment and checklist
     let complianceStatus = 'uncertain';
-    if (generatedContent.toLowerCase().includes('compliant') || 
-        generatedContent.toLowerCase().includes('sufficient') ||
-        generatedContent.toLowerCase().includes('adequate')) {
-      complianceStatus = 'compliant';
-    } else if (generatedContent.toLowerCase().includes('non-compliant') || 
-              generatedContent.toLowerCase().includes('insufficient') ||
-              generatedContent.toLowerCase().includes('inadequate')) {
+    
+    // Check if we have necessary data domains covered
+    const hasMinimumDataAccess = accessDomains?.technical || accessDomains?.biological || accessDomains?.clinical;
+    const hasDocumentation = accessDomains?.documented;
+    
+    // Essential for compliance: at least one data domain + documentation
+    if (hasMinimumDataAccess && hasDocumentation) {
+      // For direct contracts, we need a contract reference
+      if (accessType === 'direct_contract' && !contractReference) {
+        complianceStatus = 'non-compliant';
+      }
+      // For indirect access, we need a third-party service
+      else if (accessType === 'indirect_access' && !thirdPartyService) {
+        complianceStatus = 'non-compliant';
+      }
+      // If those check out, analyze the AI-generated content
+      else if (generatedContent.toLowerCase().includes('compliant') || 
+          generatedContent.toLowerCase().includes('sufficient') ||
+          generatedContent.toLowerCase().includes('adequate')) {
+        complianceStatus = 'compliant';
+      } else if (generatedContent.toLowerCase().includes('non-compliant') || 
+                generatedContent.toLowerCase().includes('insufficient') ||
+                generatedContent.toLowerCase().includes('inadequate')) {
+        complianceStatus = 'non-compliant';
+      } else {
+        // Default to compliant if checklist is complete but no clear indication in text
+        complianceStatus = 'compliant';
+      }
+    } else {
+      // Missing essential MDR Article 61(5) requirements
       complianceStatus = 'non-compliant';
     }
 
