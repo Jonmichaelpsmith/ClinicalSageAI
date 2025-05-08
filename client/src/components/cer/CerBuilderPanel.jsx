@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { cerApiService } from '@/services/CerAPIService';
+import { checkSectionCtqFactors } from '@/services/CerQualityGatingService';
 import LiteratureSearchPanel from './LiteratureSearchPanel';
 import ComplianceScorePanel from './ComplianceScorePanel';
 import EvidenceGapDetector from './EvidenceGapDetector';
@@ -28,8 +29,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, FileText, BookOpen, FileDown, Plus, Trash2, Lightbulb, Search } from 'lucide-react';
+import { Loader2, FileText, BookOpen, FileDown, Plus, Trash2, Lightbulb, Search, AlertTriangle, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useExportFAERS } from '../../hooks/useExportFAERS';
 import CerPreviewPanel from './CerPreviewPanel';
 
@@ -66,7 +68,18 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     { id: 'conclusion', label: 'Conclusion' },
   ];
   
-  // Generate section using AI
+  // State to track quality gating checks
+  const [qualityStatus, setQualityStatus] = useState(null);
+  const [isCheckingQuality, setIsCheckingQuality] = useState(false);
+  const [isQualityOverridden, setIsQualityOverridden] = useState(false);
+  
+  // Check CtQ factors when section type changes
+  useEffect(() => {
+    setQualityStatus(null);
+    setIsQualityOverridden(false);
+  }, [selectedSectionType]);
+  
+  // Generate section using AI with CtQ factor gating
   const generateSection = async () => {
     if (!sectionContext) {
       toast({
@@ -77,11 +90,33 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       return;
     }
     
-    setIsGenerating(true);
-    console.log('EMERGENCY FIX: Generating section', selectedSectionType, sectionContext.substring(0, 50));
+    // First check if quality requirements are satisfied
+    setIsCheckingQuality(true);
     
     try {
-      // Fix: Changed from section to sectionType to match API service expectation
+      // Check CtQ factors for this section type
+      const qualityCheck = await checkSectionCtqFactors(selectedSectionType);
+      setQualityStatus(qualityCheck);
+      
+      // If cannot proceed due to high-risk factors, show error and abort
+      if (!qualityCheck.canProceed && !isQualityOverridden) {
+        toast({
+          title: 'Quality Requirements Not Met',
+          description: 'Critical quality factors must be satisfied before generating this section',
+          variant: 'destructive',
+        });
+        setIsCheckingQuality(false);
+        return;
+      }
+      
+      // Proceed with section generation
+      setIsGenerating(true);
+      
+      // If medium-risk factors are not satisfied but user is proceeding, log warning
+      if (qualityCheck.mediumRiskBlockers > 0) {
+        console.warn('Proceeding with section generation despite medium-risk quality factors not being satisfied');
+      }
+      
       const response = await fetch('/api/cer/generate-section', {
         method: 'POST',
         headers: {
@@ -99,7 +134,6 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       }
       
       const data = await response.json();
-      console.log('EMERGENCY FIX: Section generated successfully', data);
       
       // If response includes a section property, use that
       if (data.section) {
@@ -113,7 +147,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
         description: `${getSelectedSectionLabel()} section successfully generated.`,
       });
     } catch (error) {
-      console.error('Error generating section:', error);
+      console.error('Error in section generation process:', error);
       toast({
         title: 'Generation failed',
         description: error.message || 'Failed to generate section. Please try again.',
@@ -121,6 +155,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       });
     } finally {
       setIsGenerating(false);
+      setIsCheckingQuality(false);
     }
   };
   
@@ -131,6 +166,28 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     // Check if we need to handle additional metadata from AI generation
     const content = generatedSection.content;
     const model = generatedSection.model || 'gpt-4o';
+    
+    // Determine quality status indicators for metadata
+    const qualityMetadata = qualityStatus ? {
+      qualityRequirementsMet: qualityStatus.canProceed || isQualityOverridden,
+      qualityOverridden: isQualityOverridden,
+      highRiskFactors: qualityStatus.highRiskBlockers > 0,
+      mediumRiskFactors: qualityStatus.mediumRiskBlockers > 0,
+      lowRiskFactors: qualityStatus.lowRiskBlockers > 0,
+      ctqFactors: qualityStatus.ctqFactors ? qualityStatus.ctqFactors.map(factor => ({
+        id: factor.id,
+        name: factor.name,
+        riskLevel: factor.riskLevel,
+        status: factor.status
+      })) : []
+    } : {
+      qualityRequirementsMet: true, // Assume requirements met if no check performed
+      qualityOverridden: false,
+      highRiskFactors: false,
+      mediumRiskFactors: false,
+      lowRiskFactors: false,
+      ctqFactors: []
+    };
     
     const newSection = {
       id: `section-${Date.now()}`,
@@ -143,7 +200,8 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
         generatedBy: model,
         contextLength: sectionContext.length,
         regulatoryStandard: 'EU MDR 2017/745',
-        complianceChecked: false
+        complianceChecked: false,
+        ...qualityMetadata // Include quality metadata
       }
     };
     
@@ -159,15 +217,34 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     setCerSections(updatedSections);
     onSectionsChange(updatedSections);
     
-    // Show toast with additional model info if available
+    // Show toast with quality status if applicable
+    let toastVariant = 'default';
+    let toastDescription = `${newSection.title} added to report${model ? ` (generated with ${model})` : ''}.`;
+    
+    if (qualityStatus) {
+      if (isQualityOverridden) {
+        toastVariant = 'warning';
+        toastDescription += ' Quality requirements overridden - this may affect regulatory compliance.';
+      } else if (qualityStatus.mediumRiskBlockers > 0) {
+        toastVariant = 'warning';
+        toastDescription += ' Some medium-risk quality factors are pending.';
+      } else if (qualityStatus.highRiskBlockers === 0) {
+        toastVariant = 'success';
+        toastDescription += ' All quality requirements satisfied.';
+      }
+    }
+    
     toast({
       title: 'Section added',
-      description: `${newSection.title} added to report${model ? ` (generated with ${model})` : ''}.`,
+      description: toastDescription,
+      variant: toastVariant
     });
     
-    // Clear generated section and context for a fresh start
+    // Clear generated section, context, and quality status for a fresh start
     setGeneratedSection(null);
     setSectionContext('');
+    setQualityStatus(null);
+    setIsQualityOverridden(false);
   };
   
   // Get the human-readable label for the selected section type
@@ -252,16 +329,101 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   </p>
                 </div>
                 
-                <div className="flex justify-end">
+                {/* Quality Status Display */}
+                {qualityStatus && (
+                  <Alert 
+                    className={cn(
+                      "border py-3",
+                      qualityStatus.severity === 'error' ? "border-red-500 bg-red-50 text-red-800" : 
+                      qualityStatus.severity === 'warning' ? "border-amber-500 bg-amber-50 text-amber-800" : 
+                      "border-blue-500 bg-blue-50 text-blue-800"
+                    )}
+                  >
+                    {qualityStatus.severity === 'error' && <ShieldAlert className="h-4 w-4 mr-2" />}
+                    {qualityStatus.severity === 'warning' && <AlertTriangle className="h-4 w-4 mr-2" />}
+                    {qualityStatus.severity === 'info' && <CheckCircle2 className="h-4 w-4 mr-2" />}
+                    <AlertTitle className="text-sm font-semibold">
+                      {qualityStatus.severity === 'error' ? 'Quality Requirements Not Met' : 
+                       qualityStatus.severity === 'warning' ? 'Quality Warning' : 
+                       'Quality Check Passed'}
+                    </AlertTitle>
+                    <AlertDescription className="text-xs mt-1">
+                      {qualityStatus.message}
+                      
+                      {/* Show override option for high-risk blockers */}
+                      {qualityStatus.highRiskBlockers > 0 && (
+                        <div className="mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsQualityOverridden(true)}
+                            className="text-xs bg-white hover:bg-red-50 border-red-300 text-red-700"
+                          >
+                            Override Quality Gate (Not Recommended)
+                          </Button>
+                        </div>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                {/* Check Quality button or Generate Section button */}
+                <div className="flex justify-end space-x-2">
+                  {sectionContext && !qualityStatus && (
+                    <Button 
+                      onClick={async () => {
+                        setIsCheckingQuality(true);
+                        try {
+                          const check = await checkSectionCtqFactors(selectedSectionType);
+                          setQualityStatus(check);
+                        } catch (error) {
+                          console.error('Error checking quality requirements:', error);
+                          toast({
+                            title: 'Quality Check Failed',
+                            description: 'Unable to verify quality requirements. Proceed with caution.',
+                            variant: 'destructive',
+                          });
+                        } finally {
+                          setIsCheckingQuality(false);
+                        }
+                      }}
+                      disabled={isCheckingQuality}
+                      variant="outline"
+                      className="border-[#0F6CBD] text-[#0F6CBD]"
+                    >
+                      {isCheckingQuality ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <span>Checking...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShieldAlert className="mr-2 h-4 w-4" />
+                          <span>Check Quality Requirements</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  
                   <Button 
                     onClick={generateSection} 
-                    disabled={isGenerating || !sectionContext}
-                    className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+                    disabled={isGenerating || !sectionContext || 
+                             (isCheckingQuality || 
+                              (qualityStatus && !qualityStatus.canProceed && !isQualityOverridden))}
+                    className={cn(
+                      "text-white",
+                      isQualityOverridden ? "bg-red-600 hover:bg-red-700" : "bg-[#0F6CBD] hover:bg-[#115EA3]"
+                    )}
                   >
                     {isGenerating ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         <span>Generating...</span>
+                      </>
+                    ) : isQualityOverridden ? (
+                      <>
+                        <ShieldAlert className="mr-2 h-4 w-4" />
+                        <span>Generate With Override</span>
                       </>
                     ) : (
                       <>
