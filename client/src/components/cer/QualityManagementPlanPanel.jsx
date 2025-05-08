@@ -5,13 +5,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, AlertTriangle, ArrowRight, BarChart3, Check, CheckCircle, Clock, Clipboard, ClipboardCheck, Download, Edit, FilePlus, FileCheck, FileText, LinkIcon, Plus, Save, Shield, Trash2, X, XCircle } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { AlertCircle, AlertTriangle, ArrowRight, BarChart3, Check, CheckCircle, Clock, Clipboard, ClipboardCheck, Download, Edit, FilePlus, FileCheck, FileText, LinkIcon, Plus, RefreshCw, Save, Shield, Trash2, X, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CerTooltipWrapper from './CerTooltipWrapper';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { cerApiService } from '@/services/CerAPIService';
+import { getComplianceMetrics } from '@/services/CerComplianceService';
+import ComplianceDashboardPanel from './ComplianceDashboardPanel';
+import ObjectiveComplianceCard from './ObjectiveComplianceCard';
 
 // ICH E6(R3) Compliant Quality Management Plan Component
 const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }) => {
@@ -857,6 +861,35 @@ _Document Generated: ${new Date().toLocaleDateString()}_
     );
   };
 
+  // State for compliance metrics
+  const [complianceMetrics, setComplianceMetrics] = useState(null);
+  const [isLoadingCompliance, setIsLoadingCompliance] = useState(false);
+  
+  // Fetch compliance metrics
+  const fetchComplianceMetrics = async () => {
+    try {
+      setIsLoadingCompliance(true);
+      const data = await getComplianceMetrics('current', 'mdr');
+      setComplianceMetrics(data);
+    } catch (error) {
+      console.error('Error fetching compliance metrics:', error);
+      toast({
+        title: 'Error Loading Compliance Metrics',
+        description: error.message || 'Failed to load compliance metrics',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoadingCompliance(false);
+    }
+  };
+  
+  // Load compliance metrics on component mount
+  useEffect(() => {
+    if (objectives.length > 0) {
+      fetchComplianceMetrics();
+    }
+  }, [objectives]);
+  
   // Calculate metrics for dashboard with compliance engine integration
   const metrics = useMemo(() => {
     const totalObjectives = objectives.length;
@@ -918,6 +951,22 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                     (sectionCoveragePercentage * 0.3)))
       : 0;
     
+    // Get compliance status counts from compliance engine metrics
+    let complianceStatusCounts = {
+      excellent: 0,
+      good: 0,
+      needsImprovement: 0,
+      criticalIssues: 0,
+      notEvaluated: totalObjectives
+    };
+    
+    if (complianceMetrics && complianceMetrics.complianceBreakdown) {
+      complianceStatusCounts = complianceMetrics.complianceBreakdown;
+    }
+    
+    // Include compliance metrics
+    const complianceScore = complianceMetrics ? complianceMetrics.overallComplianceScore : null;
+    
     return {
       totalObjectives,
       completedObjectives,
@@ -936,9 +985,23 @@ _Document Generated: ${new Date().toLocaleDateString()}_
       sectionCoveragePercentage,
       totalSections: requiredCERSections.length,
       scopeCoveragePercentage,
-      coveredSections
+      coveredSections,
+      // Compliance metrics from engine
+      complianceScore,
+      complianceStatusCounts,
+      // Include object mapping for status counts
+      objectivesByStatus: {
+        complete: completedObjectives,
+        inProgress: inProgressObjectives,
+        planned: totalObjectives - completedObjectives - inProgressObjectives - blockedObjectives,
+        blocked: blockedObjectives
+      },
+      // Overall completion for API compatibility
+      overallCompletion: objectivesCompletionPercentage,
+      // Section coverage for API compatibility
+      sectionCoverage: sectionCoveragePercentage
     };
-  }, [objectives, ctqFactors]);
+  }, [objectives, ctqFactors, complianceMetrics]);
 
   return (
     <div className="bg-[#F9F9F9] p-4">
