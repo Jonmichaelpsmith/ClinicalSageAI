@@ -6,10 +6,25 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Info, FileCheck, AlertCircle, Search, CheckCircle, FileText, Plus } from 'lucide-react';
+import { 
+  Info, 
+  FileCheck, 
+  AlertCircle, 
+  Search, 
+  CheckCircle, 
+  FileText, 
+  Plus, 
+  Sparkles, 
+  Loader2, 
+  RefreshCw, 
+  Shield 
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from '@/hooks/use-toast';
 import CerTooltipWrapper from './CerTooltipWrapper';
 
 // Evidence source types
@@ -85,6 +100,10 @@ export default function GSPRMappingPanel({
   const [evidenceSearchTerm, setEvidenceSearchTerm] = useState('');
   const [availableEvidence, setAvailableEvidence] = useState([]);
   const [filteredEvidence, setFilteredEvidence] = useState([]);
+  const [isGeneratingAIAnalysis, setIsGeneratingAIAnalysis] = useState(false);
+  const [aiAnalysisProgress, setAiAnalysisProgress] = useState(0);
+  const [aiAnalysisTarget, setAiAnalysisTarget] = useState(null);
+  const { toast } = useToast();
   
   // Initialize or update the mapping when selectedGSPRs change
   useEffect(() => {
@@ -425,6 +444,113 @@ export default function GSPRMappingPanel({
     setChanges(false);
   };
   
+  // GPT-4o powered GSPR analysis function
+  const generateAIAnalysis = async (gsprId) => {
+    try {
+      const gspr = GSPRs.find(g => g.id === gsprId);
+      if (!gspr) return;
+      
+      setIsGeneratingAIAnalysis(true);
+      setAiAnalysisTarget(gsprId);
+      setAiAnalysisProgress(10);
+      
+      // Notify user that AI analysis has started
+      toast({
+        title: "GPT-4o Analysis Started",
+        description: `Analyzing GSPR ${gsprId} using advanced AI to ensure regulatory compliance.`,
+        variant: "default",
+        duration: 5000
+      });
+      
+      // Prepare context data for the AI
+      const evidenceSources = mapping[gsprId].evidenceSources;
+      
+      // Prepare evidence context
+      setAiAnalysisProgress(30);
+      const evidenceContext = evidenceSources.map(evidence => {
+        return {
+          type: evidence.type,
+          title: evidence.title,
+          description: evidence.description,
+          date: evidence.date,
+          severity: evidence.severity,
+          data: evidence.data
+        };
+      });
+      
+      // Make OpenAI API call directly
+      const response = await fetch('/api/cer/ai-gspr-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          deviceName,
+          gspr: {
+            id: gspr.id,
+            title: gspr.title,
+            description: gspr.description
+          },
+          evidenceContext,
+          currentAnalysis: mapping[gsprId]
+        }),
+      });
+      
+      setAiAnalysisProgress(70);
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate AI analysis');
+      }
+      
+      const result = await response.json();
+      
+      // Update the mapping with AI-generated content
+      setMapping(prevMapping => ({
+        ...prevMapping,
+        [gsprId]: {
+          ...prevMapping[gsprId],
+          regulatoryInterpretation: result.regulatoryInterpretation || prevMapping[gsprId].regulatoryInterpretation,
+          acceptanceCriteria: result.acceptanceCriteria || prevMapping[gsprId].acceptanceCriteria,
+          complianceStatement: result.complianceStatement || prevMapping[gsprId].complianceStatement,
+          clinicalRelevance: result.clinicalRelevance || prevMapping[gsprId].clinicalRelevance,
+          evidenceStrength: result.evidenceStrength || prevMapping[gsprId].evidenceStrength,
+          gapsIdentified: result.gapsIdentified !== undefined ? result.gapsIdentified : prevMapping[gsprId].gapsIdentified,
+          gapStatement: result.gapStatement || prevMapping[gsprId].gapStatement,
+          gapImpact: result.gapImpact || prevMapping[gsprId].gapImpact,
+          nextSteps: result.nextSteps || prevMapping[gsprId].nextSteps,
+          complianceStatus: result.complianceStatus || prevMapping[gsprId].complianceStatus,
+          risk: result.risk || prevMapping[gsprId].risk
+        }
+      }));
+      
+      setAiAnalysisProgress(100);
+      setChanges(true);
+      
+      // Notify user that AI analysis is complete
+      toast({
+        title: "AI Analysis Complete",
+        description: `GSPR ${gsprId} analysis completed successfully.`,
+        variant: "success",
+        duration: 5000
+      });
+      
+    } catch (error) {
+      console.error('Error in AI GSPR analysis:', error);
+      toast({
+        title: "AI Analysis Error",
+        description: "Failed to complete the analysis. Please try again or complete manually.",
+        variant: "destructive",
+        duration: 5000
+      });
+    } finally {
+      setTimeout(() => {
+        setIsGeneratingAIAnalysis(false);
+        setAiAnalysisTarget(null);
+        setAiAnalysisProgress(0);
+      }, 1000);
+    }
+  };
+  
   // Generate CER section content from the mapping data
   const generateGsprEvaluationContent = (mappingData) => {
     const content = {
@@ -659,6 +785,46 @@ Compliance is determined based on evidence strength, quality, and clinical relev
                          mapping[activeGspr]?.complianceStatus === 'partial' ? 'Partial' : 'Pending'}
                       </span>
                     </Badge>
+                  </div>
+                  
+                  {/* AI Analysis Button and Progress */}
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center">
+                        <Shield className="h-4 w-4 text-[#0F6CBD] mr-2" />
+                        <span className="text-sm font-medium text-[#323130]">AI-Assisted Regulatory Analysis</span>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 border-[#0F6CBD] text-[#0F6CBD] hover:bg-[#EFF6FC]"
+                        onClick={() => generateAIAnalysis(activeGspr)}
+                        disabled={isGeneratingAIAnalysis}
+                      >
+                        {isGeneratingAIAnalysis && aiAnalysisTarget === activeGspr ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Analyzing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4" />
+                            <span>Generate with GPT-4o</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {isGeneratingAIAnalysis && aiAnalysisTarget === activeGspr && (
+                      <div>
+                        <Progress value={aiAnalysisProgress} className="h-2 mb-1" />
+                        <p className="text-xs text-[#605E5C] text-right">
+                          {aiAnalysisProgress < 100
+                            ? "GPT-4o is analyzing evidence and generating regulatory insights..."
+                            : "Analysis complete!"}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
