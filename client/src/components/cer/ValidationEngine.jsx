@@ -17,6 +17,7 @@ import React, { useState, useEffect } from 'react';
 import { cerApiService } from '@/services/CerAPIService';
 import { cerValidationService } from '@/services/CerValidationService';
 import { cerAiValidationService } from '@/services/CerAiValidationService';
+import axios from 'axios';
 import CerValidationPanel from './CerValidationPanel';
 import {
   Tabs,
@@ -97,6 +98,9 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
   const [cerSections, setCerSections] = useState([]);
   const [validationMode, setValidationMode] = useState('standard'); // 'standard' or 'enhanced'
   const [enhancedValidationResults, setEnhancedValidationResults] = useState(null);
+  const [qmpAssessment, setQmpAssessment] = useState(null);
+  const [isLoadingQmpData, setIsLoadingQmpData] = useState(false);
+  const [qmpIntegrationEnabled, setQmpIntegrationEnabled] = useState(true); // Default to enabled
   const { toast } = useToast();
   
   // Update cerSections when sections prop changes
@@ -143,6 +147,22 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
     consistency: {
       name: 'Internal Consistency',
       icon: <FileCheck className="h-5 w-5" />
+    },
+    qms_quality: {
+      name: 'QMS Integration',
+      icon: <Gauge className="h-5 w-5" />
+    },
+    risk_assessment: {
+      name: 'Risk Assessment',
+      icon: <AlertTriangle className="h-5 w-5" />
+    },
+    data_integrity: {
+      name: 'Data Integrity',
+      icon: <Braces className="h-5 w-5" />
+    },
+    ich_compliance: {
+      name: 'ICH E6(R3) Compliance',
+      icon: <Sparkles className="h-5 w-5" />
     }
   };
 
@@ -161,6 +181,34 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
       runValidation();
     }
   }, [documentId, selectedFramework]);
+  
+  // Fetch QMP data for validation integration
+  const fetchQmpAssessment = async () => {
+    try {
+      setIsLoadingQmpData(true);
+      
+      // Fetch QMP data from the API
+      const response = await axios.get(`/api/qmp?documentId=${documentId}`);
+      
+      if (response.data && response.data.success) {
+        setQmpAssessment(response.data.data);
+        return response.data.data;
+      } else {
+        console.warn('QMP data not available:', response.data.message);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching QMP data:', error);
+      toast({
+        title: 'QMP Integration Warning',
+        description: 'Unable to fetch Quality Management Plan data. Some validation checks may be limited.',
+        variant: 'warning'
+      });
+      return null;
+    } finally {
+      setIsLoadingQmpData(false);
+    }
+  };
 
   // Run validation with selected framework
   const runValidation = async () => {
@@ -169,6 +217,12 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
     
     try {
       let data;
+      let qmpData = null;
+      
+      // Fetch QMP data if integration is enabled
+      if (qmpIntegrationEnabled) {
+        qmpData = await fetchQmpAssessment();
+      }
       
       // Choose validation method based on mode
       if (validationMode === 'enhanced') {
@@ -179,6 +233,7 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
         const cerDocument = {
           id: documentId,
           sections: cerSections,
+          qmpData: qmpData, // Include QMP data for ICH E6(R3) risk-based quality assessment
           // Add additional document metadata as available
         };
         
@@ -190,11 +245,46 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
       } else {
         // Standard validation
         console.log('Running standard validation...');
+        
+        // Include QMP data in the validation request if available
+        const additionalParams = qmpData ? { qmpData } : {};
+        
         data = await cerApiService.validateCERDocument(
           documentId, 
           selectedFramework,
-          cerSections // Send document sections for AI validation
+          cerSections, // Send document sections for AI validation
+          additionalParams
         );
+      }
+      
+      // Add Quality Management Plan integration data if enabled
+      if (qmpIntegrationEnabled && qmpData) {
+        // Add QMP validation category if not already present
+        if (!data.categories.qms_quality) {
+          data.categories.qms_quality = { passed: 0, failed: 0, total: 0 };
+        }
+        
+        // Enhance validation results with QMP data
+        const qmpIssues = await processQmpRisks(qmpData, data);
+        
+        // Add QMP-based validation issues to results
+        data.issues = [...data.issues, ...qmpIssues];
+        
+        // Update category counts
+        data.categories.qms_quality.total = qmpIssues.length;
+        data.categories.qms_quality.failed = qmpIssues.filter(issue => issue.severity === 'critical' || issue.severity === 'major').length;
+        data.categories.qms_quality.passed = qmpIssues.filter(issue => issue.severity === 'minor' || issue.status === 'passed').length;
+        
+        // Update total issues count
+        data.summary.totalIssues += qmpIssues.filter(issue => issue.status !== 'passed').length;
+        data.summary.criticalIssues += qmpIssues.filter(issue => issue.severity === 'critical').length;
+        data.summary.majorIssues += qmpIssues.filter(issue => issue.severity === 'major').length;
+        data.summary.minorIssues += qmpIssues.filter(issue => issue.severity === 'minor').length;
+        
+        // Update compliance score (basic calculation)
+        const totalChecks = Object.values(data.categories).reduce((sum, cat) => sum + cat.total, 0);
+        const passedChecks = Object.values(data.categories).reduce((sum, cat) => sum + cat.passed, 0);
+        data.summary.complianceScore = Math.round((passedChecks / totalChecks) * 100) || 0;
       }
       
       setValidationData(data);
@@ -203,10 +293,16 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
         onValidationComplete(data);
       }
       
-      // Display toast based on validation results and method
-      const validationMethod = validationMode === 'enhanced' ? 'Enhanced GPT-4o AI' : 
+      // Determine validation method for message
+      let validationMethod = validationMode === 'enhanced' ? 'Enhanced GPT-4o AI' : 
         (data.validationMethod === 'ai' ? 'GPT-4o AI-Powered' : 'Standard');
       
+      // Add QMP tag if QMP integration is enabled
+      if (qmpIntegrationEnabled && qmpData) {
+        validationMethod = `${validationMethod} with ICH E6(R3) QMS`;
+      }
+      
+      // Display toast based on validation results
       if (data.summary.criticalIssues > 0) {
         toast({
           title: `${validationMethod} Validation: ${data.summary.criticalIssues} Critical Issues Found`,
@@ -238,6 +334,75 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
     } finally {
       setLoading(false);
     }
+  };
+  
+  // Process QMP risks and convert them to validation issues
+  const processQmpRisks = async (qmpData, validationData) => {
+    if (!qmpData || !qmpData.riskAssessments || qmpData.riskAssessments.length === 0) {
+      return [];
+    }
+    
+    // Map QMP risk levels to validation severities
+    const riskToSeverity = {
+      high: 'critical',
+      medium: 'major',
+      low: 'minor'
+    };
+    
+    // Convert QMP risks to validation issues
+    const qmpIssues = qmpData.riskAssessments.map(risk => {
+      // Only create issues for risks that aren't adequately controlled
+      if (risk.mitigated || risk.controlStatus === 'complete') {
+        return {
+          id: `qmp-${risk.id}`,
+          title: `QMS: ${risk.title}`,
+          description: `Risk adequately controlled through: ${risk.mitigationStrategy || 'Appropriate controls'}`,
+          category: 'qms_quality',
+          severity: 'minor',
+          status: 'passed',
+          section: risk.applicableSection || 'General',
+          impacts: risk.impactedProcess ? [risk.impactedProcess] : [],
+          remediation: 'No action needed'
+        };
+      }
+      
+      // Create validation issues for unmitigated risks
+      return {
+        id: `qmp-${risk.id}`,
+        title: `QMS: ${risk.title}`,
+        description: risk.description || `Unmitigated quality risk in "${risk.applicableSection || 'General'}" section`,
+        category: 'qms_quality',
+        severity: riskToSeverity[risk.riskLevel] || 'major',
+        status: 'failed',
+        section: risk.applicableSection || 'General',
+        impacts: risk.impactedProcess ? [risk.impactedProcess] : [],
+        remediation: risk.mitigationStrategy || 'Implement appropriate controls based on ICH E6(R3) requirements'
+      };
+    });
+    
+    // If using enhanced validation, use AI to enhance QMP issue descriptions
+    if (validationMode === 'enhanced' && qmpIssues.length > 0) {
+      try {
+        // Format the QMP issues to send to AI service
+        const enhancementData = {
+          documentId: documentId,
+          framework: selectedFramework,
+          qmpIssues: qmpIssues,
+          regulatoryContext: validationData.framework || 'mdr'
+        };
+        
+        // Call AI service to enhance QMP issue descriptions
+        const response = await axios.post('/api/qmp/enhance-issues', enhancementData);
+        
+        if (response.data && response.data.success && response.data.enhancedIssues) {
+          return response.data.enhancedIssues;
+        }
+      } catch (error) {
+        console.warn('Error enhancing QMP issues with AI:', error);
+      }
+    }
+    
+    return qmpIssues;
   };
   
   // Submit document for human review
@@ -405,29 +570,57 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <div className="flex gap-2 items-center bg-slate-50 border rounded-md px-2 py-1 h-10">
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="validation-mode" 
-                checked={validationMode === 'enhanced'}
-                onCheckedChange={(checked) => setValidationMode(checked ? 'enhanced' : 'standard')}
-              />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Label htmlFor="validation-mode" className="cursor-pointer flex items-center">
-                      <span className="mr-1">Enhanced Validation</span>
-                      <BrainCircuit className="h-4 w-4 text-blue-500" />
-                    </Label>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p>
-                      Enhanced validation uses GPT-4o AI to perform in-depth checks for hallucinated citations, 
-                      factual accuracy verification, and regulatory compliance testing that goes beyond standard validation.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+          <div className="flex flex-col xs:flex-row gap-2">
+            <div className="flex gap-2 items-center bg-slate-50 border rounded-md px-2 py-1 h-10">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="validation-mode" 
+                  checked={validationMode === 'enhanced'}
+                  onCheckedChange={(checked) => setValidationMode(checked ? 'enhanced' : 'standard')}
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="validation-mode" className="cursor-pointer flex items-center">
+                        <span className="mr-1">Enhanced Validation</span>
+                        <BrainCircuit className="h-4 w-4 text-blue-500" />
+                      </Label>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>
+                        Enhanced validation uses GPT-4o AI to perform in-depth checks for hallucinated citations, 
+                        factual accuracy verification, and regulatory compliance testing that goes beyond standard validation.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+            
+            <div className="flex gap-2 items-center bg-slate-50 border rounded-md px-2 py-1 h-10">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="qmp-integration" 
+                  checked={qmpIntegrationEnabled}
+                  onCheckedChange={(checked) => setQmpIntegrationEnabled(checked)}
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Label htmlFor="qmp-integration" className="cursor-pointer flex items-center">
+                        <span className="mr-1">QMS Integration</span>
+                        <Gauge className="h-4 w-4 text-[#E3008C]" />
+                      </Label>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>
+                        Integrate Quality Management Plan risk assessment data into the validation process,
+                        enabling ICH E6(R3) risk-based quality monitoring across all phases of CER development.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             </div>
           </div>
           
