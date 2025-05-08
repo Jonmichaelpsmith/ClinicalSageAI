@@ -1,17 +1,63 @@
 import express, { Express } from 'express';
 import path from 'path';
+
+// Declare module types to avoid TypeScript errors
+declare module './routes/indWizardAPI.js' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/cer-final.js' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/faers-api.js' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/literature.js' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/literature-review.js' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/emergency-fix.js' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/sota-api.mjs' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/equivalence-api.mjs' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/internal-clinical-data.js' {
+  const router: express.Router;
+  export default router;
+}
+
+// Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
-import cerRouter from './routes/cer-final.js';  // Using our simplified & fixed CER router
-import faersRouter from './routes/faers-api.js';  // Add direct FAERS API router
+import cerRouter from './routes/cer-final.js';
+import faersRouter from './routes/faers-api.js';
 import literatureRouter from './routes/literature.js';
-import literatureReviewRouter from './routes/literature-review.js';  // Add literature review workflow API
+import literatureReviewRouter from './routes/literature-review.js';
 import documentRouter from './routes/document-routes';
 import emergencyFixRouter from './routes/emergency-fix.js';
 import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
-import internalClinicalDataRouter from './routes/internal-clinical-data.js';  // Add internal clinical data API
-// Skip the CER validation router for now until we fix the module issue
-// We'll implement it properly in the next update
+import internalClinicalDataRouter from './routes/internal-clinical-data.js';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
