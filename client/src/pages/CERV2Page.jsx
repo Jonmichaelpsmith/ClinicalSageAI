@@ -15,6 +15,7 @@ import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow'
 import NotificationBanner from '@/components/cer/NotificationBanner';
 import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
 import EuPmsDataPanel from '@/components/cer/EuPmsDataPanel';
+import RiskManagementPanel from '@/components/cer/RiskManagementPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -133,6 +134,7 @@ export default function CERV2Page() {
         label: "Analysis:",
         tabs: [
           { id: "equivalence", label: "Equivalence", icon: <GitCompare className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "risk-management", label: "Risk Management", icon: <Layers className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "gspr-mapping", label: "GSPR Mapping", icon: <BarChart className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5" /> }
@@ -379,7 +381,47 @@ export default function CERV2Page() {
     }
     
     // Add other tab content handlers for literature-review, internal-clinical-data, eu-pms-data,
-    // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
+    // documents, data-retrieval, equivalence, risk-management, gspr-mapping, sota, compliance, assistant
+    
+    if (activeTab === 'risk-management') {
+      return (
+        <RiskManagementPanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          onAddToReport={(riskData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'risk-management' || 
+              (section.title && section.title.toLowerCase().includes('risk management'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: riskData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Risk Management Data Updated",
+                description: "Risk management data has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, riskData]);
+              
+              toast({
+                title: "Risk Management Data Added",
+                description: "Risk management data has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
 
     if (activeTab === 'literature-review') {
       return (
