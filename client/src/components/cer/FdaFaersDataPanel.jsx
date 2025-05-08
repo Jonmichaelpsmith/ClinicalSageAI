@@ -641,8 +641,13 @@ const FdaFaersDataPanel = ({ onDataFetched, onAnalysisFetched, deviceName = '', 
               <Button variant="outline" size="sm" className="mr-2">
                 Copy to Clipboard
               </Button>
-              <Button size="sm">
-                Add to Report
+              <Button 
+                size="sm"
+                onClick={integrateIntoReport}
+                disabled={isIntegratedInReport || !faersAnalysis}
+              >
+                <FileCheck className="h-4 w-4 mr-1.5" />
+                Add to CER
               </Button>
             </div>
           </CardFooter>
