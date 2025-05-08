@@ -338,6 +338,41 @@ export default function CERV2Page() {
     // Add other tab content handlers for literature-review, internal-clinical-data, 
     // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
 
+    if (activeTab === 'sota') {
+      return (
+        <StateOfArtPanel
+          onSectionGenerated={(sotaSection) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'state-of-art' || 
+              (section.title && section.title.toLowerCase().includes('state of the art'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: sotaSection.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+            } else {
+              setSections([...sections, sotaSection]);
+            }
+            
+            // Update localStorage
+            saveToLocalStorage('cer-sections', [...sections, sotaSection]);
+            
+            // Show success message
+            toast({
+              title: 'State of Art Section Added',
+              description: 'The section has been added to your CER document.',
+              variant: 'success',
+            });
+          }}
+        />
+      );
+    }
+
     if (activeTab === 'literature-review') {
       return (
         <LiteratureReviewWorkflow
