@@ -114,7 +114,16 @@ app.get('/marketing', (req, res) => {
   }
 });
 
-// Note: client-portal route removed as requested
+// 5. Direct CERV2 access test page
+app.get('/cerv2-test', (req, res) => {
+  console.log('Serving CERV2 direct access test page');
+  const testPagePath = path.join(process.cwd(), 'cerv2_direct_access.html');
+  if (fs.existsSync(testPagePath)) {
+    res.sendFile(testPagePath);
+  } else {
+    res.status(404).send('CERV2 test page not found');
+  }
+});
 
 // Create HTTP server
 const httpServer = createHttpServer(app);
