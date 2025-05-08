@@ -53,6 +53,11 @@ app.use('/public', express.static(path.join(process.cwd(), 'public')));
 // Register API routes
 registerRoutes(app);
 
+// Import and register QMP routes
+import qmpRoutes from './routes/qmp.js';
+app.use('/api/qmp', qmpRoutes);
+console.log('QMP API routes registered');
+
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
