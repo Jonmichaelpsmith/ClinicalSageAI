@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, AlertTriangle, ArrowRight, BarChart3, Check, CheckCircle, Clock, Clipboard, ClipboardCheck, Download, Edit, FilePlus, FileText, LinkIcon, Plus, Save, Shield, Trash2, X, XCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, BarChart3, Check, CheckCircle, Clock, Clipboard, ClipboardCheck, Download, Edit, FilePlus, FileCheck, FileText, LinkIcon, Plus, Save, Shield, Trash2, X, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CerTooltipWrapper from './CerTooltipWrapper';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -715,7 +715,7 @@ _Document Generated: ${new Date().toLocaleDateString()}_
     );
   };
   
-  // Calculate metrics for dashboard
+  // Calculate metrics for dashboard with compliance engine integration
   const metrics = useMemo(() => {
     const totalObjectives = objectives.length;
     const completedObjectives = objectives.filter(obj => obj.status === 'completed').length;
@@ -742,9 +742,38 @@ _Document Generated: ${new Date().toLocaleDateString()}_
     const mitigationCompletionPercentage = totalCtqFactors > 0
       ? Math.round((ctqFactorsWithMitigation / totalCtqFactors) * 100)
       : 0;
-      
+    
+    // Analyze scope section coverage - all required CER sections
+    const requiredCERSections = [
+      'Safety', 'Literature Review', 'Clinical Data', 'GSPR Mapping', 
+      'State of the Art', 'Benefit-Risk', 'PMS', 'PMCF', 'Equivalence'
+    ];
+    
+    // Count how many required sections are covered by at least one quality objective
+    const coveredSections = requiredCERSections.filter(section => {
+      return objectives.some(obj => 
+        obj.scopeSections && obj.scopeSections.includes(section)
+      );
+    });
+    
+    const sectionCoverageCount = coveredSections.length;
+    const sectionCoveragePercentage = Math.round((sectionCoverageCount / requiredCERSections.length) * 100);
+    
+    // Calculate scope section weight for each objective (more sections = higher complexity)
+    const objectivesWithSections = objectives.filter(obj => 
+      obj.scopeSections && obj.scopeSections.length > 0
+    ).length;
+    
+    const scopeCoveragePercentage = totalObjectives > 0
+      ? Math.round((objectivesWithSections / totalObjectives) * 100)
+      : 0;
+    
+    // Weighted document readiness - includes section coverage as a key compliance factor
     const documentReadiness = totalObjectives > 0 && totalCtqFactors > 0
-      ? Math.round(((objectivesCompletionPercentage + mitigationCompletionPercentage + (linkedFactors / totalCtqFactors * 100)) / 3))
+      ? Math.round(((objectivesCompletionPercentage * 0.3) + 
+                    (mitigationCompletionPercentage * 0.2) + 
+                    (linkedFactors / totalCtqFactors * 100 * 0.2) +
+                    (sectionCoveragePercentage * 0.3)))
       : 0;
     
     return {
@@ -759,7 +788,13 @@ _Document Generated: ${new Date().toLocaleDateString()}_
       linkedFactors,
       objectivesCompletionPercentage,
       mitigationCompletionPercentage,
-      documentReadiness
+      documentReadiness,
+      // New metrics for compliance engine
+      sectionCoverageCount,
+      sectionCoveragePercentage,
+      totalSections: requiredCERSections.length,
+      scopeCoveragePercentage,
+      coveredSections
     };
   }, [objectives, ctqFactors]);
 
@@ -898,7 +933,7 @@ _Document Generated: ${new Date().toLocaleDateString()}_
           <span className="text-xs font-normal text-[#605E5C] ml-2">ICH E6(R3) Implementation Status</span>
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <Card className="shadow-none border-l-4 border-l-blue-500">
             <CardHeader className="p-3 pb-0">
               <CardTitle className="text-sm text-[#323130]">
@@ -951,25 +986,6 @@ _Document Generated: ${new Date().toLocaleDateString()}_
             </CardContent>
           </Card>
           
-          <Card className="shadow-none border-l-4 border-l-green-500">
-            <CardHeader className="p-3 pb-0">
-              <CardTitle className="text-sm text-[#323130]">
-                Traceability Links
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 pt-1">
-              <div className="text-2xl font-bold text-green-600">
-                {metrics.linkedFactors}/{metrics.totalCtqFactors}
-              </div>
-              <div className="text-xs text-[#605E5C] mt-1 flex items-center">
-                <LinkIcon className="h-3 w-3 mr-1 text-[#0F6CBD]" /> 
-                {metrics.totalCtqFactors > 0 
-                  ? Math.round((metrics.linkedFactors / metrics.totalCtqFactors) * 100) 
-                  : 0}% Linked to CER
-              </div>
-            </CardContent>
-          </Card>
-          
           <Card className="shadow-none border-l-4 border-l-purple-500">
             <CardHeader className="p-3 pb-0">
               <CardTitle className="text-sm text-[#323130]">
@@ -986,6 +1002,118 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                 {metrics.documentReadiness < 50 ? 'Needs attention' : 
                  metrics.documentReadiness < 80 ? 'Making progress' : 
                  'Almost ready'}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <Card className="shadow-none border-l-4 border-l-green-500">
+            <CardHeader className="p-3 pb-0">
+              <CardTitle className="text-sm text-[#323130] flex items-center">
+                CER Section Coverage
+                <CerTooltipWrapper
+                  tooltipContent="Measures how many CER sections have associated quality objectives for compliance"
+                  whyThisMatters="EU MDR requires documented quality controls for all major sections of the CER"
+                >
+                  <AlertCircle className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                </CerTooltipWrapper>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-1">
+              <div className="text-xl font-bold text-green-600">
+                {metrics.sectionCoverageCount}/{metrics.totalSections} Sections
+              </div>
+              <div className="mt-1">
+                <Progress value={metrics.sectionCoveragePercentage} className="h-1.5 w-full bg-gray-200" />
+              </div>
+              <div className="text-xs text-[#605E5C] mt-3">
+                <div className="flex flex-wrap gap-1 mb-1">
+                  {metrics.coveredSections.map(section => (
+                    <Badge 
+                      key={section}
+                      variant="outline"
+                      className="bg-[#EFF6FC] text-[#0F6CBD] border-[#0F6CBD] text-xs"
+                    >
+                      {section}
+                    </Badge>
+                  ))}
+                </div>
+                {metrics.sectionCoveragePercentage < 50 ? (
+                  <div className="mt-1 text-red-600 flex items-center">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Add objectives for additional CER sections
+                  </div>
+                ) : metrics.sectionCoveragePercentage < 100 ? (
+                  <div className="mt-1 text-amber-600 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Some sections are missing quality coverage
+                  </div>
+                ) : (
+                  <div className="mt-1 text-green-600 flex items-center">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    All CER sections have quality coverage
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-none border-l-4 border-l-amber-500">
+            <CardHeader className="p-3 pb-0">
+              <CardTitle className="text-sm text-[#323130] flex items-center">
+                Traceability & Compliance Status
+                <CerTooltipWrapper
+                  tooltipContent="Measures links between quality objectives, CtQ factors, and CER sections"
+                  whyThisMatters="Traceability is key for regulatory inspections and audit readiness"
+                >
+                  <AlertCircle className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                </CerTooltipWrapper>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-sm font-medium text-[#323130]">Linked CtQ Factors</div>
+                  <div className="text-lg font-bold text-amber-600">
+                    {metrics.linkedFactors}/{metrics.totalCtqFactors}
+                  </div>
+                  <div className="text-xs text-[#605E5C] mt-1 flex items-center">
+                    <LinkIcon className="h-3 w-3 mr-1 text-[#0F6CBD]" /> 
+                    {metrics.totalCtqFactors > 0 
+                      ? Math.round((metrics.linkedFactors / metrics.totalCtqFactors) * 100) 
+                      : 0}% Linked
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-[#323130]">Objectives with Scope</div>
+                  <div className="text-lg font-bold text-amber-600">
+                    {metrics.objectivesWithSections}/{metrics.totalObjectives}
+                  </div>
+                  <div className="text-xs text-[#605E5C] mt-1 flex items-center">
+                    <FileCheck className="h-3 w-3 mr-1 text-[#0F6CBD]" /> 
+                    {metrics.scopeCoveragePercentage}% Coverage
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 text-xs">
+                {(metrics.sectionCoveragePercentage < 100 || (metrics.totalCtqFactors > 0 && metrics.linkedFactors / metrics.totalCtqFactors < 0.8)) ? (
+                  <Alert className="p-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <AlertTitle className="text-xs font-medium">Compliance Warning</AlertTitle>
+                    <AlertDescription className="text-xs">
+                      Improve scope and linkage coverage to meet ICH E6(R3) compliance
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <Alert className="p-2 border-green-200 bg-green-50">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertTitle className="text-xs font-medium">Compliance Ready</AlertTitle>
+                    <AlertDescription className="text-xs">
+                      QMP elements meet ICH E6(R3) and EU MDR traceability requirements
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </CardContent>
           </Card>
