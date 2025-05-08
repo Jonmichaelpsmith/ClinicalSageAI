@@ -1054,6 +1054,7 @@ ${updatedCepData.evaluationCriteria || 'Not specified'}
           
           <TabsContent value="internal-clinical-data" className="mt-0">
             <InternalClinicalDataPanel
+              jobId={`cer-${Date.now()}`}
               deviceName={deviceName}
               manufacturer={manufacturer}
               onAddToCER={(internalClinicalData) => {
