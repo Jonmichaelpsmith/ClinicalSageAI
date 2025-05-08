@@ -217,6 +217,109 @@ router.get('/export-audit-trail', (req, res) => {
 });
 
 /**
+ * GET /api/qmp/export-audit-trail-pdf
+ * Export QMP audit trail as a PDF report for documentation and regulatory purposes
+ */
+router.get('/export-audit-trail-pdf', async (req, res) => {
+  try {
+    // Format used in the export filename
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const baseFilename = `QMP_Audit_Trail_Report_${timestamp}`;
+    const tempJsonPath = path.join(os.tmpdir(), `${baseFilename}.json`);
+    const outputPdfPath = path.join(os.tmpdir(), `${baseFilename}.pdf`);
+    
+    // Sort records by timestamp (newest first)
+    const sortedRecords = [...qmpAuditTrail].sort((a, b) => {
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+    
+    // Create a JSON export with metadata
+    const exportData = {
+      metadata: {
+        title: 'Quality Management Plan - Audit Trail',
+        generated: new Date().toISOString(),
+        retentionPolicy: '10 years (21 CFR Part 11 compliance)',
+        recordCount: sortedRecords.length,
+        complianceStandard: '21 CFR Part 11',
+        lastUpdated: new Date().toISOString()
+      },
+      auditRecords: sortedRecords
+    };
+    
+    // Write the JSON data to a temp file for the Python script to read
+    fs.writeFileSync(tempJsonPath, JSON.stringify(exportData, null, 2));
+    
+    // Use the Python script to generate the PDF
+    const pythonScript = path.join(__dirname, '../pdf_generators/qmp_audit_trail_pdf.py');
+    
+    logger.info('Generating PDF report from audit trail data', {
+      module: 'qmp-audit-api',
+      recordCount: qmpAuditTrail.length,
+      script: pythonScript
+    });
+    
+    try {
+      // Make the Python script executable
+      fs.chmodSync(pythonScript, '755');
+      
+      // Execute the Python script to generate the PDF
+      const { stdout, stderr } = await execPromise(`python3 ${pythonScript} ${tempJsonPath} ${outputPdfPath}`);
+      
+      if (stderr) {
+        logger.warn('Python script warning', {
+          module: 'qmp-audit-api',
+          stderr
+        });
+      }
+      
+      // Check if the PDF was created
+      if (!fs.existsSync(outputPdfPath)) {
+        throw new Error('PDF generation failed - output file not created');
+      }
+      
+      // Read the generated PDF
+      const pdfData = fs.readFileSync(outputPdfPath);
+      
+      // Set appropriate headers
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${baseFilename}.pdf"`);
+      res.setHeader('Content-Length', pdfData.length);
+      
+      // Send the PDF data
+      res.send(pdfData);
+      
+      // Clean up temporary files
+      fs.unlinkSync(tempJsonPath);
+      fs.unlinkSync(outputPdfPath);
+      
+      logger.info('Successfully exported QMP audit trail as PDF', {
+        module: 'qmp-audit-api',
+        recordCount: qmpAuditTrail.length,
+        fileSize: pdfData.length
+      });
+    } catch (pythonError) {
+      logger.error('Error executing Python PDF generator', {
+        module: 'qmp-audit-api',
+        error: pythonError.message,
+        stdout: pythonError.stdout,
+        stderr: pythonError.stderr
+      });
+      throw new Error(`PDF generation failed: ${pythonError.message}`);
+    }
+  } catch (error) {
+    logger.error('Error exporting QMP audit trail to PDF', {
+      module: 'qmp-audit-api',
+      error: error.message
+    });
+    
+    res.status(500).json({
+      error: 'Failed to export QMP audit trail to PDF',
+      message: error.message
+    });
+  }
+});
+
+/**
  * GET /api/qmp/audit-trail/by-date/:date
  * Retrieve QMP audit trail records for a specific date
  */
