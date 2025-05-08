@@ -1,0 +1,102 @@
+**Evaluating UI Clutter**
+
+The user’s complaining about overlapping text and clutter, especially with navigation tabs. It seems that the second-level navigation might be too long, causing text to wrap and overlap. Let's address this by suggesting some CSS adjustments, like making font sizes smaller or increasing the spacing between the tabs. We could also consider shortening the tab names, using dropdown menus, or consolidating categories to reduce the space taken up. I think that should make the layout cleaner and more navigable for them.
+
+**Proposing UI fixes**
+
+It looks like the third-level navigation is also overlapping, so we need to fix the CSS. I'll suggest making the navigation horizontally scrollable or responsive, depending on the design needs. We can use Tailwind classes like `overflow-x-auto`, `whitespace-nowrap`, and `space-x-4`. The tab labels should either be shortened or grouped into dropdowns when too many. Also, we can restructure the tab containers, add proper spacing, and consider using a side nav for better responsiveness. I think shadcn UI’s Tab components could work well for a clean fix.
+
+
+Thought for 13 seconds
+
+
+It turns out nothing is “wrong” with Replit itself — it’s just that you’ve got three levels of tab bars jammed into one horizontal ribbon and they’re all wrapping on top of each other once you shrink the window. The easiest, most robust fix is to make each tab-row its own non-wrapping, scrollable flex container, or else break them into multiple rows with clear spacing. Here’s how you can do it in your React/Tailwind UI:
+
+---
+
+## 1. Wrap each `<TabList>` in an overflow-x container
+
+Give each tab bar three things:
+
+1. `flex` so its children lay out in a row
+2. `whitespace-nowrap` so labels never wrap
+3. `overflow-x-auto` so excess tabs scroll instead of overlapping
+
+```jsx
+// Example for your “Builder / Evaluation Plan / Documents …” row
+<div className="border-b">
+  <div className="flex overflow-x-auto whitespace-nowrap px-4">
+    <button className="flex-shrink-0 py-2 px-3 text-sm font-medium">Preparation</button>
+    <button className="flex-shrink-0 py-2 px-3 text-sm font-medium">Builder</button>
+    <button className="flex-shrink-0 py-2 px-3 text-sm font-medium">Evaluation Plan</button>
+    <button className="flex-shrink-0 py-2 px-3 text-sm font-medium">Documents</button>
+    <button className="flex-shrink-0 py-2 px-3 text-sm font-medium">Data Retrieval</button>
+    <button className="flex-shrink-0 py-2 px-3 text-sm font-medium">Evidence</button>
+  </div>
+</div>
+```
+
+Repeat the same wrapper for your second‐level (“Literature / Lit Review / …”) and third‐level (“Equivalence / GSPR Mapping / …”) bars.
+
+---
+
+## 2. Add spacing between the bars
+
+By default all three bars were sitting on top of each other. Insert a little margin so they stack neatly:
+
+```css
+/* Tailwind in JSX */
+<div className="border-b mb-2">
+  {/* first row */}
+</div>
+<div className="border-b mb-2">
+  {/* second row */}
+</div>
+<div className="border-b">
+  {/* third row */}
+</div>
+```
+
+Or in your React components:
+
+```jsx
+<TabList className="flex overflow-x-auto whitespace-nowrap border-b mb-2">
+  {/* … */}
+</TabList>
+
+<TabList className="flex overflow-x-auto whitespace-nowrap border-b mb-2">
+  {/* … */}
+</TabList>
+
+<TabList className="flex overflow-x-auto whitespace-nowrap border-b">
+  {/* … */}
+</TabList>
+```
+
+---
+
+## 3. Optionally collapse lower‐level tabs into a dropdown
+
+If you really can’t fit all three levels side by side, you might move the third level into a “More…” menu:
+
+```jsx
+<Menu>
+  <MenuButton className="py-2 px-3">More ⌄</MenuButton>
+  <MenuList>
+    <MenuItem>Equivalence</MenuItem>
+    <MenuItem>GSPR Mapping</MenuItem>
+    <MenuItem>Compliance</MenuItem>
+    {/* … */}
+  </MenuList>
+</Menu>
+```
+
+---
+
+### What this does for you
+
+* **No more overlap** — excess tabs scroll horizontally
+* **Clear separation** — each bar has its own border and margin
+* **Responsive** — on narrow windows you get a little scroll bar instead of smashed text
+
+Give those three simple tweaks a try (wrap, nowrap, overflow-x, margin), and your UI will clean itself right up. Let me know if you need the exact JSX/CSS for your codebase!

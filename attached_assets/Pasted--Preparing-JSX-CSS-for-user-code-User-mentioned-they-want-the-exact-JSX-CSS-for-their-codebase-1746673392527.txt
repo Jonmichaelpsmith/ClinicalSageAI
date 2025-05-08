@@ -1,0 +1,157 @@
+**Preparing JSX/CSS for user code**
+
+User mentioned they want the exact JSX/CSS for their codebase. They’re working with React and Tailwind, using components like `<Menu>` and `<MenuButton>` from Chakra UI. I’ll need to adjust and offer JSX and Tailwind classes tailored to their shared components, such as `TabList` and potentially React Router modules like `ClientPortal.jsx`. The task is to show modifications for the three “TabList” groups, integrating these changes straight into their `client/src/components/cer/GSPRMappingPanel.jsx` file. Time to tailor this example!
+
+**Providing JSX/CSS examples**
+
+The user might be looking for a solution where they manually style a `TabList` with Tailwind. A simple example could be:
+
+```jsx
+const TabGroup = ({children}) => (
+  <div className="border-b mb-2">
+    <div className="flex overflow-x-auto whitespace-nowrap">{children}</div>
+  </div>
+);
+```
+
+Or if they prefer a more basic setup, here's pure HTML using Tailwind classes:
+
+```html
+<div className="overflow-x-auto whitespace-nowrap border-b mb-2 px-4">
+  <div className="inline-flex">
+    <button className="py-2 px-3">...</button>
+  </div>
+</div>
+```
+
+This should give flexibility for adapting to their preferred structure.
+
+
+Thought for 14 seconds
+
+
+Below is a drop-in Tailwind/JSX snippet you can copy straight into your layout. It wraps each row of tabs in its own non-wrapping, scrollable container, and adds just enough spacing so nothing ever overlaps.
+
+---
+
+### 1. Create a reusable `<TabRow>` wrapper
+
+```jsx
+// TabRow.jsx
+import React from 'react';
+
+/**
+ * Wraps a row of tabs so that:
+ *  - they never wrap to a second line
+ *  - excess tabs scroll horizontally
+ *  - each row is separated by a bottom border + margin
+ */
+export function TabRow({ children, className = '' }) {
+  return (
+    <div className={`overflow-x-auto whitespace-nowrap border-b mb-2 ${className}`}>
+      <div className="inline-flex items-center px-4">
+        {React.Children.map(children, child =>
+          React.cloneElement(child, { className: `${child.props.className ?? ''} flex-shrink-0 mx-1` })
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+Drop that into your `components/ui/` folder (or wherever you like).
+
+---
+
+### 2. Replace your three levels of tabs with `<TabRow>`
+
+```jsx
+import { TabRow } from './ui/TabRow';
+import { Tab }    from '@chakra-ui/react';   // or whatever Tab component you use
+import { Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
+
+function CerBuilderTabs() {
+  return (
+    <>
+      {/* ─────────────── Level 1 ─────────────── Preparation / Builder / … */}
+      <TabRow>
+        <Tab>Preparation</Tab>
+        <Tab>Builder</Tab>
+        <Tab>Evaluation Plan</Tab>
+        <Tab>Documents</Tab>
+        <Tab>Data Retrieval</Tab>
+        <Tab>Evidence</Tab>
+      </TabRow>
+
+      {/* ─────────────── Level 2 ─────────────── Literature / State of Art / … */}
+      <TabRow>
+        <Tab>Literature</Tab>
+        <Tab>Literature Review</Tab>
+        <Tab>Internal Clinical Data</Tab>
+        <Tab>State of Art</Tab>
+        {/* If “Analysis:” is just text you can do: */}
+        <span className="text-gray-500 ml-4">Analysis:</span>
+      </TabRow>
+
+      {/* ─────────────── Level 3 ─────────────── Equivalence / GSPR Mapping / … */}
+      <TabRow>
+        <Tab>Equivalence</Tab>
+        <Tab>GSPR Mapping</Tab>
+        <Tab>Compliance</Tab>
+        <Tab>Assistant</Tab>
+        {/* On the right side, e.g. Output / Preview */}
+        <div className="ml-auto flex items-center">
+          <span>Output:</span>
+          <span className="ml-2">Preview</span>
+        </div>
+      </TabRow>
+    </>
+  );
+}
+```
+
+A few key Tailwind classes in action:
+
+* **`overflow-x-auto whitespace-nowrap`**
+  Makes the container scroll horizontally instead of wrapping or overlapping.
+* **`inline-flex items-center`**
+  Lays out your tabs side-by-side, vertically centered.
+* **`flex-shrink-0 mx-1`** on each tab
+  Prevents the tabs from squishing down or wrapping.
+* **`border-b mb-2`**
+  Gives each row its own bottom border and small margin, so they don’t sit right on top of each other.
+
+---
+
+### 3. (Optional) Collapse “too many” tabs into a 🔽 menu
+
+If Level 3 is still too long, you can turn part of it into a dropdown:
+
+```jsx
+<TabRow>
+  <Tab>Equivalence</Tab>
+  <Tab>GSPR Mapping</Tab>
+  <Menu>
+    <MenuButton className="flex-shrink-0 mx-1 py-2 px-3 bg-white rounded">More ⌄</MenuButton>
+    <MenuList>
+      <MenuItem>Compliance</MenuItem>
+      <MenuItem>Assistant</MenuItem>
+      {/* … */}
+    </MenuList>
+  </Menu>
+  <div className="ml-auto flex items-center">
+    <span>Output:</span>
+    <span className="ml-2">Preview</span>
+  </div>
+</TabRow>
+```
+
+---
+
+#### Result
+
+* **No overlapping text**
+* **Clear separation** between each tab level
+* **Responsive**—on narrow screens you get a little scroll bar, not a mess of wrapped labels
+
+Give that a shot and let me know how it looks!
