@@ -59,6 +59,7 @@ import {
   AlertTitle 
 } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Loader2, 
   Plus, 
