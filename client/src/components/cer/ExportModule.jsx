@@ -55,6 +55,7 @@ const ExportModule = ({
   canExport = true
 }) => {
   const [exportFormat, setExportFormat] = useState('docx');
+  const [selectedFramework, setSelectedFramework] = useState(framework || 'mdr');
   const [exportOptions, setExportOptions] = useState({
     includeTableOfContents: true,
     includeAppendices: true,
@@ -73,22 +74,82 @@ const ExportModule = ({
     { id: 'pdf', label: 'PDF Document', icon: <FileDown className="h-4 w-4" /> },
     { id: 'xml', label: 'eCTD XML Shell', icon: <Code className="h-4 w-4" /> },
   ];
+  
+  // Framework options
+  const frameworkOptions = [
+    { id: 'mdr', label: 'EU MDR', description: 'European Union Medical Device Regulation' },
+    { id: 'fda', label: 'US FDA', description: 'US Food and Drug Administration' },
+    { id: 'ukca', label: 'UKCA', description: 'UK Conformity Assessed' },
+    { id: 'health_canada', label: 'Health Canada', description: 'Canadian medical device regulations' },
+    { id: 'ich', label: 'ICH', description: 'International Council for Harmonisation' }
+  ];
 
   // Export templates
   const templates = {
     'mdr': [
-      { id: 'mdr_standard', name: 'EU MDR Standard', description: 'Standard template for EU MDR submissions' },
-      { id: 'mdr_extended', name: 'EU MDR Extended', description: 'Extended template with additional sections' }
+      { 
+        id: 'mdr_standard', 
+        name: 'EU MDR Standard', 
+        description: 'MEDDEV 2.7/1 Rev 4 compliant template for EU MDR submissions with emphasis on GSPR' 
+      },
+      { 
+        id: 'mdr_extended', 
+        name: 'EU MDR Extended', 
+        description: 'Extended template with additional sections for high-risk devices and combination products' 
+      },
+      {
+        id: 'mdr_pmcf',
+        name: 'EU MDR with PMCF',
+        description: 'Template with enhanced Post-Market Clinical Follow-up (PMCF) sections per MDCG 2020-7'
+      }
     ],
     'fda': [
-      { id: 'fda_510k', name: 'FDA 510(k)', description: 'Template for FDA 510(k) submissions' },
-      { id: 'fda_pma', name: 'FDA PMA', description: 'Template for FDA PMA submissions' }
+      { 
+        id: 'fda_510k', 
+        name: 'FDA 510(k) Summary', 
+        description: 'Template for FDA 510(k) submissions with substantial equivalence focus' 
+      },
+      { 
+        id: 'fda_pma', 
+        name: 'FDA PMA Clinical Summary', 
+        description: 'Template for FDA PMA submissions with pivotal clinical study emphasis' 
+      },
+      {
+        id: 'fda_de_novo',
+        name: 'FDA De Novo',
+        description: 'Template for FDA De Novo submissions with emphasis on risk-benefit analysis'
+      }
+    ],
+    'ukca': [
+      {
+        id: 'ukca_standard',
+        name: 'UKCA Standard',
+        description: 'UK Conformity Assessed standard template aligned with UK MDR requirements'
+      },
+      {
+        id: 'ukca_extended',
+        name: 'UKCA Extended',
+        description: 'Extended template for UK market submissions with UK-specific clinical evidence requirements'
+      }
     ],
     'health_canada': [
-      { id: 'hc_standard', name: 'Health Canada Standard', description: 'Standard template for Health Canada submissions' }
+      { 
+        id: 'hc_standard', 
+        name: 'Health Canada Standard', 
+        description: 'Standard template for Health Canada submissions aligned with Canadian Medical Devices Regulations' 
+      },
+      {
+        id: 'hc_licensing',
+        name: 'Health Canada Licensing',
+        description: 'Template focused on Medical Device Licensing requirements for Class III and IV devices'
+      }
     ],
     'ich': [
-      { id: 'ich_standard', name: 'ICH Standard', description: 'Standard template following ICH guidelines' }
+      { 
+        id: 'ich_standard', 
+        name: 'ICH Standard', 
+        description: 'Template following ICH guidelines for international harmonization' 
+      }
     ]
   };
 
@@ -198,12 +259,13 @@ const ExportModule = ({
   const handleExport = () => {
     // Get selected template
     const templateId = document.querySelector('input[name="template"]:checked')?.value || 
-                      templates[framework]?.[0]?.id;
+                      templates[selectedFramework]?.[0]?.id;
     
     exportMutation.mutate({
       format: exportFormat,
       options: exportOptions,
-      templateId
+      templateId,
+      framework: selectedFramework
     });
   };
 
@@ -253,14 +315,41 @@ const ExportModule = ({
               
               <Separator />
               
+              <div className="mb-4">
+                <Label className="mb-2 block">Regulatory Framework</Label>
+                <Select 
+                  value={selectedFramework} 
+                  onValueChange={setSelectedFramework}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select regulatory framework" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {frameworkOptions.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        <div className="flex flex-col">
+                          <span>{option.label}</span>
+                          <span className="text-xs text-gray-500">{option.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select the appropriate regulatory framework for your target market
+                </p>
+              </div>
+              
+              <Separator className="my-4" />
+              
               <div>
                 <Label className="mb-3 block">Template</Label>
                 <RadioGroup 
                   name="template" 
-                  defaultValue={templates[framework]?.[0]?.id}
+                  defaultValue={templates[selectedFramework]?.[0]?.id}
                   className="space-y-3"
                 >
-                  {templates[framework]?.map((template) => (
+                  {templates[selectedFramework]?.map((template) => (
                     <div key={template.id} className="flex items-start space-x-2">
                       <RadioGroupItem id={`template-${template.id}`} value={template.id} />
                       <div>
@@ -443,7 +532,9 @@ const ExportModule = ({
                     </li>
                     <li className="flex justify-between">
                       <span className="text-gray-600">Framework:</span>
-                      <span className="font-medium">{framework.toUpperCase()}</span>
+                      <span className="font-medium">
+                        {frameworkOptions.find(option => option.id === selectedFramework)?.label || framework.toUpperCase()}
+                      </span>
                     </li>
                     <li className="flex justify-between">
                       <span className="text-gray-600">Last Modified:</span>
@@ -472,7 +563,7 @@ const ExportModule = ({
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-3 w-3 mr-2 text-blue-700" />
-                      Template: {templates[framework]?.find(t => t.id === document.querySelector('input[name="template"]:checked')?.value)?.name || templates[framework]?.[0]?.name}
+                      Template: {templates[selectedFramework]?.find(t => t.id === document.querySelector('input[name="template"]:checked')?.value)?.name || templates[selectedFramework]?.[0]?.name}
                     </li>
                     {exportOptions.includeTableOfContents && (
                       <li className="flex items-center">
