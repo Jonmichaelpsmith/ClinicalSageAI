@@ -411,6 +411,7 @@ This mapping provides traceability from clinical evidence to regulatory requirem
           <CerTooltipWrapper
             tooltipContent="Add this GSPR mapping as a dedicated section in your CER document. This creates a traceability matrix between regulatory requirements and clinical evidence."
             whyThisMatters="Clear traceability from GSPRs to supporting evidence is a key requirement for regulatory approval. It demonstrates how your clinical evaluation supports device conformity with essential requirements."
+            tooltipPosition="bottom"
           >
             <Button
               className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"

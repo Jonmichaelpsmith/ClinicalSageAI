@@ -15,8 +15,9 @@ import { HelpCircle } from 'lucide-react';
  */
 const CerTooltipWrapper = ({ 
   children, 
-  content, 
-  side = "right", 
+  tooltipContent,
+  whyThisMatters,
+  tooltipPosition = "right", 
   showIcon = true,
   delay = 0,
   className = "" 
@@ -33,10 +34,18 @@ const CerTooltipWrapper = ({
           </div>
         </TooltipTrigger>
         <TooltipContent 
-          side={side} 
+          side={tooltipPosition} 
           className="bg-white border border-[#E1DFDD] shadow-md p-3 max-w-sm text-sm text-[#323130] rounded"
         >
-          {content}
+          <div>
+            <p className="mb-2">{tooltipContent}</p>
+            {whyThisMatters && (
+              <div className="mt-2 pt-2 border-t border-[#E1DFDD]">
+                <p className="text-xs font-medium text-[#0F6CBD] mb-1">Why this matters:</p>
+                <p className="text-xs text-[#605E5C]">{whyThisMatters}</p>
+              </div>
+            )}
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
