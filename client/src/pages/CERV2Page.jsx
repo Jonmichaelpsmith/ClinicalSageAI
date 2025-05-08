@@ -145,11 +145,11 @@ export default function CERV2Page() {
         {tabGroups.map((group, groupIndex) => (
           <div 
             key={groupIndex} 
-            className={`overflow-x-auto whitespace-nowrap bg-white border-b border-[#E1DFDD] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''}`}
+            className={`overflow-x-auto whitespace-nowrap bg-white border-b ${group.label === "Preparation" || group.label === "Evidence" || group.label === "Analysis" ? "border-[#E3008C]" : "border-[#E1DFDD]"} py-3 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''}`}
           >
             <div className="flex items-center px-6">
-              <div className="flex items-center mr-4 flex-shrink-0 bg-[#323130] px-3 py-1 rounded-sm">
-                <span className={`text-xs font-medium ${group.label === "Preparation" || group.label === "Evidence" || group.label === "Analysis" ? "text-[#FF69B4]" : "text-white"}`}>{group.label}</span>
+              <div className="flex items-center mr-4 flex-shrink-0">
+                <span className={`text-sm font-semibold ${group.label === "Preparation" || group.label === "Evidence" || group.label === "Analysis" ? "text-[#E3008C]" : "text-[#505050]"}`}>{group.label}</span>
               </div>
               
               <div className="inline-flex items-center">
@@ -159,10 +159,10 @@ export default function CERV2Page() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`
                       flex-shrink-0 mx-1 rounded-none border-b-2 px-3 py-1 
-                      font-normal text-xs sm:text-sm flex items-center
+                      font-medium text-xs sm:text-sm flex items-center
                       ${activeTab === tab.id 
-                        ? 'border-b-[#0F6CBD] text-[#0F6CBD]' 
-                        : 'border-b-transparent text-[#616161] hover:text-[#0F6CBD]'
+                        ? 'border-b-[#0F6CBD] text-[#0F6CBD] bg-[#f0f9ff]' 
+                        : 'border-b-transparent text-[#616161] hover:text-[#0F6CBD] hover:bg-[#f8f8f8]'
                       }
                     `}
                   >
