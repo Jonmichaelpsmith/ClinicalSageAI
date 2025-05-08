@@ -287,9 +287,9 @@ function formatCriticalFactors(factors) {
 
 /**
  * Generate a regulatory traceability report for CtQ factors
- * POST /api/cer-qmp-integration/traceability-report
+ * POST /api/cer-qmp-integration/generate-traceability-report
  */
-router.post('/traceability-report', async (req, res) => {
+router.post('/generate-traceability-report', async (req, res) => {
   try {
     const { deviceName, qmpData, sectionTitles } = req.body;
     
