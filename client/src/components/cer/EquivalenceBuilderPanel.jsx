@@ -133,6 +133,16 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
   const [dialogMode, setDialogMode] = useState('add'); // 'add' or 'edit'
   const [activeDeviceId, setActiveDeviceId] = useState(null);
   
+  // Data access verification
+  const [isDataAccessDialogOpen, setIsDataAccessDialogOpen] = useState(false);
+  const [dataAccessStatus, setDataAccessStatus] = useState(null); // null, 'checking', 'compliant', 'non-compliant', 'uncertain'
+  const [dataAccessAssessment, setDataAccessAssessment] = useState('');
+  const [dataAccessInfo, setDataAccessInfo] = useState({
+    manufacturerName: '',
+    accessType: 'direct_contract', // 'direct_contract', 'indirect_access', 'published_literature', 'other'
+    accessDetails: ''
+  });
+  
   // Save whole equivalence data to parent
   useEffect(() => {
     if (subjectDevice.name && onEquivalenceDataChange) {
