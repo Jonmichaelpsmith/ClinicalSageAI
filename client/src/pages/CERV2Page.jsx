@@ -15,6 +15,7 @@ import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow'
 import CerOnboardingGuide from '@/components/cer/CerOnboardingGuide';
 import WizardStepper from '@/components/cer/WizardStepper';
 import NotificationBanner from '@/components/cer/NotificationBanner';
+import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -645,6 +646,14 @@ export default function CERV2Page() {
             </TabsTrigger>
             
             <TabsTrigger 
+              value="internal-clinical-data" 
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
+            >
+              <Database className="h-3.5 w-3.5 mr-1.5" />
+              <span>Internal Clinical Data</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
               value="export" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
@@ -1104,6 +1113,46 @@ ${updatedCepData.evaluationCriteria || 'Not specified'}
                   toast({
                     title: "Literature Review Added",
                     description: "Literature review has been added to your CER.",
+                    variant: "success"
+                  });
+                }
+              }}
+            />
+          </TabsContent>
+          
+          <TabsContent value="internal-clinical-data" className="mt-0">
+            <InternalClinicalDataPanel
+              deviceName={deviceName}
+              manufacturer={manufacturer}
+              onAddToCER={(internalClinicalData) => {
+                // Check if we already have an internal clinical data section
+                const existingIndex = sections.findIndex(
+                  section => section.type === 'internal-clinical-data' || 
+                  (section.title && section.title.toLowerCase().includes('internal clinical data'))
+                );
+                
+                if (existingIndex >= 0) {
+                  // Update existing section
+                  const updatedSections = [...sections];
+                  updatedSections[existingIndex] = {
+                    ...updatedSections[existingIndex],
+                    content: internalClinicalData.content,
+                    lastUpdated: new Date().toISOString()
+                  };
+                  setSections(updatedSections);
+                  
+                  toast({
+                    title: "Internal Clinical Data Updated",
+                    description: "Your CER now includes the latest internal clinical evidence.",
+                    variant: "success"
+                  });
+                } else {
+                  // Add new section
+                  setSections([...sections, internalClinicalData]);
+                  
+                  toast({
+                    title: "Internal Clinical Data Added",
+                    description: "Internal clinical evidence has been added to your CER.",
                     variant: "success"
                   });
                 }
