@@ -663,11 +663,21 @@ Compliance is determined based on evidence strength, quality, and clinical relev
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <h4 className="text-sm font-medium text-[#323130] mb-2">Compliance Statement</h4>
+                      <h4 className="text-sm font-medium text-[#323130] mb-2">
+                        <span className="flex items-center">
+                          Regulatory Interpretation
+                          <CerTooltipWrapper
+                            tooltipContent="Specify how this GSPR applies to your device in its specific context"
+                            whyThisMatters="Accurate interpretation of GSPRs in the context of your device is a key regulatory requirement that helps notified bodies understand relevance"
+                          >
+                            <Info className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                          </CerTooltipWrapper>
+                        </span>
+                      </h4>
                       <Textarea
-                        value={mapping[activeGspr]?.complianceStatement || ''}
-                        onChange={(e) => handleComplianceStatementChange(activeGspr, e.target.value)}
-                        placeholder="Explain how evidence demonstrates compliance..."
+                        value={mapping[activeGspr]?.regulatoryInterpretation || ''}
+                        onChange={(e) => handleRegulatoryInterpretationChange(activeGspr, e.target.value)}
+                        placeholder="Explain how this requirement applies to your device..."
                         className="border-[#E1DFDD] h-20 text-sm"
                       />
                     </div>
@@ -704,20 +714,87 @@ Compliance is determined based on evidence strength, quality, and clinical relev
                     </div>
                   </div>
                   
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-[#323130] mb-2">
+                        Compliance Statement
+                        <span className="text-xs text-[#E3008C] ml-1">*</span>
+                      </h4>
+                      <Textarea
+                        value={mapping[activeGspr]?.complianceStatement || ''}
+                        onChange={(e) => handleComplianceStatementChange(activeGspr, e.target.value)}
+                        placeholder="Explain how evidence demonstrates compliance..."
+                        className="border-[#E1DFDD] h-20 text-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-[#323130] mb-2">
+                        <span className="flex items-center">
+                          Acceptance Criteria
+                          <CerTooltipWrapper
+                            tooltipContent="Define criteria that must be met to consider this GSPR as satisfied"
+                            whyThisMatters="Pre-defined acceptance criteria are essential for meeting EU MDR requirements and notified body expectations"
+                          >
+                            <Info className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                          </CerTooltipWrapper>
+                        </span>
+                      </h4>
+                      <Textarea
+                        value={mapping[activeGspr]?.acceptanceCriteria || ''}
+                        onChange={(e) => handleAcceptanceCriteriaChange(activeGspr, e.target.value)}
+                        placeholder="Define measurable criteria for considering this GSPR satisfied..."
+                        className="border-[#E1DFDD] h-20 text-sm"
+                      />
+                    </div>
+                  </div>
+                  
                   {mapping[activeGspr]?.gapsIdentified && (
                     <div className="p-3 border border-[#F2C811] bg-[#FFFCE5] rounded mb-4">
-                      <h4 className="text-sm font-medium text-[#323130] mb-2">Gap Assessment</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <Textarea
-                          value={mapping[activeGspr]?.gapStatement || ''}
-                          onChange={(e) => handleGapStatementChange(activeGspr, e.target.value)}
-                          placeholder="Describe identified gaps..."
-                          className="border-[#E1DFDD] h-16 text-sm"
-                        />
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-medium text-[#323130]">Gap Assessment</h4>
+                        <CerTooltipWrapper
+                          tooltipContent="Gaps in clinical evidence must be identified and addressed per MDR Annex XIV"
+                          whyThisMatters="Notified Bodies will scrutinize your gap management and mitigation plans as part of conformity assessment"
+                        >
+                          <AlertCircle className="h-4 w-4 text-amber-500" />
+                        </CerTooltipWrapper>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <label className="text-xs text-[#323130] font-medium mb-1 block">
+                            Gap Description
+                          </label>
+                          <Textarea
+                            value={mapping[activeGspr]?.gapStatement || ''}
+                            onChange={(e) => handleGapStatementChange(activeGspr, e.target.value)}
+                            placeholder="Describe identified gaps in the clinical evidence..."
+                            className="border-[#E1DFDD] h-16 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-[#323130] font-medium mb-1 block">
+                            Gap Impact Assessment
+                          </label>
+                          <Textarea
+                            value={mapping[activeGspr]?.gapImpact || ''}
+                            onChange={(e) => handleGapImpactChange(activeGspr, e.target.value)}
+                            placeholder="Assess the impact of these gaps on safety and performance..."
+                            className="border-[#E1DFDD] h-16 text-sm"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="text-xs text-[#323130] font-medium mb-1 block">
+                          Mitigation Plan & Next Steps
+                          <span className="text-xs text-[#E3008C] ml-1">*</span>
+                        </label>
                         <Textarea
                           value={mapping[activeGspr]?.nextSteps || ''}
                           onChange={(e) => handleNextStepsChange(activeGspr, e.target.value)}
-                          placeholder="Define actions to address gaps..."
+                          placeholder="Define concrete actions to address the identified gaps (e.g., PMCF studies, additional literature reviews)..."
                           className="border-[#E1DFDD] h-16 text-sm"
                         />
                       </div>
@@ -780,7 +857,72 @@ Compliance is determined based on evidence strength, quality, and clinical relev
                     )}
                   </div>
                   
-                  <div className="flex justify-end border-t border-[#E1DFDD] pt-4">
+                  <div className="border-t border-[#E1DFDD] pt-4 mt-4 mb-4">
+                    <h4 className="text-sm font-medium text-[#323130] mb-3">
+                      <span className="flex items-center">
+                        Evidence Quality & Strength Assessment
+                        <CerTooltipWrapper
+                          tooltipContent="Assess the overall quality and strength of the evidence for this GSPR"
+                          whyThisMatters="MEDDEV 2.7/1 Rev 4 requires assessment of evidence quality factors such as methodological quality, directness of evidence, consistency, and clinical significance"
+                        >
+                          <Info className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                        </CerTooltipWrapper>
+                      </span>
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="text-xs text-[#323130] font-medium mb-1 block">
+                          Evidence Strength
+                        </label>
+                        <Select
+                          value={mapping[activeGspr]?.evidenceStrength || 'unrated'}
+                          onValueChange={(value) => handleEvidenceStrengthChange(activeGspr, value)}
+                        >
+                          <SelectTrigger className="border-[#E1DFDD]">
+                            <SelectValue placeholder="Select strength" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="unrated">Unrated</SelectItem>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label className="text-xs text-[#323130] font-medium mb-1 block">
+                          Clinical Relevance
+                        </label>
+                        <Textarea
+                          value={mapping[activeGspr]?.clinicalRelevance || ''}
+                          onChange={(e) => handleClinicalRelevanceChange(activeGspr, e.target.value)}
+                          placeholder="Explain the clinical relevance of the evidence to this specific requirement..."
+                          className="border-[#E1DFDD] h-20 text-sm"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="mb-4">
+                      <label className="text-xs text-[#323130] font-medium mb-1 block">
+                        Reviewer Comments
+                      </label>
+                      <Textarea
+                        value={mapping[activeGspr]?.reviewerComments || ''}
+                        onChange={(e) => handleReviewerCommentsChange(activeGspr, e.target.value)}
+                        placeholder="Add reviewer notes, action items, or comments for peer review..."
+                        className="border-[#E1DFDD] h-16 text-sm"
+                      />
+                      {mapping[activeGspr]?.lastReviewed && (
+                        <p className="text-xs text-[#605E5C] mt-1">
+                          Last reviewed: {new Date(mapping[activeGspr].lastReviewed).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end">
                     <Button
                       variant="outline"
                       className="border-[#0F6CBD] text-[#0F6CBD] hover:bg-[#EFF6FC]"
