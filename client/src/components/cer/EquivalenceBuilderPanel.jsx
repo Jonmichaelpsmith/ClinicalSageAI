@@ -162,7 +162,7 @@ const predefinedCharacteristics = [
  * by allowing feature-by-feature comparison of the subject device with claimed
  * equivalent devices.
  */
-export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
+export default function EquivalenceBuilderPanel({ onEquivalenceDataChange, onAddToCER }) {
   const { toast } = useToast();
   
   // Device states
@@ -708,6 +708,35 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
         title: 'Verification failed',
         description: error.message || 'Failed to verify data access compliance. Please try again.',
         variant: 'destructive',
+      });
+    }
+  };
+  
+  // Handle adding the equivalence section to the CER
+  const handleAddToCER = () => {
+    if (!sectionE4Content) {
+      toast({
+        title: 'No content to add',
+        description: 'Please generate the E.4 section first before adding to your CER.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (onAddToCER) {
+      const cerSection = {
+        title: "Device Equivalence Assessment",
+        type: "equivalence-assessment",
+        content: sectionE4Content,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      onAddToCER(cerSection);
+      
+      toast({
+        title: 'Added to CER',
+        description: 'Device equivalence assessment has been added to your CER document.',
+        variant: 'success'
       });
     }
   };
@@ -1851,21 +1880,33 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
                 <h4 className="text-sm font-medium text-[#323130]">
                   Generated Section E.4: Comparison of Clinical, Technical and Biological Characteristics
                 </h4>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8"
-                  onClick={() => {
-                    navigator.clipboard.writeText(sectionE4Content);
-                    toast({
-                      title: 'Copied to clipboard',
-                      description: 'The E.4 section content has been copied to your clipboard.',
-                    });
-                  }}
-                >
-                  <Copy className="mr-2 h-3.5 w-3.5" />
-                  <span>Copy</span>
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={() => {
+                      navigator.clipboard.writeText(sectionE4Content);
+                      toast({
+                        title: 'Copied to clipboard',
+                        description: 'The E.4 section content has been copied to your clipboard.',
+                      });
+                    }}
+                  >
+                    <Copy className="mr-2 h-3.5 w-3.5" />
+                    <span>Copy</span>
+                  </Button>
+                  
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 border-[#0F6CBD] text-[#0F6CBD]"
+                    onClick={handleAddToCER}
+                  >
+                    <FileText className="mr-2 h-3.5 w-3.5" />
+                    <span>Add to CER</span>
+                  </Button>
+                </div>
               </div>
               <div className="p-4 bg-[#FAF9F8] rounded border border-[#E1DFDD] max-h-96 overflow-y-auto">
                 <div className="prose prose-sm max-w-none">
