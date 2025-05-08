@@ -1074,6 +1074,65 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  {/* Scope Selector - Multi-select list of CER sections */}
+                  <div>
+                    <label className="text-sm font-medium text-[#323130] flex items-center">
+                      Scope Sections
+                      <CerTooltipWrapper
+                        tooltipContent="Select which CER sections this quality objective applies to"
+                        whyThisMatters="Tying objectives to specific sections helps with traceability and ensures all CER parts meet quality requirements"
+                      >
+                        <AlertCircle className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                      </CerTooltipWrapper>
+                    </label>
+                    <div className="mt-1 p-2 border rounded-md flex flex-wrap gap-1 bg-white">
+                      {['Safety', 'Literature Review', 'Clinical Data', 'GSPR Mapping', 'State of the Art', 
+                        'Benefit-Risk', 'PMS', 'PMCF', 'Equivalence'].map((section) => (
+                        <Badge 
+                          key={section}
+                          variant={currentObjective.scopeSections?.includes(section) ? "default" : "outline"}
+                          className={`cursor-pointer ${
+                            currentObjective.scopeSections?.includes(section)
+                              ? "bg-[#0F6CBD] hover:bg-[#0E5CA8] text-white"
+                              : "bg-white hover:bg-gray-100 text-gray-700"
+                          }`}
+                          onClick={() => {
+                            const currentSections = currentObjective.scopeSections || [];
+                            const newSections = currentSections.includes(section)
+                              ? currentSections.filter(s => s !== section)
+                              : [...currentSections, section];
+                            setCurrentObjective({...currentObjective, scopeSections: newSections});
+                          }}
+                        >
+                          {section}
+                          {currentObjective.scopeSections?.includes(section) && (
+                            <X className="ml-1 h-3 w-3" />
+                          )}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Mitigation / Control Actions */}
+                  <div>
+                    <label className="text-sm font-medium text-[#323130] flex items-center">
+                      Mitigation / Control Actions
+                      <CerTooltipWrapper
+                        tooltipContent="Define specific actions to ensure this quality objective is met"
+                        whyThisMatters="Mitigation actions demonstrate how quality will be actively managed and controlled throughout the CER process"
+                      >
+                        <AlertCircle className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                      </CerTooltipWrapper>
+                    </label>
+                    <Textarea
+                      value={currentObjective.mitigationActions}
+                      onChange={(e) => setCurrentObjective({...currentObjective, mitigationActions: e.target.value})}
+                      placeholder="E.g., Run data consistency script weekly, Implement dual validation process..."
+                      className="mt-1"
+                      rows={3}
+                    />
+                  </div>
                 </CardContent>
                 <CardFooter className="p-4 flex justify-end gap-2">
                   <Button
