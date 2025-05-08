@@ -347,41 +347,34 @@ export default function CERV2Page() {
               metadata: qmpMetadata,
               lastUpdated: qmpData.lastUpdated || new Date().toISOString()
             };
+            
+            // Check if a QMS section already exists
+            const existingIndex = sections.findIndex(
+              section => section.type === 'qmp' || section.type === 'qms-plan' || 
+              (section.title && section.title.toLowerCase().includes('quality management'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: qmsSection.content,
+                metadata: qmpMetadata,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
               
-              // Check if a QMS section already exists
-              const existingIndex = sections.findIndex(
-                section => section.type === 'qms-plan' || 
-                (section.title && section.title.toLowerCase().includes('quality management'))
-              );
-              
-              if (existingIndex >= 0) {
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = {
-                  ...updatedSections[existingIndex],
-                  content: qmsSection.content,
-                  lastUpdated: new Date().toISOString()
-                };
-                setSections(updatedSections);
-                
-                toast({
-                  title: "QMS Plan Updated",
-                  description: "Quality Management System Plan (ICH E6(R3)) has been updated in your CER.",
-                  variant: "success"
-                });
-              } else {
-                setSections([...sections, qmsSection]);
-                
-                toast({
-                  title: "QMS Plan Added",
-                  description: "Quality Management System Plan (ICH E6(R3)) has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            } else {
-              // Just save the draft without adding to CER
               toast({
-                title: "QMS Plan Draft Saved",
-                description: "Your Quality Management System Plan (ICH E6(R3)) draft has been saved.",
+                title: "QMP Updated",
+                description: "Quality Management Plan (ICH E6(R3)) has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, qmsSection]);
+              
+              toast({
+                title: "QMP Added",
+                description: "Quality Management Plan (ICH E6(R3)) has been added to your CER.",
                 variant: "success"
               });
             }
