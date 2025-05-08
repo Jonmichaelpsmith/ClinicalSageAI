@@ -201,6 +201,9 @@ export default function registerRoutes(app: Express): void {
   // Register QMP API routes
   app.use('/api/qmp', qmpRouter);
   
+  // Register CER QMP Integration routes
+  app.use('/api/cer', cerQmpIntegrationRouter);
+  
   // Create a temporary CER Validation router
   const cerValidationRouter = express.Router();
   
