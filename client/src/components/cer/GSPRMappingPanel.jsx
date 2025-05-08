@@ -26,6 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from '@/hooks/use-toast';
 import CerTooltipWrapper from './CerTooltipWrapper';
+import { cerApiService } from '../../services/CerAPIService';
 
 // Evidence source types
 const EVIDENCE_SOURCES = {
