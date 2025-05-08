@@ -1,863 +1,495 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { 
+  BarChart3, FileText, Download, Calendar, Users, 
+  CheckCircle, AlertTriangle, FileBarChart2, FileCheck
+} from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import axios from 'axios';
 import { 
-  BarChart3, 
-  FileText, 
-  History, 
-  Network, 
-  Layers,
-  Download,
-  ClipboardCheck,
-  AlertCircle,
-  FileBarChart2,
-  Users,
-  CheckCircle2,
-  ListChecks,
-  ShieldAlert,
-  GanttChart,
-  FileCog,
-  ArrowDownToLine,
-  Printer,
-  FileQuestion,
-  BookOpen,
-  FileSearch,
-  Gauge
-} from 'lucide-react';
-
-import QmpAuditTrailPanel from './QmpAuditTrailPanel';
-import QmpTraceabilityHeatmap from './QmpTraceabilityHeatmap';
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
 
 /**
- * CER Comprehensive Reports Panel
+ * CerComprehensiveReportsPanel Component
  * 
- * A central reporting hub providing comprehensive insights and export capabilities 
- * for all aspects of the Clinical Evaluation Report process.
+ * This component provides a comprehensive reporting interface for the CER module,
+ * displaying various metrics, compliance scores, and generating PDF reports.
  */
-const CerComprehensiveReportsPanel = ({ 
-  cerData,
-  deviceName,
-  manufacturer,
-  // QMP Data
-  qmpData,
-  objectives,
-  ctqFactors,
-  complianceMetrics,
-  // Literature Review Data
-  literatureData,
-  // Clinical Data
-  clinicalData,
-  // Regulatory Data
-  regulatoryData,
-  // Validation data
-  validationResults,
-  // Risk analysis data
-  riskAnalysisData
-}) => {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('compliance-dashboard');
-  const [exportStatus, setExportStatus] = useState({
-    inProgress: false,
-    type: null,
-    progress: 0
+const CerComprehensiveReportsPanel = () => {
+  const [activeReportType, setActiveReportType] = useState('compliance');
+  const [reportTimeframe, setReportTimeframe] = useState('last30days');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportData, setReportData] = useState({
+    compliance: {
+      overall: 85,
+      bySection: [
+        { section: 'Device Description', score: 92, status: 'compliant' },
+        { section: 'Clinical Evaluation Strategy', score: 78, status: 'minor-issues' },
+        { section: 'Literature Review', score: 88, status: 'compliant' },
+        { section: 'Risk Assessment', score: 90, status: 'compliant' },
+        { section: 'Clinical Data Analysis', score: 75, status: 'minor-issues' },
+        { section: 'Post-Market Surveillance', score: 95, status: 'compliant' },
+      ]
+    },
+    activity: {
+      totalEdits: 127,
+      lastActivityDate: '2025-05-07',
+      userActivity: [
+        { user: 'John Doe', edits: 45, sections: ['Device Description', 'Literature Review'] },
+        { user: 'Jane Smith', edits: 38, sections: ['Risk Assessment', 'Post-Market Surveillance'] },
+        { user: 'Robert Johnson', edits: 44, sections: ['Clinical Data Analysis', 'Clinical Evaluation Strategy'] }
+      ]
+    },
+    quality: {
+      ctqFactorsCompleted: 18,
+      ctqFactorsTotal: 22,
+      riskBreakdown: {
+        high: { completed: 8, total: 8 },
+        medium: { completed: 6, total: 8 },
+        low: { completed: 4, total: 6 }
+      }
+    }
   });
-  
-  // Dashboard metrics calculation
-  const dashboardMetrics = useMemo(() => {
-    // Calculate overall statistics and metrics
-    const overallCompletionScore = Math.round(
-      (complianceMetrics?.overallScore || 0)
-    );
+
+  // Simulated API call to fetch report data
+  useEffect(() => {
+    // This would be replaced with an actual API call
+    console.log(`Fetching ${activeReportType} report data for ${reportTimeframe}`);
+    // setReportData(fetchedData) would happen here in a real implementation
+  }, [activeReportType, reportTimeframe]);
+
+  const generatePDFReport = async () => {
+    setIsGeneratingReport(true);
     
-    const literatureReviewStatus = literatureData?.reviewStatus || 'pending';
-    const literatureReviewCompletion = literatureData?.completionPercentage || 0;
-    
-    const riskAnalysisCompletion = riskAnalysisData?.completionPercentage || 0;
-    
-    const validationIssuesCount = validationResults?.issues?.length || 0;
-    const criticalValidationIssues = validationResults?.issues?.filter(i => i.severity === 'critical')?.length || 0;
-    
-    const regulatoryComplianceScore = regulatoryData?.complianceScore || 0;
-    
-    return {
-      overallCompletionScore,
-      literatureReviewStatus,
-      literatureReviewCompletion,
-      riskAnalysisCompletion,
-      validationIssuesCount,
-      criticalValidationIssues,
-      regulatoryComplianceScore
+    try {
+      // Simulate PDF generation
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      toast({
+        title: "Report Generated Successfully",
+        description: `Your ${getReportTypeName(activeReportType)} report has been generated and is ready for download.`,
+        variant: "success",
+      });
+      
+      // In a real implementation, this would trigger a file download
+    } catch (error) {
+      toast({
+        title: "Report Generation Failed",
+        description: error.message || "There was an error generating your report.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
+  const getReportTypeName = (reportType) => {
+    const reportTypes = {
+      compliance: "Compliance",
+      activity: "Activity",
+      quality: "Quality Management"
     };
-  }, [complianceMetrics, literatureData, riskAnalysisData, validationResults, regulatoryData]);
-  
-  // Export all reports combined as a single PDF
-  const exportComprehensiveReport = async () => {
-    setExportStatus({
-      inProgress: true,
-      type: 'comprehensive',
-      progress: 10
-    });
-    
-    try {
-      toast({
-        title: "Starting report generation",
-        description: "Compiling data from all CER modules...",
-      });
-      
-      // Simulate progress for UI feedback
-      const progressInterval = setInterval(() => {
-        setExportStatus(prev => ({
-          ...prev,
-          progress: Math.min(prev.progress + 5, 90)
-        }));
-      }, 500);
-      
-      // Request the comprehensive report PDF from the server
-      const response = await axios.get('/api/cer/export-comprehensive-report', {
-        responseType: 'blob',
-        params: {
-          deviceName,
-          manufacturer,
-          includeSections: 'all'
-        }
-      });
-      
-      clearInterval(progressInterval);
-      setExportStatus(prev => ({
-        ...prev,
-        progress: 100
-      }));
-      
-      // Create download link for the PDF
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${deviceName.replace(/[^a-z0-9]/gi, '_')}_CER_Comprehensive_Report.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      
-      toast({
-        title: "Comprehensive report exported",
-        description: "The PDF has been downloaded successfully.",
-      });
-    } catch (error) {
-      console.error('Error exporting comprehensive report:', error);
-      toast({
-        title: "Export failed",
-        description: "Failed to generate the comprehensive report. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      // Reset status after a delay to show 100% completion
-      setTimeout(() => {
-        setExportStatus({
-          inProgress: false,
-          type: null,
-          progress: 0
-        });
-      }, 1000);
-    }
+    return reportTypes[reportType] || reportType;
   };
-  
-  // Export report for a specific section
-  const exportSectionReport = async (section) => {
-    setExportStatus({
-      inProgress: true,
-      type: section,
-      progress: 10
-    });
-    
-    try {
-      toast({
-        title: `Starting ${section} report generation`,
-        description: "Compiling section data...",
-      });
-      
-      // Simulate progress for UI feedback
-      const progressInterval = setInterval(() => {
-        setExportStatus(prev => ({
-          ...prev,
-          progress: Math.min(prev.progress + 8, 90)
-        }));
-      }, 300);
-      
-      // Request the section report PDF from the server
-      const response = await axios.get(`/api/cer/export-section-report/${section}`, {
-        responseType: 'blob',
-        params: {
-          deviceName,
-          manufacturer
-        }
-      });
-      
-      clearInterval(progressInterval);
-      setExportStatus(prev => ({
-        ...prev,
-        progress: 100
-      }));
-      
-      // Format the section name for the filename
-      const formattedSection = section
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join('');
-      
-      // Create download link for the PDF
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${deviceName.replace(/[^a-z0-9]/gi, '_')}_CER_${formattedSection}_Report.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-      
-      toast({
-        title: `${formattedSection} report exported`,
-        description: "The PDF has been downloaded successfully.",
-      });
-    } catch (error) {
-      console.error(`Error exporting ${section} report:`, error);
-      toast({
-        title: "Export failed",
-        description: `Failed to generate the ${section} report. Please try again.`,
-        variant: "destructive",
-      });
-    } finally {
-      // Reset status after a delay to show 100% completion
-      setTimeout(() => {
-        setExportStatus({
-          inProgress: false,
-          type: null,
-          progress: 0
-        });
-      }, 1000);
-    }
+
+  const getTimeframeName = (timeframe) => {
+    const timeframes = {
+      last7days: "Last 7 Days",
+      last30days: "Last 30 Days",
+      last90days: "Last 90 Days",
+      allTime: "All Time"
+    };
+    return timeframes[timeframe] || timeframe;
   };
-  
-  return (
-    <div className="bg-white rounded-lg shadow-sm border p-4">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-            <FileBarChart2 className="mr-2 h-6 w-6 text-blue-600" />
-            CER Comprehensive Reports
-          </h2>
-          <p className="text-gray-600 mt-1">
-            Generate detailed reports across all Clinical Evaluation Report modules
-          </p>
-        </div>
-        
-        <Button 
-          onClick={exportComprehensiveReport}
-          disabled={exportStatus.inProgress}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          {exportStatus.inProgress && exportStatus.type === 'comprehensive' ? (
-            <>
-              <Printer className="mr-2 h-4 w-4 animate-pulse" />
-              Generating Report...
-            </>
-          ) : (
-            <>
-              <ArrowDownToLine className="mr-2 h-4 w-4" />
-              Export Full CER Report
-            </>
-          )}
-        </Button>
+
+  const renderComplianceReport = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Overall Compliance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-4">
+              <div className="relative h-24 w-24">
+                <svg className="h-full w-full" viewBox="0 0 100 100">
+                  <circle
+                    className="text-gray-200"
+                    strokeWidth="10"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="40"
+                    cx="50"
+                    cy="50"
+                  />
+                  <circle
+                    className="text-blue-600"
+                    strokeWidth="10"
+                    strokeDasharray={2 * Math.PI * 40}
+                    strokeDashoffset={2 * Math.PI * 40 * (1 - reportData.compliance.overall / 100)}
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="40"
+                    cx="50"
+                    cy="50"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl font-bold">{reportData.compliance.overall}%</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-0">
+            {reportData.compliance.overall >= 80 ? (
+              <div className="w-full flex items-center text-sm text-green-600">
+                <CheckCircle className="h-4 w-4 mr-1" />
+                <span>Meets regulatory threshold</span>
+              </div>
+            ) : (
+              <div className="w-full flex items-center text-sm text-amber-600">
+                <AlertTriangle className="h-4 w-4 mr-1" />
+                <span>Below regulatory threshold</span>
+              </div>
+            )}
+          </CardFooter>
+        </Card>
+
+        <Card className="col-span-1 md:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Compliance by Section</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {reportData.compliance.bySection.map((section, index) => (
+                <div key={index} className="flex flex-col">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>{section.section}</span>
+                    <span className="font-medium">{section.score}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full ${
+                        section.status === 'compliant' 
+                          ? 'bg-green-500' 
+                          : section.status === 'minor-issues' 
+                            ? 'bg-amber-500' 
+                            : 'bg-red-500'
+                      }`} 
+                      style={{ width: `${section.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      
-      {exportStatus.inProgress && (
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium">
-              Generating {exportStatus.type === 'comprehensive' ? 'comprehensive report' : `${exportStatus.type} report`}...
-            </span>
-            <span className="text-sm text-gray-500">{exportStatus.progress}%</span>
-          </div>
-          <Progress value={exportStatus.progress} className="h-2" />
-        </div>
-      )}
-      
-      <Tabs 
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full"
-      >
-        <div className="border-b mb-6">
-          <ScrollArea className="w-full whitespace-nowrap pb-2">
-            <TabsList className="inline-flex justify-start bg-transparent h-auto p-0 w-auto">
-              <TabsTrigger 
-                value="compliance-dashboard"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent px-4 py-2"
-              >
-                <Gauge className="h-4 w-4 mr-2" />
-                <span>Compliance Dashboard</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="quality-management"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent px-4 py-2"
-              >
-                <ShieldAlert className="h-4 w-4 mr-2" />
-                <span>Quality Management</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="literature-review"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent px-4 py-2"
-              >
-                <BookOpen className="h-4 w-4 mr-2" />
-                <span>Literature Review</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="clinical-data"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent px-4 py-2"
-              >
-                <FileSearch className="h-4 w-4 mr-2" />
-                <span>Clinical Evidence</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="risk-analysis"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent px-4 py-2"
-              >
-                <AlertCircle className="h-4 w-4 mr-2" />
-                <span>Risk Analysis</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="validation"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent px-4 py-2"
-              >
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                <span>Validation Results</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="regulatory"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent px-4 py-2"
-              >
-                <FileCog className="h-4 w-4 mr-2" />
-                <span>Regulatory Traceability</span>
-              </TabsTrigger>
-              
-              <TabsTrigger 
-                value="approvals"
-                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none border-b-2 border-transparent px-4 py-2"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                <span>Approval Status</span>
-              </TabsTrigger>
-            </TabsList>
-          </ScrollArea>
-        </div>
-        
-        {/* Compliance Dashboard Tab */}
-        <TabsContent value="compliance-dashboard" className="mt-0">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-lg font-semibold flex items-center text-gray-800">
-                <Gauge className="h-5 w-5 mr-2 text-blue-600" />
-                CER Compliance Dashboard
-              </h3>
-              <p className="text-sm text-gray-600">
-                Overview of compliance metrics across all CER modules
-              </p>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Regulatory Frameworks Compliance</CardTitle>
+          <CardDescription>Analysis of CER compliance with major regulatory frameworks</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium">EU MDR 2017/745</h3>
+                <span className="text-green-600 bg-green-100 px-2 py-0.5 rounded text-xs">Compliant</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Overall Score:</span>
+                <span className="font-medium">92%</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Requirements Met:</span>
+                <span className="font-medium">54/58</span>
+              </div>
             </div>
+            
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium">FDA CFR 21</h3>
+                <span className="text-amber-600 bg-amber-100 px-2 py-0.5 rounded text-xs">Needs Review</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Overall Score:</span>
+                <span className="font-medium">78%</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Requirements Met:</span>
+                <span className="font-medium">42/54</span>
+              </div>
+            </div>
+            
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium">ISO 14155:2020</h3>
+                <span className="text-green-600 bg-green-100 px-2 py-0.5 rounded text-xs">Compliant</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Overall Score:</span>
+                <span className="font-medium">89%</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Requirements Met:</span>
+                <span className="font-medium">32/36</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderActivityReport = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Total Edits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-4">
+              <span className="text-4xl font-bold">{reportData.activity.totalEdits}</span>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-0">
+            <div className="w-full flex items-center text-sm text-gray-600">
+              <Calendar className="h-4 w-4 mr-1" />
+              <span>Last activity: {reportData.activity.lastActivityDate}</span>
+            </div>
+          </CardFooter>
+        </Card>
+
+        <Card className="col-span-1 md:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">User Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {reportData.activity.userActivity.map((user, index) => (
+                <div key={index} className="border-b pb-3 last:border-0 last:pb-0">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-medium">{user.user}</span>
+                    <span>{user.edits} edits</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Sections: {user.sections.join(', ')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const renderQualityReport = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">CtQ Factors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center py-4">
+              <div className="relative h-24 w-24">
+                <svg className="h-full w-full" viewBox="0 0 100 100">
+                  <circle
+                    className="text-gray-200"
+                    strokeWidth="10"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="40"
+                    cx="50"
+                    cy="50"
+                  />
+                  <circle
+                    className="text-green-600"
+                    strokeWidth="10"
+                    strokeDasharray={2 * Math.PI * 40}
+                    strokeDashoffset={2 * Math.PI * 40 * (1 - reportData.quality.ctqFactorsCompleted / reportData.quality.ctqFactorsTotal)}
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="40"
+                    cx="50"
+                    cy="50"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">{reportData.quality.ctqFactorsCompleted}/{reportData.quality.ctqFactorsTotal}</div>
+                    <div className="text-xs">completed</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-0">
+            <div className="w-full flex items-center text-sm text-gray-600">
+              <CheckCircle className="h-4 w-4 mr-1" />
+              <span>
+                {Math.round((reportData.quality.ctqFactorsCompleted / reportData.quality.ctqFactorsTotal) * 100)}% completion rate
+              </span>
+            </div>
+          </CardFooter>
+        </Card>
+
+        <Card className="col-span-1 md:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">CtQ Completion by Risk Level</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium text-red-600">High Risk</span>
+                  <span>
+                    {reportData.quality.riskBreakdown.high.completed}/{reportData.quality.riskBreakdown.high.total} completed
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-red-500 rounded-full" 
+                    style={{ width: `${(reportData.quality.riskBreakdown.high.completed / reportData.quality.riskBreakdown.high.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium text-amber-600">Medium Risk</span>
+                  <span>
+                    {reportData.quality.riskBreakdown.medium.completed}/{reportData.quality.riskBreakdown.medium.total} completed
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-amber-500 rounded-full" 
+                    style={{ width: `${(reportData.quality.riskBreakdown.medium.completed / reportData.quality.riskBreakdown.medium.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="font-medium text-green-600">Low Risk</span>
+                  <span>
+                    {reportData.quality.riskBreakdown.low.completed}/{reportData.quality.riskBreakdown.low.total} completed
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-green-500 rounded-full" 
+                    style={{ width: `${(reportData.quality.riskBreakdown.low.completed / reportData.quality.riskBreakdown.low.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  // Render the active report based on selection
+  const renderActiveReport = () => {
+    switch (activeReportType) {
+      case 'compliance':
+        return renderComplianceReport();
+      case 'activity':
+        return renderActivityReport();
+      case 'quality':
+        return renderQualityReport();
+      default:
+        return <div>Select a report type to view</div>;
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="p-4 bg-white rounded-lg border">
+        <div className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold mb-1">Comprehensive Reports</h2>
+            <p className="text-gray-500">
+              Generate detailed reports to monitor compliance, activity, and quality metrics
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <Button
+              onClick={generatePDFReport}
+              disabled={isGeneratingReport}
+              className="flex items-center space-x-1"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Generate PDF Report</span>
+            </Button>
             
             <Button
               variant="outline"
-              size="sm"
-              onClick={() => exportSectionReport('compliance-dashboard')}
-              disabled={exportStatus.inProgress}
+              onClick={generatePDFReport}
+              disabled={isGeneratingReport}
+              className="flex items-center space-x-1"
             >
-              {exportStatus.inProgress && exportStatus.type === 'compliance-dashboard' ? (
-                <Printer className="h-4 w-4 mr-1.5 animate-pulse" />
-              ) : (
-                <Download className="h-4 w-4 mr-1.5" />
-              )}
-              Export Report
+              <Download className="h-4 w-4" />
+              <span>Export Data</span>
             </Button>
           </div>
-          
-          {/* Main metrics cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Overall Compliance</p>
-                    <h4 className="text-2xl font-bold mt-1">{dashboardMetrics.overallCompletionScore}%</h4>
-                  </div>
-                  <div className={`p-2 rounded-full ${
-                    dashboardMetrics.overallCompletionScore >= 80 ? 'bg-green-100' :
-                    dashboardMetrics.overallCompletionScore >= 50 ? 'bg-yellow-100' : 'bg-red-100'
-                  }`}>
-                    <Gauge className={`h-5 w-5 ${
-                      dashboardMetrics.overallCompletionScore >= 80 ? 'text-green-600' :
-                      dashboardMetrics.overallCompletionScore >= 50 ? 'text-yellow-600' : 'text-red-600'
-                    }`} />
-                  </div>
-                </div>
-                <Progress 
-                  value={dashboardMetrics.overallCompletionScore} 
-                  className="h-1.5 mt-2"
-                  indicatorClassName={
-                    dashboardMetrics.overallCompletionScore >= 80 ? 'bg-green-600' :
-                    dashboardMetrics.overallCompletionScore >= 50 ? 'bg-yellow-600' : 'bg-red-600'
-                  }
-                />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Validation Status</p>
-                    <h4 className="text-2xl font-bold mt-1">
-                      {dashboardMetrics.criticalValidationIssues > 0 ? (
-                        <span className="text-red-600">{dashboardMetrics.validationIssuesCount} Issues</span>
-                      ) : dashboardMetrics.validationIssuesCount > 0 ? (
-                        <span className="text-yellow-600">{dashboardMetrics.validationIssuesCount} Warnings</span>
-                      ) : (
-                        <span className="text-green-600">Passed</span>
-                      )}
-                    </h4>
-                  </div>
-                  <div className={`p-2 rounded-full ${
-                    dashboardMetrics.criticalValidationIssues > 0 ? 'bg-red-100' :
-                    dashboardMetrics.validationIssuesCount > 0 ? 'bg-yellow-100' : 'bg-green-100'
-                  }`}>
-                    {dashboardMetrics.criticalValidationIssues > 0 ? (
-                      <AlertCircle className="h-5 w-5 text-red-600" />
-                    ) : dashboardMetrics.validationIssuesCount > 0 ? (
-                      <FileQuestion className="h-5 w-5 text-yellow-600" />
-                    ) : (
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    )}
-                  </div>
-                </div>
-                <div className="mt-2">
-                  <Badge className={
-                    dashboardMetrics.criticalValidationIssues > 0 ? 'bg-red-100 text-red-700 hover:bg-red-100' :
-                    dashboardMetrics.validationIssuesCount > 0 ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100' : 
-                    'bg-green-100 text-green-700 hover:bg-green-100'
-                  }>
-                    {dashboardMetrics.criticalValidationIssues > 0 ? 
-                      `${dashboardMetrics.criticalValidationIssues} critical issues` :
-                      dashboardMetrics.validationIssuesCount > 0 ?
-                      `${dashboardMetrics.validationIssuesCount} non-critical issues` :
-                      'All checks passed'
-                    }
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Literature Review</p>
-                    <h4 className="text-2xl font-bold mt-1">{dashboardMetrics.literatureReviewCompletion}%</h4>
-                  </div>
-                  <div className={`p-2 rounded-full ${
-                    dashboardMetrics.literatureReviewCompletion >= 90 ? 'bg-green-100' :
-                    dashboardMetrics.literatureReviewCompletion >= 60 ? 'bg-yellow-100' : 'bg-red-100'
-                  }`}>
-                    <BookOpen className={`h-5 w-5 ${
-                      dashboardMetrics.literatureReviewCompletion >= 90 ? 'text-green-600' :
-                      dashboardMetrics.literatureReviewCompletion >= 60 ? 'text-yellow-600' : 'text-red-600'
-                    }`} />
-                  </div>
-                </div>
-                <Progress 
-                  value={dashboardMetrics.literatureReviewCompletion} 
-                  className="h-1.5 mt-2"
-                  indicatorClassName={
-                    dashboardMetrics.literatureReviewCompletion >= 90 ? 'bg-green-600' :
-                    dashboardMetrics.literatureReviewCompletion >= 60 ? 'bg-yellow-600' : 'bg-red-600'
-                  }
-                />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Regulatory Compliance</p>
-                    <h4 className="text-2xl font-bold mt-1">{dashboardMetrics.regulatoryComplianceScore}%</h4>
-                  </div>
-                  <div className={`p-2 rounded-full ${
-                    dashboardMetrics.regulatoryComplianceScore >= 90 ? 'bg-green-100' :
-                    dashboardMetrics.regulatoryComplianceScore >= 70 ? 'bg-yellow-100' : 'bg-red-100'
-                  }`}>
-                    <FileCog className={`h-5 w-5 ${
-                      dashboardMetrics.regulatoryComplianceScore >= 90 ? 'text-green-600' :
-                      dashboardMetrics.regulatoryComplianceScore >= 70 ? 'text-yellow-600' : 'text-red-600'
-                    }`} />
-                  </div>
-                </div>
-                <Progress 
-                  value={dashboardMetrics.regulatoryComplianceScore} 
-                  className="h-1.5 mt-2"
-                  indicatorClassName={
-                    dashboardMetrics.regulatoryComplianceScore >= 90 ? 'bg-green-600' :
-                    dashboardMetrics.regulatoryComplianceScore >= 70 ? 'bg-yellow-600' : 'bg-red-600'
-                  }
-                />
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Section status overview */}
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h4 className="text-base font-semibold mb-4">CER Section Completion Status</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {/* Example section statuses - these would come from actual data */}
-              <div className="bg-white p-3 rounded border">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Device Description</span>
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100">100%</Badge>
-                </div>
-                <Progress value={100} className="h-1.5" indicatorClassName="bg-green-600" />
-              </div>
-              
-              <div className="bg-white p-3 rounded border">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Literature Review</span>
-                  <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">78%</Badge>
-                </div>
-                <Progress value={78} className="h-1.5" indicatorClassName="bg-yellow-600" />
-              </div>
-              
-              <div className="bg-white p-3 rounded border">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Clinical Evaluation</span>
-                  <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">65%</Badge>
-                </div>
-                <Progress value={65} className="h-1.5" indicatorClassName="bg-yellow-600" />
-              </div>
-              
-              <div className="bg-white p-3 rounded border">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Post-Market Surveillance</span>
-                  <Badge className="bg-red-100 text-red-700 hover:bg-red-100">40%</Badge>
-                </div>
-                <Progress value={40} className="h-1.5" indicatorClassName="bg-red-600" />
-              </div>
-              
-              <div className="bg-white p-3 rounded border">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Risk Assessment</span>
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100">90%</Badge>
-                </div>
-                <Progress value={90} className="h-1.5" indicatorClassName="bg-green-600" />
-              </div>
-              
-              <div className="bg-white p-3 rounded border">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Benefit-Risk Analysis</span>
-                  <Badge className="bg-red-100 text-red-700 hover:bg-red-100">35%</Badge>
-                </div>
-                <Progress value={35} className="h-1.5" indicatorClassName="bg-red-600" />
-              </div>
-            </div>
-          </div>
-          
-          {/* Critical issues summary */}
-          <div className="rounded-lg border mb-6">
-            <div className="p-4 border-b bg-gray-50">
-              <h4 className="text-base font-semibold flex items-center">
-                <AlertCircle className="h-4 w-4 mr-2 text-red-600" />
-                Critical Issues Summary
-              </h4>
-            </div>
-            <div className="p-4">
-              {dashboardMetrics.criticalValidationIssues > 0 ? (
-                <div className="space-y-3">
-                  <Alert variant="destructive" className="bg-red-50 text-red-800 border-red-200">
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    <AlertDescription>
-                      Missing required clinical data in the Post-Market Surveillance section
-                    </AlertDescription>
-                  </Alert>
-                  
-                  <Alert variant="destructive" className="bg-red-50 text-red-800 border-red-200">
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    <AlertDescription>
-                      Benefit-Risk Analysis lacks quantitative evidence
-                    </AlertDescription>
-                  </Alert>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center py-6 text-gray-500">
-                  <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" />
-                  <span>No critical issues detected</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </TabsContent>
+        </div>
         
-        {/* Quality Management Tab */}
-        <TabsContent value="quality-management" className="mt-0">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-lg font-semibold flex items-center text-gray-800">
-                <ShieldAlert className="h-5 w-5 mr-2 text-blue-600" />
-                Quality Management Reports
-              </h3>
-              <p className="text-sm text-gray-600">
-                Quality plan implementation status, audit trail, and traceability
-              </p>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => exportSectionReport('quality-management')}
-              disabled={exportStatus.inProgress}
-            >
-              {exportStatus.inProgress && exportStatus.type === 'quality-management' ? (
-                <Printer className="h-4 w-4 mr-1.5 animate-pulse" />
-              ) : (
-                <Download className="h-4 w-4 mr-1.5" />
-              )}
-              Export Report
-            </Button>
-          </div>
-          
-          <Tabs defaultValue="quality-traceability">
-            <TabsList className="w-full grid grid-cols-2 mb-6">
-              <TabsTrigger value="quality-traceability">
-                <Network className="h-4 w-4 mr-2" />
-                Quality Traceability
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 mb-6">
+          <Tabs 
+            defaultValue="compliance" 
+            value={activeReportType}
+            onValueChange={setActiveReportType}
+            className="w-full md:w-auto"
+          >
+            <TabsList>
+              <TabsTrigger value="compliance" className="flex items-center">
+                <FileCheck className="h-4 w-4 mr-1" />
+                Compliance
               </TabsTrigger>
-              <TabsTrigger value="audit-trail">
-                <History className="h-4 w-4 mr-2" />
-                Audit Trail
+              <TabsTrigger value="activity" className="flex items-center">
+                <Users className="h-4 w-4 mr-1" />
+                Activity
+              </TabsTrigger>
+              <TabsTrigger value="quality" className="flex items-center">
+                <FileBarChart2 className="h-4 w-4 mr-1" />
+                Quality
               </TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="quality-traceability">
-              <QmpTraceabilityHeatmap 
-                objectives={objectives}
-                ctqFactors={ctqFactors}
-                complianceMetrics={complianceMetrics}
-              />
-            </TabsContent>
-            
-            <TabsContent value="audit-trail">
-              <QmpAuditTrailPanel />
-            </TabsContent>
           </Tabs>
-        </TabsContent>
-        
-        {/* Literature Review Tab */}
-        <TabsContent value="literature-review" className="mt-0">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-lg font-semibold flex items-center text-gray-800">
-                <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
-                Literature Review Reports
-              </h3>
-              <p className="text-sm text-gray-600">
-                Literature search methodology, results coverage, and summary
-              </p>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => exportSectionReport('literature-review')}
-              disabled={exportStatus.inProgress}
-            >
-              {exportStatus.inProgress && exportStatus.type === 'literature-review' ? (
-                <Printer className="h-4 w-4 mr-1.5 animate-pulse" />
-              ) : (
-                <Download className="h-4 w-4 mr-1.5" />
-              )}
-              Export Report
-            </Button>
-          </div>
           
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <h4 className="text-lg font-medium mb-4">Literature Search Methodology</h4>
-              <p className="text-sm text-gray-700 mb-4">
-                A systematic literature search was conducted according to the requirements of MEDDEV 
-                2.7/1 Rev 4 and sections 9 and 10 of the MDR to identify all relevant publications 
-                related to the device.
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h5 className="font-medium mb-2 text-blue-700">Databases Searched</h5>
-                  <ul className="list-disc pl-5 text-sm">
-                    <li>PubMed / MEDLINE</li>
-                    <li>Embase</li>
-                    <li>Cochrane Library</li>
-                    <li>Web of Science</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h5 className="font-medium mb-2 text-blue-700">Search Terms</h5>
-                  <ul className="list-disc pl-5 text-sm">
-                    <li>Device specific terms</li>
-                    <li>Type of device terms</li>
-                    <li>Clinical application terms</li>
-                    <li>Outcome measurement terms</li>
-                  </ul>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h5 className="font-medium mb-2 text-blue-700">Inclusion Criteria</h5>
-                  <ul className="list-disc pl-5 text-sm">
-                    <li>English language studies</li>
-                    <li>Human studies</li>
-                    <li>Published 2015 - 2025</li>
-                    <li>Clinical investigations</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <h4 className="text-lg font-medium mb-4">Search Results Summary</h4>
-              
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex-1">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Literature Search Statistics</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Total records identified:</div>
-                          <div className="font-medium">428</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">After duplicate removal:</div>
-                          <div className="font-medium">315</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Title/abstract screening:</div>
-                          <div className="font-medium">87</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Full-text assessment:</div>
-                          <div className="font-medium">42</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Included in analysis:</div>
-                          <div className="font-medium">24</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                <div className="flex-1">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">Evidence Type Distribution</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Randomized controlled trials:</div>
-                          <div className="font-medium">7</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Prospective cohort studies:</div>
-                          <div className="font-medium">9</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Retrospective analyses:</div>
-                          <div className="font-medium">5</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Case series/reports:</div>
-                          <div className="font-medium">3</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">Meta-analyses:</div>
-                          <div className="font-medium">0</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Add additional tabs for other sections */}
-        
-        {/* Risk Analysis Tab */}
-        <TabsContent value="risk-analysis" className="mt-0">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-lg font-semibold flex items-center text-gray-800">
-                <AlertCircle className="h-5 w-5 mr-2 text-blue-600" />
-                Risk Analysis Reports
-              </h3>
-              <p className="text-sm text-gray-600">
-                Risk assessment, mitigation strategies, and benefit-risk determination
-              </p>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => exportSectionReport('risk-analysis')}
-              disabled={exportStatus.inProgress}
-            >
-              {exportStatus.inProgress && exportStatus.type === 'risk-analysis' ? (
-                <Printer className="h-4 w-4 mr-1.5 animate-pulse" />
-              ) : (
-                <Download className="h-4 w-4 mr-1.5" />
-              )}
-              Export Report
-            </Button>
+          <div className="w-full md:w-48">
+            <Select value={reportTimeframe} onValueChange={setReportTimeframe}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select timeframe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="last7days">Last 7 Days</SelectItem>
+                <SelectItem value="last30days">Last 30 Days</SelectItem>
+                <SelectItem value="last90days">Last 90 Days</SelectItem>
+                <SelectItem value="allTime">All Time</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          
-          <div className="p-6 rounded-md bg-gray-50 mb-6">
-            <p className="text-yellow-700 font-medium flex items-center mb-4">
-              <AlertCircle className="h-5 w-5 mr-2" />
-              Risk analysis data would be displayed here based on actual CER data
-            </p>
-            
-            <p className="text-sm text-gray-600">
-              This section would include a comprehensive risk analysis report covering:
-            </p>
-            
-            <ul className="list-disc pl-5 text-sm mt-2 space-y-1 text-gray-600">
-              <li>Identified hazards and potential harms</li>
-              <li>Risk assessment methodology</li>
-              <li>Risk mitigation strategies</li>
-              <li>Residual risk evaluation</li>
-              <li>Benefit-risk determination</li>
-              <li>Risk management plan implementation status</li>
-            </ul>
-          </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+        
+        {renderActiveReport()}
+      </div>
     </div>
   );
 };

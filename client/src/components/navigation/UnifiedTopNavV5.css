@@ -15,12 +15,21 @@
 }
 .utnv5-controls button,
 .utnv5-controls .utnv5-home,
-.utnv5-controls .utnv5-switch {
+.utnv5-controls .utnv5-switch,
+.utnv5-controls .utnv5-reports {
   background: none;
   border: none;
   font-size: var(--text-md);
   cursor: pointer;
   color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.utnv5-controls .utnv5-reports {
+  display: flex;
+  align-items: center;
+  color: #0F6CBD;
+  font-weight: 500;
 }
 .utnv5-tabs {
   margin-top: var(--space-sm);
