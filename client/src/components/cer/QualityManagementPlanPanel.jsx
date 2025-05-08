@@ -18,6 +18,18 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
   const [objectives, setObjectives] = useState([]);
   const [ctqFactors, setCtqFactors] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // QMP Metadata fields (added based on new requirements)
+  const [planMetadata, setPlanMetadata] = useState({
+    planName: 'Quality Management Plan',
+    planVersion: '1.0.0',
+    authorName: 'System User', // Default value, should be replaced with actual user
+    authorRole: 'Quality Manager',
+    dateCreated: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    linkedCerVersion: 'Current Draft'
+  });
+  
   const [currentObjective, setCurrentObjective] = useState({ 
     id: null, 
     title: '', 
@@ -25,8 +37,11 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
     measures: '',
     responsible: '',
     timeline: '',
-    status: 'planned' 
+    status: 'planned',
+    scopeSections: [], // New field for multi-select list of CER sections 
+    mitigationActions: '' // New field for control actions
   });
+  
   const [currentCtq, setCurrentCtq] = useState({
     id: null,
     objectiveId: null,
@@ -34,8 +49,11 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
     description: '',
     riskLevel: 'medium',
     associatedSection: '',
-    mitigation: ''
+    mitigation: '',
+    nextReviewDate: '', // For risk-based review scheduling
+    status: 'pending' // For tracking CtQ satisfaction status
   });
+  
   const [editingCtqId, setEditingCtqId] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingPlan, setIsLoadingPlan] = useState(false);
@@ -935,8 +953,6 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                                       Link this factor to a CER section for complete ICH E6(R3) traceability
                                     </span>
                                   </div>
-                                </div>
-                              )
                                 </div>
                               )}
                             </div>
