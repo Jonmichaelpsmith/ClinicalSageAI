@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import ValidationEngine from '@/components/cer/ValidationEngine';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -28,6 +29,8 @@ import {
   FileIcon,
   FileOutput,
   Code,
+  Shield,
+  AlertTriangle,
   FileBadge,
   FileDigit,
   Table,
