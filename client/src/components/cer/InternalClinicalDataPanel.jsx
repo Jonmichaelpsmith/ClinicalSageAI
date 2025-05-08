@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 import { 
   Database, 
   FileUp, 
@@ -20,7 +21,10 @@ import {
   Activity,
   PieChart,
   RefreshCw,
-  Plus
+  Plus,
+  Upload,
+  File,
+  X
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cerApiService as CerAPIService } from '@/services/CerAPIService';
@@ -38,7 +42,11 @@ import { cerApiService as CerAPIService } from '@/services/CerAPIService';
 export default function InternalClinicalDataPanel({ jobId, deviceName, manufacturer, onAddToCER }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef(null);
   const [activeTab, setActiveTab] = useState("investigations");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     fileName: "",
     reportType: "",
@@ -49,7 +57,8 @@ export default function InternalClinicalDataPanel({ jobId, deviceName, manufactu
     summary: "",
     author: "",
     department: "",
-    documentId: ""
+    documentId: "",
+    fileUrl: ""
   });
 
   // Query to fetch existing internal clinical data
@@ -68,6 +77,71 @@ export default function InternalClinicalDataPanel({ jobId, deviceName, manufactu
     enabled: !!internalData && Object.values(internalData).some(arr => arr.length > 0),
   });
 
+  // Mutation for file upload
+  const uploadFileMutation = useMutation({
+    mutationFn: (formData) => {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/cer/internal-data/upload');
+        
+        // Track upload progress
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(progress);
+          }
+        };
+        
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (e) {
+              reject(new Error('Invalid response format'));
+            }
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        };
+        
+        xhr.onerror = () => reject(new Error('Upload failed'));
+        
+        xhr.send(formData);
+      });
+    },
+    onSuccess: (data) => {
+      // Add uploaded file to the list
+      setUploadedFiles([...uploadedFiles, data]);
+      
+      // Update the form with the file URL
+      setFormData(prev => ({
+        ...prev,
+        fileUrl: data.fileUrl,
+        fileName: prev.fileName || data.originalFilename
+      }));
+      
+      toast({
+        title: "File Uploaded Successfully",
+        description: "Your file has been uploaded and is ready to be added to the CER database.",
+        variant: "success"
+      });
+      
+      setIsUploading(false);
+      setUploadProgress(0);
+    },
+    onError: (error) => {
+      toast({
+        title: "Upload Failed",
+        description: error.message || "An error occurred while uploading the file.",
+        variant: "destructive"
+      });
+      
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  });
+  
   // Mutation for adding new internal clinical data
   const addInternalDataMutation = useMutation({
     mutationFn: (data) => CerAPIService.addInternalClinicalData(data),
@@ -89,8 +163,12 @@ export default function InternalClinicalDataPanel({ jobId, deviceName, manufactu
         summary: "",
         author: "",
         department: "",
-        documentId: ""
+        documentId: "",
+        fileUrl: ""
       });
+      
+      // Clear uploaded files
+      setUploadedFiles([]);
       
       // Refetch data
       queryClient.invalidateQueries({ queryKey: ['/api/cer/internal-data'] });
@@ -141,6 +219,61 @@ export default function InternalClinicalDataPanel({ jobId, deviceName, manufactu
       ...formData,
       [name]: value
     });
+  };
+
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      
+      // Create form data for upload
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      uploadData.append('category', activeTab);
+      uploadData.append('jobId', jobId || `cer-${Date.now()}`);
+      
+      // Start upload
+      setIsUploading(true);
+      uploadFileMutation.mutate(uploadData);
+      
+      // Auto-populate filename if not already set
+      if (!formData.fileName) {
+        // Remove extension from filename
+        const fileName = file.name.replace(/\.[^/.]+$/, "");
+        setFormData(prev => ({
+          ...prev,
+          fileName
+        }));
+      }
+    }
+  };
+  
+  // Trigger file input click
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  // Remove uploaded file
+  const removeUploadedFile = (index) => {
+    const newFiles = [...uploadedFiles];
+    newFiles.splice(index, 1);
+    setUploadedFiles(newFiles);
+    
+    // If removing the last file, clear the fileUrl
+    if (newFiles.length === 0) {
+      setFormData(prev => ({
+        ...prev,
+        fileUrl: ""
+      }));
+    } else {
+      // Set the fileUrl to the last file in the list
+      setFormData(prev => ({
+        ...prev,
+        fileUrl: newFiles[newFiles.length - 1].fileUrl
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -417,6 +550,78 @@ ${summaryData ? summaryData.conclusions || 'Based on the internal clinical data 
                         onChange={handleInputChange}
                         placeholder="e.g., 250"
                       />
+                    </div>
+                  </div>
+                  
+                  {/* File Upload Section */}
+                  <div className="space-y-2">
+                    <Label>Upload Document</Label>
+                    <div className="flex flex-col space-y-2">
+                      {/* Hidden file input */}
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={handleFileSelect}
+                        accept=".pdf,.doc,.docx,.xlsx,.xls,.csv,.json,.xml"
+                      />
+                      
+                      {/* Upload button */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full flex items-center justify-center gap-2"
+                        onClick={triggerFileUpload}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <span className="flex items-center gap-2">
+                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></span>
+                            Uploading...
+                          </span>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4" />
+                            Select File
+                          </>
+                        )}
+                      </Button>
+                      
+                      {/* Upload progress bar */}
+                      {isUploading && (
+                        <div className="w-full space-y-1">
+                          <Progress value={uploadProgress} className="h-2 w-full" />
+                          <p className="text-xs text-muted-foreground text-center">{uploadProgress}%</p>
+                        </div>
+                      )}
+                      
+                      {/* Uploaded files list */}
+                      {uploadedFiles.length > 0 && (
+                        <div className="mt-2 space-y-2">
+                          <p className="text-xs font-medium">Uploaded Files:</p>
+                          <div className="space-y-1">
+                            {uploadedFiles.map((file, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                <div className="flex items-center gap-2">
+                                  <File className="h-4 w-4 text-primary" />
+                                  <span className="text-sm truncate max-w-[180px]">
+                                    {file.originalFilename || 'Uploaded file'}
+                                  </span>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => removeUploadedFile(index)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
