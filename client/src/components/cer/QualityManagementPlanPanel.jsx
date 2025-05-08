@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -57,6 +57,11 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
   const [editingCtqId, setEditingCtqId] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingPlan, setIsLoadingPlan] = useState(false);
+  const [draggedObjective, setDraggedObjective] = useState(null);
+  const [showInlineCtqForm, setShowInlineCtqForm] = useState(null);
+  
+  // Refs for drag and drop
+  const objectiveRefs = useRef({});
 
   // Load existing QMP data from API on component mount
   useEffect(() => {
@@ -534,6 +539,118 @@ _Document Generated: ${new Date().toLocaleDateString()}_
   * Description: ${factor.description}
   * Mitigation: ${factor.mitigation}
 `).join('')}`;
+  };
+  
+  // Drag and drop functionality
+  const handleDragStart = (e, objective) => {
+    setDraggedObjective(objective);
+    // Set data to make dragging work
+    e.dataTransfer.setData('text/plain', objective.id);
+    e.dataTransfer.effectAllowed = 'move';
+    // Add styling to the dragged item
+    setTimeout(() => {
+      if (objectiveRefs.current[objective.id]) {
+        objectiveRefs.current[objective.id].style.opacity = '0.4';
+      }
+    }, 0);
+  };
+  
+  const handleDragEnd = (e, objective) => {
+    if (objectiveRefs.current[objective.id]) {
+      objectiveRefs.current[objective.id].style.opacity = '1';
+    }
+    setDraggedObjective(null);
+  };
+  
+  const handleDragOver = (e, targetObjective) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    // Don't do anything if it's the same objective
+    if (!draggedObjective || draggedObjective.id === targetObjective.id) {
+      return;
+    }
+    
+    // Add visual indicator for drop target
+    if (objectiveRefs.current[targetObjective.id]) {
+      objectiveRefs.current[targetObjective.id].style.borderTop = '3px dashed #0F6CBD';
+    }
+  };
+  
+  const handleDragLeave = (e, targetObjective) => {
+    if (objectiveRefs.current[targetObjective.id]) {
+      objectiveRefs.current[targetObjective.id].style.borderTop = 'none';
+    }
+  };
+  
+  const handleDrop = (e, targetObjective) => {
+    e.preventDefault();
+    
+    // Reset styling
+    if (objectiveRefs.current[targetObjective.id]) {
+      objectiveRefs.current[targetObjective.id].style.borderTop = 'none';
+    }
+    
+    // Don't do anything if it's the same objective
+    if (!draggedObjective || draggedObjective.id === targetObjective.id) {
+      return;
+    }
+    
+    // Reorder objectives
+    const newObjectives = [...objectives];
+    const draggedIndex = newObjectives.findIndex(o => o.id === draggedObjective.id);
+    const targetIndex = newObjectives.findIndex(o => o.id === targetObjective.id);
+    
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      // Remove dragged item
+      const [removed] = newObjectives.splice(draggedIndex, 1);
+      // Insert at new position
+      newObjectives.splice(targetIndex, 0, removed);
+      
+      setObjectives(newObjectives);
+      toast({
+        title: "Objectives Reordered",
+        description: "Quality objectives order has been updated successfully.",
+        variant: "success"
+      });
+    }
+  };
+  
+  // Add CtQ inline for specific objective
+  const handleAddCtqInline = (objectiveId) => {
+    setCurrentCtq({
+      id: null,
+      objectiveId: objectiveId,
+      name: '',
+      description: '',
+      riskLevel: 'medium',
+      associatedSection: '',
+      mitigation: '',
+      nextReviewDate: '', 
+      status: 'pending'
+    });
+    
+    setShowInlineCtqForm(objectiveId);
+  };
+  
+  const handleSaveInlineCtq = () => {
+    handleSaveCtqFactor();
+    setShowInlineCtqForm(null);
+  };
+  
+  const handleCancelInlineCtq = () => {
+    setShowInlineCtqForm(null);
+    setCurrentCtq({
+      id: null,
+      objectiveId: null,
+      name: '',
+      description: '',
+      riskLevel: 'medium',
+      associatedSection: '',
+      mitigation: '',
+      nextReviewDate: '', 
+      status: 'pending'
+    });
   };
 
   // Render status badge with appropriate color and icon
