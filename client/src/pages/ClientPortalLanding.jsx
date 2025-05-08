@@ -61,6 +61,7 @@ const ClientPortalLanding = () => {
     { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard' },
     { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor' },
     { id: 'cer', title: 'CER Generator™', description: 'The TrialSage CER Generator is a next-generation regulatory automation module designed to eliminate bottlenecks in medical device and combination product submissions. Built for compliance with EU MDR 2017/745, FDA post-market expectations, and ISO 14155 guidance, it fuses real-world adverse event data with literature review automation, GPT-4o reasoning, and structured risk modeling. This module is not a template engine—it is a true clinical intelligence system that analyzes, compares, and generates highly defensible CERs in minutes, not months.', path: '/cerv2' },
+    { id: 'cer-projects', title: 'CER Projects™', description: 'Manage multiple Clinical Evaluation Report projects across different clients with comprehensive tracking, status monitoring, and team collaboration', path: '/cer-projects', highlight: true, isNew: true },
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc' },
     { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault' },
     { id: 'rih', title: 'Regulatory Intelligence Hub™', description: 'AI-powered strategy, timeline, and risk simulation', path: '/regulatory-intelligence-hub', highlight: true },
@@ -135,8 +136,13 @@ const ClientPortalLanding = () => {
                         console.log('Full URL:', fullUrl);
                         window.location.href = fullUrl;
                       }} 
-                      className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer"
+                      className={`block ${module.highlight ? 'bg-indigo-100 border border-indigo-200' : 'bg-indigo-50'} hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer relative`}
                     >
+                      {module.isNew && (
+                        <span className="absolute top-0 right-0 transform translate-x-1 -translate-y-1/2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                          NEW
+                        </span>
+                      )}
                       <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
                       <p className="text-gray-600 mt-2 text-sm">{module.description}</p>
                     </div>
