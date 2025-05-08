@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { createServer as createHttpServer } from 'http';
-import registerRoutes from './routes';
+import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
 
 // Load environment variables
