@@ -21,6 +21,7 @@ export default function UnifiedTopNavV5({ tabs = [] }) {
         <button onClick={goForward} aria-label="Forward">→</button>
         <Link href="/dashboard" className="utnv5-home">🏠 Dashboard</Link>
         <Link href="/switch-module" className="utnv5-switch">🔀 Switch Module</Link>
+        <Link href="/reports" className="utnv5-reports">📊 Reports</Link>
       </div>
       <nav className="utnv5-tabs">
         {tabs.map(t => (
