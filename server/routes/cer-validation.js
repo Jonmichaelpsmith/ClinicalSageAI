@@ -78,16 +78,31 @@ const validationFrameworks = {
 router.post('/documents/:id/validate', async (req, res) => {
   try {
     const documentId = req.params.id;
-    const { framework = 'mdr' } = req.body;
+    const { framework = 'mdr', sections } = req.body;
     
-    // In a real implementation, we would retrieve the document content
-    // from a database or file storage using documentId
+    // Prepare document for validation
+    const document = {
+      id: documentId,
+      sections: sections || []
+    };
     
-    // For demonstration, we'll simulate the validation process
-    // In a real implementation, this would analyze the actual document content
+    let validationResults;
     
-    // Example validation results structure
-    const validationResults = await simulateValidation(documentId, framework);
+    // If we have actual document sections and the OPENAI_API_KEY, use AI validation
+    if (sections && sections.length > 0 && process.env.OPENAI_API_KEY) {
+      console.log('Using AI-powered validation with GPT-4o');
+      validationResults = await validateWithAI(document, framework);
+    } else {
+      // Otherwise, fallback to simulated validation
+      console.log('Using simulated validation (no document sections or OpenAI API key)');
+      validationResults = await simulateValidation(documentId, framework);
+    }
+    
+    // Add additional validation details 
+    validationResults.validationMethod = validationResults.aiValidated ? 'ai' : 'simulated';
+    validationResults.documentId = documentId;
+    validationResults.frameworkUsed = framework;
+    validationResults.validationDate = new Date().toISOString();
     
     res.json(validationResults);
   } catch (error) {
