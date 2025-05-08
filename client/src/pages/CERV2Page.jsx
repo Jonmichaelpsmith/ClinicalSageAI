@@ -167,6 +167,12 @@ export default function CERV2Page() {
         ]
       },
       {
+        label: "Reports:",
+        tabs: [
+          { id: "reports", label: "Comprehensive Reports", icon: <FileText className="h-3.5 w-3.5 mr-1.5" /> }
+        ]
+      },
+      {
         label: "Export:",
         tabs: [
           { id: "export", label: "Export Options", icon: <Download className="h-3.5 w-3.5 mr-1.5" /> }
@@ -432,6 +438,20 @@ export default function CERV2Page() {
     
     // Add other tab content handlers for literature-review, internal-clinical-data, 
     // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
+    
+    if (activeTab === 'reports') {
+      return (
+        <CerComprehensiveReportsPanel 
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          cerData={{
+            title: title,
+            sections: sections
+          }}
+        />
+      );
+    }
     
     if (activeTab === 'traceability') {
       return (
