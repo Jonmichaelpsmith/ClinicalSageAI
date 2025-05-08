@@ -34,7 +34,7 @@ const CerTooltipWrapper = ({
             onMouseLeave={handleMouseLeave}
           >
             {children}
-            {!tooltipContent.includes('infoIcon=false') && (
+            {tooltipContent && !tooltipContent.includes('infoIcon=false') && (
               <div className="inline-flex items-center absolute right-0 top-0 -mt-2 -mr-2">
                 <HelpCircle className="h-4 w-4 text-[#0F6CBD]" />
               </div>

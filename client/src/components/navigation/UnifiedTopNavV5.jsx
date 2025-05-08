@@ -21,7 +21,13 @@ export default function UnifiedTopNavV5({ tabs = [] }) {
         <button onClick={goForward} aria-label="Forward">→</button>
         <Link href="/dashboard" className="utnv5-home">🏠 Dashboard</Link>
         <Link href="/switch-module" className="utnv5-switch">🔀 Switch Module</Link>
-        <Link href="/reports" className="utnv5-reports">📊 Reports</Link>
+        <Link href="/cerv2?tab=reports" className="utnv5-reports">
+          <span className="flex items-center">
+            <span className="mr-1">📊</span>
+            <span>Reports</span>
+            <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full">New</span>
+          </span>
+        </Link>
       </div>
       <nav className="utnv5-tabs">
         {tabs.map(t => (

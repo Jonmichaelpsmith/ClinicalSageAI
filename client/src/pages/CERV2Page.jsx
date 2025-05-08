@@ -17,6 +17,7 @@ import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow'
 import NotificationBanner from '@/components/cer/NotificationBanner';
 import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
 import ExportModule from '@/components/cer/ExportModule';
+import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
