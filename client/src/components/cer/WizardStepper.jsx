@@ -12,11 +12,16 @@ import CerTooltipWrapper from './CerTooltipWrapper';
  */
 export default function WizardStepper({ 
   steps, 
-  currentStepIndex, 
+  currentStep, 
   onStepChange,
   completedSteps = [],
+  className = "",
   children 
 }) {
+  // Map currentStep string to index if needed
+  const currentStepIndex = typeof currentStep === 'string' && steps ? 
+    steps.findIndex(step => step.id === currentStep) : 
+    currentStep || 0;
   const { toast } = useToast();
   const [stepsState, setStepsState] = useState([]);
 
