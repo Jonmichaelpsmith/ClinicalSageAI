@@ -1203,13 +1203,7 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                             </Button>
                           </div>
                           <Button
-                            onClick={() => {
-                              setCurrentCtq({
-                                ...currentCtq,
-                                objectiveId: objective.id
-                              });
-                              document.getElementById('add-ctq-section').scrollIntoView({ behavior: 'smooth' });
-                            }}
+                            onClick={() => handleAddCtqInline(objective.id)}
                             variant="outline"
                             size="sm"
                             className="h-8 bg-transparent text-[#0F6CBD] border-[#0F6CBD]"
