@@ -19,6 +19,8 @@ import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPane
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import TabRow from '@/components/ui/TabRow';
+import CERNavigation from '@/components/cer/CERNavigation';
+import SimpleCERTabContent from '@/components/cer/SimpleCERTabContent';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
@@ -145,106 +147,32 @@ export default function CERV2Page() {
         </div>
       </div>
 
-      {/* Tab navigation using TabRow for scrollable, non-overlapping tabs */}
-      <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
-        {/* First row - Preparation group */}
-        <TabRow label="Preparation:">
-          <TabsTrigger 
-            value="builder" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <FileText className="h-3.5 w-3.5 mr-1.5" />
-            <span>Builder</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="cep" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
-            <span>Evaluation Plan</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="documents" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
-            <span>Documents</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="data-retrieval" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <Database className="h-3.5 w-3.5 mr-1.5" />
-            <span>Data Retrieval</span>
-          </TabsTrigger>
-        </TabRow>
-
-        {/* Second row - Evidence group */}
-        <TabRow label="Evidence:">
-          <TabsTrigger 
-            value="literature" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-            <span>Literature</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="literature-review" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-            <span>Literature Review</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="internal-clinical-data" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" />
-            <span>Internal Clinical Data</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="sota" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <BookMarked className="h-3.5 w-3.5 mr-1.5" />
-            <span>State of Art</span>
-          </TabsTrigger>
-        </TabRow>
-
-        {/* Third row - Analysis group */}
-        <TabRow label="Analysis:" className="mb-4">
-          <TabsTrigger 
-            value="equivalence" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <GitCompare className="h-3.5 w-3.5 mr-1.5" />
-            <span>Equivalence</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="gspr-mapping" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <BarChart className="h-3.5 w-3.5 mr-1.5" />
-            <span>GSPR Mapping</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="compliance" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <CheckSquare className="h-3.5 w-3.5 mr-1.5" />
-            <span>Compliance</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="assistant" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <Lightbulb className="h-3.5 w-3.5 mr-1.5" />
-            <span>Assistant</span>
-          </TabsTrigger>
-        </TabRow>
-
-        {/* Tab Content */}
-        <TabsContent value="builder" className="mt-0">
+      {/* Custom navigation component without Radix dependencies */}
+      <CERNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      
+      {/* Content container */}
+      <div className="w-full mt-0">
+        <SimpleCERTabContent
+          activeTab={activeTab}
+          title={title}
+          faers={faers}
+          comparators={comparators}
+          sections={sections}
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          isFetchingFaers={isFetchingFaers}
+          showEvidenceReminder={showEvidenceReminder}
+          onTitleChange={setTitle}
+          onSectionsChange={setSections}
+          onFaersChange={setFaers}
+          onComparatorsChange={setComparators}
+          onExport={handleExport}
+          setActiveTab={setActiveTab}
+          setShowEvidenceReminder={setShowEvidenceReminder}
+          setIsFetchingFaers={setIsFetchingFaers}
+          toast={toast}
+        />
           <div className="bg-[#F9F9F9] py-4">
             <div className="flex flex-col md:flex-row items-start justify-between">
               <div className="flex-1 px-4">
