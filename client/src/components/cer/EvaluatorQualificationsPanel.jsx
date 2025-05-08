@@ -1,0 +1,550 @@
+import React, { useState, useEffect } from 'react';
+import { cerApiService } from '@/services/CerAPIService';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  FileText, 
+  CheckCircle, 
+  PenTool, 
+  User, 
+  Briefcase,
+  GraduationCap,
+  ClipboardCheck,
+  CalendarClock,
+  Users,
+  BadgeCheck
+} from 'lucide-react';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+
+const EvaluatorQualificationsPanel = ({ deviceName, deviceType, manufacturer, onAddToCER }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('primary-evaluator');
+  
+  // Primary Evaluator Info
+  const [primaryEvaluator, setPrimaryEvaluator] = useState({
+    name: '',
+    title: '',
+    company: '',
+    qualifications: '',
+    education: '',
+    yearsExperience: '',
+    relevantBackground: '',
+    conflictOfInterest: false,
+    conflictDetails: '',
+    signature: '',
+    date: new Date().toISOString().split('T')[0]
+  });
+  
+  // Independent Reviewer Info
+  const [reviewers, setReviewers] = useState([
+    {
+      id: 'reviewer-1',
+      name: '',
+      title: '',
+      company: '',
+      qualifications: '',
+      comments: '',
+      agreed: true,
+      signedDate: new Date().toISOString().split('T')[0]
+    }
+  ]);
+  
+  // MDR Compliance Checklist
+  const [complianceChecklist, setComplianceChecklist] = useState([
+    { id: 'check-1', text: 'The evaluator has sufficient demonstrable experience in the evaluation of the relevant device technology and its clinical application', checked: false },
+    { id: 'check-2', text: 'The evaluator has knowledge of the state of the art in the device category', checked: false },
+    { id: 'check-3', text: 'The evaluator has expertise in clinical research methodologies', checked: false },
+    { id: 'check-4', text: 'The evaluator has knowledge of the relevant harmonized standards and guidance documents', checked: false },
+    { id: 'check-5', text: 'The evaluator has no conflicts of interest that could influence the evaluation', checked: false },
+    { id: 'check-6', text: 'The evaluation has been independently reviewed as required by MEDDEV 2.7/1 Rev 4', checked: false },
+    { id: 'check-7', text: 'At least one evaluator has medical qualifications in a field relevant to the device', checked: false },
+    { id: 'check-8', text: 'The evaluation team collectively has suitable qualifications and experience for the device being evaluated', checked: false }
+  ]);
+  
+  // Update primary evaluator information
+  const handlePrimaryEvaluatorChange = (field, value) => {
+    setPrimaryEvaluator(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+  
+  // Update reviewer information
+  const handleReviewerChange = (reviewerId, field, value) => {
+    setReviewers(prev => 
+      prev.map(reviewer => 
+        reviewer.id === reviewerId 
+          ? { ...reviewer, [field]: value }
+          : reviewer
+      )
+    );
+  };
+  
+  // Add a new reviewer
+  const addReviewer = () => {
+    setReviewers(prev => [
+      ...prev,
+      {
+        id: `reviewer-${prev.length + 1}`,
+        name: '',
+        title: '',
+        company: '',
+        qualifications: '',
+        comments: '',
+        agreed: true,
+        signedDate: new Date().toISOString().split('T')[0]
+      }
+    ]);
+  };
+  
+  // Remove a reviewer
+  const removeReviewer = (reviewerId) => {
+    if (reviewers.length <= 1) return;
+    setReviewers(prev => prev.filter(reviewer => reviewer.id !== reviewerId));
+  };
+  
+  // Toggle checklist items
+  const toggleChecklist = (itemId) => {
+    setComplianceChecklist(prev => 
+      prev.map(item => 
+        item.id === itemId 
+          ? { ...item, checked: !item.checked }
+          : item
+      )
+    );
+  };
+
+  // Generate the qualification appendix and add to CER
+  const handleAddToCER = () => {
+    setIsLoading(true);
+    
+    try {
+      // Format the evaluator qualification for the CER
+      const cerSection = {
+        type: 'evaluator-qualifications',
+        title: 'Evaluator Qualifications and Review Sign-Off',
+        content: `
+## Appendix: Evaluator Qualifications and Review Sign-Off
+
+### Primary Clinical Evaluator
+- **Name:** ${primaryEvaluator.name}
+- **Title:** ${primaryEvaluator.title}
+- **Company:** ${primaryEvaluator.company}
+- **Education:** ${primaryEvaluator.education}
+- **Years of Experience:** ${primaryEvaluator.yearsExperience}
+- **Professional Qualifications:** ${primaryEvaluator.qualifications}
+- **Relevant Background:**
+${primaryEvaluator.relevantBackground}
+
+${primaryEvaluator.conflictOfInterest ? 
+`**Conflict of Interest Declaration:**
+${primaryEvaluator.conflictDetails}` 
+: 
+'**Conflict of Interest Declaration:** No conflicts of interest to declare.'
+}
+
+**Signature:** ${primaryEvaluator.signature}  
+**Date:** ${primaryEvaluator.date}
+
+### Independent Review Sign-Off
+${reviewers.map(reviewer => `
+#### Reviewer: ${reviewer.name}
+- **Title:** ${reviewer.title}
+- **Company:** ${reviewer.company}
+- **Qualifications:** ${reviewer.qualifications}
+- **Review Comments:**
+${reviewer.comments}
+
+**Status:** ${reviewer.agreed ? 'Approved' : 'Revision Requested'}  
+**Date:** ${reviewer.signedDate}
+`).join('\n')}
+
+### MDR Compliance Declaration
+${complianceChecklist.filter(item => item.checked).map(item => `- ✓ ${item.text}`).join('\n')}
+
+### Compliance Statement
+This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 guidance and EU MDR (2017/745) requirements. The evaluators collectively have the qualifications and experience required for the evaluation of ${deviceName || 'the medical device'}, as demonstrated above.
+
+*Note: This appendix satisfies the requirements of EU MDR Article 61 and MEDDEV 2.7/1 Rev 4 regarding the qualification of evaluators and the independence of the clinical evaluation process.*
+        `,
+        author: primaryEvaluator.name || 'Clinical Evaluator',
+        createdAt: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+        sources: [
+          { name: 'MEDDEV 2.7/1 Rev 4', type: 'guidance', date: new Date().toISOString() },
+          { name: 'EU MDR (2017/745)', type: 'regulation', date: new Date().toISOString() }
+        ]
+      };
+      
+      // Add to CER
+      onAddToCER(cerSection);
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error generating evaluator qualifications appendix:', error);
+      setIsLoading(false);
+    }
+  };
+  
+  // Render the primary evaluator form
+  const renderPrimaryEvaluatorForm = () => (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center">
+            <User className="h-5 w-5 mr-2 text-blue-600" />
+            Primary Clinical Evaluator Information
+          </CardTitle>
+          <CardDescription>
+            Provide details of the primary clinical evaluator responsible for this CER
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                value={primaryEvaluator.name}
+                onChange={(e) => handlePrimaryEvaluatorChange('name', e.target.value)}
+                placeholder="Dr. Jane Smith"
+              />
+            </div>
+            <div>
+              <Label htmlFor="title">Title/Position</Label>
+              <Input
+                id="title"
+                value={primaryEvaluator.title}
+                onChange={(e) => handlePrimaryEvaluatorChange('title', e.target.value)}
+                placeholder="Senior Clinical Evaluator"
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="company">Company/Institution</Label>
+              <Input
+                id="company"
+                value={primaryEvaluator.company}
+                onChange={(e) => handlePrimaryEvaluatorChange('company', e.target.value)}
+                placeholder="Medical Device Consultants Inc."
+              />
+            </div>
+            <div>
+              <Label htmlFor="yearsExperience">Years of Experience</Label>
+              <Input
+                id="yearsExperience"
+                value={primaryEvaluator.yearsExperience}
+                onChange={(e) => handlePrimaryEvaluatorChange('yearsExperience', e.target.value)}
+                placeholder="15"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="education">Education & Degrees</Label>
+            <Input
+              id="education"
+              value={primaryEvaluator.education}
+              onChange={(e) => handlePrimaryEvaluatorChange('education', e.target.value)}
+              placeholder="Ph.D. in Biomedical Engineering, M.D."
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="qualifications">Professional Qualifications</Label>
+            <Input
+              id="qualifications"
+              value={primaryEvaluator.qualifications}
+              onChange={(e) => handlePrimaryEvaluatorChange('qualifications', e.target.value)}
+              placeholder="Board Certified in [Specialty], RAC (EU), CQA"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="relevantBackground">Relevant Background & Expertise</Label>
+            <Textarea
+              id="relevantBackground"
+              value={primaryEvaluator.relevantBackground}
+              onChange={(e) => handlePrimaryEvaluatorChange('relevantBackground', e.target.value)}
+              placeholder="Describe specific experience with similar devices, technologies, or clinical areas relevant to this evaluation..."
+              rows={4}
+            />
+          </div>
+          
+          <div className="flex items-start space-x-2 pt-2">
+            <Checkbox
+              id="conflictOfInterest"
+              checked={primaryEvaluator.conflictOfInterest}
+              onCheckedChange={(checked) => handlePrimaryEvaluatorChange('conflictOfInterest', checked)}
+            />
+            <div className="grid gap-1.5 leading-none">
+              <Label htmlFor="conflictOfInterest" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Conflict of Interest Declaration
+              </Label>
+              <p className="text-sm text-gray-500">
+                Check if you have any potential conflicts of interest to declare
+              </p>
+            </div>
+          </div>
+          
+          {primaryEvaluator.conflictOfInterest && (
+            <div>
+              <Label htmlFor="conflictDetails">Conflict of Interest Details</Label>
+              <Textarea
+                id="conflictDetails"
+                value={primaryEvaluator.conflictDetails}
+                onChange={(e) => handlePrimaryEvaluatorChange('conflictDetails', e.target.value)}
+                placeholder="Describe any financial relationships, consulting arrangements, or other potential conflicts of interest..."
+                rows={3}
+              />
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="signature">Signature (Name)</Label>
+              <Input
+                id="signature"
+                value={primaryEvaluator.signature}
+                onChange={(e) => handlePrimaryEvaluatorChange('signature', e.target.value)}
+                placeholder="Type your name as signature"
+              />
+            </div>
+            <div>
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={primaryEvaluator.date}
+                onChange={(e) => handlePrimaryEvaluatorChange('date', e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+  
+  // Render the reviewers form
+  const renderReviewersForm = () => (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center">
+            <Users className="h-5 w-5 mr-2 text-blue-600" />
+            Independent Reviewers
+          </CardTitle>
+          <CardDescription>
+            EU MDR requires independent review of the clinical evaluation to ensure its validity
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {reviewers.map((reviewer, index) => (
+            <div key={reviewer.id} className="border rounded-md p-4 space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-md font-medium">Reviewer {index + 1}</h3>
+                {reviewers.length > 1 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => removeReviewer(reviewer.id)}
+                    className="h-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    Remove
+                  </Button>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`${reviewer.id}-name`}>Full Name</Label>
+                  <Input
+                    id={`${reviewer.id}-name`}
+                    value={reviewer.name}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'name', e.target.value)}
+                    placeholder="Dr. John Doe"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`${reviewer.id}-title`}>Title/Position</Label>
+                  <Input
+                    id={`${reviewer.id}-title`}
+                    value={reviewer.title}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'title', e.target.value)}
+                    placeholder="Independent Medical Reviewer"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`${reviewer.id}-company`}>Company/Institution</Label>
+                  <Input
+                    id={`${reviewer.id}-company`}
+                    value={reviewer.company}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'company', e.target.value)}
+                    placeholder="Medical Experts Inc."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`${reviewer.id}-qualifications`}>Qualifications</Label>
+                  <Input
+                    id={`${reviewer.id}-qualifications`}
+                    value={reviewer.qualifications}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'qualifications', e.target.value)}
+                    placeholder="M.D., Ph.D., Orthopedic Surgeon"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor={`${reviewer.id}-comments`}>Review Comments</Label>
+                <Textarea
+                  id={`${reviewer.id}-comments`}
+                  value={reviewer.comments}
+                  onChange={(e) => handleReviewerChange(reviewer.id, 'comments', e.target.value)}
+                  placeholder="Provide comments on the clinical evaluation, its methodology, conclusions, and any recommendations for improvement..."
+                  rows={4}
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2 pt-2">
+                <Checkbox
+                  id={`${reviewer.id}-agreed`}
+                  checked={reviewer.agreed}
+                  onCheckedChange={(checked) => handleReviewerChange(reviewer.id, 'agreed', checked)}
+                />
+                <Label htmlFor={`${reviewer.id}-agreed`} className="text-sm font-medium leading-none">
+                  I agree with the conclusions of this clinical evaluation
+                </Label>
+              </div>
+              
+              <div>
+                <Label htmlFor={`${reviewer.id}-signedDate`}>Signature Date</Label>
+                <Input
+                  id={`${reviewer.id}-signedDate`}
+                  type="date"
+                  value={reviewer.signedDate}
+                  onChange={(e) => handleReviewerChange(reviewer.id, 'signedDate', e.target.value)}
+                />
+              </div>
+            </div>
+          ))}
+          
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={addReviewer}
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Add Another Reviewer
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+  
+  // Render the compliance checklist
+  const renderComplianceChecklist = () => (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center">
+            <ClipboardCheck className="h-5 w-5 mr-2 text-blue-600" />
+            EU MDR Compliance Checklist
+          </CardTitle>
+          <CardDescription>
+            Ensure all requirements for evaluator qualifications are met according to EU MDR and MEDDEV 2.7/1 Rev 4
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            {complianceChecklist.map((item) => (
+              <div key={item.id} className="flex items-start space-x-2">
+                <Checkbox
+                  id={item.id}
+                  checked={item.checked}
+                  onCheckedChange={() => toggleChecklist(item.id)}
+                />
+                <Label htmlFor={item.id} className="text-sm leading-tight">
+                  {item.text}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+  
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col space-y-4">
+        <h2 className="text-xl font-semibold text-[#323130]">Evaluator Qualifications & Sign-Off</h2>
+        <div className="bg-[#EFF6FC] rounded-md px-3 py-2 text-sm">
+          <p className="text-[#0F6CBD]">
+            <BadgeCheck className="h-4 w-4 inline-block mr-1 mb-1" />
+            EU MDR Article 61 and MEDDEV 2.7/1 Rev 4 require that clinical evaluations are performed by qualified evaluators with documented expertise
+          </p>
+        </div>
+        
+        <Tabs defaultValue="primary-evaluator" className="w-full" onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="primary-evaluator">
+              <User className="h-4 w-4 mr-2" />
+              Primary Evaluator
+            </TabsTrigger>
+            <TabsTrigger value="reviewers">
+              <Users className="h-4 w-4 mr-2" />
+              Independent Reviewers
+            </TabsTrigger>
+            <TabsTrigger value="compliance-checklist">
+              <ClipboardCheck className="h-4 w-4 mr-2" />
+              Compliance Checklist
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="primary-evaluator">
+            {renderPrimaryEvaluatorForm()}
+          </TabsContent>
+          
+          <TabsContent value="reviewers">
+            {renderReviewersForm()}
+          </TabsContent>
+          
+          <TabsContent value="compliance-checklist">
+            {renderComplianceChecklist()}
+          </TabsContent>
+        </Tabs>
+        
+        <div className="flex justify-end pt-4">
+          <Button 
+            className="bg-[#0F6CBD] hover:bg-[#0E5EA5]" 
+            onClick={handleAddToCER}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <LoadingSpinner size="sm" />
+            ) : (
+              <>
+                <FileText className="h-4 w-4 mr-2" />
+                Add to CER as Appendix
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EvaluatorQualificationsPanel;
