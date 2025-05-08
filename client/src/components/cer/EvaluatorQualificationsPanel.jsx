@@ -479,6 +479,9 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
   );
   
   // Render the compliance checklist
+  // State for signature authority confirmation
+  const [signatureAuthorityConfirmed, setSignatureAuthorityConfirmed] = useState(false);
+
   const renderComplianceChecklist = () => (
     <div className="space-y-4">
       <Card>
@@ -492,12 +495,20 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-4">
-            {complianceChecklist.map((item) => (
-              <div key={item.id} className="flex items-start space-x-2">
-                <Checkbox
-                  id={item.id}
-                  checked={item.checked}
+          <div className="bg-[#F3F9FE] p-3 rounded-md mb-3 border border-[#DEECF9]">
+            <p className="text-sm text-[#0F6CBD]">
+              <CheckCircle className="h-4 w-4 inline-block mr-1 mb-1" />
+              All items below must be checked prior to final CER submission to ensure regulatory compliance with EU MDR requirements.
+            </p>
+          </div>
+          
+          <div className="mb-4">
+            <h3 className="font-medium text-sm mb-2">Evaluator Requirements</h3>
+            {complianceChecklist.slice(0, 5).map((item) => (
+              <div key={item.id} className="flex items-start space-x-2 mb-2">
+                <Checkbox 
+                  id={item.id} 
+                  checked={item.checked} 
                   onCheckedChange={() => toggleChecklist(item.id)}
                 />
                 <Label htmlFor={item.id} className="text-sm leading-tight">
@@ -505,6 +516,43 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
                 </Label>
               </div>
             ))}
+          </div>
+          
+          <div className="mb-4">
+            <h3 className="font-medium text-sm mb-2">Evaluation Process Requirements</h3>
+            {complianceChecklist.slice(5, 10).map((item) => (
+              <div key={item.id} className="flex items-start space-x-2 mb-2">
+                <Checkbox 
+                  id={item.id} 
+                  checked={item.checked} 
+                  onCheckedChange={() => toggleChecklist(item.id)}
+                />
+                <Label htmlFor={item.id} className="text-sm leading-tight">
+                  {item.text}
+                </Label>
+              </div>
+            ))}
+          </div>
+          
+          <div className="bg-amber-50 p-3 rounded-md border border-amber-200">
+            <h3 className="font-medium text-sm mb-1 text-amber-800">Signature Authority Confirmation</h3>
+            <p className="text-xs text-amber-700 mb-2">
+              By checking this box, you confirm that the primary evaluator and reviewers have the proper authority to sign 
+              and are qualified to evaluate this device according to company procedures.
+            </p>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="signature-authority" 
+                checked={signatureAuthorityConfirmed}
+                onCheckedChange={(checked) => setSignatureAuthorityConfirmed(checked)}
+              />
+              <Label
+                htmlFor="signature-authority"
+                className="text-sm font-medium"
+              >
+                I confirm all evaluators have proper signature authority per company SOP
+              </Label>
+            </div>
           </div>
         </CardContent>
       </Card>
