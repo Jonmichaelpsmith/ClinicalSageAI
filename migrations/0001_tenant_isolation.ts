@@ -1,35 +1,10 @@
 /**
- * Migration: Setup Multi-Tenant Data Isolation
+ * Migration: Tenant Isolation
  * 
- * This migration sets up PostgreSQL Row-Level Security (RLS) policies
- * to enforce tenant isolation at the database level.
+ * This migration creates and sets up Row-Level Security for tenant isolation.
  */
-import { TenantDb, setupRlsForAllTables, createTenantTriggerFunction } from '../server/db';
-
-// Tables that need tenant isolation
-const TENANT_TABLES = [
-  'quality_management_plans',
-  'ctq_factors',
-  'qmp_audit_trail',
-  'qmp_section_gating',
-  'qmp_traceability_matrix',
-  'cer_projects',
-  'cer_project_documents',
-  'project_activities',
-  'project_milestones',
-  'client_user_permissions',
-  'cer_reports',
-  'cer_sections',
-  'cer_faers_data',
-  'cer_literature',
-  'cer_compliance_checks',
-  'cer_workflows',
-  'cer_exports',
-  'vault_documents_v2',
-  'vault_document_folders',
-  'vault_document_shares',
-  'vault_document_audit_logs'
-];
+import { SQL } from 'drizzle-orm';
+import { setupRlsForAllTables, createTenantTriggerFunction } from '../server/db/tenantRls';
 
 /**
  * Setup function that will be called when this migration is applied
@@ -38,13 +13,13 @@ export async function up() {
   try {
     console.log('Starting tenant isolation migration...');
     
-    // Create a function that automatically sets tenant_id
+    // Setup tenant isolation functions
+    console.log('Creating tenant trigger function...');
     await createTenantTriggerFunction();
-    console.log('Created tenant trigger function');
     
-    // Apply RLS policies to all tenant tables
+    // Add organization_id column to all relevant tables
+    console.log('Setting up RLS for all tables...');
     await setupRlsForAllTables();
-    console.log('Applied Row-Level Security policies to all tenant tables');
     
     console.log('Tenant isolation migration completed successfully');
   } catch (error) {
@@ -60,38 +35,29 @@ export async function down() {
   try {
     console.log('Reverting tenant isolation migration...');
     
-    // Disable RLS on all tenant tables
-    for (const table of TENANT_TABLES) {
-      await executeRawQuery(`ALTER TABLE ${table} DISABLE ROW LEVEL SECURITY;`);
-      console.log(`Disabled RLS on ${table}`);
-      
-      // Drop all policies
-      await executeRawQuery(`
-        DO $$ 
-        DECLARE
-          policy_name text;
-        BEGIN
-          FOR policy_name IN 
-            SELECT policyname FROM pg_policies WHERE tablename = '${table}'
-          LOOP
-            EXECUTE 'DROP POLICY IF EXISTS ' || policy_name || ' ON ${table}';
-          END LOOP;
-        END $$;
-      `);
-      console.log(`Dropped all policies on ${table}`);
-      
-      // Drop tenant trigger if it exists
-      await executeRawQuery(`
-        DROP TRIGGER IF EXISTS set_tenant_id_before_insert ON ${table};
-      `);
-      console.log(`Dropped tenant trigger on ${table}`);
-    }
-    
     // Drop the tenant trigger function
     await executeRawQuery(`
-      DROP FUNCTION IF EXISTS set_tenant_id_on_insert();
+      DROP FUNCTION IF EXISTS set_tenant_id();
     `);
     console.log('Dropped tenant trigger function');
+    
+    // Disable RLS on all tables
+    const tablesResult = await executeRawQuery(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+        AND table_name != 'schema_migrations';
+    `);
+    
+    for (const row of tablesResult.rows) {
+      await executeRawQuery(`
+        ALTER TABLE ${row.table_name} DISABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS ${row.table_name}_tenant_isolation_policy ON ${row.table_name};
+        DROP TRIGGER IF EXISTS set_tenant_id_trigger ON ${row.table_name};
+      `);
+      console.log(`Disabled RLS on table ${row.table_name}`);
+    }
     
     console.log('Tenant isolation migration reverted successfully');
   } catch (error) {
