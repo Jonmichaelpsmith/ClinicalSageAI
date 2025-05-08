@@ -539,6 +539,104 @@ export default function CERV2Page() {
         />
       );
     }
+    
+    if (activeTab === 'equivalence') {
+      return (
+        <EquivalenceBuilderPanel
+          onEquivalenceDataChange={(equivalenceData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'equivalence' || 
+              (section.title && section.title.toLowerCase().includes('equivalence'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: equivalenceData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Equivalence Data Updated",
+                description: "Your CER now includes the latest device equivalence data.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, equivalenceData]);
+              
+              toast({
+                title: "Equivalence Data Added",
+                description: "Device equivalence analysis has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+    
+    if (activeTab === 'compliance') {
+      return (
+        <ComplianceCheckPanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          sections={sections}
+          onAddToReport={(complianceData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'compliance' || 
+              (section.title && section.title.toLowerCase().includes('compliance'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: complianceData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Compliance Check Updated",
+                description: "Your CER now includes the latest compliance assessment.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, complianceData]);
+              
+              toast({
+                title: "Compliance Check Added",
+                description: "Regulatory compliance assessment has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+    
+    if (activeTab === 'assistant') {
+      return (
+        <CerAssistantPanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          sections={sections}
+          onAddContent={(assistantContent) => {
+            setSections([...sections, assistantContent]);
+            
+            toast({
+              title: "Content Added",
+              description: "Assistant-generated content has been added to your CER.",
+              variant: "success"
+            });
+          }}
+        />
+      );
+    }
 
     // Default fallback for other tabs
     return (
