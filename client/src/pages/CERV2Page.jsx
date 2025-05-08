@@ -163,13 +163,8 @@ export default function CERV2Page() {
             <span className="text-[0.65rem] text-gray-600">ICH E6(R3) & MDR</span>
           </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "reports", label: "Reports", icon: <FileText className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5" /> }
-        ]
-      },
-      {
-        label: "Reports:",
-        tabs: [
-          { id: "reports", label: "Comprehensive Reports", icon: <FileText className="h-3.5 w-3.5 mr-1.5" /> }
         ]
       },
       {
