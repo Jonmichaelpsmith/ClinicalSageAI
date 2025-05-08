@@ -324,11 +324,14 @@ async function validateWithAI(document, framework) {
       }
     `;
     
-    // Call the OpenAI API with the gpt-4o model
+    // Call the OpenAI API with the latest GPT-4o model for more human-like writing
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
       messages: [
-        { role: "system", content: "You are an expert regulatory consultant for medical device Clinical Evaluation Reports." },
+        { 
+          role: "system", 
+          content: "You are an expert regulatory consultant for medical device Clinical Evaluation Reports with deep knowledge of EU MDR, FDA, UKCA, Health Canada, and ICH requirements. Write with a natural, conversational tone while maintaining technical accuracy. Your writing should sound like it was written by a human expert who understands regulatory nuances. Use clear, accessible language that regulatory professionals would use in conversation. Avoid overly formal, robotic, or academic language patterns."
+        },
         { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" }

@@ -1643,13 +1643,40 @@ cerApiService.deleteEuPmsData = async (id) => {
  * @param {string} [framework='mdr'] - The regulatory framework to validate against (mdr, fda, ukca, health_canada, ich)
  * @returns {Promise<Object>} - The validation results
  */
-cerApiService.validateCERDocument = async (documentId, framework = 'mdr') => {
+/**
+ * Validate a CER document against regulatory requirements
+ * @param {string} documentId - The ID of the document to validate
+ * @param {string} [framework='mdr'] - The regulatory framework to validate against
+ * @param {Array} [sections=[]] - Document sections to analyze with AI validation
+ * @returns {Promise<Object>} - Validation results including AI-powered insights
+ */
+cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sections = []) => {
   try {
-    // For demonstration purposes, simulate the validation response
-    // In production, this would call the actual validation endpoint
+    // Check if we should use the real API (when document sections are provided)
+    // or fall back to simulation (for testing purposes)
+    if (sections && sections.length > 0) {
+      console.log(`Validating document ${documentId} against ${framework} framework with ${sections.length} sections`);
+      
+      const response = await fetch(`/api/cer/documents/${documentId}/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          framework,
+          sections
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error validating document: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    }
     
-    // This is a temporary implementation until the backend is ready
-    // TODO: Replace with actual API call when backend is available
+    // Fallback to simulation for testing when no document sections are provided
+    console.log('No document sections provided, using simulation for testing purposes');
     
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1500));
