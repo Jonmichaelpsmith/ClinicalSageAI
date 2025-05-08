@@ -42,10 +42,19 @@ const createInitialMapping = (selectedGSPRs = []) => {
     mapping[gsprId] = {
       evidenceSources: [],
       complianceStatement: '',
+      regulatoryInterpretation: '', // New field for specific MDR interpretation
+      acceptanceCriteria: '', // New field for defining acceptance criteria
+      evidenceStrength: 'unrated', // unrated, low, medium, high
+      evidenceQuality: [], // Array of evidence quality factors
+      clinicalRelevance: '', // Clinical relevance explanation
       gapsIdentified: false,
       gapStatement: '',
+      gapImpact: '', // New field for gap impact assessment
       nextSteps: '',
-      complianceStatus: 'pending' // pending, partial, compliant
+      complianceStatus: 'pending', // pending, partial, compliant
+      reviewerComments: '', // New field for reviewer input
+      lastReviewed: null, // Timestamp for last review
+      risk: 'unassessed' // unassessed, low, medium, high
     };
   });
   return mapping;
@@ -90,10 +99,19 @@ export default function GSPRMappingPanel({
             newMapping[gsprId] = {
               evidenceSources: [],
               complianceStatement: '',
+              regulatoryInterpretation: '',
+              acceptanceCriteria: '',
+              evidenceStrength: 'unrated',
+              evidenceQuality: [],
+              clinicalRelevance: '',
               gapsIdentified: false,
               gapStatement: '',
+              gapImpact: '',
               nextSteps: '',
-              complianceStatus: 'pending'
+              complianceStatus: 'pending',
+              reviewerComments: '',
+              lastReviewed: null,
+              risk: 'unassessed'
             };
           }
         });
@@ -291,6 +309,104 @@ export default function GSPRMappingPanel({
     setChanges(true);
   };
   
+  // New handlers for enhanced fields
+  const handleRegulatoryInterpretationChange = (gsprId, interpretation) => {
+    setMapping(prevMapping => ({
+      ...prevMapping,
+      [gsprId]: {
+        ...prevMapping[gsprId],
+        regulatoryInterpretation: interpretation
+      }
+    }));
+    
+    setChanges(true);
+  };
+  
+  const handleAcceptanceCriteriaChange = (gsprId, criteria) => {
+    setMapping(prevMapping => ({
+      ...prevMapping,
+      [gsprId]: {
+        ...prevMapping[gsprId],
+        acceptanceCriteria: criteria
+      }
+    }));
+    
+    setChanges(true);
+  };
+  
+  const handleEvidenceStrengthChange = (gsprId, strength) => {
+    setMapping(prevMapping => ({
+      ...prevMapping,
+      [gsprId]: {
+        ...prevMapping[gsprId],
+        evidenceStrength: strength
+      }
+    }));
+    
+    setChanges(true);
+  };
+  
+  const handleEvidenceQualityChange = (gsprId, qualityFactors) => {
+    setMapping(prevMapping => ({
+      ...prevMapping,
+      [gsprId]: {
+        ...prevMapping[gsprId],
+        evidenceQuality: qualityFactors
+      }
+    }));
+    
+    setChanges(true);
+  };
+  
+  const handleClinicalRelevanceChange = (gsprId, relevance) => {
+    setMapping(prevMapping => ({
+      ...prevMapping,
+      [gsprId]: {
+        ...prevMapping[gsprId],
+        clinicalRelevance: relevance
+      }
+    }));
+    
+    setChanges(true);
+  };
+  
+  const handleGapImpactChange = (gsprId, impact) => {
+    setMapping(prevMapping => ({
+      ...prevMapping,
+      [gsprId]: {
+        ...prevMapping[gsprId],
+        gapImpact: impact
+      }
+    }));
+    
+    setChanges(true);
+  };
+  
+  const handleReviewerCommentsChange = (gsprId, comments) => {
+    setMapping(prevMapping => ({
+      ...prevMapping,
+      [gsprId]: {
+        ...prevMapping[gsprId],
+        reviewerComments: comments,
+        lastReviewed: new Date().toISOString()
+      }
+    }));
+    
+    setChanges(true);
+  };
+  
+  const handleRiskAssessmentChange = (gsprId, risk) => {
+    setMapping(prevMapping => ({
+      ...prevMapping,
+      [gsprId]: {
+        ...prevMapping[gsprId],
+        risk: risk
+      }
+    }));
+    
+    setChanges(true);
+  };
+  
   const handleSetActiveGspr = (gsprId) => {
     setActiveGspr(gsprId);
     setEvidenceSearchTerm('');
@@ -318,7 +434,7 @@ export default function GSPRMappingPanel({
 # GSPR Clinical Evaluation Mapping
 
 ## Overview
-This section provides a systematic mapping between the General Safety and Performance Requirements (GSPRs) and the clinical evidence that supports compliance with each requirement.
+This section provides a systematic mapping between the General Safety and Performance Requirements (GSPRs) and the clinical evidence that supports compliance with each requirement. This mapping is in accordance with EU MDR Annex I and MEDDEV 2.7/1 Rev 4 guidance.
 
 ${Object.entries(mappingData).map(([gsprId, data]) => {
   const gspr = GSPRs.find(g => g.id === gsprId) || { title: `GSPR ${gsprId}`, description: 'No description available' };
@@ -329,7 +445,15 @@ ${Object.entries(mappingData).map(([gsprId, data]) => {
 
 **Compliance Status:** ${data.complianceStatus === 'compliant' ? 'Compliant' : data.complianceStatus === 'partial' ? 'Partially Compliant' : 'Pending Evaluation'}
 
+${data.regulatoryInterpretation ? `**Regulatory Interpretation:**\n${data.regulatoryInterpretation}\n` : ''}
+
 ${data.complianceStatement ? `**Compliance Statement:**\n${data.complianceStatement}\n` : ''}
+
+${data.acceptanceCriteria ? `**Acceptance Criteria:**\n${data.acceptanceCriteria}\n` : ''}
+
+${data.clinicalRelevance ? `**Clinical Relevance:**\n${data.clinicalRelevance}\n` : ''}
+
+${data.evidenceStrength !== 'unrated' ? `**Evidence Strength Assessment:** ${data.evidenceStrength === 'high' ? 'High' : data.evidenceStrength === 'medium' ? 'Medium' : 'Low'}\n` : ''}
 
 ${data.evidenceSources.length > 0 ? `
 ### Supporting Evidence
@@ -346,13 +470,35 @@ ${data.gapsIdentified ? `
 ### Identified Gaps
 ${data.gapStatement || 'Gaps have been identified but not detailed.'}
 
-${data.nextSteps ? `**Next Steps:**\n${data.nextSteps}` : ''}
+${data.gapImpact ? `**Gap Impact Assessment:**\n${data.gapImpact}\n` : ''}
+
+${data.nextSteps ? `**Next Steps to Address Gaps:**\n${data.nextSteps}` : ''}
+` : ''}
+
+${data.risk !== 'unassessed' ? `
+### Risk Assessment
+**Risk Level:** ${data.risk === 'high' ? 'High' : data.risk === 'medium' ? 'Medium' : 'Low'}
+` : ''}
+
+${data.reviewerComments ? `
+### Reviewer Notes
+${data.reviewerComments}
+${data.lastReviewed ? `\n*Last reviewed: ${new Date(data.lastReviewed).toLocaleDateString()}*` : ''}
 ` : ''}
 `;
 }).join('')}
 
 ## Summary
-This mapping provides traceability from clinical evidence to regulatory requirements, demonstrating how the compiled clinical data supports the device's compliance with relevant GSPRs from MDR Annex I.
+This mapping provides traceability from clinical evidence to regulatory requirements, demonstrating how the compiled clinical data supports the device's compliance with relevant GSPRs from MDR Annex I. The evaluation follows a systematic approach per MEDDEV 2.7/1 Rev 4, section 8.2 on demonstration of conformity.
+
+## Methodology
+The evaluation of each GSPR:
+1. Identifies relevant clinical evidence from multiple data sources (literature, investigations, post-market surveillance)
+2. Assesses the strength and quality of evidence against pre-defined acceptance criteria
+3. Identifies and addresses any gaps in clinical evidence
+4. Provides a clear statement of conformity with appropriate justification
+
+Compliance is determined based on evidence strength, quality, and clinical relevance according to the MEDDEV 2.7/1 Rev 4 guidelines, which requires "sufficient clinical evidence" to demonstrate conformity.
 `,
       lastUpdated: new Date().toISOString()
     };
