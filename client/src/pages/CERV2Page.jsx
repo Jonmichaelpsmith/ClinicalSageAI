@@ -10,6 +10,7 @@ import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
+import QualityManagementPlanPanel from '@/components/cer/QualityManagementPlanPanel';
 import GSPRMappingPanel from '@/components/cer/GSPRMappingPanel';
 import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow';
 import NotificationBanner from '@/components/cer/NotificationBanner';
@@ -20,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -51,6 +52,23 @@ export default function CERV2Page() {
   const [showWizard, setShowWizard] = useState(false);
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
   const { toast } = useToast();
+  
+  // Helper function to format CtQ factors for a specific objective
+  const getCtqFactorsForSection = (objectiveId, ctqFactors) => {
+    const factors = ctqFactors.filter(factor => factor.objectiveId === objectiveId);
+    
+    if (factors.length === 0) {
+      return "No Critical-to-Quality factors defined.";
+    }
+    
+    return `**Critical-to-Quality Factors:**\n${factors.map(factor => `
+* **${factor.name}**
+  * Associated Section: ${factor.associatedSection}
+  * Risk Level: ${factor.riskLevel}
+  * Description: ${factor.description}
+  * Mitigation: ${factor.mitigation}
+`).join('')}`;
+  };
 
   // Helper functions
   const handleExport = async (format) => {
@@ -95,7 +113,7 @@ export default function CERV2Page() {
   };
 
   const getWizardStep = (tab) => {
-    if (['builder', 'cep', 'documents', 'data-retrieval'].includes(tab)) {
+    if (['builder', 'cep', 'qmp', 'documents', 'data-retrieval'].includes(tab)) {
       return 'preparation';
     } else if (['literature', 'literature-review', 'internal-clinical-data', 'sota'].includes(tab)) {
       return 'evidence';
@@ -117,6 +135,7 @@ export default function CERV2Page() {
         tabs: [
           { id: "builder", label: "Builder", icon: <FileText className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "cep", label: "Evaluation Plan", icon: <ClipboardList className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "qmp", label: "Quality Management", icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "documents", label: "Documents", icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5" /> }
         ]
@@ -293,6 +312,86 @@ export default function CERV2Page() {
           deviceName={deviceName}
           deviceType={deviceType}
           manufacturer={manufacturer}
+        />
+      );
+    }
+    
+    if (activeTab === 'qmp') {
+      return (
+        <QualityManagementPlanPanel
+          deviceName={deviceName}
+          manufacturer={manufacturer}
+          cerData={{
+            version: "1.0",
+            author: "", // This would ideally come from user context
+            title: title
+          }}
+          onUpdateQMP={(qmpData, linkToCER) => {
+            if (linkToCER) {
+              // Create a new section for the QMS Plan
+              const qmsSection = {
+                title: "Quality Management System Plan",
+                type: "qms-plan",
+                content: `
+# Quality Management System Plan for ${deviceName || 'Medical Device'} CER
+
+## Quality Objectives
+${qmpData.qualityObjectives.map(obj => `
+### ${obj.description}
+**Scope:** ${obj.scope}
+**Risk Rating:** ${obj.riskRating}
+**Control/Mitigation:** ${obj.controlMitigation}
+
+${getCtqFactorsForSection(obj.id, qmpData.ctqFactors)}
+`).join('\n')}
+
+## Plan Author
+${qmpData.author}
+
+## Date
+${qmpData.date}
+`,
+                lastUpdated: new Date().toISOString()
+              };
+              
+              // Check if a QMS section already exists
+              const existingIndex = sections.findIndex(
+                section => section.type === 'qms-plan' || 
+                (section.title && section.title.toLowerCase().includes('quality management'))
+              );
+              
+              if (existingIndex >= 0) {
+                const updatedSections = [...sections];
+                updatedSections[existingIndex] = {
+                  ...updatedSections[existingIndex],
+                  content: qmsSection.content,
+                  lastUpdated: new Date().toISOString()
+                };
+                setSections(updatedSections);
+                
+                toast({
+                  title: "QMS Plan Updated",
+                  description: "Quality Management System Plan has been updated in your CER.",
+                  variant: "success"
+                });
+              } else {
+                setSections([...sections, qmsSection]);
+                
+                toast({
+                  title: "QMS Plan Added",
+                  description: "Quality Management System Plan has been added to your CER.",
+                  variant: "success"
+                });
+              }
+            } else {
+              // Just save the draft without adding to CER
+              toast({
+                title: "QMS Plan Draft Saved",
+                description: "Your Quality Management System Plan draft has been saved.",
+                variant: "success"
+              });
+            }
+          }}
         />
       );
     }
