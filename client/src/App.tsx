@@ -13,6 +13,7 @@ import CoAuthor from '@/pages/CoAuthor';
 // Import your existing CSR Analyzer pages
 import CSRAnalyzer from '@/pages/CSRAnalyzer.jsx';
 import CERV2Page from '@/pages/CERV2Page.jsx';
+import ReportsPage from '@/pages/ReportsPage.jsx';
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from './hooks/use-auth';
 import AppShell from '@/components/layout/AppShell';
@@ -41,6 +42,7 @@ function Router() {
       <ProtectedRoute path="/coauthor" component={CoAuthor} />
       <ProtectedRoute path="/CSRAnalyzer" component={CSRAnalyzer} />
       <ProtectedRoute path="/cer" component={CERV2Page} />
+      <ProtectedRoute path="/reports" component={ReportsPage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
