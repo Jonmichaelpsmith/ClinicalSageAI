@@ -1758,35 +1758,9 @@ cerApiService.detectHallucinations = async (cerDocument) => {
     return await response.json();
   } catch (error) {
     console.error('Error detecting hallucinations:', error);
-    // For testing/demo, return simulated data to avoid blocking the UI development
-    return {
-      hallucinations: [
-        {
-          text: "The device demonstrated a 97% success rate in clinical trials with over 5,000 patients.",
-          location: "section:clinical_evaluation",
-          confidence: 0.92,
-          details: "No clinical trial with 5,000 patients exists in the literature for this device. The largest study had 342 participants.",
-          suggestedCorrection: "The device demonstrated an 84% success rate in the largest clinical trial with 342 patients."
-        },
-        {
-          text: "A 2023 meta-analysis by Johnson et al. confirmed the safety profile across all age groups.",
-          location: "section:safety_analysis",
-          confidence: 0.87,
-          details: "No 2023 meta-analysis by Johnson exists for this device. The most recent meta-analysis was from 2021 by Silva et al.",
-          suggestedCorrection: "A 2021 meta-analysis by Silva et al. confirmed the safety profile in adults, though pediatric data remains limited."
-        }
-      ],
-      recommendations: [
-        {
-          type: "citation_verification",
-          message: "Verify all citations against PubMed or other authoritative sources"
-        },
-        {
-          type: "study_size_accuracy",
-          message: "Double-check all reported study sizes against original publications"
-        }
-      ]
-    };
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to detect hallucinations: ${error.message}. Please ensure the backend validation service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
   }
 };
 
@@ -1818,15 +1792,9 @@ cerApiService.verifyFactualClaim = async (claim) => {
     return await response.json();
   } catch (error) {
     console.error('Error verifying claim:', error);
-    // For testing/demo, return simulated data
-    return {
-      verified: Math.random() > 0.3, // 70% of claims are verified
-      confidence: 0.7 + (Math.random() * 0.3),
-      issue: "Claim contains numerical inaccuracy",
-      explanation: "The actual value reported in the literature is different from what's stated",
-      suggestedCorrection: "A corrected version of the claim with accurate information",
-      correctInformation: "The factually correct information"
-    };
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to verify factual claim: ${error.message}. Please ensure the backend validation service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
   }
 };
 
@@ -1858,15 +1826,9 @@ cerApiService.verifyReference = async (reference) => {
     return await response.json();
   } catch (error) {
     console.error('Error verifying reference:', error);
-    // For testing/demo, return simulated data
-    return {
-      valid: Math.random() > 0.2, // 80% of references are valid
-      confidence: 0.8 + (Math.random() * 0.2),
-      severity: Math.random() > 0.5 ? 'major' : 'minor',
-      issue: "Reference not found in literature database",
-      explanation: "The cited reference could not be verified in PubMed, Scopus, or other academic databases",
-      suggestedCorrection: Math.random() > 0.5 ? "A suggested alternative reference that supports the same claim" : null
-    };
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to verify reference: ${error.message}. Please ensure the backend validation service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
   }
 };
 
@@ -1900,37 +1862,9 @@ cerApiService.validateRegulatory = async (cerDocument, regulatoryFramework) => {
     return await response.json();
   } catch (error) {
     console.error('Error validating regulatory compliance:', error);
-    // For testing/demo, return simulated data
-    return {
-      issues: [
-        {
-          type: "missing_section",
-          message: "Missing required section: Benefit-Risk Analysis",
-          severity: "critical",
-          location: "document",
-          regulatoryReference: "EU MDR Annex XIV, Part A, Section 1"
-        },
-        {
-          type: "incomplete_section",
-          message: "Post-Market Surveillance Plan is incomplete",
-          severity: "major",
-          location: "section:pms_plan",
-          regulatoryReference: "EU MDR Article 83"
-        }
-      ],
-      recommendations: [
-        {
-          id: "rec-reg-1",
-          type: "add_section",
-          message: "Add a comprehensive Benefit-Risk Analysis section"
-        },
-        {
-          id: "rec-reg-2",
-          type: "update_section",
-          message: "Update PMS Plan to include complaint handling procedures"
-        }
-      ]
-    };
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to validate regulatory compliance: ${error.message}. Please ensure the backend validation service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
   }
 };
 
@@ -1960,13 +1894,9 @@ cerApiService.submitReviewRequest = async (reviewRequest) => {
     return await response.json();
   } catch (error) {
     console.error('Error submitting review request:', error);
-    // For testing/demo, return simulated data
-    return {
-      requestId: `rev-${Date.now()}`,
-      status: 'pending',
-      estimatedCompletionTime: '24 hours',
-      success: true
-    };
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to submit document for review: ${error.message}. Please ensure the backend review service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
   }
 };
 
