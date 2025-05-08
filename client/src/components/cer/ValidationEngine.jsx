@@ -1,475 +1,406 @@
-import React, { useState, useEffect } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-
-// UI Components
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-
-// Icons
-import { 
-  Shield, 
-  AlertTriangle, 
-  CheckCircle2, 
-  XCircle, 
-  Loader2,
-  BookOpen,
-  FileCheck,
-  Scale,
-  HelpCircle
-} from 'lucide-react';
-
 /**
  * ValidationEngine Component
  * 
- * This component validates CER documents for:
- * 1. Regulatory compliance with multiple frameworks
- * 2. Document completeness
- * 3. Reference verification
- * 4. Internal consistency
- * 5. Data source authenticity
+ * This component provides comprehensive regulatory compliance validation
+ * for Clinical Evaluation Reports against multiple international frameworks.
+ * 
+ * It verifies document completeness, reference integrity, and regulatory
+ * compliance with EU MDR, FDA, UKCA, Health Canada, and ICH requirements.
  */
-const ValidationEngine = ({ 
-  documentId, 
-  framework = "mdr",
-  onValidationComplete = () => {},
-  isPreview = false 
-}) => {
-  const [validationState, setValidationState] = useState({
-    status: 'idle', // idle, running, completed, failed
-    progress: 0,
-    results: null
-  });
+
+import React, { useState, useEffect } from 'react';
+import { cerApiService } from '@/services/CerAPIService';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from '@/components/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
+import {
+  AlertCircle,
+  CheckCircle,
+  AlertTriangle,
+  FileCheck,
+  BookOpen,
+  Gauge,
+  RefreshCw,
+  ClipboardList,
+  Shield,
+  Download
+} from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+
+const ValidationEngine = ({ documentId, onValidationComplete }) => {
+  const [validationData, setValidationData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedFramework, setSelectedFramework] = useState('mdr');
   const { toast } = useToast();
 
-  // Validation categories with their descriptions and icons
-  const validationCategories = [
-    {
-      id: 'regulatory_compliance',
-      name: 'Regulatory Compliance',
-      description: 'Verifies that the document meets the requirements of the selected regulatory framework',
-      icon: <Scale className="h-4 w-4" />
+  // Maps validation severities to UI elements
+  const severityMap = {
+    critical: {
+      icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+      badge: <Badge variant="destructive">Critical</Badge>,
+      color: 'text-red-500',
+      bgColor: 'bg-red-50'
     },
-    {
-      id: 'completeness',
-      name: 'Document Completeness',
-      description: 'Checks that all required sections are present and populated with appropriate content',
-      icon: <FileCheck className="h-4 w-4" />
+    major: {
+      icon: <AlertTriangle className="h-5 w-5 text-amber-500" />,
+      badge: <Badge variant="warning">Major</Badge>,
+      color: 'text-amber-500',
+      bgColor: 'bg-amber-50'
     },
-    {
-      id: 'references',
-      name: 'Reference Verification',
-      description: 'Validates that all cited references exist and are correctly formatted',
-      icon: <BookOpen className="h-4 w-4" />
-    },
-    {
-      id: 'consistency',
-      name: 'Internal Consistency',
-      description: 'Ensures that data, claims, and analyses are consistent throughout the document',
-      icon: <CheckCircle2 className="h-4 w-4" />
+    minor: {
+      icon: <FileCheck className="h-5 w-5 text-blue-500" />,
+      badge: <Badge variant="outline">Minor</Badge>,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-50'
     }
-  ];
+  };
 
-  // Validation mutation
-  const validationMutation = useMutation({
-    mutationFn: async () => {
-      setValidationState({
-        status: 'running',
-        progress: 0,
-        results: null
-      });
-      
-      // Setup interval to simulate progress
-      const progressInterval = setInterval(() => {
-        setValidationState(prev => ({
-          ...prev,
-          progress: prev.progress + Math.random() * 5 > 95 ? 95 : prev.progress + Math.random() * 5
-        }));
-      }, 500);
-      
-      // Call API
-      const response = await apiRequest('POST', `/api/cer/documents/${documentId}/validate`, {
-        framework
-      });
-      
-      // Clear interval and set to 100%
-      clearInterval(progressInterval);
-      setValidationState(prev => ({
-        ...prev,
-        progress: 100
-      }));
-      
-      return response;
+  // Maps category names to UI elements
+  const categoryMap = {
+    regulatory_compliance: {
+      name: 'Regulatory Compliance',
+      icon: <Shield className="h-5 w-5" />
     },
-    onSuccess: (response) => {
-      // Process validation results
-      const results = response.data;
+    completeness: {
+      name: 'Document Completeness',
+      icon: <ClipboardList className="h-5 w-5" />
+    },
+    references: {
+      name: 'Reference Verification',
+      icon: <BookOpen className="h-5 w-5" />
+    },
+    consistency: {
+      name: 'Internal Consistency',
+      icon: <FileCheck className="h-5 w-5" />
+    }
+  };
+
+  // Framework display names
+  const frameworkNames = {
+    mdr: 'EU MDR',
+    fda: 'US FDA',
+    ukca: 'UKCA',
+    health_canada: 'Health Canada',
+    ich: 'ICH'
+  };
+
+  // Run validation when framework changes
+  useEffect(() => {
+    if (documentId) {
+      runValidation();
+    }
+  }, [documentId, selectedFramework]);
+
+  // Run validation with selected framework
+  const runValidation = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const data = await cerApiService.validateCERDocument(documentId, selectedFramework);
+      setValidationData(data);
       
-      setValidationState({
-        status: 'completed',
-        progress: 100,
-        results
-      });
+      if (onValidationComplete) {
+        onValidationComplete(data);
+      }
+      
+      // Display toast based on validation results
+      if (data.summary.criticalIssues > 0) {
+        toast({
+          title: `${data.summary.criticalIssues} Critical Issues Found`,
+          description: 'Your document has critical compliance issues that must be addressed.',
+          variant: 'destructive'
+        });
+      } else if (data.summary.totalIssues === 0) {
+        toast({
+          title: 'Validation Successful',
+          description: 'Your document passed all validation checks.',
+          variant: 'success'
+        });
+      } else {
+        toast({
+          title: `${data.summary.totalIssues} Issues Found`,
+          description: 'Your document has compliance issues that should be reviewed.',
+          variant: 'warning'
+        });
+      }
+    } catch (err) {
+      console.error('Validation error:', err);
+      setError(err.message || 'Error running validation');
       
       toast({
-        title: 'Validation Complete',
-        description: `Found ${results.issues.length} issues that need attention`,
-      });
-      
-      onValidationComplete(results);
-    },
-    onError: (error) => {
-      console.error('Error validating document:', error);
-      
-      setValidationState({
-        status: 'failed',
-        progress: 0,
-        results: null
-      });
-      
-      toast({
-        title: 'Validation failed',
-        description: 'There was a problem validating your document. Please try again.',
+        title: 'Validation Error',
+        description: err.message || 'An error occurred while validating your document',
         variant: 'destructive'
       });
-    }
-  });
-
-  // If preview mode, load sample data
-  useEffect(() => {
-    if (isPreview) {
-      const previewResults = {
-        summary: {
-          totalIssues: 5,
-          criticalIssues: 1,
-          majorIssues: 2,
-          minorIssues: 2,
-          passedChecks: 42,
-          complianceScore: 89
-        },
-        categories: {
-          regulatory_compliance: { status: 'warning', passed: 18, failed: 2 },
-          completeness: { status: 'error', passed: 8, failed: 1 },
-          references: { status: 'warning', passed: 10, failed: 2 },
-          consistency: { status: 'success', passed: 6, failed: 0 }
-        },
-        issues: [
-          {
-            id: 1,
-            category: 'regulatory_compliance',
-            severity: 'critical',
-            message: 'Missing GSPR mapping for safety claims in section 4.2.3',
-            location: 'Section 4.2.3',
-            suggestion: 'Add GSPR mapping for all safety claims per MEDDEV 2.7/1 Rev 4 requirements'
-          },
-          {
-            id: 2,
-            category: 'completeness',
-            severity: 'major',
-            message: 'Literature search methodology is incomplete',
-            location: 'Section 3.5',
-            suggestion: 'Include search terms, databases, and inclusion/exclusion criteria'
-          },
-          {
-            id: 3,
-            category: 'references',
-            severity: 'major',
-            message: 'Citation Smith et al. (2022) not found in reference list',
-            location: 'Section 5.2',
-            suggestion: 'Add missing reference to bibliography or correct citation'
-          },
-          {
-            id: 4,
-            category: 'regulatory_compliance',
-            severity: 'minor',
-            message: 'State-of-the-art analysis lacks comparison with current standards',
-            location: 'Section 2.3',
-            suggestion: 'Include comparison with current industry standards and guidelines'
-          },
-          {
-            id: 5,
-            category: 'references',
-            severity: 'minor',
-            message: 'Inconsistent citation format in section 6',
-            location: 'Section 6',
-            suggestion: 'Standardize citation format according to document template'
-          }
-        ]
-      };
-      
-      setTimeout(() => {
-        setValidationState({
-          status: 'completed',
-          progress: 100,
-          results: previewResults
-        });
-      }, 1500);
-    }
-  }, [isPreview]);
-
-  // Start validation
-  const handleStartValidation = () => {
-    validationMutation.mutate();
-  };
-
-  // Render severity badge
-  const renderSeverityBadge = (severity) => {
-    switch (severity) {
-      case 'critical':
-        return (
-          <Badge variant="destructive" className="ml-2">
-            Critical
-          </Badge>
-        );
-      case 'major':
-        return (
-          <Badge variant="warning" className="ml-2 bg-amber-500">
-            Major
-          </Badge>
-        );
-      case 'minor':
-        return (
-          <Badge variant="secondary" className="ml-2">
-            Minor
-          </Badge>
-        );
-      default:
-        return null;
+    } finally {
+      setLoading(false);
     }
   };
-
-  // Render category status
-  const renderCategoryStatus = (status) => {
+  
+  // Calculate compliance score display
+  const getScoreColor = (score) => {
+    if (score >= 90) return 'text-green-600';
+    if (score >= 70) return 'text-amber-600';
+    return 'text-red-600';
+  };
+  
+  // Progress bar color based on status
+  const getProgressColor = (status) => {
     switch (status) {
-      case 'success':
-        return (
-          <div className="flex items-center text-green-600">
-            <CheckCircle2 className="h-5 w-5 mr-1" />
-            <span>Passed</span>
-          </div>
-        );
-      case 'warning':
-        return (
-          <div className="flex items-center text-amber-600">
-            <AlertTriangle className="h-5 w-5 mr-1" />
-            <span>Warnings</span>
-          </div>
-        );
-      case 'error':
-        return (
-          <div className="flex items-center text-red-600">
-            <XCircle className="h-5 w-5 mr-1" />
-            <span>Failed</span>
-          </div>
-        );
-      default:
-        return (
-          <div className="flex items-center text-gray-500">
-            <HelpCircle className="h-5 w-5 mr-1" />
-            <span>Unknown</span>
-          </div>
-        );
+      case 'success': return 'bg-green-500';
+      case 'warning': return 'bg-amber-500';
+      case 'error': return 'bg-red-500';
+      default: return 'bg-blue-500';
     }
   };
 
+  // Rendering loading state
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-6 w-5/6" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-4/6" />
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Skeleton className="h-10 w-28" />
+          </CardFooter>
+        </Card>
+        
+        <div className="text-center py-8">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
+          <p className="text-lg font-medium">Validating document against {frameworkNames[selectedFramework]} requirements...</p>
+          <p className="text-sm text-muted-foreground">This may take a moment</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Rendering error state
+  if (error) {
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-700">
+            <AlertCircle className="h-5 w-5" />
+            Validation Error
+          </CardTitle>
+          <CardDescription className="text-red-600">
+            An error occurred while validating your document
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-red-800 font-mono text-sm bg-red-100 p-3 rounded">{error}</p>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={runValidation} variant="outline" className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Try Again
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  // Main validation results rendering
   return (
     <div className="space-y-4">
-      {validationState.status === 'idle' && (
-        <Card className="border-dashed border-gray-300">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-3">
-              <Shield className="h-12 w-12 text-blue-200 mx-auto" />
-              <h3 className="font-medium">Document Validation</h3>
-              <p className="text-sm text-gray-500 max-w-md mx-auto">
-                Validate your document against regulatory requirements, check for completeness,
-                verify references, and ensure internal consistency.
-              </p>
-              <Button 
-                onClick={handleStartValidation}
-                className="mt-2"
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Start Validation
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {validationState.status === 'running' && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="relative mx-auto w-16 h-16 flex items-center justify-center">
-                <Shield className="h-16 w-16 text-blue-100" />
-                <Loader2 className="h-16 w-16 absolute top-0 left-0 text-blue-500 animate-spin opacity-75" />
-              </div>
-              <h3 className="font-medium">Validating Document</h3>
-              <p className="text-sm text-gray-500">
-                Running comprehensive validation checks...
-              </p>
-              <div className="w-full max-w-md mx-auto">
-                <Progress value={validationState.progress} className="h-2" />
-                <p className="text-xs text-gray-500 mt-2">
-                  {Math.round(validationState.progress)}% complete
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {validationState.status === 'completed' && validationState.results && (
-        <div className="space-y-4">
-          {/* Summary Card */}
+      {/* Framework selector */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-xl font-semibold mb-1">Regulatory Validation</h2>
+          <p className="text-muted-foreground">
+            Validate your CER against international regulatory requirements
+          </p>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <select 
+            value={selectedFramework}
+            onChange={(e) => setSelectedFramework(e.target.value)}
+            className="rounded-md border border-input h-10 px-3 py-2 text-sm"
+          >
+            <option value="mdr">EU MDR</option>
+            <option value="fda">US FDA</option>
+            <option value="ukca">UKCA</option>
+            <option value="health_canada">Health Canada</option>
+            <option value="ich">ICH</option>
+          </select>
+          
+          <Button onClick={runValidation} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Run Validation
+          </Button>
+        </div>
+      </div>
+      
+      {/* Validation results */}
+      {validationData && (
+        <div className="space-y-6">
+          {/* Summary card */}
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center">
-                <Shield className="h-5 w-5 mr-2 text-blue-600" />
-                Validation Summary
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Validation Summary</span>
+                
+                <span className={`font-bold ${getScoreColor(validationData.summary.complianceScore)}`}>
+                  <Gauge className="inline-block mr-2 h-5 w-5" />
+                  {validationData.summary.complianceScore}% Compliance
+                </span>
               </CardTitle>
               <CardDescription>
-                Overall document validation results
+                {validationData.summary.totalIssues === 0 
+                  ? 'Your document passed all validation checks' 
+                  : `${validationData.summary.totalIssues} issues found during validation`}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="bg-blue-50 rounded-md p-3 text-center">
-                  <p className="text-sm text-gray-600">Compliance Score</p>
-                  <p className="text-2xl font-bold text-blue-700">
-                    {validationState.results.summary.complianceScore}%
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="flex flex-col items-center p-4 rounded-lg border bg-background">
+                  <span className="text-3xl font-bold mb-1 text-red-600">
+                    {validationData.summary.criticalIssues}
+                  </span>
+                  <span className="text-sm text-muted-foreground">Critical Issues</span>
                 </div>
-                <div className="bg-red-50 rounded-md p-3 text-center">
-                  <p className="text-sm text-gray-600">Critical Issues</p>
-                  <p className="text-2xl font-bold text-red-700">
-                    {validationState.results.summary.criticalIssues}
-                  </p>
+                <div className="flex flex-col items-center p-4 rounded-lg border bg-background">
+                  <span className="text-3xl font-bold mb-1 text-amber-600">
+                    {validationData.summary.majorIssues}
+                  </span>
+                  <span className="text-sm text-muted-foreground">Major Issues</span>
                 </div>
-                <div className="bg-amber-50 rounded-md p-3 text-center">
-                  <p className="text-sm text-gray-600">Major Issues</p>
-                  <p className="text-2xl font-bold text-amber-700">
-                    {validationState.results.summary.majorIssues}
-                  </p>
+                <div className="flex flex-col items-center p-4 rounded-lg border bg-background">
+                  <span className="text-3xl font-bold mb-1 text-blue-600">
+                    {validationData.summary.minorIssues}
+                  </span>
+                  <span className="text-sm text-muted-foreground">Minor Issues</span>
                 </div>
-                <div className="bg-green-50 rounded-md p-3 text-center">
-                  <p className="text-sm text-gray-600">Passed Checks</p>
-                  <p className="text-2xl font-bold text-green-700">
-                    {validationState.results.summary.passedChecks}
-                  </p>
+                <div className="flex flex-col items-center p-4 rounded-lg border bg-background">
+                  <span className="text-3xl font-bold mb-1 text-green-600">
+                    {validationData.summary.passedChecks}
+                  </span>
+                  <span className="text-sm text-muted-foreground">Passed Checks</span>
                 </div>
               </div>
               
-              <h3 className="text-sm font-medium mb-2">Category Results</h3>
-              <div className="space-y-2">
-                {validationCategories.map((category) => {
-                  const categoryResult = validationState.results.categories[category.id];
-                  return (
-                    <div 
-                      key={category.id} 
-                      className="flex items-center justify-between bg-gray-50 p-2 rounded-md"
-                    >
-                      <div className="flex items-center">
-                        {React.cloneElement(category.icon, { className: "h-4 w-4 mr-2 text-gray-500" })}
-                        <span className="text-sm">{category.name}</span>
+              {/* Category progress bars */}
+              <div className="space-y-4">
+                {Object.entries(validationData.categories).map(([key, category]) => (
+                  <div key={key} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {categoryMap[key]?.icon}
+                        <span className="font-medium">{categoryMap[key]?.name || key}</span>
                       </div>
-                      <div className="flex items-center text-sm">
-                        <span className="text-gray-600 mr-2">
-                          {categoryResult.passed}/{categoryResult.passed + categoryResult.failed} Passed
-                        </span>
-                        {renderCategoryStatus(categoryResult.status)}
+                      <div className="text-sm">
+                        <span className="text-green-600 font-medium">{category.passed} Passed</span>
+                        <span className="mx-1">•</span>
+                        <span className="text-red-600 font-medium">{category.failed} Failed</span>
                       </div>
                     </div>
-                  );
-                })}
+                    <Progress 
+                      value={(category.passed / (category.passed + category.failed)) * 100} 
+                      className={`h-2 ${getProgressColor(category.status)}`}
+                    />
+                  </div>
+                ))}
               </div>
             </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" />
+                Export Validation Report
+              </Button>
+            </CardFooter>
           </Card>
           
-          {/* Issues Card */}
-          {validationState.results.issues.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center">
-                  <AlertTriangle className="h-5 w-5 mr-2 text-amber-600" />
-                  Identified Issues
-                </CardTitle>
-                <CardDescription>
-                  Issues that need to be addressed before export
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="multiple" className="w-full">
-                  {validationState.results.issues.map((issue) => {
-                    const category = validationCategories.find(c => c.id === issue.category);
-                    return (
-                      <AccordionItem key={issue.id} value={`issue-${issue.id}`}>
-                        <AccordionTrigger className="hover:no-underline">
-                          <div className="flex items-center text-left">
-                            <div className="mr-2">
-                              {category && React.cloneElement(category.icon, { 
-                                className: "h-4 w-4 text-gray-500" 
-                              })}
-                            </div>
-                            <span>{issue.message}</span>
-                            {renderSeverityBadge(issue.severity)}
+          {/* Issues list */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Validation Issues</CardTitle>
+              <CardDescription>
+                {validationData.issues.length === 0 
+                  ? 'No issues were found during validation' 
+                  : `${validationData.issues.length} issues require attention`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {validationData.issues.length === 0 ? (
+                <div className="text-center py-10">
+                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                  <h3 className="text-xl font-medium text-green-700 mb-1">All Validation Checks Passed</h3>
+                  <p className="text-muted-foreground">
+                    Your document complies with {frameworkNames[selectedFramework]} requirements
+                  </p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">Severity</TableHead>
+                      <TableHead>Issue</TableHead>
+                      <TableHead className="w-[120px]">Location</TableHead>
+                      <TableHead className="w-[180px]">Category</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {validationData.issues.map((issue) => (
+                      <TableRow key={issue.id} className={severityMap[issue.severity]?.bgColor}>
+                        <TableCell>
+                          {severityMap[issue.severity]?.badge}
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{issue.message}</div>
+                          <div className="text-sm text-muted-foreground mt-1">{issue.suggestion}</div>
+                        </TableCell>
+                        <TableCell>{issue.location}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {categoryMap[issue.category]?.icon}
+                            <span className="text-sm">{categoryMap[issue.category]?.name || issue.category}</span>
                           </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="pl-6 space-y-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              <div>
-                                <p className="text-sm font-medium text-gray-600">Location</p>
-                                <p className="text-sm">{issue.location}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-600">Category</p>
-                                <p className="text-sm">{category ? category.name : issue.category}</p>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-600">Suggestion</p>
-                              <p className="text-sm">{issue.suggestion}</p>
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    );
-                  })}
-                </Accordion>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Actions */}
-          <div className="flex justify-end space-x-2">
-            <Button 
-              variant="outline"
-              onClick={handleStartValidation}
-            >
-              Re-validate
-            </Button>
-            <Button>
-              Fix All Issues
-            </Button>
-          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
         </div>
-      )}
-
-      {validationState.status === 'failed' && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Validation Failed</AlertTitle>
-          <AlertDescription>
-            There was an error during validation. Please try again or contact support if the issue persists.
-          </AlertDescription>
-        </Alert>
       )}
     </div>
   );
