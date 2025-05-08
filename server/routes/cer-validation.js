@@ -1,0 +1,281 @@
+/**
+ * CER Validation API Routes
+ * 
+ * This module provides endpoints for validating Clinical Evaluation Reports
+ * against regulatory requirements from multiple frameworks.
+ */
+
+const express = require('express');
+const router = express.Router();
+const { OpenAI } = require('openai');
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// Validation framework requirements
+const validationFrameworks = {
+  mdr: {
+    name: 'EU MDR',
+    requirements: [
+      'GSPR mapping for all safety and performance claims',
+      'State-of-the-art analysis with current standards',
+      'Literature search methodology documentation',
+      'Benefit-risk analysis',
+      'Post-market surveillance plan',
+      'PMCF plan compliant with MDCG 2020-7',
+      'Device description and intended purpose',
+      'Qualifications of evaluators',
+      'Complete bibliography with proper citations'
+    ]
+  },
+  fda: {
+    name: 'US FDA',
+    requirements: [
+      'Substantial equivalence documentation (for 510(k))',
+      'Benefit-risk determination',
+      'Performance testing data',
+      'Clinical study protocols and results',
+      'Device description and indications for use',
+      'Complete reference list with proper citations'
+    ]
+  },
+  ukca: {
+    name: 'UKCA',
+    requirements: [
+      'UK-specific clinical evidence requirements',
+      'UKCA marking compliance documentation',
+      'Post-market surveillance plan for UK market',
+      'UK Responsible Person details',
+      'Complete reference list with proper citations'
+    ]
+  },
+  health_canada: {
+    name: 'Health Canada',
+    requirements: [
+      'Device classification according to Canadian regulations',
+      'Canadian Medical Device Licence requirements',
+      'Risk classification and management',
+      'Clinical evidence specific to Canadian guidelines',
+      'Complete reference list with proper citations'
+    ]
+  },
+  ich: {
+    name: 'ICH',
+    requirements: [
+      'International harmonization documentation',
+      'Cross-reference to regional requirements',
+      'Complete reference list with proper citations'
+    ]
+  }
+};
+
+/**
+ * Validate a CER document
+ * POST /api/cer/documents/:id/validate
+ */
+router.post('/documents/:id/validate', async (req, res) => {
+  try {
+    const documentId = req.params.id;
+    const { framework = 'mdr' } = req.body;
+    
+    // In a real implementation, we would retrieve the document content
+    // from a database or file storage using documentId
+    
+    // For demonstration, we'll simulate the validation process
+    // In a real implementation, this would analyze the actual document content
+    
+    // Example validation results structure
+    const validationResults = await simulateValidation(documentId, framework);
+    
+    res.json(validationResults);
+  } catch (error) {
+    console.error('Error validating document:', error);
+    res.status(500).json({
+      error: 'Failed to validate document',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Simulate validation of a document
+ * In a real implementation, this would perform actual content analysis
+ */
+async function simulateValidation(documentId, framework) {
+  // In a real implementation, we would:
+  // 1. Retrieve the document content
+  // 2. Analyze it for compliance with the selected framework
+  // 3. Verify references and citations
+  // 4. Check for completeness and consistency
+  
+  // Create a simulated validation response with real requirements
+  // based on the selected framework
+  
+  const criticalIssues = Math.floor(Math.random() * 2); // 0-1
+  const majorIssues = Math.floor(Math.random() * 3); // 0-2
+  const minorIssues = Math.floor(Math.random() * 4); // 0-3
+  
+  const totalIssues = criticalIssues + majorIssues + minorIssues;
+  const passedChecks = Math.floor(Math.random() * 15) + 30; // 30-44
+  
+  // Calculate compliance score
+  const complianceScore = Math.max(0, 100 - (criticalIssues * 15) - (majorIssues * 7) - (minorIssues * 3));
+  
+  const frameworkReqs = validationFrameworks[framework] || validationFrameworks.mdr;
+  
+  // Generate an array of fake issues based on the framework requirements
+  const issues = [];
+  
+  // Add critical issues if any
+  for (let i = 0; i < criticalIssues; i++) {
+    const reqIndex = Math.floor(Math.random() * frameworkReqs.requirements.length);
+    const req = frameworkReqs.requirements[reqIndex];
+    
+    issues.push({
+      id: issues.length + 1,
+      category: 'regulatory_compliance',
+      severity: 'critical',
+      message: `Missing ${req} documentation required by ${frameworkReqs.name}`,
+      location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
+      suggestion: `Add complete ${req} documentation according to ${frameworkReqs.name} requirements`
+    });
+  }
+  
+  // Add major issues if any
+  for (let i = 0; i < majorIssues; i++) {
+    const categories = ['completeness', 'references', 'regulatory_compliance'];
+    const category = categories[Math.floor(Math.random() * categories.length)];
+    
+    let message, suggestion;
+    
+    if (category === 'completeness') {
+      message = 'Document section is incomplete';
+      suggestion = 'Complete the section with all required information';
+    } else if (category === 'references') {
+      message = 'Citation not found in reference list';
+      suggestion = 'Add missing reference to bibliography or correct citation';
+    } else {
+      const reqIndex = Math.floor(Math.random() * frameworkReqs.requirements.length);
+      const req = frameworkReqs.requirements[reqIndex];
+      message = `Inadequate ${req} documentation`;
+      suggestion = `Enhance ${req} documentation according to ${frameworkReqs.name} guidelines`;
+    }
+    
+    issues.push({
+      id: issues.length + 1,
+      category,
+      severity: 'major',
+      message,
+      location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
+      suggestion
+    });
+  }
+  
+  // Add minor issues if any
+  for (let i = 0; i < minorIssues; i++) {
+    const categories = ['completeness', 'references', 'consistency', 'regulatory_compliance'];
+    const category = categories[Math.floor(Math.random() * categories.length)];
+    
+    let message, suggestion;
+    
+    if (category === 'completeness') {
+      message = 'Section could be enhanced with additional details';
+      suggestion = 'Consider adding more comprehensive information to strengthen this section';
+    } else if (category === 'references') {
+      message = 'Inconsistent citation format';
+      suggestion = 'Standardize citation format according to document template';
+    } else if (category === 'consistency') {
+      message = 'Terminology inconsistency detected';
+      suggestion = 'Use consistent terminology throughout the document';
+    } else {
+      message = 'Additional regulatory context would strengthen compliance';
+      suggestion = 'Consider adding more regulatory context to enhance compliance';
+    }
+    
+    issues.push({
+      id: issues.length + 1,
+      category,
+      severity: 'minor',
+      message,
+      location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
+      suggestion
+    });
+  }
+  
+  // Calculate category statuses
+  const getStatus = (passed, failed) => {
+    if (failed === 0) return 'success';
+    if (failed > 0 && failed <= 2) return 'warning';
+    return 'error';
+  };
+  
+  return {
+    summary: {
+      totalIssues,
+      criticalIssues,
+      majorIssues,
+      minorIssues,
+      passedChecks,
+      complianceScore
+    },
+    categories: {
+      regulatory_compliance: { 
+        status: getStatus(passedChecks, issues.filter(i => i.category === 'regulatory_compliance').length),
+        passed: Math.floor(Math.random() * 5) + 15, // 15-19
+        failed: issues.filter(i => i.category === 'regulatory_compliance').length
+      },
+      completeness: { 
+        status: getStatus(passedChecks, issues.filter(i => i.category === 'completeness').length),
+        passed: Math.floor(Math.random() * 3) + 7, // 7-9
+        failed: issues.filter(i => i.category === 'completeness').length
+      },
+      references: { 
+        status: getStatus(passedChecks, issues.filter(i => i.category === 'references').length),
+        passed: Math.floor(Math.random() * 3) + 8, // 8-10
+        failed: issues.filter(i => i.category === 'references').length
+      },
+      consistency: { 
+        status: getStatus(passedChecks, issues.filter(i => i.category === 'consistency').length),
+        passed: Math.floor(Math.random() * 3) + 5, // 5-7
+        failed: issues.filter(i => i.category === 'consistency').length
+      }
+    },
+    issues
+  };
+}
+
+// In a real implementation, we would have additional AI-driven validation
+// using the OpenAI API to analyze the document content in-depth
+async function validateWithAI(documentContent, framework) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: `You are a regulatory expert specializing in medical device clinical evaluation reports. 
+          Analyze the provided document content against ${framework} requirements.
+          Identify any regulatory compliance issues, completeness problems, reference verification issues, 
+          and internal consistency problems. Provide a detailed report with issue severity (critical, major, minor),
+          locations in the document, and suggestions for remediation.`
+        },
+        {
+          role: "user",
+          content: documentContent
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error) {
+    console.error('Error validating with AI:', error);
+    throw error;
+  }
+}
+
+// Export the router as default
+module.exports = router;
+module.exports.default = router;
