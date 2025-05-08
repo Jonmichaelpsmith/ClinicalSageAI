@@ -24,6 +24,9 @@ const sectionTypeToQmpMapping = {
   'conclusion': 'Conclusion'
 };
 
+// Debug mappings for development
+console.log('Available CtQ section mappings:', sectionTypeToQmpMapping);
+
 /**
  * Check if all required CtQ factors for a given section type are satisfied
  * 
@@ -34,6 +37,8 @@ export const checkSectionCtqFactors = async (sectionType) => {
   try {
     // Map section type to QMP section name
     const qmpSectionName = sectionTypeToQmpMapping[sectionType] || sectionType;
+    
+    console.log(`Checking CtQ factors for section type "${sectionType}" → mapped to "${qmpSectionName}"`);
     
     // Get CtQ factors related to this section
     const response = await axios.get(`/api/qmp/ctq-for-section/${encodeURIComponent(qmpSectionName)}`);

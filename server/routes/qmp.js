@@ -126,10 +126,18 @@ router.get('/ctq-for-section/:sectionName', (req, res) => {
       });
     }
     
-    // Find CtQ factors for the specified section
-    const ctqFactors = qmpData.ctqFactors.filter(factor => 
-      factor.associatedSection.toLowerCase() === sectionName.toLowerCase()
-    );
+    // Find CtQ factors for the specified section (with improved matching)
+    console.log(`Looking for CtQ factors for section: "${sectionName}"`);
+    
+    const ctqFactors = qmpData.ctqFactors.filter(factor => {
+      const factorSection = factor.associatedSection.toLowerCase().trim();
+      const requestedSection = sectionName.toLowerCase().trim();
+      
+      console.log(`Comparing: "${factorSection}" vs "${requestedSection}"`);
+      return factorSection === requestedSection;
+    });
+    
+    console.log(`Found ${ctqFactors.length} matching CtQ factors`);
     
     logger.info('Retrieved CtQ factors for section', {
       module: 'qmp-api',
