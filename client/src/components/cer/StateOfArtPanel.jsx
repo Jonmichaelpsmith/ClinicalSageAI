@@ -185,7 +185,7 @@ export default function StateOfArtPanel({ onSectionGenerated }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sota-panel">
       {/* Input panel - Using MS365-inspired design */}
       <div className="lg:col-span-2">
         <Card className="shadow-sm border-[#E1DFDD]">
@@ -200,8 +200,8 @@ export default function StateOfArtPanel({ onSectionGenerated }) {
           </CardHeader>
           
           <CardContent className="pt-4">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="bg-[#F5F5F5] mb-4 w-full grid grid-cols-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full cer-tabs">
+              <TabsList className="bg-[#F5F5F5] mb-4 w-full grid grid-cols-2 cer-tabs-list">
                 <TabsTrigger 
                   value="standard" 
                   className="cer-tab-trigger rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD]"
