@@ -40,11 +40,27 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve static JavaScript files
-app.use('/js', express.static(path.join(process.cwd(), 'js')));
-app.use('/public', express.static(path.join(process.cwd(), 'public')));
+// 1. Serve static JavaScript files from various directories with proper MIME types
+// This ensures JS files are served with Content-Type: application/javascript
+app.use('/js', express.static(path.join(process.cwd(), 'js'), {
+  setHeaders: (res, filePath) => {
+    if (path.extname(filePath) === '.js') {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
+app.use('/public', express.static(path.join(process.cwd(), 'public'), {
+  setHeaders: (res, filePath) => {
+    if (path.extname(filePath) === '.js') {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+}));
 
-// Serve the marketing landing page at the root URL
+// 2. Register API routes before the catch-all
+registerRoutes(app);
+
+// 3. Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
   const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
@@ -56,7 +72,7 @@ app.get('/', (req, res) => {
   }
 });
 
-// Alternative marketing page route
+// 4. Alternative marketing page route
 app.get('/marketing', (req, res) => {
   console.log('Serving marketing page from /marketing route');
   const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
@@ -67,14 +83,22 @@ app.get('/marketing', (req, res) => {
   }
 });
 
-// Register API routes
-registerRoutes(app);
-
-// Direct access to cerv2 should be handled by Vite for client-side routing
-// No special handler needed
-
 // Create HTTP server
 const httpServer = createHttpServer(app);
+
+// Add a catch-all route for SPA client-side routing
+// This should come after all other routes but before Vite setup
+app.get('*', (req, res, next) => {
+  // If the request looks like a static asset but wasn't found by express.static,
+  // return 404 instead of falling back to index.html
+  if (/\.(js|css|png|svg|ico|map)$/i.test(req.path)) {
+    console.warn(`Asset not found: ${req.path}`);
+    return res.status(404).end();
+  }
+  
+  // For all other routes, pass to the next handler (which will be Vite in dev mode)
+  next();
+});
 
 // Setup Vite middleware in development mode
 if (isDev) {

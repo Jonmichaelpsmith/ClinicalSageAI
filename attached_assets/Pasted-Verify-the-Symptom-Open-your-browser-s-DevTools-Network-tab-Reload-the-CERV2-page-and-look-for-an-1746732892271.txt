@@ -1,0 +1,123 @@
+Verify the Symptom
+Open your browser’s DevTools → Network tab
+
+Reload the CERV2 page and look for any requests for .js files that return HTML (you’ll see an HTML snippet in the Preview)
+
+Note the URL of the failing asset(s) and the Status Code (often 200 OK, but content is HTML rather than JS)
+
+2. Typical Root Causes
+Catch-All Route Order: A server fallback (e.g. app.get('*', …)) is catching JS asset requests and returning index.html.
+
+Static Middleware Misconfiguration: Your static file handler isn’t mounted (or is mounted after your catch-all), so JS files never get served from disk.
+
+Incorrect MIME Type Headers: The server is sending HTML responses with Content-Type: text/html even for .js URLs.
+
+3. Step-By-Step Fixes
+3.1. Reorder Express Static & Fallback
+In your server/index.ts (or wherever you configure Express):
+
+js
+Copy
+Edit
+import path from 'path';
+import express from 'express';
+
+const app = express();
+
+// 1) Serve your API routes first:
+app.use('/api', apiRouter);
+
+// 2) Serve built frontend assets **before** any catch-all:
+const clientDist = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDist, {
+  // ensure index.html is only served for unmatched routes
+  extensions: ['js','css','png','svg','html']
+}));
+
+// 3) Fallback: only catch *non-API*, non-asset requests
+app.get('*', (req, res) => {
+  // If the request looks like a static asset (has extension), let static middleware handle it
+  if (/\.(js|css|png|svg|ico|map)$/i.test(req.path)) {
+    return res.status(404).end();
+  }
+  // Otherwise, serve the index.html for SPA routing
+  res.sendFile(path.join(clientDist, 'index.html'));
+});
+
+app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+Why this works:
+
+Static middleware (express.static) will try to match *.js or other asset files in your /dist folder first, and serve them with the correct Content-Type: application/javascript.
+
+The catch-all only responds when no file is found, and only for non-asset routes, preventing HTML from masquerading as JS.
+
+3.2. Confirm MIME Types
+Express’s static will automatically set the correct MIME based on file extension. If you ever have to serve a JS file manually, explicitly set the header:
+
+js
+Copy
+Edit
+res.type('application/javascript').sendFile(pathToJsFile);
+4. Vite Configuration (Dev + Prod)
+In vite.config.ts, ensure your base and build.rollupOptions are correct so that asset paths resolve properly:
+
+ts
+Copy
+Edit
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  root: path.resolve(__dirname, 'client'),
+  base: process.env.NODE_ENV === 'production'
+    ? '/static/'          // if you're serving from /static/ on your server
+    : '/',
+  build: {
+    outDir: path.resolve(__dirname, 'dist'), // relative to root
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'client/index.html')
+      }
+    }
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+    hmr: { protocol: 'ws', host: 'localhost' }
+  }
+});
+base ensures <script src="…"> tags point to the right public URL prefix in production.
+
+outDir tells Vite where to emit your build so that Express’s static middleware can find it.
+
+5. Verify & Test
+Rebuild the client:
+
+bash
+Copy
+Edit
+cd client
+npm run build
+Restart your server and open the CER Builder page.
+
+In DevTools → Network, confirm each .js request returns the JS bundle (Content-Type: application/javascript) and not HTML.
+
+Verify that the console errors disappear and that the tabs/components now load correctly.
+
+6. Add Safeguards
+Logging Middleware: In production, consider logging any requests for *.js that return HTML so you can catch regressions.
+
+Automated Smoke Test: Write a lightweight integration test (e.g. using Playwright or Cypress) that loads /cer and asserts that no network request for .js returns HTML.
+
+Documentation: Add a note in your README about the required ordering of static middleware and catch-all routes so future maintainers avoid the same pitfall.
+
+By ensuring that your Express (or other backend) serves JS assets before falling back to HTML—and by verifying your Vite base path—your “Unexpected token ‘<’” errors will vanish, restoring full client-side functionality to the CERV2 module.
+
+
+
+
+
+
+
