@@ -18,7 +18,9 @@ import {
   ClipboardList, 
   LineChart,
   Activity,
-  PieChart
+  PieChart,
+  RefreshCw,
+  Plus
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cerApiService as CerAPIService } from '@/services/CerAPIService';
@@ -33,7 +35,7 @@ import { cerApiService as CerAPIService } from '@/services/CerAPIService';
  * - Registry data
  * - Complaint trend data
  */
-export default function InternalClinicalDataPanel({ jobId }) {
+export default function InternalClinicalDataPanel({ jobId, deviceName, manufacturer, onAddToCER }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("investigations");
@@ -183,6 +185,105 @@ export default function InternalClinicalDataPanel({ jobId }) {
         return <AlertTriangle className="h-5 w-5 text-amber-600" />;
       default:
         return <FileText className="h-5 w-5 text-gray-600" />;
+    }
+  };
+  
+  // Generate CER section content
+  const generateCERSection = () => {
+    // Early return if there's no data
+    if (!internalData || Object.values(internalData).every(arr => arr.length === 0)) {
+      toast({
+        title: "No Data Available",
+        description: "Please add internal clinical data before generating a CER section.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Format data for the CER section
+    const content = {
+      title: "Internal Clinical Data Analysis",
+      type: "internal-clinical-data",
+      content: `# Internal Clinical Data Analysis
+      
+## Overview
+This section presents an analysis of internal clinical data for ${deviceName || 'the device'}, including clinical investigations, post-market surveillance reports, registry data, and complaint trends.
+
+${internalData.investigations && internalData.investigations.length > 0 ? `
+## Clinical Investigations
+${internalData.investigations.map(item => `
+### ${item.fileName}
+- **Type:** ${item.reportType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+- **Study Design:** ${item.studyDesign ? item.studyDesign.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Not specified'}
+- **Time Period:** ${item.timeframe || 'Not specified'}
+- **Sample Size:** ${item.sampleSize || 'Not specified'}
+- **Document Reference:** ${item.documentId || 'Not specified'}
+
+${item.summary || 'No summary provided.'}
+`).join('')}
+` : ''}
+
+${internalData.pmsReports && internalData.pmsReports.length > 0 ? `
+## Post-Market Surveillance
+${internalData.pmsReports.map(item => `
+### ${item.fileName}
+- **Type:** ${item.reportType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+- **Time Period:** ${item.timeframe || 'Not specified'}
+- **Document Reference:** ${item.documentId || 'Not specified'}
+
+${item.summary || 'No summary provided.'}
+`).join('')}
+` : ''}
+
+${internalData.registryData && internalData.registryData.length > 0 ? `
+## Registry Data
+${internalData.registryData.map(item => `
+### ${item.fileName}
+- **Registry Type:** ${item.reportType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+- **Time Period:** ${item.timeframe || 'Not specified'}
+- **Sample Size:** ${item.sampleSize || 'Not specified'}
+- **Document Reference:** ${item.documentId || 'Not specified'}
+
+${item.summary || 'No summary provided.'}
+`).join('')}
+` : ''}
+
+${internalData.complaints && internalData.complaints.length > 0 ? `
+## Complaint Trends and Vigilance Data
+${internalData.complaints.map(item => `
+### ${item.fileName}
+- **Analysis Type:** ${item.reportType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+- **Time Period:** ${item.timeframe || 'Not specified'}
+- **Document Reference:** ${item.documentId || 'Not specified'}
+
+${item.summary || 'No summary provided.'}
+`).join('')}
+` : ''}
+
+## Synthesis of Internal Clinical Data
+${summaryData ? summaryData.synthesis || 'The internal clinical data supports the safety and performance of the device within its intended use.' : 'A comprehensive analysis of the internal clinical data supports the safety and performance of the device within its intended use.'}
+
+## Conclusions
+${summaryData ? summaryData.conclusions || 'Based on the internal clinical data presented above, the device demonstrates an acceptable safety and performance profile that is consistent with its intended purpose.' : 'Based on the internal clinical data presented above, the device demonstrates an acceptable safety and performance profile that is consistent with its intended purpose.'}
+`,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    return content;
+  };
+  
+  // Handle adding to CER
+  const handleAddToCER = () => {
+    if (typeof onAddToCER === 'function') {
+      const cerSection = generateCERSection();
+      if (cerSection) {
+        onAddToCER(cerSection);
+        toast({
+          title: "Added to CER",
+          description: "Internal clinical data analysis has been added to your Clinical Evaluation Report.",
+          variant: "success"
+        });
+      }
     }
   };
 
