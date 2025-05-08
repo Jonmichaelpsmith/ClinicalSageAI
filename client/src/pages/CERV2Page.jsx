@@ -579,12 +579,10 @@ export default function CERV2Page() {
     
     if (activeTab === 'compliance') {
       return (
-        <ComplianceCheckPanel
-          deviceName={deviceName}
-          deviceType={deviceType}
-          manufacturer={manufacturer}
+        <ComplianceScorePanel
           sections={sections}
-          onAddToReport={(complianceData) => {
+          title={`${deviceName || 'Device'} Clinical Evaluation Report`}
+          onComplianceChange={(complianceData) => {
             const existingIndex = sections.findIndex(
               section => section.type === 'compliance' || 
               (section.title && section.title.toLowerCase().includes('compliance'))
@@ -594,7 +592,9 @@ export default function CERV2Page() {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
                 ...updatedSections[existingIndex],
-                content: complianceData.content,
+                content: JSON.stringify(complianceData),
+                type: 'compliance',
+                title: 'Regulatory Compliance Assessment',
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
@@ -605,13 +605,23 @@ export default function CERV2Page() {
                 variant: "success"
               });
             } else {
-              setSections([...sections, complianceData]);
+              setSections([...sections, {
+                type: 'compliance',
+                title: 'Regulatory Compliance Assessment',
+                content: JSON.stringify(complianceData),
+                lastUpdated: new Date().toISOString()
+              }]);
               
               toast({
                 title: "Compliance Check Added",
                 description: "Regulatory compliance assessment has been added to your CER.",
                 variant: "success"
               });
+            }
+          }}
+          onStatusChange={(status) => {
+            if (status === 'ready-for-review') {
+              setDraftStatus('needs-review');
             }
           }}
         />
