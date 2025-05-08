@@ -1,10 +1,14 @@
 import React from 'react';
+import { TabsList } from '@/components/ui/tabs';
 
 /**
  * TabRow Component
  * 
  * Creates a horizontally scrollable container for tabs that prevents wrapping
  * and overlapping even on small screens.
+ * 
+ * Wraps children in a proper TabsList from shadcn/ui to provide
+ * the required RovingFocusGroup context.
  * 
  * @param {Object} props
  * @param {React.ReactNode} props.children - Tab triggers to display in the row
@@ -20,13 +24,13 @@ export default function TabRow({ children, label, className = '' }) {
             <span className="text-xs font-medium text-[#605E5C]">{label}</span>
           </div>
         )}
-        <div className="inline-flex items-center">
+        <TabsList className="inline-flex items-center h-auto bg-transparent p-0 space-x-0">
           {React.Children.map(children, child => 
             child ? React.cloneElement(child, { 
               className: `${child.props.className || ''} flex-shrink-0 mx-1`
             }) : null
           )}
-        </div>
+        </TabsList>
       </div>
     </div>
   );
