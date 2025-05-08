@@ -97,7 +97,7 @@ export default function CERV2Page() {
   const getWizardStep = (tab) => {
     if (['builder', 'cep', 'documents', 'data-retrieval'].includes(tab)) {
       return 'preparation';
-    } else if (['literature', 'literature-review', 'internal-clinical-data', 'sota'].includes(tab)) {
+    } else if (['literature', 'literature-review', 'internal-clinical-data', 'eu-pms-data', 'sota'].includes(tab)) {
       return 'evidence';
     } else if (['equivalence', 'gspr-mapping', 'compliance', 'assistant'].includes(tab)) {
       return 'analysis';
@@ -125,6 +125,7 @@ export default function CERV2Page() {
           { id: "literature", label: "Literature", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "literature-review", label: "Literature Review", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "internal-clinical-data", label: "Internal Clinical Data", icon: <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "eu-pms-data", label: "EU & Global PMS", icon: <Globe className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "sota", label: "State of Art", icon: <BookMarked className="h-3.5 w-3.5 mr-1.5" /> }
         ]
       },
@@ -377,7 +378,7 @@ export default function CERV2Page() {
       );
     }
     
-    // Add other tab content handlers for literature-review, internal-clinical-data, 
+    // Add other tab content handlers for literature-review, internal-clinical-data, eu-pms-data,
     // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
 
     if (activeTab === 'literature-review') {
@@ -451,6 +452,46 @@ export default function CERV2Page() {
               toast({
                 title: "Internal Clinical Data Added",
                 description: "Internal clinical evidence has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+    
+    if (activeTab === 'eu-pms-data') {
+      return (
+        <EuPmsDataPanel
+          jobId={`cer-${Date.now()}`}
+          deviceName={deviceName}
+          manufacturer={manufacturer}
+          onAddToCER={(pmsData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'eu-global-pms-data' || 
+              (section.title && section.title.toLowerCase().includes('eu and global post-market surveillance'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: pmsData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "EU & Global PMS Data Updated",
+                description: "European and global post-market surveillance data has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, pmsData]);
+              
+              toast({
+                title: "EU & Global PMS Data Added",
+                description: "European and global post-market surveillance data has been added to your CER.",
                 variant: "success"
               });
             }
