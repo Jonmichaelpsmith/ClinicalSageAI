@@ -609,6 +609,67 @@ const CERStreamingGenerator = ({
     </div>
   );
   
+  // Start manual section editing
+  const startEditingSection = (sectionId) => {
+    // Store original content in manualEdits to track changes
+    if (!manualEdits[sectionId]) {
+      setManualEdits(prev => ({
+        ...prev,
+        [sectionId]: generatedContent[sectionId]
+      }));
+    }
+    
+    setEditingSectionId(sectionId);
+    
+    toast({
+      title: "Editing Mode",
+      description: "You can now edit this section manually. Click Save when done."
+    });
+  };
+  
+  // Save manual edits
+  const saveManualEdit = (sectionId) => {
+    const editedContent = manualEdits[sectionId];
+    
+    if (editedContent) {
+      setGeneratedContent(prev => ({
+        ...prev,
+        [sectionId]: editedContent
+      }));
+      
+      toast({
+        title: "Changes Saved",
+        description: "Your manual edits have been saved"
+      });
+    }
+    
+    setEditingSectionId(null);
+  };
+  
+  // Cancel manual editing
+  const cancelEditing = (sectionId) => {
+    // Reset to original content
+    setManualEdits(prev => ({
+      ...prev,
+      [sectionId]: generatedContent[sectionId]
+    }));
+    
+    setEditingSectionId(null);
+    
+    toast({
+      title: "Editing Cancelled",
+      description: "Your changes have been discarded"
+    });
+  };
+  
+  // Handle manual edit changes
+  const handleManualEditChange = (sectionId, newContent) => {
+    setManualEdits(prev => ({
+      ...prev,
+      [sectionId]: newContent
+    }));
+  };
+
   // Render advanced options
   const renderAdvancedOptions = () => (
     <div className="border rounded-md overflow-hidden">
@@ -629,6 +690,19 @@ const CERStreamingGenerator = ({
       
       {isAdvancedOptionsOpen && (
         <div className="p-4 space-y-4">
+          <div className="flex items-center justify-between border-b pb-4">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">Use AI Generation</label>
+              <p className="text-xs text-gray-500">
+                Toggle AI-powered content generation (GPT-4o)
+              </p>
+            </div>
+            <Switch
+              checked={useAI}
+              onCheckedChange={(checked) => setUseAI(checked)}
+            />
+          </div>
+          
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <label className="text-sm font-medium">Include FAERS Data</label>
@@ -853,20 +927,80 @@ const CERStreamingGenerator = ({
           {sections
             .filter(section => section.selected)
             .map((section) => (
-              <div key={section.id} className="space-y-2">
-                <h3 className="text-xl font-bold">{section.label}</h3>
+              <div key={section.id} className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-bold">{section.label}</h3>
+                  {generatedContent[section.id] && (
+                    <div className="flex items-center space-x-2">
+                      {editingSectionId === section.id ? (
+                        <>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => cancelEditing(section.id)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={() => saveManualEdit(section.id)}
+                          >
+                            Save Changes
+                          </Button>
+                        </>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => startEditingSection(section.id)}
+                        >
+                          Edit Manually
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
                 
                 {generatedContent[section.id] ? (
-                  <div 
-                    className="prose max-w-full"
-                    dangerouslySetInnerHTML={{ __html: generatedContent[section.id].replace(/\n/g, '<br/>') }}
-                  />
+                  <div className="prose max-w-full">
+                    {editingSectionId === section.id ? (
+                      <Textarea
+                        value={manualEdits[section.id] || generatedContent[section.id]}
+                        onChange={(e) => handleManualEditChange(section.id, e.target.value)}
+                        className="min-h-[200px] font-mono text-sm"
+                      />
+                    ) : (
+                      <div 
+                        className="prose max-w-full" 
+                        dangerouslySetInnerHTML={{ __html: generatedContent[section.id].replace(/\n/g, '<br/>') }}
+                      />
+                    )}
+                  </div>
                 ) : (
                   <div className="py-4 text-gray-400 italic text-sm">
                     {generationState === 'generating' && currentlyGeneratingSection === section.id ? (
                       <div className="flex items-center">
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Generating content...
+                      </div>
+                    ) : !useAI && generationState === 'idle' ? (
+                      <div className="flex flex-col items-center py-6">
+                        <p>AI generation is disabled. Write content manually.</p>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          className="mt-2"
+                          onClick={() => {
+                            // Initialize empty content for manual editing
+                            setGeneratedContent(prev => ({
+                              ...prev,
+                              [section.id]: ""
+                            }));
+                            startEditingSection(section.id);
+                          }}
+                        >
+                          Start Writing
+                        </Button>
                       </div>
                     ) : generationState === 'generating' ? (
                       'Waiting to generate...'
