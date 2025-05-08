@@ -122,29 +122,37 @@ const ValidationEngine = ({ documentId, onValidationComplete }) => {
     setError(null);
     
     try {
-      const data = await cerApiService.validateCERDocument(documentId, selectedFramework);
+      // Pass document sections for comprehensive AI validation
+      const data = await cerApiService.validateCERDocument(
+        documentId, 
+        selectedFramework,
+        cerSections // Send document sections for AI validation
+      );
+      
       setValidationData(data);
       
       if (onValidationComplete) {
         onValidationComplete(data);
       }
       
-      // Display toast based on validation results
+      // Display toast based on validation results and method
+      const validationMethod = data.validationMethod === 'ai' ? 'AI-Powered' : 'Standard';
+      
       if (data.summary.criticalIssues > 0) {
         toast({
-          title: `${data.summary.criticalIssues} Critical Issues Found`,
+          title: `${validationMethod} Validation: ${data.summary.criticalIssues} Critical Issues Found`,
           description: 'Your document has critical compliance issues that must be addressed.',
           variant: 'destructive'
         });
       } else if (data.summary.totalIssues === 0) {
         toast({
-          title: 'Validation Successful',
-          description: 'Your document passed all validation checks.',
+          title: `${validationMethod} Validation Successful`,
+          description: 'Your document passed all validation checks against the selected regulatory framework.',
           variant: 'success'
         });
       } else {
         toast({
-          title: `${data.summary.totalIssues} Issues Found`,
+          title: `${validationMethod} Validation: ${data.summary.totalIssues} Issues Found`,
           description: 'Your document has compliance issues that should be reviewed.',
           variant: 'warning'
         });
