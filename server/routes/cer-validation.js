@@ -19,7 +19,7 @@ const openai = new OpenAI({
  * Validate CER Document Endpoint
  * Validates a CER document against a specific regulatory framework
  */
-router.post('/documents/:documentId/validate', isAuthenticated, async (req, res) => {
+router.post('/documents/:documentId/validate', async (req, res) => {
   try {
     const { documentId } = req.params;
     const { framework = 'mdr', sections = [] } = req.body;
@@ -65,7 +65,7 @@ router.post('/documents/:documentId/validate', isAuthenticated, async (req, res)
  * Provides deeper analysis including hallucination detection, reference checking,
  * and regulatory gap analysis
  */
-router.post('/documents/:documentId/validate-enhanced', isAuthenticated, async (req, res) => {
+router.post('/documents/:documentId/validate-enhanced', async (req, res) => {
   try {
     const { documentId } = req.params;
     const { framework = 'mdr', sections = [], options = {} } = req.body;
@@ -232,7 +232,7 @@ Format your response as a valid JSON with the following structure:
  * Check Specific Section Endpoint
  * Validates a single section of a CER document
  */
-router.post('/documents/:documentId/check-section', isAuthenticated, async (req, res) => {
+router.post('/documents/:documentId/check-section', async (req, res) => {
   try {
     const { documentId } = req.params;
     const { section, framework = 'mdr' } = req.body;
@@ -330,7 +330,7 @@ Format your response as a valid JSON with the following structure:
  * Validates a Quality Management Plan's objectives against CER sections
  * to ensure proper compliance with ICH E6(R3) and regulatory requirements
  */
-router.post('/qmp-integration/validate', isAuthenticated, async (req, res) => {
+router.post('/qmp-integration/validate', async (req, res) => {
   try {
     const { objectives, cerSections, framework = 'mdr' } = req.body;
     
