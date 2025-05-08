@@ -1,175 +1,150 @@
 /**
- * This module contains functions to manage PostgreSQL Row-Level Security
- * policies for multi-tenant data isolation.
+ * Tenant Row-Level Security (RLS) Utilities
  * 
- * RLS policies are a powerful PostgreSQL feature that enforces access control
- * rules at the database level, ensuring that tenants can only access their own data
- * even if application-level security is bypassed.
+ * This module provides utilities for setting up and managing
+ * Row-Level Security policies for multi-tenant isolation.
  */
+import { createScopedLogger } from '../utils/logger';
+import { executeRawQuery } from './execute';
 
-import { execute } from './execute';
-
-/**
- * Enable row-level security on a table
- */
-export async function enableRls(tableName: string): Promise<void> {
-  await execute(`
-    ALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;
-  `);
-}
+const logger = createScopedLogger('tenant-rls');
 
 /**
- * Create a tenant isolation policy on a table.
- * This enforces that rows can only be accessed if they belong to the tenant's organization.
+ * Create the tenant trigger function that automatically sets organization_id
+ * on new records based on the current app.current_tenant_id setting.
+ * 
+ * @returns Promise that resolves when the function is created
  */
-export async function createTenantIsolationPolicy(
-  tableName: string,
-  policyName: string = 'tenant_isolation'
-): Promise<void> {
-  await execute(`
-    CREATE POLICY ${policyName} ON ${tableName}
-    USING (organization_id = current_setting('app.current_tenant_id')::integer);
-  `);
-}
-
-/**
- * Create RLS policies for all common operations (select, insert, update, delete)
- */
-export async function createTenantPolicies(tableName: string): Promise<void> {
-  // Enable RLS on the table
-  await enableRls(tableName);
-  
-  // Policy for SELECT operations
-  await execute(`
-    CREATE POLICY tenant_isolation_select ON ${tableName}
-    FOR SELECT
-    USING (organization_id = current_setting('app.current_tenant_id')::integer);
-  `);
-  
-  // Policy for INSERT operations
-  await execute(`
-    CREATE POLICY tenant_isolation_insert ON ${tableName}
-    FOR INSERT
-    WITH CHECK (organization_id = current_setting('app.current_tenant_id')::integer);
-  `);
-  
-  // Policy for UPDATE operations
-  await execute(`
-    CREATE POLICY tenant_isolation_update ON ${tableName}
-    FOR UPDATE
-    USING (organization_id = current_setting('app.current_tenant_id')::integer)
-    WITH CHECK (organization_id = current_setting('app.current_tenant_id')::integer);
-  `);
-  
-  // Policy for DELETE operations
-  await execute(`
-    CREATE POLICY tenant_isolation_delete ON ${tableName}
-    FOR DELETE
-    USING (organization_id = current_setting('app.current_tenant_id')::integer);
-  `);
-}
-
-/**
- * Set the current tenant ID in the PostgreSQL session.
- * This will be used by RLS policies to filter rows.
- */
-export async function setTenantId(tenantId: number): Promise<void> {
-  await execute(`
-    SET LOCAL app.current_tenant_id = '${tenantId}';
-  `);
-}
-
-/**
- * Create a database role for a specific tenant
- * This can be used for more sophisticated isolation scenarios
- */
-export async function createTenantRole(tenantId: number): Promise<void> {
-  const roleName = `tenant_${tenantId}`;
-  
-  // Check if role already exists
-  const roleExists = await checkRoleExists(roleName);
-  if (roleExists) {
-    return;
-  }
-  
-  await execute(`
-    CREATE ROLE ${roleName};
-    GRANT USAGE ON SCHEMA public TO ${roleName};
-    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${roleName};
-    ALTER ROLE ${roleName} SET app.current_tenant_id = '${tenantId}';
-  `);
-}
-
-/**
- * Check if a database role exists
- */
-async function checkRoleExists(roleName: string): Promise<boolean> {
-  const result = await execute(`
-    SELECT 1 FROM pg_roles WHERE rolname = '${roleName}';
-  `);
-  
-  return result.rowCount > 0;
-}
-
-/**
- * Create a migration that sets up RLS for all tenant-isolated tables
- */
-export async function setupRlsForAllTables(): Promise<void> {
-  // List of tables that should have tenant isolation
-  const tenantTables = [
-    'quality_management_plans',
-    'ctq_factors',
-    'qmp_audit_trail',
-    'qmp_section_gating',
-    'qmp_traceability_matrix',
-    'cer_projects',
-    'cer_project_documents',
-    'project_activities',
-    'project_milestones',
-    'client_user_permissions',
-    'cer_reports',
-    'cer_sections',
-    'cer_faers_data',
-    'cer_literature',
-    'cer_compliance_checks',
-    'cer_workflows',
-    'cer_exports',
-    'vault_documents_v2',
-    'vault_document_folders',
-    'vault_document_shares',
-    'vault_document_audit_logs'
-  ];
-  
-  for (const table of tenantTables) {
-    await createTenantPolicies(table);
+export async function createTenantTriggerFunction() {
+  try {
+    logger.info('Creating tenant trigger function');
+    
+    await executeRawQuery(`
+      -- Function to set organization_id on insert
+      CREATE OR REPLACE FUNCTION set_tenant_id()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        -- Skip if organization_id is already set
+        IF NEW.organization_id IS NOT NULL THEN
+          RETURN NEW;
+        END IF;
+        
+        -- Get current tenant ID from session variable
+        NEW.organization_id := NULLIF(current_setting('app.current_tenant_id', TRUE), '')::INTEGER;
+        
+        -- If no tenant ID is set, raise an error
+        IF NEW.organization_id IS NULL THEN
+          RAISE EXCEPTION 'No tenant ID set for insert operation';
+        END IF;
+        
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    `);
+    
+    logger.info('Tenant trigger function created successfully');
+    return true;
+  } catch (error) {
+    logger.error('Failed to create tenant trigger function', error);
+    throw error;
   }
 }
 
 /**
- * Create a function that automatically sets the organization_id
- * field when inserting new rows.
+ * Setup Row-Level Security policies for a table to enforce tenant isolation
+ * 
+ * @param tableName - The name of the table to set up RLS for
+ * @returns Promise that resolves when the RLS policy is set up
  */
-export async function createTenantTriggerFunction(): Promise<void> {
-  await execute(`
-    CREATE OR REPLACE FUNCTION set_tenant_id_on_insert()
-    RETURNS TRIGGER AS $$
-    BEGIN
-      NEW.organization_id = current_setting('app.current_tenant_id')::integer;
-      RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
-  `);
+export async function setupTableRls(tableName: string) {
+  try {
+    logger.info(`Setting up RLS for table: ${tableName}`);
+    
+    // First check if the table has organization_id column
+    const columnCheckResult = await executeRawQuery(`
+      SELECT column_name 
+      FROM information_schema.columns
+      WHERE table_name = '${tableName}' AND column_name = 'organization_id';
+    `);
+    
+    // If organization_id column doesn't exist, skip this table
+    if (columnCheckResult.rowCount === 0) {
+      logger.warn(`Table ${tableName} doesn't have organization_id column, skipping RLS setup`);
+      return false;
+    }
+    
+    // Enable RLS on the table
+    await executeRawQuery(`
+      -- Enable row-level security on the table
+      ALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;
+    `);
+    
+    // Create policy for select operations
+    await executeRawQuery(`
+      -- Policy for read operations
+      DROP POLICY IF EXISTS ${tableName}_tenant_isolation_policy ON ${tableName};
+      
+      CREATE POLICY ${tableName}_tenant_isolation_policy ON ${tableName}
+      FOR ALL
+      USING (
+        -- Either the record belongs to the current tenant
+        organization_id = NULLIF(current_setting('app.current_tenant_id', TRUE), '')::INTEGER
+        -- Or it's a special zero tenant (shared resources)
+        OR organization_id = 0
+        -- Or super admin role is allowed to see all data
+        OR current_setting('app.current_user_role', TRUE) = 'app_super_admin'
+      );
+    `);
+    
+    // Create the insert trigger to set organization_id automatically
+    await executeRawQuery(`
+      -- Create trigger to set organization_id on insert
+      DROP TRIGGER IF EXISTS set_tenant_id_trigger ON ${tableName};
+      
+      CREATE TRIGGER set_tenant_id_trigger
+      BEFORE INSERT ON ${tableName}
+      FOR EACH ROW
+      EXECUTE FUNCTION set_tenant_id();
+    `);
+    
+    logger.info(`RLS setup completed for table: ${tableName}`);
+    return true;
+  } catch (error) {
+    logger.error(`Failed to set up RLS for table: ${tableName}`, error);
+    throw error;
+  }
 }
 
 /**
- * Add a trigger to a table that automatically sets the organization_id
- * field when inserting new rows.
+ * Setup Row-Level Security for all tables in the database
+ * 
+ * @returns Promise that resolves when all tables have RLS policies
  */
-export async function addTenantTrigger(tableName: string): Promise<void> {
-  await execute(`
-    CREATE TRIGGER set_tenant_id_before_insert
-    BEFORE INSERT ON ${tableName}
-    FOR EACH ROW
-    EXECUTE FUNCTION set_tenant_id_on_insert();
-  `);
+export async function setupRlsForAllTables() {
+  try {
+    logger.info('Setting up RLS for all tables');
+    
+    // Create tenant trigger function
+    await createTenantTriggerFunction();
+    
+    // Get all tables in the public schema
+    const tablesResult = await executeRawQuery(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+        AND table_name NOT IN ('schema_migrations', 'drizzle_migrations');
+    `);
+    
+    // Set up RLS for each table
+    for (const row of tablesResult.rows) {
+      await setupTableRls(row.table_name);
+    }
+    
+    logger.info('RLS setup completed for all tables');
+    return true;
+  } catch (error) {
+    logger.error('Failed to set up RLS for all tables', error);
+    throw error;
+  }
 }

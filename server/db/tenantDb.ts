@@ -1,160 +1,201 @@
-import { Request } from 'express';
-import { db } from '../db';
-import { SQL, and, eq } from 'drizzle-orm';
-import { PostgresTable } from 'drizzle-orm/pg-core';
+/**
+ * Tenant Database Utilities
+ * 
+ * This module provides database utilities specifically designed for
+ * multi-tenant operations with proper isolation.
+ */
+import { SQL, eq, and, sql } from 'drizzle-orm';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { getDb } from './index';
+import { PgTable } from 'drizzle-orm/pg-core';
+import { createScopedLogger } from '../utils/logger';
+
+const logger = createScopedLogger('tenant-db');
 
 /**
- * TenantDb provides a database access layer that automatically
- * applies tenant isolation for all database operations.
- * 
- * It ensures that a tenant can only access its own data.
+ * A utility class for performing tenant-isolated database operations
  */
 export class TenantDb {
+  private db: PostgresJsDatabase;
   private organizationId: number;
   
-  constructor(organizationId: number) {
+  /**
+   * Create a new TenantDb instance for a specific tenant
+   * 
+   * @param organizationId - The tenant's organization ID
+   * @param db - Optional database instance to use instead of the global one
+   */
+  constructor(organizationId: number, db?: PostgresJsDatabase) {
     this.organizationId = organizationId;
+    this.db = db || getDb();
+    
+    if (!this.organizationId) {
+      throw new Error('Organization ID is required for tenant database operations');
+    }
   }
   
   /**
-   * Factory method to create a TenantDb instance from a request
-   * that has been processed by the tenant context middleware
+   * Query the database with automatic tenant filtering
+   * 
+   * @param table - The table to query
+   * @param extraFilter - Optional additional filter conditions
+   * @returns A filtered query for the tenant
    */
-  static fromRequest(req: Request): TenantDb {
-    if (!req.tenantContext?.organizationId) {
-      throw new Error('Tenant context not available on request');
+  query<T extends PgTable>(table: T, extraFilter?: SQL<unknown>) {
+    // Create the base condition to filter by tenant
+    const organizationIdColumn = table.name === 'organizations' 
+      ? 'id' 
+      : 'organization_id';
+    
+    const tenantCondition = eq(
+      table[organizationIdColumn as keyof typeof table], 
+      this.organizationId
+    );
+    
+    // Combine with extra filter if provided
+    const filter = extraFilter 
+      ? and(tenantCondition, extraFilter) 
+      : tenantCondition;
+    
+    // Return filtered query
+    return this.db
+      .select()
+      .from(table)
+      .where(filter);
+  }
+  
+  /**
+   * Get a single record with tenant isolation
+   * 
+   * @param table - The table to query
+   * @param id - The ID of the record to retrieve
+   * @returns The record if found
+   */
+  async findById<T extends PgTable>(table: T, id: number | string) {
+    // Create the base condition to filter by tenant and ID
+    const organizationIdColumn = table.name === 'organizations' 
+      ? 'id' 
+      : 'organization_id';
+    
+    const filter = and(
+      eq(table[organizationIdColumn as keyof typeof table], this.organizationId),
+      eq(table.id as any, id)
+    );
+    
+    // Execute query
+    const result = await this.db
+      .select()
+      .from(table)
+      .where(filter)
+      .limit(1);
+    
+    return result[0] || null;
+  }
+  
+  /**
+   * Count records with tenant isolation
+   * 
+   * @param table - The table to query
+   * @param extraFilter - Optional additional filter conditions
+   * @returns The count of matching records
+   */
+  async count<T extends PgTable>(table: T, extraFilter?: SQL<unknown>) {
+    // Create the base condition to filter by tenant
+    const organizationIdColumn = table.name === 'organizations' 
+      ? 'id' 
+      : 'organization_id';
+    
+    const tenantCondition = eq(
+      table[organizationIdColumn as keyof typeof table], 
+      this.organizationId
+    );
+    
+    // Combine with extra filter if provided
+    const filter = extraFilter 
+      ? and(tenantCondition, extraFilter) 
+      : tenantCondition;
+    
+    // Execute count query
+    const result = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(table)
+      .where(filter);
+    
+    return result[0]?.count || 0;
+  }
+  
+  /**
+   * Insert a record with automatic tenant assignment
+   * 
+   * @param table - The table to insert into
+   * @param data - The data to insert
+   * @returns The inserted record
+   */
+  async create<T extends PgTable>(table: T, data: { [x: string]: any }) {
+    // Skip tenant assignment for the organizations table
+    if (table.name !== 'organizations') {
+      // Add the organization_id to the data
+      data.organization_id = this.organizationId;
     }
     
-    return new TenantDb(req.tenantContext.organizationId);
+    // Execute insert
+    const result = await this.db.insert(table).values(data).returning();
+    return result[0];
   }
   
   /**
-   * Apply tenant filter to a table if it has an organizationId column
+   * Update a record with tenant isolation
+   * 
+   * @param table - The table to update
+   * @param id - The ID of the record to update
+   * @param data - The data to update
+   * @returns The updated record
    */
-  private applyTenantFilter<T extends PostgresTable>(
-    table: T, 
-    additionalFilter?: SQL<unknown>
-  ): SQL<unknown> {
-    // Check if table has organizationId column
-    if (!('organizationId' in table)) {
-      throw new Error(`Table ${table} does not have organizationId column for tenant isolation`);
-    }
+  async update<T extends PgTable>(table: T, id: number | string, data: { [x: string]: any }) {
+    // Create the base condition to filter by tenant and ID
+    const organizationIdColumn = table.name === 'organizations' 
+      ? 'id' 
+      : 'organization_id';
     
-    const tenantFilter = eq(table.organizationId as any, this.organizationId);
+    const filter = and(
+      eq(table[organizationIdColumn as keyof typeof table], this.organizationId),
+      eq(table.id as any, id)
+    );
     
-    // Combine with additional filter if provided
-    if (additionalFilter) {
-      return and(tenantFilter, additionalFilter);
-    }
+    // Execute update with tenant isolation
+    const result = await this.db
+      .update(table)
+      .set(data)
+      .where(filter)
+      .returning();
     
-    return tenantFilter;
+    return result[0];
   }
   
   /**
-   * Query methods with automatic tenant filtering
+   * Delete a record with tenant isolation
+   * 
+   * @param table - The table to delete from
+   * @param id - The ID of the record to delete
+   * @returns The deleted record
    */
-  
-  async findMany<T extends PostgresTable>(
-    table: T,
-    options: {
-      where?: SQL<unknown>;
-      limit?: number;
-      offset?: number;
-      orderBy?: SQL<unknown>;
-    } = {}
-  ) {
-    const { where, ...restOptions } = options;
-    const tenantFilter = this.applyTenantFilter(table, where);
+  async delete<T extends PgTable>(table: T, id: number | string) {
+    // Create the base condition to filter by tenant and ID
+    const organizationIdColumn = table.name === 'organizations' 
+      ? 'id' 
+      : 'organization_id';
     
-    return db.select().from(table).where(tenantFilter).limit(options.limit || 100)
-      .offset(options.offset || 0)
-      .orderBy(options.orderBy || undefined);
-  }
-  
-  async findFirst<T extends PostgresTable>(
-    table: T,
-    options: {
-      where?: SQL<unknown>;
-      orderBy?: SQL<unknown>;
-    } = {}
-  ) {
-    const { where, ...restOptions } = options;
-    const tenantFilter = this.applyTenantFilter(table, where);
+    const filter = and(
+      eq(table[organizationIdColumn as keyof typeof table], this.organizationId),
+      eq(table.id as any, id)
+    );
     
-    const results = await db.select().from(table).where(tenantFilter)
-      .limit(1)
-      .orderBy(options.orderBy || undefined);
-      
-    return results[0] || null;
-  }
-  
-  async findById<T extends PostgresTable>(
-    table: T,
-    id: number | string
-  ) {
-    // Handle UUID or number ID
-    const idFilter = typeof id === 'number' 
-      ? eq(table.id as any, id)
-      : eq(table.id as any, id);
-      
-    const tenantFilter = this.applyTenantFilter(table, idFilter);
+    // Execute delete with tenant isolation
+    const result = await this.db
+      .delete(table)
+      .where(filter)
+      .returning();
     
-    const results = await db.select().from(table).where(tenantFilter).limit(1);
-    return results[0] || null;
-  }
-  
-  async insert<T extends PostgresTable>(
-    table: T,
-    data: Record<string, any>
-  ) {
-    // Add organizationId to the data
-    const dataWithTenant = {
-      ...data,
-      organizationId: this.organizationId
-    };
-    
-    return db.insert(table).values(dataWithTenant).returning();
-  }
-  
-  async update<T extends PostgresTable>(
-    table: T,
-    id: number | string,
-    data: Record<string, any>
-  ) {
-    // Handle UUID or number ID
-    const idFilter = typeof id === 'number' 
-      ? eq(table.id as any, id)
-      : eq(table.id as any, id);
-      
-    const tenantFilter = this.applyTenantFilter(table, idFilter);
-    
-    // Don't allow changing organizationId
-    const { organizationId, ...safeData } = data;
-    
-    return db.update(table).set(safeData).where(tenantFilter).returning();
-  }
-  
-  async delete<T extends PostgresTable>(
-    table: T,
-    id: number | string
-  ) {
-    // Handle UUID or number ID
-    const idFilter = typeof id === 'number' 
-      ? eq(table.id as any, id)
-      : eq(table.id as any, id);
-      
-    const tenantFilter = this.applyTenantFilter(table, idFilter);
-    
-    return db.delete(table).where(tenantFilter).returning();
-  }
-  
-  /**
-   * Execute a custom query with tenant filter
-   * For more complex queries that the basic CRUD operations don't cover
-   */
-  async executeQuery<T extends any>(
-    callback: (tenantId: number) => Promise<T>
-  ): Promise<T> {
-    return callback(this.organizationId);
+    return result[0];
   }
 }
