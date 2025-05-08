@@ -72,7 +72,7 @@ const validationFrameworks = {
 };
 
 /**
- * Validate a CER document
+ * Validate a CER document using GPT-4o AI analysis
  * POST /api/cer/documents/:id/validate
  */
 router.post('/documents/:id/validate', async (req, res) => {
@@ -80,26 +80,25 @@ router.post('/documents/:id/validate', async (req, res) => {
     const documentId = req.params.id;
     const { framework = 'mdr', sections } = req.body;
     
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI API key is required for regulatory validation. Please add this to environment variables.');
+    }
+    
     // Prepare document for validation
     const document = {
       id: documentId,
       sections: sections || []
     };
     
-    let validationResults;
+    // Log the validation request
+    console.log(`Validating document ${documentId} against ${framework} framework with GPT-4o`);
     
-    // If we have actual document sections and the OPENAI_API_KEY, use AI validation
-    if (sections && sections.length > 0 && process.env.OPENAI_API_KEY) {
-      console.log('Using AI-powered validation with GPT-4o');
-      validationResults = await validateWithAI(document, framework);
-    } else {
-      // Otherwise, fallback to simulated validation
-      console.log('Using simulated validation (no document sections or OpenAI API key)');
-      validationResults = await simulateValidation(documentId, framework);
-    }
+    // Always use AI validation with GPT-4o
+    const validationResults = await validateWithAI(document, framework);
     
     // Add additional validation details 
-    validationResults.validationMethod = validationResults.aiValidated ? 'ai' : 'simulated';
+    validationResults.validationMethod = 'ai';
     validationResults.documentId = documentId;
     validationResults.frameworkUsed = framework;
     validationResults.validationDate = new Date().toISOString();

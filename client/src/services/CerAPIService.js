@@ -1652,223 +1652,27 @@ cerApiService.deleteEuPmsData = async (id) => {
  */
 cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sections = []) => {
   try {
-    // Check if we should use the real API (when document sections are provided)
-    // or fall back to simulation (for testing purposes)
-    if (sections && sections.length > 0) {
-      console.log(`Validating document ${documentId} against ${framework} framework with ${sections.length} sections`);
-      
-      const response = await fetch(`/api/cer/documents/${documentId}/validate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          framework,
-          sections
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error validating document: ${response.statusText}`);
-      }
-      
-      return await response.json();
+    // Log validation request details
+    console.log(`Validating document ${documentId} against ${framework} framework with ${sections.length} sections`);
+    
+    // Always use the real API validation endpoint
+    const response = await fetch(`/api/cer/documents/${documentId}/validate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        framework,
+        sections
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error validating document: ${response.statusText}`);
     }
     
-    // Fallback to simulation for testing when no document sections are provided
-    console.log('No document sections provided, using simulation for testing purposes');
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Generate random validation results
-    const criticalIssues = Math.floor(Math.random() * 2); // 0-1
-    const majorIssues = Math.floor(Math.random() * 3); // 0-2
-    const minorIssues = Math.floor(Math.random() * 4); // 0-3
-    
-    const totalIssues = criticalIssues + majorIssues + minorIssues;
-    const passedChecks = Math.floor(Math.random() * 15) + 30; // 30-44
-    
-    // Calculate compliance score
-    const complianceScore = Math.max(0, 100 - (criticalIssues * 15) - (majorIssues * 7) - (minorIssues * 3));
-    
-    const frameworks = {
-      mdr: {
-        name: 'EU MDR',
-        requirements: [
-          'GSPR mapping for all safety and performance claims',
-          'State-of-the-art analysis with current standards',
-          'Literature search methodology documentation',
-          'Benefit-risk analysis',
-          'Post-market surveillance plan',
-          'PMCF plan compliant with MDCG 2020-7',
-          'Device description and intended purpose',
-          'Qualifications of evaluators',
-          'Complete bibliography with proper citations'
-        ]
-      },
-      fda: {
-        name: 'US FDA',
-        requirements: [
-          'Substantial equivalence documentation (for 510(k))',
-          'Benefit-risk determination',
-          'Performance testing data',
-          'Clinical study protocols and results',
-          'Device description and indications for use',
-          'Complete reference list with proper citations'
-        ]
-      },
-      ukca: {
-        name: 'UKCA',
-        requirements: [
-          'UK-specific clinical evidence requirements',
-          'UKCA marking compliance documentation',
-          'Post-market surveillance plan for UK market',
-          'UK Responsible Person details',
-          'Complete reference list with proper citations'
-        ]
-      },
-      health_canada: {
-        name: 'Health Canada',
-        requirements: [
-          'Device classification according to Canadian regulations',
-          'Canadian Medical Device Licence requirements',
-          'Risk classification and management',
-          'Clinical evidence specific to Canadian guidelines',
-          'Complete reference list with proper citations'
-        ]
-      },
-      ich: {
-        name: 'ICH',
-        requirements: [
-          'International harmonization documentation',
-          'Cross-reference to regional requirements',
-          'Complete reference list with proper citations'
-        ]
-      }
-    };
-    
-    const frameworkReqs = frameworks[framework] || frameworks.mdr;
-    
-    // Generate an array of fake issues based on the framework requirements
-    const issues = [];
-    
-    // Add critical issues if any
-    for (let i = 0; i < criticalIssues; i++) {
-      const reqIndex = Math.floor(Math.random() * frameworkReqs.requirements.length);
-      const req = frameworkReqs.requirements[reqIndex];
-      
-      issues.push({
-        id: issues.length + 1,
-        category: 'regulatory_compliance',
-        severity: 'critical',
-        message: `Missing ${req} documentation required by ${frameworkReqs.name}`,
-        location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
-        suggestion: `Add complete ${req} documentation according to ${frameworkReqs.name} requirements`
-      });
-    }
-    
-    // Add major issues if any
-    for (let i = 0; i < majorIssues; i++) {
-      const categories = ['completeness', 'references', 'regulatory_compliance'];
-      const category = categories[Math.floor(Math.random() * categories.length)];
-      
-      let message, suggestion;
-      
-      if (category === 'completeness') {
-        message = 'Document section is incomplete';
-        suggestion = 'Complete the section with all required information';
-      } else if (category === 'references') {
-        message = 'Citation not found in reference list';
-        suggestion = 'Add missing reference to bibliography or correct citation';
-      } else {
-        const reqIndex = Math.floor(Math.random() * frameworkReqs.requirements.length);
-        const req = frameworkReqs.requirements[reqIndex];
-        message = `Inadequate ${req} documentation`;
-        suggestion = `Enhance ${req} documentation according to ${frameworkReqs.name} guidelines`;
-      }
-      
-      issues.push({
-        id: issues.length + 1,
-        category,
-        severity: 'major',
-        message,
-        location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
-        suggestion
-      });
-    }
-    
-    // Add minor issues if any
-    for (let i = 0; i < minorIssues; i++) {
-      const categories = ['completeness', 'references', 'consistency', 'regulatory_compliance'];
-      const category = categories[Math.floor(Math.random() * categories.length)];
-      
-      let message, suggestion;
-      
-      if (category === 'completeness') {
-        message = 'Section could be enhanced with additional details';
-        suggestion = 'Consider adding more comprehensive information to strengthen this section';
-      } else if (category === 'references') {
-        message = 'Inconsistent citation format';
-        suggestion = 'Standardize citation format according to document template';
-      } else if (category === 'consistency') {
-        message = 'Terminology inconsistency detected';
-        suggestion = 'Use consistent terminology throughout the document';
-      } else {
-        message = 'Additional regulatory context would strengthen compliance';
-        suggestion = 'Consider adding more regulatory context to enhance compliance';
-      }
-      
-      issues.push({
-        id: issues.length + 1,
-        category,
-        severity: 'minor',
-        message,
-        location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
-        suggestion
-      });
-    }
-    
-    // Calculate category statuses
-    const getStatus = (passed, failed) => {
-      if (failed === 0) return 'success';
-      if (failed > 0 && failed <= 2) return 'warning';
-      return 'error';
-    };
-    
-    return {
-      summary: {
-        totalIssues,
-        criticalIssues,
-        majorIssues,
-        minorIssues,
-        passedChecks,
-        complianceScore
-      },
-      categories: {
-        regulatory_compliance: { 
-          status: getStatus(passedChecks, issues.filter(i => i.category === 'regulatory_compliance').length),
-          passed: Math.floor(Math.random() * 5) + 15, // 15-19
-          failed: issues.filter(i => i.category === 'regulatory_compliance').length
-        },
-        completeness: { 
-          status: getStatus(passedChecks, issues.filter(i => i.category === 'completeness').length),
-          passed: Math.floor(Math.random() * 3) + 7, // 7-9
-          failed: issues.filter(i => i.category === 'completeness').length
-        },
-        references: { 
-          status: getStatus(passedChecks, issues.filter(i => i.category === 'references').length),
-          passed: Math.floor(Math.random() * 3) + 8, // 8-10
-          failed: issues.filter(i => i.category === 'references').length
-        },
-        consistency: { 
-          status: getStatus(passedChecks, issues.filter(i => i.category === 'consistency').length),
-          passed: Math.floor(Math.random() * 3) + 5, // 5-7
-          failed: issues.filter(i => i.category === 'consistency').length
-        }
-      },
-      issues
-    };
+    // Return the real validation results from the API
+    return await response.json();
   } catch (error) {
     console.error('Error in validateCERDocument:', error);
     throw error;
