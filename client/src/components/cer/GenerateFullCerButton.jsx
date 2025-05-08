@@ -163,7 +163,7 @@ export default function GenerateFullCerButton({ onCompletion }) {
         includeAppendices: true
       };
       
-      // Fetch QMP data to include in the generation process
+      // Fetch QMP data with enhanced metadata to include in the generation process
       let qmpData = null;
       try {
         const qmpResponse = await fetch('/api/qmp-api/data', {
@@ -175,7 +175,25 @@ export default function GenerateFullCerButton({ onCompletion }) {
         
         if (qmpResponse.ok) {
           qmpData = await qmpResponse.json();
-          console.log('Fetched QMP data for ICH E6(R3) integration into CER');
+          
+          // Extract metadata if available, or use defaults for backward compatibility
+          const metadata = qmpData.metadata || {
+            planName: 'Quality Management Plan',
+            planVersion: '1.0.0',
+            authorName: 'System User',
+            authorRole: 'Quality Manager',
+            dateCreated: new Date().toISOString(),
+            lastUpdated: new Date().toISOString(),
+            linkedCerVersion: 'Current Draft'
+          };
+          
+          // Ensure metadata is properly structured in the QMP data
+          qmpData = {
+            ...qmpData,
+            metadata: metadata
+          };
+          
+          console.log('Fetched QMP data with metadata for ICH E6(R3) integration into CER');
         }
       } catch (qmpError) {
         console.warn('Failed to fetch QMP data, proceeding without ICH E6(R3) integration:', qmpError);
