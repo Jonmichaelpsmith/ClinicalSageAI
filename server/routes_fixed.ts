@@ -11,8 +11,8 @@ import faersRouter from './routes/faers-api.js';
 import literatureRouter from './routes/literature.js';
 // @ts-ignore
 import literatureReviewRouter from './routes/literature-review.js';
-// Document routes temporarily disabled due to missing module
-// import documentRouter from './routes/document-routes.js';
+// @ts-ignore
+import documentRouter from './routes/document-routes.js';
 // @ts-ignore
 import emergencyFixRouter from './routes/emergency-fix.js';
 // @ts-ignore
@@ -21,6 +21,8 @@ import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
 // @ts-ignore
 import internalClinicalDataRouter from './routes/internal-clinical-data.js';
+// @ts-ignore
+import qmpApiRouter from './routes/qmp-api.js';
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes
@@ -108,8 +110,8 @@ export default function registerRoutes(app: Express): void {
   // Register Literature Review workflow API routes
   app.use('/api/literature', literatureReviewRouter);
   
-  // Document routes temporarily disabled due to missing module
-  // app.use('/api/documents', documentRouter);
+  // Register Document routes
+  app.use('/api/documents', documentRouter);
   
   // Register SOTA API routes
   app.use('/api/cer/sota', sotaRouter);
