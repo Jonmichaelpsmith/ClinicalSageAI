@@ -372,101 +372,128 @@ const ExportModule = ({
           </Card>
         </div>
         
-        {/* Middle Panel: Options */}
+        {/* Middle Panel: Options and Validation */}
         <div className="lg:col-span-1">
           <Card className="h-full">
             <CardHeader>
               <CardTitle className="text-base flex items-center">
                 <Settings className="h-4 w-4 mr-2 text-blue-600" />
-                Export Options
+                Export Options & Validation
               </CardTitle>
               <CardDescription>
-                Configure the export settings
+                Configure and validate your document
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="toc" className="flex items-center">
-                    <Table className="h-4 w-4 mr-2 text-gray-500" />
-                    Table of Contents
-                  </Label>
-                  <Switch 
-                    id="toc" 
-                    checked={exportOptions.includeTableOfContents}
-                    onCheckedChange={(checked) => handleOptionChange('includeTableOfContents', checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="appendices" className="flex items-center">
-                    <ClipboardCheck className="h-4 w-4 mr-2 text-gray-500" />
-                    Include Appendices
-                  </Label>
-                  <Switch 
-                    id="appendices" 
-                    checked={exportOptions.includeAppendices}
-                    onCheckedChange={(checked) => handleOptionChange('includeAppendices', checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="metadata" className="flex items-center">
-                    <FileBadge className="h-4 w-4 mr-2 text-gray-500" />
-                    Include Metadata
-                  </Label>
-                  <Switch 
-                    id="metadata" 
-                    checked={exportOptions.includeMetadata}
-                    onCheckedChange={(checked) => handleOptionChange('includeMetadata', checked)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="coverPage" className="flex items-center">
-                    <FileDigit className="h-4 w-4 mr-2 text-gray-500" />
-                    Include Cover Page
-                  </Label>
-                  <Switch 
-                    id="coverPage" 
-                    checked={exportOptions.includeCoverPage}
-                    onCheckedChange={(checked) => handleOptionChange('includeCoverPage', checked)}
-                  />
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="watermark" className="flex items-center">
-                    <Printer className="h-4 w-4 mr-2 text-gray-500" />
-                    Add Watermark
-                  </Label>
-                  <Switch 
-                    id="watermark" 
-                    checked={exportOptions.addWatermark}
-                    onCheckedChange={(checked) => handleOptionChange('addWatermark', checked)}
-                  />
-                </div>
+              <Tabs defaultValue="options" className="w-full">
+                <TabsList className="w-full mb-4">
+                  <TabsTrigger value="options" className="flex-1">
+                    <span className="flex items-center">
+                      <Settings className="h-4 w-4 mr-1.5" />
+                      Options
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="validation" className="flex-1">
+                    <span className="flex items-center">
+                      <Shield className="h-4 w-4 mr-1.5" />
+                      Validation
+                    </span>
+                  </TabsTrigger>
+                </TabsList>
                 
-                {exportOptions.addWatermark && (
-                  <div>
-                    <Label className="text-sm mb-1 block">Watermark Text</Label>
-                    <Select 
-                      value={exportOptions.watermarkText} 
-                      onValueChange={handleWatermarkTextChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select watermark" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DRAFT">DRAFT</SelectItem>
-                        <SelectItem value="CONFIDENTIAL">CONFIDENTIAL</SelectItem>
-                        <SelectItem value="FOR REVIEW">FOR REVIEW</SelectItem>
-                        <SelectItem value="INTERNAL USE">INTERNAL USE</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <TabsContent value="options" className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="toc" className="flex items-center">
+                        <Table className="h-4 w-4 mr-2 text-gray-500" />
+                        Table of Contents
+                      </Label>
+                      <Switch 
+                        id="toc" 
+                        checked={exportOptions.includeTableOfContents}
+                        onCheckedChange={(checked) => handleOptionChange('includeTableOfContents', checked)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="appendices" className="flex items-center">
+                        <ClipboardCheck className="h-4 w-4 mr-2 text-gray-500" />
+                        Include Appendices
+                      </Label>
+                      <Switch 
+                        id="appendices" 
+                        checked={exportOptions.includeAppendices}
+                        onCheckedChange={(checked) => handleOptionChange('includeAppendices', checked)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="metadata" className="flex items-center">
+                        <FileBadge className="h-4 w-4 mr-2 text-gray-500" />
+                        Include Metadata
+                      </Label>
+                      <Switch 
+                        id="metadata" 
+                        checked={exportOptions.includeMetadata}
+                        onCheckedChange={(checked) => handleOptionChange('includeMetadata', checked)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="coverPage" className="flex items-center">
+                        <FileDigit className="h-4 w-4 mr-2 text-gray-500" />
+                        Include Cover Page
+                      </Label>
+                      <Switch 
+                        id="coverPage" 
+                        checked={exportOptions.includeCoverPage}
+                        onCheckedChange={(checked) => handleOptionChange('includeCoverPage', checked)}
+                      />
+                    </div>
                   </div>
-                )}
-              </div>
+                  
+                  <Separator />
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="watermark" className="flex items-center">
+                        <Printer className="h-4 w-4 mr-2 text-gray-500" />
+                        Add Watermark
+                      </Label>
+                      <Switch 
+                        id="watermark" 
+                        checked={exportOptions.addWatermark}
+                        onCheckedChange={(checked) => handleOptionChange('addWatermark', checked)}
+                      />
+                    </div>
+                    
+                    {exportOptions.addWatermark && (
+                      <div>
+                        <Label className="text-sm mb-1 block">Watermark Text</Label>
+                        <Select 
+                          value={exportOptions.watermarkText} 
+                          onValueChange={handleWatermarkTextChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select watermark" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="DRAFT">DRAFT</SelectItem>
+                            <SelectItem value="CONFIDENTIAL">CONFIDENTIAL</SelectItem>
+                            <SelectItem value="FOR REVIEW">FOR REVIEW</SelectItem>
+                            <SelectItem value="INTERNAL USE">INTERNAL USE</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="validation" className="space-y-4">
+                  <ValidationEngine 
+                    documentId={documentId} 
+                    framework={selectedFramework}
+                    isPreview={true}
+                  />
+                </TabsContent>
+              </Tabs>
               
               <div className="pt-4">
                 <Button 
