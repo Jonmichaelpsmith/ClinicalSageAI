@@ -1,0 +1,64 @@
+Recommended Addition or Enhancement	Priority
+Clinical Evaluation Plan (CEP) integration – No dedicated support for planning phase or linking CER to a CEP (required by MDR Annex XIV)
+file-8xvevukrigfwgmpnbypnpm
+.	Add a CEP module to document the evaluation plan (scope, clinical questions, data sources, GSPRs addressed) and link it to the CER content
+file-8xvevukrigfwgmpnbypnpm
+.	Critical – Needed for EU MDR compliance.
+General Safety and Performance Requirements (GSPR) mapping – CER does not explicitly map clinical evidence to specific GSPRs/Essential Requirements.
+file-8xvevukrigfwgmpnbypnpm
+file-bkth7d3dpydzgubywrzypx
+Incorporate a requirements mapping section or tool that links each relevant GSPR to supporting clinical data and analysis in the CER.	High – Ensures clear demonstration of regulatory conformity.
+Literature search documentation – Lacks robust documentation of search strategy, selection criteria, and appraisal of literature (required by MEDDEV 2.7/1 Rev.4)
+file-8xvevukrigfwgmpnbypnpm
+file-bkth7d3dpydzgubywrzypx
+.	Provide a literature review workflow: capture databases searched, dates, search strings, inclusion/exclusion criteria, and output a reproducible search appendix
+file-8xvevukrigfwgmpnbypnpm
+. Include an AI-assisted relevance appraisal and bias assessment for each study.	Critical – Key for EU NB scrutiny; supports IMDRF “scientifically valid evidence” expectations.
+State-of-the-Art (SOTA) and alternative therapies – Current features may not adequately summarize the current SOTA or benchmark device performance against alternatives
+bsigroup.com
+.	Add a SOTA analysis section generator. The AI should pull in data on standard of care outcomes and competitor devices, to compare the subject device’s safety/performance against established therapies
+bsigroup.com
+.	High – Essential for context of benefit-risk in EU/UK; useful for FDA benefit-risk discussions.
+Equivalence justification tools – Limited support for demonstrating device equivalence to an existing device (technical, biological, clinical characteristics)
+greenlight.guru
+file-snsgojrvhkfl2b5ualh7jh
+.	Implement an equivalence comparison assistant: structured input for subject vs. equivalent device specs (tech characteristics, materials, clinical use). The AI can generate the equivalence rationale and identify any differences with justification of why they don’t adversely affect safety or performance
+file-snsgojrvhkfl2b5ualh7jh
+. Include prompts to confirm data access/contract for the equivalent device
+greenlight.guru
+.	Critical – Required if using literature from equivalent devices (EU MDR/MEDDEV compliance).
+Inclusion of unpublished and post-market data – The module currently focuses on published literature; it may not integrate manufacturer’s internal data (premarket study reports, registries, complaint data, vigilance reports)
+file-bkth7d3dpydzgubywrzypx
+file-bkth7d3dpydzgubywrzypx
+.	Extend the data pipeline to accept internal clinical data uploads: e.g. import clinical investigation summaries, post-market surveillance (PMS) reports, registry datasets, complaint trends. The AI should incorporate these into the CER narrative (e.g. safety data from field use) alongside literature
+file-bkth7d3dpydzgubywrzypx
+.	Critical – Regulators expect CERs to include all available clinical evidence (not just literature).
+Adverse event database integration (non-FAERS) – Only FAERS (FDA’s database) is integrated; no integration with other vigilance databases (e.g. EU’s incident reports, manufacturer’s PMS).	Add EU and global PMS data integration: e.g. ability to input Eudamed vigilance data or summary of FSCA/incident reports. Leverage the existing FAERS integration model to cover other regions’ safety data for a comprehensive safety profile.	Medium – Enhances completeness of safety analysis; critical for global use (EU expects PMS data in CER
+file-8xvevukrigfwgmpnbypnpm
+).
+Risk management linkage – No explicit link between CER findings and the risk management file (e.g. verification of risk mitigations, residual risk acceptability).	Provide a risk management linkage feature: allow import of the device’s risk matrix or known risks from ISO 14971 file. The CER generator can then cross-check that all significant risks have corresponding clinical evidence or discussion of residual risk acceptability
+bsigroup.com
+bsigroup.com
+.	High – Strongly recommended by MEDDEV & MDR to feed CER insights into risk analysis and vice versa.
+Author qualifications & review traceability – The tool does not capture the CER author/reviewer credentials or offer a review log (MEDDEV Rev.4 requires qualified experts and documentation of their review)
+greenlight.guru
+greenlight.guru
+.	Add a section for author qualifications and a reviewer sign-off workflow. For example, a form to record evaluator education/experience and a checklist for independent review comments. This could be output as an appendix in the CER to satisfy qualification requirements
+greenlight.guru
+greenlight.guru
+.	Medium – Compliance expectation in EU; enhances credibility of AI-generated content.
+PMCF planning and updates – The module does not guide Post-Market Clinical Follow-up (PMCF) planning or capture the need for ongoing updates to the CER
+file-8xvevukrigfwgmpnbypnpm
+.	Integrate a PMCF plan builder or template (aligned with MDCG 2020-7). Prompt users to justify if no PMCF is needed (per MDR exceptional cases)
+file-8xvevukrigfwgmpnbypnpm
+. Additionally, include a scheduler or reminder system for CER updates (e.g. annual update for high-risk devices, or when new data emerges) to reinforce the CER as a “living document”
+digitalregulations.innovation.nhs.uk
+imdrf.org
+.	Critical – MDR mandates PMCF or justification and continuous CER updates; this feature ensures lifecycle compliance.
+Regional report customization – Currently one-size-fits-all output may not meet format needs for FDA or other regulators (e.g. FDA’s 510(k)/PMA summary vs. EU CER)	Provide region-specific templates or export options. For example: an FDA-focused clinical summary format (highlighting substantial equivalence and pivotal study data for 510(k)/PMA), a EU MDR format (per MEDDEV structure), and a UKCA format (aligning with UK requirements, which mirror MDR)
+digitalregulations.innovation.nhs.uk
+emergobyul.com
+. This can reuse core content but adjust emphasis and terminology per regulator.	High – Important for usability beyond EU; ensures TrialSage outputs are directly applicable to submission dossiers in each jurisdiction.
+AI output validation checks – No robust validation to catch AI errors or regulatory omissions in the generated text.	Implement validation logic: automated checks for completeness (all required sections present per authority’s checklist), internal consistency (e.g. device claims in CER match IFU), and factual accuracy (e.g. flag if a cited study’s data seems misinterpreted). Incorporate a reference verification step to prevent hallucinated citations. Possibly allow human reviewer feedback in-loop before finalizing.	Critical – Ensures reliability and compliance of AI-generated CERs; mitigates risk of regulatory non-conformity due to AI errors.
+
+Table 1 – Key gaps in TrialSage’s current CER module and recommended features to address them, with priority (Critical = needed for basic compliance, High = important enhancement, Medium = nice-to-have or future regulatory need).

@@ -62,7 +62,17 @@ export default function ClinicalEvaluationPlanPanel({
     literatureSearchStrategy: '',
     dataAnalysisMethods: '',
     clinicalEvaluationTeam: '',
-    evaluationCriteria: ''
+    evaluationCriteria: '',
+    // New fields for MDR Annex XIV compliance
+    deviceClass: '',
+    mdrClassificationRule: '',
+    referenceStandards: '',
+    stateOfArt: '',
+    updateFrequency: 'Annual',
+    pmcfPlan: '',
+    pmcfJustification: '',
+    clinicalDataGaps: '',
+    summaryOfSafetyAndPerformance: ''
   };
   
   const [cepData, setCepData] = useState(initialData || defaultCEPData);
