@@ -237,6 +237,129 @@ router.delete('/:id', (req, res) => {
 });
 
 /**
+ * GET /api/cer/internal-data/summary
+ * Generate a summary of all internal clinical data for CER inclusion
+ * 
+ * Important: Router paths are relative to the route the router is mounted on
+ */
+router.get('/summary', async (req, res) => {
+  try {
+    // Generate a comprehensive summary of all internal clinical data
+    const categoryCounts = {
+      investigations: internalData.investigations.length,
+      pmsReports: internalData.pmsReports.length,
+      registryData: internalData.registryData.length,
+      complaints: internalData.complaints.length
+    };
+
+    const totalCount = Object.values(categoryCounts).reduce((sum, count) => sum + count, 0);
+
+    // If no data available, return empty summary
+    if (totalCount === 0) {
+      return res.json({
+        summary: {
+          totalItems: 0,
+          categories: categoryCounts,
+          narrative: "No internal clinical data available for CER inclusion."
+        }
+      });
+    }
+
+    // Generate category-specific summaries
+    const categorySummaries = {};
+    for (const category of Object.keys(internalData)) {
+      if (internalData[category].length > 0) {
+        categorySummaries[category] = {
+          count: internalData[category].length,
+          items: internalData[category].map(file => ({
+            id: file.id,
+            title: file.name,
+            documentId: file.metadata.documentId,
+            timeframe: file.metadata.timeframe,
+            summary: file.metadata.summary,
+            dataType: file.metadata.dataType
+          }))
+        };
+      }
+    }
+
+    // Generate a narrative summary if OpenAI is available
+    let narrativeSummary = "Internal clinical data summary. (AI-generated narrative not available)";
+    
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        // Prepare data for the prompt in a condensed format
+        const promptData = Object.entries(categorySummaries).map(([category, data]) => {
+          return `${category.toUpperCase()} (${data.count}): ${data.items.map(item => 
+            `${item.title} (${item.timeframe || 'No timeframe'})`).join(', ')}`;
+        }).join('\n\n');
+
+        const prompt = `
+You are a medical device regulatory expert specializing in clinical evaluations.
+
+Please generate a concise summary (approximately 300 words) of the following internal clinical data for inclusion in a Clinical Evaluation Report (CER) under EU MDR requirements:
+
+${promptData}
+
+Your summary should:
+1. Emphasize the importance of including internal clinical data alongside literature evidence
+2. Highlight key types of evidence available
+3. Note any apparent gaps in the data 
+4. Explain how this internal clinical evidence supports EU MDR compliance
+5. Be written in a formal, objective style appropriate for regulatory documentation
+
+The output will be included directly in the CER as a summary of internal clinical evidence.
+`;
+
+        const response = await openaiService.generateText({
+          prompt,
+          maxTokens: 800,
+          temperature: 0.3
+        });
+
+        narrativeSummary = response.text;
+        
+        logger.info('Generated AI narrative summary for internal clinical data', {
+          module: 'internal-clinical-data',
+          summaryLength: narrativeSummary.length
+        });
+      } catch (aiError) {
+        logger.warn('Failed to generate AI narrative summary', {
+          module: 'internal-clinical-data',
+          error: aiError.message
+        });
+      }
+    }
+
+    logger.info('Generated internal clinical data summary', {
+      module: 'internal-clinical-data',
+      totalCount,
+      categories: categoryCounts
+    });
+
+    res.json({
+      summary: {
+        totalItems: totalCount,
+        categories: categoryCounts,
+        categorySummaries: categorySummaries,
+        narrative: narrativeSummary
+      }
+    });
+  } catch (error) {
+    logger.error('Error generating internal clinical data summary', {
+      module: 'internal-clinical-data',
+      error: error.message,
+      stack: error.stack
+    });
+
+    res.status(500).json({
+      error: 'Failed to generate internal clinical data summary',
+      message: error.message
+    });
+  }
+});
+
+/**
  * GET /api/cer/internal-data/category/:category
  * Retrieve all internal clinical data for a specific category
  */
@@ -274,6 +397,8 @@ router.get('/category/:category', (req, res) => {
 /**
  * GET /api/cer/internal-data/summary
  * Generate a summary of all internal clinical data for CER inclusion
+ * 
+ * Important: Router paths are relative to the route the router is mounted on
  */
 router.get('/summary', async (req, res) => {
   try {
