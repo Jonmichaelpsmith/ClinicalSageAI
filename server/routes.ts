@@ -57,6 +57,11 @@ declare module './routes/cer-ai-analysis.js' {
   export default router;
 }
 
+declare module './routes/qmp-api.js' {
+  const router: express.Router;
+  export default router;
+}
+
 // Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';
@@ -68,6 +73,7 @@ import emergencyFixRouter from './routes/emergency-fix.js';
 import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
 import internalClinicalDataRouter from './routes/internal-clinical-data.js';
+import qmpRouter from './routes/qmp-api.js';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
@@ -185,6 +191,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register CER AI Analysis API routes
   app.use('/api/cer/ai', cerAiAnalysisRouter);
+  
+  // Register QMP API routes
+  app.use('/api/qmp', qmpRouter);
   
   // Create a temporary CER Validation router
   const cerValidationRouter = express.Router();
