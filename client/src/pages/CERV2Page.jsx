@@ -288,6 +288,47 @@ export default function CERV2Page() {
       );
     }
     
+    if (activeTab === 'compliance') {
+      return (
+        <ComplianceScorePanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          sections={sections}
+          complianceStatus={compliance}
+          isLoading={isComplianceRunning}
+          onComplianceCheck={(result) => {
+            setCompliance(result);
+            setIsComplianceRunning(false);
+            toast({
+              title: "Compliance Check Complete",
+              description: "Your CER has been evaluated against EU MDR requirements.",
+              variant: "success"
+            });
+          }}
+        />
+      );
+    }
+    
+    if (activeTab === 'assistant') {
+      return (
+        <CerAssistantPanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          sections={sections}
+          onAddSuggestion={(newSection) => {
+            setSections([...sections, newSection]);
+            toast({
+              title: "Content Added",
+              description: "The suggested content has been added to your CER.",
+              variant: "success"
+            });
+          }}
+        />
+      );
+    }
+    
     if (activeTab === 'literature') {
       return (
         <Tabs defaultValue="search" className="w-full">
@@ -462,6 +503,46 @@ export default function CERV2Page() {
       );
     }
 
+    if (activeTab === 'equivalence') {
+      return (
+        <EquivalenceBuilderPanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          onAddToReport={(equivalenceData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'equivalence' || 
+              (section.title && section.title.toLowerCase().includes('equivalence'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: equivalenceData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Equivalence Data Updated",
+                description: "Device equivalence assessment has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, equivalenceData]);
+              
+              toast({
+                title: "Equivalence Data Added",
+                description: "Device equivalence assessment has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+    
     if (activeTab === 'gspr-mapping') {
       return (
         <GSPRMappingPanel
@@ -497,6 +578,46 @@ export default function CERV2Page() {
               toast({
                 title: "GSPR Mapping Added",
                 description: "GSPR requirements mapping has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+    
+    if (activeTab === 'sota') {
+      return (
+        <StateOfArtPanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          onAddToReport={(sotaData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'sota' || 
+              (section.title && section.title.toLowerCase().includes('state of the art'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: sotaData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "State of Art Analysis Updated",
+                description: "The state of art analysis has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, sotaData]);
+              
+              toast({
+                title: "State of Art Analysis Added",
+                description: "State of art analysis has been added to your CER.",
                 variant: "success"
               });
             }
