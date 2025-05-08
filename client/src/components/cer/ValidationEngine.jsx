@@ -21,6 +21,17 @@ import axios from 'axios';
 import QmpIntegrationHelp from './QmpIntegrationHelp';
 import CerValidationPanel from './CerValidationPanel';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -62,7 +73,9 @@ import {
   BrainCircuit,
   Eye,
   CornerDownRight,
-  Sparkles
+  Sparkles,
+  BadgeCheck,
+  Info as InfoIcon
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -1040,12 +1053,93 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
                         <TableCell>
                           <div className="font-medium">{issue.message}</div>
                           <div className="text-sm text-muted-foreground mt-1">{issue.suggestion}</div>
+                          
+                          {(issue.category === 'qms_quality' || issue.category === 'ich_compliance') && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="link" 
+                                  className="p-0 h-auto text-[#E3008C] hover:text-[#E3008C]/80 text-xs flex items-center gap-1 mt-1"
+                                >
+                                  <InfoIcon className="h-3 w-3" />
+                                  Learn More About ICH E6(R3) Impact
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle className="text-[#E3008C] flex items-center gap-2">
+                                    <BadgeCheck className="h-5 w-5" />
+                                    ICH E6(R3) Guidance
+                                  </DialogTitle>
+                                  <DialogDescription>
+                                    How this issue relates to ICH E6(R3) Quality Management principles
+                                  </DialogDescription>
+                                </DialogHeader>
+                                
+                                <div className="p-4 bg-[#FDF2F8] border border-[#E3008C] rounded-md mb-3">
+                                  <h4 className="font-semibold text-[#E3008C] mb-1">Risk-Based Quality Management</h4>
+                                  <p className="text-sm text-gray-700">
+                                    {issue.ichGuidance || `This issue impacts Critical-to-Quality factors related to ${issue.category === 'qms_quality' ? 'quality management' : 'regulatory compliance'} under ICH E6(R3) principles.`}
+                                  </p>
+                                </div>
+                                
+                                <Accordion type="single" collapsible className="w-full">
+                                  <AccordionItem value="remediation">
+                                    <AccordionTrigger className="text-[#E3008C]">Remediation Steps</AccordionTrigger>
+                                    <AccordionContent>
+                                      <ol className="list-decimal pl-5 space-y-1 text-sm">
+                                        <li>Address the identified issue in your document</li>
+                                        <li>Implement appropriate risk controls as defined in your QMP</li>
+                                        <li>Document the resolution in your Quality Management Plan</li>
+                                        <li>Update any related Critical-to-Quality factors</li>
+                                        <li>Re-validate to ensure compliance</li>
+                                      </ol>
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                  
+                                  <AccordionItem value="regulatory-impact">
+                                    <AccordionTrigger className="text-[#E3008C]">Regulatory Impact</AccordionTrigger>
+                                    <AccordionContent>
+                                      <div className="text-sm space-y-2">
+                                        <p>
+                                          ICH E6(R3) introduces a risk-based quality paradigm that requires:
+                                        </p>
+                                        <ul className="list-disc pl-5 space-y-1">
+                                          <li>Systematic identification of Critical-to-Quality factors</li>
+                                          <li>Implementation of proportionate risk controls</li>
+                                          <li>Focus on issues that matter to stakeholders</li>
+                                          <li>Documentation of quality management activities</li>
+                                        </ul>
+                                      </div>
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                </Accordion>
+                                
+                                <DialogFooter>
+                                  <Button variant="outline" onClick={() => {
+                                    const dialog = document.querySelector('[data-state="open"][role="dialog"]');
+                                    if (dialog) {
+                                      const closeButton = dialog.querySelector('button[aria-label="Close"]');
+                                      if (closeButton) closeButton.click();
+                                    }
+                                  }}>
+                                    Close
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          )}
                         </TableCell>
                         <TableCell>{issue.location}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {categoryMap[issue.category]?.icon}
                             <span className="text-sm">{categoryMap[issue.category]?.name || issue.category}</span>
+                            {(issue.category === 'qms_quality' || issue.category === 'ich_compliance') && (
+                              <Badge variant="outline" className="ml-1 bg-[#FDF2F8] text-[#E3008C] border-[#E3008C] text-[10px]">
+                                ICH E6(R3)
+                              </Badge>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

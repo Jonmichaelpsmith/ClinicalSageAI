@@ -1776,10 +1776,13 @@ cerApiService.deleteEuPmsData = async (id) => {
  * @param {Array} [sections=[]] - Document sections to analyze with AI validation
  * @returns {Promise<Object>} - Validation results including AI-powered insights
  */
-cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sections = []) => {
+cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sections = [], additionalParams = {}) => {
   try {
     // Log validation request details
     console.log(`Validating document ${documentId} against ${framework} framework with ${sections.length} sections`);
+    if (additionalParams.qmpData) {
+      console.log(`Including QMP data for ICH E6(R3) integration`);
+    }
     
     // Always use the real API validation endpoint
     const response = await fetch(`/api/cer/documents/${documentId}/validate`, {
@@ -1789,7 +1792,8 @@ cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sectio
       },
       body: JSON.stringify({
         framework,
-        sections
+        sections,
+        ...additionalParams  // Include QMP data and other parameters
       }),
     });
     
