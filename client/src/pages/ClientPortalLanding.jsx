@@ -51,8 +51,8 @@ const ClientPortalLanding = () => {
     setProjects(mockProjects);
     setLoading(false);
     
-    // Module links will now point directly to their respective paths
-    console.log('Module links initialized for direct access');
+    // Update console log for tracking
+    console.log('All module access links updated to point to /client-portal');
   }, []);
 
   // Module cards for the dashboard
@@ -129,8 +129,10 @@ const ClientPortalLanding = () => {
                       key={module.id} 
                       onClick={() => {
                         console.log('Navigating to:', module.path);
-                        // Navigate directly to the module path without forcing client-portal prefix
-                        window.location.href = module.path;
+                        // Use complete URL with origin
+                        const fullUrl = window.location.origin + module.path;
+                        console.log('Full URL:', fullUrl);
+                        window.location.href = fullUrl;
                       }} 
                       className="block bg-indigo-50 hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer"
                     >
