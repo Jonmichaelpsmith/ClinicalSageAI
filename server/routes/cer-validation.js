@@ -325,5 +325,143 @@ Format your response as a valid JSON with the following structure:
   }
 });
 
+/**
+ * QMP Integration Validation Endpoint
+ * Validates a Quality Management Plan's objectives against CER sections
+ * to ensure proper compliance with ICH E6(R3) and regulatory requirements
+ */
+router.post('/qmp-integration/validate', isAuthenticated, async (req, res) => {
+  try {
+    const { objectives, cerSections, framework = 'mdr' } = req.body;
+    
+    if (!objectives || !Array.isArray(objectives) || objectives.length === 0) {
+      return res.status(400).json({ 
+        error: 'Valid quality objectives array is required' 
+      });
+    }
+    
+    console.log(`Validating QMP integration with ${objectives.length} objectives against framework: ${framework}`);
+    
+    // Extract required sections for the specified framework
+    const regulatoryService = require('../services/regulatoryService');
+    const frameworkSections = await regulatoryService.getRequiredSections(framework);
+    
+    // Check which required sections are covered by objectives
+    const coveredSections = new Set();
+    objectives.forEach(objective => {
+      if (objective.scopeSections && Array.isArray(objective.scopeSections)) {
+        objective.scopeSections.forEach(section => {
+          coveredSections.add(section);
+        });
+      }
+    });
+    
+    // Check for missing critical sections
+    const criticalSections = ['Safety', 'Clinical Data', 'GSPR Mapping'];
+    const missingSections = frameworkSections.filter(section => !coveredSections.has(section));
+    const missingCriticalSections = criticalSections.filter(section => !coveredSections.has(section));
+    
+    // Use GPT-4o for advanced validation of QMP integration
+    console.log(`Using GPT-4o to analyze QMP compliance with ICH E6(R3) requirements`);
+    
+    // Convert objectives to easily readable text format for the AI
+    const objectivesText = objectives.map(obj => {
+      return `Objective: ${obj.title}
+Description: ${obj.description}
+Status: ${obj.status}
+Scope Sections: ${obj.scopeSections ? obj.scopeSections.join(', ') : 'None'}
+Mitigation Actions: ${obj.mitigationActions || 'None'}
+`;
+    }).join('\n\n');
+    
+    const systemPrompt = `You are an expert in regulatory compliance focusing on Quality Management Plans for medical device Clinical Evaluation Reports.
+You are evaluating whether a set of quality objectives properly addresses ICH E6(R3) requirements and provides adequate coverage for CER sections.
+
+Your task is to:
+1. Analyze if the quality objectives adequately cover the critical sections of a CER
+2. Evaluate the completeness and specificity of the objectives
+3. Assess if mitigation actions are appropriate and sufficient
+4. Determine if the overall QMP approach meets ICH E6(R3) standards
+5. Identify any gaps or areas for improvement
+
+Format your response as a valid JSON with the following structure:
+{
+  "compliance": {
+    "score": <number between 0-100>,
+    "compliantWithICH": <boolean>,
+    "compliantWithFramework": <boolean>,
+    "adequateCoverage": <boolean>
+  },
+  "gaps": [
+    {
+      "section": "<section name>",
+      "impact": "<high|medium|low>",
+      "description": "<description of the gap>"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "<high|medium|low>",
+      "description": "<recommendation>",
+      "justification": "<regulatory reference or rationale>"
+    }
+  ],
+  "strengths": ["<strength 1>", "<strength 2>"]
+}`;
+
+    try {
+      const gpt4oResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Analyze these Quality Management Plan objectives for compliance with ICH E6(R3) and coverage of CER sections:\n\n${objectivesText}` }
+        ],
+        temperature: 0.2,
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse and validate the response
+      const aiAnalysis = JSON.parse(gpt4oResponse.choices[0].message.content);
+      
+      // Calculate section coverage metrics
+      const coveragePercentage = frameworkSections.length > 0 
+        ? Math.round((coveredSections.size / frameworkSections.length) * 100) 
+        : 0;
+      
+      // Compile final validation results
+      const validationResults = {
+        timestamp: new Date().toISOString(),
+        framework,
+        sectionsAnalysis: {
+          requiredSections: frameworkSections,
+          coveredSections: Array.from(coveredSections),
+          missingSections,
+          missingCriticalSections,
+          coveragePercentage
+        },
+        aiAnalysis,
+        complianceStatus: {
+          compliant: aiAnalysis.compliance.compliantWithICH && aiAnalysis.compliance.compliantWithFramework,
+          objectivesWithoutScope: objectives.filter(obj => !obj.scopeSections || obj.scopeSections.length === 0).length,
+          objectivesWithoutMitigation: objectives.filter(obj => !obj.mitigationActions || obj.mitigationActions.trim() === '').length,
+          coverage: coveragePercentage,
+          criticalSectionsMissing: missingCriticalSections.length > 0,
+          recommendationCount: aiAnalysis.recommendations.length
+        }
+      };
+      
+      console.log(`QMP validation complete. Coverage: ${coveragePercentage}%, Compliance score: ${aiAnalysis.compliance.score}`);
+      
+      res.json(validationResults);
+    } catch (error) {
+      console.error(`Error analyzing QMP objectives:`, error);
+      throw new Error(`QMP validation failed: ${error.message}`);
+    }
+  } catch (error) {
+    console.error('Error validating QMP integration:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Export the router
 module.exports = router;

@@ -1307,7 +1307,19 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                             </div>
                           )}
                           
-                          {/* Mitigation Actions are already displayed in the main objective fields */}
+                          {/* Display Mitigation/Control Actions if available */}
+                          {objective.mitigationActions && objective.mitigationActions.trim() !== '' && (
+                            <div className="mt-3">
+                              <p className="text-xs font-medium text-[#605E5C] mb-1">Mitigation / Control Actions:</p>
+                              <div className="text-xs text-[#323130] p-2 bg-[#F3F3F3] rounded-md">
+                                {objective.mitigationActions.split('\n').map((line, i) => (
+                                  <p key={i} className={i > 0 ? "mt-1" : ""}>
+                                    {line}
+                                  </p>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </CardContent>
                         <CardFooter className="p-3 pt-0 flex justify-between items-center">
                           <div className="flex space-x-1">
