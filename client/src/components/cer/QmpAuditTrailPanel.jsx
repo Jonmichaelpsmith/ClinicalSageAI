@@ -1,297 +1,348 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+  FileText, Clock, User, ArrowUp, ArrowDown, 
+  ChevronDown, ChevronUp, Filter, Search, Calendar 
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import { 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
-  Calendar, 
-  User, 
-  FileText, 
-  Download,
-  Loader2
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
 /**
  * QMP Audit Trail Panel Component
  * 
- * Displays historical changes to the Quality Management Plan for audit and traceability purposes.
- * Allows filtering by date, user, and modification type.
+ * This component displays a comprehensive audit trail for the Quality Management Plan,
+ * allowing users to track all changes made over time with robust filtering capabilities.
  */
-export default function QmpAuditTrailPanel() {
-  const { toast } = useToast();
-  const [auditTrail, setAuditTrail] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
-  const [exportingPdf, setExportingPdf] = useState(false);
+const QmpAuditTrailPanel = ({ deviceName, manufacturer }) => {
+  // Filter and sort states
+  const [filterType, setFilterType] = useState('all');
+  const [sortDirection, setSortDirection] = useState('desc');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dateRange, setDateRange] = useState('last30days');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
-  useEffect(() => {
-    fetchAuditTrail();
-  }, []);
-  
-  // Fetch QMP audit trail data
-  const fetchAuditTrail = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get('/api/qmp/audit-trail');
-      setAuditTrail(response.data.auditRecords || []);
-    } catch (error) {
-      console.error('Error fetching QMP audit trail:', error);
-      toast({
-        title: 'Error fetching audit trail',
-        description: 'Could not retrieve QMP change history. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+  // Mock audit trail data - would come from API in production
+  const [auditEntries, setAuditEntries] = useState([
+    {
+      id: 1,
+      timestamp: '2025-05-08T14:32:00Z',
+      user: 'John Smith',
+      action: 'created',
+      component: 'QMP',
+      section: 'Objectives',
+      details: 'Initial creation of quality management objectives',
+      changes: {
+        before: null,
+        after: 'Defined 3 primary quality objectives for clinical evaluation'
+      }
+    },
+    {
+      id: 2,
+      timestamp: '2025-05-08T15:10:00Z',
+      user: 'Sarah Johnson',
+      action: 'updated',
+      component: 'QMP',
+      section: 'Critical-to-Quality Factors',
+      details: 'Added risk factors for clinical data evaluation',
+      changes: {
+        before: '2 CtQ factors defined',
+        after: '5 CtQ factors defined with risk categories'
+      }
+    },
+    {
+      id: 3,
+      timestamp: '2025-05-07T09:45:00Z',
+      user: 'Maria Garcia',
+      action: 'updated',
+      component: 'QMP',
+      section: 'Gating Criteria',
+      details: 'Modified quality gates for benefit-risk analysis',
+      changes: {
+        before: 'Section requires 3 evidence sources',
+        after: 'Section requires 5 evidence sources and statistical justification'
+      }
+    },
+    {
+      id: 4,
+      timestamp: '2025-05-06T11:20:00Z',
+      user: 'Robert Lee',
+      action: 'updated',
+      component: 'QMP',
+      section: 'Risk Management',
+      details: 'Added verification steps for clinical data collection',
+      changes: {
+        before: 'Basic verification process',
+        after: 'Enhanced verification with 3-level review process'
+      }
+    },
+    {
+      id: 5,
+      timestamp: '2025-05-05T16:15:00Z',
+      user: 'Jennifer Williams',
+      action: 'approved',
+      component: 'QMP',
+      section: 'Complete QMP',
+      details: 'Formal approval of QMP version 1.0',
+      changes: {
+        before: 'Draft status',
+        after: 'Approved status'
+      }
+    },
+    {
+      id: 6,
+      timestamp: '2025-05-04T10:30:00Z',
+      user: 'Thomas Brown',
+      action: 'created',
+      component: 'QMP',
+      section: 'Data Integrity',
+      details: 'Initial data integrity controls for clinical evaluation',
+      changes: {
+        before: null,
+        after: 'Established data integrity protocols for clinical evidence'
+      }
+    },
+    {
+      id: 7,
+      timestamp: '2025-05-03T14:05:00Z',
+      user: 'Sarah Johnson',
+      action: 'updated',
+      component: 'QMP',
+      section: 'Quality Controls',
+      details: 'Enhanced verification requirements for literature data',
+      changes: {
+        before: 'Single verification step',
+        after: 'Triple verification with expertise requirements'
+      }
     }
-  };
+  ]);
   
-  // Export audit trail to PDF
-  const exportAuditTrail = async () => {
-    setExportingPdf(true);
-    try {
-      const response = await axios.get('/api/qmp/export-audit-trail-pdf', {
-        responseType: 'blob',
-      });
+  // Filter and sort the audit entries
+  const filteredEntries = auditEntries
+    .filter(entry => {
+      // Filter by type
+      if (filterType !== 'all' && entry.action !== filterType) {
+        return false;
+      }
       
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `QMP_Audit_Trail_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
+      // Filter by search term
+      if (searchTerm && !entry.details.toLowerCase().includes(searchTerm.toLowerCase()) && 
+          !entry.section.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !entry.user.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
       
-      toast({
-        title: 'Audit trail exported',
-        description: 'QMP audit trail has been exported to PDF successfully.',
-      });
-    } catch (error) {
-      console.error('Error exporting audit trail:', error);
-      toast({
-        title: 'Export failed',
-        description: 'Failed to export QMP audit trail report. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setExportingPdf(false);
-    }
-  };
+      // Filter by date range
+      const entryDate = new Date(entry.timestamp);
+      const now = new Date();
+      
+      if (dateRange === 'last7days') {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(now.getDate() - 7);
+        if (entryDate < sevenDaysAgo) {
+          return false;
+        }
+      } else if (dateRange === 'last30days') {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+        if (entryDate < thirtyDaysAgo) {
+          return false;
+        }
+      } else if (dateRange === 'last90days') {
+        const ninetyDaysAgo = new Date();
+        ninetyDaysAgo.setDate(now.getDate() - 90);
+        if (entryDate < ninetyDaysAgo) {
+          return false;
+        }
+      }
+      
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.timestamp);
+      const dateB = new Date(b.timestamp);
+      
+      return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
+    });
   
-  // Filter audit records based on active tab
-  const getFilteredRecords = () => {
-    if (activeTab === 'all') {
-      return auditTrail;
-    }
-    
-    return auditTrail.filter(record => record.changeType === activeTab);
-  };
-  
-  // Get appropriate color and icon for change type
-  const getChangeTypeProps = (changeType) => {
-    switch (changeType) {
-      case 'objective-added':
-        return { 
-          color: 'bg-green-50 text-green-700 border-green-200', 
-          icon: <CheckCircle2 className="h-4 w-4 mr-1.5" />
-        };
-      case 'objective-updated':
-        return { 
-          color: 'bg-blue-50 text-blue-700 border-blue-200', 
-          icon: <FileText className="h-4 w-4 mr-1.5" />
-        };
-      case 'ctq-added':
-        return { 
-          color: 'bg-purple-50 text-purple-700 border-purple-200', 
-          icon: <CheckCircle2 className="h-4 w-4 mr-1.5" />
-        };
-      case 'ctq-updated':
-        return { 
-          color: 'bg-indigo-50 text-indigo-700 border-indigo-200', 
-          icon: <FileText className="h-4 w-4 mr-1.5" />
-        };
-      case 'ctq-completed':
-        return { 
-          color: 'bg-emerald-50 text-emerald-700 border-emerald-200', 
-          icon: <CheckCircle2 className="h-4 w-4 mr-1.5" />
-        };
-      case 'status-changed':
-        return { 
-          color: 'bg-amber-50 text-amber-700 border-amber-200', 
-          icon: <AlertCircle className="h-4 w-4 mr-1.5" />
-        };
-      default:
-        return { 
-          color: 'bg-gray-50 text-gray-700 border-gray-200', 
-          icon: <FileText className="h-4 w-4 mr-1.5" />
-        };
-    }
-  };
-  
-  // Format date for display
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', { 
+  // Format the timestamp
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
+      day: 'numeric' 
+    }) + ' at ' + date.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
       minute: '2-digit'
     });
   };
   
+  // Get appropriate icon for action type
+  const getActionIcon = (action) => {
+    switch (action) {
+      case 'created':
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Created</Badge>;
+      case 'updated':
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">Updated</Badge>;
+      case 'deleted':
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">Deleted</Badge>;
+      case 'approved':
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">Approved</Badge>;
+      default:
+        return <Badge variant="outline">{action}</Badge>;
+    }
+  };
+  
   return (
-    <Card className="shadow-sm border-gray-200">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl font-semibold">QMP Audit Trail</CardTitle>
-            <CardDescription className="text-sm text-gray-500 mt-1">
-              Track changes and updates to your Quality Management Plan
-            </CardDescription>
+    <div className="space-y-6">
+      <div className="bg-white rounded-md shadow p-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <h2 className="text-xl font-semibold">Quality Management Plan Audit Trail</h2>
+          
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
+              <Filter className="h-4 w-4 mr-1" />
+              Filters
+              {showAdvancedFilters ? 
+                <ChevronUp className="h-4 w-4 ml-1" /> : 
+                <ChevronDown className="h-4 w-4 ml-1" />
+              }
+            </Button>
+            
+            <Button variant="outline" size="sm" onClick={() => console.log('Export audit trail')}>
+              <FileText className="h-4 w-4 mr-1" />
+              Export
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc')}
+            >
+              {sortDirection === 'desc' ? 
+                <ArrowDown className="h-4 w-4 mr-1" /> : 
+                <ArrowUp className="h-4 w-4 mr-1" />
+              }
+              {sortDirection === 'desc' ? 'Newest First' : 'Oldest First'}
+            </Button>
           </div>
-          <Button 
-            onClick={exportAuditTrail} 
-            disabled={isLoading || exportingPdf}
-            variant="outline"
-            className="border-blue-200 text-blue-700 flex items-center"
-          >
-            {exportingPdf ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                <span>Exporting...</span>
-              </>
-            ) : (
-              <>
-                <Download className="h-4 w-4 mr-1.5" />
-                <span>Export PDF Report</span>
-              </>
-            )}
-          </Button>
         </div>
         
-        <Tabs 
-          defaultValue="all" 
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="mt-4"
-        >
-          <TabsList className="grid grid-cols-7 mb-4">
-            <TabsTrigger value="all">All Changes</TabsTrigger>
-            <TabsTrigger value="objective-added">Objectives Added</TabsTrigger>
-            <TabsTrigger value="objective-updated">Objectives Updated</TabsTrigger>
-            <TabsTrigger value="ctq-added">CtQ Factors Added</TabsTrigger>
-            <TabsTrigger value="ctq-updated">CtQ Factors Updated</TabsTrigger>
-            <TabsTrigger value="ctq-completed">CtQ Factors Completed</TabsTrigger>
-            <TabsTrigger value="status-changed">Status Changes</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </CardHeader>
-      
-      <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <span className="ml-3 text-gray-600">Loading audit trail data...</span>
+        {showAdvancedFilters && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-md">
+            <div>
+              <label className="block text-sm font-medium mb-1">Action Type</label>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select action type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Actions</SelectItem>
+                  <SelectItem value="created">Created</SelectItem>
+                  <SelectItem value="updated">Updated</SelectItem>
+                  <SelectItem value="deleted">Deleted</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Date Range</label>
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select date range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="last7days">Last 7 Days</SelectItem>
+                  <SelectItem value="last30days">Last 30 Days</SelectItem>
+                  <SelectItem value="last90days">Last 90 Days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">Search</label>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search audit trail..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
-        ) : getFilteredRecords().length === 0 ? (
-          <div className="text-center py-8 border rounded-md bg-gray-50">
-            <FileText className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-            <h3 className="text-gray-700 font-medium mb-1">No audit records found</h3>
-            <p className="text-gray-500 text-sm">
-              {activeTab === 'all' 
-                ? 'There are no recorded changes to the Quality Management Plan.' 
-                : 'No changes of this type have been recorded yet.'}
-            </p>
-          </div>
-        ) : (
-          <ScrollArea className="h-[400px] pr-4">
-            <div className="space-y-4">
-              {getFilteredRecords().map((record, index) => {
-                const { color, icon } = getChangeTypeProps(record.changeType);
-                
-                return (
-                  <div 
-                    key={record.id || index} 
-                    className="p-4 border rounded-lg bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <Badge variant="outline" className={cn("mb-2", color)}>
-                          <div className="flex items-center">
-                            {icon}
-                            <span>
-                              {record.changeType === 'objective-added' && 'Objective Added'}
-                              {record.changeType === 'objective-updated' && 'Objective Updated'}
-                              {record.changeType === 'ctq-added' && 'CtQ Factor Added'}
-                              {record.changeType === 'ctq-updated' && 'CtQ Factor Updated'}
-                              {record.changeType === 'ctq-completed' && 'CtQ Factor Completed'}
-                              {record.changeType === 'status-changed' && 'Status Changed'}
-                              {!['objective-added', 'objective-updated', 'ctq-added', 'ctq-updated', 'ctq-completed', 'status-changed'].includes(record.changeType) && 'QMP Change'}
-                            </span>
-                          </div>
-                        </Badge>
-                        
-                        <h4 className="font-medium text-gray-900 mb-1">{record.title}</h4>
-                        <p className="text-sm text-gray-600">{record.description}</p>
-                        
-                        {record.details && (
-                          <div className="mt-3 text-xs bg-gray-50 p-2 rounded border text-gray-700">
-                            <pre className="whitespace-pre-wrap font-sans">
-                              {typeof record.details === 'object' 
-                                ? JSON.stringify(record.details, null, 2) 
-                                : record.details}
-                            </pre>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="text-right text-xs text-gray-500">
-                        <div className="flex items-center justify-end mb-1">
-                          <Calendar className="h-3.5 w-3.5 mr-1" />
-                          <span>{formatDate(record.timestamp)}</span>
-                        </div>
-                        
-                        <div className="flex items-center justify-end">
-                          <User className="h-3.5 w-3.5 mr-1" />
-                          <span>{record.user || 'System User'}</span>
-                        </div>
-                      </div>
+        )}
+        
+        <div className="space-y-4">
+          {filteredEntries.length > 0 ? (
+            filteredEntries.map(entry => (
+              <Card key={entry.id} className="overflow-hidden">
+                <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
+                  <div className="flex flex-col">
+                    <CardTitle className="text-md font-medium">
+                      {entry.section}
+                    </CardTitle>
+                    <div className="text-sm text-gray-500 flex items-center">
+                      <Clock className="h-3.5 w-3.5 mr-1 inline" />
+                      {formatTimestamp(entry.timestamp)}
                     </div>
                   </div>
-                );
-              })}
+                  {getActionIcon(entry.action)}
+                </CardHeader>
+                
+                <CardContent className="p-4 pt-2">
+                  <div className="flex items-center mb-2">
+                    <User className="h-4 w-4 mr-1 text-gray-500" />
+                    <span className="text-sm font-medium">{entry.user}</span>
+                  </div>
+                  
+                  <div className="text-sm">{entry.details}</div>
+                  
+                  {entry.changes && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      {entry.changes.before && (
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">Previous: </span>
+                          {entry.changes.before}
+                        </div>
+                      )}
+                      {entry.changes.after && (
+                        <div className="text-sm text-blue-600">
+                          <span className="font-medium">Changed to: </span>
+                          {entry.changes.after}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-lg font-medium">No matching audit entries found</p>
+              <p className="text-sm">Try adjusting your filters to see more results</p>
             </div>
-          </ScrollArea>
-        )}
-      </CardContent>
-      
-      <CardFooter className="flex justify-between border-t pt-4 text-xs text-gray-500">
-        <div className="flex items-center">
-          <Clock className="h-3.5 w-3.5 mr-1.5" />
-          <span>Records are retained for 10 years per 21 CFR Part 11 compliance</span>
-        </div>
-        
-        <div>
-          {auditTrail.length > 0 && (
-            <span>{auditTrail.length} record{auditTrail.length !== 1 ? 's' : ''} found</span>
           )}
         </div>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
-}
+};
+
+export default QmpAuditTrailPanel;
