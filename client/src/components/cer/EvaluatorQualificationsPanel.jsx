@@ -49,9 +49,16 @@ const EvaluatorQualificationsPanel = ({ deviceName, deviceType, manufacturer, on
       name: '',
       title: '',
       company: '',
+      education: '',
+      specialty: '',
+      yearsExperience: '',
       qualifications: '',
       comments: '',
+      recommendations: '',
       agreed: true,
+      conflictOfInterest: false,
+      conflictDetails: '',
+      signature: '',
       signedDate: new Date().toISOString().split('T')[0]
     }
   ]);
@@ -98,9 +105,16 @@ const EvaluatorQualificationsPanel = ({ deviceName, deviceType, manufacturer, on
         name: '',
         title: '',
         company: '',
+        education: '',
+        specialty: '',
+        yearsExperience: '',
         qualifications: '',
         comments: '',
+        recommendations: '',
         agreed: true,
+        conflictOfInterest: false,
+        conflictDetails: '',
+        signature: '',
         signedDate: new Date().toISOString().split('T')[0]
       }
     ]);
@@ -159,12 +173,27 @@ ${primaryEvaluator.conflictDetails}`
 ${reviewers.map(reviewer => `
 #### Reviewer: ${reviewer.name}
 - **Title:** ${reviewer.title}
-- **Company:** ${reviewer.company}
-- **Qualifications:** ${reviewer.qualifications}
-- **Review Comments:**
+- **Company/Institution:** ${reviewer.company}
+- **Education:** ${reviewer.education}
+- **Clinical Specialty:** ${reviewer.specialty}
+- **Years of Experience:** ${reviewer.yearsExperience}
+- **Professional Qualifications:** ${reviewer.qualifications}
+
+${reviewer.conflictOfInterest ? 
+`**Conflict of Interest Declaration:**
+${reviewer.conflictDetails}` 
+: 
+'**Conflict of Interest Declaration:** No conflicts of interest to declare.'
+}
+
+**Review Comments:**
 ${reviewer.comments}
 
-**Status:** ${reviewer.agreed ? 'Approved' : 'Revision Requested'}  
+**Recommendations:**
+${reviewer.recommendations || 'No specific recommendations provided.'}
+
+**Review Status:** ${reviewer.agreed ? 'Approved' : 'Revision Requested'}  
+**Signature:** ${reviewer.signature || reviewer.name}  
 **Date:** ${reviewer.signedDate}
 `).join('\n')}
 
@@ -204,6 +233,20 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
           reviewCycle: {
             initialApproval: new Date().toISOString(),
             nextReviewDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()
+          },
+          regulatory: {
+            signatureAuthorityConfirmed: signatureAuthorityConfirmed,
+            primaryEvaluatorQualified: complianceChecklist.filter(item => item.id === 'check-1' || item.id === 'check-3').every(item => item.checked),
+            independentReviewComplete: complianceChecklist.filter(item => item.id === 'check-6').every(item => item.checked),
+            mdcgCompliant: true,
+            meddevCompliant: complianceChecklist.filter(item => item.id === 'check-9').every(item => item.checked),
+            euMdrArticle61Compliant: complianceChecklist.filter(item => 
+              item.id === 'check-1' || 
+              item.id === 'check-3' || 
+              item.id === 'check-4' ||
+              item.id === 'check-7' || 
+              item.id === 'check-8'
+            ).every(item => item.checked)
           }
         }
       };
@@ -389,6 +432,13 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
                 )}
               </div>
               
+              <div className="bg-[#F3F9FE] p-3 rounded-md mb-4 border border-[#DEECF9]">
+                <p className="text-xs text-[#0F6CBD]">
+                  <BadgeCheck className="h-3 w-3 inline-block mr-1 mb-1" />
+                  MEDDEV 2.7/1 Rev 4 requires independent review from individuals with appropriate qualifications and experience. The reviewers should not have been involved in the design or clinical investigation of the device.
+                </p>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={`${reviewer.id}-name`}>Full Name</Label>
@@ -421,14 +471,45 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
                   />
                 </div>
                 <div>
-                  <Label htmlFor={`${reviewer.id}-qualifications`}>Qualifications</Label>
+                  <Label htmlFor={`${reviewer.id}-education`}>Education & Degrees</Label>
                   <Input
-                    id={`${reviewer.id}-qualifications`}
-                    value={reviewer.qualifications}
-                    onChange={(e) => handleReviewerChange(reviewer.id, 'qualifications', e.target.value)}
-                    placeholder="M.D., Ph.D., Orthopedic Surgeon"
+                    id={`${reviewer.id}-education`}
+                    value={reviewer.education}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'education', e.target.value)}
+                    placeholder="M.D., Ph.D., MBA"
                   />
                 </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`${reviewer.id}-specialty`}>Clinical Specialty</Label>
+                  <Input
+                    id={`${reviewer.id}-specialty`}
+                    value={reviewer.specialty}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'specialty', e.target.value)}
+                    placeholder="Orthopedic Surgery, Cardiology, etc."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`${reviewer.id}-yearsExperience`}>Years of Experience</Label>
+                  <Input
+                    id={`${reviewer.id}-yearsExperience`}
+                    value={reviewer.yearsExperience}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'yearsExperience', e.target.value)}
+                    placeholder="20"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor={`${reviewer.id}-qualifications`}>Professional Qualifications</Label>
+                <Input
+                  id={`${reviewer.id}-qualifications`}
+                  value={reviewer.qualifications}
+                  onChange={(e) => handleReviewerChange(reviewer.id, 'qualifications', e.target.value)}
+                  placeholder="Board Certified, RAC (EU), CQA, etc."
+                />
               </div>
               
               <div>
@@ -437,10 +518,50 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
                   id={`${reviewer.id}-comments`}
                   value={reviewer.comments}
                   onChange={(e) => handleReviewerChange(reviewer.id, 'comments', e.target.value)}
-                  placeholder="Provide comments on the clinical evaluation, its methodology, conclusions, and any recommendations for improvement..."
-                  rows={4}
+                  placeholder="Provide comments on the clinical evaluation, its methodology, conclusions, and any issues identified during review..."
+                  rows={3}
                 />
               </div>
+              
+              <div>
+                <Label htmlFor={`${reviewer.id}-recommendations`}>Recommendations</Label>
+                <Textarea
+                  id={`${reviewer.id}-recommendations`}
+                  value={reviewer.recommendations}
+                  onChange={(e) => handleReviewerChange(reviewer.id, 'recommendations', e.target.value)}
+                  placeholder="Provide recommendations for improvement, additional evidence needed, or other suggestions for strengthening the clinical evaluation..."
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex items-start space-x-2 pt-2">
+                <Checkbox
+                  id={`${reviewer.id}-conflictOfInterest`}
+                  checked={reviewer.conflictOfInterest}
+                  onCheckedChange={(checked) => handleReviewerChange(reviewer.id, 'conflictOfInterest', checked)}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label htmlFor={`${reviewer.id}-conflictOfInterest`} className="text-sm font-medium leading-none">
+                    Conflict of Interest Declaration
+                  </Label>
+                  <p className="text-sm text-gray-500">
+                    Check if you have any potential conflicts of interest to declare
+                  </p>
+                </div>
+              </div>
+              
+              {reviewer.conflictOfInterest && (
+                <div>
+                  <Label htmlFor={`${reviewer.id}-conflictDetails`}>Conflict of Interest Details</Label>
+                  <Textarea
+                    id={`${reviewer.id}-conflictDetails`}
+                    value={reviewer.conflictDetails}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'conflictDetails', e.target.value)}
+                    placeholder="Describe any financial relationships, consulting arrangements, or other potential conflicts of interest..."
+                    rows={2}
+                  />
+                </div>
+              )}
               
               <div className="flex items-center space-x-2 pt-2">
                 <Checkbox
@@ -453,14 +574,25 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
                 </Label>
               </div>
               
-              <div>
-                <Label htmlFor={`${reviewer.id}-signedDate`}>Signature Date</Label>
-                <Input
-                  id={`${reviewer.id}-signedDate`}
-                  type="date"
-                  value={reviewer.signedDate}
-                  onChange={(e) => handleReviewerChange(reviewer.id, 'signedDate', e.target.value)}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor={`${reviewer.id}-signature`}>Signature (Name)</Label>
+                  <Input
+                    id={`${reviewer.id}-signature`}
+                    value={reviewer.signature}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'signature', e.target.value)}
+                    placeholder="Type your name as signature"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor={`${reviewer.id}-signedDate`}>Signature Date</Label>
+                  <Input
+                    id={`${reviewer.id}-signedDate`}
+                    type="date"
+                    value={reviewer.signedDate}
+                    onChange={(e) => handleReviewerChange(reviewer.id, 'signedDate', e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           ))}
