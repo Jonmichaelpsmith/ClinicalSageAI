@@ -63,9 +63,40 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
     const loadQmpData = async () => {
       try {
         setIsLoadingPlan(true);
-        // TODO: Implement API call to load QMP data
-        // For now, use sample data
-        setTimeout(() => {
+        
+        // Fetch QMP data with metadata from the server
+        const response = await fetch('/api/qmp-api/data');
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Set QMP data including metadata
+          if (data.objectives) {
+            setObjectives(data.objectives);
+          }
+          
+          if (data.ctqFactors) {
+            setCtqFactors(data.ctqFactors);
+          }
+          
+          // Set metadata if available, otherwise use defaults
+          if (data.metadata) {
+            setPlanMetadata(data.metadata);
+          }
+          
+          toast({
+            title: "QMP Data Loaded",
+            description: "Quality Management Plan data loaded successfully",
+            variant: "default"
+          });
+        } else {
+          // If API call fails, use sample data for demonstration
+          toast({
+            title: "Using Sample Data",
+            description: "Could not load QMP data from server. Using sample data.",
+            variant: "warning"
+          });
+          
           const sampleObjectives = [
             {
               id: 1,
@@ -119,20 +150,21 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
           
           setObjectives(sampleObjectives);
           setCtqFactors(sampleCtqFactors);
-          setIsLoadingPlan(false);
-        }, 1000);
+        }
       } catch (error) {
+        console.error("Error loading QMP data:", error);
         toast({
           title: "Error loading Quality Management Plan",
           description: error.message || "Could not load QMP data. Please try again.",
           variant: "destructive"
         });
+      } finally {
         setIsLoadingPlan(false);
       }
     };
     
     loadQmpData();
-  }, []);
+  }, [toast]);
 
   // Add or update objective
   const handleSaveObjective = () => {
@@ -278,6 +310,54 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
     });
   };
 
+  // Save QMP data to backend
+  const saveQmpData = async () => {
+    try {
+      // Update the lastUpdated timestamp in metadata
+      const updatedMetadata = {
+        ...planMetadata,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      // Prepare data to save
+      const qmpDataToSave = {
+        objectives: objectives,
+        ctqFactors: ctqFactors,
+        metadata: updatedMetadata
+      };
+      
+      // Save data to backend
+      const response = await fetch('/api/qmp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(qmpDataToSave),
+      });
+      
+      if (response.ok) {
+        setPlanMetadata(updatedMetadata);
+        toast({
+          title: "QMP Data Saved",
+          description: "Quality Management Plan data saved successfully",
+          variant: "success"
+        });
+        return true;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save QMP data');
+      }
+    } catch (error) {
+      console.error("Error saving QMP data:", error);
+      toast({
+        title: "Error Saving QMP Data",
+        description: error.message || "Could not save QMP data. Please try again.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   // Generate QMP document and add to CER
   const handleGenerateQMP = async () => {
     if (objectives.length === 0) {
@@ -292,17 +372,44 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
     setIsGenerating(true);
 
     try {
+      // First save the current QMP data
+      const saveSuccess = await saveQmpData();
+      
+      if (!saveSuccess) {
+        toast({
+          title: "QMP Generation Warning",
+          description: "Proceeding with QMP generation, but the latest data might not be saved.",
+          variant: "warning"
+        });
+      }
+      
       // Format QMP content
       const qmpContent = formatQmpContent();
       
-      // TODO: Implement API call to save QMP and add to CER
-      // For now, simulate API call
-      setTimeout(() => {
+      // Call the API to generate the QMP document
+      const generateResponse = await fetch('/api/qmp/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          deviceName,
+          manufacturer,
+          objectives,
+          ctqFactors,
+          metadata: planMetadata
+        }),
+      });
+      
+      if (generateResponse.ok) {
+        const data = await generateResponse.json();
+        
         if (onQMPGenerated) {
           onQMPGenerated({
-            title: "Quality Management Plan",
+            title: planMetadata.planName || "Quality Management Plan",
             type: "qmp",
-            content: qmpContent,
+            content: data.content || qmpContent,
+            metadata: planMetadata,
             lastUpdated: new Date().toISOString()
           });
         }
@@ -312,14 +419,18 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
           description: "Quality Management Plan has been generated and added to your CER.",
           variant: "success"
         });
-        setIsGenerating(false);
-      }, 1500);
+      } else {
+        const errorData = await generateResponse.json();
+        throw new Error(errorData.error || 'Failed to generate QMP document');
+      }
     } catch (error) {
+      console.error("Error generating QMP:", error);
       toast({
         title: "QMP Generation Failed",
         description: error.message || "Could not generate QMP document. Please try again.",
         variant: "destructive"
       });
+    } finally {
       setIsGenerating(false);
     }
   };
@@ -516,11 +627,23 @@ _Document Generated: ${new Date().toLocaleDateString()}_
     <div className="bg-[#F9F9F9] p-4">
       {/* QMP Metadata Section */}
       <div className="mb-6 p-4 bg-white rounded-lg border shadow-sm">
-        <h3 className="text-lg font-semibold text-[#323130] mb-3 flex items-center">
-          <FileText className="mr-2 h-5 w-5 text-[#E3008C]" />
-          Plan Metadata
-          <span className="text-xs font-normal text-[#605E5C] ml-2">ICH E6(R3) Documentation</span>
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-[#323130] flex items-center">
+            <FileText className="mr-2 h-5 w-5 text-[#E3008C]" />
+            Plan Metadata
+            <span className="text-xs font-normal text-[#605E5C] ml-2">ICH E6(R3) Documentation</span>
+          </h3>
+          
+          <Button 
+            onClick={saveQmpData} 
+            size="sm" 
+            variant="outline" 
+            className="flex items-center text-sm"
+          >
+            <Save className="mr-1 h-4 w-4" />
+            Save Metadata
+          </Button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Plan Name & Version */}
