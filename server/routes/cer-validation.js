@@ -246,35 +246,106 @@ async function simulateValidation(documentId, framework) {
   };
 }
 
-// In a real implementation, we would have additional AI-driven validation
-// using the OpenAI API to analyze the document content in-depth
-async function validateWithAI(documentContent, framework) {
+/**
+ * Validate a document using OpenAI's GPT-4o model
+ * @param {Object} document - The document to validate 
+ * @param {string} framework - The regulatory framework to validate against
+ * @returns {Promise<Object>} - Validation results with detailed analysis
+ */
+async function validateWithAI(document, framework) {
   try {
+    // Use the appropriate framework requirements
+    const frameworkData = validationFrameworks[framework] || validationFrameworks.mdr;
+    
+    // Create a prompt for the AI model
+    const prompt = `
+      You are an expert regulatory consultant specialized in medical device Clinical Evaluation Reports (CERs).
+      Please analyze this clinical evaluation report content against ${frameworkData.name} requirements.
+      
+      FRAMEWORKS REQUIREMENTS:
+      ${JSON.stringify(frameworkData.requirements, null, 2)}
+      
+      DOCUMENT SECTIONS TO ANALYZE:
+      ${JSON.stringify(document.sections, null, 2)}
+      
+      For each requirement, determine if the document fully meets, partially meets, or fails to meet the requirement.
+      Identify any critical issues, major issues, and minor issues.
+      
+      Critical issues: Missing essential components required by regulations
+      Major issues: Incomplete sections or inadequate evidence for important claims
+      Minor issues: Formatting issues, minor inconsistencies, or areas that could be improved
+      
+      For each issue, provide:
+      1. The specific location in the document (section number if possible)
+      2. A detailed description of the issue
+      3. A concrete suggestion for how to address the issue
+      
+      Return your analysis in the following JSON format:
+      {
+        "summary": {
+          "totalIssues": number,
+          "criticalIssues": number,
+          "majorIssues": number,
+          "minorIssues": number,
+          "passedChecks": number,
+          "complianceScore": number
+        },
+        "categories": {
+          "regulatory_compliance": { "status": "success"|"warning"|"error", "passed": number, "failed": number },
+          "completeness": { "status": "success"|"warning"|"error", "passed": number, "failed": number },
+          "references": { "status": "success"|"warning"|"error", "passed": number, "failed": number },
+          "consistency": { "status": "success"|"warning"|"error", "passed": number, "failed": number }
+        },
+        "issues": [
+          {
+            "id": number,
+            "category": "regulatory_compliance"|"completeness"|"references"|"consistency",
+            "severity": "critical"|"major"|"minor",
+            "message": "Description of the issue",
+            "location": "Section X.Y",
+            "suggestion": "How to address the issue"
+          }
+        ]
+      }
+    `;
+    
+    // Call the OpenAI API with the gpt-4o model
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
-        {
-          role: "system",
-          content: `You are a regulatory expert specializing in medical device clinical evaluation reports. 
-          Analyze the provided document content against ${framework} requirements.
-          Identify any regulatory compliance issues, completeness problems, reference verification issues, 
-          and internal consistency problems. Provide a detailed report with issue severity (critical, major, minor),
-          locations in the document, and suggestions for remediation.`
-        },
-        {
-          role: "user",
-          content: documentContent
-        }
+        { role: "system", content: "You are an expert regulatory consultant for medical device Clinical Evaluation Reports." },
+        { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" }
     });
-
-    return JSON.parse(response.choices[0].message.content);
+    
+    // Parse the AI response
+    const aiAnalysis = JSON.parse(response.choices[0].message.content);
+    
+    // Integrate AI validation with standard checks
+    return {
+      ...aiAnalysis,
+      aiValidated: true,
+      validationDate: new Date().toISOString(),
+      framework: frameworkData.name
+    };
   } catch (error) {
     console.error('Error validating with AI:', error);
-    throw error;
+    
+    // Fallback to simulation if AI validation fails
+    console.log('Falling back to simulated validation');
+    const simulatedResults = await simulateValidation(document.id, framework);
+    
+    return {
+      ...simulatedResults,
+      aiValidated: false,
+      validationDate: new Date().toISOString(),
+      framework: frameworkData.name,
+      error: error.message
+    };
   }
 }
+
 
 // Export the router as default
 module.exports = router;
