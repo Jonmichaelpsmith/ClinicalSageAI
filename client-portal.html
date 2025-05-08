@@ -413,15 +413,6 @@
       moduleButtons.forEach(button => {
         button.addEventListener('click', function() {
           const module = this.getAttribute('data-module');
-          
-          // Special handling for CERV2 module
-          if (module === 'CERV2') {
-            console.log('Navigating to CERV2 module...');
-            window.location.href = '/cerv2';
-            return;
-          }
-          
-          console.log(`You clicked on the ${module} module`);
           alert(`You clicked on the ${module} module. This would navigate to the module interface.`);
         });
       });

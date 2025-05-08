@@ -114,12 +114,12 @@ app.get('/marketing', (req, res) => {
   }
 });
 
-// 5. Route for client-portal.html - serving your original client portal
+// 5. Alternative marketing page route
 app.get('/client-portal', (req, res) => {
-  console.log('Serving client portal page');
-  const portalPath = path.join(process.cwd(), 'client-portal.html');
-  if (fs.existsSync(portalPath)) {
-    res.sendFile(portalPath);
+  console.log('Serving client portal page from /client-portal route');
+  const clientPortalPath = path.join(process.cwd(), 'client-portal.html');
+  if (fs.existsSync(clientPortalPath)) {
+    res.sendFile(clientPortalPath);
   } else {
     res.status(404).send('Client portal page not found');
   }
