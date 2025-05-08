@@ -14,6 +14,7 @@ import GSPRMappingPanel from '@/components/cer/GSPRMappingPanel';
 import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow';
 import NotificationBanner from '@/components/cer/NotificationBanner';
 import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
+import ExportModule from '@/components/cer/ExportModule';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -100,6 +101,8 @@ export default function CERV2Page() {
       return 'evidence';
     } else if (['equivalence', 'gspr-mapping', 'compliance', 'assistant'].includes(tab)) {
       return 'analysis';
+    } else if (['export'].includes(tab)) {
+      return 'export';
     } else {
       return 'output';
     }
@@ -134,6 +137,12 @@ export default function CERV2Page() {
           { id: "gspr-mapping", label: "GSPR Mapping", icon: <BarChart className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5" /> }
+        ]
+      },
+      {
+        label: "Export:",
+        tabs: [
+          { id: "export", label: "Export Options", icon: <Download className="h-3.5 w-3.5 mr-1.5" /> }
         ]
       }
     ];
