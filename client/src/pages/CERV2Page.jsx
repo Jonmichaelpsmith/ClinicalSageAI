@@ -556,55 +556,13 @@ export default function CERV2Page() {
         
         {/* MS365-style tabs */}
         <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
-          <TabsList className="flex flex-wrap bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full gap-3">
+          <TabsList className="flex flex-wrap bg-transparent p-0 mb-4 border-b border-[#E1DFDD] w-full">
             <TabsTrigger 
               value="builder" 
               className="cer-tab-trigger rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               <span>Builder</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="literature" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-              <span>Literature</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="equivalence" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <GitCompare className="h-3.5 w-3.5 mr-1.5" />
-              <span>Equivalence</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="compliance" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <CheckSquare className="h-3.5 w-3.5 mr-1.5" />
-              <span>Compliance</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="assistant" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
-              <span>Assistant</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="preview" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <BarChart className="h-3.5 w-3.5 mr-1.5" />
-              <span>Preview</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="documents" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
-              <span>Documents</span>
             </TabsTrigger>
             <TabsTrigger 
               value="data-retrieval" 
@@ -614,29 +572,12 @@ export default function CERV2Page() {
               <span>Data Retrieval</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="sota" 
+              value="internal-clinical-data" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
             >
-              <BookMarked className="h-3.5 w-3.5 mr-1.5" />
-              <span>State of Art</span>
+              <Database className="h-3.5 w-3.5 mr-1.5" />
+              <span>Internal Clinical Data</span>
             </TabsTrigger>
-            
-            <TabsTrigger 
-              value="cep" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
-              <span>Evaluation Plan</span>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value="gspr-mapping" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <FileCheck className="h-3.5 w-3.5 mr-1.5" />
-              <span>GSPR Mapping</span>
-            </TabsTrigger>
-            
             <TabsTrigger 
               value="literature-review" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
@@ -644,15 +585,6 @@ export default function CERV2Page() {
               <BookOpen className="h-3.5 w-3.5 mr-1.5" />
               <span>Literature Review</span>
             </TabsTrigger>
-            
-            <TabsTrigger 
-              value="internal-clinical-data" 
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
-            >
-              <Database className="h-3.5 w-3.5 mr-1.5" />
-              <span>Internal Clinical Data</span>
-            </TabsTrigger>
-
             <TabsTrigger 
               value="export" 
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] text-xs sm:text-sm"
