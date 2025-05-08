@@ -15,6 +15,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { cerApiService } from '@/services/CerAPIService';
+import { cerValidationService } from '@/services/CerValidationService';
+import CerValidationPanel from './CerValidationPanel';
 import {
   Tabs,
   TabsContent,
@@ -51,7 +53,8 @@ import {
   RefreshCw,
   ClipboardList,
   Shield,
-  Download
+  Download,
+  Braces
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -62,6 +65,8 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
   const [error, setError] = useState(null);
   const [selectedFramework, setSelectedFramework] = useState('mdr');
   const [cerSections, setCerSections] = useState([]);
+  const [validationMode, setValidationMode] = useState('standard'); // 'standard' or 'enhanced'
+  const [enhancedValidationResults, setEnhancedValidationResults] = useState(null);
   const { toast } = useToast();
   
   // Update cerSections when sections prop changes
