@@ -378,49 +378,60 @@ _Document Generated: ${new Date().toLocaleDateString()}_
 `).join('')}`;
   };
 
-  // Render status badge with appropriate color
+  // Render status badge with appropriate color and icon
   const renderStatusBadge = (status) => {
-    let color;
+    let color, icon;
+    
     switch (status) {
       case 'completed':
         color = 'bg-green-100 text-green-800 border-green-200';
+        icon = <CheckCircle className="mr-1 h-3 w-3" />;
         break;
       case 'in-progress':
         color = 'bg-blue-100 text-blue-800 border-blue-200';
+        icon = <ArrowRight className="mr-1 h-3 w-3" />;
         break;
       case 'at-risk':
         color = 'bg-red-100 text-red-800 border-red-200';
+        icon = <AlertTriangle className="mr-1 h-3 w-3" />;
         break;
       default:
         color = 'bg-gray-100 text-gray-800 border-gray-200';
+        icon = <AlertCircle className="mr-1 h-3 w-3" />;
     }
     
     return (
-      <Badge className={`${color} rounded-md py-0.5 px-2 text-xs font-medium capitalize`}>
+      <Badge className={`${color} rounded-md py-0.5 px-2 text-xs font-medium capitalize flex items-center`}>
+        {icon}
         {status.replace('-', ' ')}
       </Badge>
     );
   };
 
-  // Render risk level badge with appropriate color
+  // Render risk level badge with appropriate color and icon
   const renderRiskBadge = (level) => {
-    let color;
+    let color, icon;
     switch (level) {
       case 'high':
         color = 'bg-red-100 text-red-800 border-red-200';
+        icon = <AlertCircle className="mr-1 h-3 w-3" />;
         break;
       case 'medium':
         color = 'bg-amber-100 text-amber-800 border-amber-200';
+        icon = <AlertTriangle className="mr-1 h-3 w-3" />;
         break;
       case 'low':
         color = 'bg-green-100 text-green-800 border-green-200';
+        icon = <CheckCircle className="mr-1 h-3 w-3" />;
         break;
       default:
         color = 'bg-gray-100 text-gray-800 border-gray-200';
+        icon = <AlertCircle className="mr-1 h-3 w-3" />;
     }
     
     return (
-      <Badge className={`${color} rounded-md py-0.5 px-2 text-xs font-medium capitalize`}>
+      <Badge className={`${color} rounded-md py-0.5 px-2 text-xs font-medium capitalize flex items-center`}>
+        {icon}
         {level} risk
       </Badge>
     );
@@ -869,12 +880,38 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                           </CardHeader>
                           <CardContent className="p-4 pt-2">
                             <p className="text-sm text-[#605E5C] mb-2">{factor.description}</p>
-                            {factor.associatedSection && (
-                              <div className="mt-2">
-                                <p className="text-xs font-medium text-[#605E5C]">Associated Section:</p>
-                                <p className="text-xs text-[#605E5C]">{factor.associatedSection}</p>
+                            
+                            {/* Visual traceability links */}
+                            <div className="mt-3 mb-2">
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="text-xs font-medium text-[#E3008C]">CER Traceability</span>
+                                {factor.associatedSection ? (
+                                  <Badge className="bg-green-100 text-green-800 px-2 py-0 text-xs flex items-center">
+                                    <CheckCircle className="h-3 w-3 mr-1" /> Linked
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-amber-100 text-amber-800 px-2 py-0 text-xs flex items-center">
+                                    <AlertTriangle className="h-3 w-3 mr-1" /> Missing Link
+                                  </Badge>
+                                )}
                               </div>
-                            )}
+                              
+                              {factor.associatedSection ? (
+                                <div className="border border-green-200 rounded p-2 bg-green-50">
+                                  <div className="flex items-center">
+                                    <FileText className="h-3 w-3 mr-1 text-[#0F6CBD]" />
+                                    <p className="text-xs font-medium text-[#0F6CBD]">Associated CER Section:</p>
+                                  </div>
+                                  <p className="text-xs text-[#323130] mt-1 pl-4">{factor.associatedSection}</p>
+                                </div>
+                              ) : (
+                                <div className="border border-amber-200 rounded p-2 bg-amber-50 text-xs text-amber-700 flex items-center">
+                                  <LinkIcon className="h-3 w-3 mr-1" />
+                                  Link this factor to a CER section for complete traceability
+                                </div>
+                              )}
+                            </div>
+                            
                             {factor.mitigation && (
                               <div className="mt-2">
                                 <p className="text-xs font-medium text-[#605E5C]">Mitigation Strategy:</p>
