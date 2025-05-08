@@ -1,348 +1,363 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FileText, Clock, User, ArrowUp, ArrowDown, 
-  ChevronDown, ChevronUp, Filter, Search, Calendar 
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '../ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { FileText, History, User, AlertTriangle, Check, Clock, CalendarClock } from 'lucide-react';
+import { useToast } from '../../hooks/use-toast';
+import { useTenant } from '../../contexts/TenantContext';
+import { format } from 'date-fns';
 
 /**
- * QMP Audit Trail Panel Component
+ * QMP Audit Trail Panel
  * 
- * This component displays a comprehensive audit trail for the Quality Management Plan,
- * allowing users to track all changes made over time with robust filtering capabilities.
+ * This component displays the Quality Management Plan audit trail,
+ * showing all changes to QMP factors for compliance tracking.
  */
-const QmpAuditTrailPanel = ({ deviceName, manufacturer }) => {
-  // Filter and sort states
-  const [filterType, setFilterType] = useState('all');
-  const [sortDirection, setSortDirection] = useState('desc');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState('last30days');
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  
-  // Mock audit trail data - would come from API in production
-  const [auditEntries, setAuditEntries] = useState([
-    {
-      id: 1,
-      timestamp: '2025-05-08T14:32:00Z',
-      user: 'John Smith',
-      action: 'created',
-      component: 'QMP',
-      section: 'Objectives',
-      details: 'Initial creation of quality management objectives',
-      changes: {
-        before: null,
-        after: 'Defined 3 primary quality objectives for clinical evaluation'
-      }
-    },
-    {
-      id: 2,
-      timestamp: '2025-05-08T15:10:00Z',
-      user: 'Sarah Johnson',
-      action: 'updated',
-      component: 'QMP',
-      section: 'Critical-to-Quality Factors',
-      details: 'Added risk factors for clinical data evaluation',
-      changes: {
-        before: '2 CtQ factors defined',
-        after: '5 CtQ factors defined with risk categories'
-      }
-    },
-    {
-      id: 3,
-      timestamp: '2025-05-07T09:45:00Z',
-      user: 'Maria Garcia',
-      action: 'updated',
-      component: 'QMP',
-      section: 'Gating Criteria',
-      details: 'Modified quality gates for benefit-risk analysis',
-      changes: {
-        before: 'Section requires 3 evidence sources',
-        after: 'Section requires 5 evidence sources and statistical justification'
-      }
-    },
-    {
-      id: 4,
-      timestamp: '2025-05-06T11:20:00Z',
-      user: 'Robert Lee',
-      action: 'updated',
-      component: 'QMP',
-      section: 'Risk Management',
-      details: 'Added verification steps for clinical data collection',
-      changes: {
-        before: 'Basic verification process',
-        after: 'Enhanced verification with 3-level review process'
-      }
-    },
-    {
-      id: 5,
-      timestamp: '2025-05-05T16:15:00Z',
-      user: 'Jennifer Williams',
-      action: 'approved',
-      component: 'QMP',
-      section: 'Complete QMP',
-      details: 'Formal approval of QMP version 1.0',
-      changes: {
-        before: 'Draft status',
-        after: 'Approved status'
-      }
-    },
-    {
-      id: 6,
-      timestamp: '2025-05-04T10:30:00Z',
-      user: 'Thomas Brown',
-      action: 'created',
-      component: 'QMP',
-      section: 'Data Integrity',
-      details: 'Initial data integrity controls for clinical evaluation',
-      changes: {
-        before: null,
-        after: 'Established data integrity protocols for clinical evidence'
-      }
-    },
-    {
-      id: 7,
-      timestamp: '2025-05-03T14:05:00Z',
-      user: 'Sarah Johnson',
-      action: 'updated',
-      component: 'QMP',
-      section: 'Quality Controls',
-      details: 'Enhanced verification requirements for literature data',
-      changes: {
-        before: 'Single verification step',
-        after: 'Triple verification with expertise requirements'
-      }
-    }
-  ]);
-  
-  // Filter and sort the audit entries
-  const filteredEntries = auditEntries
-    .filter(entry => {
-      // Filter by type
-      if (filterType !== 'all' && entry.action !== filterType) {
-        return false;
-      }
-      
-      // Filter by search term
-      if (searchTerm && !entry.details.toLowerCase().includes(searchTerm.toLowerCase()) && 
-          !entry.section.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !entry.user.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return false;
-      }
-      
-      // Filter by date range
-      const entryDate = new Date(entry.timestamp);
-      const now = new Date();
-      
-      if (dateRange === 'last7days') {
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(now.getDate() - 7);
-        if (entryDate < sevenDaysAgo) {
-          return false;
-        }
-      } else if (dateRange === 'last30days') {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(now.getDate() - 30);
-        if (entryDate < thirtyDaysAgo) {
-          return false;
-        }
-      } else if (dateRange === 'last90days') {
-        const ninetyDaysAgo = new Date();
-        ninetyDaysAgo.setDate(now.getDate() - 90);
-        if (entryDate < ninetyDaysAgo) {
-          return false;
-        }
-      }
-      
-      return true;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.timestamp);
-      const dateB = new Date(b.timestamp);
-      
-      return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
-    });
-  
-  // Format the timestamp
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    }) + ' at ' + date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit'
-    });
-  };
-  
-  // Get appropriate icon for action type
-  const getActionIcon = (action) => {
-    switch (action) {
-      case 'created':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Created</Badge>;
-      case 'updated':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">Updated</Badge>;
-      case 'deleted':
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">Deleted</Badge>;
-      case 'approved':
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">Approved</Badge>;
-      default:
-        return <Badge variant="outline">{action}</Badge>;
-    }
-  };
-  
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-md shadow p-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h2 className="text-xl font-semibold">Quality Management Plan Audit Trail</h2>
-          
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            >
-              <Filter className="h-4 w-4 mr-1" />
-              Filters
-              {showAdvancedFilters ? 
-                <ChevronUp className="h-4 w-4 ml-1" /> : 
-                <ChevronDown className="h-4 w-4 ml-1" />
-              }
-            </Button>
-            
-            <Button variant="outline" size="sm" onClick={() => console.log('Export audit trail')}>
-              <FileText className="h-4 w-4 mr-1" />
-              Export
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc')}
-            >
-              {sortDirection === 'desc' ? 
-                <ArrowDown className="h-4 w-4 mr-1" /> : 
-                <ArrowUp className="h-4 w-4 mr-1" />
-              }
-              {sortDirection === 'desc' ? 'Newest First' : 'Oldest First'}
-            </Button>
-          </div>
-        </div>
-        
-        {showAdvancedFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-md">
-            <div>
-              <label className="block text-sm font-medium mb-1">Action Type</label>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select action type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Actions</SelectItem>
-                  <SelectItem value="created">Created</SelectItem>
-                  <SelectItem value="updated">Updated</SelectItem>
-                  <SelectItem value="deleted">Deleted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Date Range</label>
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select date range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="last7days">Last 7 Days</SelectItem>
-                  <SelectItem value="last30days">Last 30 Days</SelectItem>
-                  <SelectItem value="last90days">Last 90 Days</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">Search</label>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search audit trail..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="space-y-4">
-          {filteredEntries.length > 0 ? (
-            filteredEntries.map(entry => (
-              <Card key={entry.id} className="overflow-hidden">
-                <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
-                  <div className="flex flex-col">
-                    <CardTitle className="text-md font-medium">
-                      {entry.section}
-                    </CardTitle>
-                    <div className="text-sm text-gray-500 flex items-center">
-                      <Clock className="h-3.5 w-3.5 mr-1 inline" />
-                      {formatTimestamp(entry.timestamp)}
-                    </div>
-                  </div>
-                  {getActionIcon(entry.action)}
-                </CardHeader>
-                
-                <CardContent className="p-4 pt-2">
-                  <div className="flex items-center mb-2">
-                    <User className="h-4 w-4 mr-1 text-gray-500" />
-                    <span className="text-sm font-medium">{entry.user}</span>
-                  </div>
-                  
-                  <div className="text-sm">{entry.details}</div>
-                  
-                  {entry.changes && (
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      {entry.changes.before && (
-                        <div className="text-sm text-gray-600">
-                          <span className="font-medium">Previous: </span>
-                          {entry.changes.before}
-                        </div>
-                      )}
-                      {entry.changes.after && (
-                        <div className="text-sm text-blue-600">
-                          <span className="font-medium">Changed to: </span>
-                          {entry.changes.after}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-lg font-medium">No matching audit entries found</p>
-              <p className="text-sm">Try adjusting your filters to see more results</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
+export default function QmpAuditTrailPanel({ qmpId, className }) {
+  const [auditTrail, setAuditTrail] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const { toast } = useToast();
+  const { currentTenant } = useTenant();
 
-export default QmpAuditTrailPanel;
+  // Fetch audit trail data
+  useEffect(() => {
+    const fetchAuditTrail = async () => {
+      try {
+        setLoading(true);
+        
+        const response = await fetch(`/api/qmp/${qmpId}/audit-trail`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch audit trail');
+        }
+        
+        const data = await response.json();
+        setAuditTrail(data);
+      } catch (error) {
+        console.error('Error fetching audit trail:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load audit trail data. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (qmpId) {
+      fetchAuditTrail();
+    }
+  }, [qmpId, toast]);
+
+  // Filter audit trail based on criteria
+  const filteredAuditTrail = auditTrail.filter(item => {
+    // Filter by type if not 'all'
+    if (filter !== 'all' && item.actionType !== filter) {
+      return false;
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        item.description.toLowerCase().includes(query) ||
+        item.actionType.toLowerCase().includes(query) ||
+        item.entityType.toLowerCase().includes(query) ||
+        (item.userName && item.userName.toLowerCase().includes(query))
+      );
+    }
+    
+    // Filter by date range
+    if (dateRange.start && new Date(item.createdAt) < new Date(dateRange.start)) {
+      return false;
+    }
+    
+    if (dateRange.end && new Date(item.createdAt) > new Date(dateRange.end)) {
+      return false;
+    }
+    
+    return true;
+  });
+
+  // Get action badge color based on action type
+  const getActionBadge = (actionType) => {
+    const variants = {
+      create: 'default',
+      update: 'secondary',
+      approve: 'success',
+      review: 'outline',
+      retire: 'destructive',
+    };
+    
+    return (
+      <Badge variant={variants[actionType] || 'default'}>
+        {actionType.charAt(0).toUpperCase() + actionType.slice(1)}
+      </Badge>
+    );
+  };
+
+  // Get entity icon based on entity type
+  const getEntityIcon = (entityType) => {
+    switch (entityType) {
+      case 'qmp':
+        return <FileText className="h-4 w-4 mr-1" />;
+      case 'ctq_factor':
+        return <AlertTriangle className="h-4 w-4 mr-1" />;
+      case 'section_gate':
+        return <Check className="h-4 w-4 mr-1" />;
+      default:
+        return <FileText className="h-4 w-4 mr-1" />;
+    }
+  };
+
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <History className="mr-2" />
+          Quality Management Audit Trail
+        </CardTitle>
+        <CardDescription>
+          Track all changes to quality management factors and approvals
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent>
+        <div className="mb-4 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 mr-4">
+              <Input
+                placeholder="Search audit trail..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Actions</SelectItem>
+                <SelectItem value="create">Create</SelectItem>
+                <SelectItem value="update">Update</SelectItem>
+                <SelectItem value="approve">Approve</SelectItem>
+                <SelectItem value="review">Review</SelectItem>
+                <SelectItem value="retire">Retire</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="startDate">From</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={dateRange.start || ''}
+                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                className="w-auto"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Label htmlFor="endDate">To</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={dateRange.end || ''}
+                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                className="w-auto"
+              />
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setDateRange({ start: null, end: null })}
+            >
+              Clear Dates
+            </Button>
+          </div>
+        </div>
+        
+        <Tabs defaultValue="list">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="list">List View</TabsTrigger>
+            <TabsTrigger value="detail">Detail View</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="list">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date/Time</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Entity</TableHead>
+                    <TableHead>Description</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">
+                        Loading audit trail data...
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredAuditTrail.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">
+                        No audit trail records found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredAuditTrail.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="whitespace-nowrap">
+                          <div className="flex items-center">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {format(new Date(item.createdAt), 'yyyy-MM-dd HH:mm')}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-1" />
+                            {item.userName || 'System'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {getActionBadge(item.actionType)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            {getEntityIcon(item.entityType)}
+                            {item.entityType.replace('_', ' ')}
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-sm truncate">
+                          {item.description}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="detail">
+            <div className="space-y-4">
+              {loading ? (
+                <div className="text-center py-4">Loading audit trail data...</div>
+              ) : filteredAuditTrail.length === 0 ? (
+                <div className="text-center py-4">No audit trail records found</div>
+              ) : (
+                filteredAuditTrail.map((item) => (
+                  <Card key={item.id}>
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          {getEntityIcon(item.entityType)}
+                          <CardTitle className="text-base">
+                            {item.description}
+                          </CardTitle>
+                        </div>
+                        {getActionBadge(item.actionType)}
+                      </div>
+                      <CardDescription className="flex justify-between">
+                        <div className="flex items-center">
+                          <User className="h-3 w-3 mr-1" />
+                          {item.userName || 'System'}
+                        </div>
+                        <div className="flex items-center">
+                          <CalendarClock className="h-3 w-3 mr-1" />
+                          {format(new Date(item.createdAt), 'yyyy-MM-dd HH:mm:ss')}
+                        </div>
+                      </CardDescription>
+                    </CardHeader>
+                    {(item.previousState || item.newState) && (
+                      <CardContent className="pt-0">
+                        {item.previousState && item.newState && (
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <h4 className="text-sm font-semibold mb-1">Previous State</h4>
+                              <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40">
+                                {JSON.stringify(item.previousState, null, 2)}
+                              </pre>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold mb-1">New State</h4>
+                              <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40">
+                                {JSON.stringify(item.newState, null, 2)}
+                              </pre>
+                            </div>
+                          </div>
+                        )}
+                        {item.previousState && !item.newState && (
+                          <div>
+                            <h4 className="text-sm font-semibold mb-1">Previous State</h4>
+                            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40">
+                              {JSON.stringify(item.previousState, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                        {!item.previousState && item.newState && (
+                          <div>
+                            <h4 className="text-sm font-semibold mb-1">New State</h4>
+                            <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-40">
+                              {JSON.stringify(item.newState, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </CardContent>
+                    )}
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+      
+      <CardFooter className="flex justify-between">
+        <div className="text-sm text-muted-foreground">
+          {filteredAuditTrail.length} records found
+        </div>
+        
+        <Button variant="outline" onClick={() => window.print()}>
+          Export Audit Trail
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
