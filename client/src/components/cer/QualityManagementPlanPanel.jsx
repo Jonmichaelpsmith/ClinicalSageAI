@@ -718,6 +718,145 @@ _Document Generated: ${new Date().toLocaleDateString()}_
     );
   };
   
+  // Validate QMP integration with CER
+  const validateQmpIntegration = async () => {
+    if (objectives.length === 0) {
+      toast({
+        title: "No Objectives Defined",
+        description: "Please define at least one quality objective before validating the QMP.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsValidating(true);
+    
+    try {
+      // Get all CER sections
+      const cerSections = [
+        'Safety', 'Literature Review', 'Clinical Data', 'GSPR Mapping', 
+        'State of the Art', 'Benefit-Risk', 'PMS', 'PMCF', 'Equivalence'
+      ];
+      
+      // Call validation API
+      const results = await cerApiService.validateQmpIntegration(objectives, cerSections, 'mdr');
+      
+      setValidationResults(results);
+      
+      // Status-based toast notification
+      if (results.complianceStatus.compliant) {
+        toast({
+          title: "QMP Integration Validated",
+          description: "Your Quality Management Plan meets ICH E6(R3) integration requirements",
+          variant: "success"
+        });
+      } else if (results.complianceStatus.criticalSectionsMissing) {
+        toast({
+          title: "Critical Gaps Detected",
+          description: `Missing critical sections: ${results.sectionsAnalysis.missingCriticalSections.join(', ')}`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Improvements Needed",
+          description: `${results.aiAnalysis.recommendations.length} recommendations available, coverage: ${results.complianceStatus.coverage}%`,
+          variant: "warning"
+        });
+      }
+      
+    } catch (error) {
+      console.error("Error validating QMP integration:", error);
+      toast({
+        title: "Validation Error",
+        description: error.message || "Could not validate QMP integration with CER.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+  
+  // Render validation results UI
+  const renderValidationResults = () => {
+    if (!validationResults) return null;
+    
+    const { complianceStatus, sectionsAnalysis, aiAnalysis } = validationResults;
+    
+    const statusColor = complianceStatus.compliant 
+      ? "bg-green-50 border-green-200" 
+      : complianceStatus.criticalSectionsMissing 
+        ? "bg-red-50 border-red-200" 
+        : "bg-amber-50 border-amber-200";
+    
+    const statusIcon = complianceStatus.compliant 
+      ? <CheckCircle className="h-5 w-5 text-green-500" /> 
+      : complianceStatus.criticalSectionsMissing 
+        ? <AlertTriangle className="h-5 w-5 text-red-500" /> 
+        : <AlertCircle className="h-5 w-5 text-amber-500" />;
+    
+    return (
+      <div className="mt-4 mb-6">
+        <div className={`border rounded-md p-4 ${statusColor}`}>
+          <div className="flex items-start">
+            <div className="flex-shrink-0 mt-0.5">
+              {statusIcon}
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium">
+                {complianceStatus.compliant 
+                  ? "QMP integration validated successfully" 
+                  : complianceStatus.criticalSectionsMissing 
+                    ? "Critical sections missing from QMP coverage" 
+                    : "Improvements needed for full QMP integration"}
+              </h3>
+              <div className="mt-2 text-sm">
+                <p>Coverage: {complianceStatus.coverage}% of required CER sections</p>
+                
+                {sectionsAnalysis.missingCriticalSections.length > 0 && (
+                  <div className="mt-2">
+                    <p className="font-medium text-red-700">Missing critical sections:</p>
+                    <ul className="list-disc pl-5 mt-1 text-red-700">
+                      {sectionsAnalysis.missingCriticalSections.map(section => (
+                        <li key={section}>{section}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {sectionsAnalysis.missingOptionalSections.length > 0 && (
+                  <div className="mt-2">
+                    <p className="font-medium text-amber-700">Missing optional sections:</p>
+                    <ul className="list-disc pl-5 mt-1 text-amber-700">
+                      {sectionsAnalysis.missingOptionalSections.map(section => (
+                        <li key={section}>{section}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {aiAnalysis.recommendations.length > 0 && (
+                  <div className="mt-3">
+                    <p className="font-medium">AI Recommendations:</p>
+                    <ul className="list-disc pl-5 mt-1">
+                      {aiAnalysis.recommendations.slice(0, 3).map((rec, idx) => (
+                        <li key={idx} className="mt-1">{rec}</li>
+                      ))}
+                      {aiAnalysis.recommendations.length > 3 && (
+                        <li className="mt-1 italic">
+                          {aiAnalysis.recommendations.length - 3} more recommendations available...
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Calculate metrics for dashboard with compliance engine integration
   const metrics = useMemo(() => {
     const totalObjectives = objectives.length;
@@ -1825,6 +1964,31 @@ _Document Generated: ${new Date().toLocaleDateString()}_
           </div>
           <div className="mt-2 md:mt-0">
             <CerTooltipWrapper
+              tooltipContent="Validate QMP integration with CER sections per ICH E6(R3) requirements."
+              whyThisMatters="Validation ensures your Quality Management Plan properly addresses all critical areas of the CER and meets regulatory expectations."
+              side="left"
+            >
+              <Button
+                onClick={validateQmpIntegration}
+                variant="outline"
+                className="mr-2 bg-transparent text-[#E3008C] hover:bg-[#FDF6FA] border-[#F9D8E8]"
+                disabled={objectives.length === 0 || isValidating}
+              >
+                {isValidating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#E3008C] mr-2"></div>
+                    Validating...
+                  </>
+                ) : (
+                  <>
+                    <Shield size={16} className="mr-1" />
+                    Validate ICH E6(R3) Compliance
+                  </>
+                )}
+              </Button>
+            </CerTooltipWrapper>
+            
+            <CerTooltipWrapper
               tooltipContent="Preview the QMP document before adding it to your CER."
               whyThisMatters="A well-structured Quality Management Plan demonstrates to regulators that you have a systematic approach to ensuring clinical evaluation quality."
               side="left"
@@ -1873,6 +2037,13 @@ _Document Generated: ${new Date().toLocaleDateString()}_
             </CerTooltipWrapper>
           </div>
         </div>
+        
+        {/* Display Validation Results */}
+        {validationResults && (
+          <div className="mb-4">
+            {renderValidationResults()}
+          </div>
+        )}
         
         <Card className="bg-[#FAFAFA] border rounded-md overflow-hidden">
           <CardHeader className="p-3 bg-[#F5F5F5] border-b">
