@@ -21,7 +21,7 @@ import {
   PieChart
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import CerAPIService from '@/services/CerAPIService';
+import { cerApiService as CerAPIService } from '@/services/CerAPIService';
 
 /**
  * Component for managing internal clinical data for Clinical Evaluation Reports
