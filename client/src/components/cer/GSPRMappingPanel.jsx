@@ -724,7 +724,7 @@ Compliance is determined based on evidence strength, quality, and clinical relev
         </TabsList>
         
         <TabsContent value="mapping">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
               <div className="bg-white p-4 rounded border border-[#E1DFDD]">
                 <h3 className="text-[#323130] font-medium mb-3">Selected GSPRs</h3>
@@ -770,7 +770,7 @@ Compliance is determined based on evidence strength, quality, and clinical relev
               </div>
             </div>
             
-            <div className="lg:col-span-2">
+            <div className="md:col-span-1 lg:col-span-2">
               {activeGspr ? (
                 <div className="bg-white p-5 rounded border border-[#E1DFDD]">
                   {console.log('Rendering GSPR detail panel for:', activeGspr)}
@@ -795,7 +795,7 @@ Compliance is determined based on evidence strength, quality, and clinical relev
                   {/* AI Analysis Button and Progress */}
                   <div className="mb-4">
                     {console.log('Rendering AI Analysis section')}
-                    <div className="flex justify-between items-center mb-2">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
                       <div className="flex items-center">
                         <Shield className="h-4 w-4 text-[#0F6CBD] mr-2" />
                         <span className="text-sm font-medium text-[#323130]">AI-Assisted Regulatory Analysis</span>
@@ -803,7 +803,7 @@ Compliance is determined based on evidence strength, quality, and clinical relev
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex items-center gap-2 border-[#0F6CBD] text-[#0F6CBD] hover:bg-[#EFF6FC]"
+                        className="flex items-center gap-2 border-[#0F6CBD] text-[#0F6CBD] hover:bg-[#EFF6FC] w-full sm:w-auto"
                         onClick={() => generateAIAnalysis(activeGspr)}
                         disabled={isGeneratingAIAnalysis}
                       >
