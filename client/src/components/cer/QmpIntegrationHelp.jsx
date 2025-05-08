@@ -40,11 +40,13 @@ import CerTooltipWrapper from './CerTooltipWrapper';
  * @param {string} [props.className] - Additional CSS classes
  * @param {boolean} [props.isDialogOpen] - Control dialog open state externally
  * @param {function} [props.setIsDialogOpen] - Function to update dialog state externally
+ * @param {string} [props.focusSection] - Specific section to highlight (e.g., 'regulatory-traceability')
  */
 const QmpIntegrationHelp = ({ 
   className = '', 
   isDialogOpen,
-  setIsDialogOpen
+  setIsDialogOpen,
+  focusSection = ''
 }) => {
   // State for dialog if not controlled externally
   const [internalDialogOpen, setInternalDialogOpen] = useState(false);
@@ -124,7 +126,12 @@ const QmpIntegrationHelp = ({
             </Card>
           </div>
           
-          <Accordion type="single" collapsible className="mb-6">
+          <Accordion 
+            type="single" 
+            collapsible 
+            className="mb-6"
+            defaultValue={focusSection === 'regulatory-traceability' ? 'traceability-matrix' : undefined}
+          >
             <AccordionItem value="ich-principles">
               <AccordionTrigger className="text-[#E3008C]">ICH E6(R3) Key Principles</AccordionTrigger>
               <AccordionContent>
@@ -149,6 +156,46 @@ const QmpIntegrationHelp = ({
                   <li><strong>Export:</strong> Full audit trail and quality attestation included in final documents</li>
                   <li><strong>Post-Market:</strong> Continuous monitoring of new evidence against established assessments</li>
                 </ul>
+              </AccordionContent>
+            </AccordionItem>
+            
+            <AccordionItem value="traceability-matrix" className={focusSection === 'regulatory-traceability' ? 'bg-blue-50 border border-blue-200 rounded-md' : ''}>
+              <AccordionTrigger className="text-[#E3008C]">Regulatory Traceability Matrix</AccordionTrigger>
+              <AccordionContent>
+                <div className={focusSection === 'regulatory-traceability' ? 'p-2' : ''}>
+                  <p className="mb-3">
+                    The Regulatory Traceability Matrix is a critical component of the Quality Management Plan that ensures 
+                    continuous alignment between clinical evidence and regulatory requirements throughout the CER lifecycle.
+                  </p>
+                  
+                  <h4 className="font-semibold text-[#E3008C] mb-2 mt-4">Key Features</h4>
+                  <ul className="list-disc pl-6 space-y-2 mb-4">
+                    <li><strong>Bidirectional Mapping:</strong> Links each evidence piece to specific regulatory requirements (GSPR, EU MDR, etc.)</li>
+                    <li><strong>Risk-Based Indicators:</strong> Visual cues identify high-risk areas requiring additional evidence</li>
+                    <li><strong>ICH E6(R3) Alignment:</strong> Implements Critical-to-Quality factors for each regulatory requirement</li>
+                    <li><strong>Gap Analysis:</strong> Real-time identification of evidence gaps requiring additional data</li>
+                    <li><strong>Compliance Scoring:</strong> Quantitative assessment of overall regulatory readiness</li>
+                  </ul>
+                  
+                  <div className="bg-white p-3 border border-gray-200 rounded-md mb-4">
+                    <h4 className="font-semibold text-[#E3008C] mb-2">Technical Implementation</h4>
+                    <p className="mb-2">The Regulatory Traceability Matrix leverages several advanced capabilities:</p>
+                    <ul className="list-disc pl-6 space-y-1">
+                      <li>GPT-4o-powered evidence mapping and classification</li>
+                      <li>Real-time API connections to regulatory databases</li>
+                      <li>Bidirectional synchronization with CER document sections</li>
+                      <li>Audit trail of all evidence-to-requirement mappings</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-amber-50 p-3 border border-amber-200 rounded-md">
+                    <h4 className="font-semibold text-amber-700 mb-2">Usage Guidance</h4>
+                    <p className="text-amber-800">
+                      The Regulatory Traceability Matrix should be continuously updated throughout the CER development process.
+                      Review the matrix before finalizing any CER to ensure complete regulatory coverage.
+                    </p>
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
             
