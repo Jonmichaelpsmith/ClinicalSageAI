@@ -46,6 +46,11 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
   const [cerSections, setCerSections] = useState(sections || []);
   const [cerTitle, setCerTitle] = useState(title || 'Clinical Evaluation Report'); 
   
+  // Quality Gating State
+  const [isCheckingQuality, setIsCheckingQuality] = useState(false);
+  const [qualityStatus, setQualityStatus] = useState(null);
+  const [isQualityOverridden, setIsQualityOverridden] = useState(false);
+  
   // Sync local state with props
   useEffect(() => {
     setCerSections(sections || []);
@@ -54,6 +59,12 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
   useEffect(() => {
     setCerTitle(title || 'Clinical Evaluation Report');
   }, [title]);
+  
+  // Reset quality state when section type changes
+  useEffect(() => {
+    setQualityStatus(null);
+    setIsQualityOverridden(false);
+  }, [selectedSectionType]);
   
   // Section type options
   const sectionTypes = [
@@ -68,17 +79,6 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     { id: 'conclusion', label: 'Conclusion' },
   ];
   
-  // State to track quality gating checks
-  const [qualityStatus, setQualityStatus] = useState(null);
-  const [isCheckingQuality, setIsCheckingQuality] = useState(false);
-  const [isQualityOverridden, setIsQualityOverridden] = useState(false);
-  
-  // Check CtQ factors when section type changes
-  useEffect(() => {
-    setQualityStatus(null);
-    setIsQualityOverridden(false);
-  }, [selectedSectionType]);
-  
   // Generate section using AI with CtQ factor gating
   const generateSection = async () => {
     if (!sectionContext) {
@@ -90,30 +90,13 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       return;
     }
     
-    // Always perform quality check before section generation (forced to ensure it works)
+    // First check if quality requirements are satisfied
     setIsCheckingQuality(true);
-    console.log('Checking CtQ factors for section type:', selectedSectionType);
     
     try {
-      // Check CtQ factors for this section type 
-      toast({
-        title: 'Checking Quality Requirements',
-        description: 'Verifying CtQ factors for ' + getSelectedSectionLabel(),
-        variant: 'default',
-      });
-      
       // Check CtQ factors for this section type
       const qualityCheck = await checkSectionCtqFactors(selectedSectionType);
-      console.log('Quality check result:', qualityCheck);
       setQualityStatus(qualityCheck);
-      
-      // Always show quality status toast for debugging
-      toast({
-        title: 'Quality Check Results',
-        description: `${qualityCheck.message}`,
-        variant: qualityCheck.severity === 'error' ? 'destructive' : 
-                qualityCheck.severity === 'warning' ? 'warning' : 'default'
-      });
       
       // If cannot proceed due to high-risk factors, show error and abort
       if (!qualityCheck.canProceed && !isQualityOverridden) {
@@ -346,59 +329,29 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   </p>
                 </div>
                 
-                {/* Quality Status Display - Always show quality requirements */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-[#323130]">Quality Requirements</h4>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={async () => {
-                        try {
-                          const qualityCheck = await checkSectionCtqFactors(selectedSectionType);
-                          setQualityStatus(qualityCheck);
-                          toast({
-                            title: 'Quality Check Completed',
-                            description: 'Quality requirements have been checked for this section',
-                          });
-                        } catch (error) {
-                          console.error('Error checking quality requirements:', error);
-                          toast({
-                            title: 'Quality Check Failed',
-                            description: 'Unable to verify quality requirements',
-                            variant: 'destructive',
-                          });
-                        }
-                      }}
-                      className="h-7 px-2 text-xs"
-                    >
-                      <RefreshCw className="h-3 w-3 mr-1" />
-                      Check Requirements
-                    </Button>
-                  </div>
-                  
-                  {qualityStatus ? (
-                    <Alert 
-                      className={cn(
-                        "border py-3",
-                        qualityStatus.severity === 'error' ? "border-red-500 bg-red-50 text-red-800" : 
-                        qualityStatus.severity === 'warning' ? "border-amber-500 bg-amber-50 text-amber-800" : 
-                        "border-blue-500 bg-blue-50 text-blue-800"
-                      )}
-                    >
-                      {qualityStatus.severity === 'error' && <ShieldAlert className="h-4 w-4 mr-2" />}
-                      {qualityStatus.severity === 'warning' && <AlertTriangle className="h-4 w-4 mr-2" />}
-                      {qualityStatus.severity === 'info' && <CheckCircle2 className="h-4 w-4 mr-2" />}
-                      <AlertTitle className="text-sm font-semibold">
-                        {qualityStatus.severity === 'error' ? 'Quality Requirements Not Met' : 
-                         qualityStatus.severity === 'warning' ? 'Quality Warning' : 
-                         'Quality Check Passed'}
-                      </AlertTitle>
-                      <AlertDescription className="text-xs mt-1">
-                        {qualityStatus.message}
-                        
-                        {/* Show override option for high-risk blockers */}
-                        {qualityStatus.highRiskBlockers > 0 && (
+                {/* Quality Status Display */}
+                {qualityStatus && (
+                  <Alert 
+                    className={cn(
+                      "border py-3",
+                      qualityStatus.severity === 'error' ? "border-red-500 bg-red-50 text-red-800" : 
+                      qualityStatus.severity === 'warning' ? "border-amber-500 bg-amber-50 text-amber-800" : 
+                      "border-blue-500 bg-blue-50 text-blue-800"
+                    )}
+                  >
+                    {qualityStatus.severity === 'error' && <ShieldAlert className="h-4 w-4 mr-2" />}
+                    {qualityStatus.severity === 'warning' && <AlertTriangle className="h-4 w-4 mr-2" />}
+                    {qualityStatus.severity === 'info' && <CheckCircle2 className="h-4 w-4 mr-2" />}
+                    <AlertTitle className="text-sm font-semibold">
+                      {qualityStatus.severity === 'error' ? 'Quality Requirements Not Met' : 
+                       qualityStatus.severity === 'warning' ? 'Quality Warning' : 
+                       'Quality Check Passed'}
+                    </AlertTitle>
+                    <AlertDescription className="text-xs mt-1">
+                      {qualityStatus.message}
+                      
+                      {/* Show override option for high-risk blockers */}
+                      {qualityStatus.highRiskBlockers > 0 && (
                         <div className="mt-2">
                           <Button
                             variant="outline"
@@ -584,58 +537,66 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                       />
                     
                       <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-medium text-[#323130]">
-                              <CerTooltipWrapper 
-                                content={
-                                  <div>
-                                    <p className="font-semibold mb-1">{section.title}</p>
-                                    <p>Required by: {section.metadata?.regulatoryStandard || 'EU MDR 2017/745'}</p>
-                                    <p className="mt-1">Last updated: {new Date(section.dateAdded).toLocaleString()}</p>
-                                  </div>
-                                }
-                                showIcon={false}
-                              >
-                                {section.title}
-                              </CerTooltipWrapper>
-                            </h4>
-                            {section.metadata?.generatedBy && (
-                              <Badge 
-                                variant="outline" 
-                                className="text-xs bg-[#E5F2FF] text-[#0F6CBD] border-[#0F6CBD] px-2 py-0.5"
-                              >
-                                AI
-                              </Badge>
-                            )}
-                            {section.metadata?.complianceChecked && (
-                              <Badge 
-                                variant="outline" 
-                                className="text-xs bg-[#E8F7EE] text-[#107C41] border-[#107C41] px-2 py-0.5"
-                              >
-                                Verified
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-[#616161] mt-1 line-clamp-2">
-                            {section.content.substring(0, 100)}...
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <p className="text-xs text-[#616161]">
-                              {new Date(section.dateAdded).toLocaleDateString()}
+                        <CerTooltipWrapper 
+                          tooltipContent={
+                            <div>
+                              <p className="font-semibold mb-1">{section.title}</p>
+                              <p className="text-xs opacity-80">Added: {new Date(section.dateAdded).toLocaleString()}</p>
+                              {section.metadata?.generatedBy && (
+                                <p className="text-xs opacity-80 mt-1">Generated by: {section.metadata.generatedBy}</p>
+                              )}
+                              
+                              {/* Display quality metadata */}
+                              {section.metadata?.qualityOverridden && (
+                                <p className="text-xs text-amber-600 mt-1 font-semibold">
+                                  ⚠️ Quality requirements were overridden
+                                </p>
+                              )}
+                              {section.metadata?.highRiskFactors && !section.metadata?.qualityOverridden && (
+                                <p className="text-xs text-red-600 mt-1">
+                                  High-risk quality factors not satisfied
+                                </p>
+                              )}
+                              {section.metadata?.mediumRiskFactors && !section.metadata?.highRiskFactors && (
+                                <p className="text-xs text-amber-600 mt-1">
+                                  Medium-risk quality factors not satisfied
+                                </p>
+                              )}
+                            </div>
+                          }
+                        >
+                          <div>
+                            <div className="flex items-center space-x-1">
+                              <span className="text-sm font-medium text-[#323130]">{section.title}</span>
+                              
+                              {/* Quality indicators */}
+                              {section.metadata?.qualityOverridden && (
+                                <Badge variant="outline" className="ml-1 bg-amber-50 text-amber-700 text-xs border-amber-300 px-1.5 py-0">
+                                  Override
+                                </Badge>
+                              )}
+                              {section.metadata?.highRiskFactors && !section.metadata?.qualityOverridden && (
+                                <Badge variant="outline" className="ml-1 bg-red-50 text-red-700 text-xs border-red-300 px-1.5 py-0">
+                                  High Risk
+                                </Badge>
+                              )}
+                              {section.metadata?.mediumRiskFactors && !section.metadata?.highRiskFactors && (
+                                <Badge variant="outline" className="ml-1 bg-amber-50 text-amber-700 text-xs border-amber-300 px-1.5 py-0">
+                                  Warning
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-[#616161] mt-0.5 line-clamp-2">
+                              {section.content.substring(0, 120)}...
                             </p>
-                            {section.metadata?.regulatoryStandard && (
-                              <p className="text-xs text-[#616161]">
-                                {section.metadata.regulatoryStandard}
-                              </p>
-                            )}
                           </div>
-                        </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        </CerTooltipWrapper>
+                    
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-[#616161] hover:text-red-600 hover:bg-red-50"
                           onClick={() => removeSection(section.id)}
-                          className="h-8 w-8 p-0 text-[#616161] hover:text-[#D83B01] hover:bg-[#FFF4CE]"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -645,29 +606,23 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 </div>
               )}
             </div>
+            
+            {/* Export button */}
+            {cerSections.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-[#E1DFDD]">
+                <Button
+                  variant="outline"
+                  className="w-full text-[#0F6CBD] border-[#0F6CBD]"
+                  onClick={() => exportToPDF({ title: cerTitle, sections: cerSections })}
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  <span>Export Report</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      
-      {/* FAERS Data Panel */}
-      {faers && faers.length > 0 && (
-        <div className="bg-white p-4 border border-[#E1DFDD] rounded mt-4">
-          <div className="flex items-center justify-between border-b border-[#E1DFDD] pb-3 mb-3">
-            <h3 className="text-base font-semibold text-[#323130]">FDA FAERS Data Integration</h3>
-            <Badge variant="outline" className="bg-[#E5F2FF] text-[#0F6CBD] text-xs border-[#0F6CBD] px-2 py-0.5">
-              Auto-included
-            </Badge>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="col-span-3">
-              <p className="text-sm text-[#616161]">
-                FAERS data for your product has been automatically integrated into the report. This data will appear in the Safety Analysis section of your final document.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
