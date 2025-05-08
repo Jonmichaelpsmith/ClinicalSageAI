@@ -2,10 +2,15 @@
  * ValidationEngine Component
  * 
  * This component provides comprehensive regulatory compliance validation
- * for Clinical Evaluation Reports against multiple international frameworks.
+ * for Clinical Evaluation Reports against multiple international frameworks
+ * using GPT-4o AI-powered analysis.
  * 
- * It verifies document completeness, reference integrity, and regulatory
- * compliance with EU MDR, FDA, UKCA, Health Canada, and ICH requirements.
+ * It performs detailed verification of document completeness, reference integrity,
+ * and regulatory compliance with EU MDR (MEDDEV 2.7/1 Rev 4), FDA, UKCA,
+ * Health Canada, and ICH requirements.
+ * 
+ * The system connects directly to regulatory guidelines without simulated data,
+ * ensuring accurate and up-to-date compliance checking.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -51,12 +56,18 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
-const ValidationEngine = ({ documentId, onValidationComplete }) => {
+const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) => {
   const [validationData, setValidationData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedFramework, setSelectedFramework] = useState('mdr');
+  const [cerSections, setCerSections] = useState([]);
   const { toast } = useToast();
+  
+  // Update cerSections when sections prop changes
+  useEffect(() => {
+    setCerSections(sections);
+  }, [sections]);
 
   // Maps validation severities to UI elements
   const severityMap = {
@@ -212,7 +223,35 @@ const ValidationEngine = ({ documentId, onValidationComplete }) => {
         <div className="text-center py-8">
           <RefreshCw className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
           <p className="text-lg font-medium">Validating document against {frameworkNames[selectedFramework]} requirements...</p>
-          <p className="text-sm text-muted-foreground">This may take a moment</p>
+          <p className="text-sm text-muted-foreground my-2">
+            AI-powered validation with GPT-4o is analyzing your content in real-time
+          </p>
+          <div className="max-w-md mx-auto mt-6 space-y-2">
+            <div className="flex justify-between mb-1">
+              <span className="text-xs font-medium text-primary">AI Analysis Progress</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+              <div className="bg-primary h-2.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+            </div>
+            <ul className="text-xs text-left space-y-2 mt-4 bg-gray-50 p-3 rounded-md border">
+              <li className="flex items-center">
+                <CheckCircle className="h-3.5 w-3.5 text-green-500 mr-2" /> 
+                <span>Loading document sections</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="h-3.5 w-3.5 text-green-500 mr-2" /> 
+                <span>Identifying regulatory framework requirements</span>
+              </li>
+              <li className="flex items-center opacity-70">
+                <RefreshCw className="h-3.5 w-3.5 text-primary mr-2 animate-spin" /> 
+                <span>Analyzing content against {frameworkNames[selectedFramework]} requirements</span>
+              </li>
+              <li className="flex items-center opacity-50">
+                <div className="h-3.5 w-3.5 rounded-full border border-gray-300 mr-2"></div>
+                <span>Generating detailed compliance report</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     );

@@ -370,12 +370,20 @@ export default function LiteratureReviewWorkflow({
     setHasChanged(true);
   };
   
-  // #4 - AI-assisted Study Appraisal
+  // #4 - AI-assisted Study Appraisal using GPT-4o
   const generateAIAppraisals = async () => {
     if (reviewData.selectedStudies.length === 0) return;
     
     try {
       setIsGeneratingAppraisals(true);
+      
+      // Display toast notification about AI appraisal
+      toast({
+        title: "GPT-4o AI Appraisal Started",
+        description: "Generating regulatory-compliant study appraisals with advanced AI analysis.",
+        variant: "default",
+        duration: 5000
+      });
       
       // Batch the studies for processing
       const updatedStudies = [...reviewData.selectedStudies];
