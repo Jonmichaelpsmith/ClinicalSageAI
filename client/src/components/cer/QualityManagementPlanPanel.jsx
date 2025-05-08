@@ -441,16 +441,32 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
       `Device: ${deviceName}${manufacturer ? ` (Manufacturer: ${manufacturer})` : ''}` : 
       `Unnamed Device${manufacturer ? ` (Manufacturer: ${manufacturer})` : ''}`;
 
-    // Include metadata fields in the QMP document
+    // Format date strings for document
+    const createdDate = new Date(planMetadata.dateCreated).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const updatedDate = new Date(planMetadata.lastUpdated).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    // Create title block for the QMP document with metadata as a formatted table
     const metadataSection = `
 # ${planMetadata.planName}
-Version: ${planMetadata.planVersion}
 
-${deviceInfo}
-Author: ${planMetadata.authorName}, ${planMetadata.authorRole}
-Created: ${new Date(planMetadata.dateCreated).toLocaleDateString()}
-Last Updated: ${new Date(planMetadata.lastUpdated).toLocaleDateString()}
-Linked CER Version: ${planMetadata.linkedCerVersion}
+| Document Metadata | Details |
+|-------------------|---------|
+| Plan Version | ${planMetadata.planVersion} |
+| ${deviceInfo} | |
+| Author | ${planMetadata.authorName}, ${planMetadata.authorRole} |
+| Creation Date | ${createdDate} |
+| Last Updated | ${updatedDate} |
+| Linked CER Version | ${planMetadata.linkedCerVersion} |
+
 `;
 
     const content = `${metadataSection}
@@ -625,6 +641,41 @@ _Document Generated: ${new Date().toLocaleDateString()}_
 
   return (
     <div className="bg-[#F9F9F9] p-4">
+      {/* QMP Metadata Header Bar */}
+      <div className="mb-4 p-3 bg-white rounded-lg border shadow-sm flex flex-wrap items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold text-[#0F6CBD]">{planMetadata.planName}</h3>
+            <span className="text-xs text-[#605E5C]">ICH E6(R3) Documentation</span>
+          </div>
+          <Badge variant="outline" className="bg-gray-50 text-[#323130] font-medium">
+            v{planMetadata.planVersion}
+          </Badge>
+        </div>
+        
+        <div className="flex items-center space-x-3 text-sm">
+          <div className="flex items-center text-[#605E5C]">
+            <span className="font-medium">{planMetadata.authorName}</span>
+            <span className="mx-1">•</span>
+            <span>{planMetadata.authorRole}</span>
+          </div>
+          <div className="flex items-center text-[#605E5C]">
+            <span>Created: {new Date(planMetadata.dateCreated).toLocaleDateString()}</span>
+            <span className="mx-1">•</span>
+            <span>CER: {planMetadata.linkedCerVersion}</span>
+          </div>
+          <Button 
+            onClick={saveQmpData} 
+            size="sm" 
+            variant="outline" 
+            className="flex items-center text-sm ml-2 bg-[#0F6CBD] text-white hover:bg-[#0F6CBD]/90 hover:text-white"
+          >
+            <Save className="mr-1 h-4 w-4" />
+            Save Metadata
+          </Button>
+        </div>
+      </div>
+      
       {/* QMP Metadata Section */}
       <div className="mb-6 p-4 bg-white rounded-lg border shadow-sm">
         <div className="flex items-center justify-between mb-3">
@@ -633,16 +684,6 @@ _Document Generated: ${new Date().toLocaleDateString()}_
             Plan Metadata
             <span className="text-xs font-normal text-[#605E5C] ml-2">ICH E6(R3) Documentation</span>
           </h3>
-          
-          <Button 
-            onClick={saveQmpData} 
-            size="sm" 
-            variant="outline" 
-            className="flex items-center text-sm"
-          >
-            <Save className="mr-1 h-4 w-4" />
-            Save Metadata
-          </Button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
