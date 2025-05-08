@@ -1,0 +1,143 @@
+Thought for a few seconds
+
+
+Here’s a single, end-to-end recipe you can copy into your Replit projects (and share with Replit support if you need) to fix both the “Unexpected token ‘<’” blank-HTML issue **and** the hidden runtime crash behind your ErrorBoundary.
+
+---
+
+## 1. Move/Rename Your “Portal” HTML
+
+1. **At your repo root**, find any stray `index.html` you added as a “landing page.”
+2. Rename it to `landing.html` (or move it into a new folder like `public_portal/`).
+3. **Leave** your real React app’s **`index.html`** in its own folder (e.g. `client/index.html` or wherever your Vite/CRA lives).
+
+---
+
+## 2. Point Replit at Your Real Dev Server
+
+Create or update a top-level **`.replit`** file with exactly:
+
+```ini
+run = "cd client && npm install && npm run dev"
+```
+
+> This makes Replit:
+>
+> 1. `cd client` into your actual app folder
+> 2. `npm install` your dependencies
+> 3. `npm run dev` start Vite (or CRA) on the port Replit previews
+
+---
+
+## 3. Verify Your Dev Scripts & Vite Config
+
+In **`client/package.json`**, ensure:
+
+```jsonc
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview --port 3001"
+}
+```
+
+And in **`client/vite.config.ts`** (or `.js`):
+
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3001,
+    hmr: {
+      host: 'localhost',
+      protocol: 'ws'
+    }
+  }
+});
+```
+
+> If you’re using Create-React-App instead of Vite, just confirm your `start` script and dev server port match Replit’s preview port.
+
+---
+
+## 4. Clean Up Any Dev-Mode Express Stubs
+
+In your Express server (if you have one under `/server`), guard your static file serving so it only runs in **production**:
+
+```js
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  app.get('*', (_, res) =>
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'))
+  );
+}
+```
+
+> During development on Replit, you won’t `node server/index.js` at all—you’ll be running `npm run dev` instead.
+
+---
+
+## 5. Reveal & Log the Real Runtime Error
+
+Your React ErrorBoundary is hiding the true crash. Temporarily swap it for a version that logs the exception:
+
+```jsx
+// src/ErrorBoundary.jsx
+import React from 'react';
+
+export class ErrorBoundary extends React.Component {
+  state = { hasError: false };
+
+  componentDidCatch(error, info) {
+    console.error("🔥 Uncaught error in component tree:", error, info);
+    this.setState({ hasError: true });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, color: "red" }}>
+          <h1>Uncaught Exception</h1>
+          <p>See DevTools → Console for details.</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+```
+
+Wrap your `<App />` (or `<MainLayout>`) in this, reload the preview, and open DevTools → Console.
+
+---
+
+## 6. Inspect & Fix the Underlying Component Crash
+
+In the console you’ll now see the real stack trace, e.g.:
+
+```
+TypeError: Cannot read property 'foo' of undefined
+    at StandaloneAuthProvider (…)
+    at MainLayout (…)
+    at Footer (…)
+    …
+```
+
+1. Jump to that file (e.g. `StandaloneAuthProvider.jsx/tsx`).
+2. Correct the broken import, missing prop, bad hook usage, etc.
+3. Save, let HMR reload, and confirm the crash is gone.
+
+---
+
+### After-Action Checklist
+
+* [ ] No stray `index.html` at root
+* [ ] `.replit` file runs your real dev script
+* [ ] Vite/CRA dev server serving the app (no more blank HTML)
+* [ ] ErrorBoundary now logging real errors
+* [ ] Broken component fixed and app renders
+
+Once all that is in place, both your projects will load properly in Replit’s Preview, and you’ll see real errors in the console instead of a blank stub or hidden crash screen. Good luck!
