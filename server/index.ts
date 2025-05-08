@@ -120,11 +120,21 @@ const httpServer = createHttpServer(app);
 // Add a catch-all route for SPA client-side routing
 // This should come after all other routes but before Vite setup
 app.get('*', (req, res, next) => {
+  // Skip asset handling for Vite-specific paths
+  // This ensures Vite's HMR and other dev-specific routes still work
+  if (
+    req.path.startsWith('/@vite/') || 
+    req.path.startsWith('/@fs/') || 
+    req.path.startsWith('/@react-refresh') ||
+    req.path.startsWith('/node_modules/')
+  ) {
+    return next();
+  }
+  
   // If the request looks like a static asset but wasn't found by express.static,
-  // return 404 instead of falling back to index.html
+  // warn but still let Vite try to handle it
   if (/\.(js|css|png|svg|ico|map)$/i.test(req.path)) {
-    console.warn(`Asset not found: ${req.path}`);
-    return res.status(404).end();
+    console.log(`Note: Asset requested: ${req.path}`);
   }
   
   // For all other routes, pass to the next handler (which will be Vite in dev mode)
