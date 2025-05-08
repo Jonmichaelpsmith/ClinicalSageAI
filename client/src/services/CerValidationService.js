@@ -20,11 +20,12 @@ class CerValidationService {
    * 
    * @param {Object} cerDocument - The complete CER document object
    * @param {string} regulatoryFramework - The regulatory framework to validate against (e.g., 'EU_MDR', 'FDA', 'UKCA')
+   * @param {boolean} enhancedValidation - Whether to use enhanced AI-powered validation
    * @returns {Promise<Object>} Validation results with issues categorized by severity
    */
-  async validateCompleteCER(cerDocument, regulatoryFramework = 'EU_MDR') {
+  async validateCompleteCER(cerDocument, regulatoryFramework = 'EU_MDR', enhancedValidation = false) {
     try {
-      console.log(`Validating CER against ${regulatoryFramework} requirements`);
+      console.log(`Validating CER against ${regulatoryFramework} requirements (Enhanced mode: ${enhancedValidation ? 'ON' : 'OFF'})`);
       
       // Start with empty results structure
       const validationResults = {

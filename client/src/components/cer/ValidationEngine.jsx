@@ -16,6 +16,7 @@
 import React, { useState, useEffect } from 'react';
 import { cerApiService } from '@/services/CerAPIService';
 import { cerValidationService } from '@/services/CerValidationService';
+import { cerAiValidationService } from '@/services/CerAiValidationService';
 import CerValidationPanel from './CerValidationPanel';
 import {
   Tabs,
@@ -54,10 +55,39 @@ import {
   ClipboardList,
   Shield,
   Download,
-  Braces
+  Braces,
+  User,
+  BrainCircuit,
+  Eye,
+  CornerDownRight,
+  Sparkles
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
+import {
+  Switch
+} from '@/components/ui/switch';
+import {
+  Label
+} from '@/components/ui/label';
+import {
+  Input
+} from '@/components/ui/input';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 
 const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) => {
   const [validationData, setValidationData] = useState(null);
@@ -138,12 +168,34 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
     setError(null);
     
     try {
-      // Pass document sections for comprehensive AI validation
-      const data = await cerApiService.validateCERDocument(
-        documentId, 
-        selectedFramework,
-        cerSections // Send document sections for AI validation
-      );
+      let data;
+      
+      // Choose validation method based on mode
+      if (validationMode === 'enhanced') {
+        // Enhanced AI validation with advanced hallucination detection
+        console.log('Running enhanced AI validation with GPT-4o...');
+        
+        // Get document data from all sections
+        const cerDocument = {
+          id: documentId,
+          sections: cerSections,
+          // Add additional document metadata as available
+        };
+        
+        // Use AI validation service for enhanced checking
+        data = await cerAiValidationService.validateWithAI(cerDocument, selectedFramework);
+        
+        // Store enhanced results separately
+        setEnhancedValidationResults(data);
+      } else {
+        // Standard validation
+        console.log('Running standard validation...');
+        data = await cerApiService.validateCERDocument(
+          documentId, 
+          selectedFramework,
+          cerSections // Send document sections for AI validation
+        );
+      }
       
       setValidationData(data);
       
@@ -152,7 +204,8 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
       }
       
       // Display toast based on validation results and method
-      const validationMethod = data.validationMethod === 'ai' ? 'GPT-4o AI-Powered' : 'Standard';
+      const validationMethod = validationMode === 'enhanced' ? 'Enhanced GPT-4o AI' : 
+        (data.validationMethod === 'ai' ? 'GPT-4o AI-Powered' : 'Standard');
       
       if (data.summary.criticalIssues > 0) {
         toast({
@@ -180,6 +233,57 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
       toast({
         title: 'Validation Error',
         description: err.message || 'An error occurred while validating your document',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Submit document for human review
+  const submitForHumanReview = async (reviewerEmail) => {
+    try {
+      setLoading(true);
+      
+      // Create document object
+      const cerDocument = {
+        id: documentId,
+        sections: cerSections,
+        // Add additional document metadata
+      };
+      
+      // Use validation results if available, otherwise run validation
+      const validationResults = validationData || await cerValidationService.validateCompleteCER(
+        cerDocument, 
+        selectedFramework, 
+        validationMode === 'enhanced'
+      );
+      
+      // Submit for human review
+      const result = await cerValidationService.submitForHumanReview(
+        cerDocument,
+        validationResults,
+        reviewerEmail
+      );
+      
+      if (result.success) {
+        toast({
+          title: 'Review Request Submitted',
+          description: `Your document has been submitted for review to ${reviewerEmail}`,
+          variant: 'success'
+        });
+      } else {
+        toast({
+          title: 'Review Request Failed',
+          description: result.error || 'Unable to submit review request',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error submitting for review:', error);
+      toast({
+        title: 'Review Request Failed',
+        description: error.message || 'An error occurred while submitting for review',
         variant: 'destructive'
       });
     } finally {
@@ -291,7 +395,7 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
   // Main validation results rendering
   return (
     <div className="space-y-4">
-      {/* Framework selector */}
+      {/* Framework selector and validation mode */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h2 className="text-xl font-semibold mb-1">Regulatory Validation</h2>
@@ -301,6 +405,32 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex gap-2 items-center bg-slate-50 border rounded-md px-2 py-1 h-10">
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="validation-mode" 
+                checked={validationMode === 'enhanced'}
+                onCheckedChange={(checked) => setValidationMode(checked ? 'enhanced' : 'standard')}
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Label htmlFor="validation-mode" className="cursor-pointer flex items-center">
+                      <span className="mr-1">Enhanced Validation</span>
+                      <BrainCircuit className="h-4 w-4 text-blue-500" />
+                    </Label>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>
+                      Enhanced validation uses GPT-4o AI to perform in-depth checks for hallucinated citations, 
+                      factual accuracy verification, and regulatory compliance testing that goes beyond standard validation.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+          
           <select 
             value={selectedFramework}
             onChange={(e) => setSelectedFramework(e.target.value)}
@@ -319,35 +449,113 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
           </Button>
           
           {validationData && (
-            <Button 
-              onClick={() => {
-                if (onValidationComplete) {
-                  const validationSummary = {
-                    title: "Regulatory Validation Report",
-                    type: "validation-report",
-                    content: {
-                      framework: frameworkNames[selectedFramework],
-                      score: validationData.summary.complianceScore,
-                      issues: validationData.issues,
-                      summary: validationData.summary
-                    },
-                    lastUpdated: new Date().toISOString()
-                  };
-                  
-                  onValidationComplete(validationSummary, true);
-                  
-                  toast({
-                    title: "Validation Report Added",
-                    description: `Validation report for ${frameworkNames[selectedFramework]} has been added to your CER`,
-                    variant: "success"
-                  });
-                }
-              }}
-              variant="outline" 
-              className="gap-2 border-[#0F6CBD] text-[#0F6CBD]"
-            >
-              Add to CER
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => {
+                  if (onValidationComplete) {
+                    const validationSummary = {
+                      title: "Regulatory Validation Report",
+                      type: "validation-report",
+                      content: {
+                        framework: frameworkNames[selectedFramework],
+                        validationMode: validationMode,
+                        score: validationData.summary.complianceScore,
+                        issues: validationData.issues,
+                        summary: validationData.summary
+                      },
+                      lastUpdated: new Date().toISOString()
+                    };
+                    
+                    onValidationComplete(validationSummary, true);
+                    
+                    toast({
+                      title: "Validation Report Added",
+                      description: `Validation report for ${frameworkNames[selectedFramework]} has been added to your CER`,
+                      variant: "success"
+                    });
+                  }
+                }}
+                variant="outline" 
+                className="gap-2 border-[#0F6CBD] text-[#0F6CBD]"
+              >
+                Add to CER
+              </Button>
+              
+              {/* Human Review Dialog */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <User className="h-4 w-4" />
+                    Human Review
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Request Human Review</DialogTitle>
+                    <DialogDescription>
+                      Submit this document for review by a regulatory expert to verify AI-generated content before finalization.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="reviewer-email" className="text-right">
+                        Reviewer Email
+                      </Label>
+                      <Input
+                        id="reviewer-email"
+                        type="email"
+                        placeholder="reviewer@example.com"
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="priority" className="text-right">
+                        Priority
+                      </Label>
+                      <select
+                        id="priority"
+                        className="col-span-3 rounded-md border border-input h-10 px-3 py-2 text-sm"
+                      >
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="review-notes" className="text-right">
+                        Notes
+                      </Label>
+                      <Input
+                        id="review-notes"
+                        placeholder="Any specific concerns or areas to focus on"
+                        className="col-span-3"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button 
+                      type="submit" 
+                      className="gap-2"
+                      onClick={() => {
+                        const reviewerEmail = document.getElementById('reviewer-email').value;
+                        if (reviewerEmail) {
+                          submitForHumanReview(reviewerEmail);
+                        } else {
+                          toast({
+                            title: "Missing Information",
+                            description: "Please enter the reviewer's email address",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                    >
+                      <User className="h-4 w-4" />
+                      Submit for Review
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           )}
         </div>
       </div>
@@ -438,6 +646,80 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
             </CardFooter>
           </Card>
           
+          {/* Enhanced AI Analysis Results - only shown when validationMode is enhanced and we have enhanced results */}
+          {validationMode === 'enhanced' && validationData.hallucinations && (
+            <Card className="border-[#E3008C] border-2">
+              <CardHeader className="bg-[#FCF2F8]">
+                <CardTitle className="text-[#E3008C] flex items-center gap-2">
+                  <BrainCircuit className="h-5 w-5" />
+                  AI Hallucination Detection
+                </CardTitle>
+                <CardDescription>
+                  Enhanced GPT-4o AI analysis to catch potential hallucinations and fabricated references
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {validationData.hallucinations.length === 0 ? (
+                  <div className="flex items-center justify-center py-6 text-center bg-green-50 rounded-md border border-green-100">
+                    <div>
+                      <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                      <p className="font-medium text-green-700">No hallucinations detected</p>
+                      <p className="text-sm text-green-600 mt-1">
+                        All content appears to be factually accurate and properly cited
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-[#FCF2F8] p-4 rounded-md border border-[#E3008C]">
+                      <p className="font-medium text-[#E3008C] mb-2 flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5" />
+                        Potential AI Hallucinations Detected
+                      </p>
+                      <p className="text-sm">
+                        {validationData.hallucinations.length} potential hallucinations were identified. These are sections where AI may have
+                        generated content that is not supported by evidence or references.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+                      {validationData.hallucinations.map((hallucination, index) => (
+                        <div 
+                          key={index} 
+                          className="bg-white border rounded-md p-3 shadow-sm"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-2 font-medium text-red-600 mb-1">
+                              <AlertTriangle className="h-4 w-4" />
+                              Potential Hallucination ({Math.round(hallucination.confidence * 100)}% confidence)
+                            </div>
+                            <Badge variant="outline" className="text-[#E3008C] border-[#E3008C]">
+                              {hallucination.location}
+                            </Badge>
+                          </div>
+                          <div className="text-sm border-l-2 border-red-200 pl-3 py-1 my-2 bg-red-50">
+                            "{hallucination.text}"
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            <span className="font-medium">Reason:</span> {hallucination.details}
+                          </div>
+                          {hallucination.suggestedCorrection && (
+                            <div className="mt-2 pt-2 border-t text-xs">
+                              <span className="font-medium text-green-600">Suggested correction:</span>
+                              <div className="border-l-2 border-green-200 pl-3 py-1 mt-1 bg-green-50">
+                                {hallucination.suggestedCorrection}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        
           {/* Issues list */}
           <Card>
             <CardHeader>
