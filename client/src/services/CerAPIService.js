@@ -2076,7 +2076,7 @@ cerApiService.getCerSections = async () => {
 cerApiService.generateQmpTraceabilityReport = async ({ deviceName, qmpData, sectionTitles = [] }) => {
   try {
     // Make API request to generate traceability report
-    const response = await fetch('/api/cer-qmp-integration/traceability-report', {
+    const response = await fetch('/api/cer-qmp-integration/generate-traceability-report', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
