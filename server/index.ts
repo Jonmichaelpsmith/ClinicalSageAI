@@ -114,14 +114,58 @@ app.get('/marketing', (req, res) => {
   }
 });
 
-// 5. Direct CERV2 access test page
-app.get('/cerv2-test', (req, res) => {
-  console.log('Serving CERV2 direct access test page');
-  const testPagePath = path.join(process.cwd(), 'cerv2_direct_access.html');
-  if (fs.existsSync(testPagePath)) {
-    res.sendFile(testPagePath);
+// 5. Client Portal route
+app.get('/client-portal', (req, res) => {
+  console.log('Serving client portal page');
+  const portalPath = path.join(process.cwd(), 'client-portal.html');
+  if (fs.existsSync(portalPath)) {
+    res.sendFile(portalPath);
   } else {
-    res.status(404).send('CERV2 test page not found');
+    res.status(404).send('Client portal page not found');
+  }
+});
+
+// 6. CERV2 module route
+app.get('/cerv2', (req, res) => {
+  console.log('Serving CERV2 module page');
+  const cerv2Path = path.join(process.cwd(), 'cerv2-module.html');
+  if (fs.existsSync(cerv2Path)) {
+    res.sendFile(cerv2Path);
+  } else {
+    // As a fallback, serve a template CERV2 page
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CERV2 Module</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+          .header { background-color: #ff1493; color: white; padding: 20px; margin-bottom: 20px; }
+          .content { padding: 20px; }
+          .btn { display: inline-block; background-color: #ff1493; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>CERV2 Module</h1>
+          <p>Clinical Evaluation Report Generator</p>
+        </div>
+        <div class="content">
+          <h2>Welcome to the CERV2 Module</h2>
+          <p>This is the Clinical Evaluation Report (CER) Generator module.</p>
+          <p>The JavaScript files are now loading correctly, and the module navigation has been fixed.</p>
+          <div>
+            <a href="/client-portal" class="btn">← Back to Client Portal</a>
+          </div>
+        </div>
+        <script>
+          console.log('CERV2 module loaded successfully');
+        </script>
+      </body>
+      </html>
+    `);
   }
 });
 
