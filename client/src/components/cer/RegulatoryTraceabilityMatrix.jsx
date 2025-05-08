@@ -430,9 +430,8 @@ const RegulatoryTraceabilityMatrix = ({
               variant="link"
               className="p-0 h-auto text-[#0F6CBD]"
               onClick={() => {
-                // Show full help modal
-                setShowHelp(false);
-                document.getElementById('qmp-help-modal').showModal();
+                // Show full help modal with focus on regulatory traceability section
+                setShowHelp(true);
               }}
             >
               Learn more about ICH E6(R3) Quality Management
@@ -990,17 +989,13 @@ const RegulatoryTraceabilityMatrix = ({
         </TabsContent>
       </Tabs>
 
-      {/* Help Modal - reused from QmpIntegrationHelp */}
-      <dialog id="qmp-help-modal" className="modal">
-        <div className="modal-box max-w-4xl">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-          </form>
-          <div className="p-4">
-            <QmpIntegrationHelp focusSection="regulatory-traceability" />
-          </div>
-        </div>
-      </dialog>
+      {/* Help Modal using QmpIntegrationHelp with controlled state */}
+      <QmpIntegrationHelp 
+        isDialogOpen={showHelp}
+        setIsDialogOpen={setShowHelp}
+        focusSection="regulatory-traceability" 
+        className="hidden" // We trigger via state, not button click
+      />
     </div>
   );
 };
