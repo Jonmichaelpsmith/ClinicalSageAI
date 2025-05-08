@@ -274,22 +274,6 @@ export default function CERV2Page() {
               onDismiss={() => setShowWizard(false)}
             />
           )}
-          
-          {/* Data Retrieval Reminder */}
-          {!isFetchingFaers && faers.length === 0 && (
-            <NotificationBanner
-              title="Essential: Retrieve FAERS Data First"
-              description="For optimal CER quality, start by retrieving real-world adverse event data and literature evidence."
-              actionText="Go to Data Retrieval"
-              onActionClick={() => setActiveTab('data-retrieval')}
-              onDismiss={() => setShowEvidenceReminder(false)}
-              variant="info"
-              visible={showEvidenceReminder}
-              showInfoIcon={true}
-              infoTooltip="Pull in real-world adverse event data (FAERS) and key published studies—so your AI sections include actual safety and evidence."
-              additionalContent="Why run this? AI section drafts will cite and analyze FAERS + literature automatically."
-            />
-          )}
 
           {/* Tab Content */}
           <TabsContent value="builder" className="mt-0">
@@ -475,6 +459,21 @@ export default function CERV2Page() {
           </TabsContent>
           
           <TabsContent value="data-retrieval" className="mt-0">
+            {/* Data Retrieval Reminder */}
+            {!isFetchingFaers && faers.length === 0 && (
+              <NotificationBanner
+                title="Essential: Retrieve FAERS Data First"
+                description="For optimal CER quality, start by retrieving real-world adverse event data and literature evidence."
+                actionText="Start Retrieval"
+                onActionClick={() => setActiveTab('data-retrieval')}
+                onDismiss={() => setShowEvidenceReminder(false)}
+                variant="info"
+                visible={showEvidenceReminder}
+                showInfoIcon={true}
+                infoTooltip="Pull in real-world adverse event data (FAERS) and key published studies—so your AI sections include actual safety and evidence."
+                additionalContent="Why run this? AI section drafts will cite and analyze FAERS + literature automatically."
+              />
+            )}
             <CerDataRetrievalPanel
               reportId={`cer-${Date.now()}`}
               deviceName={deviceName}

@@ -118,7 +118,7 @@ export default function NotificationBanner({
                   <Info className="w-3.5 h-3.5 text-[#0F6CBD]" />
                   
                   {showTooltip && (
-                    <div className="absolute z-50 w-64 p-2 bg-white rounded shadow-lg border border-gray-200 text-xs text-gray-700 left-0 top-full mt-1">
+                    <div className="absolute z-50 w-64 p-2 bg-white rounded shadow-lg border border-gray-200 text-xs text-gray-700 right-0 top-full mt-1">
                       {infoTooltip}
                     </div>
                   )}
