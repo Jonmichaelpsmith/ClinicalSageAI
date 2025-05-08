@@ -2100,4 +2100,63 @@ cerApiService.generateQmpTraceabilityReport = async ({ deviceName, qmpData, sect
   }
 };
 
+/**
+ * Validate Quality Management Plan integration with CER
+ * 
+ * This function uses the QMP objectives and their scope sections to validate 
+ * compliance with ICH E6(R3) and the relevant regulatory framework.
+ * 
+ * @param {Array} objectives - Array of quality objectives
+ * @param {Array} cerSections - Array of CER sections names
+ * @param {string} framework - Regulatory framework to check against (mdr, fda, ukca)
+ * @returns {Promise<Object>} - Validation results including compliance status, gaps, and recommendations
+ */
+cerApiService.validateQmpIntegration = async (objectives, cerSections, framework = 'mdr') => {
+  try {
+    const response = await fetch('/api/cer-validation/qmp-integration/validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        objectives,
+        cerSections,
+        framework
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error validating QMP integration: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in validateQmpIntegration:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get details on which CtQ factors might affect a specific CER section
+ * 
+ * @param {string} sectionName - Name of the CER section to check
+ * @returns {Promise<Object>} - Relevant CtQ factors for the section
+ */
+cerApiService.getCtqFactorsForSection = async (sectionName) => {
+  try {
+    const response = await fetch(`/api/qmp/ctq-for-section/${encodeURIComponent(sectionName)}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching CtQ factors for section: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getCtqFactorsForSection:', error);
+    throw error;
+  }
+};
+
 export { cerApiService };

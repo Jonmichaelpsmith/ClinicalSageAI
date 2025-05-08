@@ -11,6 +11,7 @@ import CerTooltipWrapper from './CerTooltipWrapper';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import { cerApiService } from '@/services/CerAPIService';
 
 // ICH E6(R3) Compliant Quality Management Plan Component
 const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }) => {
@@ -57,8 +58,10 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
   const [editingCtqId, setEditingCtqId] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingPlan, setIsLoadingPlan] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [draggedObjective, setDraggedObjective] = useState(null);
   const [showInlineCtqForm, setShowInlineCtqForm] = useState(null);
+  const [validationResults, setValidationResults] = useState(null);
   
   // Refs for drag and drop
   const objectiveRefs = useRef({});
