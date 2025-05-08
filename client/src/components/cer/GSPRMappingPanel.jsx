@@ -98,6 +98,12 @@ export default function GSPRMappingPanel({
   });
   const [changes, setChanges] = useState(false);
   const [activeGspr, setActiveGspr] = useState(null);
+  
+  // Debug logging for state changes
+  const setActiveGsprWithLogging = (gsprId) => {
+    console.log('Setting active GSPR to:', gsprId);
+    setActiveGspr(gsprId);
+  };
   const [evidenceSearchTerm, setEvidenceSearchTerm] = useState('');
   const [availableEvidence, setAvailableEvidence] = useState([]);
   const [filteredEvidence, setFilteredEvidence] = useState([]);
@@ -448,9 +454,13 @@ export default function GSPRMappingPanel({
   
   // GPT-4o powered GSPR analysis function
   const generateAIAnalysis = async (gsprId) => {
+    console.log('Starting AI analysis for GSPR:', gsprId);
     try {
       const gspr = GSPRs.find(g => g.id === gsprId);
-      if (!gspr) return;
+      if (!gspr) {
+        console.error('GSPR not found:', gsprId);
+        return;
+      }
       
       setIsGeneratingAIAnalysis(true);
       setAiAnalysisTarget(gsprId);
@@ -466,6 +476,7 @@ export default function GSPRMappingPanel({
       
       // Prepare context data for the AI
       const evidenceSources = mapping[gsprId].evidenceSources;
+      console.log('Evidence sources for AI analysis:', evidenceSources.length);
       
       // Prepare evidence context
       setAiAnalysisProgress(30);
@@ -762,6 +773,7 @@ Compliance is determined based on evidence strength, quality, and clinical relev
             <div className="lg:col-span-2">
               {activeGspr ? (
                 <div className="bg-white p-5 rounded border border-[#E1DFDD]">
+                  {console.log('Rendering GSPR detail panel for:', activeGspr)}
                   <div className="flex justify-between items-start mb-4 border-b border-[#E1DFDD] pb-4">
                     <div>
                       <h3 className="text-lg font-medium text-[#323130]">
@@ -782,6 +794,7 @@ Compliance is determined based on evidence strength, quality, and clinical relev
                   
                   {/* AI Analysis Button and Progress */}
                   <div className="mb-4">
+                    {console.log('Rendering AI Analysis section')}
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center">
                         <Shield className="h-4 w-4 text-[#0F6CBD] mr-2" />
