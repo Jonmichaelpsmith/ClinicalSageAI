@@ -90,13 +90,30 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       return;
     }
     
-    // First check if quality requirements are satisfied
+    // Always perform quality check before section generation (forced to ensure it works)
     setIsCheckingQuality(true);
+    console.log('Checking CtQ factors for section type:', selectedSectionType);
     
     try {
+      // Check CtQ factors for this section type 
+      toast({
+        title: 'Checking Quality Requirements',
+        description: 'Verifying CtQ factors for ' + getSelectedSectionLabel(),
+        variant: 'default',
+      });
+      
       // Check CtQ factors for this section type
       const qualityCheck = await checkSectionCtqFactors(selectedSectionType);
+      console.log('Quality check result:', qualityCheck);
       setQualityStatus(qualityCheck);
+      
+      // Always show quality status toast for debugging
+      toast({
+        title: 'Quality Check Results',
+        description: `${qualityCheck.message}`,
+        variant: qualityCheck.severity === 'error' ? 'destructive' : 
+                qualityCheck.severity === 'warning' ? 'warning' : 'default'
+      });
       
       // If cannot proceed due to high-risk factors, show error and abort
       if (!qualityCheck.canProceed && !isQualityOverridden) {
@@ -329,29 +346,59 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   </p>
                 </div>
                 
-                {/* Quality Status Display */}
-                {qualityStatus && (
-                  <Alert 
-                    className={cn(
-                      "border py-3",
-                      qualityStatus.severity === 'error' ? "border-red-500 bg-red-50 text-red-800" : 
-                      qualityStatus.severity === 'warning' ? "border-amber-500 bg-amber-50 text-amber-800" : 
-                      "border-blue-500 bg-blue-50 text-blue-800"
-                    )}
-                  >
-                    {qualityStatus.severity === 'error' && <ShieldAlert className="h-4 w-4 mr-2" />}
-                    {qualityStatus.severity === 'warning' && <AlertTriangle className="h-4 w-4 mr-2" />}
-                    {qualityStatus.severity === 'info' && <CheckCircle2 className="h-4 w-4 mr-2" />}
-                    <AlertTitle className="text-sm font-semibold">
-                      {qualityStatus.severity === 'error' ? 'Quality Requirements Not Met' : 
-                       qualityStatus.severity === 'warning' ? 'Quality Warning' : 
-                       'Quality Check Passed'}
-                    </AlertTitle>
-                    <AlertDescription className="text-xs mt-1">
-                      {qualityStatus.message}
-                      
-                      {/* Show override option for high-risk blockers */}
-                      {qualityStatus.highRiskBlockers > 0 && (
+                {/* Quality Status Display - Always show quality requirements */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-[#323130]">Quality Requirements</h4>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={async () => {
+                        try {
+                          const qualityCheck = await checkSectionCtqFactors(selectedSectionType);
+                          setQualityStatus(qualityCheck);
+                          toast({
+                            title: 'Quality Check Completed',
+                            description: 'Quality requirements have been checked for this section',
+                          });
+                        } catch (error) {
+                          console.error('Error checking quality requirements:', error);
+                          toast({
+                            title: 'Quality Check Failed',
+                            description: 'Unable to verify quality requirements',
+                            variant: 'destructive',
+                          });
+                        }
+                      }}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Check Requirements
+                    </Button>
+                  </div>
+                  
+                  {qualityStatus ? (
+                    <Alert 
+                      className={cn(
+                        "border py-3",
+                        qualityStatus.severity === 'error' ? "border-red-500 bg-red-50 text-red-800" : 
+                        qualityStatus.severity === 'warning' ? "border-amber-500 bg-amber-50 text-amber-800" : 
+                        "border-blue-500 bg-blue-50 text-blue-800"
+                      )}
+                    >
+                      {qualityStatus.severity === 'error' && <ShieldAlert className="h-4 w-4 mr-2" />}
+                      {qualityStatus.severity === 'warning' && <AlertTriangle className="h-4 w-4 mr-2" />}
+                      {qualityStatus.severity === 'info' && <CheckCircle2 className="h-4 w-4 mr-2" />}
+                      <AlertTitle className="text-sm font-semibold">
+                        {qualityStatus.severity === 'error' ? 'Quality Requirements Not Met' : 
+                         qualityStatus.severity === 'warning' ? 'Quality Warning' : 
+                         'Quality Check Passed'}
+                      </AlertTitle>
+                      <AlertDescription className="text-xs mt-1">
+                        {qualityStatus.message}
+                        
+                        {/* Show override option for high-risk blockers */}
+                        {qualityStatus.highRiskBlockers > 0 && (
                         <div className="mt-2">
                           <Button
                             variant="outline"
