@@ -621,6 +621,83 @@ export default function ClinicalEvaluationPlanPanel({
               className="border-[#E1DFDD] h-24"
             />
           </div>
+          
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <div className="flex items-center mb-3">
+              <h3 className="text-md font-semibold text-[#323130]">Post-Market Clinical Follow-up (PMCF) Plan</h3>
+              <CerTooltipWrapper
+                tooltipContent="PMCF is a continuous process to update the clinical evaluation, required under EU MDR Annex XIV Part B"
+                whyThisMatters="MDR requires manufacturers to actively and systematically gather clinical data on device use in the real-world setting after market introduction"
+              >
+                <Info className="h-4 w-4 ml-2 text-gray-500" />
+              </CerTooltipWrapper>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="use-pmcf" 
+                  checked={cepData.usePMCF}
+                  onCheckedChange={(checked) => handleChange('usePMCF', checked)}
+                />
+                <Label htmlFor="use-pmcf" className="text-sm text-[#323130]">
+                  PMCF is required for this device
+                </Label>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="update-frequency" className="text-sm text-[#323130]">
+                  CER Update Frequency
+                </Label>
+                <Select
+                  value={cepData.updateFrequency}
+                  onValueChange={(value) => handleChange('updateFrequency', value)}
+                >
+                  <SelectTrigger className="border-[#E1DFDD] h-9">
+                    <SelectValue placeholder="Select frequency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Annual">Annual</SelectItem>
+                    <SelectItem value="Biennial">Every 2 years</SelectItem>
+                    <SelectItem value="Other">Other (specify in plan)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="pmcf-plan" className="text-[#323130]">
+                PMCF Methodology
+              </Label>
+              <Textarea
+                id="pmcf-plan"
+                value={cepData.pmcfPlan}
+                onChange={(e) => handleChange('pmcfPlan', e.target.value)}
+                placeholder="Describe PMCF activities (e.g., registry participation, surveys, etc.) or reference PMCF plan document"
+                className="border-[#E1DFDD] h-20"
+              />
+              <p className="text-xs text-[#605E5C]">Required by MDR Annex XIV, Part B</p>
+            </div>
+            
+            {!cepData.usePMCF && (
+              <div className="space-y-2 mt-4">
+                <Label htmlFor="pmcf-justification" className="text-[#323130] flex items-center">
+                  Justification for Not Conducting PMCF 
+                  <AlertCircle className="h-4 w-4 ml-2 text-amber-500" />
+                </Label>
+                <Textarea
+                  id="pmcf-justification"
+                  value={cepData.pmcfJustification}
+                  onChange={(e) => handleChange('pmcfJustification', e.target.value)}
+                  placeholder="If PMCF is not required, provide a scientifically valid justification (per MDCG 2020-7)"
+                  className="border-[#E1DFDD] h-20"
+                />
+                <p className="text-xs text-amber-500">
+                  Note: EU MDR strongly requires PMCF. Exceptions must be thoroughly justified and are scrutinized by Notified Bodies.
+                </p>
+              </div>
+            )}
+          </div>
         </CardContent>
         <CardFooter className="border-t border-[#E1DFDD] bg-[#FAFAFA] px-6 py-4">
           <div className="flex justify-end space-x-2 w-full">
