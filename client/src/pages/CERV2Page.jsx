@@ -277,16 +277,55 @@ export default function CERV2Page() {
 
           {/* Tab Content */}
           <TabsContent value="builder" className="mt-0">
-            <CerBuilderPanel
-              title={title}
-              faers={faers}
-              comparators={comparators}
-              sections={sections}
-              onTitleChange={setTitle}
-              onSectionsChange={setSections}
-              onFaersChange={setFaers}
-              onComparatorsChange={setComparators}
-            />
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-grow md:w-2/3">
+                <h2 className="text-xl font-semibold mb-4">Section Generator</h2>
+                <div className="bg-[#EFF6FC] rounded-md px-3 py-1 text-sm inline-flex items-center gap-1 mb-4 text-[#0F6CBD]">
+                  <span>AI-Powered</span>
+                </div>
+                <CerBuilderPanel
+                  title={title}
+                  faers={faers}
+                  comparators={comparators}
+                  sections={sections}
+                  onTitleChange={setTitle}
+                  onSectionsChange={setSections}
+                  onFaersChange={setFaers}
+                  onComparatorsChange={setComparators}
+                />
+              </div>
+              <div className="md:w-1/3">
+                <div className="bg-white border border-[#E1DFDD] p-4 rounded-lg">
+                  <h2 className="text-xl font-semibold mb-4">Report Sections</h2>
+                  <div className="bg-[#F3F2F1] rounded px-3 py-1 text-sm inline-flex items-center gap-1 mb-4">
+                    <span>{sections.length} sections</span>
+                  </div>
+                  
+                  <h3 className="text-lg font-medium mb-2">Report Title</h3>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full p-2 mb-4 border border-[#E1DFDD] rounded"
+                    placeholder="Clinical Evaluation Report"
+                  />
+                  
+                  {sections.length > 0 ? (
+                    <div className="space-y-2">
+                      {sections.map((section, idx) => (
+                        <div key={idx} className="bg-[#F3F2F1] p-2 rounded text-sm">
+                          {section.title}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 text-sm italic">
+                      No sections added yet. Generate sections from the tools on the left.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="cep" className="mt-0">
