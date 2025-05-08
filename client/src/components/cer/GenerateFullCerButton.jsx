@@ -155,7 +155,9 @@ export default function GenerateFullCerButton({ onCompletion }) {
           "Device Description",
           "Literature Review",
           "Clinical Data Analysis",
-          "Risk Assessment",
+          "Risk Assessment", 
+          "Quality Management Plan (ICH E6(R3))",
+          "Regulatory Traceability Matrix",
           "Conclusions"
         ],
         includeAppendices: true

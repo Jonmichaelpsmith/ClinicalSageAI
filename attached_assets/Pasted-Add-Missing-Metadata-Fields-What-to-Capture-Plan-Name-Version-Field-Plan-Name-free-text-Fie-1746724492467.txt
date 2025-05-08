@@ -1,0 +1,204 @@
+Add Missing Metadata Fields
+What to Capture
+Plan Name & Version
+
+Field: “Plan Name” (free text)
+
+Field: “Plan Version” (auto-increment or semantic versioning control)
+
+Author Name & Role
+
+Auto-populate from the logged-in user’s profile
+
+Allow override in case a delegate is entering the data
+
+Date Created / Last Updated
+
+Read-only timestamp fields
+
+Linked CER Version
+
+Dropdown showing current CER draft versions (e.g. “v2.3”)
+
+Ensures traceability: this QMS plan applies specifically to that document
+
+How It Interoperates
+UI: These fields appear in a header bar of the QMS Plan tab.
+
+Reporting: On export, they form the top “Title block” of the QMS section.
+
+Audit Trail: Any change to these fields triggers a log entry (older version → newer version).
+
+2. Enhance Quality Objective Cards
+For each Objective card in the QMS Plan:
+
+New Fields & Controls
+Scope Selector
+
+Multi-select list of CER sections (Safety, Literature Review, Benefit-Risk, etc.)
+
+Ties the objective back into the Section Generator’s available section types
+
+Mitigation / Control Actions
+
+Larger free-text box describing “What we will do” (e.g., “Run data consistency script weekly”)
+
+Optionally attach SOP references or checklists
+
+Objective Status Badge
+
+States: Planned / In Progress / Complete / Blocked
+
+Color-coded (e.g. gray, blue, green, red)
+
+Interactions
+Drag-and-Drop Reordering so users can prioritize objectives.
+
+Inline “Add CtQ” Button that opens a mini-form directly under the objective.
+
+Interop
+Compliance Engine: Reads each objective’s scope to know which sections to evaluate.
+
+Dashboard Metrics: Totals objectives by status and shows percentage completed.
+
+3. Build Gating Logic in the Section Generator
+Pre-Generation Validation
+High-Risk CtQ Check
+
+Before a user clicks “Generate Section,” if any High-risk CtQ factors tied to that section are unmet, show a modal:
+
+“Warning: 2 High-risk factors for ‘Safety Profile’ are not yet satisfied. Proceed?”
+
+Offer “View CtQ Details” → scrolls the QMS panel to those factors.
+
+Mandatory CtQ Enforcement
+
+Optionally, make this gating strict: disable “Generate” button until all mandatory CtQs for that section show green “Satisfied” status.
+
+How It Works
+Data Flow: The Section Generator queries the QMS datastore for CtQs where associatedSection == currentSection.
+
+UX: The Generate button shows a tooltip if gating conditions are unmet:
+
+“Cannot generate – resolve CtQ factors.”
+
+4. Surface Audit-Trail Icons & eSign-Off
+Audit Trail
+Per-Change Badges
+
+On each Objective/CtQ card, a small clock icon that, when hovered, shows:
+
+“Last edited by Jane Doe on 2025-05-10 14:23”
+
+Global Change Log View
+
+A collapsible panel at the bottom of the QMS Plan tab listing every modification in chronological order.
+
+eSignature
+Sign-Off Button
+
+After finalizing objectives and CtQs, an orange “eSign QMS Plan” button appears.
+
+Signature Dialog
+
+Prompts user to re-enter password or use biometric (depending on your auth stack)
+
+Captures signer name, role, date/time, and version of QMS Plan being signed
+
+Lock-Down
+
+Once signed, the plan becomes read-only; any further edits require a new version (incrementing Plan Version).
+
+5. Wire QMS Plan into Export Templates
+Document Structure
+Insert QMS Section
+
+After “Evaluation Plan” in the table of contents, add “3. Quality Management Plan.”
+
+Render Plan Metadata
+
+Plan name, version, author, date, CER version, signature block.
+
+List Objectives & CtQs
+
+A two-tiered table:
+
+Tier 1: Objectives table (ID, Description, Scope, Risk, Mitigation)
+
+Tier 2: For each Objective, a nested table of CtQs (Name, Description, Associated Section, Risk, Mitigation, Status)
+
+Hyperlinked Anchors
+
+Each “Associated Section” cell in the CtQ table hyperlinks to the corresponding heading in the main CER.
+
+How It Integrates
+Export Engine merges this QMS content into the Word/PDF builder pipeline.
+
+Version Control stamps the QMS section with the Plan Version and adds it to the document’s metadata.
+
+6. Hook Compliance Engine & AI Prompts
+AI Prompt Enrichment
+Context Block
+
+When generating a section, prepend the AI prompt with a summary of relevant Quality Objectives and CtQs in plain language:
+
+“Quality Objective: Ensure Clinical Data Integrity. CtQ Factors: ‘Literature Search Comprehensiveness’ (High risk)…”
+
+Instruction Injection
+
+Include: “When drafting the Safety Profile, ensure you address all High-risk CtQs: [list].”
+
+Compliance Validation
+Automated Rules
+
+The Compliance module runs a final pass reading the QMS Plan:
+
+Checks if each High-risk CtQ has “Satisfied” status.
+
+Verifies that all Associated Sections exist and contain content.
+
+Reporting
+
+If a CtQ is unsatisfied, the compliance report flags it as an open non-conformity with a remediation suggestion.
+
+7. Scheduler & “Living CER” Banner
+Scheduler
+Risk-Based Frequencies
+
+High-risk CtQs → every 90 days
+
+Medium → every 180 days
+
+Low → yearly
+
+UI Scheduling Controls
+
+In the QMS Plan tab, show next review date per CtQ.
+
+Allow override of schedule on a per-CtQ basis.
+
+Living CER Banner
+Banner Text
+
+At top of CER Builder:
+
+“Living CER: Last updated 2025-05-07. Next scheduled review: 2025-08-05.”
+
+New Data Alerts
+
+If new FAERS or literature arrives before next review, change banner to:
+
+“New data available – click to refresh QMS Plan and CER.”
+
+Bringing It All Together
+By executing each of these richly detailed steps, you’ll transform the QMS Plan from “nice-to-have” into a fully integrated, audit-ready, risk-managed backbone that:
+
+Governs every data pull, AI generation, and compliance check
+
+Provides clear traceability from quality objectives to report sections
+
+Surfaces status and accountability at every stage
+
+Automates your reminders so the CER remains genuinely “living”
+
+This not only meets the letter of ICH E6(R3) and EU MDR but elevates your CER Module to industry-leading, quality-by-design sophistication.
