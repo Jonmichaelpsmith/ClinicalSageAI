@@ -10,7 +10,10 @@ import logger from '../utils/logger.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
+const execPromise = promisify(exec);
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

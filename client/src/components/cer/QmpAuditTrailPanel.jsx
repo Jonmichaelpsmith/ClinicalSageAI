@@ -60,31 +60,31 @@ export default function QmpAuditTrailPanel() {
     }
   };
   
-  // Export audit trail to JSON
+  // Export audit trail to PDF
   const exportAuditTrail = async () => {
     setExportingPdf(true);
     try {
-      const response = await axios.get('/api/qmp/export-audit-trail', {
+      const response = await axios.get('/api/qmp/export-audit-trail-pdf', {
         responseType: 'blob',
       });
       
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `QMP_Audit_Trail_${new Date().toISOString().split('T')[0]}.json`);
+      link.setAttribute('download', `QMP_Audit_Trail_Report_${new Date().toISOString().split('T')[0]}.pdf`);
       document.body.appendChild(link);
       link.click();
       window.URL.revokeObjectURL(url);
       
       toast({
         title: 'Audit trail exported',
-        description: 'QMP audit trail has been exported to JSON successfully.',
+        description: 'QMP audit trail has been exported to PDF successfully.',
       });
     } catch (error) {
       console.error('Error exporting audit trail:', error);
       toast({
         title: 'Export failed',
-        description: 'Failed to export QMP audit trail. Please try again.',
+        description: 'Failed to export QMP audit trail report. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -178,7 +178,7 @@ export default function QmpAuditTrailPanel() {
             ) : (
               <>
                 <Download className="h-4 w-4 mr-1.5" />
-                <span>Export JSON</span>
+                <span>Export PDF Report</span>
               </>
             )}
           </Button>
