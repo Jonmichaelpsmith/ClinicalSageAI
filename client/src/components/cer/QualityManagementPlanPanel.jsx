@@ -16,6 +16,7 @@ import { cerApiService } from '@/services/CerAPIService';
 import { getComplianceMetrics } from '@/services/CerComplianceService';
 import ComplianceDashboardPanel from './ComplianceDashboardPanel';
 import ObjectiveComplianceCard from './ObjectiveComplianceCard';
+import QmpAuditTrailPanel from './QmpAuditTrailPanel';
 
 // ICH E6(R3) Compliant Quality Management Plan Component
 const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }) => {
