@@ -26,98 +26,32 @@ router.post('/documents/:documentId/validate', isAuthenticated, async (req, res)
     
     console.log(`Validating document ${documentId} against ${framework} framework`);
     
-    // In a production environment, this would:
-    // 1. Retrieve the document from the database
-    // 2. Validate against selected regulatory framework
-    // 3. Return detailed validation results
+    // Get document from database
+    const documentService = require('../services/documentService');
+    const document = await documentService.getDocumentById(documentId);
     
-    // For testing/demo - simulating a response with validation results
-    const validationResults = {
-      documentId,
-      framework,
-      timestamp: new Date().toISOString(),
-      validationResults: {
-        summary: {
-          overallScore: 82,
-          criticalIssues: 2,
-          majorIssues: 3,
-          minorIssues: 5,
-          recommendations: 8
-        },
-        sections: [
-          {
-            name: 'Device Description',
-            score: 95,
-            issues: [],
-            recommendations: ["Consider adding more detailed specifications"]
-          },
-          {
-            name: 'State of the Art',
-            score: 88,
-            issues: [
-              {
-                severity: 'minor',
-                description: 'Missing reference to latest clinical guidelines',
-                location: 'section:state_of_art:paragraph:3'
-              }
-            ],
-            recommendations: ["Update with latest clinical guidelines from 2025"]
-          },
-          {
-            name: 'Clinical Evaluation',
-            score: 72,
-            issues: [
-              {
-                severity: 'critical',
-                description: 'Insufficient clinical evidence for claimed indication',
-                location: 'section:clinical_evaluation:claims:2'
-              },
-              {
-                severity: 'major',
-                description: 'Incomplete analysis of clinical data',
-                location: 'section:clinical_evaluation:analysis'
-              }
-            ],
-            recommendations: [
-              "Add clinical data from latest studies",
-              "Expand analysis to cover all patient subgroups"
-            ]
-          },
-          {
-            name: 'Post-Market Surveillance',
-            score: 65,
-            issues: [
-              {
-                severity: 'critical',
-                description: 'PMS plan does not meet MDCG 2020-7 requirements',
-                location: 'section:pms:plan'
-              },
-              {
-                severity: 'major',
-                description: 'Missing PMCF studies',
-                location: 'section:pms:pmcf'
-              }
-            ],
-            recommendations: [
-              "Update PMS plan to align with MDCG 2020-7",
-              "Design appropriate PMCF studies"
-            ]
-          }
-        ],
-        regulatoryRequirements: [
-          {
-            requirement: "EU MDR Annex XIV, Part A, Section 1",
-            compliant: true,
-            details: "Device description is complete"
-          },
-          {
-            requirement: "EU MDR Annex XIV, Part A, Section 3",
-            compliant: false,
-            details: "Missing comprehensive benefit-risk analysis"
-          }
-        ]
-      }
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    
+    // Load regulatory requirements from database based on framework
+    const regulatoryService = require('../services/regulatoryService');
+    const regulatoryRequirements = await regulatoryService.getRequirements(framework);
+    
+    // Create a validation context with document content and requirements
+    const validationContext = {
+      document: document,
+      framework: framework,
+      requirements: regulatoryRequirements,
+      sectionsToValidate: sections.length > 0 ? sections : null // If specified, only validate these sections
     };
+    
+    // Use regulatory validation service to perform validation
+    const validationService = require('../services/validationService');
+    const validationResults = await validationService.validateDocument(validationContext);
+    
+    // Log validation result summary
+    console.log(`Validation complete for document ${documentId}. Score: ${validationResults.validationResults.summary.overallScore}. Critical issues: ${validationResults.validationResults.summary.criticalIssues}`);
     
     res.json(validationResults);
   } catch (error) {
@@ -138,14 +72,23 @@ router.post('/documents/:documentId/validate-enhanced', isAuthenticated, async (
     
     console.log(`Running enhanced validation for document ${documentId} against ${framework}`);
     
-    // In production, this would:
-    // 1. Retrieve the document from the database
-    // 2. Use GPT-4o to analyze the document content
-    // 3. Verify claims and references against authoritative sources
-    // 4. Check for regulatory compliance
-    // 5. Return comprehensive validation results
+    // Get document from database
+    const documentService = require('../services/documentService');
+    const document = await documentService.getDocumentById(documentId);
     
-    // For testing/demo - simulating a response
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    
+    // Load regulatory requirements from database based on framework
+    const regulatoryService = require('../services/regulatoryService');
+    const regulatoryRequirements = await regulatoryService.getRequirements(framework);
+    
+    // Extract references from document for verification
+    const referenceService = require('../services/referenceService');
+    const references = await referenceService.extractReferences(document);
+    
+    // Initialize base result structure
     const enhancedValidationResults = {
       documentId,
       framework,
@@ -153,105 +96,130 @@ router.post('/documents/:documentId/validate-enhanced', isAuthenticated, async (
       analysisMode: 'enhanced',
       validationResults: {
         summary: {
-          overallScore: 78,
-          criticalIssues: 3,
-          majorIssues: 5,
-          minorIssues: 8,
-          recommendations: 12
+          overallScore: 0,
+          criticalIssues: 0,
+          majorIssues: 0,
+          minorIssues: 0,
+          recommendations: 0
         },
-        hallucinations: [
-          {
-            text: "The device demonstrated a 97% success rate in clinical trials with over 5,000 patients.",
-            location: "section:clinical_evaluation",
-            confidence: 0.92,
-            details: "No clinical trial with 5,000 patients exists in the literature for this device. The largest study had 342 participants.",
-            suggestedCorrection: "The device demonstrated an 84% success rate in the largest clinical trial with 342 patients."
-          },
-          {
-            text: "A 2023 meta-analysis by Johnson et al. confirmed the safety profile across all age groups.",
-            location: "section:safety_analysis",
-            confidence: 0.87,
-            details: "No 2023 meta-analysis by Johnson exists for this device. The most recent meta-analysis was from 2021 by Silva et al.",
-            suggestedCorrection: "A 2021 meta-analysis by Silva et al. confirmed the safety profile in adults, though pediatric data remains limited."
-          }
-        ],
-        referenceIssues: [
-          {
-            reference: {
-              id: "ref-23",
-              text: "Smith et al. (2023) 'Long-term outcomes of the device', Journal of Clinical Research, 45(2), pp. 112-118."
-            },
-            valid: false,
-            confidence: 0.95,
-            issue: "Reference not found in literature databases",
-            suggestedCorrection: "Smith et al. (2022) 'Long-term outcomes of the device', Journal of Clinical Research, 44(2), pp. 112-118."
-          }
-        ],
-        sections: [
-          {
-            name: 'Device Description',
-            score: 85,
-            issues: [
-              {
-                severity: 'minor',
-                description: 'Missing detailed breakdown of materials',
-                location: 'section:device_description:materials'
-              }
-            ],
-            recommendations: ["Add comprehensive materials list with biocompatibility information"]
-          },
-          {
-            name: 'State of the Art',
-            score: 80,
-            issues: [
-              {
-                severity: 'major',
-                description: 'Does not reflect latest technological developments',
-                location: 'section:state_of_art:overall'
-              }
-            ],
-            recommendations: ["Update with technologies released in the past 18 months"]
-          },
-          {
-            name: 'Clinical Evaluation',
-            score: 68,
-            issues: [
-              {
-                severity: 'critical',
-                description: 'Multiple unsubstantiated claims detected',
-                location: 'section:clinical_evaluation:claims'
-              },
-              {
-                severity: 'major',
-                description: 'Analysis does not adequately address confounding factors',
-                location: 'section:clinical_evaluation:analysis:methodology'
-              }
-            ],
-            recommendations: [
-              "Revise all clinical claims to ensure they have proper evidence",
-              "Enhance methodology section with confounding factors analysis"
-            ]
-          }
-        ],
-        regulatoryRequirements: [
-          {
-            requirement: "EU MDR Article 61 - Clinical Evaluation",
-            compliant: false,
-            details: "Clinical evaluation does not demonstrate conformity with relevant general safety and performance requirements"
-          },
-          {
-            requirement: "MEDDEV 2.7/1 Rev 4 Section A2",
-            compliant: false,
-            details: "Literature search methodology is inadequate"
-          },
-          {
-            requirement: "EU MDR Annex XIV, Part B - PMCF",
-            compliant: false,
-            details: "PMCF plan lacks specific, measurable objectives"
-          }
-        ]
+        hallucinations: [],
+        referenceIssues: [],
+        sections: [],
+        regulatoryRequirements: []
       }
     };
+    
+    // 1. Perform enhanced validation using GPT-4o
+    console.log("Performing GPT-4o enhanced validation analysis...");
+    const openaiService = require('../services/openaiService');
+    
+    // Convert document to text for analysis
+    const documentText = documentService.convertToText(document);
+    
+    // Build prompt for GPT-4o
+    const systemPrompt = `You are an expert regulatory validator for Clinical Evaluation Reports (CER) in the medical device industry.
+You are analyzing a CER document for compliance with ${framework} framework.
+Your task is to:
+1. Identify potential hallucinations (claims not supported by evidence)
+2. Detect any inconsistencies within the document
+3. Evaluate adherence to regulatory requirements
+4. Find any scientific or medical inaccuracies
+5. Provide an overall assessment with specific, actionable recommendations
+
+Format your response as a valid JSON with the following structure:
+{
+  "summary": {
+    "overallScore": <number between 0-100>,
+    "criticalIssues": <number>,
+    "majorIssues": <number>,
+    "minorIssues": <number>,
+    "recommendations": <number>
+  },
+  "hallucinations": [
+    {
+      "text": "<the problematic claim>",
+      "location": "<section reference>",
+      "confidence": <number between 0-1>,
+      "details": "<explanation>",
+      "suggestedCorrection": "<suggested fix>"
+    }
+  ],
+  "sections": [
+    {
+      "name": "<section name>",
+      "score": <number between 0-100>,
+      "issues": [
+        {
+          "severity": "<critical|major|minor>",
+          "description": "<issue description>",
+          "location": "<precise location in document>"
+        }
+      ],
+      "recommendations": ["<recommendation 1>", "<recommendation 2>"]
+    }
+  ],
+  "regulatoryRequirements": [
+    {
+      "requirement": "<regulatory reference>",
+      "compliant": <boolean>,
+      "details": "<explanation>"
+    }
+  ]
+}`;
+
+    try {
+      const gpt4oResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Analyze this Clinical Evaluation Report for compliance with ${framework}:\n\n${documentText}` }
+        ],
+        temperature: 0.2,
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse and validate the response
+      const aiAnalysis = JSON.parse(gpt4oResponse.choices[0].message.content);
+      
+      // Update enhanced validation results with AI analysis
+      enhancedValidationResults.validationResults.summary = aiAnalysis.summary;
+      enhancedValidationResults.validationResults.hallucinations = aiAnalysis.hallucinations;
+      enhancedValidationResults.validationResults.sections = aiAnalysis.sections;
+      enhancedValidationResults.validationResults.regulatoryRequirements = aiAnalysis.regulatoryRequirements;
+      
+      console.log(`GPT-4o analysis complete. Overall score: ${aiAnalysis.summary.overallScore}`);
+    } catch (openaiError) {
+      console.error("Error during GPT-4o analysis:", openaiError);
+      throw new Error(`Enhanced validation failed during AI analysis: ${openaiError.message}`);
+    }
+    
+    // 2. Verify references against literature databases
+    console.log("Verifying document references against literature databases...");
+    
+    try {
+      const verifiedReferences = await Promise.all(
+        references.map(reference => referenceService.verifyReference(reference))
+      );
+      
+      // Add reference issues to results
+      enhancedValidationResults.validationResults.referenceIssues = verifiedReferences
+        .filter(result => !result.valid)
+        .map(result => ({
+          reference: result.reference,
+          valid: false,
+          confidence: result.confidence,
+          issue: result.issue,
+          suggestedCorrection: result.suggestedCorrection
+        }));
+      
+      console.log(`Reference verification complete. Found ${enhancedValidationResults.validationResults.referenceIssues.length} issues.`);
+    } catch (referenceError) {
+      console.error("Error during reference verification:", referenceError);
+      throw new Error(`Enhanced validation failed during reference verification: ${referenceError.message}`);
+    }
+    
+    // Log validation result summary
+    console.log(`Enhanced validation complete for document ${documentId}. Score: ${enhancedValidationResults.validationResults.summary.overallScore}. Critical issues: ${enhancedValidationResults.validationResults.summary.criticalIssues}`);
     
     res.json(enhancedValidationResults);
   } catch (error) {
@@ -275,35 +243,82 @@ router.post('/documents/:documentId/check-section', isAuthenticated, async (req,
     
     console.log(`Checking section ${section} of document ${documentId}`);
     
-    // For testing/demo
-    const sectionCheckResults = {
-      documentId,
-      section,
-      framework,
-      timestamp: new Date().toISOString(),
-      results: {
-        score: 72,
-        compliantWithRegulation: false,
-        issues: [
-          {
-            severity: 'major',
-            description: 'Content does not satisfy regulatory requirements',
-            details: 'Missing analysis required by MEDDEV 2.7/1 Rev 4'
-          },
-          {
-            severity: 'minor',
-            description: 'Formatting inconsistency detected',
-            details: 'Tables not following template format'
-          }
-        ],
-        recommendations: [
-          "Add missing analysis as per MEDDEV 2.7/1 Rev 4, Section 9",
-          "Restructure tables to match the approved template format"
-        ]
-      }
-    };
+    // Get document from database
+    const documentService = require('../services/documentService');
+    const document = await documentService.getDocumentById(documentId);
     
-    res.json(sectionCheckResults);
+    if (!document) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    
+    // Extract just the specified section
+    const sectionContent = documentService.getSectionContent(document, section);
+    
+    if (!sectionContent) {
+      return res.status(404).json({ error: 'Section not found in document' });
+    }
+    
+    // Load section-specific requirements from the regulatory framework
+    const regulatoryService = require('../services/regulatoryService');
+    const sectionRequirements = await regulatoryService.getSectionRequirements(section, framework);
+    
+    // Use GPT-4o to analyze the specific section
+    console.log(`Using GPT-4o to analyze section ${section} against ${framework} requirements`);
+    
+    const systemPrompt = `You are an expert regulatory validator for Clinical Evaluation Reports (CER) in the medical device industry.
+You are analyzing a specific section of a CER document for compliance with ${framework} framework.
+The section being analyzed is: ${section}
+
+Your task is to:
+1. Evaluate if the section satisfies all regulatory requirements
+2. Identify any missing elements required by the standard
+3. Check for consistency with standard format and structure
+4. Provide an overall assessment with specific, actionable recommendations
+
+Format your response as a valid JSON with the following structure:
+{
+  "score": <number between 0-100>,
+  "compliantWithRegulation": <boolean>,
+  "issues": [
+    {
+      "severity": "<critical|major|minor>",
+      "description": "<issue description>",
+      "details": "<details of the issue>"
+    }
+  ],
+  "recommendations": ["<recommendation 1>", "<recommendation 2>"]
+}`;
+
+    try {
+      const gpt4oResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Analyze this section (${section}) for compliance with ${framework}:\n\n${sectionContent}` }
+        ],
+        temperature: 0.2,
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse and validate the response
+      const aiAnalysis = JSON.parse(gpt4oResponse.choices[0].message.content);
+      
+      // Structure the final response
+      const sectionCheckResults = {
+        documentId,
+        section,
+        framework,
+        timestamp: new Date().toISOString(),
+        results: aiAnalysis
+      };
+      
+      console.log(`Section ${section} analysis complete. Score: ${aiAnalysis.score}`);
+      
+      res.json(sectionCheckResults);
+    } catch (error) {
+      console.error(`Error analyzing section ${section}:`, error);
+      throw new Error(`Section validation failed: ${error.message}`);
+    }
   } catch (error) {
     console.error('Error checking section:', error);
     res.status(500).json({ error: error.message });

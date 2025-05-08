@@ -1,0 +1,151 @@
+Quality Management Plan feature needs—its functions, user experience, data flows, and how it ties into every other component of your CER Generator.
+
+1. Purpose & Placement
+Why a QMS Plan?
+ICH E6(R3) mandates that every clinical document be governed by a formal Quality Management System. Embedding a Quality Management Plan (QMS Plan) ensures your CER is “quality‐by‐design,” with risks identified and controlled up front.
+
+Where in the Workflow?
+The QMS Plan lives immediately after your Evaluation Plan step, before users begin generating individual report sections. It acts as the keystone of your risk‐based approach, linking quality objectives to every downstream action.
+
+2. Key Features & Data Captured
+Plan Metadata
+
+Plan Name & Version (e.g. “Stentra LX CER QMS Plan v1.0”)
+
+Associated CER ID & Version
+
+Author & Date (auto‐filled from user profile and timestamp)
+
+Quality Objectives
+
+Description: Free‐text statement of what must be achieved (e.g., “Ensure completeness of literature search for safety signals”).
+
+Scope: Which part(s) of the CER the objective affects (e.g. “Safety Profile,” “Benefit-Risk Analysis,” “Entire Document”).
+
+Risk Rating: High/Medium/Low relative impact if the objective is unmet.
+
+Control/Mitigation: Planned actions or checks (e.g. “Automated FAERS frequency cross-check”).
+
+Critical-to-Quality (CtQ) Factors
+For each Quality Objective, one or more CtQ factors specify the exact data points or processes to monitor:
+
+Name: e.g. “ADE Frequency Capture,” “Citation Accuracy,” “Section Presence.”
+
+Description: What this factor measures (e.g. “Adverse event rates pulled from FAERS must match table summary”).
+
+Associated CER Section: Link to the specific CER section key (e.g. “Safety Profile,” “Literature Review”).
+
+Risk Level: High/Medium/Low for that particular factor.
+
+Mitigation: How discrepancies will be detected and corrected (e.g. “Flag if FAERS count deviates >5% from previous pull”).
+
+3. UI/UX Integration
+Tab Layout:
+In your CERV2Page, add a “Quality Management Plan” tab between “Evaluation Plan” and “Section Generator.”
+
+Plan Canvas:
+
+Top area shows metadata (plan name, CER version).
+
+A collapsible list of Quality Objectives. Each objective panel expands to show its CtQ factors.
+
+“Add Objective” and “Add CtQ Factor” buttons inline.
+
+Inline Help & Examples:
+Next to each field, add tooltip icons explaining terms:
+
+“What is a Quality Objective? Define a high-level goal you must achieve in this CER.”
+“CtQ Factor: a measurable attribute or data point that directly impacts quality.”
+
+Validation Hints:
+
+Warn if no objectives or no CtQ factors exist.
+
+Highlight any CtQ factor whose “Associated Section” is not yet generated (i.e. the user hasn’t created that section in the Section Generator).
+
+4. Data Flow & Interoperability
+Creation & Persistence
+
+When the user saves the QMS Plan, objectives and factors are stored in your database keyed to the CER.
+
+Section Generation Interaction
+
+Pre-Generate Check: Before any AI section generation, a gating check verifies that every CtQ factor tied to that section has its input present (e.g. if a CtQ factor targets “Literature Review,” at least one study must have been ingested).
+
+Context Injection: The AI prompt for a section can include relevant Quality Objectives and CtQ factors to remind the model of quality requirements, reducing hallucinations.
+
+Compliance Engine
+
+The Compliance Validation module reads the QMS Plan:
+
+It flags missing sections for any CtQ factor.
+
+It evaluates risk ratings: high-risk CtQ factors generate warnings if not satisfied.
+
+Outputs a compliance score that now incorporates QMS adherence, not just MDR checklist.
+
+Report Preview & Q&A
+
+In the Report Preview, include a sidebar widget “QMS Overview” summarizing objectives and CtQ factors, with indicators (✔️/⚠️) of whether each factor has been met in the current draft.
+
+The AI Assistant can answer questions like:
+
+“Show me all High-risk QMS factors tied to the Safety Profile.”
+“Have all CtQ factors for Benefit-Risk Analysis been satisfied?”
+
+Export Integration
+
+The final PDF/Word export inserts a new “Quality Management Plan” section after the Evaluation Plan:
+
+Plan Metadata (name, version, date)
+
+Table of Quality Objectives (columns: objective, scope, risk rating, mitigation)
+
+CtQ Factor Tables under each objective, including “Associated CER Section” and “Current Status”
+
+Hyperlinks anchor each CtQ factor to its associated CER section in the document for easy review.
+
+Audit Trail & eSignatures
+
+Every change to the QMS Plan (new objective, updated mitigation) is logged with user, timestamp, and old vs. new values.
+
+Before final export, require an eSignature on the QMS Plan section, recorded alongside the overall CER sign-off.
+
+Lifecycle & Reminders
+
+Upon CER approval, the system schedules reminders based on QMS Plan CtQ factors:
+
+High-risk factors → quarterly checks
+
+Medium/Low → semi-annual
+
+Reminders surface in the Dashboard and can auto-trigger re-ingestion (FAERS, literature) or re-validation runs.
+
+5. How It Strengthens the CER Module
+Risk-Based Quality: Shifts the module from mere document generation to a risk-managed process, ensuring focus on the most critical data and sections.
+
+Regulatory Traceability: Provides clear evidence that you’ve identified what matters most (CtQ factors) and taken steps to monitor and control them—key for both ICH E6(R3) and MDR audits.
+
+AI Reliability: By embedding the QMS context into AI prompts and compliance checks, you reduce hallucinations and ensure AI outputs align with your defined quality standards.
+
+User Confidence: Users can see, at a glance, which quality objectives are complete, which need attention, and exactly how everything links to the final report.
+
+Continuous Improvement: The reminder and audit mechanisms mean the CER isn’t a static deliverable—it’s a living part of your QMS ecosystem, updated as new data arrives or risks evolve.
+
+Next Steps
+Design Review: Validate the QMS Plan UX mock-ups with your clinical quality and regulatory teams.
+
+Data Model Finalization: Confirm the list of scopes (CER sections) and risk rating conventions.
+
+API & Compliance Engine Alignment: Define how your compliance rules will query QMS Plan data.
+
+User Training: Prepare guidance materials on writing effective Quality Objectives and CtQ factors.
+
+By weaving the QMS Plan tightly into every phase—from data ingestion through AI generation, compliance checking, preview, export, and post-market maintenance—you’ll fully embrace ICH E6(R3)’s risk-based, technology-enabled quality paradigm within your CER Generator.
+
+
+
+
+
+
+
