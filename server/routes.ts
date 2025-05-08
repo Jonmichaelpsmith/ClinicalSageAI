@@ -9,6 +9,7 @@ import documentRouter from './routes/document-routes';
 import emergencyFixRouter from './routes/emergency-fix.js';
 import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
+import internalClinicalDataRouter from './routes/internal-clinical-data.js';  // Add internal clinical data API
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
@@ -109,6 +110,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Equivalence API routes
   app.use('/api/cer/equivalence', equivalenceRouter);
+  
+  // Register Internal Clinical Data API routes
+  app.use('/api/cer/internal-data', internalClinicalDataRouter);
   
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
