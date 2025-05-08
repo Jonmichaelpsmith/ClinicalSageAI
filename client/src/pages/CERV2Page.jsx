@@ -842,6 +842,15 @@ export default function CERV2Page() {
           <h1 className="text-2xl font-semibold text-[#323130] mb-1">CER Builder</h1>
           <p className="text-[#616161]">EU MDR compliant Clinical Evaluation Report generator</p>
         </div>
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+          onClick={() => window.location.href = '/cer-projects'}
+        >
+          <FolderOpen className="h-4 w-4" />
+          Manage CER Projects
+        </Button>
         
         <div className="flex gap-2 mt-2 md:mt-0">
           <Button
