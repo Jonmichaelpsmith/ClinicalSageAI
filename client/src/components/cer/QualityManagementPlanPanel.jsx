@@ -490,6 +490,10 @@ ${objectives.map(obj => `
 
 **Status:** ${obj.status.charAt(0).toUpperCase() + obj.status.slice(1)}
 
+${obj.scopeSections && obj.scopeSections.length > 0 ? `**Applicable CER Sections:** ${obj.scopeSections.join(', ')}` : ''}
+
+${obj.mitigationActions ? `**Mitigation / Control Actions:**\n${obj.mitigationActions}` : ''}
+
 ${getCtqFactorsForObjective(obj.id)}
 `).join('')}
 
@@ -946,6 +950,32 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                               <p className="text-xs text-[#605E5C]">{objective.responsible}</p>
                             </div>
                           )}
+                          
+                          {/* Display Scope Sections if available */}
+                          {objective.scopeSections && objective.scopeSections.length > 0 && (
+                            <div className="mt-3">
+                              <p className="text-xs font-medium text-[#605E5C] mb-1">Scope Sections:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {objective.scopeSections.map(section => (
+                                  <Badge 
+                                    key={section} 
+                                    variant="outline"
+                                    className="bg-[#EFF6FC] text-[#0F6CBD] border-[#0F6CBD] text-xs"
+                                  >
+                                    {section}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Display Mitigation Actions if available */}
+                          {objective.mitigationActions && (
+                            <div className="mt-3">
+                              <p className="text-xs font-medium text-[#605E5C]">Mitigation / Control Actions:</p>
+                              <p className="text-xs text-[#605E5C] whitespace-pre-line">{objective.mitigationActions}</p>
+                            </div>
+                          )}
                         </CardContent>
                         <CardFooter className="p-3 pt-0 flex justify-between items-center">
                           <div className="flex space-x-1">
@@ -1144,7 +1174,9 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                         measures: '',
                         responsible: '',
                         timeline: '',
-                        status: 'planned' 
+                        status: 'planned',
+                        scopeSections: [],
+                        mitigationActions: ''
                       });
                       setIsEditing(false);
                     }}
