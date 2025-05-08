@@ -386,10 +386,12 @@ export default function CERV2Page() {
     if (activeTab === 'risk-management') {
       return (
         <RiskManagementPanel
+          jobId={`cer-${Date.now()}`}
           deviceName={deviceName}
           deviceType={deviceType}
           manufacturer={manufacturer}
-          onAddToReport={(riskData) => {
+          sections={sections}
+          onAddToCER={(riskData) => {
             const existingIndex = sections.findIndex(
               section => section.type === 'risk-management' || 
               (section.title && section.title.toLowerCase().includes('risk management'))
