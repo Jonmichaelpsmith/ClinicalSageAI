@@ -58,6 +58,11 @@ import qmpRoutes from './routes/qmp.js';
 app.use('/api/qmp', qmpRoutes);
 console.log('QMP API routes registered');
 
+// Import and register QMP audit trail routes
+import qmpAuditRoutes from './routes/qmp-audit.js';
+app.use('/api/qmp', qmpAuditRoutes);
+console.log('QMP Audit Trail routes registered');
+
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
