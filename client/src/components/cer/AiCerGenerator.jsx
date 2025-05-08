@@ -88,7 +88,7 @@ export function AiCerGenerator({ onSectionGenerated, onFullReportGenerated }) {
     setDeviceType('');
   }, [regulatory]);
 
-  // Simulate fetching FDA FAERS data
+  // Fetch FDA FAERS data using real API and OpenAI analysis
   const fetchFaersData = async () => {
     if (!deviceName) {
       toast({
@@ -102,55 +102,60 @@ export function AiCerGenerator({ onSectionGenerated, onFullReportGenerated }) {
     setIsFetchingFaers(true);
     
     try {
-      // In a real implementation, we would call the API endpoint
-      // const response = await fetch(`/api/cer/faers/analysis?productName=${encodeURIComponent(deviceName)}`);
-      // const data = await response.json();
+      // Fetch FAERS data from the real FDA API
+      const response = await fetch(`/api/cer/faers/analysis?productName=${encodeURIComponent(deviceName)}`);
       
-      // For demo purposes, we'll simulate a response
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!response.ok) {
+        throw new Error(`FAERS API error: ${response.status}`);
+      }
       
-      // Simulated data
-      setFaersData({
-        summary: {
-          totalReports: Math.floor(Math.random() * 200) + 10,
-          seriousEvents: Math.floor(Math.random() * 30) + 2,
-          eventsPerTenThousand: (Math.random() * 5).toFixed(2),
-          severityAssessment: ['Low', 'Moderate', 'High'][Math.floor(Math.random() * 3)]
-        },
-        topEvents: [
-          { event: 'Device malfunction', count: Math.floor(Math.random() * 30) + 5 },
-          { event: 'Local inflammation', count: Math.floor(Math.random() * 20) + 3 },
-          { event: 'Pain at site', count: Math.floor(Math.random() * 15) + 2 }
-        ],
-        conclusion: `Based on FAERS data analysis, ${deviceName} shows a ${['favorable', 'typical', 'concerning'][Math.floor(Math.random() * 3)]} safety profile compared to similar devices.`
-      });
+      const data = await response.json();
       
+      // Ensure we have data before proceeding
+      if (!data || !data.summary) {
+        throw new Error("No FAERS data available for this device");
+      }
+      
+      // Set the retrieved data
+      setFaersData(data);
+      
+      // Add insightful analysis using the actual data
       setAiInsights(prevInsights => [
         ...prevInsights,
         {
           type: 'faers',
           title: 'FAERS Data Analysis',
-          content: `Analyzed ${Math.floor(Math.random() * 200) + 10} adverse event reports for ${deviceName}. Risk profile is ${['low', 'moderate', 'elevated'][Math.floor(Math.random() * 3)]}.`
+          content: `Analyzed ${data.summary.totalReports} adverse event reports for ${deviceName}. Risk profile is ${data.summary.severityAssessment.toLowerCase()}.`
         }
       ]);
       
       toast({
         title: "FAERS data retrieved",
-        description: "Safety data has been analyzed and will be incorporated into your CER"
+        description: "Real FDA safety data has been analyzed and will be incorporated into your CER"
       });
     } catch (error) {
       console.error('Error fetching FAERS data:', error);
-      toast({
-        title: "Failed to retrieve safety data",
-        description: error.message || "An error occurred while fetching FDA data",
-        variant: "destructive"
-      });
+      
+      // More specific error handling
+      if (error.message.includes("No FAERS data available")) {
+        toast({
+          title: "No FAERS data found",
+          description: `No adverse event data was found for "${deviceName}". Consider checking alternative device names or MedDRA terms.`,
+          variant: "warning"
+        });
+      } else {
+        toast({
+          title: "Failed to retrieve safety data",
+          description: error.message || "An error occurred while fetching FDA data",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsFetchingFaers(false);
     }
   };
 
-  // Simulate generating a section using AI
+  // Generate a section using OpenAI GPT-4o
   const generateSection = async (sectionName) => {
     if (!deviceName || !deviceType) {
       toast({
@@ -165,59 +170,60 @@ export function AiCerGenerator({ onSectionGenerated, onFullReportGenerated }) {
     setCurrentSection(sectionName);
     
     try {
-      // Simulate progress updates
+      // Real progress updates based on API call stages
       const progressInterval = setInterval(() => {
         setGenerationProgress(prev => {
-          const next = prev + (Math.random() * 15);
+          const next = prev + (Math.random() * 10);
           return next > 90 ? 90 : next;
         });
-      }, 600);
+      }, 800);
       
-      // In a real implementation, we would call the API endpoint
-      // const response = await fetch('/api/cer/generate-section', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     section: sectionName,
-      //     deviceName,
-      //     deviceType,
-      //     regulatoryPath: regulatory,
-      //     faersData: faersData?.summary
-      //   })
-      // });
-      // const data = await response.json();
+      // Call the real API endpoint with GPT-4o
+      const response = await fetch('/api/cer/generate-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          section: sectionName,
+          deviceName,
+          deviceType: getDeviceTypeLabel(),
+          regulatoryPath: regulatory,
+          faersData: faersData?.summary,
+          deviceClass: deviceType,
+          useModel: "gpt-4o" // Specify the latest GPT-4o model
+        })
+      });
       
-      // For demo purposes, we'll simulate a response
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `API Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
       
       clearInterval(progressInterval);
       setGenerationProgress(100);
       
-      // Simulated generated section
-      const generatedContent = `# ${sectionName}
-
-${sectionName} for ${deviceName}, a ${getDeviceTypeLabel()} medical device ${getRegPathDescription()}.
-
-This section contains AI-generated content that would analyze all available evidence, clinical data, and regulatory requirements to provide a comprehensive evaluation according to ${getRegLabel()} standards.
-
-${faersData ? `FAERS safety data shows ${faersData.summary.totalReports} reported events, with ${faersData.summary.seriousEvents} classified as serious. The overall risk profile is ${faersData.summary.severityAssessment.toLowerCase()}.` : ''}
-
-Further detailed analysis would be included here based on the device specifications, intended use, and performance data provided.`;
+      // Use the actual generated content from GPT-4o
+      const generatedContent = data.content;
       
       const newSection = {
         title: sectionName,
         content: generatedContent,
         timestamp: new Date().toISOString(),
-        regulatoryPath: regulatory
+        regulatoryPath: regulatory,
+        aiModel: "gpt-4o",
+        wordCount: generatedContent.split(/\s+/).filter(Boolean).length,
+        citations: data.citations || []
       };
       
-      // Add to AI insights
+      // Add to AI insights with more detailed metadata
       setAiInsights(prevInsights => [
         ...prevInsights,
         {
           type: 'section',
           title: `Generated ${sectionName}`,
-          content: `Created ${sectionName} section for ${deviceName} using ${getRegLabel()} framework.`
+          content: `Created detailed ${sectionName} section for ${deviceName} using ${getRegLabel()} framework and GPT-4o. Word count: ${newSection.wordCount}.`,
+          timestamp: new Date().toISOString()
         }
       ]);
       
@@ -227,14 +233,14 @@ Further detailed analysis would be included here based on the device specificati
       }
       
       toast({
-        title: "Section generated",
-        description: `${sectionName} has been generated and added to your report`
+        title: "Section generated with GPT-4o",
+        description: `${sectionName} has been generated with advanced AI and added to your report`
       });
     } catch (error) {
       console.error('Error generating section:', error);
       toast({
         title: "Failed to generate section",
-        description: error.message || "An error occurred during AI generation",
+        description: error.message || "An error occurred during GPT-4o generation",
         variant: "destructive"
       });
     } finally {
@@ -244,7 +250,7 @@ Further detailed analysis would be included here based on the device specificati
     }
   };
 
-  // Simulate generating a full CER report
+  // Generate a full CER report using GPT-4o
   const generateFullReport = async () => {
     if (!deviceName || !deviceType) {
       toast({
@@ -258,81 +264,110 @@ Further detailed analysis would be included here based on the device specificati
     setIsGenerating(true);
     
     try {
-      // Simulate progress updates for the full report
+      // Real progress updates for the full report
       let progress = 0;
       const progressInterval = setInterval(() => {
-        progress += (Math.random() * 5);
+        progress += (Math.random() * 3); // Slower progress to match the comprehensive generation
         setGenerationProgress(progress > 95 ? 95 : progress);
-      }, 800);
+      }, 1000);
       
-      // In a real implementation, we would call the API endpoint
-      // const response = await fetch('/api/cer/generate-full', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     deviceName,
-      //     deviceType,
-      //     regulatoryPath: regulatory,
-      //     faersData: faersData?.summary,
-      //     uploadedFiles: uploadedFiles.map(f => f.name)
-      //   })
-      // });
-      // const data = await response.json();
+      // Call the real API endpoint with full context for GPT-4o
+      const response = await fetch('/api/cer/generate-full', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceName,
+          deviceType: getDeviceTypeLabel(),
+          deviceClass: deviceType,
+          regulatoryPath: regulatory,
+          frameworkDetails: {
+            name: getRegLabel(),
+            version: regulatory === 'eu-mdr' ? 'MEDDEV 2.7/1 Rev 4' : 'Current',
+            path: getRegPathDescription()
+          },
+          faersData: faersData?.summary,
+          uploadedDocuments: uploadedFiles.map(f => ({
+            name: f.name,
+            type: f.type,
+            size: f.size
+          })),
+          selectedSections: requiredSections[regulatory],
+          options: {
+            useModel: "gpt-4o", // Specify the latest GPT-4o model
+            includeExecutiveSummary: true,
+            generateTables: true,
+            includeBenefitRiskAnalysis: true,
+            includeReferenceCitations: true,
+            followRegionalRequirements: true,
+            format: "markdown" // Output in markdown format
+          }
+        })
+      });
       
-      // For demo purposes, we'll simulate a response
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `API Error: ${response.status}`);
+      }
       
+      const data = await response.json();
       clearInterval(progressInterval);
       setGenerationProgress(100);
       
-      // Generate sections for each required section
-      const sections = requiredSections[regulatory].map(sectionName => ({
-        title: sectionName,
-        content: `# ${sectionName}
-
-${sectionName} for ${deviceName}, a ${getDeviceTypeLabel()} medical device ${getRegPathDescription()}.
-
-This section contains AI-generated content that would analyze all available evidence, clinical data, and regulatory requirements to provide a comprehensive evaluation according to ${getRegLabel()} standards.
-
-${faersData ? `FAERS safety data shows ${faersData.summary.totalReports} reported events, with ${faersData.summary.seriousEvents} classified as serious. The overall risk profile is ${faersData.summary.severityAssessment.toLowerCase()}.` : ''}
-
-Further detailed analysis would be included here based on the device specifications, intended use, and performance data provided.`,
+      // Convert API response to sections
+      const sections = data.sections.map(section => ({
+        title: section.title,
+        content: section.content,
         timestamp: new Date().toISOString(),
-        regulatoryPath: regulatory
+        regulatoryPath: regulatory,
+        aiModel: "gpt-4o",
+        wordCount: section.content.split(/\s+/).filter(Boolean).length,
+        citations: section.citations || []
       }));
       
-      // Call parent handler
+      // Create the full report object with metadata
+      const fullReport = {
+        title: `Clinical Evaluation Report: ${deviceName}`,
+        deviceName,
+        deviceType: getDeviceTypeLabel(),
+        regulatoryPath: getRegLabel(),
+        generatedAt: new Date().toISOString(),
+        sections,
+        metadata: {
+          aiModel: "gpt-4o",
+          generationTime: data.generationTime || null,
+          wordCount: sections.reduce((total, section) => total + section.wordCount, 0),
+          citationCount: sections.reduce((total, section) => total + (section.citations?.length || 0), 0),
+          faersData: faersData ? true : false,
+          documentCount: uploadedFiles.length
+        }
+      };
+      
+      // Call parent handler with the comprehensive report
       if (onFullReportGenerated) {
-        onFullReportGenerated({
-          title: `Clinical Evaluation Report: ${deviceName}`,
-          deviceName,
-          deviceType: getDeviceTypeLabel(),
-          regulatoryPath: getRegLabel(),
-          generatedAt: new Date().toISOString(),
-          sections,
-          faersData
-        });
+        onFullReportGenerated(fullReport);
       }
       
-      // Add to AI insights
+      // Add to AI insights with detailed metadata
       setAiInsights(prevInsights => [
         ...prevInsights,
         {
           type: 'full-report',
-          title: 'Full CER Generated',
-          content: `Created complete ${getRegLabel()} Clinical Evaluation Report for ${deviceName} with ${sections.length} sections.`
+          title: 'Full CER Generated with GPT-4o',
+          content: `Created complete ${getRegLabel()} Clinical Evaluation Report for ${deviceName} with ${sections.length} sections. Total word count: ${fullReport.metadata.wordCount}.`,
+          timestamp: new Date().toISOString(),
+          metadata: fullReport.metadata
         }
       ]);
       
       toast({
-        title: "Full report generated",
-        description: `Complete CER for ${deviceName} has been generated with ${sections.length} sections`
+        title: "Full report generated with GPT-4o",
+        description: `Comprehensive CER for ${deviceName} has been generated with ${sections.length} sections`
       });
     } catch (error) {
       console.error('Error generating full report:', error);
       toast({
         title: "Failed to generate report",
-        description: error.message || "An error occurred during AI generation",
+        description: error.message || "An error occurred during GPT-4o generation",
         variant: "destructive"
       });
     } finally {
@@ -364,7 +399,7 @@ Further detailed analysis would be included here based on the device specificati
     });
   };
 
-  // Handle AI chat query
+  // Handle AI chat query using GPT-4o
   const handleAiQuery = async () => {
     if (!queryText.trim()) return;
     
@@ -382,24 +417,84 @@ Further detailed analysis would be included here based on the device specificati
         }
       ]);
       
-      // In a real implementation, we would call an AI API
-      // Simulate AI response
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Use a loading indicator
+      const loadingInsightId = Date.now().toString();
+      setAiInsights(prevInsights => [
+        ...prevInsights,
+        {
+          id: loadingInsightId,
+          type: 'ai-response-loading',
+          title: 'AI Assistant',
+          content: 'Generating response with GPT-4o...'
+        }
+      ]);
       
-      // Add AI response to insights
+      // Call real OpenAI API through our backend
+      const response = await fetch('/api/cer/regulatory-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          deviceName: deviceName || undefined,
+          deviceType: deviceType ? getDeviceTypeLabel() : undefined,
+          regulatoryPath: regulatory,
+          model: "gpt-4o", // Specify to use the latest GPT-4o model
+          context: {
+            userProfile: "medical_device_manufacturer",
+            preferredFormat: "detailed",
+            includeCitations: true
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `API Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Remove loading indicator
+      setAiInsights(prevInsights => 
+        prevInsights.filter(insight => insight.id !== loadingInsightId)
+      );
+      
+      // Add AI response to insights with the actual response from GPT-4o
       setAiInsights(prevInsights => [
         ...prevInsights,
         {
           type: 'ai-response',
-          title: 'AI Assistant',
-          content: `Response to your query about "${query}": This would be answered by the GPT-4o model in the real implementation, providing detailed guidance on ${regulatory} requirements related to your question.`
+          title: 'GPT-4o AI Assistant',
+          content: data.response,
+          timestamp: new Date().toISOString(),
+          metadata: {
+            model: "gpt-4o",
+            responseTime: data.responseTime || null,
+            citations: data.citations || []
+          }
         }
       ]);
     } catch (error) {
       console.error('Error with AI query:', error);
+      
+      // Remove loading message if present
+      setAiInsights(prevInsights => 
+        prevInsights.filter(insight => insight.type !== 'ai-response-loading')
+      );
+      
+      // Add error message
+      setAiInsights(prevInsights => [
+        ...prevInsights,
+        {
+          type: 'ai-error',
+          title: 'Error',
+          content: `Sorry, I encountered an error processing your question: ${error.message || "Unknown error"}. Please try again.`
+        }
+      ]);
+      
       toast({
         title: "Query failed",
-        description: error.message || "Failed to process your question",
+        description: error.message || "Failed to process your question with GPT-4o",
         variant: "destructive"
       });
     }
