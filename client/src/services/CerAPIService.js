@@ -2021,4 +2021,87 @@ cerApiService.generateQmpTraceabilityReport = async ({ deviceName, qmpData, sect
   }
 };
 
+/**
+ * Get Quality Management Plan data
+ * Retrieves QMP data including ICH E6(R3) objectives and Critical-to-Quality factors 
+ * @returns {Promise<Object>} - The QMP data
+ */
+cerApiService.getQmpData = async () => {
+  try {
+    // Make API request to get QMP data
+    const response = await fetch('/api/qmp-api/data', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error retrieving QMP data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getQmpData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Save Quality Management Plan data
+ * Stores QMP data including ICH E6(R3) objectives and Critical-to-Quality factors
+ * @param {Object} qmpData - The QMP data to save
+ * @returns {Promise<Object>} - Response with success status
+ */
+cerApiService.saveQmpData = async (qmpData) => {
+  try {
+    // Make API request to save QMP data
+    const response = await fetch('/api/qmp-api/data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(qmpData)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error saving QMP data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in saveQmpData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get available CER sections
+ * Retrieves all available sections in the current CER document
+ * @returns {Promise<Object>} - The CER sections data
+ */
+cerApiService.getCerSections = async () => {
+  try {
+    // Make API request to get CER sections
+    const response = await fetch('/api/cer/sections', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error retrieving CER sections: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getCerSections:', error);
+    throw error;
+  }
+};
+
 export { cerApiService };
