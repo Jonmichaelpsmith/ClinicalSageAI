@@ -277,51 +277,69 @@ export default function CERV2Page() {
 
           {/* Tab Content */}
           <TabsContent value="builder" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
-                <h2 className="text-xl font-semibold mb-4">Section Generator</h2>
-                <div className="bg-[#EFF6FC] rounded-md px-3 py-1 text-sm inline-flex items-center gap-1 mb-4 text-[#0F6CBD]">
-                  <span>AI-Powered</span>
+            <div className="bg-[#F9F9F9] py-4">
+              <div className="flex flex-col md:flex-row items-start justify-between">
+                <div className="flex-1 px-4">
+                  <h2 className="text-xl font-semibold text-[#323130]">Section Generator</h2>
+                  <div className="mt-2 mb-4">
+                    <div className="bg-[#EFF6FC] rounded-md px-3 py-1 text-sm inline-flex items-center gap-1 text-[#0F6CBD]">
+                      <span>AI-Powered</span>
+                    </div>
+                  </div>
+                  <CerBuilderPanel
+                    title={title}
+                    faers={faers}
+                    comparators={comparators}
+                    sections={sections}
+                    onTitleChange={setTitle}
+                    onSectionsChange={setSections}
+                    onFaersChange={setFaers}
+                    onComparatorsChange={setComparators}
+                  />
                 </div>
-                <CerBuilderPanel
-                  title={title}
-                  faers={faers}
-                  comparators={comparators}
-                  sections={sections}
-                  onTitleChange={setTitle}
-                  onSectionsChange={setSections}
-                  onFaersChange={setFaers}
-                  onComparatorsChange={setComparators}
-                />
+                <div className="w-full md:w-auto md:min-w-[280px] md:max-w-[320px] px-4 mt-6 md:mt-0">
+                  <h2 className="text-xl font-semibold text-[#323130]">Report Sections</h2>
+                  <div className="mt-2 mb-4">
+                    <div className="bg-[#F3F2F1] rounded px-3 py-1 text-sm inline-flex items-center gap-1">
+                      <span>{sections.length} sections</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h3 className="text-md font-medium mb-2 text-[#323130]">Report Title</h3>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="w-full p-2 border border-[#E1DFDD] rounded"
+                      placeholder="Clinical Evaluation Report"
+                    />
+                  </div>
+                  
+                  {sections.length > 0 ? (
+                    <div className="space-y-2">
+                      {sections.map((section, idx) => (
+                        <div key={idx} className="bg-[#F3F2F1] p-2 rounded text-sm">
+                          {section.title}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 text-sm italic">
+                      No sections added yet. Generate sections from the tools on the left.
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="md:col-span-1">
-                <h2 className="text-xl font-semibold mb-4">Report Sections</h2>
-                <div className="bg-[#F3F2F1] rounded px-3 py-1 text-sm inline-flex items-center gap-1 mb-4">
-                  <span>{sections.length} sections</span>
-                </div>
-                
-                <h3 className="text-lg font-medium mb-2">Report Title</h3>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full p-2 mb-4 border border-[#E1DFDD] rounded"
-                  placeholder="Clinical Evaluation Report"
-                />
-                
-                {sections.length > 0 ? (
-                  <div className="space-y-2">
-                    {sections.map((section, idx) => (
-                      <div key={idx} className="bg-[#F3F2F1] p-2 rounded text-sm">
-                        {section.title}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-gray-500 text-sm italic">
-                    No sections added yet. Generate sections from the tools on the left.
-                  </div>
-                )}
+              <div className="px-4 mt-4 text-center">
+                <Button 
+                  onClick={() => handleExport('docx')} 
+                  className="bg-transparent text-[#0F6CBD] hover:bg-[#EFF6FC] border-none" 
+                  variant="outline"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
               </div>
             </div>
           </TabsContent>
