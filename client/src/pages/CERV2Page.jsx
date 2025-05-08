@@ -145,11 +145,11 @@ export default function CERV2Page() {
         {tabGroups.map((group, groupIndex) => (
           <div 
             key={groupIndex} 
-            className={`overflow-x-auto whitespace-nowrap bg-[#f3f2f1] border-b border-[#000000] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''}`}
+            className={`overflow-x-auto whitespace-nowrap bg-white border-b border-[#E1DFDD] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''}`}
           >
             <div className="flex items-center px-6">
-              <div className="flex items-center mr-4 flex-shrink-0 bg-[#444444] px-3 py-1 rounded-sm border border-black">
-                <span className={`text-xs font-medium ${group.label === "Preparation" || group.label === "Evidence" || group.label === "Analysis" ? "text-[#FF69B4]" : "text-[#605E5C]"}`}>{group.label}</span>
+              <div className="flex items-center mr-4 flex-shrink-0 bg-[#323130] px-3 py-1 rounded-sm">
+                <span className={`text-xs font-medium ${group.label === "Preparation" || group.label === "Evidence" || group.label === "Analysis" ? "text-[#FF69B4]" : "text-white"}`}>{group.label}</span>
               </div>
               
               <div className="inline-flex items-center">
@@ -158,7 +158,7 @@ export default function CERV2Page() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      flex-shrink-0 mx-1 rounded-none border border-black border-b-2 px-3 py-1 
+                      flex-shrink-0 mx-1 rounded-none border-b-2 px-3 py-1 
                       font-normal text-xs sm:text-sm flex items-center
                       ${activeTab === tab.id 
                         ? 'border-b-[#0F6CBD] text-[#0F6CBD]' 
