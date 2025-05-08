@@ -13,18 +13,20 @@ import React from 'react';
  */
 export default function TabRow({ children, label, className = '' }) {
   return (
-    <div className={`border-b border-[#E1DFDD] mb-2 ${className}`}>
-      <div className="flex overflow-x-auto whitespace-nowrap px-6 py-1">
+    <div className={`overflow-x-auto whitespace-nowrap bg-white border-b border-[#E1DFDD] py-2 ${className}`}>
+      <div className="flex items-center px-6">
         {label && (
-          <div className="flex items-center mr-3 flex-shrink-0">
+          <div className="flex items-center mr-4 flex-shrink-0">
             <span className="text-xs font-medium text-[#605E5C]">{label}</span>
           </div>
         )}
-        {React.Children.map(children, child => 
-          child ? React.cloneElement(child, { 
-            className: `${child.props.className || ''} flex-shrink-0`
-          }) : null
-        )}
+        <div className="inline-flex items-center">
+          {React.Children.map(children, child => 
+            child ? React.cloneElement(child, { 
+              className: `${child.props.className || ''} flex-shrink-0 mx-1`
+            }) : null
+          )}
+        </div>
       </div>
     </div>
   );
