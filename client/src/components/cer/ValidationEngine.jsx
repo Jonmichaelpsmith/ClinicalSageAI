@@ -18,6 +18,7 @@ import { cerApiService } from '@/services/CerAPIService';
 import { cerValidationService } from '@/services/CerValidationService';
 import { cerAiValidationService } from '@/services/CerAiValidationService';
 import axios from 'axios';
+import QmpIntegrationHelp from './QmpIntegrationHelp';
 import CerValidationPanel from './CerValidationPanel';
 import {
   Tabs,
@@ -628,6 +629,20 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
                   </Tooltip>
                 </TooltipProvider>
               </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="link" 
+                    className="text-xs p-0 h-auto text-[#E3008C]" 
+                    size="sm"
+                  >
+                    Learn More
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl">
+                  <QmpIntegrationHelp onClose={() => document.querySelector('[data-state="open"][role="dialog"] button[aria-label="Close"]').click()} />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           
@@ -954,6 +969,12 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
                         ICH E6(R3) risk-based quality monitoring has been integrated into the validation process.
                         Critical-to-Quality (CtQ) factors are being tracked across all phases of document development.
                       </p>
+                      {activeFilter === 'qms_quality' && (
+                        <div className="mt-2 p-2 bg-white border border-[#E3008C] rounded text-sm">
+                          <span className="font-medium text-[#E3008C]">Currently showing: </span>
+                          Only QMS-related validation issues based on ICH E6(R3) risk assessment
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
