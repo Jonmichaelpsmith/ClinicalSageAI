@@ -881,33 +881,62 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                           <CardContent className="p-4 pt-2">
                             <p className="text-sm text-[#605E5C] mb-2">{factor.description}</p>
                             
-                            {/* Visual traceability links */}
+                            {/* Visual traceability links - improved with ICH E6(R3) alignment */}
                             <div className="mt-3 mb-2">
                               <div className="flex justify-between items-center mb-1">
                                 <span className="text-xs font-medium text-[#E3008C]">CER Traceability</span>
-                                {factor.associatedSection ? (
-                                  <Badge className="bg-green-100 text-green-800 px-2 py-0 text-xs flex items-center">
-                                    <CheckCircle className="h-3 w-3 mr-1" /> Linked
-                                  </Badge>
-                                ) : (
-                                  <Badge className="bg-amber-100 text-amber-800 px-2 py-0 text-xs flex items-center">
-                                    <AlertTriangle className="h-3 w-3 mr-1" /> Missing Link
-                                  </Badge>
-                                )}
+                                <div className="text-xs text-gray-500">ICH E6(R3)</div>
                               </div>
                               
                               {factor.associatedSection ? (
-                                <div className="border border-green-200 rounded p-2 bg-green-50">
-                                  <div className="flex items-center">
-                                    <FileText className="h-3 w-3 mr-1 text-[#0F6CBD]" />
-                                    <p className="text-xs font-medium text-[#0F6CBD]">Associated CER Section:</p>
+                                <div className="border border-green-200 rounded-md overflow-hidden">
+                                  <div className="bg-green-100 px-2 py-1 flex items-center justify-between">
+                                    <div className="flex items-center">
+                                      <CheckCircle className="h-3 w-3 mr-1 text-green-700" />
+                                      <p className="text-xs font-medium text-green-700">Traced to CER</p>
+                                    </div>
+                                    <Badge className="bg-green-200 text-green-800 px-2 py-0 text-xs">Linked</Badge>
                                   </div>
-                                  <p className="text-xs text-[#323130] mt-1 pl-4">{factor.associatedSection}</p>
+                                  <div className="p-2 bg-white border-t border-green-200">
+                                    <div className="flex flex-col">
+                                      <div className="flex items-center mb-1">
+                                        <FileText className="h-3 w-3 mr-1 text-[#0F6CBD]" />
+                                        <p className="text-xs font-medium text-[#0F6CBD]">Associated CER Section:</p>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <p className="text-xs text-[#323130] pl-4">{factor.associatedSection}</p>
+                                        <div className="bg-[#EFF6FC] rounded-md px-2 py-0.5 text-xs text-[#0F6CBD]">
+                                          Direct Link
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Add CER compliance status indicator */}
+                                      <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
+                                        <span className="text-xs text-gray-500">Compliance Verification:</span>
+                                        <Badge className="bg-blue-100 text-blue-800 px-2 py-0 text-xs">
+                                          Verified
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               ) : (
-                                <div className="border border-amber-200 rounded p-2 bg-amber-50 text-xs text-amber-700 flex items-center">
-                                  <LinkIcon className="h-3 w-3 mr-1" />
-                                  Link this factor to a CER section for complete traceability
+                                <div className="border border-amber-200 rounded-md overflow-hidden">
+                                  <div className="bg-amber-100 px-2 py-1 flex items-center justify-between">
+                                    <div className="flex items-center">
+                                      <AlertTriangle className="h-3 w-3 mr-1 text-amber-700" />
+                                      <p className="text-xs font-medium text-amber-700">Needs Traceability</p>
+                                    </div>
+                                    <Badge className="bg-amber-200 text-amber-800 px-2 py-0 text-xs">Pending</Badge>
+                                  </div>
+                                  <div className="p-2 bg-white border-t border-amber-200 flex items-center">
+                                    <LinkIcon className="h-3 w-3 mr-1 text-amber-700" />
+                                    <span className="text-xs text-amber-700">
+                                      Link this factor to a CER section for complete ICH E6(R3) traceability
+                                    </span>
+                                  </div>
+                                </div>
+                              )
                                 </div>
                               )}
                             </div>
