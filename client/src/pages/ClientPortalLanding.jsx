@@ -8,6 +8,7 @@ import ProjectManagerGrid from '../components/ProjectManagerGrid';
 import NextActionsSidebar from '../components/NextActionsSidebar';
 import VaultQuickAccess from '../components/VaultQuickAccess';
 import AnalyticsQuickView from '../components/AnalyticsQuickView';
+import ReportsQuickWidget from '../components/ReportsQuickWidget';
 
 const ClientPortalLanding = () => {
   const [projects, setProjects] = useState([]);
@@ -145,7 +146,11 @@ const ClientPortalLanding = () => {
             </div>
             
             {/* Sidebar - 1/4 width on large screens */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-6">
+              {/* Reports Quick Access Widget */}
+              <ReportsQuickWidget />
+              
+              {/* Next Actions */}
               <div className="bg-white rounded-xl shadow-md p-6 sticky top-4">
                 <h2 className="text-xl font-semibold text-indigo-700 mb-4">Next Actions</h2>
                 <NextActionsSidebar />
