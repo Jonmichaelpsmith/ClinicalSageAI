@@ -8,8 +8,9 @@
  * This service integrates with GPT-4o powered endpoints for intelligent document generation
  * and regulatory compliance analysis based on EU MDR, ISO 14155, and FDA guidelines.
  * 
- * Version: 2.1.2 - May 8, 2025
- * Update: Added Validation Engine for regulatory compliance checking across frameworks
+ * Version: 2.1.3 - May 8, 2025
+ * Update: Added AI-powered GSPR analysis for regulatory compliance with EU MDR
+ *         Added Validation Engine for regulatory compliance checking across frameworks
  *         Added Literature Search Methodology Documentation (EU MDR & MEDDEV 2.7/1 Rev 4 compliant)
  *         Added State of the Art (SOTA) Analysis functionality (MEDDEV 2.7/1 Rev 4 compliant)
  *         Added Device Equivalence Assessment functionality (MEDDEV 2.7/1 Rev 4 compliant)
@@ -350,6 +351,56 @@ cerApiService.downloadBlob = (blob, filename) => {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+};
+
+/**
+ * Perform AI-powered analysis of a GSPR requirement for compliance
+ * 
+ * This function connects to the AI-powered GSPR analysis endpoint to generate
+ * a comprehensive analysis of how a device meets a specific GSPR requirement using
+ * GPT-4o's reasoning capabilities. The analysis includes regulatory interpretation,
+ * compliance assessment, evidence gap identification, and next steps.
+ * 
+ * @param {Object} params - Parameters for GSPR analysis
+ * @param {string} params.deviceName - The name of the medical device being assessed
+ * @param {Object} params.gspr - The GSPR requirement object containing id, title, description
+ * @param {Array} params.evidenceContext - Array of available clinical evidence sources
+ * @param {Object} [params.currentAnalysis={}] - Optional current analysis state for incremental updates
+ * @returns {Promise<Object>} - The AI analysis results for the GSPR requirement
+ */
+cerApiService.analyzeGsprWithAI = async ({ deviceName, gspr, evidenceContext, currentAnalysis = {} }) => {
+  try {
+    console.log(`Analyzing GSPR ${gspr.id} for ${deviceName} using GPT-4o...`);
+    
+    const response = await fetch('/api/cer/ai-gspr-analysis', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceName,
+        gspr,
+        evidenceContext,
+        currentAnalysis
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error analyzing GSPR with AI: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      ...data,
+      gsprId: gspr.id,
+      deviceName,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error in analyzeGsprWithAI:', error);
+    throw error;
+  }
 };
 
 /**

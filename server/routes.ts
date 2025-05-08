@@ -47,6 +47,11 @@ declare module './routes/internal-clinical-data.js' {
   export default router;
 }
 
+declare module './routes/cer-ai-analysis.mjs' {
+  const router: express.Router;
+  export default router;
+}
+
 // Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';
@@ -58,6 +63,7 @@ import emergencyFixRouter from './routes/emergency-fix.js';
 import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
 import internalClinicalDataRouter from './routes/internal-clinical-data.js';
+import cerAiAnalysisRouter from './routes/cer-ai-analysis.mjs';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
@@ -161,6 +167,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Internal Clinical Data API routes
   app.use('/api/cer/internal-data', internalClinicalDataRouter);
+  
+  // Register CER AI Analysis API routes
+  app.use('/api/cer', cerAiAnalysisRouter);
   
   // TODO: Register CER Validation API routes in next update
   
