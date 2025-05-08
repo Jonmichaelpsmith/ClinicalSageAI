@@ -1520,4 +1520,120 @@ cerApiService.deleteInternalClinicalData = async (id) => {
   }
 };
 
+/**
+ * Get all EU/global PMS data
+ * 
+ * Retrieves all EU and global post-market surveillance data including:
+ * - Eudamed vigilance data
+ * - FSCA/incident reports
+ * - Global regulatory authority reports
+ * 
+ * @returns {Promise<Object>} - Object with categorized EU/global PMS data
+ */
+cerApiService.getEuPmsData = async () => {
+  try {
+    const response = await fetch('/api/cer/eu-pms-data');
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching EU/global PMS data: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getEuPmsData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get summary of EU/global PMS data
+ * 
+ * @returns {Promise<Object>} - Summary data for all EU/global PMS reports
+ */
+cerApiService.getEuPmsDataSummary = async () => {
+  try {
+    const response = await fetch('/api/cer/eu-pms-data/summary');
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching EU/global PMS data summary: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getEuPmsDataSummary:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get EU/global PMS data by category
+ * 
+ * @param {string} category - The data category to retrieve (eudamed, fsca, global)
+ * @returns {Promise<Array>} - Array of EU/global PMS data items in the specified category
+ */
+cerApiService.getEuPmsDataByCategory = async (category) => {
+  try {
+    const response = await fetch(`/api/cer/eu-pms-data/category/${category}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching EU/global PMS data for category ${category}: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getEuPmsDataByCategory:', error);
+    throw error;
+  }
+};
+
+/**
+ * Add new EU/global PMS data
+ * 
+ * @param {Object} data - The EU/global PMS data to add
+ * @returns {Promise<Object>} - The added data
+ */
+cerApiService.addEuPmsData = async (data) => {
+  try {
+    const response = await fetch('/api/cer/eu-pms-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error adding EU/global PMS data: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error in addEuPmsData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete EU/global PMS data
+ * 
+ * @param {string} id - The ID of the data to delete
+ * @returns {Promise<Object>} - The result of the deletion
+ */
+cerApiService.deleteEuPmsData = async (id) => {
+  try {
+    const response = await fetch(`/api/cer/eu-pms-data/${id}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error deleting EU/global PMS data: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error in deleteEuPmsData:', error);
+    throw error;
+  }
+};
+
 export { cerApiService };
