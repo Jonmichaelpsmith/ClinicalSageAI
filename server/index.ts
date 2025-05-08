@@ -30,37 +30,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// JS File Response Monitoring Middleware
-// This middleware monitors JS file requests to detect if they return HTML content
-app.use((req, res, next) => {
-  // Only monitor GET requests for JavaScript files
-  if (req.method !== 'GET' || !req.path.endsWith('.js')) {
-    return next();
-  }
-  
-  // Save the original send method
-  const originalSend = res.send;
-  
-  // Override the send method to check response type for JS files
-  res.send = function(body) {
-    // Check if the response is likely HTML (contains HTML tags) but should be JavaScript
-    if (typeof body === 'string' && body.includes('<!DOCTYPE html>') || body.includes('<html')) {
-      console.error(`WARNING: JavaScript file ${req.path} is being served with HTML content!`);
-      
-      // In production, you might want to log this to a monitoring service
-      if (process.env.NODE_ENV === 'production') {
-        // Example: log to a monitoring service or file
-        console.error(`CRITICAL ERROR: JavaScript file ${req.path} returned HTML content in production`);
-      }
-    }
-    
-    // Continue with the original send
-    return originalSend.call(this, body);
-  };
-  
-  next();
-});
-
 app.use(express.json());
 
 // Serve static files from the root directory
