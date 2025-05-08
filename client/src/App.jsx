@@ -53,6 +53,7 @@ import AnalyticalMethodsStubPage from './pages/AnalyticalMethodsStubPage'; // Im
 import ComparabilityStudiesStubPage from './pages/ComparabilityStudiesStubPage'; // Import Comparability Studies page
 import StabilityStudiesStubPage from './pages/StabilityStudiesStubPage'; // Import Stability Studies page
 import ShelfLifePredictorStubPage from './pages/ShelfLifePredictorStubPage'; // Import Shelf Life Predictor page
+import ReportsPage from './pages/ReportsPage'; // Import comprehensive Reports page
 
 // Import Global Navigation
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -168,6 +169,11 @@ function App() {
           {/* Stability Study Management Routes */}
           <Route path="/stability" component={StabilityStudiesStubPage} />
           <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorStubPage} />
+          
+          {/* Reports Module Routes */}
+          <Route path="/reports" component={ReportsPage} />
+          <Route path="/cer-reports" component={ReportsPage} />
+          <Route path="/cerv2/reports" component={ReportsPage} />
 
           {/* Error fallback and catch-all routes for specific modules */}
           <Route path="/cer-*">
