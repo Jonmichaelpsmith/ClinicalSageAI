@@ -8,6 +8,7 @@ import literatureReviewRouter from './routes/literature-review.js';  // Add lite
 import documentRouter from './routes/document-routes';
 import emergencyFixRouter from './routes/emergency-fix.js';
 import sotaRouter from './routes/sota-api.mjs';
+import equivalenceRouter from './routes/equivalence-api.mjs';
 
 // Create a router for basic CER routes (simplified version that doesn't depend on external packages)
 const router = express.Router();
@@ -105,6 +106,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register SOTA API routes (appending to existing CER routes)
   app.use('/api/cer/sota', sotaRouter);
+  
+  // Register Equivalence API routes
+  app.use('/api/cer/equivalence', equivalenceRouter);
   
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
