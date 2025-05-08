@@ -381,6 +381,107 @@ router.post('/enhance-issues', async (req, res) => {
 });
 
 /**
+ * Generate ICH E6(R3) specific validation checks for CER documents
+ * POST /api/qmp/ich-validation
+ */
+router.post('/ich-validation', async (req, res) => {
+  try {
+    const { documentId, sections, qmpData } = req.body;
+    
+    if (!sections || sections.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Document sections are required for ICH E6(R3) validation'
+      });
+    }
+    
+    // Generate document summary for validation
+    const documentSummary = sections.map(section => ({
+      title: section.title || section.name || 'Untitled Section',
+      content: section.content ? (section.content.length > 300 ? section.content.substring(0, 300) + '...' : section.content) : 'No content'
+    }));
+    
+    // Use OpenAI for ICH E6(R3) quality management validation
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert regulatory reviewer specializing in ICH E6(R3) Good Clinical Practice and Quality Management principles.
+          Your task is to perform a comprehensive validation of a Clinical Evaluation Report (CER) against ICH E6(R3) quality guidelines.
+          
+          Focus on these key principles from ICH E6(R3):
+          1. Risk-based quality management
+          2. Critical-to-Quality factor identification
+          3. Data integrity and reliability
+          4. Process oversight and quality monitoring
+          5. Clinical evidence completeness and quality
+          
+          Generate a set of specific validation issues organized by severity (critical, major, minor) that represent
+          typical ICH E6(R3) findings in relation to the CER document and quality management data provided.
+          
+          For each validation issue:
+          - Provide a clear title
+          - Include specific reference to ICH E6(R3) principles or sections
+          - Suggest concrete remediation steps
+          - Include category (e.g., qms_quality, ich_compliance, risk_assessment)
+          - Assign appropriate section or location
+          
+          Format the response as a JSON object with the following structure:
+          {
+            "validationSummary": {
+              "score": number (0-100),
+              "ichCompliant": boolean,
+              "criticalIssues": number,
+              "majorIssues": number,
+              "minorIssues": number
+            },
+            "issues": [
+              {
+                "id": string,
+                "severity": "critical" | "major" | "minor",
+                "category": string,
+                "message": string,
+                "location": string,
+                "suggestion": string,
+                "ichReference": string
+              }
+            ]
+          }`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            documentSummary,
+            qmpData: qmpData || "No QMP data available"
+          })
+        }
+      ],
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+      max_tokens: 2000
+    });
+    
+    // Parse response and return validation results
+    const validationResults = JSON.parse(response.choices[0].message.content);
+    
+    res.json({
+      success: true,
+      message: 'ICH E6(R3) validation completed successfully',
+      validationResults
+    });
+  } catch (error) {
+    console.error('Error performing ICH E6(R3) validation:', error);
+    
+    res.status(500).json({
+      success: false,
+      error: 'Failed to perform ICH E6(R3) validation',
+      details: error.message
+    });
+  }
+});
+
+/**
  * Use OpenAI to enhance the QMP with ICH E6(R3) compliant content
  */
 async function generateEnhancedQMP(data) {
