@@ -197,6 +197,8 @@ export const analyzePaperPDF = async ({ file, context }) => {
 
 /**
  * Generate a relevance appraisal for a study in the literature review
+ * Uses GPT-4o directly for enhanced analysis and consistent quality results.
+ * 
  * @param {Object} study - The study to appraise
  * @param {string} deviceName - The name of the device being evaluated
  * @param {Array} inclusionCriteria - List of inclusion criteria for the review
@@ -205,89 +207,380 @@ export const analyzePaperPDF = async ({ file, context }) => {
  */
 export const generateRelevanceAppraisal = async (study, deviceName, inclusionCriteria = [], exclusionCriteria = []) => {
   try {
-    const response = await fetch('/api/literature/appraise-relevance', {
+    console.log('Generating relevance appraisal using GPT-4o AI', deviceName);
+    
+    // Direct GPT-4o integration for consistent high-quality appraisals
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        study, 
-        deviceName, 
-        inclusionCriteria, 
-        exclusionCriteria 
+      body: JSON.stringify({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert in clinical literature appraisal with specialized knowledge of medical devices 
+            and EU MDR/MEDDEV 2.7/1 Rev 4 requirements for clinical evaluation reports. 
+            Your task is to assess the relevance of a scientific publication to a specific medical device evaluation
+            in accordance with regulatory guidelines for CERs.
+            Provide a structured JSON response with scores and justifications.`
+          },
+          {
+            role: "user",
+            content: `Please appraise the relevance of this study for a clinical evaluation of "${deviceName}" according to MEDDEV 2.7/1 Rev 4 requirements.
+            
+            Study Title: ${study.title}
+            Authors: ${study.authors?.join(', ') || 'Unknown'}
+            ${study.abstract ? `Abstract: ${study.abstract}` : ''}
+            ${study.journal ? `Journal: ${study.journal}` : ''}
+            ${study.publication_date ? `Publication Date: ${study.publication_date}` : ''}
+            
+            Inclusion Criteria:
+            ${inclusionCriteria.map(criterion => `- ${criterion}`).join('\n')}
+            
+            Exclusion Criteria:
+            ${exclusionCriteria.map(criterion => `- ${criterion}`).join('\n')}
+            
+            Assess the study's relevance on these criteria:
+            1. Device relevance: How directly relevant is the study to the subject device?
+            2. Population relevance: How well does the study population match the intended use population?
+            3. Outcome relevance: How relevant are the studied outcomes to the intended performance and safety claims?
+            4. Setting relevance: How representative is the clinical setting to real-world use?
+            
+            Rate each criterion from 1-5 where 1=Not Relevant, 3=Moderately Relevant, 5=Highly Relevant.
+            
+            For this assessment, follow EU MDR best practices by:
+            - Ensuring device equivalence considerations are thoroughly analyzed
+            - Evaluating clinical data quality against Annex XIV requirements
+            - Assessing if the evidence supports intended purpose claims
+            
+            Provide an overall relevance score and a detailed summary of your assessment including regulatory considerations.`
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to generate relevance appraisal');
+      throw new Error('OpenAI API request failed');
     }
 
-    return await response.json();
+    const responseData = await response.json();
+    const appraisal = JSON.parse(responseData.choices[0].message.content);
+    
+    // Log successful appraisal generation
+    console.log('GPT-4o appraisal generated successfully');
+    
+    return {
+      summary: appraisal.summary || 'No summary available',
+      scores: appraisal.scores || {},
+      criteriaAssessments: appraisal.criteriaAssessments || {},
+      overallScore: appraisal.overallScore || 3,
+      timestamp: new Date().toISOString(),
+      aiProvider: 'gpt-4o',
+      regulatoryFramework: 'EU MDR (MEDDEV 2.7/1 Rev 4)'
+    };
   } catch (error) {
-    console.error('Relevance appraisal error:', error);
-    // Use OpenAI directly if API endpoint fails
-    return generateAIRelevanceAppraisal(study, deviceName, inclusionCriteria, exclusionCriteria);
+    console.error('AI relevance appraisal generation error:', error);
+    
+    // Re-attempt with backend API as backup
+    try {
+      console.log('Attempting to use server API for relevance appraisal');
+      const response = await fetch('/api/literature/appraise-relevance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          study, 
+          deviceName, 
+          inclusionCriteria, 
+          exclusionCriteria 
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate relevance appraisal');
+      }
+
+      return await response.json();
+    } catch (backupError) {
+      console.error('Backup server appraisal failed:', backupError);
+      // Return a minimal default structure if all else fails
+      return {
+        summary: 'Could not generate automatic appraisal. Please assess manually.',
+        scores: {},
+        criteriaAssessments: {},
+        overallScore: null,
+        timestamp: new Date().toISOString()
+      };
+    }
   }
 };
 
 /**
  * Generate a bias assessment for a study in the literature review
+ * Uses GPT-4o directly for enhanced analysis and consistent quality results.
+ * 
  * @param {Object} study - The study to assess
  * @param {Array} biasDomains - List of bias domains to assess
  * @returns {Promise<Object>} Generated bias assessment
  */
 export const generateBiasAssessment = async (study, biasDomains = []) => {
   try {
-    const response = await fetch('/api/literature/assess-bias', {
+    console.log('Generating bias assessment using GPT-4o AI');
+    
+    // Direct GPT-4o integration for consistent high-quality assessments
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        study, 
-        biasDomains 
+      body: JSON.stringify({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert in clinical literature appraisal with specialized knowledge in assessing bias in scientific studies
+            according to the latest methodological standards (Cochrane RoB 2.0, ROBINS-I, etc.).
+            Your task is to conduct a detailed risk of bias assessment for a clinical study in the context of a Clinical Evaluation Report 
+            following EU MDR (MEDDEV 2.7/1 Rev 4) requirements.
+            Provide a structured JSON response with risk levels and detailed justifications for each bias domain.`
+          },
+          {
+            role: "user",
+            content: `Please conduct a comprehensive risk of bias assessment for this study:
+            
+            Study Title: ${study.title}
+            Authors: ${study.authors?.join(', ') || 'Unknown'}
+            ${study.abstract ? `Abstract: ${study.abstract}` : ''}
+            ${study.journal ? `Journal: ${study.journal}` : ''}
+            ${study.publication_date ? `Publication Date: ${study.publication_date}` : ''}
+            
+            Assess the risk of bias in these domains:
+            ${biasDomains.map(domain => `- ${domain.name}: ${domain.description}`).join('\n')}
+            
+            For each domain:
+            1. Assign a risk level of "low", "some_concerns", or "high"
+            2. Provide a detailed justification based on EU MDR requirements
+            3. Include specific observations from the study
+            4. Recommend potential mitigations for identified biases
+            
+            Also provide:
+            - An overall risk of bias assessment
+            - A summary of your assessment with regulatory context
+            - Quality assessment against GRADE criteria
+            - Implications for data validity in a Clinical Evaluation Report`
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to generate bias assessment');
+      throw new Error('OpenAI API request failed');
     }
 
-    return await response.json();
+    const responseData = await response.json();
+    const assessment = JSON.parse(responseData.choices[0].message.content);
+    
+    // Log successful assessment generation
+    console.log('GPT-4o bias assessment generated successfully');
+    
+    return {
+      summary: assessment.summary || 'No summary available',
+      domainAssessments: assessment.domainAssessments || {},
+      overallRisk: assessment.overallRisk || 'unclear',
+      gradeAssessment: assessment.gradeAssessment || null,
+      regulatoryImplications: assessment.regulatoryImplications || null,
+      timestamp: new Date().toISOString(),
+      aiProvider: 'gpt-4o',
+      methodologyStandard: 'Cochrane RoB 2.0'
+    };
   } catch (error) {
-    console.error('Bias assessment error:', error);
-    // Use OpenAI directly if API endpoint fails
-    return generateAIBiasAssessment(study, biasDomains);
+    console.error('AI bias assessment generation error:', error);
+    
+    // Re-attempt with backend API as backup
+    try {
+      console.log('Attempting to use server API for bias assessment');
+      const response = await fetch('/api/literature/assess-bias', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          study, 
+          biasDomains 
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate bias assessment');
+      }
+
+      return await response.json();
+    } catch (backupError) {
+      console.error('Backup server assessment failed:', backupError);
+      // Return a minimal default structure if all else fails
+      return {
+        summary: 'Could not generate automatic bias assessment. Please assess manually.',
+        domainAssessments: {},
+        overallRisk: 'unclear',
+        timestamp: new Date().toISOString()
+      };
+    }
   }
 };
 
 /**
  * Generate a search summary for the literature review
+ * Uses GPT-4o directly for enhanced analysis and consistent quality results.
+ * 
  * @param {Object} reviewData - The literature review data
  * @returns {Promise<Object>} Generated search summary
  */
 export const generateSearchSummary = async (reviewData) => {
   try {
-    const response = await fetch('/api/literature/search-summary', {
+    console.log('Generating literature search summary using GPT-4o AI');
+    
+    // Extract the relevant data for the summary
+    const {
+      title,
+      device,
+      author,
+      date,
+      databases,
+      searchPeriod,
+      searchQueries,
+      inclusionCriteria,
+      exclusionCriteria,
+      selectedStudies,
+      prismaFlow
+    } = reviewData;
+    
+    // Direct GPT-4o integration for comprehensive search summaries
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(reviewData),
+      body: JSON.stringify({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: `You are an expert in clinical literature review and medical device evaluation
+            with specialized knowledge of EU MDR (MEDDEV 2.7/1 Rev 4) requirements.
+            Your task is to create a comprehensive search strategy summary for a Clinical Evaluation Report.
+            Provide a structured JSON response that meets regulatory requirements for documenting literature search methodology.`
+          },
+          {
+            role: "user",
+            content: `Please generate a comprehensive search methodology summary for this literature review:
+            
+            Title: ${title || 'Literature Review for Clinical Evaluation Report'}
+            Device: ${device || 'Medical Device'}
+            Author: ${author || 'Clinical Evaluator'}
+            Date: ${date || new Date().toISOString().split('T')[0]}
+            
+            Search Period:
+            From: ${searchPeriod?.startDate || 'Not specified'}
+            To: ${searchPeriod?.endDate || 'Not specified'}
+            
+            Databases searched:
+            ${databases?.map(dbId => {
+              const db = DATABASES.find(d => d.id === dbId);
+              return db ? `- ${db.name}: ${db.description}` : `- ${dbId}`;
+            }).join('\n') || 'No databases specified'}
+            
+            Search Queries:
+            ${searchQueries?.map(q => 
+              `- Database: ${q.database}, Query: "${q.query}", Results: ${q.results}, Date: ${q.date}`
+            ).join('\n') || 'No search queries specified'}
+            
+            Inclusion Criteria:
+            ${inclusionCriteria?.filter(c => c.enabled).map(c => `- ${c.criterion}`).join('\n') || 'No inclusion criteria specified'}
+            
+            Exclusion Criteria:
+            ${exclusionCriteria?.filter(c => c.enabled).map(c => `- ${c.criterion}`).join('\n') || 'No exclusion criteria specified'}
+            
+            PRISMA Flow Data:
+            - Records identified: ${prismaFlow?.identified || 0}
+            - Records screened: ${prismaFlow?.screened || 0}
+            - Records assessed for eligibility: ${prismaFlow?.eligible || 0}
+            - Studies included in the review: ${prismaFlow?.included || 0}
+            
+            Selected Studies:
+            ${selectedStudies?.map((s, i) => 
+              `${i+1}. ${s.title} (${s.authors?.join(', ') || 'Unknown'}, ${s.publication_date || 'Unknown date'})`
+            ).join('\n') || 'No studies selected'}
+            
+            Based on this information, produce:
+            1. A formatted search methodology text for inclusion in a CER according to MEDDEV 2.7/1 Rev 4
+            2. An analysis of search completeness and potential gaps
+            3. Recommendations for improving the search if needed
+            4. A conclusion about the adequacy of the search for regulatory compliance
+            
+            Include appropriate regulatory language and ensure the summary would satisfy Notified Body scrutiny.`
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+      }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to generate search summary');
+      throw new Error('OpenAI API request failed');
     }
 
-    return await response.json();
+    const responseData = await response.json();
+    const summary = JSON.parse(responseData.choices[0].message.content);
+    
+    // Log successful summary generation
+    console.log('GPT-4o search summary generated successfully');
+    
+    return {
+      methodologyText: summary.methodologyText || 'No methodology text available',
+      analysis: summary.analysis || 'No analysis available',
+      recommendations: summary.recommendations || [],
+      conclusion: summary.conclusion || 'No conclusion available',
+      timestamp: new Date().toISOString(),
+      aiProvider: 'gpt-4o',
+      regulatoryFramework: 'EU MDR (MEDDEV 2.7/1 Rev 4)'
+    };
   } catch (error) {
-    console.error('Search summary error:', error);
-    // Use OpenAI directly if API endpoint fails
-    return generateAISearchSummary(reviewData);
+    console.error('AI search summary generation error:', error);
+    
+    // Re-attempt with backend API as backup
+    try {
+      console.log('Attempting to use server API for search summary');
+      const response = await fetch('/api/literature/search-summary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate search summary');
+      }
+
+      return await response.json();
+    } catch (backupError) {
+      console.error('Backup server summary generation failed:', backupError);
+      // Use fallback if all else fails
+      return generateAISearchSummary(reviewData);
+    }
   }
 };
 

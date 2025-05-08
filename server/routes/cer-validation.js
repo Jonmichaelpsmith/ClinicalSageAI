@@ -113,152 +113,7 @@ router.post('/documents/:id/validate', async (req, res) => {
   }
 });
 
-/**
- * Simulate validation of a document
- * In a real implementation, this would perform actual content analysis
- */
-async function simulateValidation(documentId, framework) {
-  // In a real implementation, we would:
-  // 1. Retrieve the document content
-  // 2. Analyze it for compliance with the selected framework
-  // 3. Verify references and citations
-  // 4. Check for completeness and consistency
-  
-  // Create a simulated validation response with real requirements
-  // based on the selected framework
-  
-  const criticalIssues = Math.floor(Math.random() * 2); // 0-1
-  const majorIssues = Math.floor(Math.random() * 3); // 0-2
-  const minorIssues = Math.floor(Math.random() * 4); // 0-3
-  
-  const totalIssues = criticalIssues + majorIssues + minorIssues;
-  const passedChecks = Math.floor(Math.random() * 15) + 30; // 30-44
-  
-  // Calculate compliance score
-  const complianceScore = Math.max(0, 100 - (criticalIssues * 15) - (majorIssues * 7) - (minorIssues * 3));
-  
-  const frameworkReqs = validationFrameworks[framework] || validationFrameworks.mdr;
-  
-  // Generate an array of fake issues based on the framework requirements
-  const issues = [];
-  
-  // Add critical issues if any
-  for (let i = 0; i < criticalIssues; i++) {
-    const reqIndex = Math.floor(Math.random() * frameworkReqs.requirements.length);
-    const req = frameworkReqs.requirements[reqIndex];
-    
-    issues.push({
-      id: issues.length + 1,
-      category: 'regulatory_compliance',
-      severity: 'critical',
-      message: `Missing ${req} documentation required by ${frameworkReqs.name}`,
-      location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
-      suggestion: `Add complete ${req} documentation according to ${frameworkReqs.name} requirements`
-    });
-  }
-  
-  // Add major issues if any
-  for (let i = 0; i < majorIssues; i++) {
-    const categories = ['completeness', 'references', 'regulatory_compliance'];
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    
-    let message, suggestion;
-    
-    if (category === 'completeness') {
-      message = 'Document section is incomplete';
-      suggestion = 'Complete the section with all required information';
-    } else if (category === 'references') {
-      message = 'Citation not found in reference list';
-      suggestion = 'Add missing reference to bibliography or correct citation';
-    } else {
-      const reqIndex = Math.floor(Math.random() * frameworkReqs.requirements.length);
-      const req = frameworkReqs.requirements[reqIndex];
-      message = `Inadequate ${req} documentation`;
-      suggestion = `Enhance ${req} documentation according to ${frameworkReqs.name} guidelines`;
-    }
-    
-    issues.push({
-      id: issues.length + 1,
-      category,
-      severity: 'major',
-      message,
-      location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
-      suggestion
-    });
-  }
-  
-  // Add minor issues if any
-  for (let i = 0; i < minorIssues; i++) {
-    const categories = ['completeness', 'references', 'consistency', 'regulatory_compliance'];
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    
-    let message, suggestion;
-    
-    if (category === 'completeness') {
-      message = 'Section could be enhanced with additional details';
-      suggestion = 'Consider adding more comprehensive information to strengthen this section';
-    } else if (category === 'references') {
-      message = 'Inconsistent citation format';
-      suggestion = 'Standardize citation format according to document template';
-    } else if (category === 'consistency') {
-      message = 'Terminology inconsistency detected';
-      suggestion = 'Use consistent terminology throughout the document';
-    } else {
-      message = 'Additional regulatory context would strengthen compliance';
-      suggestion = 'Consider adding more regulatory context to enhance compliance';
-    }
-    
-    issues.push({
-      id: issues.length + 1,
-      category,
-      severity: 'minor',
-      message,
-      location: `Section ${Math.floor(Math.random() * 6) + 1}.${Math.floor(Math.random() * 9) + 1}`,
-      suggestion
-    });
-  }
-  
-  // Calculate category statuses
-  const getStatus = (passed, failed) => {
-    if (failed === 0) return 'success';
-    if (failed > 0 && failed <= 2) return 'warning';
-    return 'error';
-  };
-  
-  return {
-    summary: {
-      totalIssues,
-      criticalIssues,
-      majorIssues,
-      minorIssues,
-      passedChecks,
-      complianceScore
-    },
-    categories: {
-      regulatory_compliance: { 
-        status: getStatus(passedChecks, issues.filter(i => i.category === 'regulatory_compliance').length),
-        passed: Math.floor(Math.random() * 5) + 15, // 15-19
-        failed: issues.filter(i => i.category === 'regulatory_compliance').length
-      },
-      completeness: { 
-        status: getStatus(passedChecks, issues.filter(i => i.category === 'completeness').length),
-        passed: Math.floor(Math.random() * 3) + 7, // 7-9
-        failed: issues.filter(i => i.category === 'completeness').length
-      },
-      references: { 
-        status: getStatus(passedChecks, issues.filter(i => i.category === 'references').length),
-        passed: Math.floor(Math.random() * 3) + 8, // 8-10
-        failed: issues.filter(i => i.category === 'references').length
-      },
-      consistency: { 
-        status: getStatus(passedChecks, issues.filter(i => i.category === 'consistency').length),
-        passed: Math.floor(Math.random() * 3) + 5, // 5-7
-        failed: issues.filter(i => i.category === 'consistency').length
-      }
-    },
-    issues
-  };
-}
+
 
 /**
  * Validate a document using OpenAI's GPT-4o model
@@ -271,13 +126,123 @@ async function validateWithAI(document, framework) {
     // Use the appropriate framework requirements
     const frameworkData = validationFrameworks[framework] || validationFrameworks.mdr;
     
-    // Create a prompt for the AI model
+    // Create a comprehensive and framework-specific prompt for the AI model
+    const promptsByFramework = {
+      mdr: `
+        You are an expert regulatory consultant specialized in EU MDR MEDDEV 2.7/1 Rev 4 Clinical Evaluation Reports (CERs).
+        Analyze the following clinical evaluation report content against EU MDR requirements.
+        
+        EU MDR REQUIREMENTS:
+        1. Complete GSPR mapping for all safety and performance claims with traceability to evidence
+        2. Comprehensive state-of-the-art analysis with current standards and published literature
+        3. Detailed literature search methodology documentation (databases, search terms, inclusion/exclusion criteria)
+        4. Thorough benefit-risk analysis quantifying both benefits and risks
+        5. Post-market surveillance plan with specific triggers for CER updates
+        6. PMCF plan compliant with MDCG 2020-7 guidance
+        7. Detailed device description including all variants and configurations
+        8. Qualifications of evaluators demonstrating expertise in the specific device technology
+        9. Complete bibliography with proper citations formatted according to EU regulatory expectations
+        10. Comprehensive clinical evaluation of equivalence when relying on equivalent devices
+        11. Valid clinical data from PMCF studies, clinical investigations, and literature
+        12. Gap analysis with specific plans to address any identified gaps
+        
+        Focus particular attention on identifying:
+        - Missing or insufficient GSPR mapping to clinical evidence
+        - Inadequate literature search methodology
+        - Incomplete state-of-the-art analysis
+        - Insufficient clinical data for claims made
+        - Improper application of equivalence criteria
+      `,
+      fda: `
+        You are an expert regulatory consultant specialized in FDA Medical Device Clinical Evaluation Reports.
+        Analyze the following clinical evaluation report content against US FDA requirements.
+        
+        FDA REQUIREMENTS:
+        1. Substantial equivalence documentation for 510(k) submissions with proper predicate comparison
+        2. Comprehensive benefit-risk determination according to FDA guidance
+        3. Complete performance testing data supporting each indication
+        4. Clinical study protocols and results meeting FDA expectations
+        5. Detailed device description and specific indications for use
+        6. Complete reference list with proper citations
+        7. Data from valid scientific evidence as defined in 21 CFR 860.7
+        8. Risk analysis according to ISO 14971
+        9. Statistical justification for sample sizes and endpoints
+        10. Discussion of all known adverse events and complications
+        
+        Focus particular attention on identifying:
+        - Inadequate substantial equivalence justification
+        - Missing performance data for specific indications
+        - Statistical deficiencies in clinical data
+        - Unsupported claims or indications
+        - Insufficient adverse event analysis
+      `,
+      ukca: `
+        You are an expert regulatory consultant specialized in UK Conformity Assessed (UKCA) Medical Device Clinical Evaluation Reports.
+        Analyze the following clinical evaluation report content against UK regulatory requirements.
+        
+        UKCA REQUIREMENTS:
+        1. UK-specific clinical evidence requirements
+        2. UKCA marking compliance documentation
+        3. Post-market surveillance plan specific to the UK market
+        4. Details of the UK Responsible Person
+        5. Complete reference list with proper citations
+        6. Evidence meeting UK Medical Devices Regulations 2002 (as amended)
+        7. Clinical data considerations specific to UK patient populations
+        8. Compliance with applicable UK designated standards
+        
+        Focus particular attention on identifying:
+        - Missing UK-specific regulatory documentation
+        - Insufficient UK market surveillance planning
+        - Absent or incomplete UK Responsible Person details
+        - Lack of UK-specific clinical considerations
+      `,
+      health_canada: `
+        You are an expert regulatory consultant specialized in Health Canada Medical Device Clinical Evaluation Reports.
+        Analyze the following clinical evaluation report content against Canadian regulatory requirements.
+        
+        HEALTH CANADA REQUIREMENTS:
+        1. Device classification according to Canadian regulations
+        2. Canadian Medical Device Licence requirements
+        3. Risk classification and management according to Canadian standards
+        4. Clinical evidence specific to Canadian guidelines
+        5. Complete reference list with proper citations
+        6. Compliance with Canadian Medical Devices Regulations (SOR/98-282)
+        7. Safety and effectiveness requirements per section 10-20 of Canadian regulations
+        8. Consideration of Canadian population demographics in clinical data
+        
+        Focus particular attention on identifying:
+        - Incorrect device classification for Canadian market
+        - Missing Canadian-specific regulatory requirements
+        - Insufficient safety and effectiveness data for Canadian approval
+        - Inadequate risk management for Canadian regulations
+      `,
+      ich: `
+        You are an expert regulatory consultant specialized in International Council for Harmonisation (ICH) compliance for medical device documentation.
+        Analyze the following clinical evaluation report content against ICH requirements.
+        
+        ICH REQUIREMENTS:
+        1. International harmonization documentation
+        2. Cross-reference to regional requirements
+        3. Complete reference list with proper citations
+        4. Compliance with ICH E6(R2) Good Clinical Practice
+        5. Statistical analysis following ICH E9 Statistical Principles
+        6. Safety reporting aligned with ICH guidelines
+        7. Documentation quality meeting ICH expectations
+        
+        Focus particular attention on identifying:
+        - Non-compliance with ICH guidelines for clinical investigations
+        - Statistical analysis deficiencies per ICH E9
+        - Inconsistent application of international standards
+        - Inadequate harmonization across regional requirements
+      `
+    };
+    
+    // Select appropriate framework-specific prompt
+    const frameworkPrompt = promptsByFramework[framework] || promptsByFramework.mdr;
+    
+    // Build the complete prompt
     const prompt = `
-      You are an expert regulatory consultant specialized in medical device Clinical Evaluation Reports (CERs).
-      Please analyze this clinical evaluation report content against ${frameworkData.name} requirements.
-      
-      FRAMEWORKS REQUIREMENTS:
-      ${JSON.stringify(frameworkData.requirements, null, 2)}
+      ${frameworkPrompt}
       
       DOCUMENT SECTIONS TO ANALYZE:
       ${JSON.stringify(document.sections, null, 2)}
@@ -285,14 +250,14 @@ async function validateWithAI(document, framework) {
       For each requirement, determine if the document fully meets, partially meets, or fails to meet the requirement.
       Identify any critical issues, major issues, and minor issues.
       
-      Critical issues: Missing essential components required by regulations
-      Major issues: Incomplete sections or inadequate evidence for important claims
-      Minor issues: Formatting issues, minor inconsistencies, or areas that could be improved
+      Critical issues: Missing essential components required by regulations that could result in rejection by authorities
+      Major issues: Incomplete sections or inadequate evidence for important claims that require significant revision
+      Minor issues: Formatting issues, minor inconsistencies, or areas that could be improved for clarity
       
       For each issue, provide:
-      1. The specific location in the document (section number if possible)
-      2. A detailed description of the issue
-      3. A concrete suggestion for how to address the issue
+      1. The specific location in the document (section number and title if possible)
+      2. A detailed description of the issue with reference to the specific regulatory requirement
+      3. A concrete, actionable suggestion for how to address the issue with examples when applicable
       
       Return your analysis in the following JSON format:
       {
@@ -349,17 +314,8 @@ async function validateWithAI(document, framework) {
   } catch (error) {
     console.error('Error validating with AI:', error);
     
-    // Fallback to simulation if AI validation fails
-    console.log('Falling back to simulated validation');
-    const simulatedResults = await simulateValidation(document.id, framework);
-    
-    return {
-      ...simulatedResults,
-      aiValidated: false,
-      validationDate: new Date().toISOString(),
-      framework: frameworkData.name,
-      error: error.message
-    };
+    // Don't fallback to simulation - throw the error to be handled by the caller
+    throw new Error(`GPT-4o validation failed: ${error.message}. Please ensure your OpenAI API key is valid and has sufficient credits.`);
   }
 }
 
