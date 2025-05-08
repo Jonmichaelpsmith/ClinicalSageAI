@@ -30,37 +30,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// JS File Response Monitoring Middleware
-// This middleware monitors JS file requests to detect if they return HTML content
-app.use((req, res, next) => {
-  // Only monitor GET requests for JavaScript files
-  if (req.method !== 'GET' || !req.path.endsWith('.js')) {
-    return next();
-  }
-  
-  // Save the original send method
-  const originalSend = res.send;
-  
-  // Override the send method to check response type for JS files
-  res.send = function(body) {
-    // Check if the response is likely HTML (contains HTML tags) but should be JavaScript
-    if (typeof body === 'string' && body.includes('<!DOCTYPE html>') || body.includes('<html')) {
-      console.error(`WARNING: JavaScript file ${req.path} is being served with HTML content!`);
-      
-      // In production, you might want to log this to a monitoring service
-      if (process.env.NODE_ENV === 'production') {
-        // Example: log to a monitoring service or file
-        console.error(`CRITICAL ERROR: JavaScript file ${req.path} returned HTML content in production`);
-      }
-    }
-    
-    // Continue with the original send
-    return originalSend.call(this, body);
-  };
-  
-  next();
-});
-
 app.use(express.json());
 
 // Serve static files from the root directory
@@ -71,8 +40,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 1. Serve static JavaScript files from various directories with proper MIME types
-// This ensures JS files are served with Content-Type: application/javascript
+// Serve static JavaScript files from various directories with proper MIME types
 app.use('/js', express.static(path.join(process.cwd(), 'js'), {
   setHeaders: (res, filePath) => {
     if (path.extname(filePath) === '.js') {
@@ -80,18 +48,12 @@ app.use('/js', express.static(path.join(process.cwd(), 'js'), {
     }
   }
 }));
-app.use('/public', express.static(path.join(process.cwd(), 'public'), {
-  setHeaders: (res, filePath) => {
-    if (path.extname(filePath) === '.js') {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
+app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
-// 2. Register API routes before the catch-all
+// Register API routes
 registerRoutes(app);
 
-// 3. Serve the marketing landing page at the root URL
+// Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
   const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
@@ -103,7 +65,7 @@ app.get('/', (req, res) => {
   }
 });
 
-// 4. Alternative marketing page route
+// Alternative marketing page route
 app.get('/marketing', (req, res) => {
   console.log('Serving marketing page from /marketing route');
   const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
@@ -117,29 +79,8 @@ app.get('/marketing', (req, res) => {
 // Create HTTP server
 const httpServer = createHttpServer(app);
 
-// Add a catch-all route for SPA client-side routing
-// This should come after all other routes but before Vite setup
-app.get('*', (req, res, next) => {
-  // Skip asset handling for Vite-specific paths
-  // This ensures Vite's HMR and other dev-specific routes still work
-  if (
-    req.path.startsWith('/@vite/') || 
-    req.path.startsWith('/@fs/') || 
-    req.path.startsWith('/@react-refresh') ||
-    req.path.startsWith('/node_modules/')
-  ) {
-    return next();
-  }
-  
-  // If the request looks like a static asset but wasn't found by express.static,
-  // warn but still let Vite try to handle it
-  if (/\.(js|css|png|svg|ico|map)$/i.test(req.path)) {
-    console.log(`Note: Asset requested: ${req.path}`);
-  }
-  
-  // For all other routes, pass to the next handler (which will be Vite in dev mode)
-  next();
-});
+// Direct access to cerv2 should be handled by Vite for client-side routing
+// No special handler needed
 
 // Setup Vite middleware in development mode
 if (isDev) {

@@ -1,5 +1,10 @@
 # CERV2 Module Documentation
 
+## IMPORTANT WARNING
+**NEVER modify the client-side routing (React Router/Wouter) or the Vite setup**. This can break the entire application and cause unreliable client behavior. Only fix specific issues in the most minimal way possible.
+
+**The JavaScript loading errors should be fixed by properly serving static files**, not by changing how Vite handles routes or any client-side code.
+
 ## Overview
 The CERV2 module provides an enhanced interface for working with Clinical Evaluation Reports, including QMP integration, compliance checking, and dashboard metrics for tracking objectives and regulatory compliance.
 
