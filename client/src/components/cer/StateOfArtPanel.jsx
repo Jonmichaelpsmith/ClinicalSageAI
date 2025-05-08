@@ -218,7 +218,7 @@ export default function StateOfArtPanel({ onSectionGenerated }) {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="standard" className="space-y-4 mt-0">
+              <TabsContent value="standard" className="space-y-4 mt-0 cer-tabs-content">
                 {/* Standard SOTA fields */}
                 <div className="space-y-2">
                   <Label htmlFor="device-name" className="text-[#323130]">
@@ -309,7 +309,7 @@ export default function StateOfArtPanel({ onSectionGenerated }) {
                 </Button>
               </TabsContent>
               
-              <TabsContent value="comparative" className="space-y-4 mt-0">
+              <TabsContent value="comparative" className="space-y-4 mt-0 cer-tabs-content">
                 {/* Comparative SOTA fields */}
                 <div className="space-y-2">
                   <Label htmlFor="comp-device-name" className="text-[#323130]">
