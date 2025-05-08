@@ -334,33 +334,19 @@ export default function CERV2Page() {
             author: "", // This would ideally come from user context
             title: title
           }}
-          onUpdateQMP={(qmpData, linkToCER) => {
-            if (linkToCER) {
-              // Create a new section for the QMS Plan
-              const qmsSection = {
-                title: "Quality Management System Plan (ICH E6(R3))",
-                type: "qms-plan",
-                content: `
-# Quality Management System Plan (ICH E6(R3)) for ${deviceName || 'Medical Device'} CER
-
-## Quality Objectives
-${qmpData.qualityObjectives.map(obj => `
-### ${obj.description}
-**Scope:** ${obj.scope}
-**Risk Rating:** ${obj.riskRating}
-**Control/Mitigation:** ${obj.controlMitigation}
-
-${getCtqFactorsForSection(obj.id, qmpData.ctqFactors)}
-`).join('\n')}
-
-## Plan Author
-${qmpData.author}
-
-## Date
-${qmpData.date}
-`,
-                lastUpdated: new Date().toISOString()
-              };
+          onQMPGenerated={(qmpData) => {
+            // Create a new section for the QMS Plan with metadata
+            const qmpTitle = qmpData.title || "Quality Management Plan";
+            const qmpContent = qmpData.content || "";
+            const qmpMetadata = qmpData.metadata || {};
+            
+            const qmsSection = {
+              title: qmpTitle,
+              type: "qmp",
+              content: qmpContent,
+              metadata: qmpMetadata,
+              lastUpdated: qmpData.lastUpdated || new Date().toISOString()
+            };
               
               // Check if a QMS section already exists
               const existingIndex = sections.findIndex(
