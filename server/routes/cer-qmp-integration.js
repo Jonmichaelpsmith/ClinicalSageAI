@@ -9,7 +9,7 @@
  * 2. Compliance checking against specific sections defined in objectives
  * 3. Dashboard metrics for QMP objective status and completion tracking
  * 
- * Version: 1.0.0
+ * Version: 1.1.0
  * Last Updated: May 8, 2025
  */
 
@@ -18,6 +18,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import logger from '../utils/logger.js';
 import fetch from 'node-fetch';
+import complianceEngine from '../services/cer-compliance-engine.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,22 +75,27 @@ router.get('/dashboard-metrics', async (req, res) => {
     // Calculate enhanced metrics
     const enhancedMetrics = {
       ...qmpData.metrics,
-      objectivesByStatus: qmpData.metrics.objectivesByStatus,
+      objectivesByStatus: qmpData.metrics.objectivesByStatus || {
+        complete: 0,
+        inProgress: 0,
+        planned: 0,
+        blocked: 0
+      },
       objectivesBreakdown: {
-        total: qmpData.objectives.length,
-        complete: qmpData.metrics.objectivesByStatus.complete,
-        inProgress: qmpData.metrics.objectivesByStatus.inProgress,
-        planned: qmpData.metrics.objectivesByStatus.planned,
-        blocked: qmpData.metrics.objectivesByStatus.blocked
+        total: qmpData.objectives?.length || 0,
+        complete: qmpData.metrics?.objectivesByStatus?.complete || 0,
+        inProgress: qmpData.metrics?.objectivesByStatus?.inProgress || 0,
+        planned: qmpData.metrics?.objectivesByStatus?.planned || 0,
+        blocked: qmpData.metrics?.objectivesByStatus?.blocked || 0
       },
-      completionPercentage: qmpData.metrics.overallCompletion,
+      completionPercentage: qmpData.metrics?.overallCompletion || 0,
       cerSectionCoverage: {
-        percentage: qmpData.metrics.sectionCoverage,
-        coveredSections: getCoveredSections(qmpData.objectives),
-        uncoveredCriticalSections: getUncoveredCriticalSections(qmpData.objectives)
+        percentage: qmpData.metrics?.sectionCoverage || 0,
+        coveredSections: getCoveredSections(qmpData.objectives || []),
+        uncoveredCriticalSections: getUncoveredCriticalSections(qmpData.objectives || [])
       },
-      objectiveCompletionTimeline: generateCompletionTimeline(qmpData.objectives),
-      highPriorityObjectives: getHighPriorityObjectives(qmpData.objectives)
+      objectiveCompletionTimeline: generateCompletionTimeline(qmpData.objectives || []),
+      highPriorityObjectives: getHighPriorityObjectives(qmpData.objectives || [])
     };
     
     logger.info('Generated enhanced QMP dashboard metrics', {
@@ -105,6 +111,157 @@ router.get('/dashboard-metrics', async (req, res) => {
     
     res.status(500).json({
       error: 'Failed to generate enhanced dashboard metrics',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/cer/qmp-integration/compliance-metrics
+ * Get compliance metrics for dashboard showing objective compliance status
+ */
+router.get('/compliance-metrics', async (req, res) => {
+  try {
+    const { documentId = 'current', framework = 'mdr' } = req.query;
+    
+    // Get QMP data
+    const qmpData = await getQmpData();
+    const objectives = qmpData.objectives || [];
+    
+    if (objectives.length === 0) {
+      return res.json({
+        documentId,
+        framework,
+        timestamp: new Date().toISOString(),
+        message: 'No objectives defined',
+        overallComplianceScore: null,
+        objectivesByComplianceStatus: {},
+        sectionComplianceScores: {},
+        complianceBreakdown: {
+          excellent: 0,
+          good: 0,
+          needsImprovement: 0,
+          criticalIssues: 0,
+          notEvaluated: 0
+        }
+      });
+    }
+    
+    // Create a mock document for demonstration
+    // In production, this would be fetched from the database
+    const documentSections = [];
+    
+    // Get all unique sections from objectives
+    const allSections = new Set();
+    objectives.forEach(obj => {
+      if (obj.scopeSections && Array.isArray(obj.scopeSections)) {
+        obj.scopeSections.forEach(section => allSections.add(section));
+      }
+    });
+    
+    // Create mock sections for each unique section found
+    Array.from(allSections).forEach(sectionName => {
+      documentSections.push({
+        title: sectionName,
+        type: sectionName.toLowerCase().replace(/\s+/g, '_'),
+        content: `Sample content for ${sectionName} section. This would be the actual content from the CER document in production.`,
+        wordCount: 250
+      });
+    });
+    
+    const document = {
+      documentId,
+      title: 'Clinical Evaluation Report',
+      sections: documentSections
+    };
+    
+    // Get compliance results using our engine
+    const complianceResults = await complianceEngine.evaluateCompliance(
+      documentId, 
+      document, 
+      framework, 
+      true // Use QMP objectives scoping
+    );
+    
+    // Calculate objective-specific compliance scores
+    const objectiveCompliance = await complianceEngine.calculateObjectiveCompliance(complianceResults);
+    
+    // Process results for dashboard metrics
+    const objectiveScores = objectiveCompliance.objectiveScores || [];
+    
+    // Categorize objectives by compliance status
+    const objectivesByComplianceStatus = {
+      excellent: objectiveScores.filter(obj => obj.score !== null && obj.score >= 90).length,
+      good: objectiveScores.filter(obj => obj.score !== null && obj.score >= 75 && obj.score < 90).length,
+      needsImprovement: objectiveScores.filter(obj => obj.score !== null && obj.score >= 60 && obj.score < 75).length,
+      criticalIssues: objectiveScores.filter(obj => obj.score !== null && obj.score < 60).length,
+      notEvaluated: objectiveScores.filter(obj => obj.score === null).length
+    };
+    
+    // Compile section compliance scores
+    const sectionComplianceScores = {};
+    
+    objectiveScores.forEach(objective => {
+      if (objective.sections && Array.isArray(objective.sections)) {
+        objective.sections.forEach(sectionScore => {
+          if (!sectionComplianceScores[sectionScore.section]) {
+            sectionComplianceScores[sectionScore.section] = [];
+          }
+          sectionComplianceScores[sectionScore.section].push(sectionScore.score);
+        });
+      }
+    });
+    
+    // Calculate average score for each section
+    Object.keys(sectionComplianceScores).forEach(section => {
+      const scores = sectionComplianceScores[section];
+      sectionComplianceScores[section] = {
+        averageScore: scores.length > 0 ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : null,
+        objectiveCount: scores.length
+      };
+    });
+    
+    // Calculate overall compliance percentage
+    const scoredObjectives = objectiveScores.filter(obj => obj.score !== null);
+    const overallComplianceScore = scoredObjectives.length > 0
+      ? Math.round(scoredObjectives.reduce((sum, obj) => sum + obj.score, 0) / scoredObjectives.length)
+      : null;
+    
+    logger.info('Generated compliance metrics for dashboard', {
+      module: 'cer-qmp-integration',
+      documentId,
+      framework,
+      objectiveCount: objectives.length,
+      evaluatedCount: scoredObjectives.length,
+      overallScore: overallComplianceScore
+    });
+    
+    res.json({
+      documentId,
+      framework: complianceResults.framework,
+      timestamp: complianceResults.timestamp,
+      overallComplianceScore,
+      objectivesByComplianceStatus,
+      sectionComplianceScores,
+      complianceBreakdown: {
+        excellent: objectivesByComplianceStatus.excellent,
+        good: objectivesByComplianceStatus.good,
+        needsImprovement: objectivesByComplianceStatus.needsImprovement,
+        criticalIssues: objectivesByComplianceStatus.criticalIssues,
+        notEvaluated: objectivesByComplianceStatus.notEvaluated
+      },
+      totalObjectives: objectives.length,
+      evaluatedObjectives: scoredObjectives.length,
+      completionPercentage: qmpData.metrics?.overallCompletion || 0
+    });
+  } catch (error) {
+    logger.error('Error generating compliance metrics', {
+      module: 'cer-qmp-integration',
+      error: error.message
+    });
+    
+    res.status(500).json({
+      error: 'Failed to generate compliance metrics',
       message: error.message
     });
   }
@@ -165,7 +322,7 @@ router.post('/validate-scoped', async (req, res) => {
 
 /**
  * POST /api/cer/qmp-integration/objective-compliance
- * Check compliance for a specific objective
+ * Check compliance for a specific objective using the compliance engine
  */
 router.post('/objective-compliance', async (req, res) => {
   try {
@@ -187,7 +344,7 @@ router.post('/objective-compliance', async (req, res) => {
     const qmpData = await getQmpData();
     
     // Find the specific objective
-    const objective = qmpData.objectives.find(obj => obj.id === objectiveId);
+    const objective = qmpData.objectives.find(obj => obj.id === parseInt(objectiveId) || obj.id === objectiveId);
     
     if (!objective) {
       return res.status(404).json({
@@ -198,32 +355,117 @@ router.post('/objective-compliance', async (req, res) => {
     // Extract sections for the objective
     const objectiveSections = objective.scopeSections || [];
     
-    // Perform validation for just these sections
-    const validationResults = await performScopedValidation(documentId, framework, objectiveSections);
+    if (objectiveSections.length === 0) {
+      return res.status(400).json({
+        error: 'Objective has no scoped sections defined',
+        message: 'Please update the quality objective to include target CER sections before validating compliance.'
+      });
+    }
     
-    // Calculate objective-specific compliance score
-    const complianceScore = calculateObjectiveComplianceScore(validationResults, objective);
+    // Fetch the document (from DB in production)
+    // For now, we're creating a sample document with named sections
+    const documentSections = [];
     
-    logger.info('Checked objective compliance', {
-      module: 'cer-qmp-integration',
-      objectiveId,
+    // Create sections corresponding to the objective's scope
+    objectiveSections.forEach(sectionName => {
+      documentSections.push({
+        title: sectionName,
+        type: sectionName.toLowerCase().replace(/\s+/g, '_'),
+        content: `Sample content for ${sectionName} section. This would be the actual content from the CER document in production.`,
+        wordCount: 250
+      });
+    });
+    
+    const document = {
       documentId,
-      framework,
-      complianceScore
-    });
+      title: 'Clinical Evaluation Report',
+      sections: documentSections
+    };
     
-    res.json({
-      objectiveId,
-      title: objective.title,
-      sections: objectiveSections,
-      complianceScore,
-      issues: validationResults.issues.filter(issue => 
-        objectiveSections.some(section => issue.location.includes(section))
-      ),
-      recommendations: validationResults.recommendations.filter(rec => 
-        objectiveSections.some(section => rec.location?.includes(section))
-      )
-    });
+    // Use the compliance engine directly for this specific objective
+    try {
+      // Get compliance results for the whole document first
+      const complianceResults = await complianceEngine.evaluateCompliance(
+        documentId, 
+        document, 
+        framework, 
+        false // No QMP scoping here since we're already using objective-specific sections
+      );
+      
+      // Now calculate the objective-specific score using our engine
+      const objectiveCompliance = await complianceEngine.calculateObjectiveCompliance(complianceResults);
+      
+      // Find this objective's score in the results
+      const objectiveResult = objectiveCompliance.objectiveScores.find(score => 
+        score.id === objective.id || score.id === parseInt(objectiveId)
+      );
+      
+      logger.info('Checked objective compliance with engine', {
+        module: 'cer-qmp-integration',
+        objectiveId,
+        documentId,
+        framework,
+        score: objectiveResult?.score
+      });
+      
+      // Return the enhanced result
+      res.json({
+        objectiveId,
+        title: objective.title,
+        description: objective.description,
+        status: objective.status,
+        sections: objectiveSections,
+        complianceScore: objectiveResult?.score || 0,
+        complianceStatus: objectiveResult?.message || 'Not evaluated',
+        sectionScores: objectiveResult?.sections || [],
+        framework: complianceResults.framework,
+        timestamp: complianceResults.timestamp,
+        // Include related issues and recommendations filtered to this objective's sections
+        issues: complianceResults.validationResults.issues.filter(issue => 
+          objectiveSections.some(section => 
+            issue.location?.toLowerCase().includes(section.toLowerCase().replace(/\s+/g, '_'))
+          )
+        ),
+        recommendations: complianceResults.validationResults.recommendations.filter(rec => 
+          objectiveSections.some(section => 
+            rec.location?.toLowerCase().includes(section.toLowerCase().replace(/\s+/g, '_'))
+          )
+        )
+      });
+    } catch (error) {
+      logger.error('Error in compliance engine for objective', {
+        module: 'cer-qmp-integration',
+        objectiveId,
+        error: error.message
+      });
+      
+      // Fallback to original method if engine fails
+      const validationResults = await performScopedValidation(documentId, framework, objectiveSections);
+      const complianceScore = calculateObjectiveComplianceScore(validationResults, objective);
+      
+      res.json({
+        objectiveId,
+        title: objective.title,
+        description: objective.description,
+        status: objective.status,
+        sections: objectiveSections,
+        complianceScore,
+        complianceStatus: complianceScore >= 90 ? 'Excellent' : 
+                          complianceScore >= 75 ? 'Good' : 
+                          complianceScore >= 60 ? 'Needs Improvement' : 'Critical Issues',
+        usingFallback: true,
+        issues: validationResults.validationResults.issues.filter(issue => 
+          objectiveSections.some(section => 
+            issue.location?.toLowerCase().includes(section.toLowerCase().replace(/\s+/g, '_'))
+          )
+        ),
+        recommendations: validationResults.validationResults.recommendations.filter(rec => 
+          objectiveSections.some(section => 
+            rec.location?.toLowerCase().includes(section.toLowerCase().replace(/\s+/g, '_'))
+          )
+        )
+      });
+    }
   } catch (error) {
     logger.error('Error checking objective compliance', {
       module: 'cer-qmp-integration',
@@ -364,77 +606,116 @@ function getHighPriorityObjectives(objectives) {
 }
 
 /**
- * Helper function to perform scoped validation
+ * Helper function to perform scoped validation using the compliance engine
  */
 async function performScopedValidation(documentId, framework, sections) {
-  // In a real implementation, you would call the actual validation service
-  // For now, we'll simulate validation results
-  
-  // Generate mock issues based on the sections
-  const issues = [];
-  const recommendations = [];
-  
-  // Add section-specific issues and recommendations
-  sections.forEach(section => {
-    if (section === 'Clinical Data') {
-      issues.push({
-        type: 'incomplete_section',
-        message: `${section} section is incomplete`,
-        severity: 'major',
-        location: `section:${section.toLowerCase().replace(/\s+/g, '_')}`,
-        regulatoryReference: 'EU MDR Annex XIV, Part A, Section 3'
-      });
-      
-      recommendations.push({
-        id: `rec-${section.toLowerCase().replace(/\s+/g, '_')}-1`,
-        type: 'update_section',
-        message: `Include statistical analysis methods in ${section} section`,
-        location: `section:${section.toLowerCase().replace(/\s+/g, '_')}`
-      });
-    }
+  try {
+    // Fetch document from storage (would be database in production)
+    // For now, we'll create a sample document with the requested sections
+    const documentSections = sections.map(sectionName => ({
+      title: sectionName,
+      type: sectionName.toLowerCase().replace(/\s+/g, '_'),
+      content: `Sample content for ${sectionName} section. This would be the actual content from the CER document in production.`,
+      wordCount: 250
+    }));
     
-    if (section === 'State of the Art') {
-      issues.push({
-        type: 'outdated_references',
-        message: `${section} contains outdated references`,
-        severity: 'minor',
-        location: `section:${section.toLowerCase().replace(/\s+/g, '_')}`,
-        regulatoryReference: 'EU MDR Annex XIV, Part A, Section 2'
-      });
+    const document = {
+      documentId,
+      title: 'Clinical Evaluation Report',
+      sections: documentSections
+    };
+    
+    // Use the compliance engine to evaluate the document with scoped sections
+    const complianceResults = await complianceEngine.evaluateCompliance(
+      documentId, 
+      document, 
+      framework, 
+      true // Use QMP objectives scoping
+    );
+    
+    logger.info('Performed compliance evaluation using engine', {
+      module: 'cer-qmp-integration',
+      documentId,
+      framework,
+      score: complianceResults.validationResults.summary.overallScore
+    });
+    
+    return complianceResults;
+  } catch (error) {
+    logger.error('Error in compliance engine evaluation', {
+      module: 'cer-qmp-integration',
+      error: error.message
+    });
+    
+    // Fallback to simplified validation if engine fails
+    // Generate basic issues based on the sections
+    const issues = [];
+    const recommendations = [];
+    
+    // Add section-specific issues and recommendations
+    sections.forEach(section => {
+      if (section === 'Clinical Data') {
+        issues.push({
+          type: 'incomplete_section',
+          message: `${section} section is incomplete`,
+          severity: 'major',
+          location: `section:${section.toLowerCase().replace(/\s+/g, '_')}`,
+          regulatoryReference: 'EU MDR Annex XIV, Part A, Section 3'
+        });
+        
+        recommendations.push({
+          id: `rec-${section.toLowerCase().replace(/\s+/g, '_')}-1`,
+          type: 'update_section',
+          message: `Include statistical analysis methods in ${section} section`,
+          location: `section:${section.toLowerCase().replace(/\s+/g, '_')}`
+        });
+      }
       
-      recommendations.push({
-        id: `rec-${section.toLowerCase().replace(/\s+/g, '_')}-1`,
-        type: 'update_references',
-        message: `Update references in ${section} to include publications from the last 3 years`,
-        location: `section:${section.toLowerCase().replace(/\s+/g, '_')}`
-      });
-    }
-  });
-  
-  // Calculate score based on issues
-  const criticalIssues = issues.filter(i => i.severity === 'critical').length;
-  const majorIssues = issues.filter(i => i.severity === 'major').length;
-  const minorIssues = issues.filter(i => i.severity === 'minor').length;
-  
-  // Calculate score: deduct 10 for critical, 5 for major, 2 for minor
-  const score = Math.max(0, 100 - (criticalIssues * 10) - (majorIssues * 5) - (minorIssues * 2));
-  
-  return {
-    documentId,
-    framework,
-    timestamp: new Date().toISOString(),
-    validationResults: {
-      summary: {
-        overallScore: score,
-        criticalIssues,
-        majorIssues,
-        minorIssues,
-        recommendations: recommendations.length
+      if (section === 'State of the Art') {
+        issues.push({
+          type: 'outdated_references',
+          message: `${section} contains outdated references`,
+          severity: 'minor',
+          location: `section:${section.toLowerCase().replace(/\s+/g, '_')}`,
+          regulatoryReference: 'EU MDR Annex XIV, Part A, Section 2'
+        });
+        
+        recommendations.push({
+          id: `rec-${section.toLowerCase().replace(/\s+/g, '_')}-1`,
+          type: 'update_references',
+          message: `Update references in ${section} to include publications from the last 3 years`,
+          location: `section:${section.toLowerCase().replace(/\s+/g, '_')}`
+        });
+      }
+    });
+    
+    // Calculate score based on issues
+    const criticalIssues = issues.filter(i => i.severity === 'critical').length;
+    const majorIssues = issues.filter(i => i.severity === 'major').length;
+    const minorIssues = issues.filter(i => i.severity === 'minor').length;
+    
+    // Calculate score: deduct 10 for critical, 5 for major, 2 for minor
+    const score = Math.max(0, 100 - (criticalIssues * 10) - (majorIssues * 5) - (minorIssues * 2));
+    
+    return {
+      documentId,
+      framework,
+      timestamp: new Date().toISOString(),
+      validationResults: {
+        summary: {
+          overallScore: score,
+          criticalIssues,
+          majorIssues,
+          minorIssues,
+          recommendations: recommendations.length
+        },
+        issues,
+        recommendations
       },
-      issues,
-      recommendations
-    }
-  };
+      error: error.message,
+      usingFallback: true
+    };
+  }
 }
 
 /**
