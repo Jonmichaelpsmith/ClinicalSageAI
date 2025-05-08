@@ -51,17 +51,33 @@ export const csrDetails = pgTable("csr_details", {
   lastUpdated: timestamp("last_updated").defaultNow(),
 });
 
-// Users schema
+// Users schema with multi-tenant isolation
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: varchar("username", { length: 50 }).notNull().unique(),
-  password: text("password").notNull(),
-  email: varchar("email", { length: 100 }).notNull().unique(),
-  role: varchar("role", { length: 20 }).notNull().default("user"),
-  name: varchar("name", { length: 100 }),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  username: varchar("username", { length: 50 }).unique(),
+  password: text("password_hash"), // Only stored for local auth, omitted for SSO
+  salt: text("salt"), // For password hashing
+  primaryOrganizationId: integer("primary_organization_id").references(() => organizations.id),
+  role: text("role").default("user"), // global role: super_admin, admin, user
+  status: text("status").default("active"), 
+  lastLogin: timestamp("last_login"),
+  loginCount: integer("login_count").default(0),
+  failedLoginAttempts: integer("failed_login_attempts").default(0),
+  lockedUntil: timestamp("locked_until"),
+  mfaEnabled: boolean("mfa_enabled").default(false),
+  mfaMethod: text("mfa_method"), // app, sms, email, etc.
+  mfaSecret: text("mfa_secret"), // Encrypted
+  requirePasswordChange: boolean("require_password_change").default(false),
+  passwordLastChanged: timestamp("password_last_changed"),
+  authProvider: text("auth_provider").default("local"), // local, google, okta, azure, etc.
+  authProviderId: text("auth_provider_id"), // External ID from auth provider
+  preferences: jsonb("preferences").default({}),
   subscribed: boolean("subscribed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  deletedAt: timestamp("deleted_at") // Soft delete
 });
 
 // Document Types
@@ -437,7 +453,11 @@ export const cerExportsRelations = relations(cerExports, ({ one }) => ({
 // Insert schemas
 export const insertCsrReportSchema = createInsertSchema(csrReports);
 export const insertCsrDetailSchema = createInsertSchema(csrDetails);
-export const insertUserSchema = createInsertSchema(users);
+export const insertUserSchema = createInsertSchema(users, {
+  password: z.string().min(8).optional(),
+  email: z.string().email(),
+  name: z.string().min(1)
+}).omit({ passwordLastChanged: true, salt: true, mfaSecret: true });
 export const insertDocumentTypeSchema = createInsertSchema(documentTypes, {
   id: z.number().optional(),
 });
@@ -557,19 +577,43 @@ export type InsertCerExport = z.infer<typeof insertCerExportSchema>;
 // Multi-client CER Project Management Schema
 // ----------------------------------------------------------------------------
 
-// Client organizations table
-export const clients = pgTable('clients', {
+// Client organizations table (tenants)
+export const organizations = pgTable('organizations', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
+  slug: text('slug').notNull().unique(), // URL-friendly identifier
   contactName: text('contact_name'),
   contactEmail: text('contact_email'),
   phone: text('phone'),
   address: text('address'),
   logo: text('logo_url'),
   status: text('status').default('active'),
+  tier: text('tier').default('standard'), // subscription tier: standard, professional, enterprise
+  settings: jsonb('settings'), // JSON blob for tenant-specific settings
+  securitySettings: jsonb('security_settings'), // JSON blob for security configuration
+  customBranding: jsonb('custom_branding'), // JSON blob for tenant UI customization
+  dataRetentionDays: integer('data_retention_days').default(365), // Default to 1 year retention
+  maxUsers: integer('max_users').default(10), // Default user limit
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// For backward compatibility - create a view of organizations as clients
+export const clients = organizations;
+
+// Organization API keys for service account access
+export const organizationApiKeys = pgTable('organization_api_keys', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  name: text('name').notNull(), // Descriptive name for the key
+  apiKey: text('api_key').notNull(), // Hashed API key
+  scopes: text('scopes').array(), // Array of permission scopes
+  lastUsed: timestamp('last_used'),
+  expiresAt: timestamp('expires_at'), // Optional expiration
+  createdAt: timestamp('created_at').defaultNow(),
+  createdBy: integer('created_by'), // User who created the key
+  status: text('status').default('active')
 });
 
 // CER projects table
@@ -721,7 +765,95 @@ export const clientUserPermissionsRelations = relations(clientUserPermissions, (
   })
 }));
 
+// User organization references to access organizations defined at the top
+// These references are used throughout the schema
+
+// User organization membership with role-based access
+export const userOrganizations = pgTable('user_organizations', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  role: text('role').notNull().default('member'), // admin, editor, member, viewer
+  permissions: text('permissions').array(), // Specific permissions within the organization
+  invitedBy: integer('invited_by').references(() => users.id),
+  invitedAt: timestamp('invited_at').defaultNow(),
+  acceptedAt: timestamp('accepted_at'),
+  lastActive: timestamp('last_active'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  expiresAt: timestamp('expires_at') // Optional expiration for temporary access
+}, (table) => {
+  return {
+    userOrgUnique: unique().on(table.userId, table.organizationId)
+  }
+});
+
+// Session management
+export const userSessions = pgTable('user_sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  organizationId: integer('organization_id').references(() => organizations.id),
+  token: text('token').notNull(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  lastActive: timestamp('last_active').defaultNow(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  revokedAt: timestamp('revoked_at')
+});
+
+// Audit log for security events
+export const securityAuditLog = pgTable('security_audit_log', {
+  id: serial('id').primaryKey(),
+  timestamp: timestamp('timestamp').defaultNow(),
+  userId: integer('user_id').references(() => users.id),
+  organizationId: integer('organization_id').references(() => organizations.id),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  eventType: text('event_type').notNull(), // login, logout, password_change, role_change, etc.
+  eventDetails: jsonb('event_details'),
+  resourceType: text('resource_type'), // user, document, project, etc.
+  resourceId: text('resource_id') // ID of the affected resource
+});
+
+// Set up relations for organization & user tables
+export const organizationsRelations = relations(organizations, ({ many }) => ({
+  users: many(userOrganizations),
+  apiKeys: many(organizationApiKeys),
+  projects: many(cerProjects)
+}));
+
+export const usersRelations = relations(users, ({ many, one }) => ({
+  organizations: many(userOrganizations),
+  sessions: many(userSessions),
+  primaryOrganization: one(organizations, {
+    fields: [users.primaryOrganizationId],
+    references: [organizations.id]
+  })
+}));
+
+export const userOrganizationsRelations = relations(userOrganizations, ({ one }) => ({
+  user: one(users, {
+    fields: [userOrganizations.userId],
+    references: [users.id]
+  }),
+  organization: one(organizations, {
+    fields: [userOrganizations.organizationId],
+    references: [organizations.id]
+  }),
+  inviter: one(users, {
+    fields: [userOrganizations.invitedBy],
+    references: [users.id]
+  })
+}));
+
 // Create insert schemas for the new tables
+export const insertOrganizationSchema = createInsertSchema(organizations);
+export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+export type Organization = typeof organizations.$inferSelect;
+
+// Enhanced user schema already defined above
+
 export const insertClientSchema = createInsertSchema(clients);
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type Client = typeof clients.$inferSelect;
@@ -745,3 +877,221 @@ export type ProjectMilestone = typeof projectMilestones.$inferSelect;
 export const insertClientUserPermissionSchema = createInsertSchema(clientUserPermissions);
 export type InsertClientUserPermission = z.infer<typeof insertClientUserPermissionSchema>;
 export type ClientUserPermission = typeof clientUserPermissions.$inferSelect;
+
+// ----------------------------------------------------------------------------
+// Quality Management Plan (QMP) Schema with Tenant Isolation
+// ----------------------------------------------------------------------------
+
+// QMP main table
+export const qualityManagementPlans = pgTable('quality_management_plans', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  title: text('title').notNull(),
+  version: text('version').notNull().default('1.0'),
+  status: text('status').notNull().default('draft'), // draft, under_review, approved, superseded
+  description: text('description'),
+  scope: text('scope'),
+  objectives: jsonb('objectives'), // Array of quality objectives
+  regulatoryFrameworks: text('regulatory_frameworks').array(), // Array of applicable regulatory frameworks
+  createdBy: integer('created_by').references(() => users.id),
+  reviewedBy: integer('reviewed_by').references(() => users.id),
+  approvedBy: integer('approved_by').references(() => users.id),
+  approvalDate: timestamp('approval_date'),
+  reviewDate: timestamp('review_date'),
+  nextReviewDate: timestamp('next_review_date'),
+  effectiveDate: timestamp('effective_date'),
+  expirationDate: timestamp('expiration_date'),
+  metadata: jsonb('metadata').default({}),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Critical-to-Quality (CtQ) factors with risk categorization
+export const ctqFactors = pgTable('ctq_factors', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  planId: integer('plan_id').notNull().references(() => qualityManagementPlans.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  riskLevel: text('risk_level').notNull(), // high, medium, low
+  associatedSection: text('associated_section'), // Which CER section this applies to
+  objectiveId: text('objective_id'), // Reference to specific objective in the QMP
+  rationale: text('rationale'), // Why this factor is important
+  verificationType: text('verification_type'), // How this factor is verified
+  verificationCriteria: text('verification_criteria'), // Specific criteria for passing
+  mitigation: text('mitigation'), // Steps to mitigate risk if not met
+  category: text('category'), // Categorization (e.g., data integrity, regulatory compliance)
+  isHardGate: boolean('is_hard_gate').default(false), // If true, must be addressed to proceed
+  metadata: jsonb('metadata').default({}),
+  createdBy: integer('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Audit trail for QMP changes
+export const qmpAuditTrail = pgTable('qmp_audit_trail', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  planId: integer('plan_id').references(() => qualityManagementPlans.id),
+  factorId: integer('factor_id').references(() => ctqFactors.id),
+  userId: integer('user_id').references(() => users.id),
+  action: text('action').notNull(), // created, updated, deleted, approved, etc.
+  component: text('component').notNull(), // QMP, CtQ factor, objective, etc.
+  section: text('section'), // Specific section that was changed
+  details: text('details'), // Description of what changed
+  changes: jsonb('changes').default({}), // Before/after values
+  metadata: jsonb('metadata').default({}),
+  timestamp: timestamp('timestamp').defaultNow()
+});
+
+// QMP-CER section quality gating
+export const qmpSectionGating = pgTable('qmp_section_gating', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  projectId: integer('project_id').notNull().references(() => cerProjects.id),
+  cerReportId: uuid('cer_report_id').references(() => cerReports.id),
+  sectionId: text('section_id').notNull(), // Section identifier
+  sectionName: text('section_name').notNull(), // Human-readable section name
+  factors: integer('factors').array(), // Reference to CtQ factors
+  status: text('status').default('pending'), // pending, in_progress, passed, failed, waived
+  passedFactors: integer('passed_factors').array(), // Factors that are satisfied
+  failedFactors: integer('failed_factors').array(), // Factors that failed verification
+  gatingDecision: text('gating_decision'), // proceed, block, warning
+  verifiedBy: integer('verified_by').references(() => users.id),
+  verifiedAt: timestamp('verified_at'),
+  waivedBy: integer('waived_by').references(() => users.id),
+  waivedAt: timestamp('waived_at'),
+  waiveReason: text('waive_reason'),
+  metadata: jsonb('metadata').default({}),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// QMP-CER requirement traceability matrix
+export const qmpTraceabilityMatrix = pgTable('qmp_traceability_matrix', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  planId: integer('plan_id').notNull().references(() => qualityManagementPlans.id),
+  requirementId: text('requirement_id').notNull(), // Identifier for the requirement
+  requirementName: text('requirement_name').notNull(), // Human-readable name
+  requirementDescription: text('requirement_description'),
+  requirementLevel: text('requirement_level').notNull(), // high, medium, low risk
+  sections: jsonb('sections').notNull(), // Map of section IDs to coverage levels (0-3)
+  verificationMethod: text('verification_method'),
+  metadata: jsonb('metadata').default({}),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// Relations for QMP tables
+export const qualityManagementPlansRelations = relations(qualityManagementPlans, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [qualityManagementPlans.organizationId],
+    references: [organizations.id]
+  }),
+  creator: one(users, {
+    fields: [qualityManagementPlans.createdBy],
+    references: [users.id]
+  }),
+  reviewer: one(users, {
+    fields: [qualityManagementPlans.reviewedBy],
+    references: [users.id]
+  }),
+  approver: one(users, {
+    fields: [qualityManagementPlans.approvedBy],
+    references: [users.id]
+  }),
+  factors: many(ctqFactors),
+  auditTrail: many(qmpAuditTrail),
+  traceability: many(qmpTraceabilityMatrix)
+}));
+
+export const ctqFactorsRelations = relations(ctqFactors, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [ctqFactors.organizationId],
+    references: [organizations.id]
+  }),
+  plan: one(qualityManagementPlans, {
+    fields: [ctqFactors.planId],
+    references: [qualityManagementPlans.id]
+  }),
+  creator: one(users, {
+    fields: [ctqFactors.createdBy],
+    references: [users.id]
+  }),
+  auditTrail: many(qmpAuditTrail)
+}));
+
+export const qmpAuditTrailRelations = relations(qmpAuditTrail, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [qmpAuditTrail.organizationId],
+    references: [organizations.id]
+  }),
+  plan: one(qualityManagementPlans, {
+    fields: [qmpAuditTrail.planId],
+    references: [qualityManagementPlans.id]
+  }),
+  factor: one(ctqFactors, {
+    fields: [qmpAuditTrail.factorId],
+    references: [ctqFactors.id]
+  }),
+  user: one(users, {
+    fields: [qmpAuditTrail.userId],
+    references: [users.id]
+  })
+}));
+
+export const qmpSectionGatingRelations = relations(qmpSectionGating, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [qmpSectionGating.organizationId],
+    references: [organizations.id]
+  }),
+  project: one(cerProjects, {
+    fields: [qmpSectionGating.projectId],
+    references: [cerProjects.id]
+  }),
+  cerReport: one(cerReports, {
+    fields: [qmpSectionGating.cerReportId],
+    references: [cerReports.id]
+  }),
+  verifier: one(users, {
+    fields: [qmpSectionGating.verifiedBy],
+    references: [users.id]
+  }),
+  waiver: one(users, {
+    fields: [qmpSectionGating.waivedBy],
+    references: [users.id]
+  })
+}));
+
+export const qmpTraceabilityMatrixRelations = relations(qmpTraceabilityMatrix, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [qmpTraceabilityMatrix.organizationId],
+    references: [organizations.id]
+  }),
+  plan: one(qualityManagementPlans, {
+    fields: [qmpTraceabilityMatrix.planId],
+    references: [qualityManagementPlans.id]
+  })
+}));
+
+// Create insert schemas for QMP tables
+export const insertQualityManagementPlanSchema = createInsertSchema(qualityManagementPlans);
+export type InsertQualityManagementPlan = z.infer<typeof insertQualityManagementPlanSchema>;
+export type QualityManagementPlan = typeof qualityManagementPlans.$inferSelect;
+
+export const insertCtqFactorSchema = createInsertSchema(ctqFactors);
+export type InsertCtqFactor = z.infer<typeof insertCtqFactorSchema>;
+export type CtqFactor = typeof ctqFactors.$inferSelect;
+
+export const insertQmpAuditTrailSchema = createInsertSchema(qmpAuditTrail);
+export type InsertQmpAuditTrail = z.infer<typeof insertQmpAuditTrailSchema>;
+export type QmpAuditTrail = typeof qmpAuditTrail.$inferSelect;
+
+export const insertQmpSectionGatingSchema = createInsertSchema(qmpSectionGating);
+export type InsertQmpSectionGating = z.infer<typeof insertQmpSectionGatingSchema>;
+export type QmpSectionGating = typeof qmpSectionGating.$inferSelect;
+
+export const insertQmpTraceabilityMatrixSchema = createInsertSchema(qmpTraceabilityMatrix);
+export type InsertQmpTraceabilityMatrix = z.infer<typeof insertQmpTraceabilityMatrixSchema>;
+export type QmpTraceabilityMatrix = typeof qmpTraceabilityMatrix.$inferSelect;
