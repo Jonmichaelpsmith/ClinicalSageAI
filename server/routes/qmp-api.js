@@ -9,8 +9,149 @@ const openai = new OpenAI({
 
 // In-memory storage for QMP data (in production, this would be a database)
 let qmpData = {
-  objectives: [],
-  ctqFactors: []
+  objectives: [
+    {
+      id: "obj1",
+      title: "Data Integrity Across Clinical Evaluation",
+      description: "Ensure the integrity, accuracy, and traceability of all data used in clinical evaluation",
+      measures: "100% verification of critical data sources, zero unresolved data integrity issues",
+      responsible: "Clinical Data Manager",
+      timeline: "Continuous throughout CER development",
+      status: "in-progress"
+    },
+    {
+      id: "obj2",
+      title: "Regulatory Compliance with EU MDR",
+      description: "Ensure complete compliance with EU MDR 2017/745 and MEDDEV 2.7/1 Rev 4 requirements",
+      measures: "Pass all compliance checks with zero critical findings",
+      responsible: "Regulatory Affairs Manager",
+      timeline: "Verification prior to CER finalization",
+      status: "in-progress"
+    },
+    {
+      id: "obj3",
+      title: "ICH E6(R3) Implementation",
+      description: "Fully implement ICH E6(R3) risk-based quality management across clinical evaluation process",
+      measures: "Risk assessment and mitigation strategies for all critical processes",
+      responsible: "Quality Assurance Manager",
+      timeline: "Q2 2025",
+      status: "in-progress"
+    }
+  ],
+  ctqFactors: [
+    {
+      id: "ctq1",
+      objectiveId: "obj1",
+      name: "Literature Search Reproducibility",
+      description: "Search methodology must be transparent and reproducible by third parties",
+      associatedSection: "Literature Review Methodology",
+      riskLevel: "high",
+      mitigation: "Detailed documentation of search terms, databases, inclusion/exclusion criteria",
+      mitigated: false,
+      controlStatus: "partial"
+    },
+    {
+      id: "ctq2",
+      objectiveId: "obj1",
+      name: "Data Traceability",
+      description: "All data must be traceable to original source with verification method",
+      associatedSection: "Clinical Data Analysis",
+      riskLevel: "high", 
+      mitigation: "Implementation of data provenance tracking system",
+      mitigated: true,
+      controlStatus: "complete"
+    },
+    {
+      id: "ctq3",
+      objectiveId: "obj2",
+      name: "GSPR Mapping Completeness",
+      description: "All applicable GSPRs must be mapped to specific evidence",
+      associatedSection: "GSPR Assessment",
+      riskLevel: "critical",
+      mitigation: "Gap analysis and evidence mapping verification by multiple reviewers",
+      mitigated: false,
+      controlStatus: "partial"
+    },
+    {
+      id: "ctq4",
+      objectiveId: "obj2",
+      name: "PMS Data Integration",
+      description: "Post-market surveillance data must be fully integrated into clinical evaluation",
+      associatedSection: "Post-Market Surveillance",
+      riskLevel: "medium",
+      mitigation: "Automated PMS data pipeline with validation checks",
+      mitigated: true,
+      controlStatus: "complete"
+    },
+    {
+      id: "ctq5",
+      objectiveId: "obj3",
+      name: "Risk-Based Quality Monitoring",
+      description: "Implementation of risk-based monitoring for critical data points",
+      associatedSection: "Quality Management",
+      riskLevel: "medium",
+      mitigation: "Risk assessment for all data sources with corresponding monitoring plans",
+      mitigated: false,
+      controlStatus: "planned"
+    }
+  ],
+  riskAssessments: [
+    {
+      id: "risk1",
+      title: "Incomplete Literature Review Coverage",
+      description: "Risk that literature review misses relevant publications due to inadequate search strategy",
+      riskLevel: "high",
+      impactedProcess: "Literature Review",
+      applicableSection: "Literature Analysis",
+      mitigationStrategy: "Implement peer review of search strategy and results by independent clinical evaluator",
+      mitigated: false,
+      controlStatus: "partial"
+    },
+    {
+      id: "risk2",
+      title: "Outdated Clinical Data",
+      description: "Risk that clinical evidence becomes outdated during CER preparation process",
+      riskLevel: "medium",
+      impactedProcess: "State of the Art Assessment",
+      applicableSection: "Clinical Evaluation Results",
+      mitigationStrategy: "Implement automated monitoring of literature databases for new publications",
+      mitigated: true,
+      controlStatus: "complete"
+    },
+    {
+      id: "risk3",
+      title: "Inadequate Equivalence Justification",
+      description: "Risk that equivalence to predicate devices is not sufficiently substantiated",
+      riskLevel: "critical",
+      impactedProcess: "Equivalence Assessment",
+      applicableSection: "Device Equivalence",
+      mitigationStrategy: "Comprehensive documentation of equivalence with detailed technical, biological and clinical characteristics",
+      mitigated: false,
+      controlStatus: "planned"
+    },
+    {
+      id: "risk4",
+      title: "Inconsistent Benefit-Risk Determination",
+      description: "Risk of inconsistent methodology in benefit-risk determination across device variants",
+      riskLevel: "high",
+      impactedProcess: "Benefit-Risk Analysis",
+      applicableSection: "Benefit-Risk Determination",
+      mitigationStrategy: "Standardized benefit-risk assessment methodology with independent verification",
+      mitigated: false,
+      controlStatus: "partial"
+    },
+    {
+      id: "risk5",
+      title: "Incomplete Adverse Event Analysis",
+      description: "Risk that adverse events from FAERS and other sources are not fully captured or analyzed",
+      riskLevel: "medium",
+      impactedProcess: "Safety Evaluation",
+      applicableSection: "Clinical Safety",
+      mitigationStrategy: "Implement automated adverse event data collection with verification by clinical safety expert",
+      mitigated: true,
+      controlStatus: "complete"
+    }
+  ]
 };
 
 /**
@@ -166,6 +307,75 @@ router.get('/ctq-for-section/:sectionName', async (req, res) => {
       success: false,
       error: 'Failed to retrieve CtQ factors for section',
       details: error.message
+    });
+  }
+});
+
+/**
+ * Enhance QMP-related validation issues with ICH E6(R3) context
+ * POST /api/qmp/enhance-issues
+ */
+router.post('/enhance-issues', async (req, res) => {
+  try {
+    const { documentId, framework, qmpIssues, regulatoryContext } = req.body;
+    
+    if (!qmpIssues || qmpIssues.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No QMP issues to enhance',
+        enhancedIssues: []
+      });
+    }
+    
+    // Use OpenAI to enhance the QMP issues with ICH E6(R3) context
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are a Quality Management expert specializing in ICH E6(R3) and EU MDR 2017/745 compliance.
+          Your task is to enhance QMP-related validation issues with context from ICH E6(R3) Good Clinical Practice
+          and other relevant regulatory frameworks.
+          
+          For each validation issue:
+          1. Maintain the original structure and severity level
+          2. Enhance the description with specific references to ICH E6(R3) principles
+          3. Add more detailed remediation steps with concrete actions
+          4. Provide context about why this issue is important for regulatory compliance
+          5. If possible, reference specific sections of ICH E6(R3), EU MDR, or other relevant regulations
+          
+          Return the enhanced issues array in the same format as provided, with enriched descriptions and remediation suggestions.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            framework,
+            regulatoryContext,
+            issues: qmpIssues
+          })
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 2500
+    });
+    
+    const enhancedContent = JSON.parse(response.choices[0].message.content);
+    const enhancedIssues = enhancedContent.issues || enhancedContent;
+    
+    res.json({
+      success: true,
+      message: 'QMP issues enhanced successfully',
+      enhancedIssues
+    });
+  } catch (error) {
+    console.error('Error enhancing QMP issues:', error);
+    
+    // Return the original issues if enhancement fails
+    res.json({
+      success: true,
+      message: 'Could not enhance QMP issues, returning original',
+      enhancedIssues: req.body.qmpIssues,
+      error: error.message
     });
   }
 });
