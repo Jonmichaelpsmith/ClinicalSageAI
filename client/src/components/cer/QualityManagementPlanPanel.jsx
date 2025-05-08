@@ -17,6 +17,8 @@ import { getComplianceMetrics } from '@/services/CerComplianceService';
 import ComplianceDashboardPanel from './ComplianceDashboardPanel';
 import ObjectiveComplianceCard from './ObjectiveComplianceCard';
 import QmpAuditTrailPanel from './QmpAuditTrailPanel';
+import QmpTraceabilityHeatmap from './QmpTraceabilityHeatmap';
+import CerComprehensiveReportsPanel from './CerComprehensiveReportsPanel';
 
 // ICH E6(R3) Compliant Quality Management Plan Component
 const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }) => {
@@ -1213,9 +1215,39 @@ _Document Generated: ${new Date().toLocaleDateString()}_
           </Card>
         </div>
         
-        {/* Audit Trail Section */}
+        {/* Comprehensive Reports Section */}
         <div className="mb-6">
-          <QmpAuditTrailPanel />
+          <CerComprehensiveReportsPanel 
+            cerData={{
+              deviceName,
+              manufacturer,
+              version: "1.0",
+            }}
+            deviceName={deviceName}
+            manufacturer={manufacturer}
+            qmpData={planMetadata}
+            objectives={objectives}
+            ctqFactors={ctqFactors}
+            complianceMetrics={metrics}
+            // The following props would be populated with actual data in a real implementation
+            literatureData={{
+              reviewStatus: 'in-progress',
+              completionPercentage: 78
+            }}
+            clinicalData={{}}
+            regulatoryData={{
+              complianceScore: 85
+            }}
+            validationResults={{
+              issues: [
+                { severity: 'critical', message: 'Missing required clinical data in the Post-Market Surveillance section' },
+                { severity: 'critical', message: 'Benefit-Risk Analysis lacks quantitative evidence' }
+              ]
+            }}
+            riskAnalysisData={{
+              completionPercentage: 90
+            }}
+          />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
