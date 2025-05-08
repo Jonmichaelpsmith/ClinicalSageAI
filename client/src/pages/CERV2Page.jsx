@@ -16,12 +16,13 @@ import NotificationBanner from '@/components/cer/NotificationBanner';
 import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
 import EuPmsDataPanel from '@/components/cer/EuPmsDataPanel';
 import RiskManagementPanel from '@/components/cer/RiskManagementPanel';
+import EvaluatorQualificationsPanel from '@/components/cer/EvaluatorQualificationsPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, Globe } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, Globe, UserCheck, PenTool } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -100,7 +101,7 @@ export default function CERV2Page() {
       return 'preparation';
     } else if (['literature', 'literature-review', 'internal-clinical-data', 'eu-pms-data', 'sota'].includes(tab)) {
       return 'evidence';
-    } else if (['equivalence', 'gspr-mapping', 'compliance', 'assistant'].includes(tab)) {
+    } else if (['equivalence', 'risk-management', 'gspr-mapping', 'evaluator-qualifications', 'compliance', 'assistant'].includes(tab)) {
       return 'analysis';
     } else {
       return 'output';
@@ -136,6 +137,7 @@ export default function CERV2Page() {
           { id: "equivalence", label: "Equivalence", icon: <GitCompare className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "risk-management", label: "Risk Management", icon: <Layers className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "gspr-mapping", label: "GSPR Mapping", icon: <BarChart className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "evaluator-qualifications", label: "Evaluator Qualifications", icon: <UserCheck className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5" /> }
         ]
@@ -664,6 +666,46 @@ export default function CERV2Page() {
               toast({
                 title: "GSPR Mapping Added",
                 description: "GSPR requirements mapping has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+    
+    if (activeTab === 'evaluator-qualifications') {
+      return (
+        <EvaluatorQualificationsPanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          onAddToCER={(qualificationsData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'evaluator-qualifications' || 
+              (section.title && section.title.toLowerCase().includes('evaluator qualifications'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: qualificationsData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Evaluator Qualifications Updated",
+                description: "Author qualifications and reviewer sign-off information has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, qualificationsData]);
+              
+              toast({
+                title: "Evaluator Qualifications Added",
+                description: "Author qualifications and reviewer sign-off information has been added to your CER as an appendix.",
                 variant: "success"
               });
             }
