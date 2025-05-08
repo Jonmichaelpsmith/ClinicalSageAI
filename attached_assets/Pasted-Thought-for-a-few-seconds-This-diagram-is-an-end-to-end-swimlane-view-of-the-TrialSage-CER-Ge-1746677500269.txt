@@ -1,0 +1,102 @@
+Thought for a few seconds
+
+
+This diagram is an end-to-end “swimlane” view of the TrialSage CER Generator, showing every major phase of the clinical evaluation workflow—from initial setup all the way through regulatory submission and ongoing post-market updates. Here’s how to read and use it:
+
+---
+
+## 1. Layers & Swimlanes
+
+The chart is organized into seven horizontal bands, each representing a distinct phase in the CER lifecycle:
+
+1. **Preparation** (top band, y≈8)
+2. **Data Ingestion** (y≈6)
+3. **Evidence Processing** (y≈4)
+4. **Analysis** (y≈2)
+5. **Output** (y≈0)
+6. **Submission** (y≈–2)
+7. **Post-Market Loop** (y≈–4 and y≈–6)
+
+Each box is a module or step, and its vertical placement shows which phase it belongs to.
+
+---
+
+## 2. Nodes (Boxes)
+
+* **Preparation**
+
+  * **Builder (Device Info Input):** User enters basic device metadata.
+  * **Evaluation Plan (CEP Definition):** AI scaffolds the Clinical Evaluation Plan.
+  * **Documents (IFU, SSCP, Templates):** Core regulatory files are uploaded.
+  * **Data Retrieval (Trigger):** Kicks off all data-pull tasks.
+
+* **Ingestion**
+
+  * **FAERS Data Ingestion:** Pulls adverse-event reports from FDA.
+  * **Literature Fetch:** Searches PubMed/Scholar and ingests PDFs.
+  * **Internal Clinical Data:** Parses user-uploaded trial or registry datasets.
+  * **EU & Global PMS:** Imports post-market surveillance or complaint logs.
+
+* **Evidence Processing**
+
+  * **Literature Review & Appraisal:** AI extracts, screens, and appraises study data.
+  * **State of the Art Analysis:** AI synthesizes current standard-of-care benchmarks.
+
+* **Analysis**
+
+  * **Equivalence Analysis:** Compares your device to any claimed equivalent.
+  * **GSPR Mapping:** Links clinical findings to specific General Safety & Performance Requirements.
+  * **Compliance Validation:** Runs rule-based checks against MDR, FDA, UK, IMDRF criteria.
+  * **AI Assistant (Q\&A):** Interactive assistant to justify or drill into the data.
+
+* **Output**
+
+  * **Report Preview:** Interactive, in-app preview of the assembled CER.
+  * **Export PDF/DOCX:** One-click generation of submission-ready documents.
+
+* **Submission**
+
+  * **Submit to Agencies:** Package is sent to EU Notified Body, FDA, MHRA, etc.
+  * **Agency Review & Queries:** Regulators review the CER and may issue Q\&As.
+  * **Approval/Certification:** Formal approval (e.g., CE certificate, 510(k) clearance).
+
+* **Post-Market Loop**
+
+  * **PMCF Planning & Updates:** Post-Market Clinical Follow-up plan is drafted and executed.
+  * **Post-Market Data Feedback:** New adverse events or literature feed back into the Data Retrieval step, keeping the CER “living.”
+
+---
+
+## 3. Arrows (Flows)
+
+* **Horizontal Arrows** indicate the sequence within a phase (e.g., Builder → Evaluation Plan → Documents → Data Retrieval).
+* **Diagonal & Vertical Arrows** show how the output of one phase becomes the input to another (e.g., Data Retrieval → all Ingestion modules; Ingestion → Literature Review; Analysis → Report Preview; Export → Submission).
+* **Feedback Arrows** at the bottom illustrate the continuous loop: after approval, post-market data and PMCF updates flow back into the Data Retrieval trigger, ensuring the CER is updated as new evidence emerges.
+
+---
+
+## 4. How to Use This Chart
+
+1. **Architectural Blueprint**
+
+   * Use it to orient developers and stakeholders to every component—frontend tabs, backend services, AI workers, and data sources—and how they interconnect.
+
+2. **Feature Gap Analysis**
+
+   * Cross-check the modules you’ve built (or plan to build) against this workflow. Any missing box or flow arrow highlights a gap in your implementation.
+
+3. **Onboarding & Documentation**
+
+   * Embed it in your README or Wiki so new team members instantly grasp the CER pipeline’s complexity and data dependencies.
+
+4. **Testing & QA**
+
+   * Verify each module in the chart with unit/integration tests. For example, ensure FAERS ingestion truly feeds into the Literature Review step, or that a completed export triggers the Submission step.
+
+5. **Regulatory Traceability**
+
+   * Refer to this visual when mapping your code/modules back to regulatory requirements (e.g., “Where is the GSPR mapping module?” or “Which component handles PMCF?”).
+
+---
+
+By following the chart from top to bottom and left to right, you can trace the **entire journey of a CER**—from “zero-click” data pulls all the way to living-document updates—ensuring that every critical piece (planning, data ingestion, AI analysis, compliance checks, export, submission, and post-market follow-up) is accounted for in your TrialSage project.

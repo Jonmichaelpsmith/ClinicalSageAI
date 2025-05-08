@@ -58,14 +58,16 @@ const EvaluatorQualificationsPanel = ({ deviceName, deviceType, manufacturer, on
   
   // MDR Compliance Checklist
   const [complianceChecklist, setComplianceChecklist] = useState([
-    { id: 'check-1', text: 'The evaluator has sufficient demonstrable experience in the evaluation of the relevant device technology and its clinical application', checked: false },
-    { id: 'check-2', text: 'The evaluator has knowledge of the state of the art in the device category', checked: false },
-    { id: 'check-3', text: 'The evaluator has expertise in clinical research methodologies', checked: false },
-    { id: 'check-4', text: 'The evaluator has knowledge of the relevant harmonized standards and guidance documents', checked: false },
-    { id: 'check-5', text: 'The evaluator has no conflicts of interest that could influence the evaluation', checked: false },
-    { id: 'check-6', text: 'The evaluation has been independently reviewed as required by MEDDEV 2.7/1 Rev 4', checked: false },
-    { id: 'check-7', text: 'At least one evaluator has medical qualifications in a field relevant to the device', checked: false },
-    { id: 'check-8', text: 'The evaluation team collectively has suitable qualifications and experience for the device being evaluated', checked: false }
+    { id: 'check-1', text: 'The evaluator has sufficient demonstrable experience in the evaluation of the relevant device technology and its clinical application (EU MDR Article 61(3))', checked: false },
+    { id: 'check-2', text: 'The evaluator has knowledge of the state of the art in the device category (MEDDEV 2.7/1 Rev 4, Section 6.4)', checked: false },
+    { id: 'check-3', text: 'The evaluator has expertise in clinical research methodologies (EU MDR Article 61(3), Annex XIV, Part A)', checked: false },
+    { id: 'check-4', text: 'The evaluator has knowledge of the relevant harmonized standards and Common Specifications (EU MDR Article 8, Article 61)', checked: false },
+    { id: 'check-5', text: 'The evaluator has completed a Conflict of Interest Declaration and has no conflicts that could influence the evaluation (MEDDEV 2.7/1 Rev 4, Section 6.2.2)', checked: false },
+    { id: 'check-6', text: 'The clinical evaluation has been independently reviewed as required by MEDDEV 2.7/1 Rev 4, Section 9.3.1', checked: false },
+    { id: 'check-7', text: 'At least one evaluator has medical qualifications in a field relevant to the device (EU MDR Annex XIV, Part A, Section 3)', checked: false },
+    { id: 'check-8', text: 'The evaluation team collectively has suitable qualifications and experience for the device being evaluated (EU MDR Article 61(3))', checked: false },
+    { id: 'check-9', text: 'The evaluation process followed the MEDDEV 2.7/1 Rev 4 guidance for demonstrating conformity to General Safety and Performance Requirements', checked: false },
+    { id: 'check-10', text: 'Qualified individuals have verified that the CER is complete and accurate prior to Notified Body submission (EU MDR Article 61 and Annex XIV)', checked: false }
   ]);
   
   // Update primary evaluator information
@@ -169,6 +171,19 @@ ${reviewer.comments}
 ### MDR Compliance Declaration
 ${complianceChecklist.filter(item => item.checked).map(item => `- ✓ ${item.text}`).join('\n')}
 
+### Regulatory Response Capability
+The following qualified individuals are designated as authorized respondents to Notified Body or Competent Authority queries regarding this clinical evaluation:
+
+1. **Primary Respondent:** ${primaryEvaluator.name}
+   - Will address technical and methodological questions related to the clinical evaluation
+   - Available for regulatory meetings and clarifications as needed
+
+2. **Secondary Respondent(s):** ${reviewers.map(reviewer => reviewer.name).join(', ')}
+   - Will provide supporting expertise and address specialized queries in their area of competence
+
+### Post-Market Evaluation Commitment
+The qualified evaluators named in this document commit to periodic review of post-market data and literature to maintain the clinical evaluation as a living document as required by EU MDR Article 61 and Annex XIV.
+
 ### Compliance Statement
 This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 guidance and EU MDR (2017/745) requirements. The evaluators collectively have the qualifications and experience required for the evaluation of ${deviceName || 'the medical device'}, as demonstrated above.
 
@@ -179,8 +194,18 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
         lastUpdated: new Date().toISOString(),
         sources: [
           { name: 'MEDDEV 2.7/1 Rev 4', type: 'guidance', date: new Date().toISOString() },
-          { name: 'EU MDR (2017/745)', type: 'regulation', date: new Date().toISOString() }
-        ]
+          { name: 'EU MDR (2017/745)', type: 'regulation', date: new Date().toISOString() },
+          { name: 'EU MDCG 2020-13 Clinical Evaluation Assessment Report Template', type: 'guidance', date: new Date().toISOString() }
+        ],
+        metadata: {
+          outputSection: 'appendix',
+          regulatoryPurpose: 'EU MDR Article 61 compliance',
+          postMarketRelevant: true,
+          reviewCycle: {
+            initialApproval: new Date().toISOString(),
+            nextReviewDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString()
+          }
+        }
       };
       
       // Add to CER
@@ -494,6 +519,18 @@ This clinical evaluation was performed in accordance with MEDDEV 2.7/1 Rev 4 gui
           <p className="text-[#0F6CBD]">
             <BadgeCheck className="h-4 w-4 inline-block mr-1 mb-1" />
             EU MDR Article 61 and MEDDEV 2.7/1 Rev 4 require that clinical evaluations are performed by qualified evaluators with documented expertise
+          </p>
+        </div>
+        
+        <div className="bg-[#FDF6E7] border border-[#EDBE3C] rounded-md px-4 py-3">
+          <h3 className="text-[#A05E03] font-medium mb-1 flex items-center">
+            <CalendarClock className="h-4 w-4 mr-2" />
+            Post-Market Connection
+          </h3>
+          <p className="text-sm text-[#6D4B17]">
+            The evaluators documented here are also responsible for reviewing post-market data and updating the CER regularly. 
+            This creates a continuous feedback loop between the Submission phase and Data Retrieval phase, ensuring 
+            that the CER remains a living document. Evaluator qualification records will be included in EU Notified Body submissions.
           </p>
         </div>
         
