@@ -81,29 +81,76 @@ import {
   Key
 } from 'lucide-react';
 
-// Define feature categories based on MEDDEV 2.7/1 Rev 4 requirements
+// Define feature categories based on MEDDEV 2.7/1 Rev 4 requirements and EU MDR
 const featureCategories = [
+  // Clinical characteristics
   { value: 'clinical', label: 'Clinical Characteristics' },
+  { value: 'intended_use', label: 'Intended Use / Indications' },
+  { value: 'clinical_population', label: 'Clinical Population' },
+  { value: 'clinical_performance', label: 'Clinical Performance' },
+  { value: 'clinical_benefit', label: 'Clinical Benefit' },
+  { value: 'clinical_claims', label: 'Clinical Claims' },
+  
+  // Technical characteristics
   { value: 'technical', label: 'Technical Characteristics' },
-  { value: 'biological', label: 'Biological Characteristics' },
-  { value: 'materials', label: 'Materials' },
-  { value: 'design', label: 'Design Features' },
+  { value: 'design', label: 'Design & Physical Properties' },
+  { value: 'dimensions', label: 'Dimensions & Measurements' },
   { value: 'principles', label: 'Principles of Operation' },
-  { value: 'intended_use', label: 'Intended Use / Purpose' },
+  { value: 'energy_source', label: 'Energy Source (if applicable)' },
+  { value: 'software', label: 'Software / Algorithms (if applicable)' },
+  { value: 'accessories', label: 'Accessories / Components' },
+  
+  // Biological characteristics
+  { value: 'biological', label: 'Biological Characteristics' },
+  { value: 'materials', label: 'Materials & Composition' },
+  { value: 'biocompatibility', label: 'Biocompatibility' },
+  { value: 'sterility', label: 'Sterility & Packaging' },
+  { value: 'degradation', label: 'Degradation Properties (if applicable)' },
+  { value: 'absorption', label: 'Absorption / Elution (if applicable)' },
 ];
 
-// Predefined common characteristics based on regulatory guidance
+// Predefined common characteristics based on MEDDEV 2.7/1 Rev 4 and EU MDR regulatory guidance
 const predefinedCharacteristics = [
+  // Clinical characteristics
   { category: 'intended_use', name: 'Intended Use' },
   { category: 'intended_use', name: 'Indications for Use' },
-  { category: 'clinical', name: 'Contraindications' },
-  { category: 'clinical', name: 'Patient Population' },
-  { category: 'clinical', name: 'Users' },
-  { category: 'technical', name: 'Classification' },
-  { category: 'materials', name: 'Materials' },
-  { category: 'design', name: 'Dimensions' },
+  { category: 'intended_use', name: 'Contraindications' },
+  { category: 'clinical_population', name: 'Patient Population' },
+  { category: 'clinical_population', name: 'User Population' },
+  { category: 'clinical_performance', name: 'Performance Claims' },
+  { category: 'clinical_performance', name: 'Endpoints/Outcomes' },
+  { category: 'clinical_benefit', name: 'Clinical Benefits' },
+  
+  // Technical characteristics
+  { category: 'technical', name: 'Classification (Rule/Class)' },
+  { category: 'technical', name: 'Classification Rationale' },
+  { category: 'design', name: 'Physical Form' },
+  { category: 'design', name: 'Structural Components' },
+  { category: 'dimensions', name: 'Key Dimensions' },
+  { category: 'dimensions', name: 'Size Range' },
   { category: 'principles', name: 'Principles of Operation' },
-  { category: 'biological', name: 'Biocompatibility' },
+  { category: 'principles', name: 'Mechanism of Action' },
+  { category: 'software', name: 'Software Version' },
+  { category: 'software', name: 'Software Functionality' },
+  { category: 'energy_source', name: 'Energy Type' },
+  { category: 'energy_source', name: 'Power Requirements' },
+  { category: 'accessories', name: 'Essential Accessories' },
+  { category: 'accessories', name: 'Compatible Accessories' },
+  
+  // Biological characteristics
+  { category: 'materials', name: 'Primary Materials' },
+  { category: 'materials', name: 'Material Composition' },
+  { category: 'materials', name: 'Material Processing' },
+  { category: 'biocompatibility', name: 'Biocompatibility Category' },
+  { category: 'biocompatibility', name: 'ISO 10993 Compliance' },
+  { category: 'biocompatibility', name: 'Tissue Contact' },
+  { category: 'biocompatibility', name: 'Contact Duration' },
+  { category: 'sterility', name: 'Sterility Status' },
+  { category: 'sterility', name: 'Sterilization Method' },
+  { category: 'sterility', name: 'Packaging Type' },
+  { category: 'degradation', name: 'Degradation Profile' },
+  { category: 'absorption', name: 'Absorption Rate' },
+  { category: 'absorption', name: 'Elution Characteristics' },
 ];
 
 /**
