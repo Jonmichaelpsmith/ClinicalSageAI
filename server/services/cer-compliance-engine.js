@@ -14,7 +14,9 @@
 import { fileURLToPath } from 'url';
 import path from 'path';
 import logger from '../utils/logger.js';
-import fetch from 'node-fetch';
+
+// Use built-in fetch from global scope instead of node-fetch
+const fetch = global.fetch;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
