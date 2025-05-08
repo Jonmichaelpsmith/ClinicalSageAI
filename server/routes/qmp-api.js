@@ -9,6 +9,15 @@ const openai = new OpenAI({
 
 // In-memory storage for QMP data (in production, this would be a database)
 let qmpData = {
+  metadata: {
+    planName: 'Quality Management Plan',
+    planVersion: '1.0.0',
+    authorName: 'System User',
+    authorRole: 'Quality Manager',
+    dateCreated: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    linkedCerVersion: 'Current Draft'
+  },
   objectives: [
     {
       id: "obj1",
@@ -180,7 +189,7 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { objectives, ctqFactors } = req.body;
+    const { objectives, ctqFactors, metadata } = req.body;
     
     if (!objectives || !Array.isArray(objectives)) {
       return res.status(400).json({
@@ -189,9 +198,26 @@ router.post('/', async (req, res) => {
       });
     }
     
+    // Create updated qmpData object with new values, preserving existing metadata if not provided
+    const updatedMetadata = metadata || qmpData.metadata || {
+      planName: 'Quality Management Plan',
+      planVersion: '1.0.0',
+      authorName: 'System User',
+      authorRole: 'Quality Manager',
+      dateCreated: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      linkedCerVersion: 'Current Draft'
+    };
+    
+    // Always update lastUpdated date when saving
+    updatedMetadata.lastUpdated = new Date().toISOString();
+    
+    // Update QMP data while preserving risk assessments
     qmpData = {
+      metadata: updatedMetadata,
       objectives: objectives,
-      ctqFactors: ctqFactors || []
+      ctqFactors: ctqFactors || [],
+      riskAssessments: qmpData.riskAssessments || []
     };
     
     res.json({
@@ -215,7 +241,7 @@ router.post('/', async (req, res) => {
  */
 router.post('/generate', async (req, res) => {
   try {
-    const { deviceName, manufacturer, objectives, ctqFactors } = req.body;
+    const { deviceName, manufacturer, objectives, ctqFactors, metadata } = req.body;
     
     if (!objectives || objectives.length === 0) {
       return res.status(400).json({
@@ -224,12 +250,24 @@ router.post('/generate', async (req, res) => {
       });
     }
 
+    // Use provided metadata or QMP data's metadata or default values
+    const qmpMetadata = metadata || qmpData.metadata || {
+      planName: 'Quality Management Plan',
+      planVersion: '1.0.0',
+      authorName: 'System User',
+      authorRole: 'Quality Manager',
+      dateCreated: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      linkedCerVersion: 'Current Draft'
+    };
+
     // Format data for OpenAI
     const data = {
       device: deviceName || 'Unnamed Device',
       manufacturer: manufacturer || 'Unnamed Manufacturer',
       objectives: objectives,
-      ctqFactors: ctqFactors || []
+      ctqFactors: ctqFactors || [],
+      metadata: qmpMetadata
     };
 
     // Use OpenAI to enhance QMP content
@@ -238,7 +276,8 @@ router.post('/generate', async (req, res) => {
     res.json({
       success: true,
       content: enhancedContent,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      metadata: qmpMetadata
     });
   } catch (error) {
     console.error('Error generating QMP content:', error);
@@ -306,6 +345,24 @@ router.get('/ctq-for-section/:sectionName', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve CtQ factors for section',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * Get complete QMP data for CER integration
+ * GET /api/qmp-api/data
+ */
+router.get('/data', async (req, res) => {
+  try {
+    // Return the full QMP data object including metadata
+    res.json(qmpData);
+  } catch (error) {
+    console.error('Error fetching complete QMP data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve complete Quality Management Plan data',
       details: error.message
     });
   }
@@ -502,6 +559,17 @@ async function generateEnhancedQMP(data) {
         ctqFactors: ctqByObjective[obj.id] || []
       };
     });
+    
+    // Format metadata for inclusion in the document
+    const metadata = data.metadata || {
+      planName: 'Quality Management Plan',
+      planVersion: '1.0.0',
+      authorName: 'System User',
+      authorRole: 'Quality Manager',
+      dateCreated: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      linkedCerVersion: 'Current Draft'
+    };
 
     // Use GPT-4o for enhanced QMP generation
     const response = await openai.chat.completions.create({
@@ -511,26 +579,31 @@ async function generateEnhancedQMP(data) {
           role: "system",
           content: `You are a Clinical Quality Management expert specializing in ICH E6(R3) compliance and EU MDR regulations. 
           Your task is to format an enhanced, professionally written Quality Management Plan (QMP) for a medical device's 
-          Clinical Evaluation Report based on the provided quality objectives and critical-to-quality factors. 
+          Clinical Evaluation Report based on the provided quality objectives and critical-to-quality factors.
+          
+          The document must include a detailed header with the plan metadata information provided.
+          
           Follow these guidelines:
           
-          1. Create a comprehensive QMP document structure with numbered sections
-          2. Include an introduction to quality management for medical device clinical evaluations
-          3. Format each quality objective with its description, measures, timeline, and status
-          4. For each objective, include its associated critical-to-quality factors with risk levels
-          5. Add a section on quality monitoring and continuous improvement 
-          6. Add a section on compliance with ICH E6(R3) and EU MDR 2017/745
-          7. Include references to MEDDEV 2.7/1 Rev 4 and ISO 14155:2020
-          8. Format the output in Markdown for direct inclusion in the CER
-          9. Ensure the content is suitable for regulatory submission
-          10. Maintain professional, formal language throughout`
+          1. Start with a document header that includes plan name, version, author information, dates and all metadata
+          2. Create a comprehensive QMP document structure with numbered sections
+          3. Include an introduction to quality management for medical device clinical evaluations
+          4. Format each quality objective with its description, measures, timeline, and status
+          5. For each objective, include its associated critical-to-quality factors with risk levels
+          6. Add a section on quality monitoring and continuous improvement 
+          7. Add a section on compliance with ICH E6(R3) and EU MDR 2017/745
+          8. Include references to MEDDEV 2.7/1 Rev 4 and ISO 14155:2020
+          9. Format the output in Markdown for direct inclusion in the CER
+          10. Ensure the content is suitable for regulatory submission
+          11. Maintain professional, formal language throughout`
         },
         {
           role: "user",
           content: JSON.stringify({
             device: data.device,
             manufacturer: data.manufacturer,
-            objectives: objectivesWithCtq
+            objectives: objectivesWithCtq,
+            metadata: metadata
           })
         }
       ],
@@ -546,9 +619,31 @@ async function generateEnhancedQMP(data) {
     const deviceInfo = data.device ? 
       `Device: ${data.device}${data.manufacturer ? ` (Manufacturer: ${data.manufacturer})` : ''}` : 
       `Unnamed Device${data.manufacturer ? ` (Manufacturer: ${data.manufacturer})` : ''}`;
+    
+    // Extract metadata for document header
+    const metadata = data.metadata || {
+      planName: 'Quality Management Plan',
+      planVersion: '1.0.0',
+      authorName: 'System User',
+      authorRole: 'Quality Manager',
+      dateCreated: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      linkedCerVersion: 'Current Draft'
+    };
+    
+    // Format dates for display
+    const createdDate = new Date(metadata.dateCreated).toLocaleDateString();
+    const updatedDate = new Date(metadata.lastUpdated).toLocaleDateString();
 
     let content = `
-# Quality Management Plan
+# ${metadata.planName}
+
+**Version:** ${metadata.planVersion}  
+**Author:** ${metadata.authorName}  
+**Role:** ${metadata.authorRole}  
+**Created:** ${createdDate}  
+**Last Updated:** ${updatedDate}  
+**Linked CER Version:** ${metadata.linkedCerVersion}  
 
 ${deviceInfo}
 
