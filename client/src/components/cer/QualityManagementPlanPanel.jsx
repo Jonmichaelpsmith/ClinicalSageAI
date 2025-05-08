@@ -1213,6 +1213,11 @@ _Document Generated: ${new Date().toLocaleDateString()}_
           </Card>
         </div>
         
+        {/* Audit Trail Section */}
+        <div className="mb-6">
+          <QmpAuditTrailPanel />
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <Card className="shadow-none border-l-4 border-l-green-500">
             <CardHeader className="p-3 pb-0">
