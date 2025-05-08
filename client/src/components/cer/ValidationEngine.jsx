@@ -261,10 +261,42 @@ const ValidationEngine = ({ documentId, onValidationComplete }) => {
             <option value="ich">ICH</option>
           </select>
           
-          <Button onClick={runValidation} className="gap-2">
+          <Button onClick={runValidation} className="gap-2 bg-[#0F6CBD]">
             <RefreshCw className="h-4 w-4" />
             Run Validation
           </Button>
+          
+          {validationData && (
+            <Button 
+              onClick={() => {
+                if (onValidationComplete) {
+                  const validationSummary = {
+                    title: "Regulatory Validation Report",
+                    type: "validation-report",
+                    content: {
+                      framework: frameworkNames[selectedFramework],
+                      score: validationData.summary.complianceScore,
+                      issues: validationData.issues,
+                      summary: validationData.summary
+                    },
+                    lastUpdated: new Date().toISOString()
+                  };
+                  
+                  onValidationComplete(validationSummary, true);
+                  
+                  toast({
+                    title: "Validation Report Added",
+                    description: `Validation report for ${frameworkNames[selectedFramework]} has been added to your CER`,
+                    variant: "success"
+                  });
+                }
+              }}
+              variant="outline" 
+              className="gap-2 border-[#0F6CBD] text-[#0F6CBD]"
+            >
+              Add to CER
+            </Button>
+          )}
         </div>
       </div>
       
