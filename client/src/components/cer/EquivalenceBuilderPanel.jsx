@@ -635,30 +635,36 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
     setDataAccessStatus('checking');
     
     try {
+      // Prepare data for compliance check
+      const apiRequestData = {
+        manufacturerName: dataAccessInfo.manufacturerName || subjectDevice.manufacturer,
+        equivalentDeviceInfo: {
+          name: device.name,
+          manufacturer: device.manufacturer
+        },
+        accessType: dataAccessInfo.accessType,
+        accessDetails: dataAccessInfo.accessDetails,
+        // Additional details
+        contractReference: dataAccessInfo.contractReference,
+        thirdPartyService: dataAccessInfo.thirdPartyService,
+        // EU MDR compliance details
+        accessDomains: {
+          technical: dataAccessInfo.hasTechnicalAccess,
+          biological: dataAccessInfo.hasBiologicalAccess,
+          clinical: dataAccessInfo.hasClinicalAccess,
+          documented: dataAccessInfo.hasDocumentation
+        }
+      };
+      
+      console.log('Verifying data access with EU MDR compliance data:', apiRequestData);
+      
+      // Call API for verification
       const response = await fetch('/api/cer/equivalence/data-access-check', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          manufacturerName: dataAccessInfo.manufacturerName || subjectDevice.manufacturer,
-          equivalentDeviceInfo: {
-            name: device.name,
-            manufacturer: device.manufacturer
-          },
-          accessType: dataAccessInfo.accessType,
-          accessDetails: dataAccessInfo.accessDetails,
-          // Additional details
-          contractReference: dataAccessInfo.contractReference,
-          thirdPartyService: dataAccessInfo.thirdPartyService,
-          // EU MDR compliance details
-          accessDomains: {
-            technical: dataAccessInfo.hasTechnicalAccess,
-            biological: dataAccessInfo.hasBiologicalAccess,
-            clinical: dataAccessInfo.hasClinicalAccess,
-            documented: dataAccessInfo.hasDocumentation
-          }
-        }),
+        body: JSON.stringify(apiRequestData),
       });
       
       if (!response.ok) {
