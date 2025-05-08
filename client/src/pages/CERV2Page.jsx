@@ -149,7 +149,7 @@ export default function CERV2Page() {
           >
             <div className="flex items-center px-6">
               <div className="flex items-center mr-4 flex-shrink-0">
-                <span className="text-xs font-medium text-[#605E5C]">{group.label}</span>
+                <span className={`text-xs font-medium ${group.label.includes("Preparation") ? "text-[#FF69B4]" : "text-[#605E5C]"}`}>{group.label}</span>
               </div>
               
               <div className="inline-flex items-center">
@@ -167,7 +167,7 @@ export default function CERV2Page() {
                     `}
                   >
                     {tab.icon}
-                    <span className="text-[#FF69B4]">{tab.label}</span>
+                    <span className={group.label.includes("Preparation") ? "text-[#FF69B4]" : ""}>{tab.label}</span>
                   </button>
                 ))}
               </div>
