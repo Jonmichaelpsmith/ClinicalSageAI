@@ -701,6 +701,25 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
     }
   };
   
+  // Add a new predefined feature to the form
+  const addPredefinedFeature = (predefined) => {
+    if (!activeDeviceId) {
+      toast({
+        title: 'No device selected',
+        description: 'Please select an equivalent device first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setCurrentFeature({
+      ...currentFeature,
+      category: predefined.category,
+      name: predefined.name
+    });
+    setIsFeatureDialogOpen(true);
+  };
+  
   // Get the active device
   const activeDevice = equivalentDevices.find(device => device.id === activeDeviceId);
   
@@ -764,6 +783,31 @@ export default function EquivalenceBuilderPanel({ onEquivalenceDataChange }) {
     }
     
     return 'equivalent';
+  };
+  
+  // Calculate equivalence score
+  const getEquivalenceScore = (device) => {
+    if (!device.features || device.features.length === 0) {
+      return 0;
+    }
+    
+    // Score each feature: no difference = 3, minor = 2, moderate = 1, significant = 0
+    const featureScores = device.features.map(feature => {
+      switch (feature.impact) {
+        case 'none': return 3;
+        case 'minor': return 2;
+        case 'moderate': return 1;
+        case 'significant': return 0;
+        default: return 0;
+      }
+    });
+    
+    // Calculate average score (0-3 scale)
+    const totalScore = featureScores.reduce((sum, score) => sum + score, 0);
+    const averageScore = totalScore / device.features.length;
+    
+    // Convert to percentage
+    return Math.round((averageScore / 3) * 100);
   };
   
   return (
